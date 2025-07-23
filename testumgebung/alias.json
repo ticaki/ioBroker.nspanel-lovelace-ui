@@ -1,0 +1,6930 @@
+{
+  "alias.0": {
+    "_id": "alias.0",
+    "type": "meta",
+    "common": {
+      "name": {
+        "en": "root folder for Aliases",
+        "de": "Stammordner für Aliase",
+        "ru": "корневая папка для псевдонимов",
+        "pt": "pasta raiz para aliases",
+        "nl": "hoofdmap voor aliassen",
+        "fr": "dossier racine pour les alias",
+        "it": "cartella principale per gli alias",
+        "es": "carpeta raíz para alias",
+        "pl": "folder główny dla aliasów",
+        "zh-cn": "别名的根文件夹"
+      },
+      "type": "meta.folder",
+      "dontDelete": true
+    },
+    "acl": {
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator",
+      "object": 1604
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084552
+  },
+  "alias.0.Abfall": {
+    "type": "folder",
+    "common": {
+      "name": "Abfall"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.Abfall",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084559
+  },
+  "alias.0.Abfall.event1": {
+    "type": "channel",
+    "common": {
+      "name": "event1",
+      "role": "warning"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.Abfall.event1",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497724277
+  },
+  "alias.0.Abfall.event1.COLORDEC": {
+    "common": {
+      "name": "COLORDEC",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.1.color"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Abfall.event1.COLORDEC",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752575938902,
+    "val": 2016,
+    "ack": true
+  },
+  "alias.0.Abfall.event1.INFO": {
+    "common": {
+      "type": "string",
+      "role": "weather.title",
+      "name": {
+        "de": "INFO",
+        "en": "INFO"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.1.date"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event1.INFO",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084652,
+    "val": "Morgen",
+    "ack": true
+  },
+  "alias.0.Abfall.event1.LEVEL": {
+    "common": {
+      "type": "number",
+      "role": "value.warning",
+      "name": {
+        "de": "LEVEL",
+        "en": "LEVEL"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.1.color"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event1.LEVEL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084662,
+    "val": 2016,
+    "ack": true
+  },
+  "alias.0.Abfall.event1.TITLE": {
+    "common": {
+      "type": "string",
+      "role": "weather.title.short",
+      "name": {
+        "de": "TITEL",
+        "en": "TITLE"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.1.event"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event1.TITLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084753,
+    "val": "Biomüll",
+    "ack": true
+  },
+  "alias.0.Abfall.event2": {
+    "type": "channel",
+    "common": {
+      "name": "event2",
+      "role": "warning"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.Abfall.event2",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497731116
+  },
+  "alias.0.Abfall.event2.INFO": {
+    "common": {
+      "type": "string",
+      "role": "weather.title",
+      "name": {
+        "de": "INFO",
+        "en": "INFO"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.2.date"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event2.INFO",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084850,
+    "val": "06.08.2024  ",
+    "ack": true
+  },
+  "alias.0.Abfall.event2.LEVEL": {
+    "common": {
+      "type": "number",
+      "role": "value.warning",
+      "name": {
+        "de": "LEVEL",
+        "en": "LEVEL"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.2.color"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event2.LEVEL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084901,
+    "val": 65504,
+    "ack": true
+  },
+  "alias.0.Abfall.event2.TITLE": {
+    "common": {
+      "type": "string",
+      "role": "weather.title.short",
+      "name": {
+        "de": "TITEL",
+        "en": "TITLE"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.2.event"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event2.TITLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493084954,
+    "val": "Gelber Sack",
+    "ack": true
+  },
+  "alias.0.Abfall.event3": {
+    "type": "channel",
+    "common": {
+      "name": "event3",
+      "role": "warning"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.Abfall.event3",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497737762
+  },
+  "alias.0.Abfall.event3.INFO": {
+    "common": {
+      "type": "string",
+      "role": "weather.title",
+      "name": {
+        "de": "INFO",
+        "en": "INFO"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.3.date"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event3.INFO",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085052,
+    "val": "09.08.2024  ",
+    "ack": true
+  },
+  "alias.0.Abfall.event3.LEVEL": {
+    "common": {
+      "type": "number",
+      "role": "value.warning",
+      "name": {
+        "de": "LEVEL",
+        "en": "LEVEL"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.3.color"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event3.LEVEL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085106,
+    "val": 2016,
+    "ack": true
+  },
+  "alias.0.Abfall.event3.TITLE": {
+    "common": {
+      "type": "string",
+      "role": "weather.title.short",
+      "name": {
+        "de": "TITEL",
+        "en": "TITLE"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.3.event"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event3.TITLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085115,
+    "val": "Biomüll",
+    "ack": true
+  },
+  "alias.0.Abfall.event4": {
+    "type": "channel",
+    "common": {
+      "name": "event4",
+      "role": "warning"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.Abfall.event4",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497744543
+  },
+  "alias.0.Abfall.event4.INFO": {
+    "common": {
+      "type": "string",
+      "role": "weather.title",
+      "name": {
+        "de": "INFO",
+        "en": "INFO"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.4.date"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event4.INFO",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085135,
+    "val": "13.08.2024  ",
+    "ack": true
+  },
+  "alias.0.Abfall.event4.LEVEL": {
+    "common": {
+      "type": "number",
+      "role": "value.warning",
+      "name": {
+        "de": "LEVEL",
+        "en": "LEVEL"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.4.color"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event4.LEVEL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085147,
+    "val": 33840,
+    "ack": true
+  },
+  "alias.0.Abfall.event4.TITLE": {
+    "common": {
+      "type": "string",
+      "role": "weather.title.short",
+      "name": {
+        "de": "TITEL",
+        "en": "TITLE"
+      },
+      "alias": {
+        "id": "0_userdata.0.Abfallkalender.4.event"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Abfall.event4.TITLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085157,
+    "val": "Hausmüll",
+    "ack": true
+  },
+  "alias.0.Aircondition": {
+    "_id": "alias.0.Aircondition",
+    "common": {
+      "name": {
+        "de": "Aircondition"
+      },
+      "role": "airCondition",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112526306,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Aircondition.ACTUAL": {
+    "_id": "alias.0.Aircondition.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Actual"
+      },
+      "name": "ACTUAL",
+      "role": "value.temperature",
+      "write": false,
+      "type": "number",
+      "unit": "°C"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773173,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 23.5,
+    "ack": true
+  },
+  "alias.0.Aircondition.BOOST": {
+    "_id": "alias.0.Aircondition.BOOST",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Boost"
+      },
+      "name": "BOOST",
+      "role": "switch.boost",
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773186,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Aircondition.ERROR": {
+    "common": {
+      "name": "Error",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.error",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Error"
+      }
+    },
+    "type": "state",
+    "_id": "alias.0.Aircondition.ERROR",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112803078,
+    "ack": true
+  },
+  "alias.0.Aircondition.HUMIDITY": {
+    "_id": "alias.0.Aircondition.HUMIDITY",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Humidity"
+      },
+      "name": "HUMIDITY",
+      "role": "value.humidity",
+      "write": false,
+      "type": "number",
+      "unit": "%"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773179,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 25,
+    "ack": true
+  },
+  "alias.0.Aircondition.MAINTAIN": {
+    "common": {
+      "name": "Maintain",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Maintain"
+      }
+    },
+    "type": "state",
+    "_id": "alias.0.Aircondition.MAINTAIN",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112817971,
+    "ack": true
+  },
+  "alias.0.Aircondition.MODE": {
+    "_id": "alias.0.Aircondition.MODE",
+    "common": {
+      "name": "MODE",
+      "role": "level.mode.airconditioner",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Mode"
+      },
+      "states": {
+        "0": "AUTO",
+        "3": "COOL",
+        "4": "DRY",
+        "5": "ECO",
+        "6": "FAN_ONLY",
+        "7": "HEAT",
+        "8": "OFF"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773100,
+    "val": 5,
+    "ack": false
+  },
+  "alias.0.Aircondition.POWER": {
+    "_id": "alias.0.Aircondition.POWER",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Power"
+      },
+      "name": "POWER",
+      "role": "switch.power",
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773127,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Aircondition.SET": {
+    "_id": "alias.0.Aircondition.SET",
+    "common": {
+      "name": "SET",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Set"
+      },
+      "unit": "°C"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773086,
+    "val": 18,
+    "ack": false
+  },
+  "alias.0.Aircondition.SET2": {
+    "common": {
+      "name": "SET2",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Set2"
+      },
+      "min": 0,
+      "max": 100
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Aircondition.SET2",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773089,
+    "val": 0,
+    "ack": true
+  },
+  "alias.0.Aircondition.SPEED": {
+    "_id": "alias.0.Aircondition.SPEED",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Speed"
+      },
+      "name": "SPEED",
+      "role": "level.mode.fan",
+      "write": true,
+      "states": {
+        "0": "AUTO",
+        "1": "HIGH",
+        "2": "LOW",
+        "3": "MEDIUM",
+        "4": "QUIET",
+        "5": "TURBO"
+      },
+      "type": "number"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773114,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 20,
+    "ack": false
+  },
+  "alias.0.Aircondition.SWING": {
+    "_id": "alias.0.Aircondition.SWING",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Swing"
+      },
+      "name": "SWING",
+      "role": "level.mode.swing",
+      "write": true,
+      "states": {
+        "0": "AUTO",
+        "1": "HORIZONTAL",
+        "2": "STATIONARY",
+        "3": "VERTICAL"
+      },
+      "type": "number"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773195,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 2,
+    "ack": false
+  },
+  "alias.0.Aircondition.SWING_BOOLEAN": {
+    "_id": "alias.0.Aircondition.SWING_BOOLEAN",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Swing2"
+      },
+      "name": "SWING_BOOLEAN",
+      "role": "switch.mode.swing",
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112773203,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Aircondition.UNREACH": {
+    "common": {
+      "name": "Unreach",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.Aircondition.Unreach"
+      }
+    },
+    "type": "state",
+    "_id": "alias.0.Aircondition.UNREACH",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753112850444,
+    "ack": true
+  },
+  "alias.0.Auto": {
+    "type": "device",
+    "common": {
+      "name": "Auto",
+      "role": ""
+    },
+    "_id": "alias.0.Auto",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085215
+  },
+  "alias.0.Auto.Safety": {
+    "type": "channel",
+    "common": {
+      "name": "Verriegelung",
+      "role": ""
+    },
+    "_id": "alias.0.Auto.Safety",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085262
+  },
+  "alias.0.Auto.Safety.ACTUAL": {
+    "type": "state",
+    "common": {
+      "name": "ACTUAL",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Auto.Safety.lock"
+      }
+    },
+    "_id": "alias.0.Auto.Safety.ACTUAL",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493142701,
+    "ack": true
+  },
+  "alias.0.Blind": {
+    "_id": "alias.0.Blind",
+    "common": {
+      "name": {
+        "de": "Blind"
+      },
+      "role": "blind",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213183700
+  },
+  "alias.0.Blind.ACTUAL": {
+    "_id": "alias.0.Blind.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "value.blind",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "unit": "",
+      "step": 0,
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Blind1.level"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213183588,
+    "val": 50,
+    "ack": false
+  },
+  "alias.0.Blind.CLOSE": {
+    "_id": "alias.0.Blind.CLOSE",
+    "common": {
+      "name": "CLOSE",
+      "role": "button.close.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind1.close"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213183608,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind.OPEN": {
+    "_id": "alias.0.Blind.OPEN",
+    "common": {
+      "name": "OPEN",
+      "role": "button.open.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind1.open"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213183633,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind.SET": {
+    "_id": "alias.0.Blind.SET",
+    "common": {
+      "name": "SET",
+      "role": "level.blind",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "unit": "",
+      "step": 0,
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind1.level"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213183660,
+    "val": 50,
+    "ack": false
+  },
+  "alias.0.Blind.STOP": {
+    "_id": "alias.0.Blind.STOP",
+    "common": {
+      "name": "STOP",
+      "role": "button.stop.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind1.stop"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213183679,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind1": {
+    "_id": "alias.0.Blind1",
+    "common": {
+      "name": {
+        "de": "Blind"
+      },
+      "role": "blind",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213176031
+  },
+  "alias.0.Blind1.ACTUAL": {
+    "_id": "alias.0.Blind1.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "value.blind",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "unit": "",
+      "step": 0,
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Blind.level"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175820,
+    "val": 78,
+    "ack": false
+  },
+  "alias.0.Blind1.CLOSE": {
+    "_id": "alias.0.Blind1.CLOSE",
+    "common": {
+      "name": "CLOSE",
+      "role": "button.close.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind.close"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175842,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind1.OPEN": {
+    "_id": "alias.0.Blind1.OPEN",
+    "common": {
+      "name": "OPEN",
+      "role": "button.open.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind.open"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175866,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind1.SET": {
+    "_id": "alias.0.Blind1.SET",
+    "common": {
+      "name": "SET",
+      "role": "level.blind",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "unit": "",
+      "step": 0,
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind.level"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175888,
+    "val": 78,
+    "ack": false
+  },
+  "alias.0.Blind1.STOP": {
+    "_id": "alias.0.Blind1.STOP",
+    "common": {
+      "name": "STOP",
+      "role": "button.stop.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Blind.stop"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175907,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind1.TILT_ACTUAL": {
+    "_id": "alias.0.Blind1.TILT_ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Blind.tilt_level"
+      },
+      "name": "TILT_ACTUAL",
+      "role": "value.tilt",
+      "type": "number"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175922,
+    "val": 82,
+    "ack": false
+  },
+  "alias.0.Blind1.TILT_CLOSE": {
+    "_id": "alias.0.Blind1.TILT_CLOSE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Blind.tilt_close"
+      },
+      "name": "TILT_CLOSE",
+      "role": "button.close.tilt",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175950,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind1.TILT_OPEN": {
+    "_id": "alias.0.Blind1.TILT_OPEN",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Blind.tilt_open"
+      },
+      "name": "TILT_OPEN",
+      "role": "button.open.tilt",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175969,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Blind1.TILT_SET": {
+    "_id": "alias.0.Blind1.TILT_SET",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Blind.tilt_level"
+      },
+      "name": "TILT_SET",
+      "role": "level.tilt",
+      "write": true,
+      "type": "number"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213175994,
+    "val": 82,
+    "ack": false
+  },
+  "alias.0.Blind1.TILT_STOP": {
+    "_id": "alias.0.Blind1.TILT_STOP",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Blind.tilt_stop"
+      },
+      "name": "TILT_STOP",
+      "role": "button.stop.tilt",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753213176015,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Button": {
+    "_id": "alias.0.Button",
+    "common": {
+      "name": {
+        "de": "Button"
+      },
+      "role": "button",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113229401,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Button.SET": {
+    "_id": "alias.0.Button.SET",
+    "common": {
+      "name": "SET",
+      "role": "button",
+      "type": "boolean",
+      "read": false,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Button.Set"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113246010,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.CT": {
+    "_id": "alias.0.CT",
+    "common": {
+      "name": {
+        "de": "CT"
+      },
+      "role": "ct",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113289126,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.CT.DIMMER": {
+    "_id": "alias.0.CT.DIMMER",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.CT.Dimmer"
+      },
+      "name": "DIMMER",
+      "role": "level.dimmer",
+      "write": true,
+      "type": "number",
+      "unit": "%"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113332755,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 99,
+    "ack": false
+  },
+  "alias.0.CT.ON": {
+    "_id": "alias.0.CT.ON",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.CT.On"
+      },
+      "name": "ON",
+      "role": "switch.light",
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113332774,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.CT.ON_ACTUAL": {
+    "_id": "alias.0.CT.ON_ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.CT.On_Actual"
+      },
+      "name": "ON_ACTUAL",
+      "role": "sensor.light",
+      "write": false,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113332795,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": true
+  },
+  "alias.0.CT.TEMPERATURE": {
+    "_id": "alias.0.CT.TEMPERATURE",
+    "common": {
+      "name": "TEMPERATURE",
+      "role": "level.color.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.CT.Temperature"
+      },
+      "unit": "°K"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113332740,
+    "val": 500,
+    "ack": false
+  },
+  "alias.0.Charts": {
+    "type": "folder",
+    "common": {
+      "name": "Charts"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.Charts",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091195
+  },
+  "alias.0.Charts.AussenTemp": {
+    "type": "channel",
+    "common": {
+      "role": "info",
+      "name": {}
+    },
+    "native": {},
+    "_id": "alias.0.Charts.AussenTemp",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091240
+  },
+  "alias.0.Charts.AussenTemp.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "value",
+      "name": {
+        "de": "Sensor Werte",
+        "en": "Sensor Values"
+      },
+      "alias": {
+        "id": "0_userdata.0.Charts.AussenTemp.ACTUAL"
+      },
+      "desc": "Sensor Werte [~<time>:<value>]*"
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Charts.AussenTemp.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091248,
+    "val": "0^02:00+60+120+180+240^06:00+300+360+420+480^10:00+540+600+660+720^14:00+780+840+900+960^18:00+1020+1080+1140+1200^22:00+1260+1320+1380~44:167~104:167~164:166~224:166~284:167~344:170~404:174~464:179~524:180~584:189~644:185~704:183~764:193~824:206~884:206~944:194~1004:190~1064:192~1124:190~1184:185~1244:184~1304:182~1364:179~1424:177~1440:176",
+    "ack": true
+  },
+  "alias.0.Charts.AussenTemp.SCALE": {
+    "common": {
+      "name": "SCALE",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": "",
+      "alias": {
+        "id": "0_userdata.0.Charts.AussenTemp.Scale"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Charts.AussenTemp.SCALE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493195128,
+    "val": "[56,76,96,116,136]",
+    "ack": true
+  },
+  "alias.0.Charts.Balken": {
+    "common": {
+      "name": "Balken",
+      "desc": "Manuell erzeugt",
+      "role": "",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "alias.0.Charts.Balken",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "file": 1632,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091300
+  },
+  "alias.0.Charts.Balken.ACTUAL": {
+    "common": {
+      "name": "ACTUAL",
+      "desc": "Manuell erzeugt",
+      "role": "value",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": "",
+      "alias": {
+        "id": "0_userdata.0.Charts.Heizung.Werte"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Charts.Balken.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "file": 1632,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091305,
+    "val": "364^19~114~192~331~261~167~169~244^26~186~172~169~181~178~178~92^2~133~158~128~106~97~106~86^9",
+    "ack": true
+  },
+  "alias.0.Charts.Balken.SCALE": {
+    "common": {
+      "name": "SCALE",
+      "desc": "Manuell erzeugt",
+      "role": "value",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": "",
+      "alias": {
+        "id": "0_userdata.0.Charts.Heizung.Scale"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Charts.Balken.SCALE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "file": 1632,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091357,
+    "val": "[0,91,182,273,364]",
+    "ack": true
+  },
+  "alias.0.Countdown": {
+    "type": "channel",
+    "common": {
+      "role": "level.timer",
+      "name": "Countdown"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.Countdown",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091411
+  },
+  "alias.0.Countdown.ACTUAL": {
+    "common": {
+      "type": "number",
+      "role": "value.timer",
+      "name": "ACTUAL",
+      "alias": {
+        "id": "0_userdata.0.Countdown.Actual"
+      },
+      "write": false
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Countdown.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753134713728,
+    "val": 1753221615000,
+    "ack": false
+  },
+  "alias.0.Countdown.SET": {
+    "common": {
+      "name": "SET",
+      "desc": "Manuell erzeugt",
+      "role": "level.timer",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Countdown.Set"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Countdown.SET",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753134739860,
+    "val": 1753222200000,
+    "ack": false
+  },
+  "alias.0.Countdown.STATE": {
+    "common": {
+      "type": "boolean",
+      "role": "button",
+      "name": "STATE",
+      "alias": {
+        "id": "0_userdata.0.Countdown.State"
+      },
+      "write": true,
+      "read": false
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Countdown.STATE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091521,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Countdown.STATUS": {
+    "common": {
+      "name": "STATUS",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Countdown.Status"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Countdown.STATUS",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493091579,
+    "val": 2,
+    "ack": false
+  },
+  "alias.0.Dimmer": {
+    "_id": "alias.0.Dimmer",
+    "common": {
+      "name": {
+        "de": "Dimmer"
+      },
+      "role": "dimmer",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113358283,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Dimmer.ACTUAL": {
+    "_id": "alias.0.Dimmer.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Dimmer.Actual"
+      },
+      "name": "ACTUAL",
+      "role": "value.dimmer",
+      "write": false,
+      "type": "number",
+      "unit": "%"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113391615,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 50,
+    "ack": false
+  },
+  "alias.0.Dimmer.ON_ACTUAL": {
+    "_id": "alias.0.Dimmer.ON_ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Dimmer.On_Actual"
+      },
+      "name": "ON_ACTUAL",
+      "role": "sensor.light",
+      "write": false,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113391631,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Dimmer.ON_SET": {
+    "_id": "alias.0.Dimmer.ON_SET",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Dimmer.On_Set"
+      },
+      "name": "ON_SET",
+      "role": "switch.light",
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113391622,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Dimmer.SET": {
+    "_id": "alias.0.Dimmer.SET",
+    "common": {
+      "name": "SET",
+      "role": "level.dimmer",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Dimmer.Set"
+      },
+      "unit": "%"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113391607,
+    "val": 85,
+    "ack": false
+  },
+  "alias.0.Door": {
+    "_id": "alias.0.Door",
+    "common": {
+      "name": {
+        "de": "Door"
+      },
+      "role": "door",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113502412,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Door.ACTUAL": {
+    "_id": "alias.0.Door.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "sensor.door",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Door.Actual"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113643551,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Door.BUTTONTEXT": {
+    "_id": "alias.0.Door.BUTTONTEXT",
+    "common": {
+      "name": "BUTTONTEXT",
+      "role": "text",
+      "type": "string",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Door.Buttontext"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113643537,
+    "val": "zu",
+    "ack": false
+  },
+  "alias.0.Door.COLORDEC": {
+    "_id": "alias.0.Door.COLORDEC",
+    "common": {
+      "name": "COLORDEC",
+      "role": "state",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Door.Colordec"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753268043433,
+    "val": 2015,
+    "ack": false
+  },
+  "alias.0.FahrplanAnzeiger": {
+    "type": "folder",
+    "common": {
+      "name": "FahrplanAnzeiger"
+    },
+    "native": {
+      "autocreated": "by automatic ensure logic"
+    },
+    "_id": "alias.0.FahrplanAnzeiger",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259532
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0": {
+    "type": "device",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Haltestelle 0",
+        "en": "Station 0"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259538
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 0",
+        "en": "Departure 0"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259585
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259590,
+    "val": "14:48",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259603,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259654,
+    "val": "Blankenfelde (S)",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259707,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 1",
+        "en": "Departure 1"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259760
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259807,
+    "val": "14:49",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259857,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259913,
+    "val": "Bernau (b Berlin) (S)",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259925,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 2",
+        "en": "Departure 2"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497259979
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260026,
+    "val": "14:51",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260104,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260117,
+    "val": "Bernau Bahnhof (S), Bernau bei Berlin",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt2.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260169,
+    "val": "bus",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 3",
+        "en": "Departure 3"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260178
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260184,
+    "val": "14:52",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260236,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260291,
+    "val": "Zepernick (S), Panketal",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt3.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260306,
+    "val": "bus",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 4",
+        "en": "Departure 4"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260316
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260322,
+    "val": "14:55",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260331,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260350,
+    "val": "Prerower Platz, Berlin",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt4.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260363,
+    "val": "bus",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 5",
+        "en": "Departure 5"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260376
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260383,
+    "val": "14:55",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260398,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260416,
+    "val": "Bernau Bahnhof (S), Bernau bei Berlin",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt5.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260427,
+    "val": "bus",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0": {
+    "type": "device",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Route 0",
+        "en": "Route 0"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route0",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260436
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt0": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 0",
+        "en": "Departure 0"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt0",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260441
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt0.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260446,
+    "val": "14:48",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt0.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260456,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt0.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260507,
+    "val": "Blankenfelde (S)",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt0.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt0.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260518,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt1": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 1",
+        "en": "Departure 1"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt1",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260571
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt1.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260637,
+    "val": "14:48",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt1.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260657,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt1.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260668,
+    "val": "Blankenfelde (S)",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt1.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt1.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260678,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt2": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 2",
+        "en": "Departure 2"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt2",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260687
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt2.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260692,
+    "val": "14:48",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt2.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260701,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt2.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260751,
+    "val": "Blankenfelde (S)",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt2.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt2.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260788,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt3": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 3",
+        "en": "Departure 3"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt3",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260841
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt3.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260888,
+    "val": "14:49",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt3.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260944,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt3.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497260999,
+    "val": "Bernau (S)",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route0.Abfahrt3.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route0.Abfahrt3.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261052,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1": {
+    "type": "device",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Route 1",
+        "en": "Route 1"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route1",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261065
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt0": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 0",
+        "en": "Departure 0"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt0",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261111
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt0.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261180,
+    "val": "00:00",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt0.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261240,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt0.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261253,
+    "val": "Hbf",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt0.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt0.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261262,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt1": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 1",
+        "en": "Departure 1"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt1",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261313
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt1.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261324,
+    "val": "00:00",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt1.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261336,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt1.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261390,
+    "val": "Hbf",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt1.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt1.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261441,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt2": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 2",
+        "en": "Departure 2"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt2",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261455
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt2.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261502,
+    "val": "00:00",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt2.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261516,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt2.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261576,
+    "val": "Hbf",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt2.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt2.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261589,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt3": {
+    "type": "channel",
+    "common": {
+      "role": "timeTable",
+      "name": {
+        "de": "Abfahrt 3",
+        "en": "Departure 3"
+      }
+    },
+    "native": {},
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt3",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261602
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.ACTUAL": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Abfahrzeit",
+        "en": "Departure time"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt3.Departure"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261609,
+    "val": "00:00",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.DELAY": {
+    "common": {
+      "type": "boolean",
+      "role": "state",
+      "name": {
+        "de": "Verspätung",
+        "en": "Delay"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt3.Delay"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.DELAY",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261647,
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.DIRECTION": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Richtung",
+        "en": "Direction"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt3.Direction"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.DIRECTION",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261771,
+    "val": "Hbf",
+    "ack": true
+  },
+  "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.VEHICLE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": {
+        "de": "Fahrzeug",
+        "en": "Vehicle"
+      },
+      "alias": {
+        "id": "0_userdata.0.FahrplanAnzeiger.Route1.Abfahrt3.Vehicle"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.FahrplanAnzeiger.Route1.Abfahrt3.VEHICLE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497261823,
+    "val": "train",
+    "ack": true
+  },
+  "alias.0.GaesteWlan": {
+    "common": {
+      "name": "GaesteWlan",
+      "desc": "Manuell erzeugt",
+      "role": "",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "alias.0.GaesteWlan",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085429
+  },
+  "alias.0.GaesteWlan.switch": {
+    "common": {
+      "name": "switch",
+      "desc": "Manuell erzeugt",
+      "role": "switch",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.GaesteWlan.switch"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.GaesteWlan.switch",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493085476,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Gate": {
+    "_id": "alias.0.Gate",
+    "common": {
+      "name": "Gate",
+      "role": "gate",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753134598167
+  },
+  "alias.0.Gate.ACTUAL": {
+    "_id": "alias.0.Gate.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Gate.Actual"
+      },
+      "name": "ACTUAL",
+      "role": "value.blind",
+      "type": "number",
+      "unit": "%"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113484102,
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.Gate.SET": {
+    "_id": "alias.0.Gate.SET",
+    "common": {
+      "name": "SET",
+      "role": "switch.gate",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Gate.Set"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113484062,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Gate.STOP": {
+    "_id": "alias.0.Gate.STOP",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Gate.Stop"
+      },
+      "name": "STOP",
+      "role": "button.stop",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113484169,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Hue": {
+    "_id": "alias.0.Hue",
+    "common": {
+      "name": {
+        "de": "Hue"
+      },
+      "role": "hue",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113665426,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Hue.DIMMER": {
+    "_id": "alias.0.Hue.DIMMER",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Hue.Dimmer"
+      },
+      "name": "DIMMER",
+      "role": "level.dimmer",
+      "write": true,
+      "type": "number",
+      "unit": "%"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113729341,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 0,
+    "ack": true
+  },
+  "alias.0.Hue.HUE": {
+    "_id": "alias.0.Hue.HUE",
+    "common": {
+      "name": "HUE",
+      "role": "level.color.hue",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Hue.Hue"
+      },
+      "unit": "°"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113729333,
+    "val": 0,
+    "ack": true
+  },
+  "alias.0.Hue.ON": {
+    "_id": "alias.0.Hue.ON",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Hue.On"
+      },
+      "name": "ON",
+      "role": "switch.light",
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113729361,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Hue.ON_ACTUAL": {
+    "_id": "alias.0.Hue.ON_ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Hue.On_Actuel"
+      },
+      "name": "ON_ACTUAL",
+      "role": "sensor.light",
+      "write": false,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113729371,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": true
+  },
+  "alias.0.Hue.TEMPERATURE": {
+    "_id": "alias.0.Hue.TEMPERATURE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Hue.Temperature"
+      },
+      "name": "TEMPERATURE",
+      "role": "level.color.temperature",
+      "write": true,
+      "type": "number",
+      "unit": "°K"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113729352,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 0,
+    "ack": true
+  },
+  "alias.0.Humidity": {
+    "_id": "alias.0.Humidity",
+    "common": {
+      "name": {
+        "de": "Humidity"
+      },
+      "role": "humidity",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113751558,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Humidity.ACTUAL": {
+    "_id": "alias.0.Humidity.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "value.humidity",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Humidity.Actual"
+      },
+      "unit": "%",
+      "min": 0,
+      "max": 100
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753268226664,
+    "val": 50,
+    "ack": false
+  },
+  "alias.0.Humidity_Value": {
+    "_id": "alias.0.Humidity_Value",
+    "common": {
+      "name": {
+        "de": "Humidity_value"
+      },
+      "role": "value.humidity",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753214739807
+  },
+  "alias.0.Humidity_Value.ACTUAL": {
+    "_id": "alias.0.Humidity_Value.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "value.humidity",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Humidity_Value.Actual"
+      },
+      "unit": "%",
+      "min": 0,
+      "max": 100
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753268308958,
+    "val": 35,
+    "ack": false
+  },
+  "alias.0.Info": {
+    "common": {
+      "name": "Info",
+      "desc": "Manuell erzeugt",
+      "role": "info",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "alias.0.Info",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752909192966
+  },
+  "alias.0.Info.ACTUAL": {
+    "_id": "alias.0.Info.ACTUAL",
+    "type": "state",
+    "common": {
+      "name": "Status",
+      "type": "boolean",
+      "alias": {
+        "id": "0_userdata.0.Info.Status"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752908252356,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Info.BUTTONTEXT": {
+    "_id": "alias.0.Info.BUTTONTEXT",
+    "type": "state",
+    "common": {
+      "name": "ButtonText",
+      "type": "mixed",
+      "alias": {
+        "id": "0_userdata.0.Info.ButtonText"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "text",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752908731603,
+    "val": "335",
+    "ack": false
+  },
+  "alias.0.Info.BUTTONTEXTOFF": {
+    "_id": "alias.0.Info.BUTTONTEXTOFF",
+    "type": "state",
+    "common": {
+      "name": "Buttontextoff",
+      "type": "mixed",
+      "alias": {
+        "id": "0_userdata.0.Info.Buttontextoff"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "text",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752908592874,
+    "val": "41",
+    "ack": false
+  },
+  "alias.0.Info.COLORDEC": {
+    "_id": "alias.0.Info.COLORDEC",
+    "type": "state",
+    "common": {
+      "name": "Farbe",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Info.Farbe"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "value.rgb",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752908516647,
+    "val": 3265,
+    "ack": false
+  },
+  "alias.0.Info.USERICON": {
+    "_id": "alias.0.Info.USERICON",
+    "type": "state",
+    "common": {
+      "name": "Icon",
+      "type": "string",
+      "alias": {
+        "id": "0_userdata.0.Info.Icon"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "icon",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752911568395,
+    "val": "ab-testing",
+    "ack": true
+  },
+  "alias.0.Light": {
+    "_id": "alias.0.Light",
+    "common": {
+      "name": {
+        "de": "Light"
+      },
+      "role": "light",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113814300,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Light.BUTTONTEXT": {
+    "_id": "alias.0.Light.BUTTONTEXT",
+    "common": {
+      "name": "BUTTONTEXT",
+      "role": "text",
+      "type": "string",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Light.Buttontext"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113892481,
+    "val": "Licht_an",
+    "ack": false
+  },
+  "alias.0.Light.COLORDEC": {
+    "_id": "alias.0.Light.COLORDEC",
+    "common": {
+      "name": "COLORDEC",
+      "role": "state",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Light.Colordec"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753268629067,
+    "val": 2150,
+    "ack": false
+  },
+  "alias.0.Light.ON_ACTUAL": {
+    "_id": "alias.0.Light.ON_ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Light.On_Actual"
+      },
+      "name": "ON_ACTUAL",
+      "role": "sensor.light",
+      "write": false,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113892553,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Light.SET": {
+    "_id": "alias.0.Light.SET",
+    "common": {
+      "name": "SET",
+      "role": "switch.light",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Light.Set"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113892501,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Lock": {
+    "_id": "alias.0.Lock",
+    "common": {
+      "name": {
+        "de": "Lock"
+      },
+      "role": "lock",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113913427,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Lock.ACTUAL": {
+    "_id": "alias.0.Lock.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Lock.Actual"
+      },
+      "name": "ACTUAL",
+      "role": "state",
+      "write": false,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113943640,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Lock.OPEN": {
+    "_id": "alias.0.Lock.OPEN",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Lock.Open"
+      },
+      "name": "OPEN",
+      "role": "button",
+      "read": false,
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113943657,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Lock.SET": {
+    "_id": "alias.0.Lock.SET",
+    "common": {
+      "name": "SET",
+      "role": "switch.lock",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Lock.Set"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113943631,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Motion": {
+    "_id": "alias.0.Motion",
+    "common": {
+      "name": {
+        "de": "Motion"
+      },
+      "role": "motion",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113965657,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Motion.ACTUAL": {
+    "_id": "alias.0.Motion.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "sensor.motion",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Motion.Actual"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753113975581,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.RGB": {
+    "_id": "alias.0.RGB",
+    "common": {
+      "name": {
+        "de": "RGB"
+      },
+      "role": "rgb",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114057462,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.RGB.BLUE": {
+    "_id": "alias.0.RGB.BLUE",
+    "common": {
+      "name": "BLUE",
+      "role": "level.color.blue",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.RGB.Blue"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237877,
+    "val": 243,
+    "ack": true
+  },
+  "alias.0.RGB.DIMMER": {
+    "_id": "alias.0.RGB.DIMMER",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGB.Dimmer"
+      },
+      "name": "DIMMER",
+      "role": "level.dimmer",
+      "write": true,
+      "type": "number",
+      "unit": "%"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237897,
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.RGB.GREEN": {
+    "_id": "alias.0.RGB.GREEN",
+    "common": {
+      "name": "GREEN",
+      "role": "level.color.green",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.RGB.Green"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237869,
+    "val": 255,
+    "ack": true
+  },
+  "alias.0.RGB.ON": {
+    "_id": "alias.0.RGB.ON",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGB.On"
+      },
+      "name": "ON",
+      "role": "switch.light",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237917,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.RGB.ON_ACTUAL": {
+    "_id": "alias.0.RGB.ON_ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGB.On_Actual"
+      },
+      "name": "ON_ACTUAL",
+      "role": "sensor.light",
+      "write": false,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237925,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.RGB.RED": {
+    "_id": "alias.0.RGB.RED",
+    "common": {
+      "name": "RED",
+      "role": "level.color.red",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.RGB.Red"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237846,
+    "val": 127,
+    "ack": true
+  },
+  "alias.0.RGB.TEMPERATURE": {
+    "_id": "alias.0.RGB.TEMPERATURE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGB.Temperature"
+      },
+      "name": "TEMPERATURE",
+      "role": "level.color.temperature",
+      "write": true,
+      "type": "number",
+      "unit": "°K"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237905,
+    "val": 6500,
+    "ack": false
+  },
+  "alias.0.RGB.WHITE": {
+    "_id": "alias.0.RGB.WHITE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGB.White"
+      },
+      "name": "WHITE",
+      "role": "level.color.white",
+      "write": true,
+      "type": "number"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114237887,
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.RGBSingle": {
+    "_id": "alias.0.RGBSingle",
+    "common": {
+      "name": {
+        "de": "RGBsingle"
+      },
+      "role": "rgbSingle",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129128008
+  },
+  "alias.0.RGBSingle.DIMMER": {
+    "_id": "alias.0.RGBSingle.DIMMER",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGBSingle.Dimmer"
+      },
+      "name": "DIMMER",
+      "role": "level.dimmer",
+      "write": true,
+      "type": "number",
+      "unit": "%"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129127928,
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.RGBSingle.ON": {
+    "_id": "alias.0.RGBSingle.ON",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGBSingle.On"
+      },
+      "name": "ON",
+      "role": "switch.light",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129127949,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.RGBSingle.ON_ACTUAL": {
+    "_id": "alias.0.RGBSingle.ON_ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGBSingle.On_Actual"
+      },
+      "name": "ON_ACTUAL",
+      "role": "sensor.light",
+      "write": false,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129127966,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.RGBSingle.RGB": {
+    "_id": "alias.0.RGBSingle.RGB",
+    "common": {
+      "name": "RGB",
+      "role": "level.color.rgb",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.RGBSingle.RGB"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129127981,
+    "val": "#c39bff",
+    "ack": false
+  },
+  "alias.0.RGBSingle.TEMPERATURE": {
+    "_id": "alias.0.RGBSingle.TEMPERATURE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.RGBSingle.Temperature"
+      },
+      "name": "TEMPERATURE",
+      "role": "level.color.temperature",
+      "write": true,
+      "type": "number",
+      "unit": "°K"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129127997,
+    "val": 6500,
+    "ack": false
+  },
+  "alias.0.Select": {
+    "common": {
+      "name": "Select",
+      "desc": "Manuell erzeugt",
+      "role": "select",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "alias.0.Select",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129612920
+  },
+  "alias.0.Select.ACTUAL": {
+    "common": {
+      "name": "ACTUAL",
+      "desc": "Manuell erzeugt",
+      "role": "value.mode.select",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Select.Actual"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Select.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753129700466,
+    "val": 6,
+    "ack": false
+  },
+  "alias.0.Select.SET": {
+    "common": {
+      "name": "SET",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.select",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Select.Set"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Select.SET",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753130596898,
+    "val": 6,
+    "ack": false
+  },
+  "alias.0.Sensor_Alarm_Flood": {
+    "_id": "alias.0.Sensor_Alarm_Flood",
+    "common": {
+      "name": {
+        "de": "Sensor_Alarm_Flood"
+      },
+      "role": "sensor.alarm.flood",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115288166,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Sensor_Alarm_Flood.ACTUAL": {
+    "_id": "alias.0.Sensor_Alarm_Flood.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "sensor.alarm.flood",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Sensor_Alarm_Flood.Actual"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115305839,
+    "val": false,
+    "ack": true
+  },
+  "alias.0.Sensoren": {
+    "common": {
+      "name": "Sensoren",
+      "desc": "Manuell erzeugt",
+      "role": "",
+      "icon": ""
+    },
+    "type": "device",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493719033,
+    "_id": "alias.0.Sensoren",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Sensoren.TempPanel": {
+    "common": {
+      "name": "TempPanel",
+      "desc": "Manuell erzeugt",
+      "role": "",
+      "icon": ""
+    },
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493738266,
+    "_id": "alias.0.Sensoren.TempPanel",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Sensoren.TempPanel.ACTUAL": {
+    "_id": "alias.0.Sensoren.TempPanel.ACTUAL",
+    "type": "state",
+    "common": {
+      "name": "TempPanel",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Sensoren.TempPanel"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "read": true,
+      "write": true
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493671328,
+    "val": 23.5,
+    "ack": true
+  },
+  "alias.0.Sensoren.Waermeverbrauch": {
+    "common": {
+      "name": "Waermeverbrauch",
+      "desc": "Manuell erzeugt",
+      "role": "",
+      "icon": ""
+    },
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493797787,
+    "_id": "alias.0.Sensoren.Waermeverbrauch",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Sensoren.Waermeverbrauch.ACTUAL": {
+    "_id": "alias.0.Sensoren.Waermeverbrauch.ACTUAL",
+    "type": "state",
+    "common": {
+      "name": "Waermeverbrauch",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Sensoren.Waermeverbrauch"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "read": true,
+      "write": true
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493821203,
+    "val": 4514.5,
+    "ack": true
+  },
+  "alias.0.Slider": {
+    "_id": "alias.0.Slider",
+    "common": {
+      "name": {
+        "de": "Slider"
+      },
+      "role": "slider",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115368075,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Slider.SET": {
+    "_id": "alias.0.Slider.SET",
+    "common": {
+      "name": "SET",
+      "role": "level",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Slider.Set"
+      },
+      "min": 0,
+      "max": 100,
+      "unit": "%"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115382220,
+    "val": 1,
+    "ack": false
+  },
+  "alias.0.Socket": {
+    "_id": "alias.0.Socket",
+    "common": {
+      "name": {
+        "de": "Socket"
+      },
+      "role": "socket",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114372965,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Socket.ACTUAL": {
+    "_id": "alias.0.Socket.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Scoket.actual"
+      },
+      "name": "ACTUAL",
+      "role": "sensor.switch",
+      "write": false,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114462919,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Socket.BUTTONTEXT": {
+    "_id": "alias.0.Socket.BUTTONTEXT",
+    "common": {
+      "name": "BUTTONTEXT",
+      "role": "text",
+      "type": "string",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Scoket.Buttontext"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114462890,
+    "val": "Steckd. aus",
+    "ack": false
+  },
+  "alias.0.Socket.COLORDEC": {
+    "_id": "alias.0.Socket.COLORDEC",
+    "common": {
+      "name": "COLORDEC",
+      "role": "state",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Scoket.Colordec"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753269010466,
+    "val": 2015,
+    "ack": false
+  },
+  "alias.0.Socket.SET": {
+    "_id": "alias.0.Socket.SET",
+    "common": {
+      "name": "SET",
+      "role": "switch",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Scoket.set"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114462904,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Status_Licht_An": {
+    "common": {
+      "name": {
+        "de": "Status_Licht_An"
+      },
+      "role": "light"
+    },
+    "type": "channel",
+    "native": {},
+    "_id": "alias.0.Status_Licht_An",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493087463
+  },
+  "alias.0.Status_Licht_An.ACTUAL": {
+    "_id": "alias.0.Status_Licht_An.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Licht.Status_Ein"
+      },
+      "name": "ACTUAL",
+      "role": "sensor.light",
+      "write": false,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497871509,
+    "val": true,
+    "ack": true
+  },
+  "alias.0.Status_offene_Fenster": {
+    "common": {
+      "name": {
+        "de": "Status_offene_Fenster"
+      },
+      "role": "info"
+    },
+    "type": "channel",
+    "native": {},
+    "_id": "alias.0.Status_offene_Fenster",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752873209930
+  },
+  "alias.0.Status_offene_Fenster.ACTUAL": {
+    "_id": "alias.0.Status_offene_Fenster.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Fenster.Status_offene"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752875018730,
+    "ack": false
+  },
+  "alias.0.Status_offene_Fenster.BUTTONTEXT": {
+    "_id": "alias.0.Status_offene_Fenster.BUTTONTEXT",
+    "type": "state",
+    "common": {
+      "name": "Anzahl_offene",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Fenster.Anzahl_offene"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "text",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752824710287,
+    "val": 9,
+    "ack": false
+  },
+  "alias.0.Status_offene_Fenster.BUTTONTEXTOFF": {
+    "_id": "alias.0.Status_offene_Fenster.BUTTONTEXTOFF",
+    "type": "state",
+    "common": {
+      "name": "Anzahl offene off",
+      "type": "mixed",
+      "alias": {
+        "id": "0_userdata.0.Fenster.Anzahl_offene_off"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "text",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752873384974,
+    "val": "kein test",
+    "ack": true
+  },
+  "alias.0.Status_offene_Tuer": {
+    "common": {
+      "name": "Status offene Türen",
+      "role": "door"
+    },
+    "type": "channel",
+    "native": {},
+    "_id": "alias.0.Status_offene_Tuer",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493087550
+  },
+  "alias.0.Status_offene_Tuer.ACTUAL": {
+    "_id": "alias.0.Status_offene_Tuer.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "sensor.door",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Türen.Status_offene"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752497881497,
+    "ack": true
+  },
+  "alias.0.Stromdaten": {
+    "common": {
+      "name": "Stromdaten",
+      "desc": "Manuell erzeugt",
+      "role": "",
+      "icon": ""
+    },
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493992849,
+    "_id": "alias.0.Stromdaten",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Stromdaten.Leistung": {
+    "common": {
+      "name": "Leistung",
+      "desc": "Manuell erzeugt",
+      "role": "value.power",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "def": 0,
+      "unit": "W",
+      "custom": {
+        "sql.0": {
+          "enabled": true,
+          "storageType": "",
+          "counter": false,
+          "aliasId": "",
+          "debounceTime": 0,
+          "blockTime": 0,
+          "changesOnly": true,
+          "changesRelogInterval": 0,
+          "changesMinDelta": 0,
+          "ignoreBelowNumber": "",
+          "disableSkippedValueLogging": false,
+          "retention": 31536000,
+          "customRetentionDuration": 365,
+          "maxLength": 0,
+          "enableDebugLogs": false,
+          "debounce": 1000,
+          "chartStep": ""
+        }
+      },
+      "alias": {
+        "id": "0_userdata.0.example_state_number"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Stromdaten.Leistung",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493087619,
+    "val": 132,
+    "ack": false
+  },
+  "alias.0.Temperatur": {
+    "_id": "alias.0.Temperatur",
+    "common": {
+      "name": {
+        "de": "Temperatur"
+      },
+      "role": "temperature",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114491129,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Temperatur.ACTUAL": {
+    "_id": "alias.0.Temperatur.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "value.temperature",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Temperature.Actual"
+      },
+      "unit": "°C"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114502236,
+    "val": 30,
+    "ack": false
+  },
+  "alias.0.Temperatur_Value": {
+    "_id": "alias.0.Temperatur_Value",
+    "common": {
+      "name": {
+        "de": "Temperatur_Value"
+      },
+      "role": "value.temperature",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115212385
+  },
+  "alias.0.Temperatur_Value.ACTUAL": {
+    "_id": "alias.0.Temperatur_Value.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "value.temperature",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Temperature_Value.Actual"
+      },
+      "unit": "°C"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114563554,
+    "val": 25,
+    "ack": false
+  },
+  "alias.0.Temperatur_Value.USERICON": {
+    "_id": "alias.0.Temperatur_Value.USERICON",
+    "common": {
+      "name": "USERICON",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Temperature_Value.Usericon"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114563543,
+    "val": "water",
+    "ack": false
+  },
+  "alias.0.Thermostat": {
+    "_id": "alias.0.Thermostat",
+    "common": {
+      "name": {
+        "de": "Thermostat"
+      },
+      "role": "thermostat",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114611563,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Thermostat.ACTUAL": {
+    "_id": "alias.0.Thermostat.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Actual"
+      },
+      "name": "ACTUAL",
+      "role": "value.temperature",
+      "write": false,
+      "type": "number",
+      "unit": "°C"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971621,
+    "val": 24,
+    "ack": false
+  },
+  "alias.0.Thermostat.BOOST": {
+    "_id": "alias.0.Thermostat.BOOST",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Boost"
+      },
+      "name": "BOOST",
+      "role": "switch.mode.boost",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971642,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Thermostat.ERROR": {
+    "_id": "alias.0.Thermostat.ERROR",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Error"
+      },
+      "name": "ERROR",
+      "role": "indicator.error",
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971729,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Thermostat.HUMIDITY": {
+    "_id": "alias.0.Thermostat.HUMIDITY",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Humidity"
+      },
+      "name": "HUMIDITY",
+      "role": "value.humidity",
+      "write": false,
+      "type": "number",
+      "unit": "%"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971632,
+    "val": 30,
+    "ack": false
+  },
+  "alias.0.Thermostat.LOWBAT": {
+    "_id": "alias.0.Thermostat.LOWBAT",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Lowbat"
+      },
+      "name": "LOWBAT",
+      "role": "indicator.maintenance.lowbat",
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971708,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Thermostat.MAINTAIN": {
+    "_id": "alias.0.Thermostat.MAINTAIN",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Maintain"
+      },
+      "name": "MAINTAIN",
+      "role": "indicator.maintenance",
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971715,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Thermostat.MODE": {
+    "_id": "alias.0.Thermostat.MODE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Mode"
+      },
+      "name": "MODE",
+      "role": "level.mode.thermostat",
+      "write": true,
+      "states": {
+        "0": "AUTO",
+        "1": "MANUAL"
+      },
+      "type": "number"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971676,
+    "val": 1,
+    "ack": false
+  },
+  "alias.0.Thermostat.PARTY": {
+    "_id": "alias.0.Thermostat.PARTY",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Party"
+      },
+      "name": "PARTY",
+      "role": "switch.mode.party",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971662,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Thermostat.POWER": {
+    "_id": "alias.0.Thermostat.POWER",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Power"
+      },
+      "name": "POWER",
+      "role": "switch.power",
+      "write": true,
+      "type": "boolean"
+    },
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971654,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Thermostat.SET": {
+    "_id": "alias.0.Thermostat.SET",
+    "common": {
+      "name": "SET",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Set"
+      },
+      "unit": "°C"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971601,
+    "val": 0,
+    "ack": true
+  },
+  "alias.0.Thermostat.UNREACH": {
+    "_id": "alias.0.Thermostat.UNREACH",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Unreach"
+      },
+      "name": "UNREACH",
+      "role": "indicator.maintenance.unreach",
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971699,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Thermostat.VACANTION": {
+    "_id": "alias.0.Thermostat.VACANTION",
+    "common": {
+      "name": "VACANTION",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Vacation"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971585,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Thermostat.WINDOWOPEN": {
+    "_id": "alias.0.Thermostat.WINDOWOPEN",
+    "common": {
+      "name": "WINDOWOPEN",
+      "role": "sensor.window",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Thermostat.WindowOpen"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971598,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Thermostat.WORKING": {
+    "_id": "alias.0.Thermostat.WORKING",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Thermostat.Working"
+      },
+      "name": "WORKING",
+      "role": "indicator.working",
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114971685,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Uhrzeit": {
+    "type": "channel",
+    "common": {
+      "role": "date",
+      "name": "Time"
+    },
+    "native": {},
+    "_id": "alias.0.Uhrzeit",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753134521992
+  },
+  "alias.0.Uhrzeit.ACTUAL": {
+    "common": {
+      "type": "number",
+      "role": "date",
+      "name": "ACTUAL",
+      "alias": {
+        "id": "0_userdata.0.Uhrzeit.zeit"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Uhrzeit.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753134536395,
+    "val": 200,
+    "ack": true
+  },
+  "alias.0.Uhrzeit.STATE": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": "STATE",
+      "alias": {
+        "id": "0_userdata.0.Uhrzeit.Status"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Uhrzeit.STATE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752494303365,
+    "val": "pause",
+    "ack": true
+  },
+  "alias.0.Unlock": {
+    "_id": "alias.0.Unlock",
+    "type": "channel",
+    "common": {
+      "role": "sensor.fire.alarm",
+      "name": "sensor.fire.alarm"
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493090515
+  },
+  "alias.0.Unlock.ACTUAL": {
+    "common": {
+      "type": "boolean",
+      "role": "sensor.fire.alarm",
+      "name": "ACTUAL",
+      "alias": {
+        "id": "0_userdata.0.Unlock.Access"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Unlock.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493090561,
+    "val": true,
+    "ack": false
+  },
+  "alias.0.Unlock.PIN": {
+    "common": {
+      "type": "string",
+      "role": "state",
+      "name": "PIN",
+      "alias": {
+        "id": "0_userdata.0.Unlock.UnlockPin"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "_id": "alias.0.Unlock.PIN",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493090571,
+    "val": "0000",
+    "ack": true
+  },
+  "alias.0.Ventilator": {
+    "common": {
+      "name": "Ventilator",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.fan",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "alias.0.Ventilator",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493088643
+  },
+  "alias.0.Ventilator.ACTUAL": {
+    "common": {
+      "name": "ACTUAL",
+      "desc": "Manuell erzeugt",
+      "role": "sensor.switch",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.Ventilator.Actual"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753194885591,
+    "ack": false
+  },
+  "alias.0.Ventilator.MODE": {
+    "common": {
+      "name": "MODE",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.fan",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Ventilator.Mode"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator.MODE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493088743,
+    "val": 4,
+    "ack": false
+  },
+  "alias.0.Ventilator.SET": {
+    "common": {
+      "name": "SET",
+      "desc": "Manuell erzeugt",
+      "role": "switch",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.Ventilator.Set"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator.SET",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": true,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753194505198,
+    "ack": false
+  },
+  "alias.0.Ventilator.SPEED": {
+    "common": {
+      "name": "SPEED",
+      "desc": "Manuell erzeugt",
+      "role": "level.speed",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Ventilator.speed"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator.SPEED",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493088852,
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.Ventilator2": {
+    "common": {
+      "name": "Ventilator",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.fan",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "alias.0.Ventilator2",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493088909
+  },
+  "alias.0.Ventilator2.ACTUAL": {
+    "common": {
+      "name": "ACTUAL",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.Ventilator2.Switch"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator2.ACTUAL",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493088956,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Ventilator2.MODE": {
+    "common": {
+      "name": "MODE",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.fan",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 1,
+      "states": {
+        "1": "Low",
+        "2": "Medium",
+        "3": "High",
+        "4": "Sleep",
+        "5": "Move",
+        "6": "Auto",
+        "7": "Manual"
+      },
+      "alias": {
+        "id": "0_userdata.0.Ventilator2.Mode"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator2.MODE",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493089009,
+    "val": 2,
+    "ack": false
+  },
+  "alias.0.Ventilator2.SET": {
+    "common": {
+      "name": "SET",
+      "desc": "Manuell erzeugt",
+      "role": "switch",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false,
+      "alias": {
+        "id": "0_userdata.0.Ventilator2.Switch"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator2.SET",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493089062,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Ventilator2.SPEED": {
+    "common": {
+      "name": "SPEED",
+      "desc": "Manuell erzeugt",
+      "role": "level.speed",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0,
+      "alias": {
+        "id": "0_userdata.0.Ventilator2.speed"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "_id": "alias.0.Ventilator2.SPEED",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1752493089115,
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.Volume": {
+    "_id": "alias.0.Volume",
+    "common": {
+      "name": {
+        "de": "Volume"
+      },
+      "role": "volume",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753114995444,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Volume.ACTUAL": {
+    "_id": "alias.0.Volume.ACTUAL",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Volume.Actual"
+      },
+      "name": "ACTUAL",
+      "role": "value.volume",
+      "write": false,
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "unit": "%"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115025309,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 0,
+    "ack": false
+  },
+  "alias.0.Volume.MUTE": {
+    "_id": "alias.0.Volume.MUTE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Volume.Mute"
+      },
+      "name": "MUTE",
+      "role": "media.mute",
+      "write": true,
+      "type": "boolean"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115025320,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Volume.SET": {
+    "_id": "alias.0.Volume.SET",
+    "common": {
+      "name": "SET",
+      "role": "level.volume",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "alias": {
+        "id": "0_userdata.0.Volume.Set"
+      },
+      "min": 0,
+      "max": 100,
+      "unit": "%"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115025302,
+    "val": 0,
+    "ack": true
+  },
+  "alias.0.Warning": {
+    "_id": "alias.0.Warning",
+    "common": {
+      "name": {
+        "de": "Warning"
+      },
+      "role": "warning",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115041739,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Warning.INFO": {
+    "_id": "alias.0.Warning.INFO",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Warning.Info"
+      },
+      "name": "INFO",
+      "role": "weather.title",
+      "type": "string"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115066198,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": "Testtitel",
+    "ack": false
+  },
+  "alias.0.Warning.LEVEL": {
+    "_id": "alias.0.Warning.LEVEL",
+    "common": {
+      "name": "LEVEL",
+      "role": "value.warning",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Warning.Level"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115066185,
+    "val": 2015,
+    "ack": false
+  },
+  "alias.0.Warning.TITLE": {
+    "_id": "alias.0.Warning.TITLE",
+    "native": {},
+    "type": "state",
+    "common": {
+      "alias": {
+        "id": "0_userdata.0.Warning.Titel"
+      },
+      "name": "TITLE",
+      "role": "weather.title.short",
+      "type": "string"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115066192,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": "schrott",
+    "ack": false
+  },
+  "alias.0.Window": {
+    "_id": "alias.0.Window",
+    "common": {
+      "name": {
+        "de": "Window"
+      },
+      "role": "window",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115092372,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Window.ACTUAL": {
+    "_id": "alias.0.Window.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "sensor.window",
+      "type": "boolean",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Window.Actual"
+      }
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115176196,
+    "val": false,
+    "ack": false
+  },
+  "alias.0.Window.BUTTONTEXT": {
+    "_id": "alias.0.Window.BUTTONTEXT",
+    "common": {
+      "name": "BUTTONTEXT",
+      "role": "text",
+      "type": "string",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Window.Buttontext"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753115176187,
+    "val": "zu",
+    "ack": false
+  },
+  "alias.0.Window.COLORDEC": {
+    "_id": "alias.0.Window.COLORDEC",
+    "common": {
+      "name": "COLORDEC",
+      "role": "state",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Window.Colordec"
+      }
+    },
+    "type": "state",
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753269513148,
+    "val": 2015,
+    "ack": false
+  }
+}
