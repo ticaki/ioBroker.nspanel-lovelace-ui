@@ -1566,6 +1566,7 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           dpInit: item.id,
           role: "",
+          template: "button.select",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1575,7 +1576,6 @@ class ConfigManager extends import_library.BaseClass {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
             false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
-          template: "button.select",
           data: {
             entity1: {
               value: foundedStates[role].ACTUAL
@@ -2489,7 +2489,7 @@ class ConfigManager extends import_library.BaseClass {
                   value: foundedStates[role].ACTUAL,
                   set: foundedStates[role].SET
                 },
-                text: { true: { type: "const", constVal: "press" } },
+                text: { true: foundedStates[role].ACTUAL },
                 valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
                 icon: {
                   true: {

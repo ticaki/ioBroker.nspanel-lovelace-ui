@@ -648,7 +648,7 @@ const requiredScriptDataPoints = {
     description: "Auswahlbox",
     data: {
       ACTUAL: {
-        role: ["value.mode.select", "level.mode.select"],
+        role: ["value.mode.select"],
         type: "number",
         required: true,
         writeable: false,

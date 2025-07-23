@@ -149,7 +149,7 @@
 ### select
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **select** | ~~ACTUAL~~ | number| value.mode.select, level.mode.select  | X |  |  | 
+| **select** | ~~ACTUAL~~ | number| value.mode.select  | X |  |  | 
 | **"** | ~~SET~~ | number| level.mode.select  | X | X |  | 
 ### slider
 | Channel role | State ID | common.type | common.role | required | common.write | description |  

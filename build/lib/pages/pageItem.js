@@ -2038,7 +2038,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           list2 = [];
         }
         if (Array.isArray(list2) && list2.length > parseInt(value)) {
-          await item.entityInSel.value.setStateAsync(value);
+          if (item.entityInSel.set) {
+            await item.entityInSel.set.setStateAsync(value);
+          } else {
+            await item.entityInSel.value.setStateAsync(value);
+          }
           return true;
         }
       }

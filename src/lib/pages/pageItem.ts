@@ -2317,7 +2317,11 @@ export class PageItem extends BaseClassTriggerd {
                     list = [];
                 }
                 if (Array.isArray(list) && list.length > parseInt(value)) {
-                    await item.entityInSel.value.setStateAsync(value);
+                    if (item.entityInSel.set) {
+                        await item.entityInSel.set.setStateAsync(value);
+                    } else {
+                        await item.entityInSel.value.setStateAsync(value);
+                    }
                     return true;
                 }
             }

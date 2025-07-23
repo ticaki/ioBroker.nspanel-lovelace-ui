@@ -441,17 +441,24 @@ const buttonTemplates = {
         value: {
           type: "triggered",
           mode: "auto",
-          role: ["value.mode.select", "level.mode.select"],
+          role: ["value.mode.select"],
           dp: ""
         },
-        unit: { type: "const", constVal: "%" }
+        set: {
+          type: "triggered",
+          mode: "auto",
+          role: ["level.mode.select"],
+          dp: ""
+        }
       },
       text: {
         true: { type: "const", constVal: "Select" },
         false: void 0
       },
       text1: {
-        true: { type: "const", constVal: "press" }
+        //true:  { type: 'triggered', mode: 'auto', role: ['value.mode.select'], dp: '' },
+        true: { type: "const", constVal: "press" },
+        false: void 0
       }
     }
   }
