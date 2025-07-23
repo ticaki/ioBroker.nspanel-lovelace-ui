@@ -155,47 +155,20 @@ export type checkedDatapointsUnion = Record<
 >;
 
 export const checkedDatapoints: checkedDatapointsUnionWithNull = {
-    motion: {
+    airCondition: {
         ACTUAL: null,
-    },
-    dimmer: {
         SET: null,
-        ACTUAL: null,
-        ON_SET: null,
-        ON_ACTUAL: null,
-    },
-    ct: {
-        DIMMER: null,
-        ON: null,
-        ON_ACTUAL: null,
-        TEMPERATURE: null,
-    },
-    window: {
-        ACTUAL: null,
-        COLORDEC: null,
-        BUTTONTEXT: null,
-    },
-    humidity: {
-        ACTUAL: null,
-    },
-    'value.humidity': {
-        ACTUAL: null,
-    },
-    timeTable: {
-        noNeed: null,
-    },
-    hue: {
-        DIMMER: null,
-        ON: null,
-        ON_ACTUAL: null,
-        TEMPERATURE: null,
-        HUE: null,
-    },
-    info: {
-        ACTUAL: null,
-        COLORDEC: null,
-        BUTTONTEXT: null,
-        USERICON: null,
+        SET2: null,
+        BOOST: null,
+        ERROR: null,
+        HUMIDITY: null,
+        MAINTAIN: null,
+        MODE: null,
+        POWER: null,
+        SPEED: null,
+        SWING: null,
+        SWING2: null,
+        UNREACH: null,
     },
     blind: {
         ACTUAL: null,
@@ -209,25 +182,46 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         TILT_OPEN: null,
         TILT_STOP: null,
     },
-    airCondition: {
-        ACTUAL: null,
+    button: {
         SET: null,
-        SET2: null,
-        BOOST: null,
-        ERROR: null,
-        HUMIDITY: null,
-        MAINTAIN: null,
-        MODE: null,
-        POWER: null,
-        SPEED: null,
-        SWING: null,
-        UNREACH: null,
     },
-    socket: {
-        ACTUAL: null,
+    ct: {
+        DIMMER: null,
+        ON: null,
+        ON_ACTUAL: null,
+        TEMPERATURE: null,
+    },
+    dimmer: {
         SET: null,
+        ACTUAL: null,
+        ON_SET: null,
+        ON_ACTUAL: null,
+    },
+    door: {
+        ACTUAL: null,
         COLORDEC: null,
         BUTTONTEXT: null,
+    },
+    gate: {
+        ACTUAL: null,
+        SET: null,
+        STOP: null,
+    },
+    hue: {
+        DIMMER: null,
+        ON: null,
+        ON_ACTUAL: null,
+        TEMPERATURE: null,
+        HUE: null,
+    },
+    humidity: {
+        ACTUAL: null,
+    },
+    info: {
+        ACTUAL: null,
+        COLORDEC: null,
+        BUTTONTEXT: null,
+        USERICON: null,
     },
     light: {
         ACTUAL: null,
@@ -235,10 +229,13 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         COLORDEC: null,
         BUTTONTEXT: null,
     },
-    volume: {
+    lock: {
         ACTUAL: null,
+        OPEN: null,
         SET: null,
-        MUTE: null,
+    },
+    motion: {
+        ACTUAL: null,
     },
     rgb: {
         RED: null,
@@ -257,25 +254,21 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         TEMPERATURE: null,
         ON_ACTUAL: null,
     },
-    slider: {
-        SET: null,
-        ACTUAL: null,
-    },
-    button: {
-        SET: null,
-    },
     select: {
         ACTUAL: null,
         SET: null,
     },
+    slider: {
+        SET: null,
+        ACTUAL: null,
+    },
+    socket: {
+        ACTUAL: null,
+        SET: null,
+        COLORDEC: null,
+        BUTTONTEXT: null,
+    },
     temperature: {
-        ACTUAL: null,
-    },
-    'value.temperature': {
-        ACTUAL: null,
-    },
-
-    'sensor.alarm.flood': {
         ACTUAL: null,
     },
     thermostat: {
@@ -283,10 +276,8 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         SET: null,
         MODE: null,
         BOOST: null,
-        //AUTOMATIC: null,
         ERROR: null,
         LOWBAT: null,
-        //MANUAL: null,
         UNREACH: null,
         HUMIDITY: null,
         MAINTAIN: null,
@@ -297,16 +288,20 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         WORKING: null,
         USERICON: null,
     },
-    'level.timer': {
+    timeTable: {
+        noNeed: null,
+    },
+    volume: {
         ACTUAL: null,
         SET: null,
-        STATE: null,
-        STATUS: null,
+        MUTE: null,
     },
-    gate: {
-        ACTUAL: null,
+    warning: {
+        INFO: null,
+        LEVEL: null,
+        TITLE: null,
     },
-    door: {
+    window: {
         ACTUAL: null,
         COLORDEC: null,
         BUTTONTEXT: null,
@@ -317,159 +312,100 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         SET: null,
         SPEED: null,
     },
-    lock: {
+    'level.timer': {
         ACTUAL: null,
-        OPEN: null,
         SET: null,
+        STATE: null,
+        STATUS: null,
     },
-    warning: {
-        INFO: null,
-        LEVEL: null,
-        TITLE: null,
+    'sensor.alarm.flood': {
+        ACTUAL: null,
+    },
+    'value.humidity': {
+        ACTUAL: null,
+    },
+    'value.temperature': {
+        ACTUAL: null,
     },
 };
+
 export type mydps =
     | 'ACTUAL'
-    | 'noNeed'
-    | 'SET'
-    | 'ON_SET'
-    | 'ON_ACTUAL'
-    | 'DIMMER'
-    | 'ON'
-    | 'TEMPERATURE'
-    | 'COLORDEC'
-    | 'BUTTONTEXT'
-    | 'USERICON'
-    | 'CLOSE'
-    | 'OPEN'
-    | 'STOP'
-    | 'TILT_ACTUAL'
-    | 'TILT_SET'
-    | 'TILT_CLOSE'
-    | 'TILT_OPEN'
-    | 'TILT_STOP'
-    | 'SET2'
     | 'AUTO'
-    | 'COOL'
-    | 'BOOST'
-    | 'ERROR'
-    | 'HEAT'
-    | 'HUMIDITY'
-    | 'MAINTAIN'
-    | 'MODE'
-    | 'OFF'
-    | 'POWER'
-    | 'SPEED'
-    | 'SWING'
-    | 'UNREACH'
-    | 'MUTE'
-    | 'RED'
-    | 'GREEN'
+    | 'AUTOMATIC'
     | 'BLUE'
-    | 'WHITE'
-    | 'RGB'
-    | 'STATE'
+    | 'BOOST'
+    | 'BUTTONTEXT'
+    | 'CLOSE'
+    | 'COLORDEC'
+    | 'COOL'
+    | 'DIMMER'
+    | 'ERROR'
+    | 'GREEN'
+    | 'HEAT'
+    | 'HUE'
+    | 'HUMIDITY'
+    | 'ICON'
     | 'INFO'
     | 'LEVEL'
-    | 'TITLE'
-    | 'ICON'
-    | 'TEMP'
-    | 'SWITCH'
-    | 'HUE'
-    | 'AUTOMATIC'
     | 'LOWBAT'
+    | 'MAINTAIN'
     | 'MANUAL'
+    | 'MODE'
+    | 'MUTE'
+    | 'noNeed'
+    | 'OFF'
+    | 'ON'
+    | 'ON_ACTUAL'
+    | 'ON_SET'
+    | 'OPEN'
     | 'PARTY'
+    | 'POWER'
+    | 'RED'
+    | 'RGB'
+    | 'SET'
+    | 'SET2'
+    | 'SPEED'
+    | 'STATE'
+    | 'STATUS'
+    | 'STOP'
+    | 'SWING'
+    | 'SWING2'
+    | 'SWITCH'
+    | 'TEMP'
+    | 'TEMPERATURE'
+    | 'TILT_ACTUAL'
+    | 'TILT_CLOSE'
+    | 'TILT_OPEN'
+    | 'TILT_SET'
+    | 'TILT_STOP'
+    | 'TITLE'
+    | 'UNREACH'
+    | 'USERICON'
     | 'VACATION'
-    | 'WINDOWOPEN'
-    | 'WORKING'
     | 'VALUE'
-    | 'STATUS';
+    | 'WHITE'
+    | 'WINDOWOPEN'
+    | 'WORKING';
+
 export type requiredDatapoints = Pick<requiredDatapoints2, ScriptConfig.channelRoles>;
 
 type requiredDatapoints2 = {
-    motion: {
+    airCondition: {
         data: {
             ACTUAL: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    timeTable: {
-        data: {
-            noNeed: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    dimmer: {
-        data: {
             SET: Datapoint;
-            ACTUAL: Datapoint;
-            ON_SET: Datapoint;
-            ON_ACTUAL: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    ct: {
-        data: {
-            DIMMER: Datapoint;
-            ON: Datapoint;
-            ON_ACTUAL: Datapoint;
-            TEMPERATURE: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    window: {
-        data: {
-            ACTUAL: Datapoint;
-            COLORDEC: Datapoint;
-            BUTTONTEXT: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    'value.humidity': {
-        data: {
-            ACTUAL: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    humidity: {
-        data: {
-            ACTUAL: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    hue: {
-        data: {
-            DIMMER: Datapoint;
-            ON: Datapoint;
-            ON_ACTUAL: Datapoint;
-            TEMPERATURE: Datapoint;
-            HUE: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    info: {
-        data: {
-            ACTUAL: Datapoint;
-            COLORDEC: Datapoint;
-            BUTTONTEXT: Datapoint;
-            USERICON: Datapoint;
+            SET2: Datapoint;
+            BOOST: Datapoint;
+            ERROR: Datapoint;
+            HUMIDITY: Datapoint;
+            MAINTAIN: Datapoint;
+            MODE: Datapoint;
+            POWER: Datapoint;
+            SPEED: Datapoint;
+            SWING: Datapoint;
+            SWING2: Datapoint;
+            UNREACH: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -492,31 +428,82 @@ type requiredDatapoints2 = {
         name: string;
         description: string;
     };
-    airCondition: {
+    button: {
         data: {
-            ACTUAL: Datapoint;
             SET: Datapoint;
-            SET2: Datapoint;
-            BOOST: Datapoint;
-            ERROR: Datapoint;
-            HUMIDITY: Datapoint;
-            MAINTAIN: Datapoint;
-            MODE: Datapoint;
-            POWER: Datapoint;
-            SPEED: Datapoint;
-            SWING: Datapoint;
-            UNREACH: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
         description: string;
     };
-    socket: {
+    ct: {
+        data: {
+            DIMMER: Datapoint;
+            ON: Datapoint;
+            ON_ACTUAL: Datapoint;
+            TEMPERATURE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    dimmer: {
+        data: {
+            SET: Datapoint;
+            ACTUAL: Datapoint;
+            ON_SET: Datapoint;
+            ON_ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    door: {
+        data: {
+            ACTUAL: Datapoint;
+            COLORDEC: Datapoint;
+            BUTTONTEXT: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    gate: {
         data: {
             ACTUAL: Datapoint;
             SET: Datapoint;
+            STOP: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    hue: {
+        data: {
+            DIMMER: Datapoint;
+            ON: Datapoint;
+            ON_ACTUAL: Datapoint;
+            TEMPERATURE: Datapoint;
+            HUE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    humidity: {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    info: {
+        data: {
+            ACTUAL: Datapoint;
             COLORDEC: Datapoint;
             BUTTONTEXT: Datapoint;
+            USERICON: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -533,11 +520,19 @@ type requiredDatapoints2 = {
         name: string;
         description: string;
     };
-    volume: {
+    lock: {
         data: {
             ACTUAL: Datapoint;
+            OPEN: Datapoint;
             SET: Datapoint;
-            MUTE: Datapoint;
+        };
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    motion: {
+        data: {
+            ACTUAL: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -570,6 +565,15 @@ type requiredDatapoints2 = {
         name: string;
         description: string;
     };
+    select: {
+        data: {
+            ACTUAL: Datapoint;
+            SET: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
     slider: {
         data: {
             SET: Datapoint;
@@ -579,18 +583,12 @@ type requiredDatapoints2 = {
         name: string;
         description: string;
     };
-    button: {
-        data: {
-            SET: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    select: {
+    socket: {
         data: {
             ACTUAL: Datapoint;
             SET: Datapoint;
+            COLORDEC: Datapoint;
+            BUTTONTEXT: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -604,33 +602,14 @@ type requiredDatapoints2 = {
         name: string;
         description: string;
     };
-    'value.temperature': {
-        data: {
-            ACTUAL: Datapoint;
-            USERICON: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
-    'sensor.alarm.flood': {
-        data: {
-            ACTUAL: Datapoint;
-        } & Partial<Record<mydps, Datapoint>>;
-        updatedVersion?: boolean;
-        name: string;
-        description: string;
-    };
     thermostat: {
         data: {
             ACTUAL: Datapoint;
             SET: Datapoint;
             MODE: Datapoint;
             BOOST: Datapoint;
-            //AUTOMATIC: Datapoint;
             ERROR: Datapoint;
             LOWBAT: Datapoint;
-            //MANUAL: Datapoint;
             UNREACH: Datapoint;
             HUMIDITY: Datapoint;
             MAINTAIN: Datapoint;
@@ -645,26 +624,35 @@ type requiredDatapoints2 = {
         name: string;
         description: string;
     };
-    'level.timer': {
+    timeTable: {
+        data: {
+            noNeed: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    volume: {
         data: {
             ACTUAL: Datapoint;
-            STATE: Datapoint;
             SET: Datapoint;
-            STATUS: Datapoint;
+            MUTE: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
         description: string;
     };
-    gate: {
+    warning: {
         data: {
-            ACTUAL: Datapoint;
+            INFO: Datapoint;
+            LEVEL: Datapoint;
+            TITLE: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
         description: string;
     };
-    door: {
+    window: {
         data: {
             ACTUAL: Datapoint;
             COLORDEC: Datapoint;
@@ -685,21 +673,37 @@ type requiredDatapoints2 = {
         name: string;
         description: string;
     };
-    lock: {
+    'level.timer': {
         data: {
             ACTUAL: Datapoint;
-            OPEN: Datapoint;
+            STATE: Datapoint;
             SET: Datapoint;
-        };
+            STATUS: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
         description: string;
     };
-    warning: {
+    'sensor.alarm.flood': {
         data: {
-            INFO: Datapoint;
-            LEVEL: Datapoint;
-            TITLE: Datapoint;
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    'value.humidity': {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    'value.temperature': {
+        data: {
+            ACTUAL: Datapoint;
+            USERICON: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -718,196 +722,6 @@ type Datapoint = {
     alternate?: mydps; // für die alten Versionen
 };
 export const requiredScriptDataPoints: requiredDatapoints = {
-    motion: {
-        updatedVersion: true,
-        name: 'motion',
-        description: 'Status of the motion sensor or presence detector (motion or presence detected)',
-        data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false, trigger: true } },
-    },
-    timeTable: {
-        updatedVersion: true,
-        name: 'timeTable',
-        description: 'Time table for the Departure (Fahrplan Adapter)',
-        data: {
-            noNeed: {
-                role: 'state',
-                type: 'string',
-                required: false,
-                description: 'Just use the template for this - ask TT-Tom :)',
-            },
-        },
-    },
-    //läuft im Script mit unter RGBsingle, muss nochmal geprüft werden ob sinnvoll
-    /* cie: {
-        name: 'cie',
-        description: '',
-        data: {
-            CIE: { role: 'level.color.cie', type: 'string', required: true, writeable: true },
-            DIMMER: { role: 'level.dimmer', type: 'boolean', required: true, writeable: true },
-            ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
-        },
-    }, */
-    dimmer: {
-        updatedVersion: true,
-        name: 'dimmer',
-        description: 'Licht ein- / ausschalten und dimmen',
-        data: {
-            SET: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
-            ACTUAL: {
-                role: ['value.dimmer', 'level.dimmer'],
-                type: 'number',
-                required: false,
-                writeable: false,
-                trigger: true,
-                alternate: 'SET',
-            },
-            ON_SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            ON_ACTUAL: {
-                role: ['sensor.light', 'switch.light'],
-                type: 'boolean',
-                required: false,
-                writeable: false,
-                trigger: true,
-                alternate: 'ON_SET',
-            },
-        },
-    },
-    ct: {
-        updatedVersion: true,
-        name: 'ct',
-        description: 'für Lampen die das weiße Licht zwischen kalt und warm ändern können',
-        data: {
-            DIMMER: { role: 'level.dimmer', type: 'number', required: true, trigger: true, writeable: true },
-            ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            ON_ACTUAL: {
-                role: ['sensor.light', 'switch.light'],
-                type: 'boolean',
-                required: false,
-                writeable: false,
-                trigger: true,
-                alternate: 'ON',
-            },
-            TEMPERATURE: {
-                role: 'level.color.temperature',
-                type: 'number',
-                required: true,
-                writeable: true,
-                trigger: true,
-            },
-        },
-    },
-    window: {
-        updatedVersion: true,
-        name: 'window',
-        description: '',
-        data: {
-            ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false, trigger: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
-            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, //Button-Text über DP steuern
-        },
-    },
-    humidity: {
-        updatedVersion: true,
-        name: 'humidity',
-        description: '',
-        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false, trigger: true } },
-    },
-    'value.humidity': {
-        updatedVersion: true,
-        name: 'humidity',
-        description: '',
-        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false, trigger: true } },
-    },
-    hue: {
-        updatedVersion: true,
-        name: 'hue',
-        description: '',
-        data: {
-            DIMMER: { role: 'level.dimmer', type: 'number', required: true, trigger: true, writeable: true },
-            ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            ON_ACTUAL: {
-                role: ['sensor.light', 'switch.light'],
-                type: 'boolean',
-                required: false,
-                writeable: false,
-                trigger: true,
-                alternate: 'ON',
-            },
-            TEMPERATURE: {
-                role: 'level.color.temperature',
-                type: 'number',
-                required: false,
-                writeable: true,
-                trigger: true,
-            },
-            HUE: { role: 'level.color.hue', type: 'number', required: true, writeable: true, trigger: true },
-            //SCENE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
-        },
-    },
-    info: {
-        updatedVersion: true,
-        name: 'info',
-        description: 'Universal Datenpunkt für diverse Anwendungen',
-        data: {
-            ACTUAL: {
-                role: 'state',
-                type: ['string', 'number', 'boolean', 'mixed'],
-                required: true,
-                writeable: false,
-                useKey: true,
-                trigger: true,
-            },
-            COLORDEC: {
-                role: 'value.rgb',
-                type: 'number',
-                required: false,
-                writeable: false,
-                useKey: true,
-                trigger: true,
-            }, //Farbcode über DP senden
-            BUTTONTEXT: {
-                role: ['text'],
-                type: 'string',
-                required: false,
-                writeable: false,
-                useKey: true,
-                trigger: true,
-            }, //Button-Text über DP senden bei cardEntity
-            USERICON: { role: 'state', type: 'string', required: false, writeable: false, useKey: true, trigger: true }, //Benutzerdefinierte Iconnamen über DP senden
-        },
-    },
-    blind: {
-        updatedVersion: true,
-        name: 'blind',
-        description: '',
-        data: {
-            ACTUAL: {
-                role: ['value.blind', 'level.blind'],
-                type: 'number',
-                required: false,
-                writeable: false,
-                trigger: true,
-                alternate: 'SET',
-            },
-            SET: { role: 'level.blind', type: 'number', required: true, writeable: true },
-            CLOSE: { role: 'button.close.blind', type: 'boolean', required: true, writeable: true },
-            OPEN: { role: 'button.open.blind', type: 'boolean', required: true, writeable: true },
-            STOP: { role: 'button.stop.blind', type: 'boolean', required: true, writeable: true },
-            TILT_ACTUAL: {
-                role: ['level.tilt', 'value.tilt'],
-                type: 'number',
-                required: false,
-                writeable: false,
-                trigger: true,
-            },
-            TILT_SET: { role: 'level.tilt', type: 'number', required: false, writeable: true },
-            TILT_CLOSE: { role: 'button.close.tilt', type: 'boolean', required: false, writeable: true },
-            TILT_OPEN: { role: 'button.open.tilt', type: 'boolean', required: false, writeable: true },
-            TILT_STOP: { role: 'button.stop.tilt', type: 'boolean', required: false, writeable: true },
-        },
-    },
     airCondition: {
         name: 'airCondition',
         description: '',
@@ -951,9 +765,10 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: true,
                 description: 'use MODE for on/off',
-            }, //on
+            },
             SPEED: { role: 'level.mode.fan', type: 'number', required: false, writeable: true, trigger: true },
-            SWING: { role: 'switch.mode.swing', type: 'boolean', required: false, writeable: true, trigger: true },
+            SWING: { role: 'level.mode.swing', type: 'number', required: false, writeable: true, trigger: true },
+            SWING2: { role: 'switch.mode.swing', type: 'boolean', required: false, writeable: true, trigger: true },
             UNREACH: {
                 role: 'indicator.maintenance',
                 type: 'boolean',
@@ -963,22 +778,172 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             },
         },
     },
-    socket: {
+    blind: {
         updatedVersion: true,
-        name: 'socket',
-        description: 'Steckdosen, Schalter, Relais, usw. alles was man mit true/false steuern kann',
+        name: 'blind',
+        description: '',
         data: {
             ACTUAL: {
-                role: 'sensor.switch',
-                type: 'boolean',
+                role: ['value.blind', 'level.blind'],
+                type: 'number',
                 required: false,
                 writeable: false,
                 trigger: true,
                 alternate: 'SET',
             },
-            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true }, //Farbcode über DP steuern
-            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false, trigger: true }, //Button-Text über DP steuern bei cardEntity
+            SET: { role: 'level.blind', type: 'number', required: true, writeable: true },
+            CLOSE: { role: 'button.close.blind', type: 'boolean', required: true, writeable: true },
+            OPEN: { role: 'button.open.blind', type: 'boolean', required: true, writeable: true },
+            STOP: { role: 'button.stop.blind', type: 'boolean', required: true, writeable: true },
+            TILT_ACTUAL: {
+                role: ['level.tilt', 'value.tilt'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
+            TILT_SET: { role: 'level.tilt', type: 'number', required: false, writeable: true },
+            TILT_CLOSE: { role: 'button.close.tilt', type: 'boolean', required: false, writeable: true },
+            TILT_OPEN: { role: 'button.open.tilt', type: 'boolean', required: false, writeable: true },
+            TILT_STOP: { role: 'button.stop.tilt', type: 'boolean', required: false, writeable: true },
+        },
+    },
+    button: {
+        updatedVersion: true,
+        name: 'button',
+        description: 'Switch',
+        data: {
+            SET: { role: 'button', type: 'boolean', required: true, writeable: true },
+        },
+    },
+    ct: {
+        updatedVersion: true,
+        name: 'ct',
+        description: 'für Lampen die das weiße Licht zwischen kalt und warm ändern können',
+        data: {
+            DIMMER: { role: 'level.dimmer', type: 'number', required: true, trigger: true, writeable: true },
+            ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'ON',
+            },
+            TEMPERATURE: {
+                role: 'level.color.temperature',
+                type: 'number',
+                required: true,
+                writeable: true,
+                trigger: true,
+            },
+        },
+    },
+    dimmer: {
+        updatedVersion: true,
+        name: 'dimmer',
+        description: 'Licht ein- / ausschalten und dimmen',
+        data: {
+            SET: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
+            ACTUAL: {
+                role: ['value.dimmer', 'level.dimmer'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET',
+            },
+            ON_SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'ON_SET',
+            },
+        },
+    },
+    door: {
+        name: 'door',
+        description: '',
+        data: {
+            ACTUAL: { role: 'sensor.door', type: 'boolean', required: true, writeable: false, trigger: true },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true },
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false, trigger: true },
+        },
+    },
+    gate: {
+        name: 'gate',
+        description: '',
+        data: {
+            ACTUAL: { role: 'value.blind', type: 'number', required: false, writeable: false, trigger: true },
+            SET: { role: 'switch.gate', type: 'boolean', required: true, writeable: true, trigger: true },
+            STOP: { role: 'button.stop', type: 'boolean', required: false, writeable: true, trigger: true },
+        },
+    },
+    hue: {
+        updatedVersion: true,
+        name: 'hue',
+        description: '',
+        data: {
+            DIMMER: { role: 'level.dimmer', type: 'number', required: true, trigger: true, writeable: true },
+            ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'ON',
+            },
+            TEMPERATURE: {
+                role: 'level.color.temperature',
+                type: 'number',
+                required: false,
+                writeable: true,
+                trigger: true,
+            },
+            HUE: { role: 'level.color.hue', type: 'number', required: true, writeable: true, trigger: true },
+        },
+    },
+    humidity: {
+        updatedVersion: true,
+        name: 'humidity',
+        description: '',
+        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false, trigger: true } },
+    },
+    info: {
+        updatedVersion: true,
+        name: 'info',
+        description: 'Universal Datenpunkt für diverse Anwendungen',
+        data: {
+            ACTUAL: {
+                role: 'state',
+                type: ['string', 'number', 'boolean', 'mixed'],
+                required: true,
+                writeable: false,
+                useKey: true,
+                trigger: true,
+            },
+            COLORDEC: {
+                role: 'value.rgb',
+                type: 'number',
+                required: false,
+                writeable: false,
+                useKey: true,
+                trigger: true,
+            },
+            BUTTONTEXT: {
+                role: ['text'],
+                type: 'string',
+                required: false,
+                writeable: false,
+                useKey: true,
+                trigger: true,
+            },
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false, useKey: true, trigger: true },
         },
     },
     light: {
@@ -995,26 +960,31 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 alternate: 'SET',
             },
             SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true }, //Farbcode über DP steuern
-            BUTTONTEXT: { role: 'text', type: 'string', required: false, writeable: false, trigger: true }, //Button-Text über DP steuern bei cardEntity
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true },
+            BUTTONTEXT: { role: 'text', type: 'string', required: false, writeable: false, trigger: true },
         },
     },
-    volume: {
-        updatedVersion: true,
-        name: 'volume',
-        description: '',
+    lock: {
+        name: 'lock',
+        description: 'Türschloss',
         data: {
             ACTUAL: {
-                role: ['value.volume', 'level.volume'],
-                type: 'number',
+                role: ['switch.lock', 'state'],
+                type: 'boolean',
                 required: false,
                 writeable: false,
                 trigger: true,
                 alternate: 'SET',
             },
-            SET: { role: 'level.volume', type: 'number', required: true, writeable: true },
-            MUTE: { role: 'media.mute', type: 'boolean', required: false, writeable: true, trigger: true },
+            OPEN: { role: 'button', type: 'boolean', required: false, writeable: true },
+            SET: { role: 'switch.lock', type: 'boolean', required: true, writeable: true },
         },
+    },
+    motion: {
+        updatedVersion: true,
+        name: 'motion',
+        description: 'Status of the motion sensor or presence detector (motion or presence detected)',
+        data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false, trigger: true } },
     },
     rgb: {
         updatedVersion: true,
@@ -1039,9 +1009,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: true,
                 trigger: true,
-            }, // entweder oder
-            WHITE: { role: 'level.color.white', type: 'number', required: false, writeable: true, trigger: true }, // mit prüfen
-            //VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
+            },
+            WHITE: { role: 'level.color.white', type: 'number', required: false, writeable: true, trigger: true },
         },
     },
     rgbSingle: {
@@ -1067,24 +1036,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 trigger: true,
                 alternate: 'ON',
             },
-            // VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
-        },
-    },
-    slider: {
-        updatedVersion: true,
-        name: 'slider',
-        description: 'Slider to set a numerical value',
-        data: {
-            SET: { role: 'level', type: 'number', required: true, writeable: true },
-            ACTUAL: { role: ['value', 'level'], type: 'number', required: false, writeable: false, trigger: true },
-        },
-    },
-    button: {
-        updatedVersion: true,
-        name: 'button',
-        description: 'Switch',
-        data: {
-            SET: { role: 'button', type: 'boolean', required: true, writeable: true },
         },
     },
     select: {
@@ -1102,21 +1053,39 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             SET: { role: 'level.mode.select', type: 'number', required: true, writeable: true, trigger: true },
         },
     },
+    slider: {
+        updatedVersion: true,
+        name: 'slider',
+        description: 'Slider to set a numerical value',
+        data: {
+            SET: { role: 'level', type: 'number', required: true, writeable: true },
+            ACTUAL: { role: ['value', 'level'], type: 'number', required: false, writeable: false, trigger: true },
+        },
+    },
+    socket: {
+        updatedVersion: true,
+        name: 'socket',
+        description: 'Steckdosen, Schalter, Relais, usw. alles was man mit true/false steuern kann',
+        data: {
+            ACTUAL: {
+                role: 'sensor.switch',
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET',
+            },
+            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true },
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false, trigger: true },
+        },
+    },
     temperature: {
         updatedVersion: true,
         name: 'temperature',
         description: '',
         data: {
             ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false, trigger: true },
-        },
-    },
-    'value.temperature': {
-        updatedVersion: true,
-        name: 'value.temperature',
-        description: '',
-        data: {
-            ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false, trigger: true },
-            USERICON: { role: 'state', type: 'string', required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
         },
     },
     thermostat: {
@@ -1140,7 +1109,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 writeable: true,
                 trigger: true,
             },
-            //AUTOMATIC: { role: 'state', type: 'boolean', required: false },
             ERROR: { role: 'indicator.error', type: 'boolean', required: false, writeable: false, trigger: true },
             LOWBAT: {
                 role: 'indicator.maintenance.lowbat',
@@ -1149,7 +1117,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 writeable: false,
                 trigger: true,
             },
-            //MANUAL: { role: 'state', type: 'boolean', required: false },
             UNREACH: {
                 role: 'indicator.maintenance.unreach',
                 type: 'boolean',
@@ -1176,7 +1143,73 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 trigger: true,
             },
             WORKING: { role: 'indicator.working', type: 'boolean', required: false, writeable: false, trigger: true },
-            USERICON: { role: 'state', type: 'string', useKey: true, required: false, writeable: false, trigger: true }, // benutzerdefinierter Iconname über DP senden
+            USERICON: { role: 'state', type: 'string', useKey: true, required: false, writeable: false, trigger: true },
+        },
+    },
+    timeTable: {
+        updatedVersion: true,
+        name: 'timeTable',
+        description: 'Time table for the Departure (Fahrplan Adapter)',
+        data: {
+            noNeed: {
+                role: 'state',
+                type: 'string',
+                required: false,
+                description: 'Just use the template for this - ask TT-Tom :)',
+            },
+        },
+    },
+    volume: {
+        updatedVersion: true,
+        name: 'volume',
+        description: '',
+        data: {
+            ACTUAL: {
+                role: ['value.volume', 'level.volume'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET',
+            },
+            SET: { role: 'level.volume', type: 'number', required: true, writeable: true },
+            MUTE: { role: 'media.mute', type: 'boolean', required: false, writeable: true, trigger: true },
+        },
+    },
+    warning: {
+        name: 'warning',
+        description: '',
+        data: {
+            INFO: { role: 'weather.title', type: 'string', required: true, writeable: false },
+            LEVEL: { role: 'value.warning', type: 'number', required: true, writeable: false },
+            TITLE: { role: 'weather.title.short', type: 'string', required: true, writeable: false },
+        },
+    },
+    window: {
+        updatedVersion: true,
+        name: 'window',
+        description: '',
+        data: {
+            ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false, trigger: true },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false },
+        },
+    },
+    'level.mode.fan': {
+        name: 'fan',
+        description: '',
+        data: {
+            ACTUAL: {
+                role: ['sensor.switch', 'state'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET',
+            },
+            MODE: { role: 'level.mode.fan', type: 'number', required: false, writeable: true, trigger: true },
+            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
+            SPEED: { role: 'level.speed', type: 'number', required: true, writeable: true, trigger: true },
         },
     },
     'level.timer': {
@@ -1215,67 +1248,26 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             },
         },
     },
-    gate: {
-        name: 'gate',
-        description: '',
-        data: { ACTUAL: { role: 'switch.gate', type: 'boolean', required: true, writeable: false, trigger: true } },
-    },
-    door: {
-        name: 'door',
-        description: '',
-        data: {
-            ACTUAL: { role: 'sensor.door', type: 'boolean', required: true, writeable: false, trigger: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true }, // Farbcode über DP steuern
-            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false, trigger: true }, // Button-Text über DP steuern
-        },
-    },
-    'level.mode.fan': {
-        name: 'fan',
-        description: '',
-        data: {
-            ACTUAL: {
-                role: 'state',
-                type: 'boolean',
-                required: false,
-                writeable: false,
-                trigger: true,
-                alternate: 'SET',
-            },
-            MODE: { role: 'level.mode.fan', type: 'number', required: false, writeable: true, trigger: true },
-            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
-            SPEED: { role: 'level.speed', type: 'number', required: true, writeable: true, trigger: true },
-        },
-    },
-    lock: {
-        name: 'lock',
-        description: 'Türschloss',
-        data: {
-            ACTUAL: {
-                role: ['switch.lock', 'state'],
-                type: 'boolean',
-                required: false,
-                writeable: false,
-                trigger: true,
-                alternate: 'SET',
-            },
-            OPEN: { role: 'button', type: 'boolean', required: false, writeable: true },
-            SET: { role: 'switch.lock', type: 'boolean', required: true, writeable: true },
-        },
-    },
-    warning: {
-        name: 'warning',
-        description: '',
-        data: {
-            INFO: { role: 'weather.title', type: 'string', required: true, writeable: false },
-            LEVEL: { role: 'value.warning', type: 'number', required: true, writeable: false },
-            TITLE: { role: 'weather.title.short', type: 'string', required: true, writeable: false },
-        },
-    },
     'sensor.alarm.flood': {
         name: 'sensor.alarm.flood',
         description: 'Sensor für Hochwasser',
         data: {
             ACTUAL: { role: 'sensor.alarm.flood', type: 'boolean', required: true, writeable: false, trigger: true },
+        },
+    },
+    'value.humidity': {
+        updatedVersion: true,
+        name: 'humidity',
+        description: '',
+        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false, trigger: true } },
+    },
+    'value.temperature': {
+        updatedVersion: true,
+        name: 'value.temperature',
+        description: '',
+        data: {
+            ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false, trigger: true },
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false },
         },
     },
 };

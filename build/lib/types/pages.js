@@ -139,6 +139,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "level.mode.fan",
   "level.mode.thermostat",
   "level.speed",
+  "level.mode.swing",
   "level.temperature",
   "level.tilt",
   "level.value",

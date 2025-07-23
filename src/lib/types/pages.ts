@@ -138,6 +138,7 @@ export const stateRoleArray = arrayOfAllStateRole([
     'level.mode.fan',
     'level.mode.thermostat',
     'level.speed',
+    'level.mode.swing',
     'level.temperature',
     'level.tilt',
     'level.value',
@@ -251,6 +252,7 @@ export type StateRole =
     | 'level.dimmer'
     | 'level.mode.airconditioner'
     | 'level.mode.fan'
+    | 'level.mode.swing'
     | 'level.mode.thermostat'
     | 'level.speed'
     | 'level.temperature'
