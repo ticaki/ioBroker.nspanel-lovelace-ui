@@ -969,7 +969,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: 'Türschloss',
         data: {
             ACTUAL: {
-                role: ['switch.lock', 'state'],
+                role: ['state'],
                 type: 'boolean',
                 required: false,
                 writeable: false,

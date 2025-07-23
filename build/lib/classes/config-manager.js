@@ -1592,7 +1592,7 @@ class ConfigManager extends import_library.BaseClass {
           template: "text.lock",
           dpInit: item.id,
           type: "button",
-          role: "button",
+          role: "",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1604,10 +1604,8 @@ class ConfigManager extends import_library.BaseClass {
           },
           data: {
             text,
-            entity1: {
-              value: foundedStates[role].ACTUAL,
-              set: foundedStates[role].SET
-            }
+            entity1: foundedStates[role].ACTUAL ? { value: foundedStates[role].ACTUAL } : { value: foundedStates[role].SET },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
         break;

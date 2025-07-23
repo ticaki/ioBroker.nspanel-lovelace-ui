@@ -120,7 +120,7 @@
 ### lock
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **lock** | ~~ACTUAL~~ | boolean| switch.lock, state  |  |  |  | 
+| **lock** | ~~ACTUAL~~ | boolean| state  |  |  |  | 
 | **"** | ~~OPEN~~ | boolean| button  |  | X |  | 
 | **"** | ~~SET~~ | boolean| switch.lock  | X | X |  | 
 ### motion

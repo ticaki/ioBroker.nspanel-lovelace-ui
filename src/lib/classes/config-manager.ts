@@ -1820,7 +1820,7 @@ export class ConfigManager extends BaseClass {
                     template: 'text.lock',
                     dpInit: item.id,
                     type: 'button',
-                    role: 'button',
+                    role: '',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1832,10 +1832,10 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         text: text,
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                            set: foundedStates[role].SET,
-                        },
+                        entity1: foundedStates[role].ACTUAL
+                            ? { value: foundedStates[role].ACTUAL }
+                            : { value: foundedStates[role].SET },
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
                 break;
