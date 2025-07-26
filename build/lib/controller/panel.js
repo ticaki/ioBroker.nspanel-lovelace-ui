@@ -1098,6 +1098,7 @@ class Panel extends import_library.BaseClass {
         this.sendScreeensaverTimeout(this.timeout);
         this.sendDimmode();
         this.navigation.resetPosition();
+        await this.adapter.delay(200);
         const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
         const popup = i !== -1 ? this.pages[i] : void 0;
         if (popup) {
@@ -1108,7 +1109,7 @@ class Panel extends import_library.BaseClass {
             await this.setActivePage(popup, false);
           }
         }
-        await this.adapter.delay(100);
+        await this.adapter.delay(50);
         if (this.screenSaver) {
           await this.screenSaver.createPageItems();
           await this.screenSaver.HandleDate();

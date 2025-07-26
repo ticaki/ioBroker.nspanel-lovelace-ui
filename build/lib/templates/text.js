@@ -1790,6 +1790,732 @@ const textTemplates = {
         false: { type: "const", constVal: "offline" }
       }
     }
+  },
+  "text.openweathermap.sunriseset": {
+    role: "4values",
+    adapter: "openweathermap",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "weather-sunset-up" },
+          color: { type: "const", constVal: { r: 255, g: 138, b: 18 } }
+        },
+        false: {
+          value: { type: "const", constVal: "weather-sunset-down" },
+          color: { type: "const", constVal: { r: 255, g: 209, b: 163 } }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "date.sunrise",
+          dp: "",
+          read: `
+                        if (new Date().getDate() !== new Date(val).getDate()){
+                            return null;
+                        }
+                        const t = new Date(val).getTime();
+                        if (t < Date.now()) return null;
+                        return t;`
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      entity2: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "date.sunset",
+          dp: "",
+          read: `
+                    if (new Date().getDate() !== new Date(val).getDate()){
+                        return null;
+                    }
+                    const n = Date.now();
+                    const t = new Date(val).getTime();
+                    if (t < n) return null;
+                    return t;`
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      entity3: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "date.sunrise",
+          dp: ""
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "sunriseToken" },
+        false: { type: "const", constVal: "sunsetToken" }
+      },
+      text1: void 0
+    }
+  },
+  "text.openweathermap.favorit": {
+    role: "text",
+    adapter: "openweathermap",
+    type: "text",
+    modeScr: "favorit",
+    data: {
+      entity2: {
+        value: {
+          role: "value.temperature",
+          mode: "auto",
+          type: "state",
+          dp: "",
+          regexp: /\.current\.temperature$/
+        },
+        decimal: {
+          type: "const",
+          constVal: null
+        },
+        factor: void 0
+        /*unit: {
+            type: 'const',
+            constVal: '°C',
+        },*/
+      },
+      icon: {
+        true: {
+          value: {
+            type: "state",
+            role: "weather.icon",
+            mode: "auto",
+            dp: "",
+            regexp: /\.current\.icon$/,
+            /**
+             * How to use
+             * this run its own this. U dont have accress to variables that no definied for this.
+             * Color: in a import of color.ts
+             * val: is the incoming value - raw
+             *
+             * The best thing is to write the function with () => { here }. Then remove the () => {}
+             * and convert it into a template literal, using ``. A return is mandatory.
+             */
+            read: `{
+                    if (val && val.split('/').length > 1) {
+                        val = val.split('/').pop();
+                        val = val.split('.')[0];
+                    }
+                    switch (val) {
+                        case "01d":
+                            return 'weather-sunny';
+                        case "01n":
+                            return 'weather-night';
+                        case "02d": //few clouds day
+                            return 'weather-partly-cloudy';
+                        case "02n": //few clouds night
+                            return 'weather-night-partly-cloudy';
+                        case "03d": //scattered clouds
+                        case "03n":
+                            return 'weather-cloudy';
+                        case "04d": // cloudy
+                        case "04n":
+                            return 'weather-cloudy'; 
+                        case "09d": //shower rain 
+                        case "09n":
+                            return 'weather-rainy';
+                        case "10d": //rain 
+                        case "10n":
+                            return 'weather-pouring';
+                        case "11d": //Thunderstorm 
+                        case "11n":
+                            return 'weather-lightning';
+                        case "13d": //snow 
+                        case "13n":
+                            return 'weather-snowy';
+                        case "50d": //mist 
+                        case "50n":
+                            return 'weather-fog';
+                        default:
+                            return 'alert-circle-outline';                         
+                    }
+                        }`
+          },
+          color: {
+            type: "triggered",
+            role: "value",
+            mode: "auto",
+            dp: "",
+            regexp: /\.Current\.WeatherIcon$/,
+            read: `
+                            if (val && val.split('/').length > 1) {
+                                val = val.split('/').pop();
+                                val = val.split('.')[0];
+                            }
+                            switch (val) {
+                                case "01d": //clear sky day
+                                    return rgb_dec565(swSunny);
+                                case "01n": //clear sky night
+                                    return rgb_dec565(swClearNight);
+                                case "02d": //few clouds day
+                                case "02n": //few clouds night
+                                    return rgb_dec565(swPartlycloudy);
+                                case "03d": //scattered clouds
+                                case "03n":
+                                    return rgb_dec565(swCloudy);
+                                case "04d": //broken clouds
+                                case "04n":
+                                    return rgb_dec565(swCloudy);
+                                case "09d": //shower rain 
+                                case "09n":
+                                    return rgb_dec565(swRainy);
+                                case "10d": //rain 
+                                case "10n":
+                                    return rgb_dec565(swPouring);
+                                case "11d": //Thunderstorm 
+                                case "11n":
+                                    return rgb_dec565(swLightningRainy);
+                                case "13d": //snow 
+                                case "13n":
+                                    return rgb_dec565(swSnowy);
+                                case "50d": //mist 
+                                case "50n":
+                                    return rgb_dec565(swFog);
+                                default:
+                                    return rgb_dec565(White);
+                            }`
+          }
+        },
+        false: { value: void 0, color: void 0 }
+      },
+      text: {
+        true: void 0,
+        false: void 0
+      }
+    }
+  },
+  "text.openweathermap.bot2values": {
+    role: "2values",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "accuweather",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          dp: "",
+          regexp: /^accuweather\.[0-9]+\.Summary\.TempMin_/
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        factor: void 0,
+        unit: {
+          type: "const",
+          constVal: "\xB0 "
+        }
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          dp: "",
+          regexp: /^accuweather\.[0-9]+\.Summary\.TempMax_/
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        factor: void 0,
+        unit: {
+          type: "const",
+          constVal: "\xB0"
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            mode: "auto",
+            role: "",
+            type: "triggered",
+            regexp: /^accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
+            dp: "",
+            read: `{
+                                switch (val) {
+                                    case 30: // Hot
+                                        return 'weather-sunny-alert'; // exceptional
+
+                                    case 24: // Ice
+                                    case 31: // Cold
+                                        return 'snowflake-alert'; // exceptional
+
+                                    case 7: // Cloudy
+                                    case 8: // Dreary (Overcast)
+                                    case 38: // Mostly Cloudy
+                                        return 'weather-cloudy'; // cloudy
+
+                                    case 11: // fog
+                                        return 'weather-fog'; // fog
+
+                                    case 25: // Sleet
+                                        return 'weather-hail'; // Hail
+
+                                    case 15: // T-Storms
+                                        return 'weather-lightning'; // lightning
+
+                                    case 16: // Mostly Cloudy w/ T-Storms
+                                    case 17: // Partly Sunny w/ T-Storms
+                                    case 41: // Partly Cloudy w/ T-Storms
+                                    case 42: // Mostly Cloudy w/ T-Storms
+                                        return 'weather-lightning-rainy'; // lightning-rainy
+
+                                    case 33: // Clear
+                                    case 34: // Mostly Clear
+                                    case 37: // Hazy Moonlight
+                                        return 'weather-night';
+
+                                    case 3: // Partly Sunny
+                                    case 4: // Intermittent Clouds
+                                    case 6: // Mostly Cloudy
+                                    case 35: // Partly Cloudy
+                                    case 36: // Intermittent Clouds
+                                        return 'weather-partly-cloudy'; // partlycloudy
+
+                                    case 18: // pouring
+                                        return 'weather-pouring'; // pouring
+
+                                    case 12: // Showers
+                                    case 13: // Mostly Cloudy w/ Showers
+                                    case 14: // Partly Sunny w/ Showers
+                                    case 26: // Freezing Rain
+                                    case 39: // Partly Cloudy w/ Showers
+                                    case 40: // Mostly Cloudy w/ Showers
+                                        return 'weather-rainy'; // rainy
+
+                                    case 19: // Flurries
+                                    case 20: // Mostly Cloudy w/ Flurries
+                                    case 21: // Partly Sunny w/ Flurries
+                                    case 22: // Snow
+                                    case 23: // Mostly Cloudy w/ Snow
+                                    case 43: // Mostly Cloudy w/ Flurries
+                                    case 44: // Mostly Cloudy w/ Snow
+                                        return 'weather-snowy'; // snowy
+
+                                    case 29: // Rain and Snow
+                                        return 'weather-snowy-rainy'; // snowy-rainy
+
+                                    case 1: // Sunny
+                                    case 2: // Mostly Sunny
+                                    case 5: // Hazy Sunshine
+                                        return 'weather-sunny'; // sunny
+
+                                    case 32: // windy
+                                        return 'weather-windy'; // windy
+
+                                    default:
+                                        return 'alert-circle-outline';
+                                }
+                            }`
+          },
+          color: {
+            mode: "auto",
+            role: "",
+            type: "triggered",
+            dp: "",
+            regexp: /^accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
+            read: `{
+                                switch (val) {
+                                    case 24: // Ice
+                                    case 30: // Hot
+                                    case 31: // Cold
+                                        return Color.swExceptional; // exceptional
+
+                                    case 7: // Cloudy
+                                    case 8: // Dreary (Overcast)
+                                    case 38: // Mostly Cloudy
+                                        return Color.swCloudy; // cloudy
+
+                                    case 11: // fog
+                                        return Color.swFog; // fog
+
+                                    case 25: // Sleet
+                                        return Color.swHail; // Hail
+
+                                    case 15: // T-Storms
+                                        return Color.swLightning; // lightning
+
+                                    case 16: // Mostly Cloudy w/ T-Storms
+                                    case 17: // Partly Sunny w/ T-Storms
+                                    case 41: // Partly Cloudy w/ T-Storms
+                                    case 42: // Mostly Cloudy w/ T-Storms
+                                        return Color.swLightningRainy; // lightning-rainy
+
+                                    case 33: // Clear
+                                    case 34: // Mostly Clear
+                                    case 37: // Hazy Moonlight
+                                        return Color.swClearNight;
+
+                                    case 3: // Partly Sunny
+                                    case 4: // Intermittent Clouds
+                                    case 6: // Mostly Cloudy
+                                    case 35: // Partly Cloudy
+                                    case 36: // Intermittent Clouds
+                                        return Color.swPartlycloudy; // partlycloudy
+
+                                    case 18: // pouring
+                                        return Color.swPouring; // pouring
+
+                                    case 12: // Showers
+                                    case 13: // Mostly Cloudy w/ Showers
+                                    case 14: // Partly Sunny w/ Showers
+                                    case 26: // Freezing Rain
+                                    case 39: // Partly Cloudy w/ Showers
+                                    case 40: // Mostly Cloudy w/ Showers
+                                        return Color.swRainy; // rainy
+
+                                    case 19: // Flurries
+                                    case 20: // Mostly Cloudy w/ Flurries
+                                    case 21: // Partly Sunny w/ Flurries
+                                    case 22: // Snow
+                                    case 23: // Mostly Cloudy w/ Snow
+                                    case 43: // Mostly Cloudy w/ Flurries
+                                    case 44: // Mostly Cloudy w/ Snow
+                                        return Color.swSnowy; // snowy
+
+                                    case 29: // Rain and Snow
+                                        return Color.swSnowyRainy; // snowy-rainy
+
+                                    case 1: // Sunny
+                                    case 2: // Mostly Sunny
+                                    case 5: // Hazy Sunshine
+                                        return Color.swSunny; // sunny
+
+                                    case 32: // windy
+                                        return Color.swWindy; // windy
+
+                                    default:
+                                        return Color.White;
+                                }
+                            }`
+          }
+        },
+        false: {
+          value: void 0,
+          color: void 0
+        },
+        scale: void 0,
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          dp: "",
+          regexp: /^openweathermap\.[0-9]+\.forecast\.current\.date/,
+          read: `{
+                        if (!val) {
+                            return null;
+                        }
+                        const date = new Date(val);
+                        if (!date.) {
+                            return null;
+                        }
+                        return date.toLocaleDateString('de-DE', { weekday: "short" });
+                    }`
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.openweathermap.windspeed": {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "accuweather",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^openweathermap\.[0-9]+\.forecast\.current\.windSpeed/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^openweathermap\.[0-9]+\.forecast\.current\.windSpeed/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: {
+          type: "const",
+          constVal: "km/h"
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "weather-windy"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "weather-windy"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 80 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "Wind"
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.openweathermap.winddirection": {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "openweathermap",
+    data: {
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^openweathermap\.[0-9]+\.forecast\.current\.windDirection/,
+          dp: ``,
+          read: `{
+                        const directions = [
+                            "N",  "NNE", "NE",  "ENE",
+                            "E",  "ESE", "SE",  "SSE",
+                            "S",  "SSW", "SW",  "WSW",
+                            "W",  "WNW", "NW",  "NNW"
+                        ];
+                        
+                        // 360 Grad in 16 Sektoren aufteilen \u2192 22.5\xB0 pro Richtung
+                        const index = Math.round(((val % 360) / 22.5)) % 16;
+                        return directions[index];
+                    }`
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        factor: void 0,
+        unit: {
+          type: "const",
+          constVal: ""
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "windsock"
+          },
+          color: {
+            type: "const",
+            constVal: "#FFFFFF"
+          }
+        },
+        false: {
+          value: void 0,
+          color: void 0
+        },
+        scale: void 0,
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "Windr."
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.openweathermap.uvindex": {
+    role: "text",
+    type: "text",
+    adapter: "accuweather",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex$/,
+          dp: ``,
+          forceType: "string"
+        },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex$/,
+          dp: ``,
+          forceType: "string"
+        },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "solar-power"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "solar-power"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 9 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "UV"
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.openweathermap.windgust": {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "accuweather",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.WindGust/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.WindGust/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: {
+          type: "const",
+          constVal: "km/h"
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "weather-tornado"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "weather-tornado"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 80 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "B\xF6en"
+        },
+        false: void 0
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
