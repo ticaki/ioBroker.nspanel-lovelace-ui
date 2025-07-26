@@ -2516,11 +2516,6 @@ class ConfigManager extends import_library.BaseClass {
             itemConfig = {
               type: "shutter",
               role: "",
-              color: {
-                true: await this.getIconColor(item.onColor, this.colorOn),
-                false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
-              },
               icon: {
                 true: item.icon ? { type: "const", constVal: item.icon } : void 0,
                 false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
@@ -2528,13 +2523,15 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: await this.getFieldAsDataItemConfig(item.icon || "lock-open-variant")
+                    value: await this.getFieldAsDataItemConfig(item.icon || "lock-open-variant"),
+                    color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
                       constVal: item.icon2 || "lock"
-                    }
+                    },
+                    color: await this.getIconColor(item.offColor, this.colorOff)
                   }
                 },
                 text: {

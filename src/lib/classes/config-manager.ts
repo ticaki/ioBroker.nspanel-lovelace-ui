@@ -2928,11 +2928,6 @@ export class ConfigManager extends BaseClass {
                         itemConfig = {
                             type: 'shutter',
                             role: '',
-                            color: {
-                                true: await this.getIconColor(item.onColor, this.colorOn),
-                                false: await this.getIconColor(item.offColor, this.colorOff),
-                                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                            },
                             icon: {
                                 true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
                                 false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
@@ -2941,6 +2936,7 @@ export class ConfigManager extends BaseClass {
                                 icon: {
                                     true: {
                                         value: await this.getFieldAsDataItemConfig(item.icon || 'lock-open-variant'),
+                                        color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
 
                                     false: {
@@ -2948,6 +2944,7 @@ export class ConfigManager extends BaseClass {
                                             type: 'const',
                                             constVal: item.icon2 || 'lock',
                                         },
+                                        color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
                                 },
                                 text: {
