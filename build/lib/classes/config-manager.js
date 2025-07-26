@@ -2330,6 +2330,7 @@ class ConfigManager extends import_library.BaseClass {
             let textOff = void 0;
             let adapterRole = "";
             let commonUnit = "";
+            let scaleVal = {};
             switch (role) {
               case "motion": {
                 iconOn = "motion-sensor";
@@ -2378,6 +2379,7 @@ class ConfigManager extends import_library.BaseClass {
                     commonUnit = o.common.unit;
                   }
                 }
+                scaleVal = { val_min: 40, val_max: 0, val_best: 25, mode: "quadriGradAnchor" };
                 break;
               }
               case "value.humidity":
@@ -2392,6 +2394,7 @@ class ConfigManager extends import_library.BaseClass {
                     commonUnit = o.common.unit;
                   }
                 }
+                scaleVal = { val_min: 0, val_max: 100, val_best: 50, mode: "triGrad" };
                 break;
               }
             }
@@ -2421,10 +2424,7 @@ class ConfigManager extends import_library.BaseClass {
                   unstable: {
                     value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable)
                   },
-                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : {
-                    type: "const",
-                    constVal: { val_min: 0, val_max: 100, val_best: 50, mode: "triGrad" }
-                  },
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : { type: "const", constVal: scaleVal },
                   maxBri: void 0,
                   minBri: void 0
                 },

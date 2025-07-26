@@ -2715,6 +2715,7 @@ export class ConfigManager extends BaseClass {
                         let textOff: undefined | string = undefined;
                         let adapterRole: pages.DeviceRole = '';
                         let commonUnit = '';
+                        let scaleVal = {};
                         switch (role) {
                             case 'motion': {
                                 iconOn = 'motion-sensor';
@@ -2763,6 +2764,7 @@ export class ConfigManager extends BaseClass {
                                         commonUnit = o.common.unit;
                                     }
                                 }
+                                scaleVal = { val_min: 40, val_max: 0, val_best: 25, mode: 'quadriGradAnchor' };
                                 break;
                             }
                             case 'value.humidity':
@@ -2777,6 +2779,7 @@ export class ConfigManager extends BaseClass {
                                         commonUnit = o.common.unit;
                                     }
                                 }
+                                scaleVal = { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' };
                                 break;
                             }
                         }
@@ -2817,10 +2820,7 @@ export class ConfigManager extends BaseClass {
                                     },
                                     scale: Types.isIconColorScaleElement(item.colorScale)
                                         ? { type: 'const', constVal: item.colorScale }
-                                        : {
-                                              type: 'const',
-                                              constVal: { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' },
-                                          },
+                                        : { type: 'const', constVal: scaleVal },
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
