@@ -1536,8 +1536,7 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           color: {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
-            false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
-            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : { val_min: 0, val_max: 100 }
+            false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff)
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
