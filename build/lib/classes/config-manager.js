@@ -1101,7 +1101,7 @@ class ConfigManager extends import_library.BaseClass {
           }
         }
         icon = item.icon || icon || "power";
-        icon2 = item.icon2 || icon2 || icon || "power-standby";
+        icon2 = item.icon2 || icon2 || "power-standby";
         const tempItem = {
           type: "button",
           role: "button",
@@ -1820,23 +1820,30 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "socket": {
+            let icon;
+            let icon2;
+            if (item.role) {
+              switch (item.role) {
+                case "socket": {
+                  icon = "power-socket-de";
+                  icon2 = "power-socket-de";
+                  break;
+                }
+              }
+            }
+            icon = item.icon || icon || "power";
+            icon2 = item.icon2 || icon2 || "power-standby";
             const tempItem = {
               type: "switch",
               role: "",
               data: {
                 icon: {
                   true: {
-                    value: {
-                      type: "const",
-                      constVal: item.icon || "power-socket-de"
-                    },
+                    value: { type: "const", constVal: icon },
                     color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
-                    value: {
-                      type: "const",
-                      constVal: item.icon2 || "power-socket-de"
-                    },
+                    value: { type: "const", constVal: icon2 },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
                   scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,

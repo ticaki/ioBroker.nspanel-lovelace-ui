@@ -1282,7 +1282,7 @@ export class ConfigManager extends BaseClass {
                     }
                 }
                 icon = item.icon || icon || 'power';
-                icon2 = item.icon2 || icon2 || icon || 'power-standby';
+                icon2 = item.icon2 || icon2 || 'power-standby';
                 const tempItem: typePageItem.PageItemDataItemsOptions = {
                     type: 'button',
                     role: 'button',
@@ -2107,23 +2107,30 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'socket': {
+                        let icon: AllIcons | undefined;
+                        let icon2: AllIcons | undefined;
+                        if (item.role) {
+                            switch (item.role) {
+                                case 'socket': {
+                                    icon = 'power-socket-de';
+                                    icon2 = 'power-socket-de';
+                                    break;
+                                }
+                            }
+                        }
+                        icon = item.icon || icon || 'power';
+                        icon2 = item.icon2 || icon2 || 'power-standby';
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'switch',
                             role: '',
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || 'power-socket-de',
-                                        },
+                                        value: { type: 'const', constVal: icon },
                                         color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || 'power-socket-de',
-                                        },
+                                        value: { type: 'const', constVal: icon2 },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
                                     scale: Types.isIconColorScaleElement(item.colorScale)
