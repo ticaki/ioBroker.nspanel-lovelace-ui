@@ -2326,13 +2326,13 @@ const textTemplates = {
           dp: ``,
           read: `{
                         const directions = [
-                            "N",  "NNE", "NE",  "ENE",
-                            "E",  "ESE", "SE",  "SSE",
+                            "N",  "NNO", "NO",  "ONO",
+                            "O",  "OSO", "SO",  "SSO",
                             "S",  "SSW", "SW",  "WSW",
                             "W",  "WNW", "NW",  "NNW"
                         ];
                         
-                        // 360 Grad in 16 Sektoren aufteilen \u2192 22.5\xB0 pro Richtung
+                        // 360 Grad in 16 Sektoren aufteilen - 22.5\xB0 pro Richtung
                         const index = Math.round(((val % 360) / 22.5)) % 16;
                         return directions[index];
                     }`
