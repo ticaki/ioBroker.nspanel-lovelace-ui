@@ -84,7 +84,7 @@ async function configuration(): Promise<void> {
 
     const config: ScriptConfig.Config = {
         panelTopic: 'topic',
-        weatherEntity: 'accuweather.0.',
+        weatherEntity: 'openweathermap.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
         defaultBackgroundColor: HMIDark,
@@ -117,8 +117,8 @@ async function configuration(): Promise<void> {
         favoritScreensaverEntity: [
             {
                 type: 'template',
-                template: 'text.accuweather.favorit',
-                dpInit: `/^accuweather\\.0.+/`,
+                template: 'text.openweathermap.favorit',
+                dpInit: `/^openweathermap\\.0.+/`,
                 modeScr: 'favorit',
             }
         ],
