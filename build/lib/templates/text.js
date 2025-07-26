@@ -63,12 +63,12 @@ const textTemplates = {
     data: {
       icon: {
         true: {
-          value: { type: "const", constVal: "window-open-variant" },
-          color: { type: "const", constVal: import_Color.Color.Cyan }
+          value: { type: "const", constVal: "window-closed-variant" },
+          color: { type: "const", constVal: import_Color.Color.close }
         },
         false: {
-          value: { type: "const", constVal: "window-closed-variant" },
-          color: { type: "const", constVal: import_Color.Color.Green }
+          value: { type: "const", constVal: "window-open-variant" },
+          color: { type: "const", constVal: import_Color.Color.open }
         }
       },
       entity1: {
@@ -85,8 +85,8 @@ const textTemplates = {
         false: void 0
       },
       text1: {
-        true: { type: "const", constVal: "opened" },
-        false: { type: "const", constVal: "closed" }
+        true: { type: "const", constVal: "closed" },
+        false: { type: "const", constVal: "opened" }
       }
     }
   },
@@ -113,7 +113,7 @@ const textTemplates = {
           value: { type: "const", constVal: "temperature-celsius" },
           color: { type: "const", constVal: import_Color.Color.Blue }
         },
-        scale: { type: "const", constVal: { min: 0, max: 30 } }
+        scale: { type: "const", constVal: { val_min: 40, val_max: 0, val_best: 25, mode: "quadriGradAnchor" } }
       },
       entity1: {
         value: {
@@ -1341,7 +1341,7 @@ const textTemplates = {
         }
       },
       text: {
-        true: { type: "const", constVal: "door" },
+        true: { type: "const", constVal: "gate" },
         false: void 0
       },
       text1: {
@@ -1394,18 +1394,18 @@ const textTemplates = {
           color: {
             mode: "auto",
             role: "state",
-            type: "state",
+            type: "triggered",
             dp: "",
             regexp: /\.COLORDEC$/,
             def: import_Color.Color.activated
           }
         },
         false: {
-          value: { type: "const", constVal: "information-outline" },
+          value: { type: "const", constVal: "information-off-outline" },
           color: {
             mode: "auto",
             role: "state",
-            type: "state",
+            type: "triggered",
             dp: "",
             regexp: /\.COLORDEC$/,
             def: import_Color.Color.deactivated
@@ -1416,7 +1416,15 @@ const textTemplates = {
         value: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.ACTUAL$/, def: "info" }
       },
       text: {
-        true: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.BUTTONTEXT$/, def: "info" }
+        true: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.BUTTONTEXT$/, def: "info" },
+        false: {
+          mode: "auto",
+          role: "text",
+          type: "triggered",
+          dp: "",
+          regexp: /\.BUTTONTEXTOFF$/,
+          def: "info_off"
+        }
       },
       text1: {
         true: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.ACTUAL$/, def: "info" }
@@ -1434,32 +1442,36 @@ const textTemplates = {
           color: {
             mode: "auto",
             role: "value.warning",
-            type: "state",
+            type: "triggered",
             dp: "",
             regexp: /\.LEVEL$/,
             def: import_Color.Color.deactivated
           }
         },
-        false: {
-          value: { type: "const", constVal: "gesture-tap-button" },
-          color: {
-            mode: "auto",
-            role: "value.warning",
-            type: "state",
-            dp: "",
-            regexp: /\.LEVEL$/,
-            def: import_Color.Color.deactivated
-          }
-        }
+        false: void 0
       },
       entity1: void 0,
       text: {
-        true: { type: "const", constVal: "window" },
+        true: {
+          mode: "auto",
+          role: "weather.title",
+          type: "triggered",
+          dp: "",
+          regexp: /\.INFO$/,
+          def: "info"
+        },
         false: void 0
       },
       text1: {
-        true: { type: "const", constVal: "opened" },
-        false: { type: "const", constVal: "closed" }
+        true: {
+          mode: "auto",
+          role: "weather.title",
+          type: "triggered",
+          dp: "",
+          regexp: /\.TITLE$/,
+          def: "title"
+        },
+        false: void 0
       }
     }
   },
