@@ -1456,7 +1456,10 @@ export class ConfigManager extends BaseClass {
                             },
                             scale: Types.isIconColorScaleElement(item.colorScale)
                                 ? { type: 'const', constVal: item.colorScale }
-                                : undefined,
+                                : {
+                                      type: 'const',
+                                      constVal: { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' },
+                                  },
                         },
                         text: text,
 
@@ -2807,7 +2810,10 @@ export class ConfigManager extends BaseClass {
                                     },
                                     scale: Types.isIconColorScaleElement(item.colorScale)
                                         ? { type: 'const', constVal: item.colorScale }
-                                        : undefined,
+                                        : {
+                                              type: 'const',
+                                              constVal: { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' },
+                                          },
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },

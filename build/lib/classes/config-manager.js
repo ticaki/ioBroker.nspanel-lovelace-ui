@@ -1257,7 +1257,10 @@ class ConfigManager extends import_library.BaseClass {
                   textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                 }
               },
-              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : {
+                type: "const",
+                constVal: { val_min: 0, val_max: 100, val_best: 50, mode: "triGrad" }
+              }
             },
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -2411,7 +2414,10 @@ class ConfigManager extends import_library.BaseClass {
                   unstable: {
                     value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable)
                   },
-                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : {
+                    type: "const",
+                    constVal: { val_min: 0, val_max: 100, val_best: 50, mode: "triGrad" }
+                  },
                   maxBri: void 0,
                   minBri: void 0
                 },
