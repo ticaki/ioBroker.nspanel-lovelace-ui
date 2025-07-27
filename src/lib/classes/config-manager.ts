@@ -3326,7 +3326,7 @@ export class ConfigManager extends BaseClass {
                 }
                 if (config.weatherAddDefaultItems) {
                     pageItems = pageItems.concat([
-                        // Bottom 1 - openweathermap.0. Forecast Day 1
+                        // Bottom 1 - openweathermap.0. sunset
                         {
                             template: 'text.openweathermap.sunriseset',
                             dpInit: `/^openweathermap\\.${instance}\\.forecast\\.current.+/`,
@@ -3335,40 +3335,40 @@ export class ConfigManager extends BaseClass {
                         // Bottom 2 - openweathermap.0. Forecast Day 1
                         {
                             template: 'text.openweathermap.bot2values',
-                            dpInit: `/^openweathermap\\.${instance}.+?day0$/g`,
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day0/`,
                             modeScr: 'bottom',
                         },
 
                         // Bottom 3 - openweathermap.0. Forecast Day 2
                         {
                             template: 'text.openweathermap.bot2values',
-                            dpInit: `/^openweathermap\\.${instance}.+?day1$/`,
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day1/`,
                             modeScr: 'bottom',
                         },
 
                         // Bottom 4 - openweathermap.0. Forecast Day 3
                         {
                             template: 'text.openweathermap.bot2values',
-                            dpInit: `/^openweathermap\\.${instance}.+?day2$/`,
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day2/`,
                             modeScr: 'bottom',
                         },
 
                         // Bottom 5 - openweathermap.0. Forecast Day 4
                         {
                             template: 'text.openweathermap.bot2values',
-                            dpInit: `/^openweathermap\\.${instance}.+?day3$/`,
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day3/`,
                             modeScr: 'bottom',
                         },
                         // Bottom 6 - openweathermap.0. Forecast Day 5
                         {
                             template: 'text.openweathermap.bot2values',
-                            dpInit: `/^openweathermap\\.${instance}.+?day4$/`,
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day4/`,
                             modeScr: 'bottom',
                         },
                         // Bottom 7 - openweathermap.0. Forecast Day 5
                         {
                             template: 'text.openweathermap.bot2values',
-                            dpInit: `/^openweathermap\\.${instance}.+?day5$/`,
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day5/`,
                             modeScr: 'bottom',
                         },
                         // Bottom 8 - Windgeschwindigkeit
