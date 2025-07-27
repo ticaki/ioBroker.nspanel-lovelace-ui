@@ -784,9 +784,9 @@ const requiredScriptDataPoints = {
     name: "warning",
     description: "",
     data: {
-      INFO: { role: "weather.title", type: "string", required: true, writeable: false },
-      LEVEL: { role: "value.warning", type: "number", required: true, writeable: false },
-      TITLE: { role: "weather.title.short", type: "string", required: true, writeable: false }
+      INFO: { role: "weather.title", type: "string", required: true, writeable: false, trigger: true },
+      LEVEL: { role: "value.warning", type: "number", required: true, writeable: false, trigger: true },
+      TITLE: { role: "weather.title.short", type: "string", required: true, writeable: false, trigger: true }
     }
   },
   window: {

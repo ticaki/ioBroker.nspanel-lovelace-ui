@@ -1493,8 +1493,6 @@ class ConfigManager extends import_library.BaseClass {
             false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
-            entity1: { value: foundedStates[role].INFO },
-            text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
@@ -2379,7 +2377,7 @@ class ConfigManager extends import_library.BaseClass {
                     commonUnit = o.common.unit;
                   }
                 }
-                scaleVal = { val_min: 40, val_max: 0, val_best: 25, mode: "quadriGradAnchor" };
+                scaleVal = { val_min: 40, val_max: -10, val_best: 25, mode: "quadriGradAnchor" };
                 break;
               }
               case "value.humidity":
@@ -2612,26 +2610,21 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "warning": {
             itemConfig = {
-              role: "timer",
-              type: "timer",
-              dpInit: "",
+              template: "text.warning",
+              role: "text",
+              type: "text",
+              dpInit: item.id,
               data: {
                 icon: {
                   true: {
-                    value: { type: "const", constVal: item.icon || "timer" },
+                    value: { type: "const", constVal: item.icon || "alert-decagram-outline" },
                     color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
-                    value: { type: "const", constVal: item.icon2 || "timer" },
+                    value: { type: "const", constVal: item.icon2 || "alert-decagram-outline" },
                     color: await this.getIconColor(item.offColor, this.colorOff)
-                  },
-                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
-                  maxBri: void 0,
-                  minBri: void 0
-                },
-                entity1: foundedStates[role].ACTUAL ? { value: foundedStates[role].ACTUAL } : void 0,
-                headline: { type: "const", constVal: "Timer" },
-                setValue1: foundedStates[role].ACTUAL
+                  }
+                }
               }
             };
             break;

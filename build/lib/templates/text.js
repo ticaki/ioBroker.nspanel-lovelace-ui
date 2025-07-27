@@ -1438,27 +1438,23 @@ const textTemplates = {
     data: {
       icon: {
         true: {
-          value: { type: "const", constVal: "gesture-tap-button" },
-          color: {
-            mode: "auto",
-            role: "value.warning",
-            type: "triggered",
-            dp: "",
-            regexp: /\.LEVEL$/,
-            def: import_Color.Color.deactivated
-          }
+          value: { type: "const", constVal: "alert-outline" },
+          color: { type: "const", constVal: import_Color.Color.Yellow }
         },
-        false: void 0
+        false: void 0,
+        scale: { type: "const", constVal: { val_min: 4, val_max: 0, mode: "triGrad" } }
       },
-      entity1: void 0,
+      entity1: {
+        value: { mode: "auto", role: "value.warning", type: "triggered", dp: "", regexp: /\.LEVEL$/, def: 0 }
+      },
       text: {
         true: {
           mode: "auto",
-          role: "weather.title",
+          role: "weather.title.short",
           type: "triggered",
           dp: "",
-          regexp: /\.INFO$/,
-          def: "info"
+          regexp: /\.TITLE$/,
+          def: "title"
         },
         false: void 0
       },
@@ -1468,8 +1464,8 @@ const textTemplates = {
           role: "weather.title",
           type: "triggered",
           dp: "",
-          regexp: /\.TITLE$/,
-          def: "title"
+          regexp: /\.INFO$/,
+          def: "info"
         },
         false: void 0
       }
