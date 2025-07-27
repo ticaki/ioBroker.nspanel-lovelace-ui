@@ -227,7 +227,7 @@ const checkedDatapoints = {
     BUTTONTEXT: null
   },
   light: {
-    ACTUAL: null,
+    ON_ACTUAL: null,
     SET: null,
     COLORDEC: null,
     BUTTONTEXT: null
@@ -604,7 +604,7 @@ const requiredScriptDataPoints = {
       ON_ACTUAL: {
         role: ["switch.light", "sensor.light"],
         type: "boolean",
-        required: false,
+        required: true,
         writeable: false,
         trigger: true,
         alternate: "SET"

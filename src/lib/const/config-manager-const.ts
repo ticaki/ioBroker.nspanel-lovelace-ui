@@ -230,7 +230,7 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         BUTTONTEXT: null,
     },
     light: {
-        ACTUAL: null,
+        ON_ACTUAL: null,
         SET: null,
         COLORDEC: null,
         BUTTONTEXT: null,
@@ -989,7 +989,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             ON_ACTUAL: {
                 role: ['switch.light', 'sensor.light'],
                 type: 'boolean',
-                required: false,
+                required: true,
                 writeable: false,
                 trigger: true,
                 alternate: 'SET',
