@@ -3311,6 +3311,84 @@ export class ConfigManager extends BaseClass {
                         },
                     ]);
                 }
+            } else if (config.weatherEntity.startsWith('openweathermap.') && config.weatherEntity.endsWith('.')) {
+                const instance = config.weatherEntity.split('.')[1];
+                if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
+                    pageItems.push({
+                        template: 'text.openweathermap.favorit',
+                        dpInit: `/^openweathermap\\.${instance}.+/`,
+                        modeScr: 'favorit',
+                    });
+                }
+                if (config.weatherAddDefaultItems) {
+                    pageItems = pageItems.concat([
+                        // Bottom 1 - openweathermap.0. sunset
+                        {
+                            template: 'text.openweathermap.sunriseset',
+                            dpInit: `/^openweathermap\\.${instance}\\.forecast\\.current.+/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 2 - openweathermap.0. Forecast Day 1
+                        {
+                            template: 'text.openweathermap.bot2values',
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day0/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 3 - openweathermap.0. Forecast Day 2
+                        {
+                            template: 'text.openweathermap.bot2values',
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day1/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 4 - openweathermap.0. Forecast Day 3
+                        {
+                            template: 'text.openweathermap.bot2values',
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day2/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 5 - openweathermap.0. Forecast Day 4
+                        {
+                            template: 'text.openweathermap.bot2values',
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day3/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 6 - openweathermap.0. Forecast Day 5
+                        {
+                            template: 'text.openweathermap.bot2values',
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day4/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 7 - openweathermap.0. Forecast Day 5
+                        {
+                            template: 'text.openweathermap.bot2values',
+                            dpInit: `/^openweathermap\\.${instance}.+?\\.day5/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 8 - Windgeschwindigkeit
+                        {
+                            template: 'text.openweathermap.windspeed',
+                            dpInit: `/^openweathermap\\.${instance}./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 9 - Böen
+                        {
+                            template: 'text.openweathermap.windgust',
+                            dpInit: `/^openweathermap\\.${instance}./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 10 - Windrichtung
+                        {
+                            template: 'text.openweathermap.winddirection',
+                            dpInit: `/^openweathermap\\.${instance}./`,
+                            modeScr: 'bottom',
+                        },
+                    ]);
+                }
             }
         }
         if (config.indicatorScreensaverEntity) {
@@ -3410,7 +3488,7 @@ export class ConfigManager extends BaseClass {
                         dateFormat: {
                             type: 'const',
                             constVal: {
-                                local: 'de',
+                                local: this.adapter.language || 'en',
                                 format,
                             },
                         },

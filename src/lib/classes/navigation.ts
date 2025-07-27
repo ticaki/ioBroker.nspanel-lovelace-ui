@@ -404,6 +404,13 @@ export class Navigation extends BaseClass {
         const item = this.navigationConfig[index];
         return item ? item.name : 'main';
     }
+    getCurrentMainPage(): Page {
+        const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
+        if (index === -1 || this.database[index] === null || this.database[index] === undefined) {
+            return this.database[0]!.page;
+        }
+        return this.database[index].page;
+    }
     getCurrentPage(): Page {
         const page = this.database[this.currentItem];
         if (page === null || page === undefined) {

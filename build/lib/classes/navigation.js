@@ -362,6 +362,13 @@ class Navigation extends import_library.BaseClass {
     const item = this.navigationConfig[index];
     return item ? item.name : "main";
   }
+  getCurrentMainPage() {
+    const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
+    if (index === -1 || this.database[index] === null || this.database[index] === void 0) {
+      return this.database[0].page;
+    }
+    return this.database[index].page;
+  }
   getCurrentPage() {
     const page = this.database[this.currentItem];
     if (page === null || page === void 0) {
