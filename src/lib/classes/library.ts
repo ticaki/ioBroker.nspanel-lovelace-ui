@@ -683,6 +683,7 @@ export class Library extends BaseClass {
 
     async checkLanguage(): Promise<void> {
         try {
+            this.log.debug(`Load language ${this.adapter.language}`);
             this.translation = await import(`../../../admin/i18n/${this.adapter.language}/translations.json`);
         } catch {
             this.log.warn(`Language ${this.adapter.language} not exist!`);

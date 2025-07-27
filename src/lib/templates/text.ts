@@ -2151,7 +2151,7 @@ export const textTemplates: TemplateItems = {
                         if (!date) {
                             return null;
                         }
-                        return date.toLocaleDateString('de-DE', { weekday: "short" });
+                        return date.toLocaleDateString(language || 'en', { weekday: "short" });
                     }`,
                 },
                 false: undefined,

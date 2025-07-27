@@ -618,6 +618,7 @@ class Library extends BaseClass {
   }
   async checkLanguage() {
     try {
+      this.log.debug(`Load language ${this.adapter.language}`);
       this.translation = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${this.adapter.language}/translations.json`)));
     } catch {
       this.log.warn(`Language ${this.adapter.language} not exist!`);

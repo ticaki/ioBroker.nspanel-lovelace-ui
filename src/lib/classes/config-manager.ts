@@ -3492,7 +3492,7 @@ export class ConfigManager extends BaseClass {
                         dateFormat: {
                             type: 'const',
                             constVal: {
-                                local: 'de',
+                                local: this.adapter.language || 'en',
                                 format,
                             },
                         },

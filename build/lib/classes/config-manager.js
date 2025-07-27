@@ -3017,7 +3017,7 @@ class ConfigManager extends import_library.BaseClass {
             dateFormat: {
               type: "const",
               constVal: {
-                local: "de",
+                local: this.adapter.language || "en",
                 format
               }
             }
