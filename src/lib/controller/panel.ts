@@ -1194,9 +1194,9 @@ export class Panel extends BaseClass {
                 this.sendScreeensaverTimeout(this.timeout);
                 this.sendDimmode();
                 this.navigation.resetPosition();
-                await this.adapter.delay(200);
-                const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
-                const popup = i !== -1 ? this.pages[i] : undefined;
+                //const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
+                //const popup = i !== -1 ? this.pages[i] : undefined;
+                const popup = this.navigation.getCurrentMainPage();
                 if (popup) {
                     if (this._activePage === popup) {
                         this._activePage.sendType(true);
@@ -1205,7 +1205,7 @@ export class Panel extends BaseClass {
                         await this.setActivePage(popup, false);
                     }
                 }
-                await this.adapter.delay(50);
+                await this.adapter.delay(100);
 
                 if (this.screenSaver) {
                     await this.screenSaver.createPageItems();
