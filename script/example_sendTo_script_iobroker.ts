@@ -268,14 +268,14 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.openweathermap.favorit',
-                dpInit: `/^openweathermap\\.${instance}.+/`,
+                dpInit: `/^openweathermap\\.0.+/`,
                 modeScr: 'favorit',
             },
             // Bottom 2 -  Forecast Day 1
             {
                 type: 'template',
                 template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.${instance}.+?day0$/g`,
+                dpInit: `/^openweathermap\\.0.+?day0/`,
                 modeScr: 'bottom',
             },
 
@@ -283,7 +283,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.${instance}.+?day1$/g`,
+                dpInit: `/^openweathermap\\.0.+?day1/`,
                 modeScr: 'bottom',
             },
 
@@ -291,7 +291,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.${instance}.+?day2$/g`,
+                dpInit: `/^openweathermap\\.0.+?day2/`,
                 modeScr: 'bottom',
             },
 
@@ -299,21 +299,21 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.${instance}.+?day3$/g`,
+                dpInit: `/^openweathermap\\.0.+?day3/`,
                 modeScr: 'bottom',
             },
             // Bottom 6 - Forecast Day 5
             {
                 type: 'template',
                 template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.${instance}.+?day4$/g`,
+                dpInit: `/^openweathermap\\.0.+?day4/`,
                 modeScr: 'bottom',
             },
             // Bottom 7 -  Forecast Day 6
             {
                 type: 'template',
                 template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.${instance}.+?day5$/g`,
+                dpInit: `/^openweathermap\\.0.+?day5/`,
                 modeScr: 'bottom',
             },
 
