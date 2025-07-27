@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "news": {
+      "0.2.3": {
+        "en": "openweathermap added as standard weather adapter\nSome adjustments due to updated firmware\nSome improvements",
+        "de": "openweathermap als standard-wetteradapter hinzugefügt\nEinige Anpassungen aufgrund aktualisierter Firmware\nEinige Verbesserungen",
+        "ru": "openweathermap добавлен в качестве стандартного адаптера погоды\nНекоторые корректировки из-за обновленного прошивки\nНекоторые улучшения",
+        "pt": "openweathermap adicionado como adaptador meteorológico padrão\nAlguns ajustes devido ao firmware atualizado\nAlgumas melhorias",
+        "nl": "openweathermap toegevoegd als standaard weeradapter\nEnkele aanpassingen vanwege bijgewerkte firmware\nEnkele verbeteringen",
+        "fr": "openweathermap ajouté comme adaptateur météo standard\nQuelques ajustements dus à la mise à jour du firmware\nQuelques améliorations",
+        "it": "openweathermap aggiunto come adattatore meteo standard\nAlcune modifiche grazie al firmware aggiornato\nAlcuni miglioramenti",
+        "es": "openweathermap añadido como adaptador de clima estándar\nAlgunos ajustes debido al firmware actualizado\nAlgunas mejoras",
+        "pl": "openweathermap dodany jako standardowy adapter pogodowy\nNiektóre korekty wynikające z aktualizacji oprogramowania firmowego\nPewne ulepszenia",
+        "uk": "openweathermap додано як стандартний адаптер погоди\nДеякі налаштування через оновлену прошивку\nДеякі поліпшення",
+        "zh-cn": "添加为标准天气适配器\n由于更新固件而作的一些调整\n一些改进"
+      },
       "0.2.2": {
         "en": "improved PageQR \nBREAKING: alias def changed\nactual-set handling changed\npopupFan added",
         "de": "verbesserte PageQR\nBREAKING: Alias def geändert\ntatsächliche handhabung geändert\npopup Fan hinzugefügt",
@@ -80,19 +93,6 @@
         "pl": "refaktoring startup\ndodane narzędzia skryptu konfiguracyjnego w admin\ndodano / naprawiono niektóre elementy konkursów\ndodane utrzymanie w admin\ndodana nawigacja w admin\ndodana karta Moc w tym. admin",
         "uk": "рефакторинг стартап\nдодано конфігурацію сценаріїв інструментів в адмін\nдодано/фіксовано деякі сторінки\nдодано підтримку в адміні\nдодана навігація в адмін\nдодано картку Потужність вкл. адмін",
         "zh-cn": "正在重构启动\n在管理员中添加配置脚本工具\n添加/固定了一些页面项目\n在管理员中添加维护\n在管理员中添加导航\n添加卡片 包括电源 管理员"
-      },
-      "0.1.9": {
-        "en": "added: tasmota web ui user & password Fixes #164\nBREAKING: Internal server use TLS - New tasmota config for internal server.\nadded servicepage items\nadded lock\ncardThermo with input_sel\nAdded: Admin option to fix wrong common.type=state in alias.0 to common.type=mixed\nRequired data points are found via role, type etc. The designation only plays a role in rare cases.",
-        "de": "hinzugefügt: tasmota web ui user & passwort Fixes #164\nBREAKING: Interner Server verwendet TLS - Neue tasmota config für internen Server.\nzusätzliche serviceseite\nzusätzliches schloss\nkarte Thermo mit input_sel\nHinzugefügt: Admin-Option, um falsch häufig zu beheben. type=state in alias.0 zu common.type=gemischt\nErforderliche Datenpunkte werden über Rolle, Art etc. gefunden. Die Bezeichnung spielt in seltenen Fällen nur eine Rolle.",
-        "ru": "добавлено: tasmota web ui user & password Fixes #164\nBREAKING: Внутренний сервер использует TLS - новый конфигуратор tasmota для внутреннего сервера.\nдобавлены элементы сервиса\nдобавить замок\nкарточка Термо с входом_sel\nДобавлено: Административная опция для исправления неправильного общего. type=state in alias.0 to common.type=mixed\nТребуемые точки данных находятся через роль, тип и т.д. Обозначение играет роль только в редких случаях.",
-        "pt": "adicionado: tasmota web ui usuário & senha correções #164\nBREAKING: Servidor interno use TLS - Nova configuração tasmota para servidor interno.\nadicionado servicepage itens\nfechadura adicionada\ncartão Termo com input_sel\nAdicionado: Admin opção para corrigir errado comum. type=state in alias.0 to common.type=mixed\nOs pontos de dados necessários são encontrados por função, tipo etc. A designação só desempenha um papel em casos raros.",
-        "nl": "toegevoegd: tasmota web ui gebruiker & wachtwoord Fixes #164\nBREAKING: Interne server gebruikt TLS - Nieuwe tasmota configuratie voor interne server.\ntoegevoegde servicepagina-items\nslot toevoegen\nkaart Thermo met ingang_sel\nToegevoegd: Admin optie om foute gemeenschappelijk op te lossen. type=staat in alias.0 naar common.type=gemengd\nVereiste datapunten worden gevonden via rol, type enz. De aanwijzing speelt slechts een rol in zeldzame gevallen.",
-        "fr": "ajouté: tasmota web ui utilisateur & mot de passe Fixer #164\nBREAKING: Serveur interne utiliser TLS - Nouvelle configuration de tasmota pour le serveur interne.\najout d'éléments de page de service\nverrouillage ajouté\ncarte Thermo avec entrée_sel\nAjouté : option Admin pour corriger mal commun. type=état dans alias.0 à common.type=mixed\nLes points de données requis sont trouvés via le rôle, le type, etc. La désignation ne joue un rôle que dans de rares cas.",
-        "it": "aggiunto: tasmota web ui utente & password Fissa #164\nBREAKING: Server interno usare TLS - Nuova configurazione tasmota per server interno.\nulteriori articoli di servicepage\nblocco aggiunto\ncarta Thermo con input_sel\nAggiunto: Admin opzione per risolvere sbagliato comune. type=state in alias.0 to common.type=mixed\nI punti di dati richiesti sono trovati tramite ruolo, tipo ecc. La designazione gioca solo un ruolo in casi rari.",
-        "es": "añadido: tasmota web ui usuario \" password Fixes #164\nBREAKING: Uso interno del servidor TLS - Nuevo configuración de tasmota para servidor interno.\nartículos de servicio añadidos\ncierre añadido\ntarjeta Termo con entrada_sel\nAñadido: opción Admin para corregir el común equivocado. type=state in alias.0 to common.type=mixed\nLos puntos de datos requeridos se encuentran a través de papel, tipo, etc. La designación sólo desempeña un papel en casos raros.",
-        "pl": "dodane: tasmota web ui użytkownik & hasło Fixes # 164\nBREAKING: Wewnętrzny serwer używać TLS - Nowy tasmota config dla wewnętrznego serwera.\ndodane pozycje na stronie serwisowej\ndodany zamek\nkarta Thermo with input _ sel\nDodano: Admin opcja naprawić złe wspólne. type = state in alias.0 to common .type = mixed\nWymagane punkty danych można znaleźć poprzez rolę, typ itp. Oznaczenie odgrywa rolę tylko w rzadkich przypadkach.",
-        "uk": "додано: tasmota web ui користувача та пароль Виправлення #164\nBREAKING: Внутрішній сервер використання TLS - Нові налаштування тасмота для внутрішнього сервера.\nдоданий сайт\nдоданий замок\nкошик Термо з входом\nДодано: Параметри адміністратора для виправлення неправильного спільного. type=state in alias.0 до спільного.type=змішувати\nПотрібні пункти даних розміщені за допомогою функції, типу тощо. Розповідь тільки грає роль у рідкісних випадках.",
-        "zh-cn": "添加: tasmota web ui 用户和密码\nBREAKING:内部服务器使用TLS - 内部服务器的新塔斯莫塔配置.\n添加的服务页项目\n添加锁定\n纸牌 带有输入的热器_ sel\n添加:管理选项来修正错误的常见. 类型=以别名.0表示为常见。类型=混合\n所需数据点通过角色,类型等查找. 指定仅在罕见的情况下发挥作用."
       }
     },
     "titleLang": {

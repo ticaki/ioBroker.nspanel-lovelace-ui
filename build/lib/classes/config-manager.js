@@ -1756,6 +1756,10 @@ class ConfigManager extends import_library.BaseClass {
               }
             }
           }
+        } else {
+          this.log.error(
+            `Channel role ${role} - key: ${dp} not found in checkedDatapoints! Please check code!`
+          );
         }
       }
       if (ups) {

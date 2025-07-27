@@ -2007,6 +2007,10 @@ export class ConfigManager extends BaseClass {
                             }
                         }
                     }
+                } else {
+                    this.log.error(
+                        `Channel role ${role} - key: ${dp} not found in checkedDatapoints! Please check code!`,
+                    );
                 }
             }
             if (ups) {
