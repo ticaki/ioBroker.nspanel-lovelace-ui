@@ -197,6 +197,9 @@ const stateRoleArray = arrayOfAllStateRole([
   "sensor.alarm.flood",
   "indicator.reachable",
   "sensor.switch",
+  "date.sunrise",
+  "date.sunset",
+  "weather.icon",
   ""
 ]);
 function isStateRole(F) {

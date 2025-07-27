@@ -1194,8 +1194,9 @@ export class Panel extends BaseClass {
                 this.sendScreeensaverTimeout(this.timeout);
                 this.sendDimmode();
                 this.navigation.resetPosition();
-                const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
-                const popup = i !== -1 ? this.pages[i] : undefined;
+                //const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
+                //const popup = i !== -1 ? this.pages[i] : undefined;
+                const popup = this.navigation.getCurrentMainPage();
                 if (popup) {
                     if (this._activePage === popup) {
                         this._activePage.sendType(true);

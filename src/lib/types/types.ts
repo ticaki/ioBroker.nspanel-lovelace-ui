@@ -20,6 +20,13 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.openweathermap.windgust'
+    | 'text.openweathermap.uvindex'
+    | 'text.openweathermap.winddirection'
+    | 'text.openweathermap.windspeed'
+    | 'text.openweathermap.bot2values'
+    | 'text.openweathermap.favorit'
+    | 'text.openweathermap.sunriseset'
     | 'text.isOnline'
     | 'text.hmip.windcombo'
     | 'text.sainlogic.windarrow'

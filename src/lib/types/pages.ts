@@ -196,10 +196,16 @@ export const stateRoleArray = arrayOfAllStateRole([
     'sensor.alarm.flood',
     'indicator.reachable',
     'sensor.switch',
+    'date.sunrise',
+    'date.sunset',
+    'weather.icon',
     '',
 ]);
 
 export type StateRole =
+    | 'weather.icon'
+    | 'date.sunrise'
+    | 'date.sunset'
     | 'sensor.switch'
     | 'indicator.reachable'
     | 'sensor.alarm.flood'
