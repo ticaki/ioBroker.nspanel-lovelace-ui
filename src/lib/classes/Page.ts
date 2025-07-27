@@ -140,7 +140,7 @@ export class Page extends BaseClassPage {
                 !(options.type == 'button' && template.type == 'text')
             ) {
                 // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                this.log.error(`Type: ${String(options.type)}is not equal with ${template.type}`);
+                this.log.error(`Type: ${String(options.type)} is not equal with ${template.type}`);
                 return undefined;
             }
             const colorTrue = (options.color || {}).true;

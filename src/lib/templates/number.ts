@@ -77,7 +77,7 @@ export const numberTemplates: TemplateItems = {
     'number.slider': {
         role: '',
         adapter: '',
-        type: 'button',
+        type: 'number',
 
         data: {
             icon: {
