@@ -1326,15 +1326,27 @@ export class PageItem extends BaseClassTriggerd {
                         message.iconL1 = optionalValueC[0];
                         message.iconM1 = optionalValueC[1];
                         message.iconR1 = optionalValueC[2];
-                        message.statusL1 = (typeof pos === 'boolean' ? false : pos === 0)
-                            ? 'disable'
-                            : optionalValueC[3];
-                        message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
-                            ? 'disable'
-                            : optionalValueC[4];
-                        message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 100)
-                            ? 'disable'
-                            : optionalValueC[5];
+                        if (this.config.role == 'gate') {
+                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 100)
+                                ? 'disable'
+                                : optionalValueC[3];
+                            message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
+                                ? 'disable'
+                                : optionalValueC[4];
+                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 0)
+                                ? 'disable'
+                                : optionalValueC[5];
+                        } else {
+                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 0)
+                                ? 'disable'
+                                : optionalValueC[3];
+                            message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
+                                ? 'disable'
+                                : optionalValueC[4];
+                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 100)
+                                ? 'disable'
+                                : optionalValueC[5];
+                        }
                     } else {
                         message.pos2 = typeof pos === 'boolean' ? 'disable' : String(pos);
                         message.pos2text = (await tools.getEntryTextOnOff(item.text2, true)) ?? '';

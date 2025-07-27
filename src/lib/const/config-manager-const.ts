@@ -952,7 +952,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: 'ein Lichtschalter',
         data: {
             ON_ACTUAL: {
-                role: ['switch.light', 'sensor.light'],
+                role: ['sensor.light', 'switch.light'],
                 type: 'boolean',
                 required: true,
                 writeable: false,

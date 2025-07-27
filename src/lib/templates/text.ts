@@ -2165,7 +2165,6 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-
     'text.openweathermap.windspeed': {
         role: 'text',
         type: 'text',

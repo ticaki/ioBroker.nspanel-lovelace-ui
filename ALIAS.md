@@ -113,7 +113,7 @@
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **light** | ~~ON_ACTUAL~~ | boolean| switch.light, sensor.light  | X |  |  | 
+| **light** | ~~ON_ACTUAL~~ | boolean| sensor.light, switch.light  | X |  |  | 
 | **"** | ~~SET~~ | boolean| switch.light  | X | X |  | 
 | **"** | ~~COLORDEC~~ | number| state  |  |  |  | 
 | **"** | ~~BUTTONTEXT~~ | string| text  |  |  |  | 
