@@ -245,7 +245,6 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         ON: null,
         DIMMER: null,
         TEMPERATURE: null,
-        WHITE: null,
     },
     rgbSingle: {
         RGB: null,
@@ -384,7 +383,6 @@ export type mydps =
     | 'USERICON'
     | 'VACATION'
     | 'VALUE'
-    | 'WHITE'
     | 'WINDOWOPEN'
     | 'WORKING';
 
@@ -547,7 +545,6 @@ type requiredDatapoints2 = {
             ON: Datapoint;
             DIMMER: Datapoint;
             TEMPERATURE: Datapoint;
-            WHITE: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -1009,7 +1006,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 writeable: true,
                 trigger: true,
             },
-            WHITE: { role: 'level.color.white', type: 'number', required: false, writeable: true, trigger: true },
         },
     },
     rgbSingle: {

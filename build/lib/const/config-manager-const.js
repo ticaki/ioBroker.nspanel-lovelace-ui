@@ -241,8 +241,7 @@ const checkedDatapoints = {
     ON_ACTUAL: null,
     ON: null,
     DIMMER: null,
-    TEMPERATURE: null,
-    WHITE: null
+    TEMPERATURE: null
   },
   rgbSingle: {
     RGB: null,
@@ -613,8 +612,7 @@ const requiredScriptDataPoints = {
         required: false,
         writeable: true,
         trigger: true
-      },
-      WHITE: { role: "level.color.white", type: "number", required: false, writeable: true, trigger: true }
+      }
     }
   },
   rgbSingle: {

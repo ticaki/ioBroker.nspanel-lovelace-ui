@@ -137,7 +137,6 @@
 | **"** | ~~ON~~ | boolean| switch.light  | X | X |  | 
 | **"** | ~~DIMMER~~ | number| level.dimmer  |  | X |  | 
 | **"** | ~~TEMPERATURE~~ | number| level.color.temperature  |  | X |  | 
-| **"** | ~~WHITE~~ | number| level.color.white  |  | X |  | 
 ### rgbSingle
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
