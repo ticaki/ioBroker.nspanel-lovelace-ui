@@ -242,6 +242,12 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
 
+                    const iconColor =
+                        dimmer != null
+                            ? item.icon?.true?.color
+                                ? await item.icon.true.color.getRGBValue()
+                                : Color.Yellow
+                            : null;
                     message.iconColor =
                         (colorMode === 'hue'
                             ? await tools.GetIconColor(
@@ -249,7 +255,9 @@ export class PageItem extends BaseClassTriggerd {
                                   dimmer != null ? (dimmer > 30 ? dimmer : 30) : v,
                               )
                             : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
-                        (await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
+                        (iconColor
+                            ? await tools.GetIconColor(iconColor, dimmer != null ? (dimmer > 30 ? dimmer : 30) : v)
+                            : await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
                         '';
                     if (v) {
                         message.optionalValue = '1';

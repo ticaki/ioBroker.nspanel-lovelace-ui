@@ -1189,9 +1189,9 @@ export class Panel extends BaseClass {
                 this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
                 this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
                 this.sendRules();
-                await this.adapter.delay(200);
+                await this.adapter.delay(100);
                 await this.writeInfo();
-                this.sendScreeensaverTimeout(this.timeout);
+                this.sendScreeensaverTimeout(3);
                 this.sendDimmode();
                 this.navigation.resetPosition();
                 //const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
