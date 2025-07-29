@@ -225,7 +225,10 @@ const buttonTemplates = {
           value: { type: "const", constVal: "temperature-celsius" },
           color: { type: "const", constVal: import_Color.Color.Blue }
         },
-        scale: { type: "const", constVal: { val_min: 40, val_max: 0, val_best: 25, mode: "quadriGradAnchor" } }
+        scale: {
+          type: "const",
+          constVal: { val_min: 40, val_max: -10, val_best: 25, mode: "quadriGradAnchor" }
+        }
       },
       entity1: {
         value: {
