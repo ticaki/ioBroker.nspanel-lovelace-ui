@@ -1997,7 +1997,7 @@ class ConfigManager extends import_library.BaseClass {
                 Red: role !== "rgb" ? void 0 : foundedStates[role].RED,
                 Green: role !== "rgb" ? void 0 : foundedStates[role].GREEN,
                 Blue: role !== "rgb" ? void 0 : foundedStates[role].BLUE,
-                White: role !== "rgb" ? void 0 : { value: foundedStates[role].WHITE },
+                //White: role !== 'rgb' ? undefined : { value: foundedStates[role].WHITE },
                 color: role !== "rgbSingle" ? void 0 : {
                   true: foundedStates[role].RGB
                 },

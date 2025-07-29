@@ -2317,7 +2317,7 @@ export class ConfigManager extends BaseClass {
                                 Red: role !== 'rgb' ? undefined : foundedStates[role].RED,
                                 Green: role !== 'rgb' ? undefined : foundedStates[role].GREEN,
                                 Blue: role !== 'rgb' ? undefined : foundedStates[role].BLUE,
-                                White: role !== 'rgb' ? undefined : { value: foundedStates[role].WHITE },
+                                //White: role !== 'rgb' ? undefined : { value: foundedStates[role].WHITE },
                                 color:
                                     role !== 'rgbSingle'
                                         ? undefined
