@@ -390,11 +390,11 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-sunset-up' },
-                    color: { type: 'const', constVal: { r: 255, g: 138, b: 18 } },
+                    color: { type: 'const', constVal: { r: 253, g: 251, b: 29 } },
                 },
                 false: {
                     value: { type: 'const', constVal: 'weather-sunset-down' },
-                    color: { type: 'const', constVal: { r: 255, g: 209, b: 163 } },
+                    color: { type: 'const', constVal: { r: 255, g: 138, b: 18 } },
                 },
             },
             entity1: {
@@ -1718,8 +1718,8 @@ export const textTemplates: TemplateItems = {
                             dp: ``,
                             read: `{
                                 const directions = [
-                                    "N",  "NNO", "NO",  "ONO",
-                                    "O",  "OSO", "SO",  "SSO",
+                                    "N",  "NNE", "NE",  "ENE",
+                                    "E",  "ESE", "SE",  "SSE",
                                     "S",  "SSW", "SW",  "WSW",
                                     "W",  "WNW", "NW",  "NNW"
                                 ];
@@ -1798,11 +1798,11 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-sunset-up' },
-                    color: { type: 'const', constVal: { r: 255, g: 138, b: 18 } },
+                    color: { type: 'const', constVal: { r: 253, g: 251, b: 29 } },
                 },
                 false: {
                     value: { type: 'const', constVal: 'weather-sunset-down' },
-                    color: { type: 'const', constVal: { r: 255, g: 209, b: 163 } },
+                    color: { type: 'const', constVal: { r: 255, g: 138, b: 18 } },
                 },
             },
             entity1: {
