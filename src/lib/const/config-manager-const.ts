@@ -607,7 +607,6 @@ type requiredDatapoints2 = {
     'value.temperature': {
         data: {
             ACTUAL: Datapoint;
-            USERICON: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -1116,7 +1115,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: '',
         data: {
             ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false, trigger: true },
-            USERICON: { role: 'state', type: 'string', required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
         },
     },
     thermostat: {

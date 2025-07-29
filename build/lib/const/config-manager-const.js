@@ -734,9 +734,7 @@ const requiredScriptDataPoints = {
     name: "value.temperature",
     description: "",
     data: {
-      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false, trigger: true },
-      USERICON: { role: "state", type: "string", required: false, writeable: false }
-      // benutzerdefinierter Iconname über DP senden
+      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false, trigger: true }
     }
   },
   thermostat: {
