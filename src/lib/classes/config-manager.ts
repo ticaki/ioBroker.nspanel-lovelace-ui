@@ -2723,8 +2723,8 @@ export class ConfigManager extends BaseClass {
                                 iconOff = 'motion-sensor';
                                 iconUnstable = '';
                                 adapterRole = 'iconNotText';
-                                textOn = 'on';
-                                textOff = 'off';
+                                textOn = 'motion';
+                                textOff = 'none';
                                 break;
                             }
                             case 'door': {

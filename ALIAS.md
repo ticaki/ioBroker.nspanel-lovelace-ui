@@ -232,4 +232,4 @@
 ### value.temperature
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **value.temperature** | ~~ACTUAL~~ | number| value.temperature  | X |  |  |  
+| **value.temperature** | ~~ACTUAL~~ | number| value.temperature  | X |  |  | 
