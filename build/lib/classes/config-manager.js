@@ -1771,7 +1771,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2363,8 +2363,15 @@ class ConfigManager extends import_library.BaseClass {
               }
               case "info": {
                 iconOn = "information-outline";
-                iconOff = "information-outline";
-                adapterRole = specialRole;
+                iconOff = "information-off-outline";
+                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                  const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                  if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
+                    adapterRole = "iconNotText";
+                  } else {
+                    adapterRole = specialRole;
+                  }
+                }
                 break;
               }
               case "thermostat":
@@ -2682,9 +2689,9 @@ class ConfigManager extends import_library.BaseClass {
           case "level.mode.fan": {
             let states;
             let keys;
-            if ((_o = foundedStates[role].MODE) == null ? void 0 : _o.dp) {
+            if ((_p = foundedStates[role].MODE) == null ? void 0 : _p.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_p = o == null ? void 0 : o.common) == null ? void 0 : _p.states) {
+              if ((_q = o == null ? void 0 : o.common) == null ? void 0 : _q.states) {
                 states = Object.values(o.common.states).map(String);
                 keys = Object.keys(o.common.states).map(String);
               }

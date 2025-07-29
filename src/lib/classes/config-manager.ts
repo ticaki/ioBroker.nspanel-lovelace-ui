@@ -2747,8 +2747,15 @@ export class ConfigManager extends BaseClass {
                             }
                             case 'info': {
                                 iconOn = 'information-outline';
-                                iconOff = 'information-outline';
-                                adapterRole = specialRole;
+                                iconOff = 'information-off-outline';
+                                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                                    if (o?.common?.type === 'boolean') {
+                                        adapterRole = 'iconNotText';
+                                    } else {
+                                        adapterRole = specialRole;
+                                    }
+                                }
                                 break;
                             }
                             case 'thermostat':
