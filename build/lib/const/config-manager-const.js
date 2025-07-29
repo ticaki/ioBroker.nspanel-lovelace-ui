@@ -870,8 +870,7 @@ const requiredScriptDataPoints = {
     name: "value.temperature",
     description: "",
     data: {
-      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false, trigger: true },
-      USERICON: { role: "state", type: "string", required: false, writeable: false }
+      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false, trigger: true }
     }
   }
 };
