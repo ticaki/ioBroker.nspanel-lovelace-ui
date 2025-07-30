@@ -270,6 +270,8 @@ export class PageItem extends BaseClassTriggerd {
                     let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1);
                     if (value === null) {
                         value = await tools.getValueEntryBoolean(item.entity1);
+                    } else {
+                        value = !this.adapter.config.shutterClosedIsZero ? 100 - value : value;
                     }
                     if (value === null) {
                         this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
@@ -314,6 +316,8 @@ export class PageItem extends BaseClassTriggerd {
                     let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1);
                     if (value === null) {
                         value = await tools.getValueEntryBoolean(item.entity1);
+                    } else {
+                        value = !this.adapter.config.shutterClosedIsZero ? 100 - value : value;
                     }
                     if (value === null) {
                         this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
