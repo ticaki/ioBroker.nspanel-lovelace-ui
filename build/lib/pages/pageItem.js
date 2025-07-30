@@ -227,8 +227,6 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           let value = await tools.getValueEntryNumber(item.entity1);
           if (value === null) {
             value = await tools.getValueEntryBoolean(item.entity1);
-          } else {
-            value = !this.adapter.config.shutterClosedIsZero && typeof value === "number" ? (100 - value) : value
           }
           if (value === null) {
             this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
@@ -268,8 +266,6 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           let value = await tools.getValueEntryNumber(item.entity1);
           if (value === null) {
             value = await tools.getValueEntryBoolean(item.entity1);
-          } else {
-            value = !this.adapter.config.shutterClosedIsZero && typeof value === "number" ? (100 - value) : value
           }
           if (value === null) {
             this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
@@ -1106,14 +1102,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         message.text2 = (_S = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? _S : "";
         message.text2 = this.library.getTranslation(message.text2);
         let pos2 = (_T = await tools.getValueEntryNumber(item.entity2)) != null ? _T : "disable";
-        if (typeof pos2 !== "string") {
-            pos2 = !this.adapter.config.shutterClosedIsZero && typeof pos2 === "number" ? 100 - pos2 : pos2;
-        }
         if (pos1 !== "disable") {
           pos1 = !this.adapter.config.shutterClosedIsZero && typeof pos1 === "number" ? 100 - pos1 : pos1;
           message.icon = (_U = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _U : "";
         } else if (typeof pos2 !== "string") {
-          
+          pos2 = !this.adapter.config.shutterClosedIsZero && typeof pos2 === "number" ? 100 - pos2 : pos2;
           message.icon = (_V = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _V : "";
         }
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
