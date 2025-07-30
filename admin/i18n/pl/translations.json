@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "Liczba kleszczy osi X",
     "labelFactorCardChart": "Współczynnik wykresu kart",
     "labelmaxXAxisLabels": "Liczba etykiet osi x",
-    "openLinkWikiPageChart": "Otwórz stronę Wiki dla Pagechart"
+    "openLinkWikiPageChart": "Otwórz stronę Wiki dla Pagechart",
+    "shutterClosedIsZero": "Pozycja 0 jest wyświetlana jako w pełni zamknięta (maksymalnie rozszerzona)."
 }

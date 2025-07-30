@@ -204,6 +204,17 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "shutterClosedIsZero": {
+                    "type": "checkbox",
+                    "label": "shutterClosedIsZero",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_openLinkAdapterInsatllation": {
                     "type": "sendTo",
                     "label": "openLinkAdapterInsatllation",
@@ -2913,7 +2924,7 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForDB",
-                            "customFilter": {common: {custom: '_dataSources'}},
+                            "customFilter": {"common": {"custom": "_dataSources"}},
                             "hidden": "!data.selInstanceDataSource > 0"
                             //"custom": { "influxdb.0": {   "enabled": true,}}
                         },

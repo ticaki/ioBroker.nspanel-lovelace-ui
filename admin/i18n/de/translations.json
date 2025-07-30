@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "Einteilung X-Achse",
     "labelFactorCardChart": "Wertefaktor für Diagramm",
     "labelmaxXAxisLabels": "Anzahl X-Achsen-Beschriftungen",
-    "openLinkWikiPageChart": "Wiki-Seite für PageChart öffnen"
+    "openLinkWikiPageChart": "Wiki-Seite für PageChart öffnen",
+    "shutterClosedIsZero": "Die Position von 0 wird als vollständig geschlossen angezeigt (maximal ausgefahren)."
 }

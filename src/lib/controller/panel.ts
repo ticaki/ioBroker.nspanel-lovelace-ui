@@ -1191,7 +1191,6 @@ export class Panel extends BaseClass {
                 this.sendRules();
                 await this.adapter.delay(200);
                 await this.writeInfo();
-                this.sendScreeensaverTimeout(this.timeout);
                 this.sendDimmode();
                 this.navigation.resetPosition();
                 //const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
@@ -1206,6 +1205,7 @@ export class Panel extends BaseClass {
                     }
                 }
                 await this.adapter.delay(100);
+                this.sendScreeensaverTimeout(2);
 
                 if (this.screenSaver) {
                     await this.screenSaver.createPageItems();

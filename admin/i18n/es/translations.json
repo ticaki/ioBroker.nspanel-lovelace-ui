@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "Número de garrapatas del eje X",
     "labelFactorCardChart": "Factor para la tabla de tarjetas",
     "labelmaxXAxisLabels": "Número de etiquetas de eje X",
-    "openLinkWikiPageChart": "Abra la página de wiki para pagechart"
+    "openLinkWikiPageChart": "Abra la página de wiki para pagechart",
+    "shutterClosedIsZero": "La posición de 0 se muestra como completamente cerrada (se extiende al máximo)."
 }
