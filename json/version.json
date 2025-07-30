@@ -1,8 +1,8 @@
 {
     "tasmota": "15.0.1",
-    "tft": "4.8.1",
-    "tft-us-l": "4.8.0",
-    "tft-us-p": "4.8.0",
+    "tft": "4.9.2",
+    "tft-us-l": "4.9.0",
+    "tft-us-p": "4.9.0",
     "tft-beta": "4.9.3",
     "tft-us-l-beta": "4.9.0",
     "tft-us-p-beta": "4.9.0"
