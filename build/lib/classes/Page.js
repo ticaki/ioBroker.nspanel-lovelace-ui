@@ -84,7 +84,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         }
         options = await this.getItemFromTemplate(options);
         if (!options) {
-          this.log.error(`Dont get a template for ${a}`);
+          this.log.error(`Dont get a template for ${a} in ${this.name}`);
           continue;
         }
         options.dpInit = typeof options.dpInit === "string" && options.device ? options.dpInit.replace("#\xB0^\xB0#", options.device) : options.dpInit;

@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "Кількість кліщів осі X",
     "labelFactorCardChart": "Фактор карткової діаграми",
     "labelmaxXAxisLabels": "Кількість мітків осі X",
-    "openLinkWikiPageChart": "Відкрийте сторінку Wiki для PageChart"
+    "openLinkWikiPageChart": "Відкрийте сторінку Wiki для PageChart",
+    "shutterClosedIsZero": "Положення 0 відображається як повністю закрите (максимально розширене)."
 }

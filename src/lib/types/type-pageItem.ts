@@ -87,7 +87,8 @@ export type entityUpdateDetailMessage =
           | 'iconM2Enable'
           | 'iconB2'
           | 'iconB2Color'
-          | 'iconB2Enable',
+          | 'iconB2Enable'
+          | 'shutterClosedIsZero',
           string
       > & { shutterTyp: 'shutter' })
     | ({ type: 'popupShutter' } & Record<
