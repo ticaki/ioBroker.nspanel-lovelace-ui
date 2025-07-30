@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "X轴tick数量",
     "labelFactorCardChart": "卡图的因素",
     "labelmaxXAxisLabels": "X轴标签的数量",
-    "openLinkWikiPageChart": "打开Wiki页面的PageChart"
+    "openLinkWikiPageChart": "打开Wiki页面的PageChart",
+    "shutterClosedIsZero": "0的位置显示为完全闭合（最大扩展）。"
 }

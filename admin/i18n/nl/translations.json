@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "Aantal x-as teken",
     "labelFactorCardChart": "Factor voor kaartgrafiek",
     "labelmaxXAxisLabels": "Aantal x-aslabels",
-    "openLinkWikiPageChart": "Open de wiki -pagina voor PageCart"
+    "openLinkWikiPageChart": "Open de wiki -pagina voor PageCart",
+    "shutterClosedIsZero": "De positie van 0 wordt weergegeven als volledig gesloten (maximaal verlengd)."
 }

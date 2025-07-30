@@ -1095,7 +1095,6 @@ class Panel extends import_library.BaseClass {
         this.sendRules();
         await this.adapter.delay(100);
         await this.writeInfo();
-        this.sendScreeensaverTimeout(3);
         this.sendDimmode();
         this.navigation.resetPosition();
         const popup = this.navigation.getCurrentMainPage();
@@ -1108,6 +1107,7 @@ class Panel extends import_library.BaseClass {
           }
         }
         await this.adapter.delay(100);
+        this.sendScreeensaverTimeout(2);
         if (this.screenSaver) {
           await this.screenSaver.createPageItems();
           await this.screenSaver.HandleDate();

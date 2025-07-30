@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "Número de carrapatos de eixo x",
     "labelFactorCardChart": "Fator para gráfico de cartões",
     "labelmaxXAxisLabels": "Número de etiquetas do eixo x",
-    "openLinkWikiPageChart": "Página do wiki aberto para PagChart"
+    "openLinkWikiPageChart": "Página do wiki aberto para PagChart",
+    "shutterClosedIsZero": "A posição de 0 é exibida como totalmente fechada (ao máximo)."
 }

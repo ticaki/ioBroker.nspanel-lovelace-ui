@@ -21,6 +21,7 @@ declare global {
             weekdayFormat:boolean;
             monthFormat:number;
             yearFormat: boolean;
+            shutterClosedIsZero: boolean;
             
             fixBrokenCommonTypes: boolean;
 

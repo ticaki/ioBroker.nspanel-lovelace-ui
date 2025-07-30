@@ -877,6 +877,7 @@ export class PageItem extends BaseClassTriggerd {
                     iconB2Color: '',
                     iconB2Enable: 'disable',
                     shutterTyp: 'shutter',
+                    shutterClosedIsZero: this.adapter.config.shutterClosedIsZero ? '1' : '0',
                 };
                 result = Object.assign(result, message);
                 return tools.getPayload(
@@ -902,6 +903,7 @@ export class PageItem extends BaseClassTriggerd {
                     result.iconB2Color,
                     result.iconB2Enable,
                     result.shutterTyp,
+                    result.shutterClosedIsZero,
                 );
             }
         }
@@ -1289,10 +1291,12 @@ export class PageItem extends BaseClassTriggerd {
                 message.text2 =
                     (await tools.getEntryTextOnOff(item.text, typeof pos1 === 'boolean' ? pos1 : true)) ?? '';
                 message.text2 = this.library.getTranslation(message.text2);
-                const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? 'disable';
+                let pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? 'disable';
                 if (pos1 !== 'disable') {
+                    pos1 = !this.adapter.config.shutterClosedIsZero && typeof pos1 === 'number' ? 100 - pos1 : pos1;
                     message.icon = (await tools.getIconEntryValue(item.icon, pos1, '')) ?? '';
-                } else if (pos2 !== 'disable') {
+                } else if (typeof pos2 !== 'string') {
+                    pos2 = !this.adapter.config.shutterClosedIsZero && typeof pos2 === 'number' ? 100 - pos2 : pos2;
                     message.icon = (await tools.getIconEntryValue(item.icon, pos2, '')) ?? '';
                 }
                 const optionalValue = item.valueList
@@ -1382,7 +1386,12 @@ export class PageItem extends BaseClassTriggerd {
                 if (pos1 == null) {
                     pos1 = await tools.getValueEntryBoolean(item.entity1);
                 }
-                message.pos1 = pos1 == null || typeof pos1 === 'boolean' ? 'disable' : pos1.toFixed(0);
+                message.pos1 =
+                    pos1 == null || typeof pos1 === 'boolean'
+                        ? 'disable'
+                        : this.adapter.config.shutterClosedIsZero && typeof pos1 === 'number'
+                          ? (100 - pos1).toFixed()
+                          : pos1.toFixed();
                 message.text2 =
                     (await tools.getEntryTextOnOff(item.text, typeof pos1 === 'boolean' ? pos1 : true)) ?? '';
                 message.text2 = this.library.getTranslation(message.text2);
@@ -2015,12 +2024,22 @@ export class PageItem extends BaseClassTriggerd {
              * 100 is right 0 left
              */
             case 'positionSlider': {
-                if (entry.type === 'shutter' || entry.type === 'shutter2') {
+                if (entry.type === 'shutter') {
                     const items = entry.data;
                     if (tools.ifValueEntryIs(items.entity1, 'number')) {
-                        await tools.setValueEntry(items.entity1, parseInt(value.trim()));
+                        let v = parseInt(value.trim());
+                        v = !this.adapter.config.shutterClosedIsZero ? 100 - v : v;
+                        await tools.setValueEntry(items.entity1, v);
+                    }
+                } else if (entry.type === 'shutter2') {
+                    const items = entry.data;
+                    if (tools.ifValueEntryIs(items.entity1, 'number')) {
+                        let v = parseInt(value.trim());
+                        v = this.adapter.config.shutterClosedIsZero ? 100 - v : v;
+                        await tools.setValueEntry(items.entity1, v);
                     }
                 }
+                break;
                 break;
             }
             /**
@@ -2030,7 +2049,9 @@ export class PageItem extends BaseClassTriggerd {
                 if (entry.type === 'shutter') {
                     const items = entry.data;
                     if (tools.ifValueEntryIs(items.entity2, 'number')) {
-                        await tools.setValueEntry(items.entity2, parseInt(value));
+                        let v = parseInt(value.trim());
+                        v = !this.adapter.config.shutterClosedIsZero ? 100 - v : v;
+                        await tools.setValueEntry(items.entity2, v);
                     }
                 }
                 break;

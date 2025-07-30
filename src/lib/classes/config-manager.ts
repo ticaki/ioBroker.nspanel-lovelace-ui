@@ -2467,9 +2467,9 @@ export class ConfigManager extends BaseClass {
                                     },
                                     entity2: {
                                         value: foundedStates[role].TILT_ACTUAL,
-                                        minScale: { type: 'const', constVal: item.minValueTilt ?? 100 },
+                                        minScale: { type: 'const', constVal: item.minValueTilt ?? 0 },
 
-                                        maxScale: { type: 'const', constVal: item.maxValueTilt ?? 0 },
+                                        maxScale: { type: 'const', constVal: item.maxValueTilt ?? 100 },
 
                                         set: foundedStates[role].TILT_SET,
                                     },

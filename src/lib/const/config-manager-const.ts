@@ -1054,7 +1054,14 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: 'Slider to set a numerical value',
         data: {
             SET: { role: 'level', type: 'number', required: true, writeable: true },
-            ACTUAL: { role: ['value', 'level'], type: 'number', required: false, writeable: false, trigger: true },
+            ACTUAL: {
+                role: ['value', 'level'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET',
+            },
         },
     },
     socket: {

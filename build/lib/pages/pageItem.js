@@ -764,7 +764,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           iconB2: "",
           iconB2Color: "",
           iconB2Enable: "disable",
-          shutterTyp: "shutter"
+          shutterTyp: "shutter",
+          shutterClosedIsZero: this.adapter.config.shutterClosedIsZero ? "1" : "0"
         };
         result = Object.assign(result, message);
         return tools.getPayload(
@@ -789,7 +790,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           result.iconB2,
           result.iconB2Color,
           result.iconB2Enable,
-          result.shutterTyp
+          result.shutterTyp,
+          result.shutterClosedIsZero
         );
       }
     }
@@ -1100,10 +1102,12 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         }
         message.text2 = (_S = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? _S : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos2 = (_T = await tools.getValueEntryNumber(item.entity2)) != null ? _T : "disable";
+        let pos2 = (_T = await tools.getValueEntryNumber(item.entity2)) != null ? _T : "disable";
         if (pos1 !== "disable") {
+          pos1 = !this.adapter.config.shutterClosedIsZero && typeof pos1 === "number" ? 100 - pos1 : pos1;
           message.icon = (_U = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _U : "";
-        } else if (pos2 !== "disable") {
+        } else if (typeof pos2 !== "string") {
+          pos2 = !this.adapter.config.shutterClosedIsZero && typeof pos2 === "number" ? 100 - pos2 : pos2;
           message.icon = (_V = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _V : "";
         }
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
@@ -1180,7 +1184,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         if (pos1 == null) {
           pos1 = await tools.getValueEntryBoolean(item.entity1);
         }
-        message.pos1 = pos1 == null || typeof pos1 === "boolean" ? "disable" : pos1.toFixed(0);
+        message.pos1 = pos1 == null || typeof pos1 === "boolean" ? "disable" : this.adapter.config.shutterClosedIsZero && typeof pos1 === "number" ? (100 - pos1).toFixed() : pos1.toFixed();
         message.text2 = (_Y = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? _Y : "";
         message.text2 = this.library.getTranslation(message.text2);
         message.iconT1 = import_icon_mapping.Icons.GetIcon("arrow-up");
@@ -1763,12 +1767,22 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
        * 100 is right 0 left
        */
       case "positionSlider": {
-        if (entry.type === "shutter" || entry.type === "shutter2") {
+        if (entry.type === "shutter") {
           const items = entry.data;
           if (tools.ifValueEntryIs(items.entity1, "number")) {
-            await tools.setValueEntry(items.entity1, parseInt(value.trim()));
+            let v = parseInt(value.trim());
+            v = !this.adapter.config.shutterClosedIsZero ? 100 - v : v;
+            await tools.setValueEntry(items.entity1, v);
+          }
+        } else if (entry.type === "shutter2") {
+          const items = entry.data;
+          if (tools.ifValueEntryIs(items.entity1, "number")) {
+            let v = parseInt(value.trim());
+            v = this.adapter.config.shutterClosedIsZero ? 100 - v : v;
+            await tools.setValueEntry(items.entity1, v);
           }
         }
+        break;
         break;
       }
       /**
@@ -1778,7 +1792,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         if (entry.type === "shutter") {
           const items = entry.data;
           if (tools.ifValueEntryIs(items.entity2, "number")) {
-            await tools.setValueEntry(items.entity2, parseInt(value));
+            let v = parseInt(value.trim());
+            v = !this.adapter.config.shutterClosedIsZero ? 100 - v : v;
+            await tools.setValueEntry(items.entity2, v);
           }
         }
         break;

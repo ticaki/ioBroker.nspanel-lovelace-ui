@@ -215,5 +215,6 @@
     "labelmaxXAxisTicks": "Количество клещей оси X",
     "labelFactorCardChart": "Фактор для карты карты",
     "labelmaxXAxisLabels": "Количество ярлыков оси X",
-    "openLinkWikiPageChart": "Открыть страницу вики для PageChart"
+    "openLinkWikiPageChart": "Открыть страницу вики для PageChart",
+    "shutterClosedIsZero": "Положение 0 отображается как полностью закрытое (максимально расширенное)."
 }

@@ -71,7 +71,7 @@ export class Page extends BaseClassPage {
 
                 options = await this.getItemFromTemplate(options);
                 if (!options) {
-                    this.log.error(`Dont get a template for ${a}`);
+                    this.log.error(`Dont get a template for ${a} in ${this.name}`);
                     continue;
                 }
 
