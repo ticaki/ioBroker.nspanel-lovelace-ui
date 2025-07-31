@@ -1611,9 +1611,27 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.message?.panel && this.controller?.panels) {
                         const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
                         if (panel?.screenSaver) {
-                            panel.screenSaver.headingNotification = obj.message.heading || '';
-                            panel.screenSaver.textNotification = obj.message.text || '';
-                            panel.screenSaver.sendNotify(!!obj.message.enabled);
+                            if (typeof obj.message.heading === 'string') {
+                                await panel.statesControler.setInternalState(
+                                    `${panel.name}/cmd/screensaverHeadingNotification`,
+                                    obj.message.heading,
+                                    false,
+                                );
+                            }
+                            if (typeof obj.message.text === 'string') {
+                                await panel.statesControler.setInternalState(
+                                    `${panel.name}/cmd/screensaverTextNotification`,
+                                    obj.message.text,
+                                    false,
+                                );
+                            }
+                            await panel.statesControler.setInternalState(
+                                `${panel.name}/cmd/screensaverActivateNotification`,
+                                !!obj.message.enabled,
+                                false,
+                            );
+                            //panel.screenSaver.textNotification = obj.message.text || '';
+                            //panel.screenSaver.sendNotify(!!obj.message.enabled);
                         } else {
                             this.log.warn(`Panel ${obj.message.panel} not exists!`);
                         }
