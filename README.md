@@ -86,6 +86,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) Admin option added for how shutter positions are interpreted.
+- (ticaki) add Screensaver Notifications fixed #361 3 States or `sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });` 
 
 ### 0.2.3 (2025-07-27)
 - (ticaki) openweathermap added as standard weather adapter
