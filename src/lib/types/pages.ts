@@ -199,10 +199,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'date.sunrise',
     'date.sunset',
     'weather.icon',
+    'level.mode.swing',
     '',
 ]);
 
 export type StateRole =
+    | 'level.mode.swing'
     | 'weather.icon'
     | 'date.sunrise'
     | 'date.sunset'
