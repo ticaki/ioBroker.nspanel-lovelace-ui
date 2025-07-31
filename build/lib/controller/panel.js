@@ -1491,6 +1491,10 @@ class Panel extends import_library.BaseClass {
         case "cmd/screensaverTextNotification": {
           if (this.screenSaver && typeof state.val === "string") {
             this.screenSaver.textNotification = state.val;
+            const s = this.library.readdb(`panels.${this.name}.cmd.screenSaver.activateNotification`);
+            if (s && s.val) {
+              this.screenSaver.sendNotify(true);
+            }
             await this.library.writedp(
               `panels.${this.name}.cmd.screenSaver.textNotification`,
               state.val,
@@ -1502,6 +1506,10 @@ class Panel extends import_library.BaseClass {
         case "cmd/screensaverHeadingNotification": {
           if (this.screenSaver && typeof state.val === "string") {
             this.screenSaver.headingNotification = state.val;
+            const s = this.library.readdb(`panels.${this.name}.cmd.screenSaver.activateNotification`);
+            if (s && s.val) {
+              this.screenSaver.sendNotify(true);
+            }
             await this.library.writedp(
               `panels.${this.name}.cmd.screenSaver.headingNotification`,
               state.val,
