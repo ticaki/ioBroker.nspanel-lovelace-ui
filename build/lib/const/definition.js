@@ -264,6 +264,44 @@ const genericStateObjects = {
             },
             native: {}
           },
+          headingNotification: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.headingNotification",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
+          textNotification: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.textNotification",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
+          activateNotification: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.activateNotification",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true
+            },
+            native: {}
+          },
           layout: {
             _id: "",
             type: "state",
@@ -1505,6 +1543,39 @@ const InternalStates = {
         name: "",
         type: "string",
         role: "json",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/screensaverHeadingNotification": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/screensaverTextNotification": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/screensaverActivateNotification": {
+      val: false,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
         read: true,
         write: true
       }
