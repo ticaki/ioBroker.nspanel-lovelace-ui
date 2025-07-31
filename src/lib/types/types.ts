@@ -116,6 +116,9 @@ export type InternalStatesObject = {
     noTrigger?: boolean;
 };
 export type PanelInternalCommand =
+    | 'cmd/screensaverHeadingNotification'
+    | 'cmd/screensaverTextNotification'
+    | 'cmd/screensaverActivateNotification'
     | 'cmd/screenSaverInfoIcon'
     | 'info/PopupInfo'
     | 'cmd/power2'

@@ -1606,6 +1606,28 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'screensaverNotify': {
+                    // sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });
+                    if (obj.message?.panel && this.controller?.panels) {
+                        const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
+                        if (panel?.screenSaver) {
+                            panel.screenSaver.headingNotification = obj.message.heading || '';
+                            panel.screenSaver.textNotification = obj.message.text || '';
+                            panel.screenSaver.sendNotify(!!obj.message.enabled);
+                        } else {
+                            this.log.warn(`Panel ${obj.message.panel} not exists!`);
+                        }
+                    } else {
+                        this.log.warn(
+                            `Missing panel in screensaverNotify: ${JSON.stringify(obj.message)} or controller not ready!`,
+                        );
+                    }
+                    // Send response in callback if required
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {

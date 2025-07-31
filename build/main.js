@@ -456,7 +456,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;
     if (typeof obj === "object" && obj.message) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -1361,6 +1361,26 @@ class NspanelLovelaceUi extends utils.Adapter {
               },
               obj.callback
             );
+          }
+          break;
+        }
+        case "screensaverNotify": {
+          if (((_C = obj.message) == null ? void 0 : _C.panel) && ((_D = this.controller) == null ? void 0 : _D.panels)) {
+            const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
+            if (panel == null ? void 0 : panel.screenSaver) {
+              panel.screenSaver.headingNotification = obj.message.heading || "";
+              panel.screenSaver.textNotification = obj.message.text || "";
+              panel.screenSaver.sendNotify(!!obj.message.enabled);
+            } else {
+              this.log.warn(`Panel ${obj.message.panel} not exists!`);
+            }
+          } else {
+            this.log.warn(
+              `Missing panel in screensaverNotify: ${JSON.stringify(obj.message)} or controller not ready!`
+            );
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
           }
           break;
         }

@@ -47,6 +47,8 @@ class Screensaver extends import_Page.Page {
   screensaverSwipe = false;
   _infoIcon = "";
   timoutRotation = void 0;
+  headingNotification = "";
+  textNotification = "";
   //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, options) {
     var _a, _b;
@@ -168,6 +170,18 @@ class Screensaver extends import_Page.Page {
       }
     }
     return message;
+  }
+  sendNotify(enabled) {
+    if (!this.panel.isOnline) {
+      return;
+    }
+    if (enabled) {
+      const msg = tools.getPayload("notify", this.headingNotification, this.textNotification);
+      this.sendToPanel(msg, false);
+    } else {
+      const msg = tools.getPayload("notify", "", "");
+      this.sendToPanel(msg, false);
+    }
   }
   get infoIcon() {
     return this._infoIcon;

@@ -51,6 +51,9 @@ export const genericStateObjects: {
                         common: { states: Record<types.ScreensaverModeTypeAsNumber, string> };
                     };
                     rotationTime: ioBroker.StateObject;
+                    headingNotification: ioBroker.StateObject;
+                    textNotification: ioBroker.StateObject;
+                    activateNotification: ioBroker.StateObject;
                 };
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
@@ -288,6 +291,44 @@ export const genericStateObjects: {
                             type: 'number',
                             role: 'level',
                             unit: 's',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    headingNotification: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.headingNotification',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    textNotification: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.textNotification',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    activateNotification: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.activateNotification',
+                            type: 'boolean',
+                            role: 'switch',
                             read: true,
                             write: true,
                         },
@@ -1538,6 +1579,39 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 name: '',
                 type: 'string',
                 role: 'json',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/screensaverHeadingNotification': {
+            val: '',
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'text',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/screensaverTextNotification': {
+            val: '',
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'text',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/screensaverActivateNotification': {
+            val: false,
+            ack: true,
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'switch',
                 read: true,
                 write: true,
             },

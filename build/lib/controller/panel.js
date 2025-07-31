@@ -446,6 +446,21 @@ class Panel extends import_library.BaseClass {
       this.timeout,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.timeout
     );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.headingNotification`,
+      void 0,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.headingNotification
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.textNotification`,
+      void 0,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.textNotification
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.activateNotification`,
+      false,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
+    );
     state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
     await this.library.writedp(
       `panels.${this.name}.info.nspanel.firmwareUpdate`,
@@ -941,6 +956,36 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "screenSaver.activateNotification": {
+          if (state && state.val != null) {
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screensaverActivateNotification`,
+              !!state.val,
+              false
+            );
+          }
+          break;
+        }
+        case "screenSaver.headingNotification": {
+          if (state && state.val != null && typeof state.val === "string") {
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screensaverHeadingNotification`,
+              String(state.val),
+              false
+            );
+          }
+          break;
+        }
+        case "screenSaver.textNotification": {
+          if (state && state.val != null && typeof state.val === "string") {
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screensaverTextNotification`,
+              String(state.val),
+              false
+            );
+          }
+          break;
+        }
       }
     }
   }
@@ -1135,6 +1180,11 @@ class Panel extends import_library.BaseClass {
       }
       case "buttonPress2": {
         if (event.id == "screensaver") {
+          await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.activateNotification`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
+          );
           if (this.screenSaverDoubleClick && this.screenSaver.screensaverSwipe) {
             switch (event.action) {
               case "bExit": {
@@ -1425,6 +1475,40 @@ class Panel extends import_library.BaseClass {
         }
         case "info/PopupInfo": {
           this.data["info/PopupInfo"] = state.val;
+          break;
+        }
+        case "cmd/screensaverActivateNotification": {
+          if (this.screenSaver) {
+            this.screenSaver.sendNotify(!!state.val);
+            await this.library.writedp(
+              `panels.${this.name}.cmd.screenSaver.activateNotification`,
+              !!state.val,
+              definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
+            );
+          }
+          break;
+        }
+        case "cmd/screensaverTextNotification": {
+          if (this.screenSaver && typeof state.val === "string") {
+            this.screenSaver.textNotification = state.val;
+            await this.library.writedp(
+              `panels.${this.name}.cmd.screenSaver.textNotification`,
+              state.val,
+              definition.genericStateObjects.panel.panels.cmd.screenSaver.textNotification
+            );
+          }
+          break;
+        }
+        case "cmd/screensaverHeadingNotification": {
+          if (this.screenSaver && typeof state.val === "string") {
+            this.screenSaver.headingNotification = state.val;
+            await this.library.writedp(
+              `panels.${this.name}.cmd.screenSaver.headingNotification`,
+              state.val,
+              definition.genericStateObjects.panel.panels.cmd.screenSaver.headingNotification
+            );
+          }
+          break;
         }
       }
       await this.statesControler.setInternalState(id, state.val, true);
