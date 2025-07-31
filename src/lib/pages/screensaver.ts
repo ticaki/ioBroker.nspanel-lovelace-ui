@@ -28,6 +28,8 @@ export class Screensaver extends Page {
     public screensaverSwipe: boolean = false;
     private _infoIcon: any = '';
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
+    public headingNotification: string = '';
+    public textNotification: string = '';
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (
@@ -164,6 +166,18 @@ export class Screensaver extends Page {
             }
         }
         return message;
+    }
+    sendNotify(enabled: boolean): void {
+        if (!this.panel.isOnline) {
+            return;
+        }
+        if (enabled) {
+            const msg = tools.getPayload('notify', this.headingNotification, this.textNotification);
+            this.sendToPanel(msg, false);
+        } else {
+            const msg = tools.getPayload('notify', '', '');
+            this.sendToPanel(msg, false);
+        }
     }
 
     get infoIcon(): string {
