@@ -399,6 +399,7 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd.screenSaver._channel,
         );
+
         await this.library.writedp(
             `panels.${this.name}.buttons`,
             undefined,
@@ -409,6 +410,7 @@ export class Panel extends BaseClass {
             true,
             definition.genericStateObjects.panel.panels.buttons.left,
         );
+
         await this.library.writedp(
             `panels.${this.name}.buttons.right`,
             true,
@@ -452,6 +454,16 @@ export class Panel extends BaseClass {
                 definition.genericStateObjects.panel.panels.buttons.screensaverGesture,
             );
         }
+
+        state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);
+        if (state && state.val != null) {
+            this.hideCards = !!state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.hideCards`,
+            this.hideCards,
+            definition.genericStateObjects.panel.panels.cmd.hideCards,
+        );
 
         state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
         if (state && state.val != null) {
@@ -1073,6 +1085,17 @@ export class Panel extends BaseClass {
                             `${this.name}/cmd/screensaverTextNotification`,
                             String(state.val),
                             false,
+                        );
+                    }
+                    break;
+                }
+                case 'hideCards': {
+                    if (state && state.val != null) {
+                        this.hideCards = !!state.val;
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.hideCards`,
+                            this.hideCards,
+                            definition.genericStateObjects.panel.panels.cmd.hideCards,
                         );
                     }
                     break;

@@ -275,12 +275,12 @@ class Navigation extends import_library.BaseClass {
       this.doubleClickTimeout = void 0;
       if (i && i[d] && i[d].single !== void 0) {
         const index = i[d].single;
-        void this.setPageByIndex(index);
+        void this.setPageByIndex(index, d);
         this.log.debug(`Navigation single click with target ${i[d].single} done.`);
         return;
       } else if (i && i[d] && i[d].double !== void 0) {
         const index = i[d].double;
-        void this.setPageByIndex(index);
+        void this.setPageByIndex(index, d);
         this.log.debug(`Navigation single click (use double target) with target ${i[d].double} done.`);
         return;
       }

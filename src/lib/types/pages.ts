@@ -538,6 +538,7 @@ export type PageBaseConfig = (
           uniqueID: string;
           template: Types.PageTemplateIdent;
           dpInit: string | RegExp;
+          hidden?: boolean;
       } & Partial<Omit<PageBaseConfigTemplate, 'template'>>)
 ) & {
     items?:

@@ -303,12 +303,12 @@ export class Navigation extends BaseClass {
             this.doubleClickTimeout = undefined;
             if (i && i[d] && i[d].single !== undefined) {
                 const index = i[d].single;
-                void this.setPageByIndex(index);
+                void this.setPageByIndex(index, d);
                 this.log.debug(`Navigation single click with target ${i[d].single} done.`);
                 return;
             } else if (i && i[d] && i[d].double !== undefined) {
                 const index = i[d].double;
-                void this.setPageByIndex(index);
+                void this.setPageByIndex(index, d);
                 this.log.debug(`Navigation single click (use double target) with target ${i[d].double} done.`);
                 return;
             }

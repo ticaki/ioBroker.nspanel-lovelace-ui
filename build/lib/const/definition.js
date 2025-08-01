@@ -154,6 +154,19 @@ const genericStateObjects = {
           },
           native: {}
         },
+        hideCards: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.hideCards",
+            type: "boolean",
+            role: "switch",
+            read: true,
+            write: true,
+            def: false
+          },
+          native: {}
+        },
         mainNavigationPoint: {
           _id: "",
           type: "state",
