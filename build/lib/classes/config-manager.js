@@ -1495,8 +1495,8 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: item.id,
           type: "button",
           color: {
-            true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
-            false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
             scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
@@ -1553,8 +1553,9 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: item.id,
           type: "button",
           color: {
-            true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
-            false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff)
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : { val_min: 0, val_max: 100 }
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -2431,7 +2432,10 @@ class ConfigManager extends import_library.BaseClass {
                 icon: {
                   true: {
                     value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
-                    color: await this.getIconColor(item.onColor, this.colorOn),
+                    color: await this.getIconColor(
+                      item.onColor || `${item.id}.COLORDEC`,
+                      this.colorOn
+                    ),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       value: foundedStates[role].ACTUAL,
                       unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
@@ -2440,7 +2444,10 @@ class ConfigManager extends import_library.BaseClass {
                   },
                   false: {
                     value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
-                    color: await this.getIconColor(item.offColor, this.colorOff),
+                    color: await this.getIconColor(
+                      item.offColor || `${item.id}.COLORDEC`,
+                      this.colorOff
+                    ),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       value: foundedStates[role].ACTUAL,
                       unit: item.unit ? { type: "const", constVal: item.unit } : void 0,

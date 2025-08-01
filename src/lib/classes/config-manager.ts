@@ -1714,8 +1714,8 @@ export class ConfigManager extends BaseClass {
                     dpInit: item.id,
                     type: 'button',
                     color: {
-                        true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
-                        false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
                         scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
@@ -1778,8 +1778,11 @@ export class ConfigManager extends BaseClass {
                     dpInit: item.id,
                     type: 'button',
                     color: {
-                        true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
-                        false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: Types.isIconColorScaleElement(item.colorScale)
+                            ? item.colorScale
+                            : { val_min: 0, val_max: 100 },
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2816,8 +2819,11 @@ export class ConfigManager extends BaseClass {
                                 icon: {
                                     true: {
                                         value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
+                                        color: await this.getIconColor(
+                                            item.onColor || `${item.id}.COLORDEC`,
+                                            this.colorOn,
+                                        ),
 
-                                        color: await this.getIconColor(item.onColor, this.colorOn),
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
                                                   value: foundedStates[role].ACTUAL,
@@ -2830,7 +2836,10 @@ export class ConfigManager extends BaseClass {
                                     },
                                     false: {
                                         value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
-                                        color: await this.getIconColor(item.offColor, this.colorOff),
+                                        color: await this.getIconColor(
+                                            item.offColor || `${item.id}.COLORDEC`,
+                                            this.colorOff,
+                                        ),
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
                                                   value: foundedStates[role].ACTUAL,
