@@ -81,6 +81,7 @@ export class Panel extends BaseClass {
     public initDone: boolean = false;
     public lightPopupV2: boolean = true; //  Enable Light Popup v2, created in 2025.
     public overrideLightPopup: boolean = true; //  Override light popup config type.
+    public hideCards: boolean = false;
 
     readonly buttons: panelConfigPartial['buttons'];
     readonly navigation: Navigation;
@@ -257,6 +258,7 @@ export class Panel extends BaseClass {
                 alwaysOn: pageConfig.alwaysOn,
                 adapter: this.adapter,
                 panelSend: this.panelSend,
+                hidden: pageConfig.hidden || false,
                 dpInit: pageConfig.dpInit,
             };
             switch (pageConfig.config.card) {

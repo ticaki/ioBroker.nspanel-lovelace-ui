@@ -74,6 +74,7 @@ class Navigation extends import_library.BaseClass {
   doubleClickTimeout;
   _currentItem = 0;
   initDone = false;
+  infityCounter = 0;
   get currentItem() {
     return this._currentItem;
   }
@@ -173,12 +174,28 @@ class Navigation extends import_library.BaseClass {
       }
     }
   }
-  async setPageByIndex(index) {
+  async setPageByIndex(index, d) {
     if (index !== -1 && index !== void 0) {
       const item = this.database[index];
       if (item) {
         this.currentItem = index;
-        await this.panel.setActivePage(this.database[index].page);
+        if (this.panel.hideCards && item.page.hidden) {
+          if (d) {
+            this.infityCounter++;
+            if (this.infityCounter > 10) {
+              this.log.error(
+                `Infinite loop detected in navigation: hidden - ${item.page.id} - ${item.page.name} - set navigation to main page.`
+              );
+              await this.setTargetPageByName(this.mainPage);
+              this.infityCounter = 0;
+              return;
+            }
+            this.go(d);
+          }
+          return;
+        }
+        this.infityCounter = 0;
+        await this.panel.setActivePage(item.page);
         await this.optionalActions(item);
       }
     }
@@ -241,7 +258,7 @@ class Navigation extends import_library.BaseClass {
       this.doubleClickTimeout = void 0;
       if (i && i[d] && i[d].double) {
         const index = i[d].double;
-        void this.setPageByIndex(index);
+        void this.setPageByIndex(index, d);
       }
     } else if (!single && i && i[d] && i[d].double) {
       this.doubleClickTimeout = this.adapter.setTimeout(

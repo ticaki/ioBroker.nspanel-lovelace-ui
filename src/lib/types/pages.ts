@@ -497,6 +497,7 @@ export type PageBaseConfig = (
                 device?: string;
                 alwaysOn: 'none' | 'always' | 'action' | 'ignore';
                 useColor?: boolean;
+                hidden?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 //    mediaNamespace: string;
                 config:
@@ -522,6 +523,7 @@ export type PageBaseConfig = (
                 alwaysOn: 'none' | 'always' | 'action' | 'ignore';
                 device?: string;
                 useColor?: boolean;
+                hidden?: boolean;
                 cardRole?: CardRole;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 /*&

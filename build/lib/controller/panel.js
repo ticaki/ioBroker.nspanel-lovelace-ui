@@ -82,6 +82,7 @@ class Panel extends import_library.BaseClass {
   //  Enable Light Popup v2, created in 2025.
   overrideLightPopup = true;
   //  Override light popup config type.
+  hideCards = false;
   buttons;
   navigation;
   format;
@@ -238,6 +239,7 @@ class Panel extends import_library.BaseClass {
         alwaysOn: pageConfig.alwaysOn,
         adapter: this.adapter,
         panelSend: this.panelSend,
+        hidden: pageConfig.hidden || false,
         dpInit: pageConfig.dpInit
       };
       switch (pageConfig.config.card) {
