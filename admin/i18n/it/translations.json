@@ -216,5 +216,6 @@
     "labelFactorCardChart": "Fattore per il grafico delle carte",
     "labelmaxXAxisLabels": "Numero di etichette dell'asse X",
     "openLinkWikiPageChart": "Pagina wiki aperta per PageChart",
-    "shutterClosedIsZero": "La posizione di 0 viene visualizzata come completamente chiusa (al massimo esteso)."
+    "shutterClosedIsZero": "La posizione di 0 viene visualizzata come completamente chiusa (al massimo esteso).",
+    "hideCards": "Nascondi pagine"
 }

@@ -21,6 +21,7 @@ export class Page extends BaseClassPage {
     readonly id: string;
     private lastCardCounter: number = 0;
     public readonly isScreensaver: boolean;
+    public hidden: boolean = false;
     //readonly enums: string | string[];
     config: pages.PageBaseConfig['config'];
     //config: Card['config'];
@@ -34,6 +35,7 @@ export class Page extends BaseClassPage {
         this.card = card.card;
         this.id = card.id;
         this.panel = card.panel;
+        this.hidden = pageItemsConfig && 'hidden' in pageItemsConfig ? !!pageItemsConfig.hidden : false;
         this.enums =
             pageItemsConfig && 'enums' in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : '';
         this.device =
