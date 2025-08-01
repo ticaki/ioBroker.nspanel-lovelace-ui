@@ -81,6 +81,7 @@ export class Panel extends BaseClass {
     public initDone: boolean = false;
     public lightPopupV2: boolean = true; //  Enable Light Popup v2, created in 2025.
     public overrideLightPopup: boolean = true; //  Override light popup config type.
+    public hideCards: boolean = false;
 
     readonly buttons: panelConfigPartial['buttons'];
     readonly navigation: Navigation;
@@ -257,6 +258,7 @@ export class Panel extends BaseClass {
                 alwaysOn: pageConfig.alwaysOn,
                 adapter: this.adapter,
                 panelSend: this.panelSend,
+                hidden: pageConfig.hidden || false,
                 dpInit: pageConfig.dpInit,
             };
             switch (pageConfig.config.card) {
@@ -397,6 +399,7 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd.screenSaver._channel,
         );
+
         await this.library.writedp(
             `panels.${this.name}.buttons`,
             undefined,
@@ -407,6 +410,7 @@ export class Panel extends BaseClass {
             true,
             definition.genericStateObjects.panel.panels.buttons.left,
         );
+
         await this.library.writedp(
             `panels.${this.name}.buttons.right`,
             true,
@@ -450,6 +454,16 @@ export class Panel extends BaseClass {
                 definition.genericStateObjects.panel.panels.buttons.screensaverGesture,
             );
         }
+
+        state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);
+        if (state && state.val != null) {
+            this.hideCards = !!state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.hideCards`,
+            this.hideCards,
+            definition.genericStateObjects.panel.panels.cmd.hideCards,
+        );
 
         state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
         if (state && state.val != null) {
@@ -1071,6 +1085,17 @@ export class Panel extends BaseClass {
                             `${this.name}/cmd/screensaverTextNotification`,
                             String(state.val),
                             false,
+                        );
+                    }
+                    break;
+                }
+                case 'hideCards': {
+                    if (state && state.val != null) {
+                        this.hideCards = !!state.val;
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.hideCards`,
+                            this.hideCards,
+                            definition.genericStateObjects.panel.panels.cmd.hideCards,
                         );
                     }
                     break;

@@ -467,6 +467,7 @@ export class ConfigManager extends BaseClass {
                         : 'none',
                     uniqueID: page.uniqueName || '',
                     useColor: false,
+                    hidden: page.hiddenByTrigger || false,
                     config: {
                         card: page.type,
                         data: {

@@ -94,6 +94,7 @@ export class Navigation extends BaseClass {
     private doubleClickTimeout: ioBroker.Timeout | undefined;
     private _currentItem: number = 0;
     private initDone = false;
+    private infityCounter = 0;
     public get currentItem(): number {
         return this._currentItem;
     }
@@ -196,12 +197,28 @@ export class Navigation extends BaseClass {
             }
         }
     }
-    async setPageByIndex(index: number | undefined): Promise<void> {
+    async setPageByIndex(index: number | undefined, d?: 'left' | 'right'): Promise<void> {
         if (index !== -1 && index !== undefined) {
             const item = this.database[index];
             if (item) {
                 this.currentItem = index;
-                await this.panel.setActivePage(this.database[index]!.page);
+                if (this.panel.hideCards && item.page.hidden) {
+                    if (d) {
+                        this.infityCounter++;
+                        if (this.infityCounter > 10) {
+                            this.log.error(
+                                `Infinite loop detected in navigation: hidden - ${item.page.id} - ${item.page.name} - set navigation to main page.`,
+                            );
+                            await this.setTargetPageByName(this.mainPage);
+                            this.infityCounter = 0;
+                            return;
+                        }
+                        this.go(d);
+                    }
+                    return;
+                }
+                this.infityCounter = 0;
+                await this.panel.setActivePage(item.page);
                 await this.optionalActions(item);
             }
         }
@@ -267,7 +284,7 @@ export class Navigation extends BaseClass {
             this.doubleClickTimeout = undefined;
             if (i && i[d] && i[d].double) {
                 const index = i[d].double;
-                void this.setPageByIndex(index);
+                void this.setPageByIndex(index, d);
             }
             // erster Klick und check obs ein Ziel für den 2. Klick gibt.
         } else if (!single && i && i[d] && i[d].double) {
@@ -286,12 +303,12 @@ export class Navigation extends BaseClass {
             this.doubleClickTimeout = undefined;
             if (i && i[d] && i[d].single !== undefined) {
                 const index = i[d].single;
-                void this.setPageByIndex(index);
+                void this.setPageByIndex(index, d);
                 this.log.debug(`Navigation single click with target ${i[d].single} done.`);
                 return;
             } else if (i && i[d] && i[d].double !== undefined) {
                 const index = i[d].double;
-                void this.setPageByIndex(index);
+                void this.setPageByIndex(index, d);
                 this.log.debug(`Navigation single click (use double target) with target ${i[d].double} done.`);
                 return;
             }

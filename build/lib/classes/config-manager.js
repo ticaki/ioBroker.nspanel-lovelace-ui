@@ -416,6 +416,7 @@ class ConfigManager extends import_library.BaseClass {
           alwaysOn: page.alwaysOnDisplay ? typeof page.alwaysOnDisplay === "boolean" ? "always" : "action" : "none",
           uniqueID: page.uniqueName || "",
           useColor: false,
+          hidden: page.hiddenByTrigger || false,
           config: {
             card: page.type,
             data: {

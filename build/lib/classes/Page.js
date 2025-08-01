@@ -43,6 +43,7 @@ class Page extends import_baseClassPage.BaseClassPage {
   id;
   lastCardCounter = 0;
   isScreensaver;
+  hidden = false;
   //readonly enums: string | string[];
   config;
   //config: Card['config'];
@@ -53,6 +54,7 @@ class Page extends import_baseClassPage.BaseClassPage {
     this.card = card.card;
     this.id = card.id;
     this.panel = card.panel;
+    this.hidden = pageItemsConfig && "hidden" in pageItemsConfig ? !!pageItemsConfig.hidden : false;
     this.enums = pageItemsConfig && "enums" in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : "";
     this.device = pageItemsConfig && "device" in pageItemsConfig && pageItemsConfig.device ? pageItemsConfig.device : "";
     if (this.device) {

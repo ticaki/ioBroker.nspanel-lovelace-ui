@@ -82,6 +82,7 @@ class Panel extends import_library.BaseClass {
   //  Enable Light Popup v2, created in 2025.
   overrideLightPopup = true;
   //  Override light popup config type.
+  hideCards = false;
   buttons;
   navigation;
   format;
@@ -238,6 +239,7 @@ class Panel extends import_library.BaseClass {
         alwaysOn: pageConfig.alwaysOn,
         adapter: this.adapter,
         panelSend: this.panelSend,
+        hidden: pageConfig.hidden || false,
         dpInit: pageConfig.dpInit
       };
       switch (pageConfig.config.card) {
@@ -419,6 +421,15 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     }
+    state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);
+    if (state && state.val != null) {
+      this.hideCards = !!state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.hideCards`,
+      this.hideCards,
+      definition.genericStateObjects.panel.panels.cmd.hideCards
+    );
     state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
     if (state && state.val != null) {
       this.detach.right = !!state.val;
@@ -982,6 +993,17 @@ class Panel extends import_library.BaseClass {
               `${this.name}/cmd/screensaverTextNotification`,
               String(state.val),
               false
+            );
+          }
+          break;
+        }
+        case "hideCards": {
+          if (state && state.val != null) {
+            this.hideCards = !!state.val;
+            await this.library.writedp(
+              `panels.${this.name}.cmd.hideCards`,
+              this.hideCards,
+              definition.genericStateObjects.panel.panels.cmd.hideCards
             );
           }
           break;
