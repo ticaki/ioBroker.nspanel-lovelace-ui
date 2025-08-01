@@ -698,7 +698,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   panels.push(item);
                 }
                 try {
-                  const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                  const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
                   this.log.info(
                     `Installing berry on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
                   );
@@ -779,7 +779,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (obj.message) {
             if (obj.message.tasmotaIP) {
               try {
-                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                 await import_axios.default.get(url);
                 if (obj.callback) {
