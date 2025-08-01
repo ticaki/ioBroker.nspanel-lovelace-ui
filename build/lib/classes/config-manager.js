@@ -1023,7 +1023,7 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
@@ -1317,6 +1317,12 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "gate": {
+        let tempMinScale = 100;
+        let tempMaxScale = 0;
+        if (this.adapter.config.shutterClosedIsZero) {
+          tempMinScale = 0;
+          tempMaxScale = 100;
+        }
         if (await this.checkRequiredDatapoints("gate", item, "feature")) {
           itemConfig = {
             template: "text.gate.isOpen",
@@ -1337,7 +1343,11 @@ class ConfigManager extends import_library.BaseClass {
                 true: { type: "const", constVal: "opened" },
                 false: { type: "const", constVal: "closed" }
               },
-              entity1: { value: foundedStates[role].ACTUAL },
+              entity1: {
+                value: foundedStates[role].ACTUAL,
+                minScale: { type: "const", constVal: (_a = item.minValueLevel) != null ? _a : tempMinScale },
+                maxScale: { type: "const", constVal: (_b = item.maxValueLevel) != null ? _b : tempMaxScale }
+              },
               setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
             }
           };
@@ -1531,6 +1541,12 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "blind": {
+        let tempMinScale = 100;
+        let tempMaxScale = 0;
+        if (this.adapter.config.shutterClosedIsZero) {
+          tempMinScale = 0;
+          tempMaxScale = 100;
+        }
         itemConfig = {
           template: "text.shutter.navigation",
           dpInit: item.id,
@@ -1551,8 +1567,8 @@ class ConfigManager extends import_library.BaseClass {
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
-              minScale: { type: "const", constVal: (_a = item.minValueLevel) != null ? _a : 0 },
-              maxScale: { type: "const", constVal: (_b = item.maxValueLevel) != null ? _b : 100 }
+              minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : tempMinScale },
+              maxScale: { type: "const", constVal: (_d = item.maxValueLevel) != null ? _d : tempMaxScale }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }

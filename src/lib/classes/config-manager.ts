@@ -1528,6 +1528,12 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'gate': {
+                let tempMinScale = 100;
+                let tempMaxScale = 0;
+                if (this.adapter.config.shutterClosedIsZero) {
+                    tempMinScale = 0;
+                    tempMaxScale = 100;
+                }
                 if (await this.checkRequiredDatapoints('gate', item, 'feature')) {
                     itemConfig = {
                         template: 'text.gate.isOpen',
@@ -1548,7 +1554,11 @@ export class ConfigManager extends BaseClass {
                                 true: { type: 'const', constVal: 'opened' },
                                 false: { type: 'const', constVal: 'closed' },
                             },
-                            entity1: { value: foundedStates[role].ACTUAL },
+                            entity1: {
+                                value: foundedStates[role].ACTUAL,
+                                minScale: { type: 'const', constVal: item.minValueLevel ?? tempMinScale },
+                                maxScale: { type: 'const', constVal: item.maxValueLevel ?? tempMaxScale },
+                            },
 
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
@@ -1569,6 +1579,7 @@ export class ConfigManager extends BaseClass {
                         },
                         data: {
                             entity1: { value: foundedStates[role].ACTUAL },
+
                             text: text,
                             text1: {
                                 true: { type: 'const', constVal: 'opened' },
@@ -1755,6 +1766,12 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'blind': {
+                let tempMinScale = 100;
+                let tempMaxScale = 0;
+                if (this.adapter.config.shutterClosedIsZero) {
+                    tempMinScale = 0;
+                    tempMaxScale = 100;
+                }
                 itemConfig = {
                     template: 'text.shutter.navigation',
                     dpInit: item.id,
@@ -1775,8 +1792,8 @@ export class ConfigManager extends BaseClass {
                         text: text,
                         entity1: {
                             value: foundedStates[role].ACTUAL,
-                            minScale: { type: 'const', constVal: item.minValueLevel ?? 0 },
-                            maxScale: { type: 'const', constVal: item.maxValueLevel ?? 100 },
+                            minScale: { type: 'const', constVal: item.minValueLevel ?? tempMinScale },
+                            maxScale: { type: 'const', constVal: item.maxValueLevel ?? tempMaxScale },
                         },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
