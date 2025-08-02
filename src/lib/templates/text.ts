@@ -43,12 +43,12 @@ export const textTemplates: TemplateItems = {
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'window-open-variant' },
-                    color: { type: 'const', constVal: Color.Cyan },
+                    value: { type: 'const', constVal: 'window-closed-variant' },
+                    color: { type: 'const', constVal: Color.close },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'window-closed-variant' },
-                    color: { type: 'const', constVal: Color.Green },
+                    value: { type: 'const', constVal: 'window-open-variant' },
+                    color: { type: 'const', constVal: Color.open },
                 },
             },
             entity1: {
@@ -65,8 +65,8 @@ export const textTemplates: TemplateItems = {
                 false: undefined,
             },
             text1: {
-                true: { type: 'const', constVal: 'opened' },
-                false: { type: 'const', constVal: 'closed' },
+                true: { type: 'const', constVal: 'closed' },
+                false: { type: 'const', constVal: 'opened' },
             },
         },
     },
@@ -94,7 +94,7 @@ export const textTemplates: TemplateItems = {
                     value: { type: 'const', constVal: 'temperature-celsius' },
                     color: { type: 'const', constVal: Color.Blue },
                 },
-                scale: { type: 'const', constVal: { min: 0, max: 30 } },
+                scale: { type: 'const', constVal: { val_min: 40, val_max: 0, val_best: 25, mode: 'quadriGradAnchor' } },
             },
             entity1: {
                 value: {
@@ -905,7 +905,6 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-
     'text.accuweather.windspeed': {
         role: 'text',
         type: 'text',
@@ -1329,7 +1328,7 @@ export const textTemplates: TemplateItems = {
                 },
             },
             text: {
-                true: { type: 'const', constVal: 'door' },
+                true: { type: 'const', constVal: 'gate' },
                 false: undefined,
             },
             text1: {
@@ -1382,18 +1381,18 @@ export const textTemplates: TemplateItems = {
                     color: {
                         mode: 'auto',
                         role: 'state',
-                        type: 'state',
+                        type: 'triggered',
                         dp: '',
                         regexp: /\.COLORDEC$/,
                         def: Color.activated,
                     },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'information-outline' },
+                    value: { type: 'const', constVal: 'information-off-outline' },
                     color: {
                         mode: 'auto',
                         role: 'state',
-                        type: 'state',
+                        type: 'triggered',
                         dp: '',
                         regexp: /\.COLORDEC$/,
                         def: Color.deactivated,
@@ -1406,6 +1405,14 @@ export const textTemplates: TemplateItems = {
 
             text: {
                 true: { mode: 'auto', role: 'state', type: 'triggered', dp: '', regexp: /\.BUTTONTEXT$/, def: 'info' },
+                false: {
+                    mode: 'auto',
+                    role: 'text',
+                    type: 'triggered',
+                    dp: '',
+                    regexp: /\.BUTTONTEXTOFF$/,
+                    def: 'info_off',
+                },
             },
             text1: {
                 true: { mode: 'auto', role: 'state', type: 'triggered', dp: '', regexp: /\.ACTUAL$/, def: 'info' },
@@ -1419,36 +1426,36 @@ export const textTemplates: TemplateItems = {
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'gesture-tap-button' },
-                    color: {
-                        mode: 'auto',
-                        role: 'value.warning',
-                        type: 'state',
-                        dp: '',
-                        regexp: /\.LEVEL$/,
-                        def: Color.deactivated,
-                    },
+                    value: { type: 'const', constVal: 'alert-outline' },
+                    color: { type: 'const', constVal: Color.Yellow },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'gesture-tap-button' },
-                    color: {
-                        mode: 'auto',
-                        role: 'value.warning',
-                        type: 'state',
-                        dp: '',
-                        regexp: /\.LEVEL$/,
-                        def: Color.deactivated,
-                    },
-                },
+                false: undefined,
+                scale: { type: 'const', constVal: { val_min: 4, val_max: 0, mode: 'triGrad' } },
             },
-            entity1: undefined,
+            entity1: {
+                value: { mode: 'auto', role: 'value.warning', type: 'triggered', dp: '', regexp: /\.LEVEL$/, def: 0 },
+            },
             text: {
-                true: { type: 'const', constVal: 'window' },
+                true: {
+                    mode: 'auto',
+                    role: 'weather.title.short',
+                    type: 'triggered',
+                    dp: '',
+                    regexp: /\.TITLE$/,
+                    def: 'title',
+                },
                 false: undefined,
             },
             text1: {
-                true: { type: 'const', constVal: 'opened' },
-                false: { type: 'const', constVal: 'closed' },
+                true: {
+                    mode: 'auto',
+                    role: 'weather.title',
+                    type: 'triggered',
+                    dp: '',
+                    regexp: /\.INFO$/,
+                    def: 'info',
+                },
+                false: undefined,
             },
         },
     },
@@ -2158,7 +2165,6 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-
     'text.openweathermap.windspeed': {
         role: 'text',
         type: 'text',

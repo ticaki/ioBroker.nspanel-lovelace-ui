@@ -242,6 +242,12 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
 
+                    const iconColor =
+                        dimmer != null
+                            ? item.icon?.true?.color
+                                ? await item.icon.true.color.getRGBValue()
+                                : Color.Yellow
+                            : null;
                     message.iconColor =
                         (colorMode === 'hue'
                             ? await tools.GetIconColor(
@@ -249,7 +255,9 @@ export class PageItem extends BaseClassTriggerd {
                                   dimmer != null ? (dimmer > 30 ? dimmer : 30) : v,
                               )
                             : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
-                        (await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
+                        (iconColor
+                            ? await tools.GetIconColor(iconColor, dimmer != null ? (dimmer > 30 ? dimmer : 30) : v)
+                            : await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
                         '';
                     if (v) {
                         message.optionalValue = '1';
@@ -1334,15 +1342,27 @@ export class PageItem extends BaseClassTriggerd {
                         message.iconL1 = optionalValueC[0];
                         message.iconM1 = optionalValueC[1];
                         message.iconR1 = optionalValueC[2];
-                        message.statusL1 = (typeof pos === 'boolean' ? false : pos === 0)
-                            ? 'disable'
-                            : optionalValueC[3];
-                        message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
-                            ? 'disable'
-                            : optionalValueC[4];
-                        message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 100)
-                            ? 'disable'
-                            : optionalValueC[5];
+                        if (this.config.role == 'gate') {
+                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 100)
+                                ? 'disable'
+                                : optionalValueC[3];
+                            message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
+                                ? 'disable'
+                                : optionalValueC[4];
+                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 0)
+                                ? 'disable'
+                                : optionalValueC[5];
+                        } else {
+                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 0)
+                                ? 'disable'
+                                : optionalValueC[3];
+                            message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
+                                ? 'disable'
+                                : optionalValueC[4];
+                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 100)
+                                ? 'disable'
+                                : optionalValueC[5];
+                        }
                     } else {
                         message.pos2 = typeof pos === 'boolean' ? 'disable' : String(pos);
                         message.pos2text = (await tools.getEntryTextOnOff(item.text2, true)) ?? '';
@@ -2342,7 +2362,11 @@ export class PageItem extends BaseClassTriggerd {
                     list = [];
                 }
                 if (Array.isArray(list) && list.length > parseInt(value)) {
-                    await item.entityInSel.value.setStateAsync(value);
+                    if (item.entityInSel.set) {
+                        await item.entityInSel.set.setStateAsync(value);
+                    } else {
+                        await item.entityInSel.value.setStateAsync(value);
+                    }
                     return true;
                 }
             }

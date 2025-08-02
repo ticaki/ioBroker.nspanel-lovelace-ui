@@ -83,7 +83,6 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **door** | ~~ACTUAL~~ | boolean| sensor.door  | X |  |  | 
-| **"** | ~~COLORDEC~~ | number| state  |  |  |  | 
 | **"** | ~~BUTTONTEXT~~ | string| state, text  |  |  |  | 
 ### gate
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
@@ -115,7 +114,6 @@
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **light** | ~~ON_ACTUAL~~ | boolean| sensor.light, switch.light  | X |  |  | 
 | **"** | ~~SET~~ | boolean| switch.light  | X | X |  | 
-| **"** | ~~COLORDEC~~ | number| state  |  |  |  | 
 | **"** | ~~BUTTONTEXT~~ | string| text  |  |  |  | 
 ### lock
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
@@ -160,7 +158,6 @@
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **socket** | ~~ACTUAL~~ | boolean| sensor.switch  |  |  |  | 
 | **"** | ~~SET~~ | boolean| switch  | X | X |  | 
-| **"** | ~~COLORDEC~~ | number| state  |  |  |  | 
 | **"** | ~~BUTTONTEXT~~ | string| state, text  |  |  |  | 
 ### temperature
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
@@ -204,7 +201,6 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **window** | ~~ACTUAL~~ | boolean| sensor.window  | X |  |  | 
-| **"** | ~~COLORDEC~~ | number| state  |  |  |  | 
 | **"** | ~~BUTTONTEXT~~ | string| state, text  |  |  |  | 
 ### level.mode.fan
 | Channel role | State ID | common.type | common.role | required | common.write | description |  

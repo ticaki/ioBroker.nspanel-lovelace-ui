@@ -1024,7 +1024,7 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
@@ -1102,7 +1102,7 @@ class ConfigManager extends import_library.BaseClass {
           }
         }
         icon = item.icon || icon || "power";
-        icon2 = item.icon2 || icon2 || icon || "power-standby";
+        icon2 = item.icon2 || icon2 || "power-standby";
         const tempItem = {
           type: "button",
           role: "button",
@@ -1258,7 +1258,10 @@ class ConfigManager extends import_library.BaseClass {
                   textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                 }
               },
-              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : {
+                type: "const",
+                constVal: { val_min: 0, val_max: 100, val_best: 50, mode: "triGrad" }
+              }
             },
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -1315,6 +1318,12 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "gate": {
+        let tempMinScale = 100;
+        let tempMaxScale = 0;
+        if (this.adapter.config.shutterClosedIsZero) {
+          tempMinScale = 0;
+          tempMaxScale = 100;
+        }
         if (await this.checkRequiredDatapoints("gate", item, "feature")) {
           itemConfig = {
             template: "text.gate.isOpen",
@@ -1335,7 +1344,11 @@ class ConfigManager extends import_library.BaseClass {
                 true: { type: "const", constVal: "opened" },
                 false: { type: "const", constVal: "closed" }
               },
-              entity1: { value: foundedStates[role].ACTUAL },
+              entity1: {
+                value: foundedStates[role].ACTUAL,
+                minScale: { type: "const", constVal: (_a = item.minValueLevel) != null ? _a : tempMinScale },
+                maxScale: { type: "const", constVal: (_b = item.maxValueLevel) != null ? _b : tempMaxScale }
+              },
               setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
             }
           };
@@ -1491,8 +1504,6 @@ class ConfigManager extends import_library.BaseClass {
             false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
-            entity1: { value: foundedStates[role].INFO },
-            text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
@@ -1531,6 +1542,12 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "blind": {
+        let tempMinScale = 100;
+        let tempMaxScale = 0;
+        if (this.adapter.config.shutterClosedIsZero) {
+          tempMinScale = 0;
+          tempMaxScale = 100;
+        }
         itemConfig = {
           template: "text.shutter.navigation",
           dpInit: item.id,
@@ -1552,8 +1569,8 @@ class ConfigManager extends import_library.BaseClass {
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
-              minScale: { type: "const", constVal: (_a = item.minValueLevel) != null ? _a : 0 },
-              maxScale: { type: "const", constVal: (_b = item.maxValueLevel) != null ? _b : 100 }
+              minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : tempMinScale },
+              maxScale: { type: "const", constVal: (_d = item.maxValueLevel) != null ? _d : tempMaxScale }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1567,6 +1584,7 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           dpInit: item.id,
           role: "",
+          template: "button.select",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1576,7 +1594,6 @@ class ConfigManager extends import_library.BaseClass {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
             false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
-          template: "button.select",
           data: {
             entity1: {
               value: foundedStates[role].ACTUAL
@@ -1593,7 +1610,7 @@ class ConfigManager extends import_library.BaseClass {
           template: "text.lock",
           dpInit: item.id,
           type: "button",
-          role: "button",
+          role: "",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1605,10 +1622,8 @@ class ConfigManager extends import_library.BaseClass {
           },
           data: {
             text,
-            entity1: {
-              value: foundedStates[role].ACTUAL,
-              set: foundedStates[role].SET
-            }
+            entity1: foundedStates[role].ACTUAL ? { value: foundedStates[role].ACTUAL } : { value: foundedStates[role].SET },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
         break;
@@ -1774,7 +1789,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -1825,23 +1840,30 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "socket": {
+            let icon;
+            let icon2;
+            if (item.role) {
+              switch (item.role) {
+                case "socket": {
+                  icon = "power-socket-de";
+                  icon2 = "power-socket-de";
+                  break;
+                }
+              }
+            }
+            icon = item.icon || icon || "power";
+            icon2 = item.icon2 || icon2 || "power-standby";
             const tempItem = {
               type: "switch",
               role: "",
               data: {
                 icon: {
                   true: {
-                    value: {
-                      type: "const",
-                      constVal: item.icon || "power-socket-de"
-                    },
+                    value: { type: "const", constVal: icon },
                     color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
-                    value: {
-                      type: "const",
-                      constVal: item.icon2 || "power-socket-de"
-                    },
+                    value: { type: "const", constVal: icon2 },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
                   scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
@@ -2328,14 +2350,15 @@ class ConfigManager extends import_library.BaseClass {
             let textOff = void 0;
             let adapterRole = "";
             let commonUnit = "";
+            let scaleVal = {};
             switch (role) {
               case "motion": {
                 iconOn = "motion-sensor";
                 iconOff = "motion-sensor";
                 iconUnstable = "";
                 adapterRole = "iconNotText";
-                textOn = "on";
-                textOff = "off";
+                textOn = "motion";
+                textOff = "none";
                 break;
               }
               case "door": {
@@ -2358,8 +2381,15 @@ class ConfigManager extends import_library.BaseClass {
               }
               case "info": {
                 iconOn = "information-outline";
-                iconOff = "information-outline";
-                adapterRole = specialRole;
+                iconOff = "information-off-outline";
+                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                  const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                  if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
+                    adapterRole = "iconNotText";
+                  } else {
+                    adapterRole = specialRole;
+                  }
+                }
                 break;
               }
               case "thermostat":
@@ -2376,6 +2406,7 @@ class ConfigManager extends import_library.BaseClass {
                     commonUnit = o.common.unit;
                   }
                 }
+                scaleVal = { val_min: 40, val_max: -10, val_best: 25, mode: "quadriGradAnchor" };
                 break;
               }
               case "value.humidity":
@@ -2390,6 +2421,7 @@ class ConfigManager extends import_library.BaseClass {
                     commonUnit = o.common.unit;
                   }
                 }
+                scaleVal = { val_min: 0, val_max: 100, val_best: 50, mode: "triGrad" };
                 break;
               }
             }
@@ -2425,7 +2457,7 @@ class ConfigManager extends import_library.BaseClass {
                   unstable: {
                     value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable)
                   },
-                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : { type: "const", constVal: scaleVal },
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -2502,7 +2534,7 @@ class ConfigManager extends import_library.BaseClass {
                   value: foundedStates[role].ACTUAL,
                   set: foundedStates[role].SET
                 },
-                text: { true: { type: "const", constVal: "press" } },
+                text: { true: foundedStates[role].ACTUAL },
                 valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
                 icon: {
                   true: {
@@ -2524,11 +2556,6 @@ class ConfigManager extends import_library.BaseClass {
             itemConfig = {
               type: "shutter",
               role: "",
-              color: {
-                true: await this.getIconColor(item.onColor, this.colorOn),
-                false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
-              },
               icon: {
                 true: item.icon ? { type: "const", constVal: item.icon } : void 0,
                 false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
@@ -2536,13 +2563,15 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: await this.getFieldAsDataItemConfig(item.icon || "lock-open-variant")
+                    value: await this.getFieldAsDataItemConfig(item.icon || "lock-open-variant"),
+                    color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
                       constVal: item.icon2 || "lock"
-                    }
+                    },
+                    color: await this.getIconColor(item.offColor, this.colorOff)
                   }
                 },
                 text: {
@@ -2616,26 +2645,21 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "warning": {
             itemConfig = {
-              role: "timer",
-              type: "timer",
-              dpInit: "",
+              template: "text.warning",
+              role: "text",
+              type: "text",
+              dpInit: item.id,
               data: {
                 icon: {
                   true: {
-                    value: { type: "const", constVal: item.icon || "timer" },
+                    value: { type: "const", constVal: item.icon || "alert-decagram-outline" },
                     color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
-                    value: { type: "const", constVal: item.icon2 || "timer" },
+                    value: { type: "const", constVal: item.icon2 || "alert-decagram-outline" },
                     color: await this.getIconColor(item.offColor, this.colorOff)
-                  },
-                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
-                  maxBri: void 0,
-                  minBri: void 0
-                },
-                entity1: foundedStates[role].ACTUAL ? { value: foundedStates[role].ACTUAL } : void 0,
-                headline: { type: "const", constVal: "Timer" },
-                setValue1: foundedStates[role].ACTUAL
+                  }
+                }
               }
             };
             break;
@@ -2689,9 +2713,9 @@ class ConfigManager extends import_library.BaseClass {
           case "level.mode.fan": {
             let states;
             let keys;
-            if ((_o = foundedStates[role].MODE) == null ? void 0 : _o.dp) {
+            if ((_p = foundedStates[role].MODE) == null ? void 0 : _p.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_p = o == null ? void 0 : o.common) == null ? void 0 : _p.states) {
+              if ((_q = o == null ? void 0 : o.common) == null ? void 0 : _q.states) {
                 states = Object.values(o.common.states).map(String);
                 keys = Object.keys(o.common.states).map(String);
               }

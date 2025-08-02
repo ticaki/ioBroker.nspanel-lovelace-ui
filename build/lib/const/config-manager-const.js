@@ -196,7 +196,6 @@ const checkedDatapoints = {
   },
   door: {
     ACTUAL: null,
-    COLORDEC: null,
     BUTTONTEXT: null
   },
   gate: {
@@ -223,7 +222,6 @@ const checkedDatapoints = {
   light: {
     ON_ACTUAL: null,
     SET: null,
-    COLORDEC: null,
     BUTTONTEXT: null
   },
   lock: {
@@ -261,7 +259,6 @@ const checkedDatapoints = {
   socket: {
     ACTUAL: null,
     SET: null,
-    COLORDEC: null,
     BUTTONTEXT: null
   },
   temperature: {
@@ -299,7 +296,6 @@ const checkedDatapoints = {
   },
   window: {
     ACTUAL: null,
-    COLORDEC: null,
     BUTTONTEXT: null
   },
   "level.mode.fan": {
@@ -473,7 +469,6 @@ const requiredScriptDataPoints = {
     description: "",
     data: {
       ACTUAL: { role: "sensor.door", type: "boolean", required: true, writeable: false, trigger: true },
-      COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false, trigger: true }
     }
   },
@@ -563,7 +558,6 @@ const requiredScriptDataPoints = {
         alternate: "SET"
       },
       SET: { role: "switch.light", type: "boolean", required: true, writeable: true },
-      COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       BUTTONTEXT: { role: "text", type: "string", required: false, writeable: false, trigger: true }
     }
   },
@@ -685,7 +679,6 @@ const requiredScriptDataPoints = {
         alternate: "SET"
       },
       SET: { role: "switch", type: "boolean", required: true, writeable: true },
-      COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false, trigger: true }
     }
   },
@@ -800,7 +793,6 @@ const requiredScriptDataPoints = {
     description: "",
     data: {
       ACTUAL: { role: "sensor.window", type: "boolean", required: true, writeable: false, trigger: true },
-      COLORDEC: { role: "state", type: "number", required: false, writeable: false },
       BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false }
     }
   },

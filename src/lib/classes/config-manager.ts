@@ -1283,7 +1283,7 @@ export class ConfigManager extends BaseClass {
                     }
                 }
                 icon = item.icon || icon || 'power';
-                icon2 = item.icon2 || icon2 || icon || 'power-standby';
+                icon2 = item.icon2 || icon2 || 'power-standby';
                 const tempItem: typePageItem.PageItemDataItemsOptions = {
                     type: 'button',
                     role: 'button',
@@ -1457,7 +1457,10 @@ export class ConfigManager extends BaseClass {
                             },
                             scale: Types.isIconColorScaleElement(item.colorScale)
                                 ? { type: 'const', constVal: item.colorScale }
-                                : undefined,
+                                : {
+                                      type: 'const',
+                                      constVal: { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' },
+                                  },
                         },
                         text: text,
 
@@ -1526,6 +1529,12 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'gate': {
+                let tempMinScale = 100;
+                let tempMaxScale = 0;
+                if (this.adapter.config.shutterClosedIsZero) {
+                    tempMinScale = 0;
+                    tempMaxScale = 100;
+                }
                 if (await this.checkRequiredDatapoints('gate', item, 'feature')) {
                     itemConfig = {
                         template: 'text.gate.isOpen',
@@ -1546,7 +1555,11 @@ export class ConfigManager extends BaseClass {
                                 true: { type: 'const', constVal: 'opened' },
                                 false: { type: 'const', constVal: 'closed' },
                             },
-                            entity1: { value: foundedStates[role].ACTUAL },
+                            entity1: {
+                                value: foundedStates[role].ACTUAL,
+                                minScale: { type: 'const', constVal: item.minValueLevel ?? tempMinScale },
+                                maxScale: { type: 'const', constVal: item.maxValueLevel ?? tempMaxScale },
+                            },
 
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
@@ -1567,6 +1580,7 @@ export class ConfigManager extends BaseClass {
                         },
                         data: {
                             entity1: { value: foundedStates[role].ACTUAL },
+
                             text: text,
                             text1: {
                                 true: { type: 'const', constVal: 'opened' },
@@ -1709,9 +1723,6 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
-                        entity1: { value: foundedStates[role].INFO },
-                        text: text,
-
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -1756,6 +1767,12 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'blind': {
+                let tempMinScale = 100;
+                let tempMaxScale = 0;
+                if (this.adapter.config.shutterClosedIsZero) {
+                    tempMinScale = 0;
+                    tempMaxScale = 100;
+                }
                 itemConfig = {
                     template: 'text.shutter.navigation',
                     dpInit: item.id,
@@ -1779,8 +1796,8 @@ export class ConfigManager extends BaseClass {
                         text: text,
                         entity1: {
                             value: foundedStates[role].ACTUAL,
-                            minScale: { type: 'const', constVal: item.minValueLevel ?? 0 },
-                            maxScale: { type: 'const', constVal: item.maxValueLevel ?? 100 },
+                            minScale: { type: 'const', constVal: item.minValueLevel ?? tempMinScale },
+                            maxScale: { type: 'const', constVal: item.maxValueLevel ?? tempMaxScale },
                         },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -1794,6 +1811,7 @@ export class ConfigManager extends BaseClass {
                     type: 'button',
                     dpInit: item.id,
                     role: '',
+                    template: 'button.select',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1803,7 +1821,6 @@ export class ConfigManager extends BaseClass {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
-                    template: 'button.select',
                     data: {
                         entity1: {
                             value: foundedStates[role].ACTUAL,
@@ -1821,7 +1838,7 @@ export class ConfigManager extends BaseClass {
                     template: 'text.lock',
                     dpInit: item.id,
                     type: 'button',
-                    role: 'button',
+                    role: '',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1833,10 +1850,10 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         text: text,
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                            set: foundedStates[role].SET,
-                        },
+                        entity1: foundedStates[role].ACTUAL
+                            ? { value: foundedStates[role].ACTUAL }
+                            : { value: foundedStates[role].SET },
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
                 break;
@@ -2112,23 +2129,30 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'socket': {
+                        let icon: AllIcons | undefined;
+                        let icon2: AllIcons | undefined;
+                        if (item.role) {
+                            switch (item.role) {
+                                case 'socket': {
+                                    icon = 'power-socket-de';
+                                    icon2 = 'power-socket-de';
+                                    break;
+                                }
+                            }
+                        }
+                        icon = item.icon || icon || 'power';
+                        icon2 = item.icon2 || icon2 || 'power-standby';
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'switch',
                             role: '',
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || 'power-socket-de',
-                                        },
+                                        value: { type: 'const', constVal: icon },
                                         color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || 'power-socket-de',
-                                        },
+                                        value: { type: 'const', constVal: icon2 },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
                                     scale: Types.isIconColorScaleElement(item.colorScale)
@@ -2713,14 +2737,15 @@ export class ConfigManager extends BaseClass {
                         let textOff: undefined | string = undefined;
                         let adapterRole: pages.DeviceRole = '';
                         let commonUnit = '';
+                        let scaleVal = {};
                         switch (role) {
                             case 'motion': {
                                 iconOn = 'motion-sensor';
                                 iconOff = 'motion-sensor';
                                 iconUnstable = '';
                                 adapterRole = 'iconNotText';
-                                textOn = 'on';
-                                textOff = 'off';
+                                textOn = 'motion';
+                                textOff = 'none';
                                 break;
                             }
                             case 'door': {
@@ -2743,8 +2768,15 @@ export class ConfigManager extends BaseClass {
                             }
                             case 'info': {
                                 iconOn = 'information-outline';
-                                iconOff = 'information-outline';
-                                adapterRole = specialRole;
+                                iconOff = 'information-off-outline';
+                                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                                    if (o?.common?.type === 'boolean') {
+                                        adapterRole = 'iconNotText';
+                                    } else {
+                                        adapterRole = specialRole;
+                                    }
+                                }
                                 break;
                             }
                             case 'thermostat':
@@ -2761,6 +2793,7 @@ export class ConfigManager extends BaseClass {
                                         commonUnit = o.common.unit;
                                     }
                                 }
+                                scaleVal = { val_min: 40, val_max: -10, val_best: 25, mode: 'quadriGradAnchor' };
                                 break;
                             }
                             case 'value.humidity':
@@ -2775,6 +2808,7 @@ export class ConfigManager extends BaseClass {
                                         commonUnit = o.common.unit;
                                     }
                                 }
+                                scaleVal = { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' };
                                 break;
                             }
                         }
@@ -2821,7 +2855,7 @@ export class ConfigManager extends BaseClass {
                                     },
                                     scale: Types.isIconColorScaleElement(item.colorScale)
                                         ? { type: 'const', constVal: item.colorScale }
-                                        : undefined,
+                                        : { type: 'const', constVal: scaleVal },
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
@@ -2913,7 +2947,7 @@ export class ConfigManager extends BaseClass {
                                     value: foundedStates[role].ACTUAL,
                                     set: foundedStates[role].SET,
                                 },
-                                text: { true: { type: 'const', constVal: 'press' } },
+                                text: { true: foundedStates[role].ACTUAL },
                                 valueList: item.modeList ? { type: 'const', constVal: item.modeList } : undefined,
                                 icon: {
                                     true: {
@@ -2936,11 +2970,6 @@ export class ConfigManager extends BaseClass {
                         itemConfig = {
                             type: 'shutter',
                             role: '',
-                            color: {
-                                true: await this.getIconColor(item.onColor, this.colorOn),
-                                false: await this.getIconColor(item.offColor, this.colorOff),
-                                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                            },
                             icon: {
                                 true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
                                 false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
@@ -2949,6 +2978,7 @@ export class ConfigManager extends BaseClass {
                                 icon: {
                                     true: {
                                         value: await this.getFieldAsDataItemConfig(item.icon || 'lock-open-variant'),
+                                        color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
 
                                     false: {
@@ -2956,6 +2986,7 @@ export class ConfigManager extends BaseClass {
                                             type: 'const',
                                             constVal: item.icon2 || 'lock',
                                         },
+                                        color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
                                 },
                                 text: {
@@ -3039,30 +3070,22 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'warning': {
                         itemConfig = {
-                            role: 'timer',
-                            type: 'timer',
-                            dpInit: '',
+                            template: 'text.warning',
+                            role: 'text',
+                            type: 'text',
+                            dpInit: item.id,
 
                             data: {
                                 icon: {
                                     true: {
-                                        value: { type: 'const', constVal: item.icon || 'timer' },
+                                        value: { type: 'const', constVal: item.icon || 'alert-decagram-outline' },
                                         color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
                                     false: {
-                                        value: { type: 'const', constVal: item.icon2 || 'timer' },
+                                        value: { type: 'const', constVal: item.icon2 || 'alert-decagram-outline' },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
-                                    scale: Types.isIconColorScaleElement(item.colorScale)
-                                        ? { type: 'const', constVal: item.colorScale }
-                                        : undefined,
-                                    maxBri: undefined,
-                                    minBri: undefined,
                                 },
-                                entity1: foundedStates[role].ACTUAL ? { value: foundedStates[role].ACTUAL } : undefined,
-                                headline: { type: 'const', constVal: 'Timer' },
-
-                                setValue1: foundedStates[role].ACTUAL,
                             },
                         };
                         break;

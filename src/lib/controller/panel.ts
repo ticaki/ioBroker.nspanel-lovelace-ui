@@ -1260,7 +1260,7 @@ export class Panel extends BaseClass {
                 this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
                 this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
                 this.sendRules();
-                await this.adapter.delay(200);
+                await this.adapter.delay(100);
                 await this.writeInfo();
                 this.sendDimmode();
                 this.navigation.resetPosition();

@@ -213,7 +213,10 @@ export const buttonTemplates: TemplateItems = {
                     value: { type: 'const', constVal: 'temperature-celsius' },
                     color: { type: 'const', constVal: Color.Blue },
                 },
-                scale: { type: 'const', constVal: { min: 0, max: 30 } },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 40, val_max: -10, val_best: 25, mode: 'quadriGradAnchor' },
+                },
             },
             entity1: {
                 value: {
@@ -433,17 +436,24 @@ export const buttonTemplates: TemplateItems = {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: ['value.mode.select', 'level.mode.select'],
+                    role: ['value.mode.select'],
                     dp: '',
                 },
-                unit: { type: 'const', constVal: '%' },
+                set: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['level.mode.select'],
+                    dp: '',
+                },
             },
             text: {
                 true: { type: 'const', constVal: 'Select' },
                 false: undefined,
             },
             text1: {
+                //true:  { type: 'triggered', mode: 'auto', role: ['value.mode.select'], dp: '' },
                 true: { type: 'const', constVal: 'press' },
+                false: undefined,
             },
         },
     },

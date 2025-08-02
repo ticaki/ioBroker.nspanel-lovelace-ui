@@ -199,7 +199,6 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     },
     door: {
         ACTUAL: null,
-        COLORDEC: null,
         BUTTONTEXT: null,
     },
     gate: {
@@ -226,7 +225,6 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     light: {
         ON_ACTUAL: null,
         SET: null,
-        COLORDEC: null,
         BUTTONTEXT: null,
     },
     lock: {
@@ -264,7 +262,6 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     socket: {
         ACTUAL: null,
         SET: null,
-        COLORDEC: null,
         BUTTONTEXT: null,
     },
     temperature: {
@@ -302,7 +299,6 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     },
     window: {
         ACTUAL: null,
-        COLORDEC: null,
         BUTTONTEXT: null,
     },
     'level.mode.fan': {
@@ -459,7 +455,6 @@ type requiredDatapoints2 = {
     door: {
         data: {
             ACTUAL: Datapoint;
-            COLORDEC: Datapoint;
             BUTTONTEXT: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
@@ -511,7 +506,6 @@ type requiredDatapoints2 = {
         data: {
             ON_ACTUAL: Datapoint;
             SET: Datapoint;
-            COLORDEC: Datapoint;
             BUTTONTEXT: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
@@ -584,7 +578,6 @@ type requiredDatapoints2 = {
         data: {
             ACTUAL: Datapoint;
             SET: Datapoint;
-            COLORDEC: Datapoint;
             BUTTONTEXT: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
@@ -652,7 +645,6 @@ type requiredDatapoints2 = {
     window: {
         data: {
             ACTUAL: Datapoint;
-            COLORDEC: Datapoint;
             BUTTONTEXT: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
@@ -866,7 +858,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: '',
         data: {
             ACTUAL: { role: 'sensor.door', type: 'boolean', required: true, writeable: false, trigger: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true },
             BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false, trigger: true },
         },
     },
@@ -956,7 +947,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 alternate: 'SET',
             },
             SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true },
             BUTTONTEXT: { role: 'text', type: 'string', required: false, writeable: false, trigger: true },
         },
     },
@@ -1078,7 +1068,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 alternate: 'SET',
             },
             SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true },
             BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false, trigger: true },
         },
     },
@@ -1193,7 +1182,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: '',
         data: {
             ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false, trigger: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
             BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false },
         },
     },

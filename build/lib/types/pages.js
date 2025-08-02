@@ -139,6 +139,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "level.mode.fan",
   "level.mode.thermostat",
   "level.speed",
+  "level.mode.swing",
   "level.temperature",
   "level.tilt",
   "level.value",
@@ -200,7 +201,6 @@ const stateRoleArray = arrayOfAllStateRole([
   "date.sunrise",
   "date.sunset",
   "weather.icon",
-  "level.mode.swing",
   ""
 ]);
 function isStateRole(F) {
