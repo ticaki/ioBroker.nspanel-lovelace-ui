@@ -360,8 +360,8 @@ export class PageAlarm extends Page {
                     const item = entry.data;
                     const value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
-                        //await this.panel.navigation.setTargetPageByName(value);
-                        //break;
+                        await this.panel.navigation.setTargetPageByName(value);
+                        break;
                     }
                     await this.setStatus('disarmed');
                     await this.setStatus('armed');

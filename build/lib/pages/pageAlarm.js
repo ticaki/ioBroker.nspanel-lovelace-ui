@@ -349,6 +349,8 @@ class PageAlarm extends import_Page.Page {
           const item = entry.data;
           const value2 = (_a = item.setNavi && await item.setNavi.getString()) != null ? _a : null;
           if (value2 !== null) {
+            await this.panel.navigation.setTargetPageByName(value2);
+            break;
           }
           await this.setStatus("disarmed");
           await this.setStatus("armed");
