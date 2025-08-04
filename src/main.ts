@@ -1,7 +1,7 @@
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
-//FlashNextion http://nspanel.de/nspanel-v4.6.0.tft ist die 55
+//FlashNextionAdv0 http://nspanel.de/nspanel-v4.6.0.tft ist die 55
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
@@ -905,7 +905,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     if (this.mqttClient) {
                                         await this.mqttClient.publish(
                                             `${topic}/cmnd/Backlog`,
-                                            `FlashNextion http://nspanel.de/${fileName}`,
+                                            `FlashNextionAdv0 http://nspanel.de/${fileName}`,
                                         );
                                     }
                                     this.log.info(
@@ -1011,7 +1011,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const url =
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                                    `&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
+                                    `&cmnd=Backlog FlashNextionAdv0 http://nspanel.de/${fileName}`;
                                 this.log.debug(url);
                                 await axios.get(url);
 
@@ -1058,7 +1058,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     : result.data[`tft${model}`].split('_')[0];
                                 const fileName = `nspanel-v${version}.tft`;
 
-                                const cmnd = `FlashNextion http://nspanel.de/${fileName}`;
+                                const cmnd = `FlashNextionAdv0 http://nspanel.de/${fileName}`;
                                 this.log.debug(cmnd);
                                 if (this.controller?.panels) {
                                     const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);

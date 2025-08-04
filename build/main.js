@@ -731,7 +731,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   if (this.mqttClient) {
                     await this.mqttClient.publish(
                       `${topic}/cmnd/Backlog`,
-                      `FlashNextion http://nspanel.de/${fileName}`
+                      `FlashNextionAdv0 http://nspanel.de/${fileName}`
                     );
                   }
                   this.log.info(
@@ -821,7 +821,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const model = obj.message.model ? `-${obj.message.model}` : "";
                 const version = obj.message.useBetaTFT ? result.data[`tft${model}-beta`].split("_")[0] : result.data[`tft${model}`].split("_")[0];
                 const fileName = `nspanel-${model}v${version}.tft`;
-                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
+                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog FlashNextionAdv0 http://nspanel.de/${fileName}`;
                 this.log.debug(url);
                 await import_axios.default.get(url);
                 if (obj.callback) {
@@ -863,7 +863,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const model = obj.message.model ? `-${obj.message.model}` : "";
                 const version = obj.message.useBetaTFT ? result.data[`tft${model}-beta`].split("_")[0] : result.data[`tft${model}`].split("_")[0];
                 const fileName = `nspanel-v${version}.tft`;
-                const cmnd = `FlashNextion http://nspanel.de/${fileName}`;
+                const cmnd = `FlashNextionAdv0 http://nspanel.de/${fileName}`;
                 this.log.debug(cmnd);
                 if ((_b = this.controller) == null ? void 0 : _b.panels) {
                   const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
