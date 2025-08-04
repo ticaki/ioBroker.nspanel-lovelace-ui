@@ -27,7 +27,7 @@ export class Screensaver extends Page {
     public screensaverIndicatorButtons: boolean = false;
     public screensaverSwipe: boolean = false;
     private _infoIcon: any = '';
-    private timoutRotation: ioBroker.Timeout | undefined = undefined;
+    private timeoutRotation: ioBroker.Timeout | undefined = undefined;
     public headingNotification: string = '';
     public textNotification: string = '';
     //readonly mode: Types.ScreensaverModeType = 'standard';
@@ -221,17 +221,17 @@ export class Screensaver extends Page {
         if (v) {
             this.sendType();
             //await this.update();
-            await this.rotationLoop();
+            await this.restartRotationLoop();
             await this.HandleTime();
         } else {
-            if (this.timoutRotation) {
-                this.adapter.clearTimeout(this.timoutRotation);
+            if (this.timeoutRotation) {
+                this.adapter.clearTimeout(this.timeoutRotation);
             }
         }
     }
     async restartRotationLoop(): Promise<void> {
-        if (this.timoutRotation) {
-            this.adapter.clearTimeout(this.timoutRotation);
+        if (this.timeoutRotation) {
+            this.adapter.clearTimeout(this.timeoutRotation);
         }
         await this.rotationLoop();
     }
@@ -250,7 +250,7 @@ export class Screensaver extends Page {
         if (this.unload) {
             return;
         }
-        this.timoutRotation = this.adapter.setTimeout(
+        this.timeoutRotation = this.adapter.setTimeout(
             this.rotationLoop,
             this.rotationTime < 3000 ? 3000 : this.rotationTime,
         );
@@ -381,8 +381,8 @@ export class Screensaver extends Page {
 
     async delete(): Promise<void> {
         await super.delete();
-        if (this.timoutRotation) {
-            this.adapter.clearTimeout(this.timoutRotation);
+        if (this.timeoutRotation) {
+            this.adapter.clearTimeout(this.timeoutRotation);
         }
         if (this.blockButtons) {
             this.adapter.clearTimeout(this.blockButtons);
