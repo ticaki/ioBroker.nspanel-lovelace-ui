@@ -46,7 +46,7 @@ class Screensaver extends import_Page.Page {
   screensaverIndicatorButtons = false;
   screensaverSwipe = false;
   _infoIcon = "";
-  timoutRotation = void 0;
+  timeoutRotation = void 0;
   headingNotification = "";
   textNotification = "";
   //readonly mode: Types.ScreensaverModeType = 'standard';
@@ -218,17 +218,17 @@ class Screensaver extends import_Page.Page {
     this.step = 0;
     if (v) {
       this.sendType();
-      await this.rotationLoop();
+      await this.restartRotationLoop();
       await this.HandleTime();
     } else {
-      if (this.timoutRotation) {
-        this.adapter.clearTimeout(this.timoutRotation);
+      if (this.timeoutRotation) {
+        this.adapter.clearTimeout(this.timeoutRotation);
       }
     }
   }
   async restartRotationLoop() {
-    if (this.timoutRotation) {
-      this.adapter.clearTimeout(this.timoutRotation);
+    if (this.timeoutRotation) {
+      this.adapter.clearTimeout(this.timeoutRotation);
     }
     await this.rotationLoop();
   }
@@ -245,7 +245,7 @@ class Screensaver extends import_Page.Page {
     if (this.unload) {
       return;
     }
-    this.timoutRotation = this.adapter.setTimeout(
+    this.timeoutRotation = this.adapter.setTimeout(
       this.rotationLoop,
       this.rotationTime < 3e3 ? 3e3 : this.rotationTime
     );
@@ -367,8 +367,8 @@ class Screensaver extends import_Page.Page {
   }
   async delete() {
     await super.delete();
-    if (this.timoutRotation) {
-      this.adapter.clearTimeout(this.timoutRotation);
+    if (this.timeoutRotation) {
+      this.adapter.clearTimeout(this.timeoutRotation);
     }
     if (this.blockButtons) {
       this.adapter.clearTimeout(this.blockButtons);
