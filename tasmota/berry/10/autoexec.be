@@ -141,7 +141,7 @@ class Nextion : Driver
 	    tasmota.delay(25)
             log("FLH: Flashing complete - Time elapsed: %d", (tasmota.millis()-self.flash_start_millis)/1000)
             tasmota.publish_result(string.format("{\"Flashing\":{\"complete\": \"done\", \"time_elapsed\": %d}}",per , (tasmota.millis()-self.flash_start_millis)/1000), "RESULT")
-            tasmota.cmd('RuleTimer1 120')
+            tasmota.cmd('RuleTimer3 120')
             tasmota.cmd('Rule3 1')
             tasmota.delay(50)
             self.flash_mode = 0
@@ -215,7 +215,7 @@ class Nextion : Driver
     end      
 
     def begin_nextion_flash()
-        tasmota.cmd('RuleTimer1 0')
+        tasmota.cmd('RuleTimer3 0')
         tasmota.cmd('Rule3 0')
         self.flash_written = 0
         self.awaiting_offset = 0
