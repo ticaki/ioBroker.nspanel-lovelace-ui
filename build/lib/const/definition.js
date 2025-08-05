@@ -1683,6 +1683,17 @@ const InternalStates = {
         def: "none"
       }
     },
+    "cmd/hideCards": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
+    },
     "info/PopupInfo": {
       val: true,
       ack: true,

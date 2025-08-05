@@ -1669,6 +1669,13 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/hideCards': {
+                    if (this.screenSaver && typeof state.val === 'boolean') {
+                        this.hideCards = !!state.val;
+                        await this.library.writedp(`panels.${this.name}.cmd.hideCards`, state.val);
+                    }
+                    break;
+                }
             }
             await this.statesControler.setInternalState(id, state.val, true);
         }
@@ -1748,6 +1755,9 @@ export class Panel extends BaseClass {
             }
             case 'info/PopupInfo': {
                 return this.data['info/PopupInfo'] ?? null;
+            }
+            case 'cmd/hideCards': {
+                return this.hideCards;
             }
         }
         return null;
