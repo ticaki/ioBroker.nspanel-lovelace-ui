@@ -997,14 +997,20 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        /* case 'hideCards': {
+            if (state && state.val != null) {
+                this.hideCards = !!state.val;
+                await this.library.writedp(
+                    `panels.${this.name}.cmd.hideCards`,
+                    this.hideCards,
+                    definition.genericStateObjects.panel.panels.cmd.hideCards,
+                );
+            }
+            break;
+        } */
         case "hideCards": {
           if (state && state.val != null) {
-            this.hideCards = !!state.val;
-            await this.library.writedp(
-              `panels.${this.name}.cmd.hideCards`,
-              this.hideCards,
-              definition.genericStateObjects.panel.panels.cmd.hideCards
-            );
+            await this.statesControler.setInternalState(`${this.name}/cmd/hideCards`, !!state.val, false);
           }
           break;
         }
@@ -1540,6 +1546,13 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "cmd/hideCards": {
+          if (this.screenSaver && typeof state.val === "boolean") {
+            this.hideCards = !!state.val;
+            await this.library.writedp(`panels.${this.name}.cmd.hideCards`, state.val);
+          }
+          break;
+        }
       }
       await this.statesControler.setInternalState(id, state.val, true);
     }
@@ -1620,6 +1633,9 @@ ${this.info.tasmota.onlineVersion}`;
       }
       case "info/PopupInfo": {
         return (_c = this.data["info/PopupInfo"]) != null ? _c : null;
+      }
+      case "cmd/hideCards": {
+        return this.hideCards;
       }
     }
     return null;

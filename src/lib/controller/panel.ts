@@ -1089,7 +1089,7 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'hideCards': {
+                /* case 'hideCards': {
                     if (state && state.val != null) {
                         this.hideCards = !!state.val;
                         await this.library.writedp(
@@ -1097,6 +1097,12 @@ export class Panel extends BaseClass {
                             this.hideCards,
                             definition.genericStateObjects.panel.panels.cmd.hideCards,
                         );
+                    }
+                    break;
+                } */
+                case 'hideCards': {
+                    if (state && state.val != null) {
+                        await this.statesControler.setInternalState(`${this.name}/cmd/hideCards`, !!state.val, false);
                     }
                     break;
                 }
@@ -1663,6 +1669,13 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/hideCards': {
+                    if (this.screenSaver && typeof state.val === 'boolean') {
+                        this.hideCards = !!state.val;
+                        await this.library.writedp(`panels.${this.name}.cmd.hideCards`, state.val);
+                    }
+                    break;
+                }
             }
             await this.statesControler.setInternalState(id, state.val, true);
         }
@@ -1742,6 +1755,9 @@ export class Panel extends BaseClass {
             }
             case 'info/PopupInfo': {
                 return this.data['info/PopupInfo'] ?? null;
+            }
+            case 'cmd/hideCards': {
+                return this.hideCards;
             }
         }
         return null;

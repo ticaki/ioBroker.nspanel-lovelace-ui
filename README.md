@@ -90,6 +90,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - (ticaki) Hide pages - fixed #360
 - (ticaki) RuleTimer1 changed to RuleTimer3
 - (tt-tom17) hide pages for cardPower, cardQR and cardChart
+- (tt-tom17) added hide cards feature to service pages
 
 ### 0.2.3 (2025-07-27)
 - (ticaki) openweathermap added as standard weather adapter

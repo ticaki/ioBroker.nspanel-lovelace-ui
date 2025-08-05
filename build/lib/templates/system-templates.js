@@ -385,6 +385,31 @@ const ServiceOverview = {
         },
         setNavi: { type: "const", constVal: "///NetworkOption" }
       }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "wifi" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "System" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///SystemOption" }
+      }
     }
   ],
   items: void 0
@@ -1384,6 +1409,48 @@ const NetworkOption = {
   ],
   items: void 0
 };
+const SystemOption = {
+  //type: 'sonstiges',
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///SystemOption",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "System"
+      }
+    },
+    scrollType: "page"
+  },
+  pageItems: [
+    {
+      role: "",
+      type: "switch",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/hideCards" }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "switch" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "switch" },
+            color: { type: "const", constVal: import_Color.Color.Red }
+          }
+        },
+        text: { true: { type: "const", constVal: "Hide Cards" }, false: void 0 },
+        setValue1: { type: "internal", dp: "cmd/hideCards" }
+      }
+    }
+  ],
+  items: void 0
+};
 const systemPages = [
   popupWelcome,
   popupNotification,
@@ -1400,6 +1467,7 @@ const systemPages = [
   RelaisOption,
   DeviceOption,
   NetworkOption,
+  SystemOption,
   popupInfo
 ];
 const systemNavigation = [
@@ -1499,6 +1567,13 @@ const systemNavigation = [
     left: { double: "///Overview" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///SystemOption",
+    //main ist die erste Seite
+    page: "///SystemOption",
+    left: { double: "///Overview" }
+    // Die 4 bezieht sich auf den name: 4
   },
   {
     name: "///PopupInfo",
