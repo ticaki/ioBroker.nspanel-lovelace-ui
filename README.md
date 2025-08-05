@@ -85,6 +85,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Auto update of berry driver
 - (ticaki) Admin option added for how shutter positions are interpreted.
 - (ticaki) add Screensaver Notifications fixed #361 3 States or `sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });` 
 - (ticaki) Hide pages - fixed #360
