@@ -1062,7 +1062,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753105753441,
-    "val": 78,
+    "val": 33,
     "ack": false
   },
   "0_userdata.0.Blind.open": {
@@ -1166,7 +1166,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753105753542,
-    "val": 82,
+    "val": 16,
     "ack": false
   },
   "0_userdata.0.Blind.tilt_open": {
@@ -1271,7 +1271,7 @@
     "common": {
       "name": "level",
       "desc": "Manuell erzeugt",
-      "role": "level.blind",
+      "role": "value.blind",
       "type": "number",
       "read": true,
       "write": true,
@@ -1289,8 +1289,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753105720963,
-    "val": 50,
+    "ts": 1753526113192,
+    "val": 1,
     "ack": false
   },
   "0_userdata.0.Blind1.open": {
@@ -1317,6 +1317,31 @@
     "user": "system.user.admin",
     "ts": 1753105720975,
     "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Blind1.set_level": {
+    "common": {
+      "name": "set_level",
+      "desc": "Manuell erzeugt",
+      "role": "level.blind",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Blind1.set_level",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753526132046,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Blind1.stop": {
@@ -1385,7 +1410,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103873272,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.CT": {
@@ -1428,7 +1453,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106456245,
-    "val": 99,
+    "val": 100,
     "ack": false
   },
   "0_userdata.0.CT.On": {
@@ -1453,7 +1478,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106438243,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.CT.On_Actual": {
@@ -1479,7 +1504,7 @@
     "user": "system.user.admin",
     "ts": 1753106428130,
     "val": true,
-    "ack": true
+    "ack": false
   },
   "0_userdata.0.CT.Temperature": {
     "common": {
@@ -1503,7 +1528,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106385805,
-    "val": 500,
+    "val": 2300,
     "ack": false
   },
   "0_userdata.0.Charts.AussenTemp": {
@@ -1809,7 +1834,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106584138,
-    "val": 50,
+    "val": 100,
     "ack": false
   },
   "0_userdata.0.Dimmer.On_Actual": {
@@ -1884,7 +1909,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106596875,
-    "val": 85,
+    "val": 99,
     "ack": false
   },
   "0_userdata.0.Door": {
@@ -1927,7 +1952,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102210996,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "0_userdata.0.Door.Buttontext": {
@@ -3947,7 +3972,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102347064,
-    "val": 100,
+    "val": 1,
     "ack": false
   },
   "0_userdata.0.Gate.Set": {
@@ -3972,7 +3997,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102380107,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Gate.Stop": {
@@ -4040,8 +4065,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753105954240,
-    "val": 0,
-    "ack": true
+    "val": 50,
+    "ack": false
   },
   "0_userdata.0.Hue.Hue": {
     "common": {
@@ -4065,8 +4090,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753105974255,
-    "val": 0,
-    "ack": true
+    "val": 180,
+    "ack": false
   },
   "0_userdata.0.Hue.On": {
     "common": {
@@ -4115,8 +4140,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106005433,
-    "val": false,
-    "ack": true
+    "val": true,
+    "ack": false
   },
   "0_userdata.0.Hue.Temperature": {
     "common": {
@@ -4140,8 +4165,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106036319,
-    "val": 0,
-    "ack": true
+    "val": 4000,
+    "ack": false
   },
   "0_userdata.0.Humidity": {
     "common": {
@@ -4183,7 +4208,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106148358,
-    "val": 50,
+    "val": 90,
     "ack": false
   },
   "0_userdata.0.Humidity_Value": {
@@ -4226,7 +4251,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106163665,
-    "val": 35,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Info": {
@@ -4266,7 +4291,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": "335",
+    "val": "258",
     "ack": false
   },
   "0_userdata.0.Info.Buttontextoff": {
@@ -4290,7 +4315,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": "41",
+    "val": "46",
     "ack": false
   },
   "0_userdata.0.Info.Farbe": {
@@ -4298,16 +4323,13 @@
       "name": "Farbe",
       "desc": "Manuell erzeugt",
       "role": "state",
-      "type": "number",
+      "type": "string",
       "read": true,
       "write": true,
       "def": 0
     },
     "type": "state",
     "native": {},
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1752908138971,
     "_id": "0_userdata.0.Info.Farbe",
     "acl": {
       "object": 1636,
@@ -4315,7 +4337,10 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 3265,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753644311727,
+    "val": "#085C18",
     "ack": false
   },
   "0_userdata.0.Info.Icon": {
@@ -4340,8 +4365,8 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": "ab-testing",
-    "ack": true
+    "val": "water",
+    "ack": false
   },
   "0_userdata.0.Info.Status": {
     "common": {
@@ -4475,7 +4500,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104535099,
-    "val": "Licht_an",
+    "val": "Licht_aus",
     "ack": false
   },
   "0_userdata.0.Light.Colordec": {
@@ -4525,7 +4550,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104676402,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Light.Set": {
@@ -4564,7 +4589,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": true,
+    "val": false,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104556451,
@@ -4607,7 +4632,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103115652,
@@ -4660,7 +4685,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102775444,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Motion": {
@@ -4703,7 +4728,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106777068,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.PopupNotify": {
@@ -5318,8 +5343,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753114184752,
-    "val": 243,
-    "ack": true
+    "val": 143,
+    "ack": false
   },
   "0_userdata.0.RGB.Dimmer": {
     "common": {
@@ -5343,7 +5368,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104303416,
-    "val": 100,
+    "val": 99,
     "ack": false
   },
   "0_userdata.0.RGB.Green": {
@@ -5369,7 +5394,7 @@
     "user": "system.user.admin",
     "ts": 1753114192847,
     "val": 255,
-    "ack": true
+    "ack": false
   },
   "0_userdata.0.RGB.On": {
     "common": {
@@ -5443,8 +5468,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753114201115,
-    "val": 127,
-    "ack": true
+    "val": 111,
+    "ack": false
   },
   "0_userdata.0.RGB.Temperature": {
     "common": {
@@ -5468,14 +5493,14 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104293804,
-    "val": "6500",
+    "val": "3103",
     "ack": false
   },
   "0_userdata.0.RGB.White": {
     "common": {
-      "name": "white",
+      "name": "White",
       "desc": "Manuell erzeugt",
-      "role": "level.color.white",
+      "role": "state",
       "type": "number",
       "read": true,
       "write": true,
@@ -5483,6 +5508,9 @@
     },
     "type": "state",
     "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753817417035,
     "_id": "0_userdata.0.RGB.White",
     "acl": {
       "object": 1636,
@@ -5490,9 +5518,6 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753114214693,
     "val": 100,
     "ack": false
   },
@@ -5558,7 +5583,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104136337,
@@ -5586,7 +5611,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104228799,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.RGBSingle.RGB": {
@@ -5611,7 +5636,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104184267,
-    "val": "#c39bff",
+    "val": "#ff2bff",
     "ack": false
   },
   "0_userdata.0.RGBSingle.Temperature": {
@@ -5636,7 +5661,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104161701,
-    "val": "6500",
+    "val": "135",
     "ack": false
   },
   "0_userdata.0.Scoket": {
@@ -5679,7 +5704,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104779136,
-    "val": "Steckd. aus",
+    "val": "Steckd. ein",
     "ack": false
   },
   "0_userdata.0.Scoket.Colordec": {
@@ -5726,7 +5751,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104705862,
@@ -5754,7 +5779,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104722545,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Select": {
@@ -5797,7 +5822,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103792898,
-    "val": 6,
+    "val": 5,
     "ack": false
   },
   "0_userdata.0.Select.Set": {
@@ -5822,7 +5847,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103809226,
-    "val": 6,
+    "val": 5,
     "ack": false
   },
   "0_userdata.0.Sensor_Alarm_Flood": {
@@ -5951,6 +5976,31 @@
     "user": "system.user.admin",
     "ts": 1753101030139
   },
+  "0_userdata.0.Slider.Actual": {
+    "common": {
+      "name": "Actual",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753309136617,
+    "_id": "0_userdata.0.Slider.Actual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 52,
+    "ack": false
+  },
   "0_userdata.0.Slider.Set": {
     "common": {
       "name": "Value",
@@ -5973,7 +6023,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104083308,
-    "val": 1,
+    "val": 29,
     "ack": false
   },
   "0_userdata.0.Temperature": {
@@ -6016,7 +6066,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103681132,
-    "val": 30,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Temperature_Value": {
@@ -6059,7 +6109,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103648355,
-    "val": 25,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Temperature_Value.Usericon": {
@@ -7122,7 +7172,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493017159,
-    "val": 100,
+    "val": 99,
     "ack": false
   },
   "0_userdata.0.Ventilator2": {
@@ -7163,7 +7213,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493017257,
-    "val": 2,
+    "val": 1,
     "ack": false
   },
   "0_userdata.0.Ventilator2.Switch": {
@@ -7213,7 +7263,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493017362,
-    "val": 100,
+    "val": 25,
     "ack": false
   },
   "0_userdata.0.Volume": {
@@ -7256,7 +7306,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104502770,
-    "val": 0,
+    "val": 75,
     "ack": false
   },
   "0_userdata.0.Volume.Mute": {
@@ -7281,7 +7331,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104491104,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Volume.Set": {
@@ -7306,8 +7356,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104476896,
-    "val": 0,
-    "ack": true
+    "val": 63,
+    "ack": false
   },
   "0_userdata.0.Warning": {
     "common": {
@@ -7349,7 +7399,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102552525,
-    "val": "Testtitel",
+    "val": "schnall",
     "ack": false
   },
   "0_userdata.0.Warning.Level": {
@@ -7374,7 +7424,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102577081,
-    "val": 2015,
+    "val": 3,
     "ack": false
   },
   "0_userdata.0.Warning.Titel": {
@@ -7399,7 +7449,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102599655,
-    "val": "schrott",
+    "val": "lllldd",
     "ack": false
   },
   "0_userdata.0.Window": {
@@ -7467,7 +7517,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106297468,
-    "val": "zu",
+    "val": "auf",
     "ack": false
   },
   "0_userdata.0.Window.Colordec": {
@@ -7492,7 +7542,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 2015,
+    "val": 2453,
     "ack": false
   },
   "0_userdata.0.example_state": {

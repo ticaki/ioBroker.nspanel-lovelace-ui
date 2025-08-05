@@ -4,7 +4,7 @@ async function configuration(): Promise<void> {
         // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
         // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
         // panelTopic: 'nspanel/ns_panel4',
-        weatherEntity: 'accuweather.0.',
+        weatherEntity: 'openweathermap.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
         weatherAddDefaultItems: true,
@@ -171,11 +171,16 @@ async function configuration(): Promise<void> {
         next: 'lichttest2',
         useColor: true,
         items: [
-            { id: 'alias.0.Dimmer', name: 'Dimmer', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.RGB', name: 'RGB', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.RGBSingle', name: 'RGBSingle', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.Hue', name: 'Hue', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.CT', name: 'CT', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.Dimmer' },
+            { navigate: true, targetPage:'lichttest2', id: 'alias.0.Dimmer' },
+            { id: 'alias.0.RGB' },
+            { navigate: true, targetPage:'lichttest2', id: 'alias.0.RGB' },
+            { id: 'alias.0.RGBSingle' },
+            { navigate: true, targetPage:'lichttest2', id: 'alias.0.RGBSingle' },
+            { id: 'alias.0.Hue' },
+            { navigate: true, targetPage:'lichttest2', id: 'alias.0.Hue' },
+            { id: 'alias.0.CT' },
+            { navigate: true, targetPage:'lichttest2', id: 'alias.0.CT' },,
             //{id: 'alias.0.CIE', name: 'CIE', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline'},
 
         ]
@@ -189,13 +194,17 @@ async function configuration(): Promise<void> {
         next: 'testrole2',
         useColor: true,
         items: [
-            { id: 'alias.0.Dimmer', name: 'Dimmer', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.RGB', name: 'RGB', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.RGBSingle', name: 'RGBSingle', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.Hue', name: 'Hue', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            { id: 'alias.0.CT', name: 'CT', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
-            //{id: 'alias.0.CIE', name: 'CIE', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline'},
-
+            { id: 'alias.0.Dimmer' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Dimmer' },
+            { id: 'alias.0.RGB' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.RGB' },
+            { id: 'alias.0.RGBSingle' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.RGBSingle' },
+            { id: 'alias.0.Hue' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Hue' },
+            { id: 'alias.0.CT' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.CT' },
+             //{id: 'alias.0.CIE', name: 'CIE', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline'},
         ]
     };
 
@@ -269,7 +278,7 @@ async function configuration(): Promise<void> {
 
     const config: ScriptConfig.Config = {
         panelTopic: 'NSPanel_DEV',
-        weatherEntity: 'accuweather.0.',
+        weatherEntity: 'openweathermap.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
         defaultBackgroundColor: HMIDark,
@@ -313,11 +322,12 @@ async function configuration(): Promise<void> {
         favoritScreensaverEntity: [
             {
                 type: 'template',
-                template: 'text.accuweather.favorit',
-                dpInit: `/^accuweather\\.0.+/`,
+                template: 'text.openweathermap.favorit',
+                dpInit: `/^openweathermap\\.0.+/`,
                 modeScr: 'favorit',
             }
         ],
+        
         alternateScreensaverEntity: [
             // only used with alternate Screensaver
         ],
@@ -387,24 +397,24 @@ async function configuration(): Promise<void> {
 
         bottomScreensaverEntity: [
             // bottomScreensaverEntity 1
-            /* {
+            {
                 type: 'template',
-                template: 'text.accuweather.sunriseset',
-                dpInit: 'accuweather.0',
-                modeScr: 'bottom'
+                template: 'text.openweathermap.sunriseset',
+                dpInit: `/^openweathermap\\.0\\.forecast\\.current.+/`,
+                modeScr: 'bottom',
             },
             // bottomScreensaverEntity 2
-            {
+            /*{
                 type: 'template',
                 template: 'text.hmip.windcombo',
                 dpInit: 'hmip.0.devices.3014F711A000185F2999676C',
                 modeScr: 'bottom',
                 //readOptions: {directionOfPanel: 81}
-            },
+            },*/ 
             {
                 type: 'script',
-                ScreensaverEntity: 'accuweather.0.Current.WindSpeed',
-                ScreensaverEntityFactor: (1000 / 3600),
+                ScreensaverEntity: 'openweathermap.0.forecast.current.windSpeed',
+                ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
                 ScreensaverEntityIconOn: 'weather-windy',
                 ScreensaverEntityIconOff: null,
@@ -415,8 +425,8 @@ async function configuration(): Promise<void> {
             // bottomScreensaverEntity 3
             {
                 type: 'script',
-                ScreensaverEntity: 'accuweather.0.Current.WindGust',
-                ScreensaverEntityFactor: (1000 / 3600),
+                ScreensaverEntity: 'openweathermap.0.forecast.current.windGust',
+                ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
                 ScreensaverEntityIconOn: 'weather-tornado',
                 ScreensaverEntityIconOff: null,
@@ -426,111 +436,118 @@ async function configuration(): Promise<void> {
             },
             // bottomScreensaverEntity 4
             {
-                type: 'script',
-                ScreensaverEntity: 'accuweather.0.Current.WindDirectionText',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityIconOn: 'windsock',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Windr.',
-                ScreensaverEntityUnitText: '°',
-                ScreensaverEntityIconColor: White
+                type: 'template',
+                template: 'text.openweathermap.winddirection',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
             },
             // bottomScreensaverEntity 5 (Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'accuweather.0.Current.RelativeHumidity',
+                ScreensaverEntity: 'openweathermap.0.forecast.current.humidity',
                 ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityDecimalPlaces: 0,
                 ScreensaverEntityIconOn: 'water-percent',
                 ScreensaverEntityIconOff: null,
                 ScreensaverEntityText: 'Feuchte',
                 ScreensaverEntityUnitText: '%',
-                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 65}
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 60}
             },
             // bottomScreensaverEntity 6 (for Advanced Screensaver)
             // the 6th day from dasWetter
             {
                 type: 'native',
                 native: dasWetterBottomScreensaverEntity6
-            }, */
+            },
             // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
 
             // Some templates for the screensaver uncomment the lines to use them
             // If u use an other instance for the weather data, change the instance in the following lines
             // If you want to have them all, set weatherAddDefaultItems=true in the config and leave the following lines as they are!
+
+            // zum nutzen der Vorlagen für den Bildschirmschoner die Zeilen auskommentieren, um sie zu verwenden
+            // Wenn du eine andere Instanz für die Wetterdaten verwendest, ändere die Instanz in den folgenden Zeilen
+            // Wenn du sie alle haben willst, setze weatherAddDefaultItems=true in der Konfiguration ganz oben und lass die folgenden Zeilen so wie sie sind!
+
             /*
-            // Bottom 1 - accuWeather.0. sunrise/set
+            // Bottom 1 - sunrise/set
             {
                 type: 'template',
-                template: 'text.accuweather.sunriseset',
-                dpInit: `/^accuweather\\.0.Daily.+/`,
-                modeScr: 'bottom',
+                template: 'text.openweathermap.favorit',
+                dpInit: `/^openweathermap\\.0.+/`,
+                modeScr: 'favorit',
             },
-            // Bottom 2 - accuWeather.0. Forecast Day 1
+            // Bottom 2 -  Forecast Day 1
             {
                 type: 'template',
-                template: 'text.accuweather.bot2values',
-                dpInit: `/^accuweather\\.0.+?d1$/g`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 3 - accuWeather.0. Forecast Day 2
-            {
-                type: 'template',
-                template: 'text.accuweather.bot2values',
-                dpInit: `/^accuweather\\.0.+?d2$/`,
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day0/`,
                 modeScr: 'bottom',
             },
 
-            // Bottom 4 - accuWeather.0. Forecast Day 3
+            // Bottom 3 - Forecast Day 2
             {
                 type: 'template',
-                template: 'text.accuweather.bot2values',
-                dpInit: `/^accuweather\\.0.+?d3$/`,
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day1/`,
                 modeScr: 'bottom',
             },
 
-            // Bottom 5 - accuWeather.0. Forecast Day 4
+            // Bottom 4 - Forecast Day 3
             {
                 type: 'template',
-                template: 'text.accuweather.bot2values',
-                dpInit: `/^accuweather\\.0.+?d4$/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 6 - accuWeather.0. Forecast Day 5
-            {
-                type: 'template',
-                template: 'text.accuweather.bot2values',
-                dpInit: `/^accuweather\\.0.+?d5$/`,
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day2/`,
                 modeScr: 'bottom',
             },
 
-            // Bottom 7 - Windgeschwindigkeit
+            // Bottom 5 - Forecast Day 4
             {
                 type: 'template',
-                template: 'text.accuweather.windspeed',
-                dpInit: `/^accuweather\\.0./`,
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day3/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day4/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 -  Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day5/`,
                 modeScr: 'bottom',
             },
 
-            // Bottom 8 - Böen
+            // Bottom 8 - Windgeschwindigkeit
             {
                 type: 'template',
-                template: 'text.accuweather.windgust',
-                dpInit: `/^accuweather\\.0./`,
+                template: 'text.openweathermap.windspeed',
+                dpInit: `/^openweathermap\\.0./`,
                 modeScr: 'bottom',
             },
 
-            // Bottom 9 - Windrichtung
+            // Bottom 9 - Böen
             {
                 type: 'template',
-                template: 'text.accuweather.winddirection',
-                dpInit: `/^accuweather\\.0./`,
+                template: 'text.openweathermap.windgust',
+                dpInit: `/^openweathermap\\.0./`,
                 modeScr: 'bottom',
             },
 
-            // Bottom 10 - UV-Index
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.openweathermap.winddirection',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 11 - UV-Index
             {
                 type: 'template',
                 template: 'text.accuweather.uvindex',
