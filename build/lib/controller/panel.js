@@ -54,6 +54,7 @@ var import_card = require("../templates/card");
 var import_tools = require("../const/tools");
 var import_pageChartBar = require("../pages/pageChartBar");
 var import_pageChartLine = require("../pages/pageChartLine");
+var import_axios = __toESM(require("axios"));
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -118,6 +119,8 @@ class Panel extends import_library.BaseClass {
       bigIconRight: false,
       onlineVersion: "",
       firmwareUpdate: 100,
+      berryDriverVersion: 0,
+      berryDriverVersionOnline: 0,
       currentPage: ""
     },
     tasmota: {
@@ -710,6 +713,34 @@ class Panel extends import_library.BaseClass {
             definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
           );
           return;
+        } else if ("nlui_driver_version" in msg) {
+          this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
+          await this.library.writedp(
+            `panels.${this.name}.info.nspanel.berryDriverVersion`,
+            this.info.nspanel.berryDriverVersion,
+            definition.genericStateObjects.panel.panels.info.nspanel.berryDriverVersion
+          );
+          this.adapter.setTimeout(async () => {
+            let result = void 0;
+            try {
+              result = await import_axios.default.get(
+                "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
+              );
+              if (!result || !result.data) {
+                return;
+              }
+              const version = this.adapter.config.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
+              if (version != this.info.nspanel.berryDriverVersion && this.info.nspanel.berryDriverVersion != -1) {
+                const url = `http://${this.info.tasmota.net.IPAddress}/cm?${this.adapter.config.useTasmotaAdmin ? `user=admin&password=${this.adapter.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                this.log.info(
+                  `Automatic update of the berry driver version from ${this.info.nspanel.berryDriverVersion} to ${version} on tasmota with IP ${this.info.tasmota.net.IPAddress} and  ${this.info.tasmota.net.Hostname}.`
+                );
+                await import_axios.default.get(url);
+              }
+            } catch {
+            }
+          }, 1);
+          return;
         }
       }
     } else if (topic.endsWith("/tele/LWT")) {
@@ -1165,6 +1196,7 @@ class Panel extends import_library.BaseClass {
         this.requestStatusTasmota();
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, "");
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
+        this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
         this.sendRules();
         await this.adapter.delay(100);
         await this.writeInfo();

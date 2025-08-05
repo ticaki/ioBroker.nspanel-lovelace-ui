@@ -789,6 +789,8 @@ export type PanelInfo = {
         onlineVersion: string;
         firmwareUpdate: number;
         currentPage: string;
+        berryDriverVersion: number;
+        berryDriverVersionOnline: number;
     };
     tasmota: {
         firmwareversion: string;

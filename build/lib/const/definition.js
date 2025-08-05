@@ -564,6 +564,32 @@ const genericStateObjects = {
             },
             native: {}
           },
+          berryDriverVersion: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.berryDriverVersion",
+              type: "number",
+              role: "value",
+              read: true,
+              write: false,
+              def: 0
+            },
+            native: {}
+          },
+          berryDriverVersionOnline: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.berryDriverVersionOnline",
+              type: "number",
+              role: "value",
+              read: true,
+              write: false,
+              def: 0
+            },
+            native: {}
+          },
           model: {
             _id: "",
             type: "state",
