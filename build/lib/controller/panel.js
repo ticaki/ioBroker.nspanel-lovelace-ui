@@ -997,14 +997,20 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        /* case 'hideCards': {
+            if (state && state.val != null) {
+                this.hideCards = !!state.val;
+                await this.library.writedp(
+                    `panels.${this.name}.cmd.hideCards`,
+                    this.hideCards,
+                    definition.genericStateObjects.panel.panels.cmd.hideCards,
+                );
+            }
+            break;
+        } */
         case "hideCards": {
           if (state && state.val != null) {
-            this.hideCards = !!state.val;
-            await this.library.writedp(
-              `panels.${this.name}.cmd.hideCards`,
-              this.hideCards,
-              definition.genericStateObjects.panel.panels.cmd.hideCards
-            );
+            await this.statesControler.setInternalState(`${this.name}/cmd/hideCards`, !!state.val, false);
           }
           break;
         }

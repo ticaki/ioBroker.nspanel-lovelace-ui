@@ -1089,7 +1089,7 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'hideCards': {
+                /* case 'hideCards': {
                     if (state && state.val != null) {
                         this.hideCards = !!state.val;
                         await this.library.writedp(
@@ -1097,6 +1097,12 @@ export class Panel extends BaseClass {
                             this.hideCards,
                             definition.genericStateObjects.panel.panels.cmd.hideCards,
                         );
+                    }
+                    break;
+                } */
+                case 'hideCards': {
+                    if (state && state.val != null) {
+                        await this.statesControler.setInternalState(`${this.name}/cmd/hideCards`, !!state.val, false);
                     }
                     break;
                 }

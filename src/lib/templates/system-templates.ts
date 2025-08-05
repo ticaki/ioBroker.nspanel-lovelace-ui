@@ -374,6 +374,32 @@ const ServiceOverview: PageBaseConfig = {
                 setNavi: { type: 'const', constVal: '///NetworkOption' },
             },
         },
+        {
+            role: '',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'wifi' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'System' },
+                    false: undefined,
+                },
+                setNavi: { type: 'const', constVal: '///SystemOption' },
+            },
+        },
     ],
     items: undefined,
 };
@@ -1402,6 +1428,49 @@ const NetworkOption: PageBaseConfig = {
     items: undefined,
 };
 
+const SystemOption: PageBaseConfig = {
+    //type: 'sonstiges',
+    //card: 'cardEntities',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: '///SystemOption',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'System',
+            },
+        },
+        scrollType: 'page',
+    },
+    pageItems: [
+        {
+            role: '',
+            type: 'switch',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/hideCards' },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                },
+                text: { true: { type: 'const', constVal: 'Hide Cards' }, false: undefined },
+                setValue1: { type: 'internal', dp: 'cmd/hideCards' },
+            },
+        },
+    ],
+    items: undefined,
+};
+
 /**
  * all pages from system
  */
@@ -1421,6 +1490,7 @@ export const systemPages: PageBaseConfig[] = [
     RelaisOption,
     DeviceOption,
     NetworkOption,
+    SystemOption,
     popupInfo,
 ];
 export const systemNavigation: NavigationItemConfig[] = [
@@ -1496,6 +1566,11 @@ export const systemNavigation: NavigationItemConfig[] = [
         page: '///NetworkOption',
         left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
         //right: { single: 'abfall1', double: 'main' },
+    },
+    {
+        name: '///SystemOption', //main ist die erste Seite
+        page: '///SystemOption',
+        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
     },
     {
         name: '///PopupInfo', //main ist die erste Seite
