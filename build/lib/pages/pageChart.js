@@ -112,6 +112,7 @@ class PageChart extends import_Page.Page {
       const result = {
         uniqueID: config.pageName,
         alwaysOn: config.alwaysOnDisplay ? "always" : "none",
+        hidden: config.hiddenByTrigger || false,
         config: {
           card,
           index,

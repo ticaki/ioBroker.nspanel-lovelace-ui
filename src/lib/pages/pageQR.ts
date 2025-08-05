@@ -208,6 +208,7 @@ export class PageQR extends Page {
             const result: pages.PageBaseConfig = {
                 uniqueID: config.pageName,
                 alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
+                hidden: config.hiddenByTrigger || false,
                 config: {
                     card: 'cardQR',
                     index: index,
