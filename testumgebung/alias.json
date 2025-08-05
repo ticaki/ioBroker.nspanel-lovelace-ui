@@ -967,7 +967,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753213183588,
-    "val": 50,
+    "val": 1,
     "ack": false
   },
   "alias.0.Blind.CLOSE": {
@@ -1035,7 +1035,7 @@
       "read": true,
       "write": true,
       "alias": {
-        "id": "0_userdata.0.Blind1.level"
+        "id": "0_userdata.0.Blind1.set_level"
       }
     },
     "type": "state",
@@ -1048,8 +1048,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753213183660,
-    "val": 50,
+    "ts": 1753526217443,
+    "val": 0,
     "ack": false
   },
   "alias.0.Blind.STOP": {
@@ -1125,7 +1125,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753213175820,
-    "val": 78,
+    "val": 33,
     "ack": false
   },
   "alias.0.Blind1.CLOSE": {
@@ -1206,8 +1206,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753213175888,
-    "val": 78,
+    "ts": 1753526193695,
+    "val": 33,
     "ack": false
   },
   "alias.0.Blind1.STOP": {
@@ -1257,7 +1257,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753213175922,
-    "val": 82,
+    "val": 16,
     "ack": false
   },
   "alias.0.Blind1.TILT_CLOSE": {
@@ -1332,7 +1332,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753213175994,
-    "val": 82,
+    "val": 16,
     "ack": false
   },
   "alias.0.Blind1.TILT_STOP": {
@@ -1403,7 +1403,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113246010,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.CT": {
@@ -1449,7 +1449,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 99,
+    "val": 100,
     "ack": false
   },
   "alias.0.CT.ON": {
@@ -1474,7 +1474,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.CT.ON_ACTUAL": {
@@ -1500,7 +1500,7 @@
       "ownerGroup": "system.group.administrator"
     },
     "val": true,
-    "ack": true
+    "ack": false
   },
   "alias.0.CT.TEMPERATURE": {
     "_id": "alias.0.CT.TEMPERATURE",
@@ -1526,7 +1526,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113332740,
-    "val": 500,
+    "val": 2300,
     "ack": false
   },
   "alias.0.Charts": {
@@ -1867,7 +1867,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 50,
+    "val": 100,
     "ack": false
   },
   "alias.0.Dimmer.ON_ACTUAL": {
@@ -1944,7 +1944,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113391607,
-    "val": 85,
+    "val": 99,
     "ack": false
   },
   "alias.0.Door": {
@@ -1990,7 +1990,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113643551,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "alias.0.Door.BUTTONTEXT": {
@@ -2017,32 +2017,6 @@
     "user": "system.user.admin",
     "ts": 1753113643537,
     "val": "zu",
-    "ack": false
-  },
-  "alias.0.Door.COLORDEC": {
-    "_id": "alias.0.Door.COLORDEC",
-    "common": {
-      "name": "COLORDEC",
-      "role": "state",
-      "type": "number",
-      "read": true,
-      "write": false,
-      "alias": {
-        "id": "0_userdata.0.Door.Colordec"
-      }
-    },
-    "type": "state",
-    "native": {},
-    "acl": {
-      "object": 1636,
-      "state": 1636,
-      "owner": "system.user.admin",
-      "ownerGroup": "system.group.administrator"
-    },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753268043433,
-    "val": 2015,
     "ack": false
   },
   "alias.0.FahrplanAnzeiger": {
@@ -3992,7 +3966,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113484102,
-    "val": 100,
+    "val": 1,
     "ack": false
   },
   "alias.0.Gate.SET": {
@@ -4018,7 +3992,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113484062,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Gate.STOP": {
@@ -4089,8 +4063,8 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 0,
-    "ack": true
+    "val": 50,
+    "ack": false
   },
   "alias.0.Hue.HUE": {
     "_id": "alias.0.Hue.HUE",
@@ -4116,8 +4090,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113729333,
-    "val": 0,
-    "ack": true
+    "val": 180,
+    "ack": false
   },
   "alias.0.Hue.ON": {
     "_id": "alias.0.Hue.ON",
@@ -4166,8 +4140,8 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
-    "ack": true
+    "val": true,
+    "ack": false
   },
   "alias.0.Hue.TEMPERATURE": {
     "_id": "alias.0.Hue.TEMPERATURE",
@@ -4192,8 +4166,8 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 0,
-    "ack": true
+    "val": 4000,
+    "ack": false
   },
   "alias.0.Humidity": {
     "_id": "alias.0.Humidity",
@@ -4241,7 +4215,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753268226664,
-    "val": 50,
+    "val": 90,
     "ack": false
   },
   "alias.0.Humidity_Value": {
@@ -4290,7 +4264,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753268308958,
-    "val": 35,
+    "val": 0,
     "ack": false
   },
   "alias.0.Info": {
@@ -4362,7 +4336,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752908731603,
-    "val": "335",
+    "val": "258",
     "ack": false
   },
   "alias.0.Info.BUTTONTEXTOFF": {
@@ -4389,7 +4363,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752908592874,
-    "val": "41",
+    "val": "46",
     "ack": false
   },
   "alias.0.Info.COLORDEC": {
@@ -4397,7 +4371,7 @@
     "type": "state",
     "common": {
       "name": "Farbe",
-      "type": "number",
+      "type": "string",
       "alias": {
         "id": "0_userdata.0.Info.Farbe"
       },
@@ -4415,8 +4389,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1752908516647,
-    "val": 3265,
+    "ts": 1753644282591,
+    "val": "#085C18",
     "ack": false
   },
   "alias.0.Info.USERICON": {
@@ -4443,8 +4417,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752911568395,
-    "val": "ab-testing",
-    "ack": true
+    "val": "water",
+    "ack": false
   },
   "alias.0.Light": {
     "_id": "alias.0.Light",
@@ -4489,33 +4463,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113892481,
-    "val": "Licht_an",
-    "ack": false
-  },
-  "alias.0.Light.COLORDEC": {
-    "_id": "alias.0.Light.COLORDEC",
-    "common": {
-      "name": "COLORDEC",
-      "role": "state",
-      "type": "number",
-      "read": true,
-      "write": false,
-      "alias": {
-        "id": "0_userdata.0.Light.Colordec"
-      }
-    },
-    "type": "state",
-    "native": {},
-    "acl": {
-      "object": 1636,
-      "state": 1636,
-      "owner": "system.user.admin",
-      "ownerGroup": "system.group.administrator"
-    },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753268629067,
-    "val": 2150,
+    "val": "Licht_aus",
     "ack": false
   },
   "alias.0.Light.ON_ACTUAL": {
@@ -4531,16 +4479,16 @@
       "write": false,
       "type": "boolean"
     },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753113892553,
     "acl": {
       "object": 1636,
       "state": 1636,
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753807830301,
+    "val": true,
     "ack": false
   },
   "alias.0.Light.SET": {
@@ -4566,7 +4514,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113892501,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "alias.0.Lock": {
@@ -4611,7 +4559,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Lock.OPEN": {
@@ -4663,7 +4611,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113943631,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Motion": {
@@ -4709,7 +4657,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113975581,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.RGB": {
@@ -4754,9 +4702,9 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753114237877,
-    "val": 243,
-    "ack": true
+    "ts": 1753818775052,
+    "val": 143,
+    "ack": false
   },
   "alias.0.RGB.DIMMER": {
     "_id": "alias.0.RGB.DIMMER",
@@ -4780,8 +4728,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753114237897,
-    "val": 100,
+    "ts": 1753818775107,
+    "val": 99,
     "ack": false
   },
   "alias.0.RGB.GREEN": {
@@ -4806,9 +4754,9 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753114237869,
+    "ts": 1753818774995,
     "val": 255,
-    "ack": true
+    "ack": false
   },
   "alias.0.RGB.ON": {
     "_id": "alias.0.RGB.ON",
@@ -4831,7 +4779,7 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753114237917,
+    "ts": 1753818775211,
     "val": true,
     "ack": false
   },
@@ -4848,15 +4796,15 @@
       "write": false,
       "type": "boolean"
     },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753114237925,
     "acl": {
       "object": 1636,
       "state": 1636,
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753818775307,
     "val": true,
     "ack": false
   },
@@ -4882,49 +4830,26 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753114237846,
-    "val": 127,
-    "ack": true
+    "ts": 1753818774940,
+    "val": 111,
+    "ack": false
   },
   "alias.0.RGB.TEMPERATURE": {
     "_id": "alias.0.RGB.TEMPERATURE",
-    "native": {},
     "type": "state",
     "common": {
+      "name": "ct",
+      "type": "number",
       "alias": {
         "id": "0_userdata.0.RGB.Temperature"
       },
-      "name": "TEMPERATURE",
+      "desc": "Manuell erzeugt",
       "role": "level.color.temperature",
+      "read": true,
       "write": true,
-      "type": "number",
       "unit": "°K"
     },
-    "acl": {
-      "object": 1636,
-      "state": 1636,
-      "owner": "system.user.admin",
-      "ownerGroup": "system.group.administrator"
-    },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753114237905,
-    "val": 6500,
-    "ack": false
-  },
-  "alias.0.RGB.WHITE": {
-    "_id": "alias.0.RGB.WHITE",
     "native": {},
-    "type": "state",
-    "common": {
-      "alias": {
-        "id": "0_userdata.0.RGB.White"
-      },
-      "name": "WHITE",
-      "role": "level.color.white",
-      "write": true,
-      "type": "number"
-    },
     "acl": {
       "object": 1636,
       "state": 1636,
@@ -4933,8 +4858,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753114237887,
-    "val": 100,
+    "ts": 1753818775158,
+    "val": 3103,
     "ack": false
   },
   "alias.0.RGBSingle": {
@@ -5005,7 +4930,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753129127949,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.RGBSingle.ON_ACTUAL": {
@@ -5030,7 +4955,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753129127966,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.RGBSingle.RGB": {
@@ -5056,7 +4981,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753129127981,
-    "val": "#c39bff",
+    "val": "#ff2bff",
     "ack": false
   },
   "alias.0.RGBSingle.TEMPERATURE": {
@@ -5082,7 +5007,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753129127997,
-    "val": 6500,
+    "val": 135,
     "ack": false
   },
   "alias.0.Select": {
@@ -5128,7 +5053,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753129700466,
-    "val": 6,
+    "val": 5,
     "ack": false
   },
   "alias.0.Select.SET": {
@@ -5156,7 +5081,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753130596898,
-    "val": 6,
+    "val": 5,
     "ack": false
   },
   "alias.0.Sensor_Alarm_Flood": {
@@ -5333,6 +5258,34 @@
       "ownerGroup": "system.group.administrator"
     }
   },
+  "alias.0.Slider.ACTUAL": {
+    "_id": "alias.0.Slider.ACTUAL",
+    "type": "state",
+    "common": {
+      "name": "Actual",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Slider.Actual"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "value",
+      "read": true,
+      "write": false,
+      "unit": "%"
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1753309215567,
+    "val": 52,
+    "ack": false
+  },
   "alias.0.Slider.SET": {
     "_id": "alias.0.Slider.SET",
     "common": {
@@ -5359,7 +5312,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753115382220,
-    "val": 1,
+    "val": 29,
     "ack": false
   },
   "alias.0.Socket": {
@@ -5404,7 +5357,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Socket.BUTTONTEXT": {
@@ -5430,33 +5383,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753114462890,
-    "val": "Steckd. aus",
-    "ack": false
-  },
-  "alias.0.Socket.COLORDEC": {
-    "_id": "alias.0.Socket.COLORDEC",
-    "common": {
-      "name": "COLORDEC",
-      "role": "state",
-      "type": "number",
-      "read": true,
-      "write": false,
-      "alias": {
-        "id": "0_userdata.0.Scoket.Colordec"
-      }
-    },
-    "type": "state",
-    "native": {},
-    "acl": {
-      "object": 1636,
-      "state": 1636,
-      "owner": "system.user.admin",
-      "ownerGroup": "system.group.administrator"
-    },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753269010466,
-    "val": 2015,
+    "val": "Steckd. ein",
     "ack": false
   },
   "alias.0.Socket.SET": {
@@ -5482,7 +5409,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753114462904,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Status_Licht_An": {
@@ -5783,7 +5710,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753114502236,
-    "val": 30,
+    "val": 0,
     "ack": false
   },
   "alias.0.Temperatur_Value": {
@@ -5830,33 +5757,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753114563554,
-    "val": 25,
-    "ack": false
-  },
-  "alias.0.Temperatur_Value.USERICON": {
-    "_id": "alias.0.Temperatur_Value.USERICON",
-    "common": {
-      "name": "USERICON",
-      "role": "state",
-      "type": "string",
-      "read": true,
-      "write": false,
-      "alias": {
-        "id": "0_userdata.0.Temperature_Value.Usericon"
-      }
-    },
-    "type": "state",
-    "native": {},
-    "acl": {
-      "object": 1636,
-      "state": 1636,
-      "owner": "system.user.admin",
-      "ownerGroup": "system.group.administrator"
-    },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753114563543,
-    "val": "water",
+    "val": 0,
     "ack": false
   },
   "alias.0.Thermostat": {
@@ -6491,7 +6392,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493088852,
-    "val": 100,
+    "val": 99,
     "ack": false
   },
   "alias.0.Ventilator2": {
@@ -6574,7 +6475,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493089009,
-    "val": 2,
+    "val": 1,
     "ack": false
   },
   "alias.0.Ventilator2.SET": {
@@ -6630,7 +6531,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493089115,
-    "val": 100,
+    "val": 25,
     "ack": false
   },
   "alias.0.Volume": {
@@ -6678,7 +6579,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 0,
+    "val": 75,
     "ack": false
   },
   "alias.0.Volume.MUTE": {
@@ -6703,7 +6604,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Volume.SET": {
@@ -6732,8 +6633,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753115025302,
-    "val": 0,
-    "ack": true
+    "val": 63,
+    "ack": false
   },
   "alias.0.Warning": {
     "_id": "alias.0.Warning",
@@ -6776,7 +6677,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": "Testtitel",
+    "val": "schnall",
     "ack": false
   },
   "alias.0.Warning.LEVEL": {
@@ -6802,7 +6703,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753115066185,
-    "val": 2015,
+    "val": 3,
     "ack": false
   },
   "alias.0.Warning.TITLE": {
@@ -6826,7 +6727,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": "schrott",
+    "val": "lllldd",
     "ack": false
   },
   "alias.0.Window": {
@@ -6898,33 +6799,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753115176187,
-    "val": "zu",
-    "ack": false
-  },
-  "alias.0.Window.COLORDEC": {
-    "_id": "alias.0.Window.COLORDEC",
-    "common": {
-      "name": "COLORDEC",
-      "role": "state",
-      "type": "number",
-      "read": true,
-      "write": false,
-      "alias": {
-        "id": "0_userdata.0.Window.Colordec"
-      }
-    },
-    "type": "state",
-    "native": {},
-    "acl": {
-      "object": 1636,
-      "state": 1636,
-      "owner": "system.user.admin",
-      "ownerGroup": "system.group.administrator"
-    },
-    "from": "system.adapter.admin.0",
-    "user": "system.user.admin",
-    "ts": 1753269513148,
-    "val": 2015,
+    "val": "auf",
     "ack": false
   }
 }
