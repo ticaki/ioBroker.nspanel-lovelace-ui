@@ -959,6 +959,17 @@
                             "default": false
                         },
                         {
+                            "attr": "hiddenByTrigger",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "checkbox",
+                            "label": "hiddenByTrigger",
+                            "default": false
+                        },
+                        {
                             "attr": "selType",
                             "xs": 12,
                             "sm": 12,
@@ -1211,6 +1222,17 @@
                             "xl": 4,
                             "type": "checkbox",
                             "label": "alwaysOnDisplay",
+                            "default": false
+                        },
+                        {
+                            "attr": "hiddenByTrigger",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "checkbox",
+                            "label": "hiddenByTrigger",
                             "default": false
                         },
                         {
@@ -2821,6 +2843,17 @@
                             "xl": 4,
                             "type": "checkbox",
                             "label": "alwaysOnDisplay",
+                            "default": false
+                        },
+                        {
+                            "attr": "hiddenByTrigger",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "checkbox",
+                            "label": "hiddenByTrigger",
                             "default": false
                         },
                         {
