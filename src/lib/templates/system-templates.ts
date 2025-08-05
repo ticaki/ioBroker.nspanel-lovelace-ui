@@ -581,7 +581,6 @@ const ScreensaverBrightness: PageBaseConfig = {
                     },
                 },
                 text: { true: { type: 'const', constVal: 'DoubleClick' }, false: undefined },
-                setValue1: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
             },
         },
         // slider Timeout to Screensaver
@@ -849,10 +848,6 @@ const RelaisOption: PageBaseConfig = {
                     true: { type: 'const', constVal: 'decoupled' },
                     false: { type: 'const', constVal: 'coupled' },
                 },
-                setValue1: {
-                    type: 'internal',
-                    dp: 'cmd/detachLeft',
-                },
             },
         },
         {
@@ -883,10 +878,6 @@ const RelaisOption: PageBaseConfig = {
                 text1: {
                     true: { type: 'const', constVal: 'decoupled' },
                     false: { type: 'const', constVal: 'coupled' },
-                },
-                setValue1: {
-                    type: 'internal',
-                    dp: 'cmd/detachRight',
                 },
             },
         },

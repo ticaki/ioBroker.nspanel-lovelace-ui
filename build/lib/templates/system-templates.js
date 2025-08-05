@@ -584,8 +584,7 @@ const ScreensaverBrightness = {
             color: { type: "const", constVal: import_Color.Color.Red }
           }
         },
-        text: { true: { type: "const", constVal: "DoubleClick" }, false: void 0 },
-        setValue1: { type: "internal", dp: "cmd/screenSaverDoubleClick" }
+        text: { true: { type: "const", constVal: "DoubleClick" }, false: void 0 }
       }
     },
     // slider Timeout to Screensaver
@@ -848,10 +847,6 @@ const RelaisOption = {
         text1: {
           true: { type: "const", constVal: "decoupled" },
           false: { type: "const", constVal: "coupled" }
-        },
-        setValue1: {
-          type: "internal",
-          dp: "cmd/detachLeft"
         }
       }
     },
@@ -882,10 +877,6 @@ const RelaisOption = {
         text1: {
           true: { type: "const", constVal: "decoupled" },
           false: { type: "const", constVal: "coupled" }
-        },
-        setValue1: {
-          type: "internal",
-          dp: "cmd/detachRight"
         }
       }
     }
