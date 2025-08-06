@@ -2643,9 +2643,9 @@ class ConfigManager extends import_library.BaseClass {
                   value: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id && await this.existsAndWriteableState(item.sliderItems[0].id) ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].ACTUAL,
                   set: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id && await this.existsAndWriteableState(item.sliderItems[0].id) ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].SET
                 },
-                heading3: {
+                heading1: {
                   type: "const",
-                  constVal: item.sliderItems && item.sliderItems[2] ? item.sliderItems[2].heading : "Slider 3"
+                  constVal: item.sliderItems && item.sliderItems[0] ? item.sliderItems[0].heading : "Slider 1"
                 },
                 minValue1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].minValue ? { type: "const", constVal: item.sliderItems[0].minValue } : void 0,
                 maxValue1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].maxValue ? { type: "const", constVal: item.sliderItems[0].maxValue } : void 0,
@@ -2667,9 +2667,9 @@ class ConfigManager extends import_library.BaseClass {
                   value: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id && await this.existsAndWriteableState(item.sliderItems[2].id) ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].ACTUAL3,
                   set: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id && await this.existsAndWriteableState(item.sliderItems[2].id) ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].SET3
                 },
-                heading1: {
+                heading3: {
                   type: "const",
-                  constVal: item.sliderItems && item.sliderItems[0] ? item.sliderItems[0].heading : "Slider 1"
+                  constVal: item.sliderItems && item.sliderItems[2] ? item.sliderItems[2].heading : "Slider 3"
                 },
                 minValue3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].minValue ? { type: "const", constVal: item.sliderItems[2].minValue } : void 0,
                 maxValue3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].maxValue ? { type: "const", constVal: item.sliderItems[2].maxValue } : void 0,

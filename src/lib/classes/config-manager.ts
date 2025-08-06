@@ -3086,12 +3086,12 @@ export class ConfigManager extends BaseClass {
                                             : foundedStates[role].SET,
                                 },
 
-                                heading3: {
+                                heading1: {
                                     type: 'const',
                                     constVal:
-                                        item.sliderItems && item.sliderItems[2]
-                                            ? item.sliderItems[2].heading
-                                            : 'Slider 3',
+                                        item.sliderItems && item.sliderItems[0]
+                                            ? item.sliderItems[0].heading
+                                            : 'Slider 1',
                                 },
                                 minValue1:
                                     item.sliderItems && item.sliderItems[0] && item.sliderItems[0].minValue
@@ -3165,12 +3165,12 @@ export class ConfigManager extends BaseClass {
                                             ? { type: 'triggered', dp: item.sliderItems[2].id }
                                             : foundedStates[role].SET3,
                                 },
-                                heading1: {
+                                heading3: {
                                     type: 'const',
                                     constVal:
-                                        item.sliderItems && item.sliderItems[0]
-                                            ? item.sliderItems[0].heading
-                                            : 'Slider 1',
+                                        item.sliderItems && item.sliderItems[2]
+                                            ? item.sliderItems[2].heading
+                                            : 'Slider 3',
                                 },
                                 minValue3:
                                     item.sliderItems && item.sliderItems[2] && item.sliderItems[2].minValue
