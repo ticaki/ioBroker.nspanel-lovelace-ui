@@ -1232,7 +1232,7 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = {
           type: "button",
           dpInit: item.id,
-          role: specialRole,
+          role: item.useValue ? specialRole : "",
           template: "button.humidity",
           data: {
             entity1: {
@@ -1283,7 +1283,7 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = {
           type: "button",
           dpInit: item.id,
-          role: specialRole,
+          role: item.useValue ? specialRole : "",
           template: "button.temperature",
           data: {
             entity1: {
@@ -1640,6 +1640,7 @@ class ConfigManager extends import_library.BaseClass {
           template: "button.slider",
           dpInit: item.id,
           type: "button",
+          role: item.useValue ? specialRole : "",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
@@ -2387,7 +2388,7 @@ class ConfigManager extends import_library.BaseClass {
                   if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
                     adapterRole = "iconNotText";
                   } else {
-                    adapterRole = specialRole;
+                    adapterRole = item.useValue ? specialRole : "";
                   }
                 }
                 break;
@@ -2399,7 +2400,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "thermometer";
                 iconOff = "snowflake-thermometer";
                 iconUnstable = "sun-thermometer";
-                adapterRole = specialRole;
+                adapterRole = item.useValue ? specialRole : "";
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2414,7 +2415,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "water-percent";
                 iconOff = "water-off";
                 iconUnstable = "water-percent-alert";
-                adapterRole = specialRole;
+                adapterRole = item.useValue ? specialRole : "";
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2491,7 +2492,7 @@ class ConfigManager extends import_library.BaseClass {
               template: "number.volume",
               dpInit: item.id,
               type: "number",
-              role: specialRole,
+              role: item.useValue ? specialRole : "",
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
@@ -2622,7 +2623,7 @@ class ConfigManager extends import_library.BaseClass {
             itemConfig = {
               dpInit: item.id,
               type: "number",
-              role: specialRole,
+              role: item.useValue ? specialRole : "",
               data: {
                 icon: {
                   true: {
@@ -2637,7 +2638,7 @@ class ConfigManager extends import_library.BaseClass {
                     value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   } : void 0,
-                  scale: { type: "const", constVal: { min: 0, max: 100 } }
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
                 },
                 entity1: {
                   value: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id && await this.existsAndWriteableState(item.sliderItems[0].id) ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].ACTUAL,

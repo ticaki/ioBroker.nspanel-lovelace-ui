@@ -1420,7 +1420,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = {
                     type: 'button',
                     dpInit: item.id,
-                    role: specialRole,
+                    role: item.useValue ? specialRole : '',
                     template: 'button.humidity',
                     data: {
                         entity1: {
@@ -1483,7 +1483,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = {
                     type: 'button',
                     dpInit: item.id,
-                    role: specialRole,
+                    role: item.useValue ? specialRole : '',
                     template: 'button.temperature',
                     data: {
                         entity1: {
@@ -1868,6 +1868,7 @@ export class ConfigManager extends BaseClass {
                     template: 'button.slider',
                     dpInit: item.id,
                     type: 'button',
+                    role: item.useValue ? specialRole : '',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
@@ -2772,7 +2773,7 @@ export class ConfigManager extends BaseClass {
                                     if (o?.common?.type === 'boolean') {
                                         adapterRole = 'iconNotText';
                                     } else {
-                                        adapterRole = specialRole;
+                                        adapterRole = item.useValue ? specialRole : '';
                                     }
                                 }
                                 break;
@@ -2784,7 +2785,7 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'thermometer';
                                 iconOff = 'snowflake-thermometer';
                                 iconUnstable = 'sun-thermometer';
-                                adapterRole = specialRole;
+                                adapterRole = item.useValue ? specialRole : '';
                                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                                     const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                                     if (o && o.common && o.common.unit) {
@@ -2799,7 +2800,7 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'water-percent';
                                 iconOff = 'water-off';
                                 iconUnstable = 'water-percent-alert';
-                                adapterRole = specialRole;
+                                adapterRole = item.useValue ? specialRole : '';
                                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                                     const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                                     if (o && o.common && o.common.unit) {
@@ -2899,7 +2900,7 @@ export class ConfigManager extends BaseClass {
                             template: 'number.volume',
                             dpInit: item.id,
                             type: 'number',
-                            role: specialRole,
+                            role: item.useValue ? specialRole : '',
                             color: {
                                 true: await this.getIconColor(item.onColor, this.colorOn),
                                 false: await this.getIconColor(item.offColor, this.colorOff),
@@ -3042,7 +3043,7 @@ export class ConfigManager extends BaseClass {
                         itemConfig = {
                             dpInit: item.id,
                             type: 'number',
-                            role: specialRole,
+                            role: item.useValue ? specialRole : '',
 
                             data: {
                                 icon: {
@@ -3065,7 +3066,9 @@ export class ConfigManager extends BaseClass {
                                               color: await this.getIconColor(item.offColor, this.colorOff),
                                           }
                                         : undefined,
-                                    scale: { type: 'const', constVal: { min: 0, max: 100 } },
+                                    scale: Types.isIconColorScaleElement(item.colorScale)
+                                        ? { type: 'const', constVal: item.colorScale }
+                                        : undefined,
                                 },
                                 entity1: {
                                     value:

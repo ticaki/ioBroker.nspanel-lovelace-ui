@@ -372,7 +372,10 @@ export class PageItem extends BaseClassTriggerd {
                         message.displayName = this.library.getTranslation(
                             (await tools.getEntryTextOnOff(item.text, true)) ?? '',
                         );
-                        message.icon = (await tools.getIconEntryValue(item.icon, value !== true, '')) ?? '';
+                        message.icon =
+                            entry.role === 'textNotIcon'
+                                ? ((await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '')
+                                : ((await tools.getIconEntryValue(item.icon, value !== true, '')) ?? '');
                         message.iconColor =
                             (await tools.getIconEntryColor(item.icon, value !== true, Color.HMIOn)) ?? '';
                         let min = item.entity1 && item.entity1.value && item.entity1.value.common.min;
