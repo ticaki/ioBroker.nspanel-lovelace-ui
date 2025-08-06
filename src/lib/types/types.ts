@@ -162,6 +162,7 @@ export function isPopupType(F: any): F is PopupType {
         case 'popupShutter2':
         case 'popupThermo':
         case 'popupTimer':
+        case 'popupSlider':
             return true;
         default:
             console.info(`Unknown PopupType: ${F} `);
@@ -207,7 +208,8 @@ export type PopupType =
     | 'popupShutter'
     | 'popupShutter2'
     | 'popupThermo'
-    | 'popupTimer';
+    | 'popupTimer'
+    | 'popupSlider'; // for slider in popup
 
 export type SerialTypePageElements =
     | 'button' //~button~button.entityName~3~17299~bt-name~bt-text

@@ -910,6 +910,71 @@ export class PageItem extends BaseClassTriggerd {
                     result.shutterClosedIsZero,
                 );
             }
+            case 'popupSlider': {
+                let result: typePageItem.entityUpdateDetailMessage = {
+                    type: 'popupSlider',
+                    entityName: '',
+                    tSlider1: '',
+                    tIconS1M: '',
+                    tIconS1P: '',
+                    hSlider1CurVal: '',
+                    hSlider1MinVal: '',
+                    hSlider1MaxVal: '',
+                    hSlider1ZeroVal: '',
+                    hSlider1Step: '',
+                    hSlider1Visibility: 'disable',
+                    tSlider2: '',
+                    tIconS2M: '',
+                    tIconS2P: '',
+                    hSlider2CurVal: '',
+                    hSlider2MinVal: '',
+                    hSlider2MaxVal: '',
+                    hSlider2ZeroVal: '',
+                    hSlider2Step: '',
+                    hSlider2Visibility: 'disable',
+                    tSlider3: '',
+                    tIconS3M: '',
+                    tIconS3P: '',
+                    hSlider3CurVal: '',
+                    hSlider3MinVal: '',
+                    hSlider3MaxVal: '',
+                    hSlider3ZeroVal: '',
+                    hSlider3Step: '',
+                    hSlider3Visibility: 'disable',
+                };
+                result = Object.assign(result, message);
+                return tools.getPayload(
+                    'entityUpdateDetail',
+                    result.entityName,
+                    result.tSlider1,
+                    result.tIconS1M,
+                    result.tIconS1P,
+                    result.hSlider1CurVal,
+                    result.hSlider1MinVal,
+                    result.hSlider1MaxVal,
+                    result.hSlider1ZeroVal,
+                    result.hSlider1Step,
+                    result.hSlider1Visibility,
+                    result.tSlider2,
+                    result.tIconS2M,
+                    result.tIconS2P,
+                    result.hSlider2CurVal,
+                    result.hSlider2MinVal,
+                    result.hSlider2MaxVal,
+                    result.hSlider2ZeroVal,
+                    result.hSlider2Step,
+                    result.hSlider2Visibility,
+                    result.tSlider3,
+                    result.tIconS3M,
+                    result.tIconS3P,
+                    result.hSlider3CurVal,
+                    result.hSlider3MinVal,
+                    result.hSlider3MaxVal,
+                    result.hSlider3ZeroVal,
+                    result.hSlider3Step,
+                    result.hSlider3Visibility,
+                );
+            }
         }
         return '';
     }
@@ -1573,8 +1638,67 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
                 }
-
                 break;
+            }
+            case 'popupSlider': {
+                if (entry.type !== 'number') {
+                    break;
+                }
+                const item = entry.data;
+                message.type = 'popupSlider';
+                if (!(message.type === 'popupSlider')) {
+                    break;
+                }
+                type EntityKey = '1' | '2' | '3';
+                for (let a = 1; a <= 3; a++) {
+                    const b = (['1', '2', '3'] as EntityKey[])[a - 1];
+                    const entity = item[`entity${b}`];
+                    if (!entity || !entity.value) {
+                        continue;
+                    }
+                    message[`hSlider${b}CurVal`] = String((await tools.getScaledNumber(entity)) ?? '');
+                    message[`hSlider${b}Visibility`] = 'enable';
+                    const heading = item[`heading${b}`];
+                    if (heading) {
+                        message[`tSlider${b}`] = this.library.getTranslation((await heading.getString()) ?? '');
+                    }
+                    message[`tIconS${b}M`] = Icons.GetIcon('minus-box');
+                    message[`tIconS${b}P`] = Icons.GetIcon('plus-box');
+
+                    const minValue = item[`minValue${b}`];
+                    message[`hSlider${b}MinVal`] = '0'; // default value
+                    if (minValue) {
+                        message[`hSlider${b}MinVal`] = String((await minValue.getNumber()) ?? '0');
+                    } else if (entity && entity.value && entity.value.common.min != undefined) {
+                        message[`hSlider${b}MinVal`] = String(entity.value.common.min);
+                    }
+
+                    const maxValue = item[`maxValue${b}`];
+                    message[`hSlider${b}MaxVal`] = '100'; // default value
+                    if (maxValue) {
+                        message[`hSlider${b}MaxVal`] = String((await maxValue.getNumber()) ?? '100');
+                    } else if (entity && entity.value && entity.value.common.max != undefined) {
+                        message[`hSlider${b}MaxVal`] = String(entity.value.common.max);
+                    }
+                    const steps = item[`steps${b}`];
+                    message[`hSlider${b}Step`] = '1'; // default value
+                    if (steps) {
+                        message[`hSlider${b}Step`] = String((await steps.getNumber()) ?? '1');
+                    } else if (entity && entity.value && entity.value.common.step != undefined) {
+                        message[`hSlider${b}Step`] = String(entity.value.common.step);
+                    }
+
+                    const zero = item[`zero${b}`];
+                    if (zero) {
+                        message[`hSlider${b}ZeroVal`] = String((await zero.getNumber()) ?? '');
+                    }
+                }
+                break;
+            }
+            default: {
+                // Exhaustiveness check
+                const _exhaustiveCheck: never = mode;
+                return _exhaustiveCheck;
             }
         }
 
@@ -2056,6 +2180,28 @@ export class PageItem extends BaseClassTriggerd {
                         let v = parseInt(value.trim());
                         v = !this.adapter.config.shutterClosedIsZero ? 100 - v : v;
                         await tools.setValueEntry(items.entity2, v);
+                    }
+                }
+                break;
+            }
+            case 'positionSlider1':
+            case 'positionSlider2':
+            case 'positionSlider3': {
+                if (entry.type !== 'number') {
+                    break;
+                }
+                const item = entry.data;
+                type EntityKey = '1' | '2' | '3';
+                for (let a = 1; a <= 3; a++) {
+                    const b = (['1', '2', '3'] as EntityKey[])[a - 1];
+                    if (action === `positionSlider${b}` && item[`entity${b}`]) {
+                        const entity = item[`entity${b}`];
+                        if (entity) {
+                            {
+                                const v = parseInt(value.trim());
+                                await tools.setScaledNumber(entity, v);
+                            }
+                        }
                     }
                 }
                 break;

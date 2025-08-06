@@ -273,7 +273,7 @@ export async function setScaledNumber(
         }
         if (i.set && i.set.writeable) {
             await i.set.setStateAsync(value);
-        } else if (nval !== value) {
+        } else if (i.value.writeable && nval !== value) {
             await i.value.setStateAsync(value);
         }
     }

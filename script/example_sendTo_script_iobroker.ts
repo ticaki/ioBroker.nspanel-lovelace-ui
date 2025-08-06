@@ -475,7 +475,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.8.8';
+const version = '0.9.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -957,8 +957,20 @@ declare namespace ScriptConfig {
              * @deprecated unused in adapter
              */
             popupVersion?: number
+            shutterType?: string;
+            sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
     };
 
+    type sliderItems = {
+        heading: string;
+        icon1?: string;
+        icon2?: string;
+        minValue?: number;
+        maxValue?: number;
+        stepValue?: number;
+        zeroValue?: boolean;
+        id?: string; // writeable overwrite actual and set
+    };
     type shutterIcons = {
         id: string;
         icon: string;

@@ -254,7 +254,11 @@ const checkedDatapoints = {
   },
   slider: {
     SET: null,
-    ACTUAL: null
+    ACTUAL: null,
+    SET2: null,
+    ACTUAL2: null,
+    SET3: null,
+    ACTUAL3: null
   },
   socket: {
     ACTUAL: null,
@@ -654,14 +658,35 @@ const requiredScriptDataPoints = {
     name: "slider",
     description: "Slider to set a numerical value",
     data: {
-      SET: { role: "level", type: "number", required: true, writeable: true },
+      SET: { role: "level", type: "number", required: true, writeable: true, useKey: true },
       ACTUAL: {
         role: ["value", "level"],
         type: "number",
         required: false,
         writeable: false,
         trigger: true,
-        alternate: "SET"
+        alternate: "SET",
+        useKey: true
+      },
+      SET2: { role: "level", type: "number", required: false, writeable: true, useKey: true },
+      ACTUAL2: {
+        role: ["value", "level"],
+        type: "number",
+        required: false,
+        writeable: false,
+        trigger: true,
+        alternate: "SET2",
+        useKey: true
+      },
+      SET3: { role: "level", type: "number", required: false, writeable: true, useKey: true },
+      ACTUAL3: {
+        role: ["value", "level"],
+        type: "number",
+        required: false,
+        writeable: false,
+        trigger: true,
+        alternate: "SET3",
+        useKey: true
       }
     }
   },

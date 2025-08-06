@@ -258,6 +258,10 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     slider: {
         SET: null,
         ACTUAL: null,
+        SET2: null,
+        ACTUAL2: null,
+        SET3: null,
+        ACTUAL3: null,
     },
     socket: {
         ACTUAL: null,
@@ -380,7 +384,10 @@ export type mydps =
     | 'VACATION'
     | 'VALUE'
     | 'WINDOWOPEN'
-    | 'WORKING';
+    | 'WORKING'
+    | 'ACTUAL2'
+    | 'ACTUAL3'
+    | 'SET3';
 
 export type requiredDatapoints = Pick<requiredDatapoints2, ScriptConfig.channelRoles>;
 
@@ -569,6 +576,10 @@ type requiredDatapoints2 = {
         data: {
             SET: Datapoint;
             ACTUAL: Datapoint;
+            SET2: Datapoint;
+            ACTUAL2: Datapoint;
+            SET3: Datapoint;
+            ACTUAL3: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -1043,7 +1054,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'slider',
         description: 'Slider to set a numerical value',
         data: {
-            SET: { role: 'level', type: 'number', required: true, writeable: true },
+            SET: { role: 'level', type: 'number', required: true, writeable: true, useKey: true },
             ACTUAL: {
                 role: ['value', 'level'],
                 type: 'number',
@@ -1051,6 +1062,27 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 writeable: false,
                 trigger: true,
                 alternate: 'SET',
+                useKey: true,
+            },
+            SET2: { role: 'level', type: 'number', required: false, writeable: true, useKey: true },
+            ACTUAL2: {
+                role: ['value', 'level'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET2',
+                useKey: true,
+            },
+            SET3: { role: 'level', type: 'number', required: false, writeable: true, useKey: true },
+            ACTUAL3: {
+                role: ['value', 'level'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET3',
+                useKey: true,
             },
         },
     },

@@ -2005,7 +2005,7 @@ export class ConfigManager extends BaseClass {
                             `${dpInit}.`,
                             entry2.role,
                             '',
-                            entry2.useKey ? new RegExp(`.${dp}$`.replaceAll('.', '\\.')) : undefined,
+                            entry2.useKey ? new RegExp(`.${alternate}$`.replaceAll('.', '\\.')) : undefined,
                             entry.trigger,
                             entry2.writeable,
                             entry.type,
@@ -3042,28 +3042,139 @@ export class ConfigManager extends BaseClass {
                             }
                         }
                         itemConfig = {
-                            template: 'number.slider',
                             dpInit: item.id,
                             type: 'number',
                             role: specialRole,
-                            color: {
-                                true: await this.getIconColor(item.onColor, this.colorOn),
-                                false: await this.getIconColor(item.offColor, this.colorOff),
-                                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                            },
-                            icon: {
-                                true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                                false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                            },
+
                             data: {
-                                entity1: {
-                                    value: foundedStates[role].ACTUAL,
-                                    unit:
-                                        item.unit || commonUnit
-                                            ? { type: 'const', constVal: item.unit || commonUnit }
-                                            : undefined,
+                                icon: {
+                                    true: {
+                                        value: item.icon
+                                            ? { type: 'const', constVal: item.icon }
+                                            : { type: 'const', constVal: 'plus-minus-variant' },
+                                        text: {
+                                            value: foundedStates[role].ACTUAL,
+                                            unit:
+                                                item.unit || commonUnit
+                                                    ? { type: 'const', constVal: item.unit || commonUnit }
+                                                    : undefined,
+                                        },
+                                        color: await this.getIconColor(item.onColor, this.colorOn),
+                                    },
+                                    false: item.icon2
+                                        ? {
+                                              value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                              color: await this.getIconColor(item.offColor, this.colorOff),
+                                          }
+                                        : undefined,
+                                    scale: { type: 'const', constVal: { min: 0, max: 100 } },
                                 },
-                                text: text,
+                                entity1: {
+                                    value:
+                                        item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id
+                                            ? { type: 'triggered', dp: item.sliderItems[0].id }
+                                            : foundedStates[role].ACTUAL,
+                                    set:
+                                        item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id
+                                            ? { type: 'triggered', dp: item.sliderItems[0].id }
+                                            : foundedStates[role].SET,
+                                },
+
+                                heading3: {
+                                    type: 'const',
+                                    constVal:
+                                        item.sliderItems && item.sliderItems[2]
+                                            ? item.sliderItems[2].heading
+                                            : 'Slider 3',
+                                },
+                                minValue1:
+                                    item.sliderItems && item.sliderItems[0] && item.sliderItems[0].minValue
+                                        ? { type: 'const', constVal: item.sliderItems[0].minValue }
+                                        : undefined,
+                                maxValue1:
+                                    item.sliderItems && item.sliderItems[0] && item.sliderItems[0].maxValue
+                                        ? { type: 'const', constVal: item.sliderItems[0].maxValue }
+                                        : undefined,
+                                zero1:
+                                    item.sliderItems && item.sliderItems[0] && item.sliderItems[0].zeroValue
+                                        ? { type: 'const', constVal: item.sliderItems[0].zeroValue }
+                                        : undefined,
+                                steps1:
+                                    item.sliderItems && item.sliderItems[0] && item.sliderItems[0].stepValue
+                                        ? { type: 'const', constVal: item.sliderItems[0].stepValue }
+                                        : undefined,
+
+                                entity2: {
+                                    value:
+                                        item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id
+                                            ? { type: 'triggered', dp: item.sliderItems[1].id }
+                                            : foundedStates[role].ACTUAL2,
+                                    set:
+                                        item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id
+                                            ? { type: 'triggered', dp: item.sliderItems[1].id }
+                                            : foundedStates[role].SET2,
+                                },
+                                heading2: {
+                                    type: 'const',
+                                    constVal:
+                                        item.sliderItems && item.sliderItems[1]
+                                            ? item.sliderItems[1].heading
+                                            : 'Slider 2',
+                                },
+                                minValue2:
+                                    item.sliderItems && item.sliderItems[1] && item.sliderItems[1].minValue
+                                        ? { type: 'const', constVal: item.sliderItems[1].minValue }
+                                        : undefined,
+                                maxValue2:
+                                    item.sliderItems && item.sliderItems[1] && item.sliderItems[1].maxValue
+                                        ? { type: 'const', constVal: item.sliderItems[1].maxValue }
+                                        : undefined,
+                                zero2:
+                                    item.sliderItems && item.sliderItems[1] && item.sliderItems[1].zeroValue
+                                        ? { type: 'const', constVal: item.sliderItems[1].zeroValue }
+                                        : undefined,
+                                steps2:
+                                    item.sliderItems && item.sliderItems[1] && item.sliderItems[1].stepValue
+                                        ? { type: 'const', constVal: item.sliderItems[1].stepValue }
+                                        : undefined,
+                                entity3: {
+                                    value:
+                                        item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id
+                                            ? { type: 'triggered', dp: item.sliderItems[2].id }
+                                            : foundedStates[role].ACTUAL3,
+                                    set:
+                                        item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id
+                                            ? { type: 'triggered', dp: item.sliderItems[2].id }
+                                            : foundedStates[role].SET3,
+                                },
+                                heading1: {
+                                    type: 'const',
+                                    constVal:
+                                        item.sliderItems && item.sliderItems[0]
+                                            ? item.sliderItems[0].heading
+                                            : 'Slider 1',
+                                },
+                                minValue3:
+                                    item.sliderItems && item.sliderItems[2] && item.sliderItems[2].minValue
+                                        ? { type: 'const', constVal: item.sliderItems[2].minValue }
+                                        : undefined,
+                                maxValue3:
+                                    item.sliderItems && item.sliderItems[2] && item.sliderItems[2].maxValue
+                                        ? { type: 'const', constVal: item.sliderItems[2].maxValue }
+                                        : undefined,
+                                zero3:
+                                    item.sliderItems && item.sliderItems[2] && item.sliderItems[2].zeroValue
+                                        ? { type: 'const', constVal: item.sliderItems[2].zeroValue }
+                                        : undefined,
+                                steps3:
+                                    item.sliderItems && item.sliderItems[2] && item.sliderItems[2].stepValue
+                                        ? { type: 'const', constVal: item.sliderItems[2].stepValue }
+                                        : undefined,
+
+                                text: {
+                                    true: { type: 'const', constVal: item.name || 'slider' },
+                                    false: undefined,
+                                },
                             },
                         };
                         break;
