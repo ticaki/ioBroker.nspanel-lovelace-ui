@@ -156,6 +156,8 @@
     "StateObjects.isOnline": "Є в Інтернеті",
     "StateObjects.status": "Статус JSON",
     "useBetaTFTText": "Бета -прошивка TFT у використанні",
+    "useBetaVersionText": "Бета -версія, що використовується",
+    "useBetaVersion": "Використовуйте бета -версію",
     "headerDateFormat": "Формат дати",
     "openTasmotaConsole": "Відкрита консоль Тасмоти",
     "tasmotaUpdate": "Оновлення Тасмоти",

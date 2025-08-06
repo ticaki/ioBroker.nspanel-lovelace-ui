@@ -156,6 +156,8 @@
     "StateObjects.isOnline": "在线",
     "StateObjects.status": "状态JSON",
     "useBetaTFTText": "使用的beta tft固件",
+    "useBetaVersionText": "使用的beta版本",
+    "useBetaVersion": "使用beta版本",
     "headerDateFormat": "日期格式",
     "openTasmotaConsole": "打开tasmota控制台",
     "tasmotaUpdate": "tasmota更新",

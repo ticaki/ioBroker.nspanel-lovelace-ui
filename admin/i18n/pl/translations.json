@@ -156,6 +156,8 @@
     "StateObjects.isOnline": "Jest online",
     "StateObjects.status": "Status Json",
     "useBetaTFTText": "W użyciu oprogramowanie układowe beta tft",
+    "useBetaVersionText": "Używana wersja beta",
+    "useBetaVersion": "Użyj wersji beta",
     "headerDateFormat": "Format daty",
     "openTasmotaConsole": "Otwarta konsola Tasmota",
     "tasmotaUpdate": "Aktualizacja Tasmota",
