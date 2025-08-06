@@ -5283,7 +5283,63 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753309215567,
-    "val": 52,
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.Slider.ACTUAL2": {
+    "_id": "alias.0.Slider.ACTUAL2",
+    "type": "state",
+    "common": {
+      "name": "Actual2",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Slider.Actual2"
+      },
+      "desc": "Manuell erzeugt",
+      "unit": "%",
+      "role": "value",
+      "read": true,
+      "write": false
+    },
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1754486384927,
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": 100,
+    "ack": false
+  },
+  "alias.0.Slider.ACTUAL3": {
+    "_id": "alias.0.Slider.ACTUAL3",
+    "type": "state",
+    "common": {
+      "name": "Actual1",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Slider.Actual3"
+      },
+      "desc": "Manuell erzeugt",
+      "role": "value",
+      "read": true,
+      "write": false,
+      "unit": "%"
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1754487019368,
+    "val": 100,
     "ack": false
   },
   "alias.0.Slider.SET": {
@@ -5312,7 +5368,63 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753115382220,
-    "val": 29,
+    "val": 57,
+    "ack": false
+  },
+  "alias.0.Slider.SET2": {
+    "_id": "alias.0.Slider.SET2",
+    "type": "state",
+    "common": {
+      "name": "Set2",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Slider.Set2"
+      },
+      "desc": "Manuell erzeugt",
+      "unit": "%",
+      "role": "level",
+      "read": true,
+      "write": true
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1754486592836,
+    "val": 32,
+    "ack": false
+  },
+  "alias.0.Slider.SET3": {
+    "_id": "alias.0.Slider.SET3",
+    "type": "state",
+    "common": {
+      "name": "Set1",
+      "type": "number",
+      "alias": {
+        "id": "0_userdata.0.Slider.Set3"
+      },
+      "desc": "Manuell erzeugt",
+      "unit": "%",
+      "role": "level",
+      "read": true,
+      "write": true
+    },
+    "native": {},
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1754487030905,
+    "val": 31,
     "ack": false
   },
   "alias.0.Socket": {

@@ -886,7 +886,7 @@ export class Panel extends BaseClass {
     sendRules(): void {
         this.sendToTasmota(
             `${this.topic}/cmnd/Rule3`,
-            `ON CustomSend DO RuleTimer3 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON${
+            `ON CustomSend DO RuleTimer3 120 ENDON ON Rules#Timer=3 DO CustomSend pageType~pageStartup ENDON${
                 this.detach.left
                     ? ` ON Button1#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button1"} ENDON`
                     : ''

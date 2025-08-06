@@ -151,8 +151,12 @@
 ### slider
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **slider** | ~~SET~~ | number| level  | X | X |  | 
-| **"** | ~~ACTUAL~~ | number| value, level  |  |  |  | 
+| **slider** | SET | number| level  | X | X |  | 
+| **"** | ACTUAL | number| value, level  |  |  |  | 
+| **"** | SET2 | number| level  |  | X |  | 
+| **"** | ACTUAL2 | number| value, level  |  |  |  | 
+| **"** | SET3 | number| level  |  | X |  | 
+| **"** | ACTUAL3 | number| value, level  |  |  |  | 
 ### socket
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

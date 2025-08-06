@@ -69,6 +69,7 @@ function isPopupType(F) {
     case "popupShutter2":
     case "popupThermo":
     case "popupTimer":
+    case "popupSlider":
       return true;
     default:
       console.info(`Unknown PopupType: ${F} `);

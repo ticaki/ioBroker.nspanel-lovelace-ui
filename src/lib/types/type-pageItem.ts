@@ -128,6 +128,39 @@ export type entityUpdateDetailMessage =
           string
       >)
     | ({
+          type: 'popupSlider';
+      } & Record<
+          | 'entityName'
+          | 'tSlider1'
+          | 'tSlider2'
+          | 'tSlider3'
+          | 'tIconS1M'
+          | 'tIconS1P'
+          | 'tIconS2M'
+          | 'tIconS2P'
+          | 'tIconS3M'
+          | 'tIconS3P'
+          | 'hSlider1CurVal'
+          | 'hSlider2CurVal'
+          | 'hSlider3CurVal'
+          | 'hSlider1MaxVal'
+          | 'hSlider2MaxVal'
+          | 'hSlider3MaxVal'
+          | 'hSlider1MinVal'
+          | 'hSlider2MinVal'
+          | 'hSlider3MinVal'
+          | 'hSlider1ZeroVal'
+          | 'hSlider2ZeroVal'
+          | 'hSlider3ZeroVal'
+          | 'hSlider1Step'
+          | 'hSlider2Step'
+          | 'hSlider3Step'
+          | 'hSlider1Visibility'
+          | 'hSlider2Visibility'
+          | 'hSlider3Visibility',
+          string
+      >)
+    | ({
           type: 'popupTimer';
       } & Record<
           | 'entityName'
@@ -289,7 +322,30 @@ export type PageItemFanDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'switch1' | 'text' | 'icon' | 'minValue1' | 'maxValue1'>;
+export type PageItemNumber = Pick<
+    PageItemBase,
+    | 'switch1'
+    | 'text'
+    | 'icon'
+    | 'entity1'
+    | 'minValue1'
+    | 'maxValue1'
+    | 'steps1'
+    | 'zero1'
+    | 'entity2'
+    | 'minValue2'
+    | 'maxValue2'
+    | 'steps2'
+    | 'zero2'
+    | 'entity3'
+    | 'minValue3'
+    | 'maxValue3'
+    | 'steps3'
+    | 'zero3'
+    | 'heading1'
+    | 'heading2'
+    | 'heading3'
+>;
 export type PageItemNumberDataItemsOptions = {
     type: 'number';
     data: pages.ChangeTypeOfKeys<PageItemNumber, Types.DataItemsOptions | undefined>;
@@ -496,6 +552,17 @@ export type PageItemBase = {
     minValue1?: number;
     minValue2?: number;
     maxValue2?: number;
+    minValue3?: number;
+    maxValue3?: number;
+    heading1: string; // heading for slider
+    heading2?: string; // heading for slider
+    heading3?: string; // heading for slider
+    steps1?: number; // steps for slider
+    steps2?: number; // steps for slider
+    steps3?: number; // steps for slider
+    zero1?: number; // zero for slider
+    zero2?: number; // zero for slider
+    zero3?: number; // zero for slider
     interpolateColor?: boolean;
     dimmer?: ScaledNumberType;
     speed?: ScaledNumberType;

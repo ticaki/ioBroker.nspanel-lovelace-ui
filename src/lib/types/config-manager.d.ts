@@ -443,8 +443,19 @@ declare namespace ScriptConfig {
         actionStringArray?: string[];
         alwaysOnDisplay?: boolean;
         shutterType?: string;
+        sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
     };
 
+    type sliderItems = {
+        heading: string;
+        icon1?: string;
+        icon2?: string;
+        minValue?: number;
+        maxValue?: number;
+        stepValue?: number;
+        zeroValue?: boolean;
+        id?: string; // writeable overwrite actual and set
+    };
     type shutterIcons = {
         id: string;
         icon: string;

@@ -1232,7 +1232,7 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = {
           type: "button",
           dpInit: item.id,
-          role: specialRole,
+          role: item.useValue ? specialRole : "",
           template: "button.humidity",
           data: {
             entity1: {
@@ -1283,7 +1283,7 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = {
           type: "button",
           dpInit: item.id,
-          role: specialRole,
+          role: item.useValue ? specialRole : "",
           template: "button.temperature",
           data: {
             entity1: {
@@ -1555,7 +1555,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : { val_min: 0, val_max: 100 }
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1640,6 +1640,7 @@ class ConfigManager extends import_library.BaseClass {
           template: "button.slider",
           dpInit: item.id,
           type: "button",
+          role: specialRole,
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
@@ -1755,7 +1756,7 @@ class ConfigManager extends import_library.BaseClass {
               `${dpInit}.`,
               entry2.role,
               "",
-              entry2.useKey ? new RegExp(`.${dp}$`.replaceAll(".", "\\.")) : void 0,
+              entry2.useKey ? new RegExp(`.${alternate}$`.replaceAll(".", "\\.")) : void 0,
               entry.trigger,
               entry2.writeable,
               entry.type
@@ -2387,7 +2388,7 @@ class ConfigManager extends import_library.BaseClass {
                   if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
                     adapterRole = "iconNotText";
                   } else {
-                    adapterRole = specialRole;
+                    adapterRole = item.useValue ? specialRole : "";
                   }
                 }
                 break;
@@ -2399,7 +2400,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "thermometer";
                 iconOff = "snowflake-thermometer";
                 iconUnstable = "sun-thermometer";
-                adapterRole = specialRole;
+                adapterRole = item.useValue ? specialRole : "";
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2414,7 +2415,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "water-percent";
                 iconOff = "water-off";
                 iconUnstable = "water-percent-alert";
-                adapterRole = specialRole;
+                adapterRole = item.useValue ? specialRole : "";
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2491,7 +2492,7 @@ class ConfigManager extends import_library.BaseClass {
               template: "number.volume",
               dpInit: item.id,
               type: "number",
-              role: specialRole,
+              role: item.useValue ? specialRole : "",
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
@@ -2620,25 +2621,65 @@ class ConfigManager extends import_library.BaseClass {
               }
             }
             itemConfig = {
-              template: "number.slider",
               dpInit: item.id,
               type: "number",
-              role: specialRole,
-              color: {
-                true: await this.getIconColor(item.onColor, this.colorOn),
-                false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
-              },
-              icon: {
-                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
-              },
+              role: item.useValue ? specialRole : "",
               data: {
-                entity1: {
-                  value: foundedStates[role].ACTUAL,
-                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+                icon: {
+                  true: {
+                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "plus-minus-variant" },
+                    text: {
+                      value: foundedStates[role].ACTUAL,
+                      unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+                    },
+                    color: await this.getIconColor(item.onColor, this.colorOn)
+                  },
+                  false: item.icon2 ? {
+                    value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
+                    color: await this.getIconColor(item.offColor, this.colorOff)
+                  } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
                 },
-                text
+                entity1: {
+                  value: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id && await this.existsAndWriteableState(item.sliderItems[0].id) ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].ACTUAL,
+                  set: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id && await this.existsAndWriteableState(item.sliderItems[0].id) ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].SET
+                },
+                heading1: {
+                  type: "const",
+                  constVal: item.sliderItems && item.sliderItems[0] ? item.sliderItems[0].heading : "Slider 1"
+                },
+                minValue1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].minValue ? { type: "const", constVal: item.sliderItems[0].minValue } : void 0,
+                maxValue1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].maxValue ? { type: "const", constVal: item.sliderItems[0].maxValue } : void 0,
+                zero1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].zeroValue ? { type: "const", constVal: item.sliderItems[0].zeroValue } : void 0,
+                steps1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].stepValue ? { type: "const", constVal: item.sliderItems[0].stepValue } : void 0,
+                entity2: {
+                  value: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id && await this.existsAndWriteableState(item.sliderItems[1].id) ? { type: "triggered", dp: item.sliderItems[1].id } : foundedStates[role].ACTUAL2,
+                  set: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id && await this.existsAndWriteableState(item.sliderItems[1].id) ? { type: "triggered", dp: item.sliderItems[1].id } : foundedStates[role].SET2
+                },
+                heading2: {
+                  type: "const",
+                  constVal: item.sliderItems && item.sliderItems[1] ? item.sliderItems[1].heading : "Slider 2"
+                },
+                minValue2: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].minValue ? { type: "const", constVal: item.sliderItems[1].minValue } : void 0,
+                maxValue2: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].maxValue ? { type: "const", constVal: item.sliderItems[1].maxValue } : void 0,
+                zero2: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].zeroValue ? { type: "const", constVal: item.sliderItems[1].zeroValue } : void 0,
+                steps2: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].stepValue ? { type: "const", constVal: item.sliderItems[1].stepValue } : void 0,
+                entity3: {
+                  value: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id && await this.existsAndWriteableState(item.sliderItems[2].id) ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].ACTUAL3,
+                  set: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id && await this.existsAndWriteableState(item.sliderItems[2].id) ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].SET3
+                },
+                heading3: {
+                  type: "const",
+                  constVal: item.sliderItems && item.sliderItems[2] ? item.sliderItems[2].heading : "Slider 3"
+                },
+                minValue3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].minValue ? { type: "const", constVal: item.sliderItems[2].minValue } : void 0,
+                maxValue3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].maxValue ? { type: "const", constVal: item.sliderItems[2].maxValue } : void 0,
+                zero3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].zeroValue ? { type: "const", constVal: item.sliderItems[2].zeroValue } : void 0,
+                steps3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].stepValue ? { type: "const", constVal: item.sliderItems[2].stepValue } : void 0,
+                text: {
+                  true: { type: "const", constVal: item.name || "slider" },
+                  false: void 0
+                }
               }
             };
             break;
