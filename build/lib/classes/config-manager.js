@@ -2640,8 +2640,8 @@ class ConfigManager extends import_library.BaseClass {
                   scale: { type: "const", constVal: { min: 0, max: 100 } }
                 },
                 entity1: {
-                  value: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].ACTUAL,
-                  set: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].SET
+                  value: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id && await this.existsAndWriteableState(item.sliderItems[0].id) ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].ACTUAL,
+                  set: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id && await this.existsAndWriteableState(item.sliderItems[0].id) ? { type: "triggered", dp: item.sliderItems[0].id } : foundedStates[role].SET
                 },
                 heading3: {
                   type: "const",
@@ -2652,8 +2652,8 @@ class ConfigManager extends import_library.BaseClass {
                 zero1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].zeroValue ? { type: "const", constVal: item.sliderItems[0].zeroValue } : void 0,
                 steps1: item.sliderItems && item.sliderItems[0] && item.sliderItems[0].stepValue ? { type: "const", constVal: item.sliderItems[0].stepValue } : void 0,
                 entity2: {
-                  value: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id ? { type: "triggered", dp: item.sliderItems[1].id } : foundedStates[role].ACTUAL2,
-                  set: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id ? { type: "triggered", dp: item.sliderItems[1].id } : foundedStates[role].SET2
+                  value: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id && await this.existsAndWriteableState(item.sliderItems[1].id) ? { type: "triggered", dp: item.sliderItems[1].id } : foundedStates[role].ACTUAL2,
+                  set: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id && await this.existsAndWriteableState(item.sliderItems[1].id) ? { type: "triggered", dp: item.sliderItems[1].id } : foundedStates[role].SET2
                 },
                 heading2: {
                   type: "const",
@@ -2664,8 +2664,8 @@ class ConfigManager extends import_library.BaseClass {
                 zero2: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].zeroValue ? { type: "const", constVal: item.sliderItems[1].zeroValue } : void 0,
                 steps2: item.sliderItems && item.sliderItems[1] && item.sliderItems[1].stepValue ? { type: "const", constVal: item.sliderItems[1].stepValue } : void 0,
                 entity3: {
-                  value: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].ACTUAL3,
-                  set: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].SET3
+                  value: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id && await this.existsAndWriteableState(item.sliderItems[2].id) ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].ACTUAL3,
+                  set: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id && await this.existsAndWriteableState(item.sliderItems[2].id) ? { type: "triggered", dp: item.sliderItems[2].id } : foundedStates[role].SET3
                 },
                 heading1: {
                   type: "const",

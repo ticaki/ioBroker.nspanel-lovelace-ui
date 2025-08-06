@@ -3071,11 +3071,17 @@ export class ConfigManager extends BaseClass {
                                 },
                                 entity1: {
                                     value:
-                                        item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id
+                                        item.sliderItems &&
+                                        item.sliderItems[0] &&
+                                        item.sliderItems[0].id &&
+                                        (await this.existsAndWriteableState(item.sliderItems[0].id))
                                             ? { type: 'triggered', dp: item.sliderItems[0].id }
                                             : foundedStates[role].ACTUAL,
                                     set:
-                                        item.sliderItems && item.sliderItems[0] && item.sliderItems[0].id
+                                        item.sliderItems &&
+                                        item.sliderItems[0] &&
+                                        item.sliderItems[0].id &&
+                                        (await this.existsAndWriteableState(item.sliderItems[0].id))
                                             ? { type: 'triggered', dp: item.sliderItems[0].id }
                                             : foundedStates[role].SET,
                                 },
@@ -3106,11 +3112,17 @@ export class ConfigManager extends BaseClass {
 
                                 entity2: {
                                     value:
-                                        item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id
+                                        item.sliderItems &&
+                                        item.sliderItems[1] &&
+                                        item.sliderItems[1].id &&
+                                        (await this.existsAndWriteableState(item.sliderItems[1].id))
                                             ? { type: 'triggered', dp: item.sliderItems[1].id }
                                             : foundedStates[role].ACTUAL2,
                                     set:
-                                        item.sliderItems && item.sliderItems[1] && item.sliderItems[1].id
+                                        item.sliderItems &&
+                                        item.sliderItems[1] &&
+                                        item.sliderItems[1].id &&
+                                        (await this.existsAndWriteableState(item.sliderItems[1].id))
                                             ? { type: 'triggered', dp: item.sliderItems[1].id }
                                             : foundedStates[role].SET2,
                                 },
@@ -3139,11 +3151,17 @@ export class ConfigManager extends BaseClass {
                                         : undefined,
                                 entity3: {
                                     value:
-                                        item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id
+                                        item.sliderItems &&
+                                        item.sliderItems[2] &&
+                                        item.sliderItems[2].id &&
+                                        (await this.existsAndWriteableState(item.sliderItems[2].id))
                                             ? { type: 'triggered', dp: item.sliderItems[2].id }
                                             : foundedStates[role].ACTUAL3,
                                     set:
-                                        item.sliderItems && item.sliderItems[2] && item.sliderItems[2].id
+                                        item.sliderItems &&
+                                        item.sliderItems[2] &&
+                                        item.sliderItems[2].id &&
+                                        (await this.existsAndWriteableState(item.sliderItems[2].id))
                                             ? { type: 'triggered', dp: item.sliderItems[2].id }
                                             : foundedStates[role].SET3,
                                 },
