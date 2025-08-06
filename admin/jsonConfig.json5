@@ -263,8 +263,8 @@
             "items": {
                 "_useBetaTFTText": {
                     "type": "staticText",
-                    "label": "useBetaTFTText",
-                    "text": "useBetaTFTText",
+                    "label": "useBetaVersionText",
+                    "text": "useBetaVersionText",
                     "style": {
                         "color": "red"
                     },
@@ -581,7 +581,7 @@
                 },
                 "useBetaTFT": {
                     "type": "checkbox",
-                    "label": "useBetaTFT",
+                    "label": "useBetaVersion",
                     "default": false,
                     "newLine": true,
                     "expertMode": true,
@@ -652,8 +652,8 @@
             "items": {
                 "_useBetaTFTText": {
                     "type": "staticText",
-                    "label": "useBetaTFTText",
-                    "text": "useBetaTFTText",
+                    "label": "useBetaVersionText",
+                    "text": "useBetaVersionText",
                     "style": {
                         "color": "red"
                     },
