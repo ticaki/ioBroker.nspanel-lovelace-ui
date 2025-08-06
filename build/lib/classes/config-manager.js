@@ -1640,7 +1640,7 @@ class ConfigManager extends import_library.BaseClass {
           template: "button.slider",
           dpInit: item.id,
           type: "button",
-          role: item.useValue ? specialRole : "",
+          role: specialRole,
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
