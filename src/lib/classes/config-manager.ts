@@ -1780,9 +1780,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
-                        scale: Types.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : { val_min: 0, val_max: 100 },
+                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
