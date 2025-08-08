@@ -74,7 +74,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - [x] popupLight
 - [x] popupLight2
 - [x] popupTimer
-- [ ] popupSlider
+- [x] popupSlider
 - [ ] popupColor (new - in progress)
 
 ---
