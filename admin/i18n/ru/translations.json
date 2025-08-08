@@ -219,5 +219,7 @@
     "labelmaxXAxisLabels": "Количество ярлыков оси X",
     "openLinkWikiPageChart": "Открыть страницу вики для PageChart",
     "shutterClosedIsZero": "Положение 0 отображается как полностью закрытое (максимально расширенное).",
-    "hideCards": "Скрыть страницы"
+    "hideCards": "Скрыть страницы",
+    "hiddenByTrigger": "Скрыть страницу",
+    "headerShutter": "Контроль затвора"
 }

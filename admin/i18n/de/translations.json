@@ -219,5 +219,7 @@
     "labelmaxXAxisLabels": "Anzahl X-Achsen-Beschriftungen",
     "openLinkWikiPageChart": "Wiki-Seite für PageChart öffnen",
     "shutterClosedIsZero": "Die Position von 0 wird als vollständig geschlossen angezeigt (maximal ausgefahren).",
-    "hideCards": "Seiten verbergen"
+    "hideCards": "Seiten verbergen",
+    "hiddenByTrigger": "Seite verbergen",
+    "headerShutter": "Rollladensteuerung"
 }

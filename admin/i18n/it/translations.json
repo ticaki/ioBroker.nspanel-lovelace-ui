@@ -106,7 +106,7 @@
     "tftInstallSendToMQTTHelp": "Aggiorna il firmware TFT sul pannello.",
     "check!": "Controllo!",
     "updateAvailable": "Aggiornamento disponibile",
-    "nsPanelInit": "NSPanel initialization",
+    "nsPanelInit": "Inizializzazione NSPanel",
     "nsPanelUpdate": "Aggiornamento di configurazione NSPanel",
     "nsPanelModel": "Nspanel hardwaremodel",
     "NSPanel_configuration_text": "Aggiunto il Tasmota Nspanel all'adattatore. Sovrascrivi le impostazioni con valori predefiniti. Richiede circa 40 secondi.",
@@ -152,7 +152,7 @@
     "StateObjects.mqttClientId": "ID client MQTT",
     "StateObjects.onlineVersion": "Versione del firmware online",
     "StateObjects.safeboot": "Avvio sicuro",
-    "StateObjects.uptime": "Uptime",
+    "StateObjects.uptime": "Tempo di attività",
     "StateObjects.isOnline": "È online",
     "StateObjects.status": "Stato JSON",
     "useBetaTFTText": "Firmware beta tft in uso",
@@ -219,5 +219,7 @@
     "labelmaxXAxisLabels": "Numero di etichette dell'asse X",
     "openLinkWikiPageChart": "Pagina wiki aperta per PageChart",
     "shutterClosedIsZero": "La posizione di 0 viene visualizzata come completamente chiusa (al massimo esteso).",
-    "hideCards": "Nascondi pagine"
+    "hideCards": "Nascondi pagine",
+    "hiddenByTrigger": "Nascondi pagina",
+    "headerShutter": "Controllo dell'otturatore"
 }
