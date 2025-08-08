@@ -219,5 +219,7 @@
     "labelmaxXAxisLabels": "Number of X-axis labels",
     "openLinkWikiPageChart": "Open Wiki page for PageChart",
     "shutterClosedIsZero": "The position of 0 is displayed as fully closed (maximally extended).",
-    "hideCards": "Hide pages"
+    "hideCards": "Hide pages",
+    "hiddenByTrigger": "Hide page",
+    "headerShutter": "Shutter control"
 }

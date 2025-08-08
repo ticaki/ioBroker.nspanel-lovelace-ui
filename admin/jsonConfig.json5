@@ -204,17 +204,6 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "shutterClosedIsZero": {
-                    "type": "checkbox",
-                    "label": "shutterClosedIsZero",
-                    "default": true,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
                 "_openLinkAdapterInsatllation": {
                     "type": "sendTo",
                     "label": "openLinkAdapterInsatllation",
@@ -642,6 +631,22 @@
                     "md": 3,
                     "lg": 2,
                     "xl": 2
+                },
+                "_headerShutter": {
+                    "type": "header",
+                    "text": "headerShutter",
+                    "size": 3
+                },
+                "shutterClosedIsZero": {
+                    "type": "checkbox",
+                    "label": "shutterClosedIsZero",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
@@ -950,10 +955,10 @@
                         {
                             "attr": "alwaysOnDisplay",
                             "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2,
                             "type": "checkbox",
                             "label": "alwaysOnDisplay",
                             "default": false
@@ -961,10 +966,10 @@
                         {
                             "attr": "hiddenByTrigger",
                             "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2,
                             "type": "checkbox",
                             "label": "hiddenByTrigger",
                             "default": false
@@ -1216,10 +1221,10 @@
                         {
                             "attr": "alwaysOnDisplay",
                             "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2,
                             "type": "checkbox",
                             "label": "alwaysOnDisplay",
                             "default": false
@@ -1227,10 +1232,10 @@
                         {
                             "attr": "hiddenByTrigger",
                             "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2,
                             "type": "checkbox",
                             "label": "hiddenByTrigger",
                             "default": false
@@ -2837,10 +2842,10 @@
                         {
                             "attr": "alwaysOnDisplay",
                             "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2,
                             "type": "checkbox",
                             "label": "alwaysOnDisplay",
                             "default": false
@@ -2848,10 +2853,10 @@
                         {
                             "attr": "hiddenByTrigger",
                             "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2,
                             "type": "checkbox",
                             "label": "hiddenByTrigger",
                             "default": false

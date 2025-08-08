@@ -143,7 +143,7 @@
     "StateObjects.power1": "Rellais 1",
     "StateObjects.power2": "Rellais 2",
     "StateObjects.nspanel": "NSPALEL",
-    "StateObjects.bigIconLeft": "Big Icon restou",
+    "StateObjects.bigIconLeft": "Ícone grande restante",
     "StateObjects.bigIconRight": "Ícone grande certo",
     "StateObjects.currentPage": "Página atual",
     "StateObjects.displayVersion": "Exibir versão do firmware",
@@ -219,5 +219,7 @@
     "labelmaxXAxisLabels": "Número de etiquetas do eixo x",
     "openLinkWikiPageChart": "Página do wiki aberto para PagChart",
     "shutterClosedIsZero": "A posição de 0 é exibida como totalmente fechada (estendida ao máximo).",
-    "hideCards": "Ocultar páginas"
+    "hideCards": "Ocultar páginas",
+    "hiddenByTrigger": "Ocultar página",
+    "headerShutter": "Controle do obturador"
 }

@@ -219,5 +219,7 @@
     "labelmaxXAxisLabels": "Кількість мітків осі X",
     "openLinkWikiPageChart": "Відкрийте сторінку Wiki для PageChart",
     "shutterClosedIsZero": "Положення 0 відображається як повністю закрите (максимально розширене).",
-    "hideCards": "Сховати сторінки"
+    "hideCards": "Сховати сторінки",
+    "hiddenByTrigger": "Схована сторінка",
+    "headerShutter": "Контроль затвора"
 }
