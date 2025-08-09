@@ -1384,31 +1384,65 @@ const textTemplates = {
     }
   },
   "text.info": {
-    role: "text",
+    role: "",
     adapter: "",
     type: "text",
     data: {
       icon: {
         true: {
-          value: { type: "const", constVal: "information-outline" },
-          color: {
+          value: {
             mode: "auto",
             role: "state",
+            type: "triggered",
+            dp: "",
+            regexp: /\.USERICON$/,
+            def: "information-outline"
+          },
+          color: {
+            mode: "auto",
+            role: "value.rgb",
             type: "triggered",
             dp: "",
             regexp: /\.COLORDEC$/,
             def: import_Color.Color.activated
+          },
+          text: {
+            value: {
+              mode: "auto",
+              role: "state",
+              type: "triggered",
+              dp: "",
+              regexp: /\.ACTUAL$/,
+              def: "info"
+            }
           }
         },
         false: {
-          value: { type: "const", constVal: "information-off-outline" },
-          color: {
+          value: {
             mode: "auto",
             role: "state",
             type: "triggered",
             dp: "",
+            regexp: /\.USERICON$/,
+            def: "information-off-outline"
+          },
+          color: {
+            mode: "auto",
+            role: "value.rgb",
+            type: "triggered",
+            dp: "",
             regexp: /\.COLORDEC$/,
             def: import_Color.Color.deactivated
+          },
+          text: {
+            value: {
+              mode: "auto",
+              role: "state",
+              type: "triggered",
+              dp: "",
+              regexp: /\.ACTUAL$/,
+              def: "info"
+            }
           }
         }
       },
@@ -1416,7 +1450,7 @@ const textTemplates = {
         value: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.ACTUAL$/, def: "info" }
       },
       text: {
-        true: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.BUTTONTEXT$/, def: "info" },
+        true: { mode: "auto", role: "text", type: "triggered", dp: "", regexp: /\.BUTTONTEXT$/, def: "info" },
         false: {
           mode: "auto",
           role: "text",

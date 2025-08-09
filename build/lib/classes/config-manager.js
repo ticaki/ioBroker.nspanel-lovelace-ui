@@ -1024,7 +1024,7 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
@@ -1040,7 +1040,7 @@ class ConfigManager extends import_library.BaseClass {
     const getButtonsTextTrue = async (item2, def1) => {
       return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
     };
-    const getButtonsTextFalse = async (item2, def1 = "") => {
+    const getButtonsTextFalse = async (item2, def1) => {
       return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
     };
     const text = {
@@ -1510,11 +1510,20 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "info": {
+        let adapterRole = "";
+        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+          const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+          if (((_c = o == null ? void 0 : o.common) == null ? void 0 : _c.type) === "boolean") {
+            adapterRole = "iconNotText";
+          } else {
+            adapterRole = item.useValue ? specialRole : "";
+          }
+        }
         itemConfig = {
           template: "text.info",
           dpInit: item.id,
           type: "button",
-          role: "info",
+          role: adapterRole,
           color: {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
@@ -1569,8 +1578,8 @@ class ConfigManager extends import_library.BaseClass {
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
-              minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : tempMinScale },
-              maxScale: { type: "const", constVal: (_d = item.maxValueLevel) != null ? _d : tempMaxScale }
+              minScale: { type: "const", constVal: (_d = item.minValueLevel) != null ? _d : tempMinScale },
+              maxScale: { type: "const", constVal: (_e = item.maxValueLevel) != null ? _e : tempMaxScale }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1790,7 +1799,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2335,7 +2344,6 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "motion":
-          case "info":
           case "humidity":
           case "value.humidity":
           case "thermostat":
@@ -2378,19 +2386,6 @@ class ConfigManager extends import_library.BaseClass {
                 adapterRole = "iconNotText";
                 textOn = "opened";
                 textOff = "closed";
-                break;
-              }
-              case "info": {
-                iconOn = "information-outline";
-                iconOff = "information-off-outline";
-                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                  const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                  if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
-                    adapterRole = "iconNotText";
-                  } else {
-                    adapterRole = item.useValue ? specialRole : "";
-                  }
-                }
                 break;
               }
               case "thermostat":
@@ -2470,10 +2465,63 @@ class ConfigManager extends import_library.BaseClass {
                 entity1: {
                   value: foundedStates[role].ACTUAL
                 },
-                entity2: role === "temperature" || role === "humidity" || role === "info" || role === "value.temperature" || role === "value.humidity" ? {
+                entity2: role === "temperature" || role === "humidity" || role === "value.temperature" || role === "value.humidity" ? {
                   value: foundedStates[role].ACTUAL,
                   unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
                 } : void 0
+              }
+            };
+            itemConfig = tempItem;
+            break;
+          }
+          case "info": {
+            let adapterRole = "";
+            let commonUnit = "";
+            if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+              if (o && o.common) {
+                if (o.common.unit) {
+                  commonUnit = o.common.unit;
+                }
+                if (o.common.type === "boolean") {
+                  adapterRole = "iconNotText";
+                } else {
+                  adapterRole = item.useValue ? specialRole : "";
+                }
+              }
+            }
+            const icontemp = item.icon2 || item.icon;
+            const tempItem = {
+              type: "text",
+              role: adapterRole,
+              data: {
+                icon: {
+                  true: {
+                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-outline" },
+                    color: item.onColor ? await this.getIconColor(item.onColor, this.colorOn) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: this.colorOn },
+                    text: await this.existsState(`${item.id}.ACTUAL`) ? {
+                      value: foundedStates[role].ACTUAL,
+                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                    } : void 0
+                  },
+                  false: {
+                    value: icontemp ? await this.getFieldAsDataItemConfig(icontemp) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-off-outline" },
+                    color: item.offColor ? await this.getIconColor(item.offColor, this.colorOff) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: this.colorOff },
+                    text: await this.existsState(`${item.id}.ACTUAL`) ? {
+                      value: foundedStates[role].ACTUAL,
+                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                    } : void 0
+                  }
+                },
+                text,
+                text1: { true: foundedStates[role].ACTUAL },
+                entity1: { value: foundedStates[role].ACTUAL },
+                entity2: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: item.unit ? { type: "const", constVal: item.unit } : { type: "const", constVal: commonUnit }
+                }
               }
             };
             itemConfig = tempItem;
@@ -2754,9 +2802,9 @@ class ConfigManager extends import_library.BaseClass {
           case "level.mode.fan": {
             let states;
             let keys;
-            if ((_p = foundedStates[role].MODE) == null ? void 0 : _p.dp) {
+            if ((_o = foundedStates[role].MODE) == null ? void 0 : _o.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_q = o == null ? void 0 : o.common) == null ? void 0 : _q.states) {
+              if ((_p = o == null ? void 0 : o.common) == null ? void 0 : _p.states) {
                 states = Object.values(o.common.states).map(String);
                 keys = Object.keys(o.common.states).map(String);
               }
