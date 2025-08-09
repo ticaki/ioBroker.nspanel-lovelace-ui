@@ -1377,10 +1377,17 @@ export const textTemplates: TemplateItems = {
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'information-outline' },
-                    color: {
+                    value: {
                         mode: 'auto',
                         role: 'state',
+                        type: 'triggered',
+                        dp: '',
+                        regexp: /\.USERICON$/,
+                        def: 'information-outline',
+                    },
+                    color: {
+                        mode: 'auto',
+                        role: 'value.rgb',
                         type: 'triggered',
                         dp: '',
                         regexp: /\.COLORDEC$/,
@@ -1388,10 +1395,17 @@ export const textTemplates: TemplateItems = {
                     },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'information-off-outline' },
-                    color: {
+                    value: {
                         mode: 'auto',
                         role: 'state',
+                        type: 'triggered',
+                        dp: '',
+                        regexp: /\.USERICON$/,
+                        def: 'information-off-outline',
+                    },
+                    color: {
+                        mode: 'auto',
+                        role: 'value.rgb',
                         type: 'triggered',
                         dp: '',
                         regexp: /\.COLORDEC$/,
@@ -1404,7 +1418,7 @@ export const textTemplates: TemplateItems = {
             },
 
             text: {
-                true: { mode: 'auto', role: 'state', type: 'triggered', dp: '', regexp: /\.BUTTONTEXT$/, def: 'info' },
+                true: { mode: 'auto', role: 'text', type: 'triggered', dp: '', regexp: /\.BUTTONTEXT$/, def: 'info' },
                 false: {
                     mode: 'auto',
                     role: 'text',

@@ -1040,7 +1040,7 @@ class ConfigManager extends import_library.BaseClass {
     const getButtonsTextTrue = async (item2, def1) => {
       return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
     };
-    const getButtonsTextFalse = async (item2, def1 = "") => {
+    const getButtonsTextFalse = async (item2, def1) => {
       return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
     };
     const text = {
@@ -2335,7 +2335,6 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "motion":
-          case "info":
           case "humidity":
           case "value.humidity":
           case "thermostat":
@@ -2378,19 +2377,6 @@ class ConfigManager extends import_library.BaseClass {
                 adapterRole = "iconNotText";
                 textOn = "opened";
                 textOff = "closed";
-                break;
-              }
-              case "info": {
-                iconOn = "information-outline";
-                iconOff = "information-off-outline";
-                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                  const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                  if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
-                    adapterRole = "iconNotText";
-                  } else {
-                    adapterRole = item.useValue ? specialRole : "";
-                  }
-                }
                 break;
               }
               case "thermostat":
@@ -2470,13 +2456,43 @@ class ConfigManager extends import_library.BaseClass {
                 entity1: {
                   value: foundedStates[role].ACTUAL
                 },
-                entity2: role === "temperature" || role === "humidity" || role === "info" || role === "value.temperature" || role === "value.humidity" ? {
+                entity2: role === "temperature" || role === "humidity" || role === "value.temperature" || role === "value.humidity" ? {
                   value: foundedStates[role].ACTUAL,
                   unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
                 } : void 0
               }
             };
             itemConfig = tempItem;
+            break;
+          }
+          case "info": {
+            let adapterRole = "";
+            if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+              if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
+                adapterRole = "iconNotText";
+              } else {
+                adapterRole = item.useValue ? specialRole : "";
+              }
+            }
+            const icontemp = item.icon2 || item.icon;
+            itemConfig = {
+              template: "text.info",
+              dpInit: item.id,
+              type: "text",
+              role: adapterRole,
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "information-outline" },
+                false: icontemp ? { type: "const", constVal: icontemp } : { type: "const", constVal: "information-off-outline" }
+              },
+              data: {
+                entity1: { value: foundedStates[role].ACTUAL },
+                entity2: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: item.unit ? { type: "const", constVal: item.unit } : void 0
+                }
+              }
+            };
             break;
           }
           case "volume": {

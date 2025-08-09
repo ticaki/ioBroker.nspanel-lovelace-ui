@@ -1200,7 +1200,7 @@ export class ConfigManager extends BaseClass {
         };
         const getButtonsTextFalse = async (
             item: ScriptConfig.PageItem,
-            def1: string = '',
+            def1: string,
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonTextOff
                 ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
@@ -2720,7 +2720,6 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'motion':
-                    case 'info':
                     case 'humidity':
                     case 'value.humidity':
                     case 'thermostat':
@@ -2763,19 +2762,6 @@ export class ConfigManager extends BaseClass {
                                 adapterRole = 'iconNotText';
                                 textOn = 'opened';
                                 textOff = 'closed';
-                                break;
-                            }
-                            case 'info': {
-                                iconOn = 'information-outline';
-                                iconOff = 'information-off-outline';
-                                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                                    if (o?.common?.type === 'boolean') {
-                                        adapterRole = 'iconNotText';
-                                    } else {
-                                        adapterRole = item.useValue ? specialRole : '';
-                                    }
-                                }
                                 break;
                             }
                             case 'thermostat':
@@ -2871,7 +2857,6 @@ export class ConfigManager extends BaseClass {
                                 entity2:
                                     role === 'temperature' ||
                                     role === 'humidity' ||
-                                    role === 'info' ||
                                     role === 'value.temperature' ||
                                     role === 'value.humidity'
                                         ? {
@@ -2885,6 +2870,58 @@ export class ConfigManager extends BaseClass {
                             },
                         };
                         itemConfig = tempItem;
+                        break;
+                    }
+                    case 'info': {
+                        let adapterRole: pages.DeviceRole = '';
+                        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                            if (o?.common?.type === 'boolean') {
+                                adapterRole = 'iconNotText';
+                            } else {
+                                adapterRole = item.useValue ? specialRole : '';
+                            }
+                        }
+                        const icontemp = item.icon2 || item.icon;
+                        itemConfig = {
+                            template: 'text.info',
+                            dpInit: item.id,
+                            type: 'text',
+                            role: adapterRole,
+                            icon: {
+                                true: item.icon
+                                    ? await this.getFieldAsDataItemConfig(item.icon)
+                                    : (await this.existsState(`${item.id}.USEERICON`))
+                                      ? { type: 'triggered', dp: `${item.id}.USERICON` }
+                                      : { type: 'const', constVal: 'information-outline' },
+                                false: icontemp
+                                    ? await this.getFieldAsDataItemConfig(icontemp)
+                                    : (await this.existsState(`${item.id}.USEERICON`))
+                                      ? { type: 'triggered', dp: `${item.id}.USERICON` }
+                                      : { type: 'const', constVal: 'information-off-outline' },
+                            },
+                            color: {
+                                true: item.onColor
+                                    ? await this.getIconColor(item.onColor, this.colorOn)
+                                    : (await this.existsState(`${item.id}.COLORDEC`))
+                                      ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
+                                      : { type: 'const', constVal: this.colorOn },
+                                false: item.offColor
+                                    ? await this.getIconColor(item.offColor, this.colorOff)
+                                    : (await this.existsState(`${item.id}.COLORDEC`))
+                                      ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
+                                      : { type: 'const', constVal: this.colorOff },
+                            },
+                            data: {
+                                text: text,
+                                text1: { true: foundedStates[role].ACTUAL },
+                                entity1: { value: foundedStates[role].ACTUAL },
+                                entity2: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                },
+                            },
+                        };
                         break;
                     }
                     case 'volume': {
