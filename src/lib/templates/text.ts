@@ -1371,7 +1371,7 @@ export const textTemplates: TemplateItems = {
         },
     },
     'text.info': {
-        role: 'text',
+        role: '',
         adapter: '',
         type: 'text',
         data: {
@@ -1393,6 +1393,16 @@ export const textTemplates: TemplateItems = {
                         regexp: /\.COLORDEC$/,
                         def: Color.activated,
                     },
+                    text: {
+                        value: {
+                            mode: 'auto',
+                            role: 'state',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.ACTUAL$/,
+                            def: 'info',
+                        },
+                    },
                 },
                 false: {
                     value: {
@@ -1410,6 +1420,16 @@ export const textTemplates: TemplateItems = {
                         dp: '',
                         regexp: /\.COLORDEC$/,
                         def: Color.deactivated,
+                    },
+                    text: {
+                        value: {
+                            mode: 'auto',
+                            role: 'state',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.ACTUAL$/,
+                            def: 'info',
+                        },
                     },
                 },
             },

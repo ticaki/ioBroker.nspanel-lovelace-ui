@@ -1024,7 +1024,7 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
@@ -1510,11 +1510,20 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "info": {
+        let adapterRole = "";
+        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+          const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+          if (((_c = o == null ? void 0 : o.common) == null ? void 0 : _c.type) === "boolean") {
+            adapterRole = "iconNotText";
+          } else {
+            adapterRole = item.useValue ? specialRole : "";
+          }
+        }
         itemConfig = {
           template: "text.info",
           dpInit: item.id,
           type: "button",
-          role: "info",
+          role: adapterRole,
           color: {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
@@ -1569,8 +1578,8 @@ class ConfigManager extends import_library.BaseClass {
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
-              minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : tempMinScale },
-              maxScale: { type: "const", constVal: (_d = item.maxValueLevel) != null ? _d : tempMaxScale }
+              minScale: { type: "const", constVal: (_d = item.minValueLevel) != null ? _d : tempMinScale },
+              maxScale: { type: "const", constVal: (_e = item.maxValueLevel) != null ? _e : tempMaxScale }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1790,7 +1799,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2481,14 +2490,6 @@ class ConfigManager extends import_library.BaseClass {
                 }
               }
             }
-            if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-              if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
-                adapterRole = "iconNotText";
-              } else {
-                adapterRole = item.useValue ? specialRole : "";
-              }
-            }
             const icontemp = item.icon2 || item.icon;
             const tempItem = {
               type: "text",
@@ -2801,9 +2802,9 @@ class ConfigManager extends import_library.BaseClass {
           case "level.mode.fan": {
             let states;
             let keys;
-            if ((_p = foundedStates[role].MODE) == null ? void 0 : _p.dp) {
+            if ((_o = foundedStates[role].MODE) == null ? void 0 : _o.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_q = o == null ? void 0 : o.common) == null ? void 0 : _q.states) {
+              if ((_p = o == null ? void 0 : o.common) == null ? void 0 : _p.states) {
                 states = Object.values(o.common.states).map(String);
                 keys = Object.keys(o.common.states).map(String);
               }

@@ -1729,11 +1729,20 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'info': {
+                let adapterRole: pages.DeviceRole = '';
+                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                    if (o?.common?.type === 'boolean') {
+                        adapterRole = 'iconNotText';
+                    } else {
+                        adapterRole = item.useValue ? specialRole : '';
+                    }
+                }
                 itemConfig = {
                     template: 'text.info',
                     dpInit: item.id,
                     type: 'button',
-                    role: 'info',
+                    role: adapterRole,
                     color: {
                         true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
                         false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
@@ -2888,14 +2897,7 @@ export class ConfigManager extends BaseClass {
                                 }
                             }
                         }
-                        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                            if (o?.common?.type === 'boolean') {
-                                adapterRole = 'iconNotText';
-                            } else {
-                                adapterRole = item.useValue ? specialRole : '';
-                            }
-                        }
+
                         const icontemp = item.icon2 || item.icon;
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'text',

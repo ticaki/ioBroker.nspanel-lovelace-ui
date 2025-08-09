@@ -1384,7 +1384,7 @@ const textTemplates = {
     }
   },
   "text.info": {
-    role: "text",
+    role: "",
     adapter: "",
     type: "text",
     data: {
@@ -1405,6 +1405,16 @@ const textTemplates = {
             dp: "",
             regexp: /\.COLORDEC$/,
             def: import_Color.Color.activated
+          },
+          text: {
+            value: {
+              mode: "auto",
+              role: "state",
+              type: "triggered",
+              dp: "",
+              regexp: /\.ACTUAL$/,
+              def: "info"
+            }
           }
         },
         false: {
@@ -1423,6 +1433,16 @@ const textTemplates = {
             dp: "",
             regexp: /\.COLORDEC$/,
             def: import_Color.Color.deactivated
+          },
+          text: {
+            value: {
+              mode: "auto",
+              role: "state",
+              type: "triggered",
+              dp: "",
+              regexp: /\.ACTUAL$/,
+              def: "info"
+            }
           }
         }
       },
