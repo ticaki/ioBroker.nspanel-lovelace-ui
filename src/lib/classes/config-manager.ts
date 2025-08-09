@@ -2874,6 +2874,20 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'info': {
                         let adapterRole: pages.DeviceRole = '';
+                        let commonUnit = '';
+                        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                            if (o && o.common) {
+                                if (o.common.unit) {
+                                    commonUnit = o.common.unit;
+                                }
+                                if (o.common.type === 'boolean') {
+                                    adapterRole = 'iconNotText';
+                                } else {
+                                    adapterRole = item.useValue ? specialRole : '';
+                                }
+                            }
+                        }
                         if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                             const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                             if (o?.common?.type === 'boolean') {
@@ -2883,45 +2897,66 @@ export class ConfigManager extends BaseClass {
                             }
                         }
                         const icontemp = item.icon2 || item.icon;
-                        itemConfig = {
-                            template: 'text.info',
-                            dpInit: item.id,
+                        const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'text',
                             role: adapterRole,
-                            icon: {
-                                true: item.icon
-                                    ? await this.getFieldAsDataItemConfig(item.icon)
-                                    : (await this.existsState(`${item.id}.USEERICON`))
-                                      ? { type: 'triggered', dp: `${item.id}.USERICON` }
-                                      : { type: 'const', constVal: 'information-outline' },
-                                false: icontemp
-                                    ? await this.getFieldAsDataItemConfig(icontemp)
-                                    : (await this.existsState(`${item.id}.USEERICON`))
-                                      ? { type: 'triggered', dp: `${item.id}.USERICON` }
-                                      : { type: 'const', constVal: 'information-off-outline' },
-                            },
-                            color: {
-                                true: item.onColor
-                                    ? await this.getIconColor(item.onColor, this.colorOn)
-                                    : (await this.existsState(`${item.id}.COLORDEC`))
-                                      ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
-                                      : { type: 'const', constVal: this.colorOn },
-                                false: item.offColor
-                                    ? await this.getIconColor(item.offColor, this.colorOff)
-                                    : (await this.existsState(`${item.id}.COLORDEC`))
-                                      ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
-                                      : { type: 'const', constVal: this.colorOff },
-                            },
                             data: {
+                                icon: {
+                                    true: {
+                                        value: item.icon
+                                            ? await this.getFieldAsDataItemConfig(item.icon)
+                                            : (await this.existsState(`${item.id}.USERICON`))
+                                              ? { type: 'triggered', dp: `${item.id}.USERICON` }
+                                              : { type: 'const', constVal: 'information-outline' },
+                                        color: item.onColor
+                                            ? await this.getIconColor(item.onColor, this.colorOn)
+                                            : (await this.existsState(`${item.id}.COLORDEC`))
+                                              ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
+                                              : { type: 'const', constVal: this.colorOn },
+                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                            ? {
+                                                  value: foundedStates[role].ACTUAL,
+                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                                  textSize: item.fontSize
+                                                      ? { type: 'const', constVal: item.fontSize }
+                                                      : undefined,
+                                              }
+                                            : undefined,
+                                    },
+                                    false: {
+                                        value: icontemp
+                                            ? await this.getFieldAsDataItemConfig(icontemp)
+                                            : (await this.existsState(`${item.id}.USERICON`))
+                                              ? { type: 'triggered', dp: `${item.id}.USERICON` }
+                                              : { type: 'const', constVal: 'information-off-outline' },
+                                        color: item.offColor
+                                            ? await this.getIconColor(item.offColor, this.colorOff)
+                                            : (await this.existsState(`${item.id}.COLORDEC`))
+                                              ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
+                                              : { type: 'const', constVal: this.colorOff },
+                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                            ? {
+                                                  value: foundedStates[role].ACTUAL,
+                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                                  textSize: item.fontSize
+                                                      ? { type: 'const', constVal: item.fontSize }
+                                                      : undefined,
+                                              }
+                                            : undefined,
+                                    },
+                                },
                                 text: text,
                                 text1: { true: foundedStates[role].ACTUAL },
                                 entity1: { value: foundedStates[role].ACTUAL },
                                 entity2: {
                                     value: foundedStates[role].ACTUAL,
-                                    unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                    unit: item.unit
+                                        ? { type: 'const', constVal: item.unit }
+                                        : { type: 'const', constVal: commonUnit },
                                 },
                             },
                         };
+                        itemConfig = tempItem;
                         break;
                     }
                     case 'volume': {

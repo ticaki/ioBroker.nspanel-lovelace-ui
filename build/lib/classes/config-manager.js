@@ -2467,6 +2467,20 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "info": {
             let adapterRole = "";
+            let commonUnit = "";
+            if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+              if (o && o.common) {
+                if (o.common.unit) {
+                  commonUnit = o.common.unit;
+                }
+                if (o.common.type === "boolean") {
+                  adapterRole = "iconNotText";
+                } else {
+                  adapterRole = item.useValue ? specialRole : "";
+                }
+              }
+            }
             if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
               if (((_o = o == null ? void 0 : o.common) == null ? void 0 : _o.type) === "boolean") {
@@ -2476,23 +2490,40 @@ class ConfigManager extends import_library.BaseClass {
               }
             }
             const icontemp = item.icon2 || item.icon;
-            itemConfig = {
-              template: "text.info",
-              dpInit: item.id,
+            const tempItem = {
               type: "text",
               role: adapterRole,
-              icon: {
-                true: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "information-outline" },
-                false: icontemp ? { type: "const", constVal: icontemp } : { type: "const", constVal: "information-off-outline" }
-              },
               data: {
+                icon: {
+                  true: {
+                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-outline" },
+                    color: item.onColor ? await this.getIconColor(item.onColor, this.colorOn) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: this.colorOn },
+                    text: await this.existsState(`${item.id}.ACTUAL`) ? {
+                      value: foundedStates[role].ACTUAL,
+                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                    } : void 0
+                  },
+                  false: {
+                    value: icontemp ? await this.getFieldAsDataItemConfig(icontemp) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-off-outline" },
+                    color: item.offColor ? await this.getIconColor(item.offColor, this.colorOff) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: this.colorOff },
+                    text: await this.existsState(`${item.id}.ACTUAL`) ? {
+                      value: foundedStates[role].ACTUAL,
+                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                    } : void 0
+                  }
+                },
+                text,
+                text1: { true: foundedStates[role].ACTUAL },
                 entity1: { value: foundedStates[role].ACTUAL },
                 entity2: {
                   value: foundedStates[role].ACTUAL,
-                  unit: item.unit ? { type: "const", constVal: item.unit } : void 0
+                  unit: item.unit ? { type: "const", constVal: item.unit } : { type: "const", constVal: commonUnit }
                 }
               }
             };
+            itemConfig = tempItem;
             break;
           }
           case "volume": {
