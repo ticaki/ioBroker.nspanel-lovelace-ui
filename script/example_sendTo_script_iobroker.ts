@@ -834,15 +834,15 @@ declare namespace ScriptConfig {
 
     export type PageQR = {
         type: 'cardQR';
-    } & Omit<PageBaseType, 'heading' | 'items'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
     export type PagePower = {
         type: 'cardPower';
-    } & Omit<PageBaseType, 'heading' | 'items'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
     export type PageChart = {
         type: 'cardChart' | 'cardLChart';
-    } & Omit<PageBaseType, 'heading' | 'items'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
     export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
 
