@@ -78,7 +78,7 @@
     "overviewOfPanels": "Обзор панелей",
     "macAdressOfPanel": "MAC -адрес панели",
     "ipFromPanel": "IP панели",
-    "tasmotaDeviceTools": "Tasmota Device Tools",
+    "tasmotaDeviceTools": "Инструменты устройства TASMOTA",
     "tasmotaAdminPassword": "TASMOTA WEBUI Пароль",
     "selectTool": "Выберите инструмент TASMOTA",
     "tasmotaTool": "Отправить настройки Tasmota на панель",
