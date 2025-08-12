@@ -2284,7 +2284,7 @@ export const textTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     type: 'triggered',
-                    regexp: /^openweathermap\.[0-9]+\.forecast\.current\.windDirection/,
+                    regexp: /^openweathermap\.[0-9]+\.forecast\.current\.windDirection$/,
                     dp: ``,
                     read: `{
                         const directions = [
