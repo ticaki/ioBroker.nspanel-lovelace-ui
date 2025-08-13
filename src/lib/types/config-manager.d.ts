@@ -239,7 +239,10 @@ declare namespace ScriptConfig {
         uniqueName: string;
         heading: string;
         items: PageItem[];
-        useColor: boolean;
+        /* 
+        @deprecated not used 
+        */
+        useColor?: boolean;
         subPage?: boolean;
         parent?: string;
         parentIcon?: string;
@@ -293,22 +296,22 @@ declare namespace ScriptConfig {
 
     export type PageEntities = {
         type: 'cardEntities';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; //5
     } & PageBaseType;
 
     export type PageGrid = {
         type: 'cardGrid';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; // 6
     } & PageBaseType;
 
     export type PageGrid2 = {
         type: 'cardGrid2';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; // 8
     } & PageBaseType;
 
     export type PageGrid3 = {
         type: 'cardGrid3';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; //4
     } & PageBaseType;
 
     export type PageThermo = {
@@ -329,22 +332,24 @@ declare namespace ScriptConfig {
     export type PageUnlock = {
         type: 'cardUnlock';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'> &
-        Partial<Pick<PageBaseType, 'useColor'>>;
+    } & Omit<PageBaseType, 'useColor'>;
 
     export type PageQR = {
         type: 'cardQR';
-    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
+        Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
     export type PagePower = {
         type: 'cardPower';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
+        Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
     export type PageChart = {
         type: 'cardChart' | 'cardLChart';
         items: PageItem[];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
+        Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
     export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
 
