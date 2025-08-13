@@ -483,7 +483,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.9.0';
+const version = '0.9.1';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -748,7 +748,7 @@ declare namespace ScriptConfig {
         uniqueName: string;
         heading: string;
         items: PageItem[];
-        useColor: boolean;
+        useColor?: boolean;
         subPage?: boolean;
         parent?: string;
         parentIcon?: string;
@@ -823,23 +823,22 @@ declare namespace ScriptConfig {
     export type PageThermo = {
         type: 'cardThermo';
         items: [PageThermoItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & PageBaseType;
 
     export type PageMedia = {
         type: 'cardMedia';
         items: [PageMediaItem];
-    } & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'>;
+    } & Omit<PageBaseType, 'autoCreateAlias'>;
 
     export type PageAlarm = {
         type: 'cardAlarm';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & PageBaseType;
 
     export type PageUnlock = {
         type: 'cardUnlock';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'> &
-        Partial<Pick<PageBaseType, 'useColor'>>;
+    } & PageBaseType;
 
     export type PageQR = {
         type: 'cardQR';
