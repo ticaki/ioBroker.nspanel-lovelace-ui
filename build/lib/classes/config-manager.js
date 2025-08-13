@@ -362,21 +362,6 @@ class ConfigManager extends import_library.BaseClass {
             panelConfig.navigation.push(navItem);
           }
         }
-        if (page.type === "cardQR") {
-          if (!Array.isArray(this.adapter.config.pageQRdata)) {
-            messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
-          if (index === -1) {
-            messages.push(`No pageQRdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          panelConfig.pages.push(await import_pageQR.PageQR.getQRPageConfig(this.adapter, index, this));
-          continue;
-        }
         if (page.type === "cardPower") {
           if (!Array.isArray(this.adapter.config.pagePowerdata)) {
             messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
@@ -421,7 +406,8 @@ class ConfigManager extends import_library.BaseClass {
             card: page.type,
             data: {
               headline: await this.getFieldAsDataItemConfig(page.heading || "")
-            }
+            },
+            index: 0
           },
           pageItems: []
         };
@@ -438,6 +424,28 @@ class ConfigManager extends import_library.BaseClass {
           );
           this.log.warn(messages[messages.length - 1]);
           continue;
+        }
+        if (page.type === "cardQR") {
+          if (!Array.isArray(this.adapter.config.pageQRdata)) {
+            messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
+          if (index === -1) {
+            messages.push(`No pageQRdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          try {
+            ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, index, gridItem, messages));
+          } catch (error) {
+            messages.push(
+              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
         }
         if (page.items) {
           for (let a = 0; a < page.items.length; a++) {
@@ -462,8 +470,8 @@ class ConfigManager extends import_library.BaseClass {
               this.log.warn(messages[messages.length - 1]);
             }
           }
-          panelConfig.pages.push(gridItem);
         }
+        panelConfig.pages.push(gridItem);
       }
     }
     return { panelConfig, messages };
