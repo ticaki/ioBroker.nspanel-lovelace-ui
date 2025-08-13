@@ -100,6 +100,48 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "_openLinkAdapterInsatllation": {
+                    "type": "staticLink",
+                    "text": "openLinkAdapterInsatllation",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_openLinkAliasTable": {
+                    "type": "staticLink",
+                    "text": "openLinkAliasTable",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md",
+                    "icon": "web",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_divider": {
+                    "type": "divider",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },                
                 "pw1": {
                     "type": "password",
                     "label": "Service-Pin (numbers only)",
@@ -203,20 +245,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
-                "_openLinkAdapterInsatllation": {
-                    "type": "sendTo",
-                    "label": "openLinkAdapterInsatllation",
-                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation\"}",
-                    "openUrl": true,
-                    "command": "openLinkAliasTable",
-                    "variant": "outlined",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
+                },                
                 "doubleClickTime": {
                     "type": "number",
                     "label": "doubleClickTime",
@@ -229,20 +258,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
-                "_openLinkAliasTable": {
-                    "type": "sendTo",
-                    "label": "openLinkAliasTable",
-                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md\"}",
-                    "openUrl": true,
-                    "command": "openLinkAliasTable",
-                    "variant": "outlined",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                }
+                }                
             }
         },
         "overview": {
@@ -447,6 +463,23 @@
                             "validatorErrorText": "mustBeUnique"
                         }
                     ]
+                },
+                "_openLinkAdapterInsatllation": {
+                    "type": "staticLink",
+                    "text": "openLinkAdapterInsatllation",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_header2": {
                     "type": "header",
@@ -675,6 +708,23 @@
                     "text": "headerMaintain",
                     "size": 2
                 },
+                "_openLinkAdapterInsatllation": {
+                    "type": "staticLink",
+                    "text": "openLinkAdapterInsatllation",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
                     "label": "RefreshMaintainTable",
@@ -684,6 +734,7 @@
                     "variant": "outlined",
                     "useNative": true,
                     "onLoaded": true,
+                    "newLine": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -906,12 +957,16 @@
                     "xl": 6
                 },
                 "_openLinkWikiPageQR": {
-                    "type": "sendTo",
-                    "label": "openLinkWikiPageQR",
-                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageQR\"}",
-                    "openUrl": true,
-                    "command": "openLinkAliasTable",
-                    "variant": "outlined",
+                    "type": "staticLink",
+                    "text": "openLinkWikiPageQR",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageQR",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -1166,12 +1221,16 @@
                     "xl": 6
                 },
                 "_openLinkWikiPagePower": {
-                    "type": "sendTo",
-                    "label": "openLinkWikiPagePower",
-                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PagePower\"}",
-                    "openUrl": true,
-                    "command": "openLinkAliasTable",
-                    "variant": "outlined",
+                    "type": "staticLink",
+                    "text": "openLinkWikiPagePower",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PagePower",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -2793,12 +2852,16 @@
                     "xl": 6
                 },
                 "_openLinkWikiPageChart": {
-                    "type": "sendTo",
-                    "label": "openLinkWikiPageChart",
-                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageChart\"}",
-                    "openUrl": true,
-                    "command": "openLinkAliasTable",
-                    "variant": "outlined",
+                    "type": "staticLink",
+                    "text": "openLinkWikiPageChart",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageChart",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
