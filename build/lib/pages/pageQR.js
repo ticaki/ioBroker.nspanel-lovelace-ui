@@ -191,7 +191,7 @@ class PageQR extends import_Page.Page {
     }
     this.sendToPanel(this.getMessage(message), false);
   }
-  static async getQRPageConfig(configManager, index, gridItem, messages) {
+  static async getQRPageConfig(configManager, page, index, gridItem, messages) {
     const adapter = configManager.adapter;
     const config = adapter.config.pageQRdata[index];
     if (config) {
@@ -227,13 +227,13 @@ class PageQR extends import_Page.Page {
       gridItem = {
         ...gridItem,
         uniqueID: config.pageName,
-        alwaysOn: config.alwaysOnDisplay ? "always" : "none",
-        hidden: config.hiddenByTrigger,
+        alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? "always" : "none",
+        hidden: gridItem.hidden || config.hiddenByTrigger,
         config: {
           card: "cardQR",
           index,
           data: {
-            headline: { type: "const", constVal: config.headline || "" }
+            headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || "")
           }
         },
         pageItems: []

@@ -167,6 +167,7 @@ export class PageQR extends Page {
     }
     static async getQRPageConfig(
         configManager: ConfigManager,
+        page: ScriptConfig.PageQR,
         index: number,
         gridItem: pages.PageBaseConfig,
         messages: string[],
@@ -209,13 +210,13 @@ export class PageQR extends Page {
             gridItem = {
                 ...gridItem,
                 uniqueID: config.pageName,
-                alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
-                hidden: config.hiddenByTrigger,
+                alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? 'always' : 'none',
+                hidden: gridItem.hidden || config.hiddenByTrigger,
                 config: {
                     card: 'cardQR',
                     index: index,
                     data: {
-                        headline: { type: 'const', constVal: config.headline || '' },
+                        headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
                     },
                 },
                 pageItems: [],

@@ -495,7 +495,7 @@ export class ConfigManager extends BaseClass {
                         continue;
                     }
                     try {
-                        ({ gridItem, messages } = await PageQR.getQRPageConfig(this, index, gridItem, messages));
+                        ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
                     } catch (error: any) {
                         messages.push(
                             `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,

@@ -438,7 +438,7 @@ class ConfigManager extends import_library.BaseClass {
             continue;
           }
           try {
-            ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, index, gridItem, messages));
+            ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, page, index, gridItem, messages));
           } catch (error) {
             messages.push(
               `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
