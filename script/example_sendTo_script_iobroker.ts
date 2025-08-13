@@ -10,6 +10,14 @@ async function configuration(): Promise<void> {
         weatherAddDefaultItems: false,
     }
 
+        /**************************************************************************************
+         **                                                                                  **
+         ** https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation **
+         **                                                                                  **
+         *************************************************************************************/
+        
+         
+
         /***********************************************************************
          **                                                                   **
          **                       Page Configuration                          **
