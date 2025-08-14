@@ -200,10 +200,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'date.sunrise',
     'date.sunset',
     'weather.icon',
+    'weather.icon.name',
     '',
 ]);
 
 export type StateRole =
+    | 'weather.icon.name'
     | 'weather.icon'
     | 'date.sunrise'
     | 'date.sunset'

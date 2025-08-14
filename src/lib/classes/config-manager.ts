@@ -3643,6 +3643,84 @@ export class ConfigManager extends BaseClass {
                         },
                     ]);
                 }
+            } else if (config.weatherEntity.startsWith('pirate-weather.') && config.weatherEntity.endsWith('.')) {
+                const instance = config.weatherEntity.split('.')[1];
+                if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
+                    pageItems.push({
+                        template: 'text.pirate-weather.favorit',
+                        dpInit: `/^pirate-weather\\.${instance}.+/`,
+                        modeScr: 'favorit',
+                    });
+                }
+                if (config.weatherAddDefaultItems) {
+                    pageItems = pageItems.concat([
+                        // Bottom 1 - pirate-weather.0. sunset
+                        {
+                            template: 'text.pirate-weather.sunriseset',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.daily\\.00.+/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 2 - pirate-weather.0. Forecast Day 1
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.01/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 3 - pirate-weather.0. Forecast Day 2
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.02/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 4 - pirate-weather.0. Forecast Day 3
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.03/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 5 - pirate-weather.0. Forecast Day 4
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.04/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 6 - pirate-weather.0. Forecast Day 5
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.05/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 7 - pirate-weather.0. Forecast Day 6
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.06/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 8 - Windgeschwindigkeit
+                        {
+                            template: 'text.pirate-weather.windspeed',
+                            dpInit: `/^pirate-weather\\.${instance}./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 9 - Böen
+                        {
+                            template: 'text.pirate-weather.windgust',
+                            dpInit: `/^pirate-weather\\.${instance}./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 10 - Windrichtung
+                        {
+                            template: 'text.pirate-weather.winddirection',
+                            dpInit: `/^pirate-weather\\.${instance}./`,
+                            modeScr: 'bottom',
+                        },
+                    ]);
+                }
             }
         }
         if (config.indicatorScreensaverEntity) {
