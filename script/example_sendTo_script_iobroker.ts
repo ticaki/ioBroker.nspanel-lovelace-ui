@@ -24,6 +24,17 @@ async function configuration(): Promise<void> {
          **                                                                   **
          ***********************************************************************/
 
+
+    // Beispiel Hauptseite / Mainpage
+    // Diese Seite ist die Hauptseite, sie wird immer als erstes angezeigt und hat den uniqueName 'main'.
+    // uniqueName 'main' muß mindestens einmal vorkommen, damit die Navigation funktioniert.
+    const Hauptseite: ScriptConfig.PageGrid = {
+        type: 'cardGrid',
+        uniqueName: 'main',
+        heading: 'Die Leere',
+        items: []
+    };
+
     // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
     // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
     // wie am Fahrplan Beispiel zu sehen ist.
@@ -103,6 +114,7 @@ async function configuration(): Promise<void> {
         // Seiteneinteilung / Page division
         // Hauptseiten / Mainpages
         pages: [
+            Hauptseite
             //irgendeinName,
             //grid1,
             //qrCode,

@@ -69,7 +69,17 @@ export class ConfigManager extends BaseClass {
             this.log.error(
                 `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : 'undefined'}`,
             );
-            return { messages: ['Invalid configuration'], panelConfig: undefined };
+            return { messages: ['Abort: Invalid configuration'], panelConfig: undefined };
+        }
+        const panelItem = this.adapter.config.panels.find(item => item.topic === config.panelTopic);
+        if (!panelItem) {
+            this.log.error(`Panel for Topic: ${config.panelTopic} not found in adapter config!`);
+            return {
+                messages: [
+                    `Abort: Topic: ${config.panelTopic} not found in Adapter configuration! Maybe wrong topic?!`,
+                ],
+                panelConfig: undefined,
+            };
         }
         let messages: string[] = [];
 
@@ -86,23 +96,25 @@ export class ConfigManager extends BaseClass {
 
         if (version < breakingVersion) {
             messages.push(
-                `Update Script! Panel for Topic: ${config.panelTopic} - Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`,
+                `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`,
             );
             this.log.error(messages[messages.length - 1]);
-            return { messages: ['Invalid configuration'], panelConfig: undefined };
+            return { messages, panelConfig: undefined };
         }
         if (version < requiredVersion) {
             messages.push(
-                `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is lower than the required version ${scriptVersion}!`,
+                `Update Script! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is lower than the required version ${scriptVersion}!`,
             );
             this.log.warn(messages[messages.length - 1]);
         } else if (version > requiredVersion) {
             messages.push(
-                `Update Adapter! Panel for Topic: ${config.panelTopic} Script version ${config.version} is higher than the required version ${scriptVersion}!`,
+                `Update Adapter! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is higher than the required version ${scriptVersion}!`,
             );
             this.log.warn(messages[messages.length - 1]);
         } else {
-            messages.push(`Panel for Topic: ${config.panelTopic} Script version ${config.version} is correct!`);
+            messages.push(
+                `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is correct!`,
+            );
         }
 
         // start configuration

@@ -121,6 +121,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (obj && obj.native) {
       const config = [];
       if (obj.native.scriptConfigRaw) {
+        const panelsText = (this.config.panels || []).map((a) => `[${a.name}#${a.topic}]`).join(", ");
+        const configsText = obj.native.scriptConfigRaw.map((a) => `${a.panelTopic}`).join(", ");
+        this.log.info(`Configured panels: name#topic -> ${panelsText}`);
+        this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
         const manager = new import_config_manager.ConfigManager(this, true);
         manager.log.warn = function(_msg) {
         };
