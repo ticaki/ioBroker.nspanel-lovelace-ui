@@ -100,25 +100,28 @@ class ConfigManager extends import_library.BaseClass {
     const version = (0, import_tools.getVersionAsNumber)(config.version);
     const requiredVersion = (0, import_tools.getVersionAsNumber)(scriptVersion);
     const breakingVersion = (0, import_tools.getVersionAsNumber)(this.breakingVersion);
+    const panelItem = this.adapter.config.panels.find((item) => item.topic === config.panelTopic);
     if (version < breakingVersion) {
       messages.push(
-        `Update Script! Panel for Topic: ${config.panelTopic} - Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`
+        `Update Script! Panel for Topic: ${config.panelTopic} - ${panelItem ? `name: ${panelItem.name}` : ""} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`
       );
       this.log.error(messages[messages.length - 1]);
       return { messages: ["Invalid configuration"], panelConfig: void 0 };
     }
     if (version < requiredVersion) {
       messages.push(
-        `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is lower than the required version ${scriptVersion}!`
+        `Update Script! Panel for Topic: ${config.panelTopic} ${panelItem ? `name: ${panelItem.name}` : ""} Script version ${config.version} is lower than the required version ${scriptVersion}!`
       );
       this.log.warn(messages[messages.length - 1]);
     } else if (version > requiredVersion) {
       messages.push(
-        `Update Adapter! Panel for Topic: ${config.panelTopic} Script version ${config.version} is higher than the required version ${scriptVersion}!`
+        `Update Adapter! Panel for Topic: ${config.panelTopic} ${panelItem ? `name: ${panelItem.name}` : ""} Script version ${config.version} is higher than the required version ${scriptVersion}!`
       );
       this.log.warn(messages[messages.length - 1]);
     } else {
-      messages.push(`Panel for Topic: ${config.panelTopic} Script version ${config.version} is correct!`);
+      messages.push(
+        `Panel for Topic: ${config.panelTopic} ${panelItem ? `name: ${panelItem.name}` : ""} Script version ${config.version} is correct!`
+      );
     }
     if (config.advancedOptions && config.advancedOptions.extraConfigLogging) {
       this.extraConfigLogging = true;
