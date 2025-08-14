@@ -58,7 +58,6 @@ async function configuration(): Promise<void> {
         type: 'cardGrid',
         uniqueName: 'main',
         heading: 'Wohnzimmer',
-        useColor: true,
         items: [
             {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
             {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
@@ -87,7 +86,6 @@ async function configuration(): Promise<void> {
             {id: 'alias.0.NSPanel.allgemein.shutter'}
         ],
         type: 'cardGrid',
-        useColor: true
     } */ 
 
     const config: ScriptConfig.Config = {
