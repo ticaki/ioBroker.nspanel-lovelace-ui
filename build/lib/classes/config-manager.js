@@ -399,7 +399,6 @@ class ConfigManager extends import_library.BaseClass {
           hidden: page.hiddenByTrigger || false,
           config: {
             card: page.type,
-            index: 0,
             data: {
               headline: await this.getFieldAsDataItemConfig(page.heading || "")
             },
