@@ -2521,15 +2521,8 @@ const textTemplates = {
             type: "state",
             role: "weather.icon.name",
             mode: "auto",
-            dp: ""
-          },
-          color: {
-            type: "triggered",
-            role: "weather.icon.name",
-            mode: "auto",
             dp: "",
-            read: `
-                            switch (val) {
+            read: `switch (val) {
                                 case 'cloudy':
                                 case 'mostly-cloudy-day':
                                 case 'mostly-cloudy-night':
@@ -2593,6 +2586,82 @@ const textTemplates = {
                                     return 'weather-windy-variant';
                                 default:
                                     return 'alert-circle-outline';
+                            }`
+          },
+          color: {
+            type: "triggered",
+            role: "weather.icon.name",
+            mode: "auto",
+            dp: "",
+            read: `
+                            switch (val) {
+                                case 'cloudy':
+                                case 'mostly-cloudy-day':
+                                case 'mostly-cloudy-night':
+                                    return Color.swCloudy; // cloudy
+
+                                case 'fog':
+                                case 'mist':
+                                case 'haze':
+                                case 'smoke':
+                                    return Color.swFog;
+
+                                case 'hail':
+                                    return Color.swHail;
+
+                                case 'thunderstorm': // T-Storms
+                                    return Color.swLightning;
+
+                                case 'clear-night':
+                                case 'mostly-clear-night':
+                                    return Color.swClearNight;
+
+                                case 'partly-cloudy-day':
+                                    return Color.swPartlycloudy;
+
+                                case 'partly-cloudy-night':
+                                    return Color.swPartlycloudy;
+
+                                case 'rain':
+                                case 'heavy-rain':
+                                case 'precipitation':
+                                    return Color.swPouring;
+
+                                case 'possible-rain-day':
+                                case 'possible-rain-night':
+                                case 'possible-precipitation-night':
+                                case 'possible-precipitation-day':
+                                case 'drizzle':
+                                case 'light-rain':
+                                    return Color.swRainy;
+
+                                case 'light-snow':
+                                case 'snow':
+                                case 'heavy-sleet':
+                                case 'heavy-snow':
+                                case 'flurries':
+                                case 'possible-snow-day':
+                                case 'possible-snow-night':
+                                case 'possible-sleet-day':
+                                case 'possible-sleet-night':
+                                    return Color.swSnowy)
+
+                                case 'sleet':
+                                case 'light-sleet':
+                                case 'very-light-sleet':
+                                    return Color.swSnowyRainy;
+
+                                case 'clear-day':
+                                case 'mostly-clear-day':
+                                    return Color.swSunny;
+
+                                case 'dangerous-wind':
+                                case 'breezy':
+                                case 'wind':
+                                    return Color.swWindy;
+
+                                default:
+                                    return Color.White;
                             }`
           }
         },
