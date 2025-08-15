@@ -3648,7 +3648,7 @@ export class ConfigManager extends BaseClass {
                 if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
                     pageItems.push({
                         template: 'text.pirate-weather.favorit',
-                        dpInit: `/^pirate-weather\\.${instance}.+/`,
+                        dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently\\./`,
                         modeScr: 'favorit',
                     });
                 }
