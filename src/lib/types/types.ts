@@ -20,6 +20,14 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.custom.windarrow'
+    | 'text.pirate-weather.windgust'
+    | 'text.pirate-weather.uvindex'
+    | 'text.pirate-weather.winddirection'
+    | 'text.pirate-weather.windspeed'
+    | 'text.pirate-weather.bot2values'
+    | 'text.pirate-weather.favorit'
+    | 'text.pirate-weather.sunriseset'
     | 'text.openweathermap.windgust'
     | 'text.openweathermap.uvindex'
     | 'text.openweathermap.winddirection'
