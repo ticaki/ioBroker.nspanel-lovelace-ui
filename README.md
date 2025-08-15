@@ -85,7 +85,9 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-
+- (ticaki) extended pirate-weather templates 
+- (tt-tom17) added pirate-weather templates
+  
 ### 0.2.4 (2025-08-06)
 - (ticaki) popupSlider added
 - (ticaki) Auto update of berry driver
