@@ -140,7 +140,8 @@ class PagePower extends import_Page.Page {
     }
     return null;
   };
-  static async getPowerPageConfig(adapter, index, configManager) {
+  static async getPowerPageConfig(configManager, page, index, gridItem, messages) {
+    const adapter = configManager.adapter;
     const config = adapter.config.pagePowerdata[index];
     const states = [];
     for (let i = 1; i <= 8; i++) {
@@ -280,15 +281,15 @@ class PagePower extends import_Page.Page {
         unit: { type: "const", constVal: valueUnit[7] }
       };
     }
-    const result = {
+    gridItem = {
       uniqueID: config.pageName,
-      alwaysOn: config.alwaysOnDisplay ? "always" : "none",
-      hidden: config.hiddenByTrigger || false,
+      alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? "always" : "none",
+      hidden: gridItem.hidden || config.hiddenByTrigger,
       config: {
         card: "cardPower",
         index,
         data: {
-          headline: { type: "const", constVal: config.headline },
+          headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ""),
           homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
           homeValueTop: {
             value: { type: "triggered", dp: states[6] },
@@ -655,7 +656,7 @@ class PagePower extends import_Page.Page {
       },
       pageItems: []
     };
-    return result;
+    return { gridItem, messages };
   }
   async update() {
     var _a, _b, _c, _d;

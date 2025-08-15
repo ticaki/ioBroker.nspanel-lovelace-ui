@@ -389,23 +389,6 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(await import_pageQR.PageQR.getQRPageConfig(this.adapter, index, this));
           continue;
         }
-        if (page.type === "cardPower") {
-          if (!Array.isArray(this.adapter.config.pagePowerdata)) {
-            messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pagePowerdata.findIndex(
-            (item) => item.pageName === page.uniqueName
-          );
-          if (index === -1) {
-            messages.push(`No pagePowerdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          panelConfig.pages.push(await import_pagePower.PagePower.getPowerPageConfig(this.adapter, index, this));
-          continue;
-        }
         if (page.type === "cardChart" || page.type === "cardLChart") {
           if (!Array.isArray(this.adapter.config.pageChartdata)) {
             messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
@@ -431,6 +414,7 @@ class ConfigManager extends import_library.BaseClass {
           hidden: page.hiddenByTrigger || false,
           config: {
             card: page.type,
+            index: 0,
             data: {
               headline: await this.getFieldAsDataItemConfig(page.heading || "")
             }
@@ -450,6 +434,36 @@ class ConfigManager extends import_library.BaseClass {
           );
           this.log.warn(messages[messages.length - 1]);
           continue;
+        }
+        if (page.type === "cardPower") {
+          if (!Array.isArray(this.adapter.config.pagePowerdata)) {
+            messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pagePowerdata.findIndex(
+            (item) => item.pageName === page.uniqueName
+          );
+          if (index === -1) {
+            messages.push(`No pagePowerdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          try {
+            ({ gridItem, messages } = await import_pagePower.PagePower.getPowerPageConfig(
+              this,
+              page,
+              index,
+              gridItem,
+              messages
+            ));
+          } catch (error) {
+            messages.push(
+              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
         }
         if (page.items) {
           for (let a = 0; a < page.items.length; a++) {
