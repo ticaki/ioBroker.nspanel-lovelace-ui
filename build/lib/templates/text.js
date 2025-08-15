@@ -1714,6 +1714,101 @@ const textTemplates = {
       }
     }
   },
+  "text.custom.windarrow": {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "sainlogic",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "value.speed.wind",
+          type: "triggered",
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "value.speed.wind",
+          type: "triggered",
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            mode: "auto",
+            role: "value.direction.wind",
+            type: "triggered",
+            dp: ``,
+            read: `{
+                            let dir = (val || 0)
+                            dir = (dir - (options?.directionOfPanel || 0) + 360) % 360
+
+                            let icon = 'arrow-'
+                            let icontop/*: 'bottom-' | 'top-' | 'down-' | 'up-' | ''*/ = ''
+                            let iconleft/*: 'left-' | 'right-' | ''*/ = ''
+                            if (dir > 292.5 || dir < 67.5) {
+                                icontop = 'top-'
+                            }
+                            else if(dir < 247.5 && dir > 112.5) {
+                                icontop = 'bottom-'
+                            }
+                            if (dir < 337.5 && dir > 212.5) {
+                                iconleft = 'left-'
+                            }
+                            else if((dir < 157.5 && dir > 32.5)) {
+                                iconleft = 'right-'
+                            }
+                            if (iconleft === '' && icontop) {
+                                if (icontop === 'top-') {
+                                    icontop = 'up-';
+                                } else {
+                                    icontop = 'down-';
+                                }
+
+                            }
+                            return icon + icontop + iconleft + (options?.icon || 'bold-outline')
+                        }`
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 120, val_max: 0, val_best: 20, mode: "triGradAnchor" }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "Wind"
+        },
+        false: void 0
+      }
+    }
+  },
   "text.hmip.windcombo": {
     role: "textNotIcon",
     type: "text",

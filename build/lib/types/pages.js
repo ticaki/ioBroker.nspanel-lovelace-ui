@@ -203,6 +203,8 @@ const stateRoleArray = arrayOfAllStateRole([
   "weather.icon",
   "weather.icon.name",
   "value.uv",
+  "value.direction.wind",
+  "value.speed.wind",
   ""
 ]);
 function isStateRole(F) {
