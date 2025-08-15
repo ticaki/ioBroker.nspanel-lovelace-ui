@@ -371,19 +371,23 @@ async function configuration(): Promise<void> {
             },
             */
 
+
             /*
+            
+            PIRATE-WEATHER
+
             // Bottom 1 - sunrise/set
             {
                 type: 'template',
                 template: 'text.pirate-weather.sunriseset',
-                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.daily\\.00.+/`,
+                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
                 modeScr: 'bottom',
             },
             // Bottom 2 -  Forecast Day 1
             {
                 type: 'template',
                 template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.01/`,
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.01/`,
                 modeScr: 'bottom',
             },
 
@@ -391,7 +395,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.02/`,
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.02/`,
                 modeScr: 'bottom',
             },
 
@@ -399,7 +403,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.03/`,
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.03/`,
                 modeScr: 'bottom',
             },
 
@@ -407,21 +411,21 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.04/`,
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.04/`,
                 modeScr: 'bottom',
             },
             // Bottom 6 - Forecast Day 5
             {
                 type: 'template',
                 template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.05/`,
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.05/`,
                 modeScr: 'bottom',
             },
             // Bottom 7 -  Forecast Day 6
             {
                 type: 'template',
                 template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.06/`,
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.06/`,
                 modeScr: 'bottom',
             },
 
@@ -429,7 +433,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.pirate-weather.windspeed',
-                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
                 modeScr: 'bottom',
             },
 
@@ -437,7 +441,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.pirate-weather.windgust',
-                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
                 modeScr: 'bottom',
             },
 
@@ -445,7 +449,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.pirate-weather.winddirection',
-                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
                 modeScr: 'bottom',
             },
 
@@ -453,7 +457,7 @@ async function configuration(): Promise<void> {
             {
                 type: 'template',
                 template: 'text.pirate-weather.uvindex',
-                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
                 modeScr: 'bottom',
             },
             */
