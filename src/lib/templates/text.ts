@@ -2639,7 +2639,7 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-snow-night':
                                 case 'possible-sleet-day':
                                 case 'possible-sleet-night':
-                                    return Color.swSnowy)
+                                    return Color.swSnowy;
 
                                 case 'sleet':
                                 case 'light-sleet':
