@@ -282,6 +282,9 @@ async function configuration(): Promise<void> {
             // Wenn du sie alle haben willst, setze weatherAddDefaultItems=true in der Konfiguration ganz oben und lass die folgenden Zeilen so wie sie sind!
 
             /*
+
+            OPENWEATHERMAP
+
             // Bottom 1 - sunrise/set
             {
                 type: 'template',
@@ -364,6 +367,93 @@ async function configuration(): Promise<void> {
                 type: 'template',
                 template: 'text.accuweather.uvindex',
                 dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+            */
+
+            /*
+            // Bottom 1 - sunrise/set
+            {
+                type: 'template',
+                template: 'text.pirate-weather.sunriseset',
+                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.daily\\.00.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 -  Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.01/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.02/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.03/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.04/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.05/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 -  Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.06/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windspeed',
+                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windgust',
+                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.pirate-weather.winddirection',
+                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 11 - UV-Index
+            {
+                type: 'template',
+                template: 'text.pirate-weather.uvindex',
+                dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                 modeScr: 'bottom',
             },
             */

@@ -3087,6 +3087,72 @@ const textTemplates = {
         false: void 0
       }
     }
+  },
+  "text.pirate-weather.uvindex": {
+    role: "text",
+    type: "text",
+    adapter: "pirate-weather",
+    data: {
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.uv",
+          dp: "",
+          forceType: "string"
+        },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "value.uv",
+          type: "triggered",
+          dp: ``,
+          forceType: "string"
+        },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "solar-power"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "solar-power"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 9 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "UV"
+        },
+        false: void 0
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

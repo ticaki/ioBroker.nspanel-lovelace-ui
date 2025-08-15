@@ -3719,6 +3719,12 @@ export class ConfigManager extends BaseClass {
                             dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
                         },
+                        // Bottom 10 - UV-Index
+                        {
+                            template: 'text.pirate-weather.uvindex',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                            modeScr: 'bottom',
+                        },
                     ]);
                 }
             }

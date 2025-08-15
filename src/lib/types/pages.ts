@@ -201,10 +201,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'date.sunset',
     'weather.icon',
     'weather.icon.name',
+    'value.uv',
     '',
 ]);
 
 export type StateRole =
+    | 'value.uv'
     | 'weather.icon.name'
     | 'weather.icon'
     | 'date.sunrise'
@@ -350,6 +352,7 @@ export type DeviceRole =
     | 'humidity'
     | 'temperature'
     | 'fan'
+    | 'value.uv'
     | '';
 
 export function isStateRole(F: string): F is StateRole {

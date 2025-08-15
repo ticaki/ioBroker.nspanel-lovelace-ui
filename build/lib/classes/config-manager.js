@@ -3127,6 +3127,12 @@ class ConfigManager extends import_library.BaseClass {
               template: "text.pirate-weather.winddirection",
               dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
               modeScr: "bottom"
+            },
+            // Bottom 10 - UV-Index
+            {
+              template: "text.pirate-weather.uvindex",
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+              modeScr: "bottom"
             }
           ]);
         }

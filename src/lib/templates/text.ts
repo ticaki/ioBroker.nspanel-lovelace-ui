@@ -3084,4 +3084,70 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.pirate-weather.uvindex': {
+        role: 'text',
+        type: 'text',
+        adapter: 'pirate-weather',
+        data: {
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.uv',
+                    dp: '',
+                    forceType: 'string',
+                },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+            },
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: 'value.uv',
+                    type: 'triggered',
+                    dp: ``,
+                    forceType: 'string',
+                },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'const',
+                        constVal: 'solar-power',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'const',
+                        constVal: 'solar-power',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSGreen,
+                    },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 9 },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'UV',
+                },
+                false: undefined,
+            },
+        },
+    },
 };
