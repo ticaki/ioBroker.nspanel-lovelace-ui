@@ -20,6 +20,7 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.pirate-weather.hourlyweather'
     | 'text.custom.windarrow'
     | 'text.pirate-weather.windgust'
     | 'text.pirate-weather.uvindex'
