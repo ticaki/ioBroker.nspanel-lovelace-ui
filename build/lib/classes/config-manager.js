@@ -3113,19 +3113,19 @@ class ConfigManager extends import_library.BaseClass {
             // Bottom 8 - Windgeschwindigkeit
             {
               template: "text.pirate-weather.windspeed",
-              dpInit: `/^pirate-weather\\.${instance}./`,
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
               modeScr: "bottom"
             },
             // Bottom 9 - Böen
             {
               template: "text.pirate-weather.windgust",
-              dpInit: `/^pirate-weather\\.${instance}./`,
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
               modeScr: "bottom"
             },
             // Bottom 10 - Windrichtung
             {
               template: "text.pirate-weather.winddirection",
-              dpInit: `/^pirate-weather\\.${instance}./`,
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
               modeScr: "bottom"
             }
           ]);

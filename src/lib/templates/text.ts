@@ -2895,7 +2895,7 @@ export const textTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     type: 'triggered',
-                    regexp: /^pirate-weather\.[0-9]+\.weather\.currently\.windSpeed/,
+                    regexp: /\.windSpeed$/,
                     dp: ``,
                 },
                 decimal: {
@@ -2909,17 +2909,17 @@ export const textTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     type: 'triggered',
-                    regexp: /^pirate-weather\.[0-9]+\.weather\.currently\.windSpeed/,
+                    regexp: /\.windSpeed$/,
                     dp: ``,
                 },
                 decimal: {
                     type: 'const',
                     constVal: 0,
                 },
-                unit: {
+                /*unit: {
                     type: 'const',
                     constVal: 'km/h',
-                },
+                },*/
             },
             icon: {
                 true: {
@@ -2969,7 +2969,7 @@ export const textTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     type: 'triggered',
-                    regexp: /^pirate-weather\.[0-9]+\.weather\.currently\.windBearingText$/,
+                    regexp: /\.windBearingText$/,
                     dp: ``,
                 },
                 decimal: {
@@ -3021,7 +3021,7 @@ export const textTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     type: 'triggered',
-                    regexp: /^pirate-weather\.[0-9]+\.weather\.currently\.windGust$/,
+                    regexp: /\.windGust$/,
                     dp: ``,
                 },
                 decimal: {
@@ -3035,17 +3035,17 @@ export const textTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     type: 'triggered',
-                    regexp: /^pirate-weather\.[0-9]+\.weather\.currently\.windGust$/,
+                    regexp: /\.windGust$/,
                     dp: ``,
                 },
                 decimal: {
                     type: 'const',
                     constVal: 0,
                 },
-                unit: {
+                /*unit: {
                     type: 'const',
                     constVal: 'm/s',
-                },
+                },*/
             },
             icon: {
                 true: {
