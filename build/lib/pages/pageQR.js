@@ -191,7 +191,8 @@ class PageQR extends import_Page.Page {
     }
     this.sendToPanel(this.getMessage(message), false);
   }
-  static async getQRPageConfig(adapter, index, configManager) {
+  static async getQRPageConfig(configManager, page, index, gridItem, messages) {
+    const adapter = configManager.adapter;
     const config = adapter.config.pageQRdata[index];
     if (config) {
       let text1 = "", text = "", icon1 = "", icon2 = "";
@@ -223,20 +224,22 @@ class PageQR extends import_Page.Page {
           break;
       }
       const stateExist = config.setState && await configManager.existsState(config.setState || "");
-      const result = {
+      gridItem = {
+        ...gridItem,
         uniqueID: config.pageName,
-        alwaysOn: config.alwaysOnDisplay ? "always" : "none",
-        hidden: config.hiddenByTrigger || false,
+        alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? "always" : "none",
+        hidden: gridItem.hidden || config.hiddenByTrigger,
         config: {
           card: "cardQR",
           index,
           data: {
-            headline: { type: "const", constVal: config.headline || "" }
+            headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || "")
           }
         },
         pageItems: []
       };
-      result.pageItems.push({
+      gridItem.pageItems = gridItem.pageItems || [];
+      gridItem.pageItems.push({
         type: "text",
         dpInit: "",
         role: "button",
@@ -309,7 +312,7 @@ class PageQR extends import_Page.Page {
           break;
       }
       if (config.setState && stateExist) {
-        result.pageItems.push({
+        gridItem.pageItems.push({
           type: "button",
           dpInit: "",
           role: "button",
@@ -349,7 +352,7 @@ class PageQR extends import_Page.Page {
           }
         });
       } else {
-        result.pageItems.push({
+        gridItem.pageItems.push({
           type: "text",
           dpInit: "",
           role: "button",
@@ -383,7 +386,7 @@ class PageQR extends import_Page.Page {
           }
         });
       }
-      return result;
+      return { gridItem, messages };
     }
     throw new Error("No config for cardQR found");
   }
