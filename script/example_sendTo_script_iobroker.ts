@@ -282,6 +282,9 @@ async function configuration(): Promise<void> {
             // Wenn du sie alle haben willst, setze weatherAddDefaultItems=true in der Konfiguration ganz oben und lass die folgenden Zeilen so wie sie sind!
 
             /*
+
+            OPENWEATHERMAP
+
             // Bottom 1 - sunrise/set
             {
                 type: 'template',
@@ -364,6 +367,111 @@ async function configuration(): Promise<void> {
                 type: 'template',
                 template: 'text.accuweather.uvindex',
                 dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+            */
+
+
+            /*
+            
+            PIRATE-WEATHER
+
+            // Bottom 1 - sunrise/set
+            {
+                type: 'template',
+                template: 'text.pirate-weather.sunriseset',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 -  Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.01/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.02/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.03/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.04/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.05/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 -  Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.06/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windspeed',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windgust',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.pirate-weather.winddirection',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 11 - UV-Index
+            {
+                type: 'template',
+                template: 'text.pirate-weather.uvindex',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+            // hier kann man dann eine Stundenübersicht erzeugen durch anpassen der 02 bzw. 04
+            // die sind nicht in addDefaultWeather enthalten.
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.02/`,
+                modeScr: 'bottom',
+            },
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.04/`,
                 modeScr: 'bottom',
             },
             */
@@ -493,7 +601,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.9.1';
+const version = '0.9.2';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1086,6 +1194,7 @@ declare namespace ScriptConfig {
         defaultBackgroundColor: RGB;
         pages: PageType[];
         subPages: PageType[];
+        restartAdapter?: boolean;
         /**
      * Represents the configuration for a button function.
      * This type can be one of the following modes:

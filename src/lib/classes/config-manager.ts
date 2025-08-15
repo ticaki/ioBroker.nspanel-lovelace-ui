@@ -416,22 +416,7 @@ export class ConfigManager extends BaseClass {
                         panelConfig.navigation.push(navItem);
                     }
                 }
-                // PageQR einlesen
-                if (page.type === 'cardQR') {
-                    if (!Array.isArray(this.adapter.config.pageQRdata)) {
-                        messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
-                    if (index === -1) {
-                        messages.push(`No pageQRdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    panelConfig.pages.push(await PageQR.getQRPageConfig(this.adapter, index, this));
-                    continue;
-                }
+
 
                 // PageChart einlesen
                 if (page.type === 'cardChart' || page.type === 'cardLChart') {
@@ -464,10 +449,10 @@ export class ConfigManager extends BaseClass {
                     hidden: page.hiddenByTrigger || false,
                     config: {
                         card: page.type,
-                        index: 0,
                         data: {
                             headline: await this.getFieldAsDataItemConfig(page.heading || ''),
                         },
+                        index: 0,
                     },
                     pageItems: [],
                 };
@@ -489,6 +474,29 @@ export class ConfigManager extends BaseClass {
                     );
                     this.log.warn(messages[messages.length - 1]);
                     continue;
+                }
+                // PageQR einlesen
+                if (page.type === 'cardQR') {
+                    if (!Array.isArray(this.adapter.config.pageQRdata)) {
+                        messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
+                    if (index === -1) {
+                        messages.push(`No pageQRdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    try {
+                        ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
+                    } catch (error: any) {
+                        messages.push(
+                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                        );
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
                 }
                 // PagePower einlesen
                 if (page.type === 'cardPower') {
@@ -544,8 +552,8 @@ export class ConfigManager extends BaseClass {
                             this.log.warn(messages[messages.length - 1]);
                         }
                     }
-                    panelConfig.pages.push(gridItem);
                 }
+                panelConfig.pages.push(gridItem);
             }
         }
         return { panelConfig, messages };
@@ -3716,21 +3724,27 @@ export class ConfigManager extends BaseClass {
                         // Bottom 8 - Windgeschwindigkeit
                         {
                             template: 'text.pirate-weather.windspeed',
-                            dpInit: `/^pirate-weather\\.${instance}./`,
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
                         },
 
                         // Bottom 9 - Böen
                         {
                             template: 'text.pirate-weather.windgust',
-                            dpInit: `/^pirate-weather\\.${instance}./`,
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
                         },
 
                         // Bottom 10 - Windrichtung
                         {
                             template: 'text.pirate-weather.winddirection',
-                            dpInit: `/^pirate-weather\\.${instance}./`,
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 10 - UV-Index
+                        {
+                            template: 'text.pirate-weather.uvindex',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
                         },
                     ]);

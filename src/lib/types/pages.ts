@@ -201,10 +201,16 @@ export const stateRoleArray = arrayOfAllStateRole([
     'date.sunset',
     'weather.icon',
     'weather.icon.name',
+    'value.uv',
+    'value.direction.wind',
+    'value.speed.wind',
     '',
 ]);
 
 export type StateRole =
+    | 'value.speed.wind'
+    | 'value.direction.wind'
+    | 'value.uv'
     | 'weather.icon.name'
     | 'weather.icon'
     | 'date.sunrise'
@@ -350,6 +356,7 @@ export type DeviceRole =
     | 'humidity'
     | 'temperature'
     | 'fan'
+    | 'value.uv'
     | '';
 
 export function isStateRole(F: string): F is StateRole {
@@ -717,7 +724,9 @@ export type cardThermoDataItems = {
 
 export type cardMediaDataItemOptions = {
     card: 'cardMedia';
-    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & { logo: toolboxItem | undefined };
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
+        logo?: toolboxItem | undefined;
+    };
 };
 
 export type cardMediaDataItems = {
@@ -809,21 +818,21 @@ export type ChangeTypeOfKeysGeneric<Obj, N> = Obj extends object
 
 type PageMediaBaseConfig = {
     headline: string;
-    alwaysOnDisplay: boolean;
-    album: string;
-    title: listItem;
-    duration: string;
-    elapsed: string;
-    artist: listItem;
-    shuffle: typePageItem.ScaledNumberType;
-    volume: typePageItem.ScaledNumberType;
-    icon: string;
-    play: string;
-    mediaState: string;
-    stop: string;
-    pause: string;
-    forward: string;
-    backward: string;
+    alwaysOnDisplay?: boolean;
+    album?: string;
+    title?: listItem;
+    duration?: string;
+    elapsed?: string;
+    artist?: listItem;
+    shuffle?: typePageItem.ScaledNumberType;
+    volume?: typePageItem.ScaledNumberType;
+    icon?: string;
+    play?: string;
+    mediaState?: string;
+    stop?: string;
+    pause?: string;
+    forward?: string;
+    backward?: string;
 };
 
 type PageGridBaseConfig = {

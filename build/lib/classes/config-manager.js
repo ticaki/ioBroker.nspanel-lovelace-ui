@@ -374,21 +374,6 @@ class ConfigManager extends import_library.BaseClass {
             panelConfig.navigation.push(navItem);
           }
         }
-        if (page.type === "cardQR") {
-          if (!Array.isArray(this.adapter.config.pageQRdata)) {
-            messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
-          if (index === -1) {
-            messages.push(`No pageQRdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          panelConfig.pages.push(await import_pageQR.PageQR.getQRPageConfig(this.adapter, index, this));
-          continue;
-        }
         if (page.type === "cardChart" || page.type === "cardLChart") {
           if (!Array.isArray(this.adapter.config.pageChartdata)) {
             messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
@@ -417,7 +402,8 @@ class ConfigManager extends import_library.BaseClass {
             index: 0,
             data: {
               headline: await this.getFieldAsDataItemConfig(page.heading || "")
-            }
+            },
+            index: 0
           },
           pageItems: []
         };
@@ -434,6 +420,28 @@ class ConfigManager extends import_library.BaseClass {
           );
           this.log.warn(messages[messages.length - 1]);
           continue;
+        }
+        if (page.type === "cardQR") {
+          if (!Array.isArray(this.adapter.config.pageQRdata)) {
+            messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
+          if (index === -1) {
+            messages.push(`No pageQRdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          try {
+            ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, page, index, gridItem, messages));
+          } catch (error) {
+            messages.push(
+              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
         }
         if (page.type === "cardPower") {
           if (!Array.isArray(this.adapter.config.pagePowerdata)) {
@@ -488,8 +496,8 @@ class ConfigManager extends import_library.BaseClass {
               this.log.warn(messages[messages.length - 1]);
             }
           }
-          panelConfig.pages.push(gridItem);
         }
+        panelConfig.pages.push(gridItem);
       }
     }
     return { panelConfig, messages };
@@ -3127,19 +3135,25 @@ class ConfigManager extends import_library.BaseClass {
             // Bottom 8 - Windgeschwindigkeit
             {
               template: "text.pirate-weather.windspeed",
-              dpInit: `/^pirate-weather\\.${instance}./`,
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
               modeScr: "bottom"
             },
             // Bottom 9 - Böen
             {
               template: "text.pirate-weather.windgust",
-              dpInit: `/^pirate-weather\\.${instance}./`,
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
               modeScr: "bottom"
             },
             // Bottom 10 - Windrichtung
             {
               template: "text.pirate-weather.winddirection",
-              dpInit: `/^pirate-weather\\.${instance}./`,
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+              modeScr: "bottom"
+            },
+            // Bottom 10 - UV-Index
+            {
+              template: "text.pirate-weather.uvindex",
+              dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
               modeScr: "bottom"
             }
           ]);
