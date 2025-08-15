@@ -808,7 +808,8 @@ export class Panel extends BaseClass {
             //this.log.info(`Receive a message from ${topic} with ${message}`);
         } else if (topic.endsWith('/tele/LWT')) {
             if (message === 'Offline') {
-                this.isOnline = false;
+                // deaktiviert, weils zu falschen offline meldungen bei 1 nutzer kommt
+                //this.isOnline = false;
             }
         } else if (topic.endsWith('/tele/INFO1')) {
             this.restartLoops();
