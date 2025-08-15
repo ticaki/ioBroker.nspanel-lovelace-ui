@@ -17,7 +17,8 @@ export type PageTemplateIdent =
     | 'entities.fahrplan.routes'
     | 'thermo.hmip.valve'
     | 'thermo.hmip.wallthermostat'
-    | 'thermo.script';
+    | 'thermo.script'
+    | 'media.amazon';
 
 export type TemplateIdent =
     | 'text.pirate-weather.hourlyweather'

@@ -1194,6 +1194,7 @@ declare namespace ScriptConfig {
         defaultBackgroundColor: RGB;
         pages: PageType[];
         subPages: PageType[];
+        restartAdapter?: boolean;
         /**
      * Represents the configuration for a button function.
      * This type can be one of the following modes:

@@ -653,6 +653,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
+                    if (obj.message?.restartAdapter) {
+                        await this.delay(100);
+                        this.log.info('Restart adapter after script config update');
+                        this.restart();
+                    }
                     break;
                 }
 
