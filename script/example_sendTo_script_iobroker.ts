@@ -460,6 +460,20 @@ async function configuration(): Promise<void> {
                 dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
                 modeScr: 'bottom',
             },
+            // hier kann man dann eine Stundenübersicht erzeugen durch anpassen der 02 bzw. 04
+            // die sind nicht in addDefaultWeather enthalten.
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.02/`,
+                modeScr: 'bottom',
+            },
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.04/`,
+                modeScr: 'bottom',
+            },
             */
         ],
 
