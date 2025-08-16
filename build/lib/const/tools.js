@@ -733,7 +733,6 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
     minFactor = 0;
     for (const p of siPrefixes) {
       if (cUnit.startsWith(p.prefix)) {
-        unit = cUnit.substring(p.prefix.length);
         minFactor = p.factor;
         break;
       }
