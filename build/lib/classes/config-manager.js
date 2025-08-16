@@ -374,23 +374,6 @@ class ConfigManager extends import_library.BaseClass {
             panelConfig.navigation.push(navItem);
           }
         }
-        if (page.type === "cardChart" || page.type === "cardLChart") {
-          if (!Array.isArray(this.adapter.config.pageChartdata)) {
-            messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageChartdata.findIndex(
-            (item) => item.pageName === page.uniqueName
-          );
-          if (index === -1) {
-            messages.push(`No pageChartdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          panelConfig.pages.push(await import_pageChart.PageChart.getChartPageConfig(this.adapter, index, this));
-          continue;
-        }
         let gridItem = {
           dpInit: "",
           alwaysOn: page.alwaysOnDisplay ? typeof page.alwaysOnDisplay === "boolean" ? "always" : "action" : "none",
@@ -463,6 +446,36 @@ class ConfigManager extends import_library.BaseClass {
               index,
               gridItem,
               messages
+            ));
+          } catch (error) {
+            messages.push(
+              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+        }
+        if (page.type === "cardChart" || page.type === "cardLChart") {
+          if (!Array.isArray(this.adapter.config.pageChartdata)) {
+            messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pageChartdata.findIndex(
+            (item) => item.pageName === page.uniqueName
+          );
+          if (index === -1) {
+            messages.push(`No pageChartdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          try {
+            ({ gridItem, messages } = await import_pageChart.PageChart.getChartPageConfig(
+              this,
+              index,
+              gridItem,
+              messages,
+              page
             ));
           } catch (error) {
             messages.push(
