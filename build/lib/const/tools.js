@@ -84,10 +84,10 @@ async function setValueEntry(i, value, sca = true) {
   if (typeof value === "number") {
     res = value / ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
     if (sca && i.minScale !== void 0 && i.maxScale !== void 0) {
-      const min2 = await i.minScale.getNumber();
+      const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
-      if (min2 !== null && max !== null) {
-        res = Math.round(import_Color.Color.scale(res, 0, 100, min2, max));
+      if (min !== null && max !== null) {
+        res = Math.round(import_Color.Color.scale(res, 0, 100, min, max));
       }
     }
   }
@@ -109,10 +109,10 @@ async function getValueEntryNumber(i, s = true, options) {
   if (nval !== null && nval !== void 0) {
     let res = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
     if (s && i.minScale !== void 0 && i.maxScale !== void 0) {
-      const min2 = await i.minScale.getNumber();
+      const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
-      if (min2 !== null && max !== null) {
-        res = import_Color.Color.scale(res, min2, max, 0, 100);
+      if (min !== null && max !== null) {
+        res = import_Color.Color.scale(res, min, max, 0, 100);
       }
     }
     const d = (_b = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _b : null;
@@ -129,12 +129,12 @@ async function getValueEntryNumber(i, s = true, options) {
   }
   return null;
 }
-function getScaledNumberRaw(n, min2, max, oldValue = null) {
-  if (min2 !== null && max !== null) {
+function getScaledNumberRaw(n, min, max, oldValue = null) {
+  if (min !== null && max !== null) {
     if (oldValue === null) {
-      n = Math.round(import_Color.Color.scale(n, min2, max, 0, 100));
+      n = Math.round(import_Color.Color.scale(n, min, max, 0, 100));
     } else {
-      n = import_Color.Color.scale(n, 0, 100, min2, max);
+      n = import_Color.Color.scale(n, 0, 100, min, max);
       if (oldValue !== false) {
         if (oldValue >= n) {
           n = Math.floor(n);
@@ -157,9 +157,9 @@ async function getScaledNumber(i) {
   if (nval != null) {
     nval = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
     if (i.minScale !== void 0 && i.maxScale !== void 0) {
-      const min2 = await i.minScale.getNumber();
+      const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
-      nval = getScaledNumberRaw(nval, min2, max);
+      nval = getScaledNumberRaw(nval, min, max);
     }
     if ("negate" in i && i.negate) {
       const reverse = await i.negate.getBoolean();
@@ -201,13 +201,13 @@ async function getSliderCTFromValue(i) {
   let r = 3500;
   if (nval !== null && nval !== void 0) {
     if (i.minScale !== void 0 && i.maxScale !== void 0) {
-      const min2 = await i.minScale.getNumber();
+      const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
-      if (min2 !== null && max !== null) {
+      if (min !== null && max !== null) {
         if (mode === "mired") {
-          r = Math.round(import_Color.Color.scale(nval, min2, max, 0, 100));
+          r = Math.round(import_Color.Color.scale(nval, min, max, 0, 100));
         } else {
-          r = Math.round(import_Color.Color.scale(nval, min2, max, 100, 0));
+          r = Math.round(import_Color.Color.scale(nval, min, max, 100, 0));
         }
       }
     } else if (i.value && i.value.common && i.value.common.min !== void 0 && i.value.common.max !== void 0) {
@@ -234,13 +234,13 @@ async function setSliderCTFromValue(i, value) {
   const mode = i.mode && await i.mode.getString();
   let r = value;
   if (i.minScale !== void 0 && i.maxScale !== void 0) {
-    const min2 = await i.minScale.getNumber();
+    const min = await i.minScale.getNumber();
     const max = await i.maxScale.getNumber();
-    if (min2 !== null && max !== null) {
+    if (min !== null && max !== null) {
       if (mode === "mired") {
-        r = Math.round(import_Color.Color.scale(r, 0, 100, min2, max));
+        r = Math.round(import_Color.Color.scale(r, 0, 100, min, max));
       } else {
-        r = Math.round(import_Color.Color.scale(r, 0, 100, max, min2));
+        r = Math.round(import_Color.Color.scale(r, 0, 100, max, min));
       }
     }
   } else if (i.value && i.value.common && i.value.common.min !== void 0 && i.value.common.max !== void 0) {
@@ -322,13 +322,13 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   } else if (typeof on === "number") {
     const scale = (0, import_types.isPartialIconSelectScaleElement)(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
     const swap = scale.valIcon_min > scale.valIcon_max;
-    const min2 = swap ? scale.valIcon_max : scale.valIcon_min;
+    const min = swap ? scale.valIcon_max : scale.valIcon_min;
     const max = swap ? scale.valIcon_min : scale.valIcon_max;
-    if (min2 < on && max > on) {
+    if (min < on && max > on) {
       return import_icon_mapping.Icons.GetIcon(
         i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def
       );
-    } else if (!swap && max > on || swap && min2 < on) {
+    } else if (!swap && max > on || swap && min < on) {
       return import_icon_mapping.Icons.GetIcon(
         i.false && i.false.value && await i.false.value.getString() || defOff || icon || def
       );
@@ -496,7 +496,7 @@ function getLogFromIconScale(i, factor) {
   }
   return factor;
 }
-async function GetIconColor(item, value, min2 = null, max = null, offColor = null) {
+async function GetIconColor(item, value, min = null, max = null, offColor = null) {
   var _a, _b;
   if (item === void 0) {
     return "";
@@ -506,7 +506,7 @@ async function GetIconColor(item, value, min2 = null, max = null, offColor = nul
     if (typeof value === "number") {
       let val = typeof value === "number" ? value : 0;
       const maxValue = max != null ? max : 100;
-      const minValue = min2 != null ? min2 : 0;
+      const minValue = min != null ? min : 0;
       val = val > maxValue ? maxValue : val;
       val = val < minValue ? minValue : val;
       return String(
@@ -529,7 +529,7 @@ async function GetIconColor(item, value, min2 = null, max = null, offColor = nul
   if (typeof value === "number") {
     let val = typeof value === "number" ? value : 0;
     const maxValue = (_a = item.maxBri && await item.maxBri.getNumber() || max) != null ? _a : 100;
-    const minValue = (_b = item.minBri && await item.minBri.getNumber() || min2) != null ? _b : 0;
+    const minValue = (_b = item.minBri && await item.minBri.getNumber() || min) != null ? _b : 0;
     val = val > maxValue ? maxValue : val;
     val = val < minValue ? minValue : val;
     return String(

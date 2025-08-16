@@ -22,7 +22,6 @@ import {
     isPartialIconSelectScaleElement,
     isValueDateFormat,
 } from '../types/types';
-import { min } from 'moment';
 
 export const messageItemDefault: MessageItem = {
     type: 'input_sel',
