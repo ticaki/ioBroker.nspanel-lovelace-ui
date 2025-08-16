@@ -22,6 +22,7 @@ import {
     isPartialIconSelectScaleElement,
     isValueDateFormat,
 } from '../types/types';
+import { min } from 'moment';
 
 export const messageItemDefault: MessageItem = {
     type: 'input_sel',
@@ -784,6 +785,21 @@ export function alignText(text: string, size: number, align: 'left' | 'right' | 
     return text2;
 }
 
+export const siPrefixes = [
+    // Unterhalb von 0
+    { prefix: 'f', name: 'femto', factor: -5 },
+    { prefix: 'p', name: 'pico', factor: -4 },
+    { prefix: 'n', name: 'nano', factor: -3 },
+    { prefix: 'μ', name: 'micro', factor: -2 },
+    { prefix: 'm', name: 'milli', factor: -1 },
+
+    // Oberhalb von 0
+    { prefix: 'k', name: 'kilo', factor: 1 },
+    { prefix: 'M', name: 'mega', factor: 2 },
+    { prefix: 'G', name: 'giga', factor: 3 },
+    { prefix: 'T', name: 'tera', factor: 4 },
+    { prefix: 'P', name: 'peta', factor: 5 },
+];
 /**
  * Converts a numerical value into a human-readable format with an appropriate SI prefix and unit.
  * The function adjusts the value and unit dynamically based on the provided constraints such as space and decimal precision.
@@ -829,21 +845,7 @@ export async function getValueAutoUnit(
     if (!i || !i.value) {
         return {};
     }
-    const siPrefixes = [
-        // Unterhalb von 0
-        { prefix: 'f', name: 'femto', factor: -5 },
-        { prefix: 'p', name: 'pico', factor: -4 },
-        { prefix: 'n', name: 'nano', factor: -3 },
-        { prefix: 'μ', name: 'micro', factor: -2 },
-        { prefix: 'm', name: 'milli', factor: -1 },
 
-        // Oberhalb von 0
-        { prefix: 'k', name: 'kilo', factor: 1 },
-        { prefix: 'M', name: 'mega', factor: 2 },
-        { prefix: 'G', name: 'giga', factor: 3 },
-        { prefix: 'T', name: 'tera', factor: 4 },
-        { prefix: 'P', name: 'peta', factor: 5 },
-    ];
     if ((v != null && unit == null) || (v == null && unit != null)) {
         throw new Error('v and unit must be both null or both not null');
     }
@@ -851,7 +853,15 @@ export async function getValueAutoUnit(
     const cUnit = ((i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '').trim();
     const decimal = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
     const fits = false;
-
+    if (minFactor === undefined || minFactor === null) {
+        minFactor = 0;
+        for (const p of siPrefixes) {
+            if (cUnit.startsWith(p.prefix)) {
+                minFactor = p.factor;
+                break;
+            }
+        }
+    }
     let res = '';
     //let opt = '';
     let unitFactor = startFactor ?? 0;
@@ -876,7 +886,8 @@ export async function getValueAutoUnit(
         let tempValue = value / 10 ** (3 * unitFactor);
 
         let d = decimal != null && decimal !== false ? decimal : 1;
-        const calSpace = space - (d ? d + 1 : 0);
+        let calSpace = space - (d ? d + 1 : 0);
+        calSpace = calSpace > 4 ? 4 : calSpace;
         d = calSpace > 3 ? d : d - (3 - calSpace);
         d = d < 0 ? 0 : d;
         let endlessCouter = 0;
