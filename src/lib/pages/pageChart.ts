@@ -108,6 +108,7 @@ export class PageChart extends Page {
             }
 
             gridItem = {
+                ...gridItem,
                 uniqueID: config.pageName,
                 alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? 'always' : 'none',
                 hidden: page.hiddenByTrigger || config.hiddenByTrigger,
