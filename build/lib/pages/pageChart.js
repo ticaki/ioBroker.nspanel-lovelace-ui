@@ -111,6 +111,7 @@ class PageChart extends import_Page.Page {
         stateExistTicks = config.setStateForTicks;
       }
       gridItem = {
+        ...gridItem,
         uniqueID: config.pageName,
         alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? "always" : "none",
         hidden: page.hiddenByTrigger || config.hiddenByTrigger,

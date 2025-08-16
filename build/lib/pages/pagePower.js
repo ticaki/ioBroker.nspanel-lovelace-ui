@@ -282,6 +282,7 @@ class PagePower extends import_Page.Page {
       };
     }
     gridItem = {
+      ...gridItem,
       uniqueID: config.pageName,
       alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? "always" : "none",
       hidden: gridItem.hidden || config.hiddenByTrigger,
