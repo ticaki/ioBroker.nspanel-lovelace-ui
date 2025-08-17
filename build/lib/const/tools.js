@@ -739,7 +739,7 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
     }
   }
   let res = "";
-  let unitFactor = startFactor != null ? startFactor : 0;
+  let unitFactor = startFactor == null || startFactor < minFactor ? minFactor : startFactor;
   if (value !== null && value !== void 0) {
     const isNegativ = value < 0;
     value = Math.abs(value);

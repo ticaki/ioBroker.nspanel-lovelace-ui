@@ -863,7 +863,7 @@ export async function getValueAutoUnit(
     }
     let res = '';
     //let opt = '';
-    let unitFactor = startFactor ?? 0;
+    let unitFactor = startFactor == null || startFactor < minFactor ? minFactor : startFactor;
 
     if (value !== null && value !== undefined) {
         const isNegativ = value < 0;
