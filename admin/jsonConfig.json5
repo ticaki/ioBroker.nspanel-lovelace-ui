@@ -19,7 +19,7 @@
                 },
                 "_notifyStaticText": {
                     "type": "staticText",
-                    "text": "Wir empfehlen den internen MQTT-Server des Adapters zu nutzen, dieser arbeitet direkt mit dem Panel. Dadurch konnte der Datenaustausch optimiert werden.",
+                    "text": "notifyMqttServer",
                     "style": {
                         "color": "red",
                     },
