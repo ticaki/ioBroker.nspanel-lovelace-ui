@@ -268,6 +268,7 @@ declare namespace ScriptConfig {
         | 'cardGrid2'
         | 'cardGrid3'
         | 'cardThermo'
+        | 'cardThermo2'
         | 'cardMedia'
         | 'cardUnlock'
         | 'cardQR'
@@ -281,6 +282,7 @@ declare namespace ScriptConfig {
         | PageGrid2
         | PageGrid3
         | PageThermo
+        | PageThermo2
         | PageMedia
         | PageUnlock
         | PageQR
@@ -319,6 +321,12 @@ declare namespace ScriptConfig {
         items: [PageThermoItem];
     } & Omit<PageBaseType, 'useColor'>;
 
+    export type PageThermo2 = {
+        type: 'cardThermo2';
+        thermoItems: PageThermo2Item[];
+        items: PageItem[];
+    } & Omit<PageBaseType, 'useColor'>;
+
     export type PageMedia = {
         type: 'cardMedia';
         items: [PageMediaItem];
@@ -351,7 +359,7 @@ declare namespace ScriptConfig {
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
         Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
-    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
+    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem | PageThermo2Item;
 
     export type PageMediaItem = {
         adapterPlayerInstance: adapterPlayerInstanceType;
@@ -375,6 +383,20 @@ declare namespace ScriptConfig {
         setThermoAlias?: string[];
         setThermoDestTemp2?: string;
     } & PageBaseItem;
+
+    export type PageThermo2Item = {
+        id: string;
+        name?: string;
+        minValue?: number;
+        maxValue?: number;
+        stepValue?: number;
+        /**
+         * The unit of the 2. line. can string, icon or state
+         */
+        unit2?: string;
+        onColor2: RGB;
+    } & PageBaseItem;
+
     // mean string start with getState(' and end with ').val
     type getStateID = string;
     export type PageBaseItem = {

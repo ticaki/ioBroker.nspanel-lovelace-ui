@@ -2682,4 +2682,7 @@ export class PageItem extends BaseClassTriggerd {
         }
         return list;
     }
+    static isPageItemTextDataItems(F: any): F is typePageItem.PageItemTextDataItems {
+        return F && typeof F === 'object' && 'type' in F && F.type === 'text';
+    }
 }
