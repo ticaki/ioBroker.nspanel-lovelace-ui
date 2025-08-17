@@ -53,7 +53,8 @@ __export(tools_exports, {
   setScaledNumber: () => setScaledNumber,
   setSliderCTFromValue: () => setSliderCTFromValue,
   setTriggeredToState: () => setTriggeredToState,
-  setValueEntry: () => setValueEntry
+  setValueEntry: () => setValueEntry,
+  siPrefixes: () => siPrefixes
 });
 module.exports = __toCommonJS(tools_exports);
 var import_data_item = require("../classes/data-item");
@@ -702,25 +703,25 @@ function alignText(text, size, align) {
   }
   return text2;
 }
+const siPrefixes = [
+  // Unterhalb von 0
+  { prefix: "f", name: "femto", factor: -5 },
+  { prefix: "p", name: "pico", factor: -4 },
+  { prefix: "n", name: "nano", factor: -3 },
+  { prefix: "\u03BC", name: "micro", factor: -2 },
+  { prefix: "m", name: "milli", factor: -1 },
+  // Oberhalb von 0
+  { prefix: "k", name: "kilo", factor: 1 },
+  { prefix: "M", name: "mega", factor: 2 },
+  { prefix: "G", name: "giga", factor: 3 },
+  { prefix: "T", name: "tera", factor: 4 },
+  { prefix: "P", name: "peta", factor: 5 }
+];
 async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, minFactor = 0) {
   var _a, _b, _c;
   if (!i || !i.value) {
     return {};
   }
-  const siPrefixes = [
-    // Unterhalb von 0
-    { prefix: "f", name: "femto", factor: -5 },
-    { prefix: "p", name: "pico", factor: -4 },
-    { prefix: "n", name: "nano", factor: -3 },
-    { prefix: "\u03BC", name: "micro", factor: -2 },
-    { prefix: "m", name: "milli", factor: -1 },
-    // Oberhalb von 0
-    { prefix: "k", name: "kilo", factor: 1 },
-    { prefix: "M", name: "mega", factor: 2 },
-    { prefix: "G", name: "giga", factor: 3 },
-    { prefix: "T", name: "tera", factor: 4 },
-    { prefix: "P", name: "peta", factor: 5 }
-  ];
   if (v != null && unit == null || v == null && unit != null) {
     throw new Error("v and unit must be both null or both not null");
   }
@@ -728,8 +729,17 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
   const cUnit = ((_b = (_a = i.unit && await i.unit.getString()) != null ? _a : i.value.common.unit) != null ? _b : "").trim();
   const decimal = (_c = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _c : null;
   const fits = false;
+  if (minFactor === void 0 || minFactor === null) {
+    minFactor = 0;
+    for (const p of siPrefixes) {
+      if (cUnit.startsWith(p.prefix)) {
+        minFactor = p.factor;
+        break;
+      }
+    }
+  }
   let res = "";
-  let unitFactor = startFactor != null ? startFactor : 0;
+  let unitFactor = startFactor == null || startFactor < minFactor ? minFactor : startFactor;
   if (value !== null && value !== void 0) {
     const isNegativ = value < 0;
     value = Math.abs(value);
@@ -755,7 +765,7 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
     let endlessCouter = 0;
     while (!fits) {
       if (unitFactor > 5 || unitFactor < minFactor || endlessCouter++ > 10) {
-        res = unitFactor < minFactor ? (value / 10 ** d / 10 ** (3 * ++unitFactor)).toFixed(d) : "error";
+        res = unitFactor < minFactor ? (value / 10 ** (3 * ++unitFactor)).toFixed(d) : "error";
         break;
       }
       tempValue = Math.round(tempValue * 10 ** d) / 10 ** d;
@@ -1052,6 +1062,7 @@ function isVersionGreaterOrEqual(a, b) {
   setScaledNumber,
   setSliderCTFromValue,
   setTriggeredToState,
-  setValueEntry
+  setValueEntry,
+  siPrefixes
 });
 //# sourceMappingURL=tools.js.map
