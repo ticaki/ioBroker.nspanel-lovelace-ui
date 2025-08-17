@@ -199,6 +199,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       case "cardBurnRec":
       case "cardItemSpecial":
       case "cardSchedule":
+      case "cardThermo2":
         renderCurrentPage = true;
         break;
       case "popupNotify":
