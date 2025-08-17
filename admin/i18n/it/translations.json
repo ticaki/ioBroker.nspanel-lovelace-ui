@@ -221,5 +221,6 @@
     "shutterClosedIsZero": "La posizione di 0 viene visualizzata come completamente chiusa (al massimo esteso).",
     "hideCards": "Nascondi pagine",
     "hiddenByTrigger": "Nascondi pagina",
-    "headerShutter": "Controllo dell'otturatore"
+    "headerShutter": "Controllo dell'otturatore",
+    "notifyMqttServer": "Si consiglia di utilizzare il server MQTT interno dell'adattatore, che funziona direttamente con il pannello. Ciò ottimizza lo scambio di dati."
 }

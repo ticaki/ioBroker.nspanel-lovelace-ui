@@ -221,5 +221,6 @@
     "shutterClosedIsZero": "La position de 0 est affichée comme entièrement fermée (étendues au maximum).",
     "hideCards": "Masquer les pages",
     "hiddenByTrigger": "Cachette",
-    "headerShutter": "Contrôle de l'obturateur"
+    "headerShutter": "Contrôle de l'obturateur",
+    "notifyMqttServer": "Nous vous recommandons d'utiliser le serveur MQTT interne de l'adaptateur, qui fonctionne directement avec le panneau. Cela optimise l'échange de données."
 }

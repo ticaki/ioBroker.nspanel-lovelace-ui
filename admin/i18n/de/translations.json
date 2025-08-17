@@ -221,5 +221,6 @@
     "shutterClosedIsZero": "Die Position von 0 wird als vollständig geschlossen angezeigt (maximal ausgefahren).",
     "hideCards": "Seiten verbergen",
     "hiddenByTrigger": "Seite verbergen",
-    "headerShutter": "Rollladensteuerung"
+    "headerShutter": "Rollladensteuerung",
+    "notifyMqttServer": "Wir empfehlen den internen MQTT-Server des Adapters zu nutzen, dieser arbeitet direkt mit dem Panel. Dadurch konnte der Datenaustausch optimiert werden."
 }
