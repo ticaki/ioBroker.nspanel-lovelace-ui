@@ -90,7 +90,8 @@ class PageChart extends import_Page.Page {
     }
     this.sendToPanel(this.getMessage(message), false);
   }
-  static async getChartPageConfig(adapter, index, configManager) {
+  static async getChartPageConfig(configManager, index, gridItem, messages, page) {
+    const adapter = configManager.adapter;
     const config = adapter.config.pageChartdata[index];
     let stateExistValue = "";
     let stateExistTicks = "";
@@ -109,15 +110,16 @@ class PageChart extends import_Page.Page {
       if (await configManager.existsState(config.setStateForTicks)) {
         stateExistTicks = config.setStateForTicks;
       }
-      const result = {
+      gridItem = {
+        ...gridItem,
         uniqueID: config.pageName,
-        alwaysOn: config.alwaysOnDisplay ? "always" : "none",
-        hidden: config.hiddenByTrigger || false,
+        alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? "always" : "none",
+        hidden: page.hiddenByTrigger || config.hiddenByTrigger,
         config: {
           card,
           index,
           data: {
-            headline: { type: "const", constVal: config.headline || "" },
+            headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ""),
             text: { type: "const", constVal: config.txtlabelYAchse || "" },
             color: { true: { color: { type: "const", constVal: config.chart_color } } },
             ticks: { type: "triggered", dp: stateExistTicks },
@@ -126,7 +128,7 @@ class PageChart extends import_Page.Page {
         },
         pageItems: []
       };
-      return result;
+      return { gridItem, messages };
     }
     throw new Error("No config for cardChart found");
   }

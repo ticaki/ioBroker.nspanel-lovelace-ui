@@ -14,7 +14,6 @@ import {
 } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent, nsPanelState } from '../types/types';
-import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { ConfigManager } from '../classes/config-manager';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
@@ -153,10 +152,13 @@ export class PagePower extends Page {
     };
 
     static async getPowerPageConfig(
-        adapter: NspanelLovelaceUi,
-        index: number,
         configManager: ConfigManager,
-    ): Promise<pages.PageBaseConfig> {
+        page: ScriptConfig.PagePower,
+        index: number,
+        gridItem: pages.PageBaseConfig,
+        messages: string[],
+    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+        const adapter = configManager.adapter;
         const config = adapter.config.pagePowerdata[index];
 
         //array of states
@@ -320,15 +322,16 @@ export class PagePower extends Page {
             };
         }
 
-        const result: pages.PageBaseConfig = {
+        gridItem = {
+            ...gridItem,
             uniqueID: config.pageName,
-            alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
-            hidden: config.hiddenByTrigger || false,
+            alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? 'always' : 'none',
+            hidden: gridItem.hidden || config.hiddenByTrigger,
             config: {
                 card: 'cardPower',
                 index: index,
                 data: {
-                    headline: { type: 'const', constVal: config.headline },
+                    headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
                     homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
                         value: { type: 'triggered', dp: states[6] },
@@ -694,7 +697,7 @@ export class PagePower extends Page {
             },
             pageItems: [],
         };
-        return result;
+        return { gridItem, messages };
     }
 
     public async update(): Promise<void> {
