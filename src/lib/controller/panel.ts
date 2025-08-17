@@ -297,6 +297,11 @@ export class Panel extends BaseClass {
                     this.pages[a] = new PageThermo(pmconfig, pageConfig);
                     break;
                 }
+                case 'cardThermo2': {
+                    pageConfig = Panel.getPage(pageConfig, this);
+                    this.pages[a] = new PageThermo(pmconfig, pageConfig);
+                    break;
+                }
                 case 'cardMedia': {
                     pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);

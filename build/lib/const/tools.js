@@ -739,7 +739,7 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
     }
   }
   let res = "";
-  let unitFactor = startFactor != null ? startFactor : 0;
+  let unitFactor = startFactor == null || startFactor < minFactor ? minFactor : startFactor;
   if (value !== null && value !== void 0) {
     const isNegativ = value < 0;
     value = Math.abs(value);
@@ -759,14 +759,13 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
     value *= 10 ** (3 * factor);
     let tempValue = value / 10 ** (3 * unitFactor);
     let d = decimal != null && decimal !== false ? decimal : 1;
-    let calSpace = space - (d ? d + 1 : 0);
-    calSpace = calSpace > 4 ? 4 : calSpace;
+    const calSpace = space - (d ? d + 1 : 0);
     d = calSpace > 3 ? d : d - (3 - calSpace);
     d = d < 0 ? 0 : d;
     let endlessCouter = 0;
     while (!fits) {
       if (unitFactor > 5 || unitFactor < minFactor || endlessCouter++ > 10) {
-        res = unitFactor < minFactor ? (value / 10 ** d / 10 ** (3 * ++unitFactor)).toFixed(d) : "error";
+        res = unitFactor < minFactor ? (value / 10 ** (3 * ++unitFactor)).toFixed(d) : "error";
         break;
       }
       tempValue = Math.round(tempValue * 10 ** d) / 10 ** d;

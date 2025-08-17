@@ -762,7 +762,7 @@ export class PagePower extends Page {
             value: newValue,
             unit,
             endFactor,
-        } = await getValueAutoUnit(item.value, null, 7, null, this.autoUnit[index]);
+        } = await getValueAutoUnit(item.value, null, 6, null, this.autoUnit[index]);
         this.autoUnit[index] = endFactor || 0;
         message.value = `${newValue}${unit ? ` ${unit}` : ''}`;
         this.log.debug(`getElementUpdate ${value} ${newValue} ${unit} ${endFactor}`);

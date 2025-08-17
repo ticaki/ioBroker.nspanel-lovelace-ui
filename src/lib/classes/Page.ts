@@ -217,6 +217,7 @@ export class Page extends BaseClassPage {
             case 'cardBurnRec':
             case 'cardItemSpecial':
             case 'cardSchedule':
+            case 'cardThermo2':
                 renderCurrentPage = true;
                 break;
             case 'popupNotify':

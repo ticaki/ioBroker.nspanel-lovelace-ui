@@ -12,6 +12,7 @@ export type PageTypeCards =
     | 'cardGrid2'
     | 'cardGrid3'
     | 'cardThermo'
+    | 'cardThermo2'
     | 'cardMedia'
     | 'cardUnlock'
     | 'cardQR'
@@ -465,6 +466,7 @@ export type PageBaseConfigTemplate =
               | cardMediaDataItemOptions
               | cardGridDataItemOptions
               | cardThermoDataItemOptions
+              | cardThermo2DataItemOptions
               | cardEntitiesDataItemOptions
               | cardAlarmDataItemOptions
               | cardQRDataItemOptions
@@ -514,6 +516,7 @@ export type PageBaseConfig = (
                     | cardMediaDataItemOptions
                     | cardGridDataItemOptions
                     | cardThermoDataItemOptions
+                    | cardThermo2DataItemOptions
                     | cardEntitiesDataItemOptions
                     | cardAlarmDataItemOptions
                     | cardNotifyDataItemOptions
@@ -557,6 +560,7 @@ export type PageBaseConfig = (
         | cardMediaDataItems
         | cardGridDataItems
         | cardThermoDataItems
+        | cardThermo2DataItems
         | cardAlarmDataItems
         | cardNotifyDataItems
         | cardNotify2DataItems
@@ -867,6 +871,29 @@ export type PageGridPowerConfigElement =
       }
     | undefined;
 
+export type cardThermo2DataItemOptions = {
+    card: 'cardThermo2';
+    data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardThermo2DataItems = {
+    card: 'cardThermo2';
+    data: ChangeTypeOfKeys<PageThermo2BaseConfig, dataItem.Dataitem | undefined>;
+};
+
+type PageThermo2BaseConfig = ThermoDataSetBase | ThermoDataSetBase[];
+
+type ThermoDataSetBase = {
+    entity1: typePageItem.ValueEntryType;
+    humidity?: typePageItem.ValueEntryType;
+    set: boolean;
+    unit: string;
+    headline: string;
+    minTemp: number; // *10
+    maxTemp: number; // *10
+    tempStep: number; // *10
+    power: boolean;
+};
+
 type PageThermoBaseConfig = {
     auto?: boolean;
     boost?: boolean;
@@ -1057,6 +1084,39 @@ export type PageScheduleMessage = {
     headline: string;
     navigation: string;
     options: [string?, string?, string?, string?, string?, string?, string?, string?];
+};
+export type PageThermo2Message = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    dstTemp: number | string; // *10
+    minTemp: number | string; // *10
+    maxTemp: number | string; // *10
+    tempStep: string; // *10
+    unit: string;
+    power: boolean;
+    options: [
+        /*Info*/
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        /** option */
+        string?,
+        /** Pageitems */
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+    ];
 };
 
 export type PageThermoMessage = {
