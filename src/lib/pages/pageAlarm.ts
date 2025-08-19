@@ -102,10 +102,11 @@ export class PageAlarm extends Page {
         this.items.card = 'cardAlarm';
 
         await super.init();
+        this.useStates = true;
         this.alarmType = (this.items?.data?.alarmType && (await this.items.data.alarmType.getString())) ?? 'alarm';
-        if (this.alarmType === 'unlock' && this.items?.data?.setNavi) {
-            this.useStates = false;
-        } else {
+        /*if (this.alarmType === 'unlock' && this.items?.data?.setNavi) {
+            this.useStates = true;
+        } else */ {
             await this.library.writedp(
                 `panels.${this.name}.alarm`,
                 undefined,
@@ -205,18 +206,33 @@ export class PageAlarm extends Page {
                 message.flashing = 'enable'; //flashing*
             }
         } else if (this.alarmType === 'unlock') {
-            message.button1 = this.library.getTranslation('unlock');
-            message.status1 = 'U1';
-            message.button2 = '';
-            message.status2 = '';
-            message.button3 = '';
-            message.status3 = '';
-            message.button4 = '';
-            message.status4 = '';
-            message.icon = Icons.GetIcon('lock-remove'); //icon*~*
-            message.iconColor = String(Color.rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
-            message.numpad = 'enable'; //numpadStatus*~*
-            message.flashing = 'enable'; //flashing*
+            if (this.status == 'triggered') {
+                message.button1 = this.library.getTranslation('locked');
+                message.status1 = '';
+                message.button2 = '';
+                message.status2 = '';
+                message.button3 = '';
+                message.status3 = '';
+                message.button4 = '';
+                message.status4 = '';
+                message.icon = Icons.GetIcon('lock-off'); //icon*~*
+                message.iconColor = String(Color.rgb_dec565({ r: 255, g: 0, b: 0 })); //iconcolor*~*
+                message.numpad = 'disable'; //numpadStatus*~*
+                message.flashing = 'enable'; //flashing*
+            } else {
+                message.button1 = this.library.getTranslation('unlock');
+                message.status1 = 'U1';
+                message.button2 = '';
+                message.status2 = '';
+                message.button3 = '';
+                message.status3 = '';
+                message.button4 = '';
+                message.status4 = '';
+                message.icon = Icons.GetIcon('lock-remove'); //icon*~*
+                message.iconColor = String(Color.rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
+                message.numpad = 'enable'; //numpadStatus*~*
+                message.flashing = 'enable'; //flashing*
+            }
         }
         //message.icon = await getIconEntryValue(data.icon, true, 'shield-home');
         //message.iconColor = await getIconEntryColor(data.icon, true, '');
@@ -306,7 +322,7 @@ export class PageAlarm extends Page {
                     this.log.error('Wrong pin entered. locked!');
                     await this.setStatus('triggered');
                 }
-                this.update;
+                await this.update();
                 return;
             }
             this.log.debug(`Alarm event ${button} value: ${value}`);

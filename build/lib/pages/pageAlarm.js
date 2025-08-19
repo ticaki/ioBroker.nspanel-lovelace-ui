@@ -106,7 +106,7 @@ class PageAlarm extends import_Page.Page {
     this.neverDeactivateTrigger = true;
   }
   async init() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d;
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
@@ -116,10 +116,9 @@ class PageAlarm extends import_Page.Page {
     this.items = tempItem;
     this.items.card = "cardAlarm";
     await super.init();
+    this.useStates = true;
     this.alarmType = (_c = ((_b = (_a = this.items) == null ? void 0 : _a.data) == null ? void 0 : _b.alarmType) && await this.items.data.alarmType.getString()) != null ? _c : "alarm";
-    if (this.alarmType === "unlock" && ((_e = (_d = this.items) == null ? void 0 : _d.data) == null ? void 0 : _e.setNavi)) {
-      this.useStates = false;
-    } else {
+    {
       await this.library.writedp(
         `panels.${this.name}.alarm`,
         void 0,
@@ -143,7 +142,7 @@ class PageAlarm extends import_Page.Page {
     } else {
       await this.setStatus("armed");
     }
-    this.pin = (_f = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getString()) != null ? _f : "";
+    this.pin = (_d = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getString()) != null ? _d : "";
     if (this.pin == "-1") {
       this.pin = this.adapter.config.pw1 ? this.adapter.config.pw1 : "";
     }
@@ -209,18 +208,33 @@ class PageAlarm extends import_Page.Page {
         message.flashing = "enable";
       }
     } else if (this.alarmType === "unlock") {
-      message.button1 = this.library.getTranslation("unlock");
-      message.status1 = "U1";
-      message.button2 = "";
-      message.status2 = "";
-      message.button3 = "";
-      message.status3 = "";
-      message.button4 = "";
-      message.status4 = "";
-      message.icon = import_icon_mapping.Icons.GetIcon("lock-remove");
-      message.iconColor = String(import_Color.Color.rgb_dec565({ r: 223, g: 76, b: 30 }));
-      message.numpad = "enable";
-      message.flashing = "enable";
+      if (this.status == "triggered") {
+        message.button1 = this.library.getTranslation("locked");
+        message.status1 = "";
+        message.button2 = "";
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
+        message.icon = import_icon_mapping.Icons.GetIcon("lock-off");
+        message.iconColor = String(import_Color.Color.rgb_dec565({ r: 255, g: 0, b: 0 }));
+        message.numpad = "disable";
+        message.flashing = "enable";
+      } else {
+        message.button1 = this.library.getTranslation("unlock");
+        message.status1 = "U1";
+        message.button2 = "";
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
+        message.icon = import_icon_mapping.Icons.GetIcon("lock-remove");
+        message.iconColor = String(import_Color.Color.rgb_dec565({ r: 223, g: 76, b: 30 }));
+        message.numpad = "enable";
+        message.flashing = "enable";
+      }
     }
     this.sendToPanel(this.getMessage(message), false);
   }
@@ -298,7 +312,7 @@ class PageAlarm extends import_Page.Page {
           this.log.error("Wrong pin entered. locked!");
           await this.setStatus("triggered");
         }
-        this.update;
+        await this.update();
         return;
       }
       this.log.debug(`Alarm event ${button} value: ${value}`);
