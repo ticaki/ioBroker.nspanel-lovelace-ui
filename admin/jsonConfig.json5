@@ -21,7 +21,7 @@
                     "type": "staticText",
                     "text": "notifyMqttServer",
                     "style": {
-                        "color": "red",
+                        "color": "red"
                     },
                     "newLine": true,
                     "hidden": "data.mqttServer",
@@ -3286,65 +3286,10 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "topic": {
-                    "type": "text",
-                    "label": "topic",
-                    "newLine": true,
-                    "hidden": "false",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "name": {
-                    "type": "text",
-                    "label": "name",
-                    "newLine": false,
-                    "hidden": "false",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
                 "logUnknownTokens": {
                     "type": "checkbox",
                     "label": "logUnknownTokens",
                     "default": false,
-                    "hidden": "false",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "onlyStartFromSystemConfig": {
-                    "type": "checkbox",
-                    "label": "onlyStartFromSystemConfig",
-                    "default": true,
-                    "hidden": "false",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mediaid": {
-                    "type": "text",
-                    "label": "mediaid",
-                    "newLine": false,
-                    "hidden": "false",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "timeout": {
-                    "type": "number",
-                    "label": "timeout",
-                    "newLine": true,
                     "hidden": "false",
                     "xs": 12,
                     "sm": 12,
