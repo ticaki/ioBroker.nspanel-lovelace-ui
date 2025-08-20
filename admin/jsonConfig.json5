@@ -4,7 +4,7 @@
     "items": {
         "general": {
             "type": "panel",
-            "label": "general",
+            "label": "mqttServerSetting",
             "items": {
                 "mqttServer": {
                     "type": "checkbox",
@@ -155,19 +155,6 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },                
-                "pw1": {
-                    "type": "password",
-                    "label": "Service-Pin (numbers only)",
-                    "newLine": true,
-                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
-                    "validatorNoSaveOnError": true,
-                    "validatorErrorText": "mustBeNumber",
-                    "xs": 12,
-                    "sm": 8,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 3
                 }                
             }
         },
@@ -603,6 +590,19 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },                
+                "pw1": {
+                    "type": "password",
+                    "label": "Service-Pin (numbers only)",
+                    "newLine": true,
+                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
+                    "validatorNoSaveOnError": true,
+                    "validatorErrorText": "mustBeNumber",
+                    "xs": 12,
+                    "sm": 8,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
                 }
             }
         },

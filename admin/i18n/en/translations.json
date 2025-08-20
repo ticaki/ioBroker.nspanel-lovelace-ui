@@ -222,5 +222,6 @@
     "hideCards": "Hide pages",
     "hiddenByTrigger": "Hide page",
     "headerShutter": "Shutter control",
-    "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange."
+    "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange.",
+    "mqttServerSetting": "MQTT server settings"
 }
