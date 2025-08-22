@@ -386,6 +386,8 @@ declare namespace ScriptConfig {
 
     export type PageThermo2Item = {
         id: string;
+        id2?: string;
+        set: string;
         name?: string;
         minValue?: number;
         maxValue?: number;
@@ -393,8 +395,9 @@ declare namespace ScriptConfig {
         /**
          * The unit of the 2. line. can string, icon or state
          */
+        power: string;
         unit2?: string;
-        onColor2: RGB;
+        onColor2?: RGB;
     } & PageBaseItem;
 
     // mean string start with getState(' and end with ').val

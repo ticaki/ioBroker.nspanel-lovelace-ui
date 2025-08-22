@@ -55,6 +55,7 @@ var import_tools = require("../const/tools");
 var import_pageChartBar = require("../pages/pageChartBar");
 var import_pageChartLine = require("../pages/pageChartLine");
 var import_axios = __toESM(require("axios"));
+var import_pageThermo2 = require("../pages/pageThermo2");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -280,7 +281,7 @@ class Panel extends import_library.BaseClass {
         }
         case "cardThermo2": {
           pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
+          this.pages[a] = new import_pageThermo2.PageThermo2(pmconfig, pageConfig);
           break;
         }
         case "cardMedia": {

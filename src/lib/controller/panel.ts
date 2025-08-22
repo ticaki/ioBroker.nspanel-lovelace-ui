@@ -30,6 +30,7 @@ import { deepAssign, getRegExp, isVersionGreaterOrEqual } from '../const/tools';
 import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 import axios from 'axios';
+import { PageThermo2 } from '../pages/pageThermo2';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -299,7 +300,7 @@ export class Panel extends BaseClass {
                 }
                 case 'cardThermo2': {
                     pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageThermo(pmconfig, pageConfig);
+                    this.pages[a] = new PageThermo2(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardMedia': {

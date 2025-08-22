@@ -873,6 +873,9 @@ export type PageGridPowerConfigElement =
 
 export type cardThermo2DataItemOptions = {
     card: 'cardThermo2';
+    filterType?: 'true' | 'false';
+    scrollType?: 'page';
+    cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardThermo2DataItems = {
@@ -880,9 +883,22 @@ export type cardThermo2DataItems = {
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, dataItem.Dataitem | undefined>;
 };
 
-type PageThermo2BaseConfig = ThermoDataSetBase | ThermoDataSetBase[];
+type PageThermo2BaseConfig = Thermo2DataSetBase | Thermo2DataSetBase[];
 
-type ThermoDataSetBase = {
+type Thermo2DataSetBase = {
+    entity3?: typePageItem.ValueEntryType; // Thermostat
+    entity1: typePageItem.ValueEntryType; // sensor
+    icon1?: typePageItem.IconEntryType;
+    entity2?: typePageItem.ValueEntryType; // humidity
+    icon2?: typePageItem.IconEntryType;
+    headline?: string;
+    minValue?: number;
+    maxValue?: number;
+    stepValue?: number;
+    power?: boolean;
+};
+
+/*type ThermoDataSetBase = {
     entity1: typePageItem.ValueEntryType;
     humidity?: typePageItem.ValueEntryType;
     set: boolean;
@@ -892,7 +908,7 @@ type ThermoDataSetBase = {
     maxTemp: number; // *10
     tempStep: number; // *10
     power: boolean;
-};
+};*/
 
 type PageThermoBaseConfig = {
     auto?: boolean;
@@ -1089,6 +1105,7 @@ export type PageThermo2Message = {
     event: 'entityUpd';
     headline: string;
     navigation: string;
+    internalName: string;
     dstTemp: number | string; // *10
     minTemp: number | string; // *10
     maxTemp: number | string; // *10

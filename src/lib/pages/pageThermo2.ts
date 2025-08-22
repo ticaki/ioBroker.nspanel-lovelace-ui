@@ -1,15 +1,24 @@
-import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
-import { Icons } from '../const/icon_mapping';
-import { getPayload, getPayloadArray } from '../const/tools';
+import {
+    getIconEntryColor,
+    getIconEntryValue,
+    getPayload,
+    getPayloadArray,
+    getValueEntryNumber,
+    setValueEntry,
+} from '../const/tools';
 import type * as pages from '../types/pages';
-import type { IncomingEvent } from '../types/types';
-import { PageItem } from './pageItem';
+import type * as Types from '../types/types';
+
+import type { ConfigManager } from '../classes/config-manager';
+import { PageMenu } from './pageMenu';
+import { Color } from '../const/Color';
 
 const PageThermo2MessageDefault: pages.PageThermo2Message = {
     event: 'entityUpd',
     headline: 'Page Thermo',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
+    internalName: 'PageThermo2',
     dstTemp: '',
     minTemp: '10',
     maxTemp: '40',
@@ -42,10 +51,12 @@ type MyValidType = AtLeastOne<MyType>;
 
 export const a: MyValidType = { c: 'c' };*/
 
-export class PageThermo2 extends Page {
+export class PageThermo2 extends PageMenu {
     //config: pages.cardThermoDataItemOptions;
-    items: pages.cardThermoDataItems | undefined;
-    private step: number = 1;
+    items: pages.cardThermo2DataItems | undefined;
+    step: number = 1;
+    heatCycles: number = 1;
+    protected maxItems: number = 17;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     public convertValue: 1 | 10 = 1;
@@ -53,33 +64,22 @@ export class PageThermo2 extends Page {
     public index = 0;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (config.card !== 'cardThermo') {
+        if (config.card !== 'cardThermo2') {
             return;
         }
-        if (options && options.pageItems) {
-            options.pageItems.unshift({
-                type: 'button',
-                dpInit: '',
-                role: 'button',
-                modeScr: undefined,
-                data: {
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: 'arrow-right-bold-circle-outline' },
-                            color: { type: 'const', constVal: { red: 205, green: 142, blue: 153 } },
-                        },
-                    },
-                    entity1: { value: { type: 'const', constVal: true } },
-                },
-            });
-        }
         super(config, options);
-        if (options.config && options.config.card == 'cardThermo') {
+        this.config = options.config;
+        this.iconLeftP = 'arrow-left-bold-outline';
+        this.iconLeft = 'arrow-up-bold';
+        this.iconRightP = 'arrow-right-bold-outline';
+        this.iconRight = 'arrow-down-bold';
+        if (options.config && options.config.card == 'cardThermo2') {
             this.config = options.config;
+            this.config.scrollType = 'page';
         } else {
             throw new Error('Missing config!');
         }
-        if (options.items && options.items.card == 'cardThermo') {
+        if (options.items && options.items.card == 'cardThermo2') {
             this.items = options.items;
         }
         this.filterDuplicateMessages = false;
@@ -89,198 +89,134 @@ export class PageThermo2 extends Page {
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardThermoDataItems> =
+        const tempConfig: Partial<pages.cardThermo2DataItems> =
             this.enums || this.dpInit
                 ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardThermoDataItems> = await this.panel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardThermo2DataItems> = await this.panel.statesControler.createDataItems(
             tempConfig,
             this,
         );
         if (tempItem) {
-            tempItem.card = 'cardThermo';
+            tempItem.card = 'cardThermo2';
         }
-        this.items = tempItem as pages.cardThermoDataItems;
-        await super.init();
+        this.heatCycles = Array.isArray(tempItem.data) ? tempItem.data.length : 1;
+        if (this.heatCycles > 8 && Array.isArray(tempItem.data)) {
+            this.log.warn(
+                `PageThermo2: Heat cycles are ${this.heatCycles}, but only 8 are supported! Using only 8 cycles.`,
+            );
+            tempItem.data = tempItem.data.slice(0, 8);
+            this.heatCycles = 8;
+        }
+        this.pageItemConfig = this.pageItemConfig || [];
+        for (let i = this.heatCycles; i > 0; --i) {
+            await this.panel.statesControler.setInternalState(
+                `///${this.panel.name}/${this.name}/${i - 1}`,
+                i === this.index - 1 ? true : false,
+                true,
+                {
+                    type: 'boolean',
+                    role: 'button',
+                    name: `Thermo2 ${this.name} ${i}`,
+                    read: true,
+                    write: true,
+                },
+                this.onInternalCommand,
+            );
+            this.pageItemConfig.unshift({
+                role: '',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                            color: {
+                                type: 'const',
+                                constVal: Color.Green,
+                            },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                            color: {
+                                type: 'const',
+                                constVal: Color.Gray,
+                            },
+                        },
+                    },
+                    entity1: {
+                        value: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
+                        set: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
+                    },
+                },
+            });
+        }
 
-        const v = Array.isArray(this.items.data)
-            ? this.items.data[0]
-                ? this.items.data[0].maxTemp && (await this.items.data[0].maxTemp.getNumber())
-                : null
-            : ((this.items.data.maxTemp && (await this.items.data.maxTemp.getNumber())) ?? null);
-        if (v != null) {
-            if (v < 100) {
-                this.convertValue = 10;
-            }
-        }
+        this.items = tempItem as pages.cardThermo2DataItems;
+        await super.init();
     }
 
     public async update(): Promise<void> {
-        if (!this.visibility) {
+        if (!this?.visibility) {
             return;
         }
         const message: Partial<pages.PageThermo2Message> = {};
-        message.options = [
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-            '~~~~~',
-        ];
+        message.options = [];
+        message.navigation = this.getNavigation();
         if (this.items) {
             const data = Array.isArray(this.items.data)
                 ? this.items.data[this.index]
                     ? this.items.data[this.index]
                     : null
                 : this.items.data;
-            if (this.pageItems && data) {
-                /*const pageItems = this.pageItems.filter(
-                    a => a && a.dataItems && a.dataItems.type === 'button' && a.dataItems.data.entity1,
-                );*/
-                const pageItems = this.pageItems;
-
-                if (pageItems[1] && pageItems[1].dataItems?.data) {
-                    const t = pageItems[1].dataItems;
-                    if (PageItem.isPageItemTextDataItems(t)) {
-                        t.data = t.data || {};
-                        t.data.entity1 = data.entity1;
-                    }
-                }
-
-                if (pageItems[3] && pageItems[3].dataItems?.data) {
-                    const t = pageItems[3].dataItems;
-                    if (PageItem.isPageItemTextDataItems(t)) {
-                        t.data = t.data || {};
-                        t.data.entity1 = data.humidity;
-                    }
-                }
-
-                const a = pageItems[0] && (await pageItems[0].dataItems?.data.icon?.true?.value?.getString());
-                this.log.debug(`Icon: ${a}`);
-                let b = 0;
-                for (let a = 1; a < 9; a++, b++) {
-                    const temp = pageItems[a];
-                    if (temp) {
-                        message.options[b] = await temp.getPageItemPayload();
-                    }
-                }
-
-                const localStep = pageItems.length > 17 ? 7 : 8;
-                if (pageItems.length - 9 - 1 <= localStep * (this.step - 1)) {
-                    this.step = 1;
-                }
-                // arrow is at index [0]
-                const maxSteps = localStep * this.step + 9;
-                const minStep = localStep * (this.step - 1) + 9;
-                b = 8; //pageItems.length >= 16 ? 0 : Math.ceil((8 - (pageItems.length-8)) / 2);
-                for (let a = minStep; a < maxSteps; a++, b++) {
-                    const temp = pageItems[a];
-                    if (temp) {
-                        message.options[b] = await temp.getPageItemPayload();
-                    }
-                }
-
-                if (localStep === 7) {
-                    this.nextArrow = true;
-                    const temp = this.pageItems[8];
-                    if (temp) {
-                        const a = await temp.dataItems?.data.icon?.true?.value?.getString();
-                        this.log.debug(`Next Arrow Icon: ${a} used`);
-                        message.options[message.options.length - 1] = await temp.getPageItemPayload();
-                    }
-                }
-
-                /*for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
-                    const temp = pageItems[a];
-                    if (temp) {
-                        const arr = (await temp.getPageItemPayload()).split('~');
-                        message.options[a] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
-                    }
-                }*/
-            }
-
             if (data) {
                 message.headline = this.library.getTranslation(
                     (data && data.headline && (await data.headline.getString())) ?? '',
                 );
+                message.dstTemp = (((await getValueEntryNumber(data.entity3)) || 0) * 10).toString();
+                message.minTemp = ((await data.minValue?.getNumber()) || 150).toString();
+                message.maxTemp = ((await data.maxValue?.getNumber()) || 280).toString();
+                message.tempStep = ((await data.stepValue?.getNumber()) || 5).toString();
+                message.unit = (await data.entity3?.unit?.getString()) || '°C';
+                message.power = (await data.power?.getBoolean()) || false;
 
-                message.navigation = this.getNavigation();
-
-                let v: number | null = (data.set && (await data.set.getNumber())) ?? null;
-                if (v !== null) {
-                    message.dstTemp = v * 10;
+                //build pageitem strings for thermo2 - spezial case
+                for (let i = 0; i < 7; i++) {
+                    message.options[i] = `text~${this.name}.${i}~${
+                        [
+                            await getIconEntryValue(data?.icon1, true, 'thermometer'),
+                            (((await data?.entity1?.value?.getNumber()) || 0) * 10).toString(),
+                            (await data?.entity1?.unit?.getString()) || '°C',
+                            await getIconEntryValue(data?.icon1, true, 'water-percent'),
+                            (((await data?.entity2?.value?.getNumber()) || 0) * 10).toString(),
+                            (await data?.entity2?.unit?.getString()) || '%',
+                            '',
+                        ][i]
+                    }~${
+                        [
+                            await getIconEntryColor(data?.icon1, !!(await data?.power?.getBoolean()), Color.Green),
+                            await getIconEntryColor(data?.icon1, !!(await data?.power?.getBoolean()), Color.Green),
+                            await getIconEntryColor(data?.icon1, !!(await data?.power?.getBoolean()), Color.Green),
+                            await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
+                            await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
+                            await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
+                            '',
+                        ][i]
+                    }~~`;
                 }
-                v = (data.minTemp && (await data.minTemp.getNumber())) ?? null;
-                if (v !== null) {
-                    message.minTemp = v * this.convertValue;
-                } else if (data.set && data.set.common.min != null) {
-                    message.minTemp = data.set.common.min * 10;
-                } else {
-                    message.minTemp = 150;
-                }
-
-                v = (data.maxTemp && (await data.maxTemp.getNumber())) ?? null;
-                if (v !== null) {
-                    message.maxTemp = v * this.convertValue;
-                } else if (data.set && data.set.common.max != null) {
-                    message.maxTemp = data.set.common.max * 10;
-                } else {
-                    message.maxTemp = 300;
-                }
-
-                // if we dont have a unit we get it from set1 or set2
-                const v1 = (data.unit && (await data.unit.getString())) ?? null;
-                if (v1 !== null) {
-                    message.unit = Icons.GetIcon(v1) || v1;
-                } else {
-                    if (data) {
-                        const set = data.set;
-                        if (set) {
-                            if (set.common.unit) {
-                                message.unit = set.common.unit;
-                            }
-                        } /*else {
-                        set = data.set2;
-                        if (set) {
-                            if (set.common.unit) {
-                                message.tCF = set.common.unit;
-                            }
-                        }
-                    }*/
-                    }
-                }
-                v = (data.tempStep && (await data.tempStep.getNumber())) ?? null;
-                if (v !== null) {
-                    message.tempStep = String(v * this.convertValue);
-                } else if (data.set && data.set.common.step) {
-                    message.tempStep = String(data.set.common.step * 10);
-                } else {
-                    message.tempStep = '5';
-                }
-                message.tempStep = parseFloat(message.tempStep) < 1 ? '1' : message.tempStep;
             }
-            //this.pageItems && this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel') ? '' : 1;
-        }
+            const arr = (await this.getOptions([])).slice(0, this.maxItems);
+            message.options = message.options.concat(arr) as typeof message.options;
 
-        const msg: pages.PageThermo2Message = Object.assign(PageThermo2MessageDefault, message);
-        const msg2 = this.getMessage(msg);
-        this.sendToPanel(msg2, false);
+            const msg: pages.PageThermo2Message = Object.assign(PageThermo2MessageDefault, message);
+            const msg2 = this.getMessage(msg);
+            this.sendToPanel(msg2, false);
+        }
     }
 
-    async onButtonEvent(event: IncomingEvent): Promise<void> {
+    async onButtonEvent(event: Types.IncomingEvent): Promise<void> {
         if (event.action === 'tempUpd') {
             if (!this.items) {
                 return;
@@ -292,9 +228,9 @@ export class PageThermo2 extends Page {
                 : this.items.data;
             if (data) {
                 const newValLow = parseInt(event.opt) / 10;
-                const valLow = (data.set && (await data.set.getNumber())) ?? null;
+                const valLow = (await getValueEntryNumber(data.entity3)) ?? null;
                 if (valLow !== null && newValLow !== valLow) {
-                    await data.set!.setStateAsync(newValLow);
+                    await setValueEntry(data.entity3, newValLow);
                 }
             }
         } else if (
@@ -316,12 +252,13 @@ export class PageThermo2 extends Page {
             'entityUpd',
             message.headline,
             message.navigation,
+            String(this.name),
             String(message.dstTemp),
             String(message.minTemp),
             String(message.maxTemp),
             message.tempStep,
             message.unit,
-            message.power ? '1' : '0',
+            !message.power ? '1' : '0',
             getPayloadArray(message.options),
         );
     }
@@ -350,5 +287,125 @@ export class PageThermo2 extends Page {
     }
     async reset(): Promise<void> {
         this.step = 1;
+    }
+
+    onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
+        if (state?.val) {
+            this.index = parseInt(id.split('/').pop() ?? '0');
+            this.adapter.setTimeout(() => this.update, 1);
+        }
+        if (id == `///${this.panel.name}/${this.name}/${this.index}`) {
+            return true;
+        }
+        return false;
+    };
+    static async getPage(
+        configManager: ConfigManager,
+        page: ScriptConfig.PageThermo2,
+        gridItem: pages.PageBaseConfig,
+        messages: string[],
+    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+        if (page.type !== 'cardThermo2' || !gridItem.config || gridItem.config.card !== 'cardThermo2') {
+            return { gridItem, messages };
+        }
+        const adapter = configManager.adapter;
+        if (!page.thermoItems || !page.thermoItems[0]) {
+            const msg = `${page.uniqueName}: Thermo page has no thermo item or item 0 has no id!`;
+            messages.push(msg);
+            adapter.log.warn(msg);
+            return { gridItem, messages };
+        }
+        gridItem.config.card = 'cardThermo2';
+        gridItem.config.data = [];
+        for (let i = 0; i < page.thermoItems.length; i++) {
+            const item = page.thermoItems[i];
+            if (!item || !item.id || item.id.endsWith('.')) {
+                const msg = `${page.uniqueName} id: ${item.id} is invalid!`;
+                messages.push(msg);
+                adapter.log.error(msg);
+                return { gridItem, messages };
+            }
+            if (!item || !item.id2 || item.id2.endsWith('.')) {
+                const msg = `${page.uniqueName} id2: ${item.id2} is invalid!`;
+                messages.push(msg);
+                adapter.log.error(msg);
+                return { gridItem, messages };
+            }
+            if (!item || !item.set || item.set.endsWith('.')) {
+                const msg = `${page.uniqueName} set: ${item.set} is invalid!`;
+                messages.push(msg);
+                adapter.log.error(msg);
+                return { gridItem, messages };
+            }
+
+            const o = await adapter.getForeignObjectAsync(item.id);
+            if (!o || !o.common) {
+                const msg = `${page.uniqueName} id: ${page.items[0].id} has a invalid object!`;
+                messages.push(msg);
+                adapter.log.error(msg);
+                return { gridItem, messages };
+            }
+            const data: pages.cardThermo2DataItemOptions['data'] = {
+                entity3: (await configManager.existsAndWriteableState(item.set))
+                    ? {
+                          value: { type: 'triggered', dp: item.set },
+                          set: { type: 'state', dp: item.set },
+                      }
+                    : undefined,
+                entity1: (await configManager.existsState(item.id))
+                    ? {
+                          value: { type: 'state', dp: item.id || '' },
+                      }
+                    : undefined,
+                icon1: {
+                    true: {
+                        value: { type: 'const', constVal: item.icon || 'thermometer' },
+                        color: { type: 'const', constVal: item.onColor || Color.Green },
+                    },
+                },
+
+                icon2: {
+                    true: {
+                        value: { type: 'const', constVal: item.icon2 || 'water-percent' },
+                        color: { type: 'const', constVal: Color.Magenta },
+                    },
+                },
+                entity2: {
+                    value: { type: 'state', dp: item.id2 || '' },
+                },
+                headline: { type: 'const', constVal: item.name || '' },
+                minValue:
+                    item.minValue != null
+                        ? {
+                              type: 'const',
+                              constVal: item.minValue,
+                          }
+                        : undefined,
+                maxValue:
+                    item.maxValue != null
+                        ? {
+                              type: 'const',
+                              constVal: item.maxValue,
+                          }
+                        : undefined,
+                stepValue:
+                    item.stepValue != null
+                        ? {
+                              type: 'const',
+                              constVal: item.stepValue,
+                          }
+                        : undefined,
+                power: (await configManager.existsState(item.power))
+                    ? {
+                          type: 'triggered',
+                          dp: item.power,
+                      }
+                    : undefined,
+            };
+            if (Array.isArray(gridItem.config.data)) {
+                gridItem.config.data.push(data);
+            }
+        }
+        return { gridItem, messages };
     }
 }

@@ -219,7 +219,7 @@ async function configuration(): Promise<void> {
             /*{
                 type: 'template',
                 template: 'text.hmip.windcombo',
-                dpInit: 'hmip.0.devices.3014F711A000185F2999676C',
+                dpInit: 'hmip.0.devices.3014G71HA0001XXXXXXXXXX',
                 modeScr: 'bottom',
                 //readOptions: {directionOfPanel: 81}
             },*/ 
@@ -696,11 +696,13 @@ type PageItem = ScriptConfig.PageItem;
 type PageBaseItem = ScriptConfig.PageBaseItem;
 type PageMediaItem = ScriptConfig.PageMediaItem;
 type PageThermoItem = ScriptConfig.PageThermoItem;
+type PageThermo2Item = ScriptConfig.PageThermo2Item;
 type PageEntities = ScriptConfig.PageEntities;
 type PageGrid = ScriptConfig.PageGrid;
 type PageGrid2 = ScriptConfig.PageGrid2;
 type PageGrid3 = ScriptConfig.PageGrid3;
 type PageThermo = ScriptConfig.PageThermo;
+type PageThermo2 = ScriptConfig.PageThermo2;
 type PageMedia = ScriptConfig.PageMedia;
 type PageAlarm = ScriptConfig.PageAlarm;
 type PageUnlock = ScriptConfig.PageUnlock;
@@ -893,6 +895,7 @@ declare namespace ScriptConfig {
         | 'cardGrid2'
         | 'cardGrid3'
         | 'cardThermo'
+        | 'cardThermo2'
         | 'cardMedia'
         | 'cardUnlock'
         | 'cardQR'
@@ -906,6 +909,7 @@ declare namespace ScriptConfig {
         | PageGrid2
         | PageGrid3
         | PageThermo
+        | PageThermo2
         | PageMedia
         | PageUnlock
         | PageQR
@@ -943,6 +947,12 @@ declare namespace ScriptConfig {
         type: 'cardThermo';
         items: [PageThermoItem];
     } & PageBaseType;
+
+    export type PageThermo2 = {
+        type: 'cardThermo2';
+        thermoItems: PageThermo2Item[];
+        items: PageItem[];
+    } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
         type: 'cardMedia';
@@ -995,6 +1005,23 @@ declare namespace ScriptConfig {
         setThermoAlias?: string[];
         setThermoDestTemp2?: string;
     } & PageBaseItem;
+
+    export type PageThermo2Item = {
+        id: string;
+        id2?: string;
+        set: string;
+        name?: string;
+        minValue?: number;
+        maxValue?: number;
+        stepValue?: number;
+        /**
+         * The unit of the 2. line. can string, icon or state
+         */
+        power?: string;
+        unit2?: string;
+        onColor2?: RGB;
+    } & PageBaseItem;
+    
     // mean string start with getState(' and end with ').val
     type getStateID = string;
 
