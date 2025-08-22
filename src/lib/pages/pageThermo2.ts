@@ -147,9 +147,9 @@ export class PageThermo2 extends PageMenu {
                         },
                     },
                     entity1: {
-                        value: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
-                        set: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
+                        value: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}`, change: 'ts' },
                     },
+                    setValue2: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
                 },
             });
         }
@@ -292,7 +292,7 @@ export class PageThermo2 extends PageMenu {
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (state?.val) {
             this.index = parseInt(id.split('/').pop() ?? '0');
-            this.adapter.setTimeout(() => this.update, 1);
+            //this.adapter.setTimeout(() => this.update, 100);
         }
         if (id == `///${this.panel.name}/${this.name}/${this.index}`) {
             return true;

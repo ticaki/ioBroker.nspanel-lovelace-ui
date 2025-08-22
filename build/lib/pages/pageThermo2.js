@@ -142,9 +142,9 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             }
           },
           entity1: {
-            value: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}` },
-            set: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}` }
-          }
+            value: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}`, change: "ts" }
+          },
+          setValue2: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}` }
         }
       });
     }
@@ -267,7 +267,6 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     var _a;
     if (state == null ? void 0 : state.val) {
       this.index = parseInt((_a = id.split("/").pop()) != null ? _a : "0");
-      this.adapter.setTimeout(() => this.update, 1);
     }
     if (id == `///${this.panel.name}/${this.name}/${this.index}`) {
       return true;
