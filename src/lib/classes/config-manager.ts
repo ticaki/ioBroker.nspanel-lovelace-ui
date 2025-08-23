@@ -1352,7 +1352,7 @@ export class ConfigManager extends BaseClass {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: icon,
+                                    constVal: String(icon),
                                 },
                                 color: await this.getIconColor(item.onColor, this.colorOn),
                             },

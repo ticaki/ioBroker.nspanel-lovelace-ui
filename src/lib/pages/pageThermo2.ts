@@ -13,7 +13,6 @@ import type * as Types from '../types/types';
 import type { ConfigManager } from '../classes/config-manager';
 import { PageMenu } from './pageMenu';
 import { Color } from '../const/Color';
-import type * as typePageItem from '../types/type-pageItem';
 import * as configManagerConst from '../const/config-manager-const';
 
 const PageThermo2MessageDefault: pages.PageThermo2Message = {
@@ -198,15 +197,8 @@ export class PageThermo2 extends PageMenu {
                 message.tempStep = ((await data.stepValue?.getNumber()) || 5).toString();
                 message.unit = (await data.entity3?.unit?.getString()) || '°C';
                 message.power = (await data.power?.getBoolean()) || false;
-                const statesIndex = (await data.mode?.getNumber()) || -1;
-                const statesText =
-                    statesIndex > -1 && data.mode?.common?.states
-                        ? Array.isArray(data.mode.common.states)
-                            ? data.mode.common.states[statesIndex][statesIndex]
-                            : typeof data.mode.common.states === 'object' && statesIndex in data.mode.common.states
-                              ? data.mode.common.states[statesIndex]
-                              : ''
-                        : '';
+                const statesText = (await data.mode?.getString()) || '';
+
                 //build pageitem strings for thermo2 - spezial case
                 for (let i = 0; i < 7; i++) {
                     message.options[i] = `text~${this.name}.${i}~${
@@ -227,9 +219,9 @@ export class PageThermo2 extends PageMenu {
                             await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
                             await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
                             await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
-                            await getIconEntryColor(data?.icon5, true, Color.Magenta),
+                            await getIconEntryColor(data?.icon5, true, Color.MSYellow),
                         ][i]
-                    }~~${['', '', '', '', '', '', statesIndex > -1 ? String(statesIndex) : ''][i]}`;
+                    }~~${['', '', '', '', '', '', statesText ? String(3) : ''][i]}`;
                 }
             }
             const arr = (await this.getOptions([])).slice(0, this.maxItems);
@@ -344,12 +336,13 @@ export class PageThermo2 extends PageMenu {
         gridItem.config.filterType = 0;
         gridItem.config.data = [];
         let o = undefined;
-        let actual = '';
-        let humidity = '';
-        let set = '';
-        let foundedStates: configManagerConst.checkedDatapointsUnion | undefined;
 
         for (let i = 0; i < page.thermoItems.length; i++) {
+            let actual = '';
+            let humidity = '';
+            let set = '';
+            let mode: Types.DataItemsOptions | undefined;
+            let foundedStates: configManagerConst.checkedDatapointsUnion | undefined;
             const item = page.thermoItems[i];
             foundedStates = undefined;
             if (!item) {
@@ -397,6 +390,28 @@ export class PageThermo2 extends PageMenu {
                 actual = foundedStates[o.common.role].ACTUAL?.dp || '';
                 humidity = foundedStates[o.common.role].HUMIDITY?.dp || '';
                 set = foundedStates[o.common.role].SET?.dp || '';
+                const role = o.common.role;
+                if (foundedStates[role].MODE) {
+                    const dp = foundedStates[role].MODE.dp;
+                    if (dp) {
+                        const o2 = await adapter.getForeignObjectAsync(dp);
+                        if (o2?.common?.states) {
+                            mode = {
+                                ...foundedStates[role].MODE,
+                                read: `return ${JSON.stringify(o2.common.states)}[val]`,
+                            };
+                        } else {
+                            mode = {
+                                ...foundedStates[role].MODE,
+                                read: `return ${JSON.stringify(
+                                    item.modeList
+                                        ? item.modeList
+                                        : ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'],
+                                )}[val]`,
+                            };
+                        }
+                    }
+                }
             } else {
                 if (!item || !item.thermoId1 || item.thermoId1.endsWith('.')) {
                     const msg = `${page.uniqueName} thermoId1: ${item.thermoId1} is invalid!`;
@@ -412,18 +427,45 @@ export class PageThermo2 extends PageMenu {
                     adapter.log.error(msg);
                     return { gridItem, messages };
                 }
-                if (!item || (item.thermoId2 && item.thermoId2.endsWith('.'))) {
+                if (
+                    !item ||
+                    (item.thermoId2 &&
+                        (item.thermoId2.endsWith('.') || !(await configManager.existsState(item.thermoId2))))
+                ) {
                     const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
                     messages.push(msg);
                     adapter.log.error(msg);
                     return { gridItem, messages };
                 }
                 humidity = item.thermoId2 || '';
-                if (!item || !item.set || item.set.endsWith('.')) {
-                    const msg = `${page.uniqueName} set: ${item.set} is invalid!`;
+                if (
+                    !item ||
+                    (item.modeId && (item.modeId.endsWith('.') || !(await configManager.existsState(item.modeId))))
+                ) {
+                    const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
                     messages.push(msg);
                     adapter.log.error(msg);
                     return { gridItem, messages };
+                }
+                if (item.modeId) {
+                    let states: string[] | Record<string, string> = [
+                        'OFF',
+                        'AUTO',
+                        'COOL',
+                        'HEAT',
+                        'ECO',
+                        'FAN',
+                        'DRY',
+                    ];
+                    if (!item.modeList || !Array.isArray(item.modeList) || item.modeList.length < 1) {
+                        const o = await adapter.getForeignObjectAsync(item.modeId);
+                        if (o?.common?.states) {
+                            states = o.common.states;
+                        }
+                    } else {
+                        states = item.modeList;
+                    }
+                    mode = { type: 'triggered', dp: item.modeId, read: `return ${JSON.stringify(states)}[val]` };
                 }
                 set = item.set;
             }
@@ -500,6 +542,7 @@ export class PageThermo2 extends PageMenu {
                           dp: item.power,
                       }
                     : undefined,
+                mode: mode,
             };
             if (Array.isArray(gridItem.config.data)) {
                 gridItem.config.data.push(data);
@@ -517,7 +560,7 @@ export class PageThermo2 extends PageMenu {
             }
 
             gridItem.pageItems = gridItem.pageItems || [];
-            if (role === 'thermostat' || (role === 'airCondition' && !foundedStates[role].MODE)) {
+            if (role === 'thermostat' || role === 'airCondition') {
                 //Automatic
                 if (foundedStates[role].AUTOMATIC && !foundedStates[role].MANUAL) {
                     foundedStates[role].MANUAL = JSON.parse(JSON.stringify(foundedStates[role].AUTOMATIC));
@@ -603,151 +646,8 @@ export class PageThermo2 extends PageMenu {
                         },
                     });
                 }
-            } else if (foundedStates[role]?.MODE) {
+
                 // airCondition with mode
-                let states: string[] | Record<string, string> = ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'];
-                if (foundedStates[role].MODE.dp) {
-                    const o = await adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-                    if (o?.common?.states) {
-                        states = o.common.states;
-                    }
-                }
-
-                const tempItem: typePageItem.PageItemDataItemsOptions = {
-                    role: 'button',
-                    type: 'button',
-                    filter: i,
-                    dpInit: '',
-                    data: {
-                        icon: {
-                            true: {
-                                value: { type: 'const', constVal: 'power-off' },
-                                color: { type: 'const', constVal: Color.activated },
-                            },
-                            false: {
-                                value: undefined,
-                                color: { type: 'const', constVal: Color.deactivated },
-                            },
-                        },
-                        entity1: {
-                            value: { ...foundedStates[role].MODE, read: `return val == index}` },
-                            set: { ...foundedStates[role].MODE, write: `return index}` },
-                        },
-                    },
-                };
-                if (tempItem?.data?.icon?.true && tempItem?.data?.icon?.false && tempItem?.data?.entity1) {
-                    let index: any =
-                        typeof states == 'object'
-                            ? Array.isArray(states)
-                                ? states.findIndex(item => item === 'OFF')
-                                : states.OFF !== undefined
-                                  ? 'OFF'
-                                  : -1
-                            : -1;
-                    if (index != -1) {
-                        tempItem.data.icon.true.value = { type: 'const', constVal: 'power-off' };
-                        tempItem.data.icon.false.value = undefined;
-                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                    }
-                    index =
-                        typeof states == 'object'
-                            ? Array.isArray(states)
-                                ? states.findIndex(item => item === 'AUTO')
-                                : states.AUTO !== undefined
-                                  ? 'AUTO'
-                                  : -1
-                            : -1;
-                    if (index != -1) {
-                        tempItem.data.icon.true.value = { type: 'const', constVal: 'alpha-a-circle' };
-                        tempItem.data.icon.false.value = { type: 'const', constVal: 'alpha-a-circle-outline' };
-                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                    }
-                    index =
-                        typeof states == 'object'
-                            ? Array.isArray(states)
-                                ? states.findIndex(item => item === 'COOL')
-                                : states.COOL !== undefined
-                                  ? 'COOL'
-                                  : -1
-                            : -1;
-                    if (index != -1) {
-                        tempItem.data.icon.true.value = { type: 'const', constVal: 'snowflake' };
-                        tempItem.data.icon.false.value = undefined;
-                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                    }
-
-                    let token = 'HEAT';
-                    index =
-                        typeof states == 'object'
-                            ? Array.isArray(states)
-                                ? states.findIndex(item => item === token)
-                                : states[token] !== undefined
-                                  ? token
-                                  : -1
-                            : -1;
-                    if (index != -1) {
-                        tempItem.data.icon.true.value = { type: 'const', constVal: 'fire' };
-                        tempItem.data.icon.false.value = undefined;
-                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                    }
-
-                    token = 'ECO';
-                    index =
-                        typeof states == 'object'
-                            ? Array.isArray(states)
-                                ? states.findIndex(item => item === token)
-                                : states[token] !== undefined
-                                  ? token
-                                  : -1
-                            : -1;
-                    if (index != -1) {
-                        tempItem.data.icon.true.value = { type: 'const', constVal: 'alpha-e-circle-outline' };
-                        tempItem.data.icon.false.value = undefined;
-                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                    }
-                    token = 'FAN_ONLY';
-                    index =
-                        typeof states == 'object'
-                            ? Array.isArray(states)
-                                ? states.findIndex(item => item === token)
-                                : states[token] !== undefined
-                                  ? token
-                                  : -1
-                            : -1;
-                    if (index != -1) {
-                        tempItem.data.icon.true.value = { type: 'const', constVal: 'fan' };
-                        tempItem.data.icon.false.value = undefined;
-                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                    }
-                    token = 'DRY';
-                    index =
-                        typeof states == 'object'
-                            ? Array.isArray(states)
-                                ? states.findIndex(item => item === token)
-                                : states[token] !== undefined
-                                  ? token
-                                  : -1
-                            : -1;
-                    if (index != -1) {
-                        tempItem.data.icon.true.value = { type: 'const', constVal: 'water-percent' };
-                        tempItem.data.icon.false.value = undefined;
-                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                    }
-                }
             }
             if (foundedStates[role].POWER) {
                 gridItem.pageItems.push({

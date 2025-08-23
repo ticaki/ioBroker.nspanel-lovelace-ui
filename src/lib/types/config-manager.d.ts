@@ -359,7 +359,7 @@ declare namespace ScriptConfig {
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
         Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
-    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem | PageThermo2Item;
+    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
 
     export type PageMediaItem = {
         adapterPlayerInstance: adapterPlayerInstanceType;
@@ -412,9 +412,12 @@ declare namespace ScriptConfig {
          * The unit of the 2. line. can string, icon or state
          */
         power: string;
+        unit: string;
+        onColor?: RGB;
         unit2?: string;
         onColor2?: RGB;
-    } & PageBaseItem;
+        modeList?: string[];
+    };
 
     // mean string start with getState(' and end with ').val
     type getStateID = string;

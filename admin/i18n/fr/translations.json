@@ -222,5 +222,12 @@
     "hideCards": "Masquer les pages",
     "hiddenByTrigger": "Cachette",
     "headerShutter": "Contrôle de l'obturateur",
-    "notifyMqttServer": "Nous vous recommandons d'utiliser le serveur MQTT interne de l'adaptateur, qui fonctionne directement avec le panneau. Cela optimise l'échange de données."
+    "notifyMqttServer": "Nous vous recommandons d'utiliser le serveur MQTT interne de l'adaptateur, qui fonctionne directement avec le panneau. Cela optimise l'échange de données.",
+    "OFF": "Désactivé",
+    "AUTO": "Auto",
+    "COOL": "Cool",
+    "HEAT": "Chaleur",
+    "ECO": "Écos",
+    "FAN": "Ventilateur",
+    "DRY": "Sec"
 }

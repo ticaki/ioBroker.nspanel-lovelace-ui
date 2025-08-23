@@ -1048,6 +1048,8 @@ declare namespace ScriptConfig {
         onColor2?: RGB;
         unit?: string;
         onColor?: RGB;
+        // array of stings for mode
+        modeList?: string[];
     } 
     
     // mean string start with getState(' and end with ').val
