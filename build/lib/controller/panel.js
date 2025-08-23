@@ -1206,6 +1206,9 @@ class Panel extends import_library.BaseClass {
         await this.writeInfo();
         this.sendDimmode();
         this.navigation.resetPosition();
+        await this.adapter.delay(50);
+        const popup = this.navigation.getCurrentMainPage();
+        await this.setActivePage(popup, false);
         if (this.screenSaver) {
           this.screenSaver.pageItems = await this.screenSaver.createPageItems(
             this.screenSaver.pageItemConfig
@@ -1213,11 +1216,7 @@ class Panel extends import_library.BaseClass {
           await this.screenSaver.HandleDate();
           await this.screenSaver.HandleTime();
         }
-        await this.adapter.delay(400);
-        const popup = this.navigation.getCurrentMainPage();
-        await this.setActivePage(popup, false);
-        await popup.setVisibility(true);
-        this.sendScreeensaverTimeout(5);
+        this.sendScreeensaverTimeout(3);
         this.log.info("Panel startup finished!");
         break;
       }

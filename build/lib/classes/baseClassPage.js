@@ -38,7 +38,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   panel;
   filterDuplicateMessages = true;
   neverDeactivateTrigger = false;
-  sleep = true;
+  sleep = false;
   parent = void 0;
   triggerParent = false;
   dpInit = "";
@@ -75,6 +75,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
     if (!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger) || this.unload) {
+      this.log.debug(`[${this.panel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
       return false;
     }
     if (this.sleep && !this.neverDeactivateTrigger) {

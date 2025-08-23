@@ -37,7 +37,7 @@ export class BaseClassTriggerd extends BaseClass {
     public panel: Panel;
     protected filterDuplicateMessages: boolean = true;
     neverDeactivateTrigger: boolean = false;
-    sleep: boolean = true;
+    sleep: boolean = false;
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
     dpInit: string | RegExp = '';
@@ -80,8 +80,10 @@ export class BaseClassTriggerd extends BaseClass {
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
         if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload) {
+            this.log.debug(`[${this.panel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
             return false;
         }
+
         if (this.sleep && !this.neverDeactivateTrigger) {
             return false;
         }
