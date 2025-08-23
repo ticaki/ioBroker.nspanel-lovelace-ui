@@ -186,8 +186,8 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           (_a = data && data.headline && await data.headline.getString()) != null ? _a : ""
         );
         message.dstTemp = ((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10).toString();
-        message.minTemp = (await ((_b = data.minValue) == null ? void 0 : _b.getNumber()) || 150).toString();
-        message.maxTemp = (await ((_c = data.maxValue) == null ? void 0 : _c.getNumber()) || 280).toString();
+        message.minTemp = ((await ((_b = data.minValue) == null ? void 0 : _b.getNumber()) || 15) * 10).toString();
+        message.maxTemp = ((await ((_c = data.maxValue) == null ? void 0 : _c.getNumber()) || 28) * 10).toString();
         message.tempStep = (await ((_d = data.stepValue) == null ? void 0 : _d.getNumber()) || 5).toString();
         message.unit = await ((_f = (_e = data.entity3) == null ? void 0 : _e.unit) == null ? void 0 : _f.getString()) || "\xB0C";
         message.power = await ((_g = data.power) == null ? void 0 : _g.getBoolean()) || false;

@@ -192,8 +192,8 @@ export class PageThermo2 extends PageMenu {
                     (data && data.headline && (await data.headline.getString())) ?? '',
                 );
                 message.dstTemp = (((await getValueEntryNumber(data.entity3)) || 0) * 10).toString();
-                message.minTemp = ((await data.minValue?.getNumber()) || 150).toString();
-                message.maxTemp = ((await data.maxValue?.getNumber()) || 280).toString();
+                message.minTemp = (((await data.minValue?.getNumber()) || 15) * 10).toString();
+                message.maxTemp = (((await data.maxValue?.getNumber()) || 28) * 10).toString();
                 message.tempStep = ((await data.stepValue?.getNumber()) || 5).toString();
                 message.unit = (await data.entity3?.unit?.getString()) || '°C';
                 message.power = (await data.power?.getBoolean()) || false;
