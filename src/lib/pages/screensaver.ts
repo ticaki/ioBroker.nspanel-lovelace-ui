@@ -11,6 +11,7 @@ import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
 import type { PageInterface } from '../classes/PageInterface';
 import type { BaseClassTriggerd } from '../classes/baseClassPage';
+import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -71,7 +72,7 @@ export class Screensaver extends Page {
 
     async init(): Promise<void> {
         await super.init();
-        await this.createPageItems();
+        this.pageItems = await this.createPageItems(this.pageItemConfig);
         await this.panel.setScreensaverSwipe(this.screensaverSwipe);
         if (this.pageItems) {
             const indicators = this.pageItems.filter(x => x && x.config && x.config.modeScr === 'indicator');
@@ -211,8 +212,10 @@ export class Screensaver extends Page {
         this.sendToPanel(msg, false);
         await this.HandleScreensaverStatusIcons();
     }
-    async createPageItems(): Promise<void> {
-        await super.createPageItems();
+    public async createPageItems(
+        pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined,
+    ): Promise<(PageItem | undefined)[] | undefined> {
+        return await super.createPageItems(pageItemsConfig);
     }
 
     async onVisibilityChange(v: boolean): Promise<void> {

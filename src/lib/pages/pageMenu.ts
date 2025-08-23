@@ -91,6 +91,18 @@ export class PageMenu extends Page {
                         }
                     }
                     pageItems = this.tempItems;
+                } else if (typeof this.config.filterType === 'number') {
+                    this.tempItems = [];
+                    for (const p of this.pageItems) {
+                        if (
+                            p &&
+                            p.dataItems &&
+                            (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)
+                        ) {
+                            this.tempItems.push(p);
+                        }
+                    }
+                    pageItems = this.tempItems;
                 }
 
                 const isEntities =

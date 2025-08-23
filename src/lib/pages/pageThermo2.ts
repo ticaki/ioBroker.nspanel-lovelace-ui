@@ -13,6 +13,8 @@ import type * as Types from '../types/types';
 import type { ConfigManager } from '../classes/config-manager';
 import { PageMenu } from './pageMenu';
 import { Color } from '../const/Color';
+import type * as typePageItem from '../types/type-pageItem';
+import * as configManagerConst from '../const/config-manager-const';
 
 const PageThermo2MessageDefault: pages.PageThermo2Message = {
     event: 'entityUpd',
@@ -87,7 +89,7 @@ export class PageThermo2 extends PageMenu {
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardThermo2DataItems> =
+        const tempConfig: Partial<pages.cardThermo2DataItemOptions> =
             this.enums || this.dpInit
                 ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
@@ -109,7 +111,10 @@ export class PageThermo2 extends PageMenu {
             this.heatCycles = 8;
         }
         this.pageItemConfig = this.pageItemConfig || [];
-        if (this.heatCycles > 1) {
+        if (this.heatCycles > 1 && tempItem?.card === 'cardThermo2') {
+            if (this.config?.card === 'cardThermo2' && this.config?.filterType) {
+                this.config.filterType = this.index;
+            }
             for (let i = this.heatCycles; i > 0; --i) {
                 await this.panel.statesControler.setInternalState(
                     `///${this.panel.name}/${this.name}/${i - 1}`,
@@ -124,26 +129,34 @@ export class PageThermo2 extends PageMenu {
                     },
                     this.onInternalCommand,
                 );
+                const item2 = Array.isArray(tempConfig?.data) && tempConfig?.data[i - 1];
+
                 this.pageItemConfig.unshift({
                     role: 'heatcycle',
                     type: 'button',
                     dpInit: '',
                     data: {
                         icon: {
-                            true: {
-                                value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
-                                color: {
-                                    type: 'const',
-                                    constVal: Color.Green,
-                                },
-                            },
-                            false: {
-                                value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
-                                color: {
-                                    type: 'const',
-                                    constVal: Color.Gray,
-                                },
-                            },
+                            true:
+                                item2 && item2?.icon4?.true
+                                    ? item2.icon4.true
+                                    : {
+                                          value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                                          color: {
+                                              type: 'const',
+                                              constVal: Color.Green,
+                                          },
+                                      },
+                            false:
+                                item2 && item2?.icon4?.false
+                                    ? item2.icon4.false
+                                    : {
+                                          value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                                          color: {
+                                              type: 'const',
+                                              constVal: Color.Gray,
+                                          },
+                                      },
                         },
                         entity1: {
                             value: {
@@ -185,7 +198,15 @@ export class PageThermo2 extends PageMenu {
                 message.tempStep = ((await data.stepValue?.getNumber()) || 5).toString();
                 message.unit = (await data.entity3?.unit?.getString()) || '°C';
                 message.power = (await data.power?.getBoolean()) || false;
-
+                const statesIndex = (await data.mode?.getNumber()) || -1;
+                const statesText =
+                    statesIndex > -1 && data.mode?.common?.states
+                        ? Array.isArray(data.mode.common.states)
+                            ? data.mode.common.states[statesIndex][statesIndex]
+                            : typeof data.mode.common.states === 'object' && statesIndex in data.mode.common.states
+                              ? data.mode.common.states[statesIndex]
+                              : ''
+                        : '';
                 //build pageitem strings for thermo2 - spezial case
                 for (let i = 0; i < 7; i++) {
                     message.options[i] = `text~${this.name}.${i}~${
@@ -193,10 +214,10 @@ export class PageThermo2 extends PageMenu {
                             await getIconEntryValue(data?.icon1, true, 'thermometer'),
                             (((await data?.entity1?.value?.getNumber()) || 0) * 10).toString(),
                             (await data?.entity1?.unit?.getString()) || '°C',
-                            await getIconEntryValue(data?.icon1, true, 'water-percent'),
+                            await getIconEntryValue(data?.icon2, true, 'water-percent'),
                             (((await data?.entity2?.value?.getNumber()) || 0) * 10).toString(),
                             (await data?.entity2?.unit?.getString()) || '%',
-                            '',
+                            statesText,
                         ][i]
                     }~${
                         [
@@ -206,9 +227,9 @@ export class PageThermo2 extends PageMenu {
                             await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
                             await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
                             await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
-                            '',
+                            await getIconEntryColor(data?.icon5, true, Color.Magenta),
                         ][i]
-                    }~~`;
+                    }~~${['', '', '', '', '', '', statesIndex > -1 ? String(statesIndex) : ''][i]}`;
                 }
             }
             const arr = (await this.getOptions([])).slice(0, this.maxItems);
@@ -259,7 +280,7 @@ export class PageThermo2 extends PageMenu {
             String(message.maxTemp),
             message.tempStep,
             message.unit,
-            !message.power ? '1' : '0',
+            !message.power ? '1' : '1',
             getPayloadArray(message.options),
         );
     }
@@ -293,6 +314,9 @@ export class PageThermo2 extends PageMenu {
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (state?.val) {
             this.index = parseInt(id.split('/').pop() ?? '0');
+            if (this.config?.card === 'cardThermo2' && this.config?.filterType != null) {
+                this.config.filterType = this.index;
+            }
             //this.adapter.setTimeout(() => this.update, 100);
         }
         if (id == `///${this.panel.name}/${this.name}/${this.index}`) {
@@ -317,63 +341,137 @@ export class PageThermo2 extends PageMenu {
             return { gridItem, messages };
         }
         gridItem.config.card = 'cardThermo2';
+        gridItem.config.filterType = 0;
         gridItem.config.data = [];
+        let o = undefined;
+        let actual = '';
+        let humidity = '';
+        let set = '';
+        let foundedStates: configManagerConst.checkedDatapointsUnion | undefined;
+
         for (let i = 0; i < page.thermoItems.length; i++) {
             const item = page.thermoItems[i];
-            if (!item || !item.id || item.id.endsWith('.')) {
-                const msg = `${page.uniqueName} id: ${item.id} is invalid!`;
+            foundedStates = undefined;
+            if (!item) {
+                const msg = `${page.uniqueName} item ${i} is invalid!`;
                 messages.push(msg);
                 adapter.log.error(msg);
                 return { gridItem, messages };
             }
-            if (!item || !item.id2 || item.id2.endsWith('.')) {
-                const msg = `${page.uniqueName} id2: ${item.id2} is invalid!`;
-                messages.push(msg);
-                adapter.log.error(msg);
-                return { gridItem, messages };
-            }
-            if (!item || !item.set || item.set.endsWith('.')) {
-                const msg = `${page.uniqueName} set: ${item.set} is invalid!`;
-                messages.push(msg);
-                adapter.log.error(msg);
-                return { gridItem, messages };
-            }
-
-            const o = await adapter.getForeignObjectAsync(item.id);
-            if (!o || !o.common) {
-                const msg = `${page.uniqueName} id: ${page.items[0].id} has a invalid object!`;
-                messages.push(msg);
-                adapter.log.error(msg);
-                return { gridItem, messages };
+            if ('id' in item) {
+                if (!item || !item.id || item.id.endsWith('.')) {
+                    const msg = `${page.uniqueName} id2: ${item.id} is invalid!`;
+                    messages.push(msg);
+                    adapter.log.error(msg);
+                    return { gridItem, messages };
+                }
+                o = await adapter.getForeignObjectAsync(item.id);
+                if (
+                    !o ||
+                    !o.common ||
+                    !o.common.role ||
+                    (o.common.role !== 'thermostat' && o.common.role !== 'airCondition')
+                ) {
+                    const msg = `${page.uniqueName} id: ${item.id} ${!o || !o.common ? 'has a invalid object' : o.common.role !== 'thermostat' && o.common.role !== 'airCondition' ? `has wrong role: ${o.common.role} check alias.md` : ' something went wrong'} !`;
+                    messages.push(msg);
+                    adapter.log.error(msg);
+                    page.thermoItems.splice(i--, 1);
+                    continue;
+                }
+                try {
+                    foundedStates = await configManager.searchDatapointsForItems(
+                        configManagerConst.requiredScriptDataPoints,
+                        o.common.role,
+                        item.id,
+                        messages,
+                    );
+                } catch {
+                    return { gridItem, messages };
+                }
+                if (!foundedStates) {
+                    const msg = `${page.uniqueName} id: ${item.id} has no states!`;
+                    messages.push(msg);
+                    adapter.log.error(msg);
+                    return { gridItem, messages };
+                }
+                actual = foundedStates[o.common.role].ACTUAL?.dp || '';
+                humidity = foundedStates[o.common.role].HUMIDITY?.dp || '';
+                set = foundedStates[o.common.role].SET?.dp || '';
+            } else {
+                if (!item || !item.thermoId1 || item.thermoId1.endsWith('.')) {
+                    const msg = `${page.uniqueName} thermoId1: ${item.thermoId1} is invalid!`;
+                    messages.push(msg);
+                    adapter.log.error(msg);
+                    return { gridItem, messages };
+                }
+                actual = item.thermoId1;
+                o = await adapter.getForeignObjectAsync(item.thermoId1);
+                if (!o || !o.common) {
+                    const msg = `${page.uniqueName} id: ${item.thermoId1} has a invalid object!`;
+                    messages.push(msg);
+                    adapter.log.error(msg);
+                    return { gridItem, messages };
+                }
+                if (!item || (item.thermoId2 && item.thermoId2.endsWith('.'))) {
+                    const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
+                    messages.push(msg);
+                    adapter.log.error(msg);
+                    return { gridItem, messages };
+                }
+                humidity = item.thermoId2 || '';
+                if (!item || !item.set || item.set.endsWith('.')) {
+                    const msg = `${page.uniqueName} set: ${item.set} is invalid!`;
+                    messages.push(msg);
+                    adapter.log.error(msg);
+                    return { gridItem, messages };
+                }
+                set = item.set;
             }
             const data: pages.cardThermo2DataItemOptions['data'] = {
-                entity3: (await configManager.existsAndWriteableState(item.set))
+                entity3: (await configManager.existsAndWriteableState(set))
                     ? {
-                          value: { type: 'triggered', dp: item.set },
-                          set: { type: 'state', dp: item.set },
+                          value: { type: 'triggered', dp: set },
+                          set: { type: 'state', dp: set },
                       }
                     : undefined,
-                entity1: (await configManager.existsState(item.id))
+                entity1: (await configManager.existsState(actual))
                     ? {
-                          value: { type: 'state', dp: item.id || '' },
+                          value: { type: 'triggered', dp: actual || '' },
+                          unit: { type: 'const', constVal: item.unit || '°C' },
                       }
                     : undefined,
                 icon1: {
                     true: {
                         value: { type: 'const', constVal: item.icon || 'thermometer' },
-                        color: { type: 'const', constVal: item.onColor || Color.Green },
+                        color: await configManager.getIconColor(item.onColor, Color.Green),
                     },
                 },
 
                 icon2: {
                     true: {
                         value: { type: 'const', constVal: item.icon2 || 'water-percent' },
-                        color: { type: 'const', constVal: Color.Magenta },
+                        color: await configManager.getIconColor(item.onColor2, Color.Magenta),
                     },
                 },
-                entity2: {
-                    value: { type: 'state', dp: item.id2 || '' },
-                },
+                icon4: item.iconHeatCycle
+                    ? {
+                          true: {
+                              value: { type: 'const', constVal: item.iconHeatCycle },
+                              color: await configManager.getIconColor(item.iconHeatCycleOnColor, Color.Green),
+                          },
+
+                          false: {
+                              value: { type: 'const', constVal: item.iconHeatCycle },
+                              color: await configManager.getIconColor(item.iconHeatCycleOffColor, Color.Gray),
+                          },
+                      }
+                    : undefined,
+                entity2: (await configManager.existsState(humidity))
+                    ? {
+                          value: { type: 'triggered', dp: humidity || '' },
+                          unit: { type: 'const', constVal: item.unit || '%' },
+                      }
+                    : undefined,
                 headline: { type: 'const', constVal: item.name || '' },
                 minValue:
                     item.minValue != null
@@ -405,6 +503,511 @@ export class PageThermo2 extends PageMenu {
             };
             if (Array.isArray(gridItem.config.data)) {
                 gridItem.config.data.push(data);
+            }
+            if (!foundedStates) {
+                continue;
+            }
+            const role = o.common.role as ScriptConfig.channelRoles;
+
+            if (role !== 'thermostat' && role !== 'airCondition') {
+                const msg = `${page.uniqueName} id: ${o._id} role '${role}' not supported for cardThermo2!`;
+                messages.push(msg);
+                adapter.log.error(msg);
+                return { gridItem, messages };
+            }
+
+            gridItem.pageItems = gridItem.pageItems || [];
+            if (role === 'thermostat' || (role === 'airCondition' && !foundedStates[role].MODE)) {
+                //Automatic
+                if (foundedStates[role].AUTOMATIC && !foundedStates[role].MANUAL) {
+                    foundedStates[role].MANUAL = JSON.parse(JSON.stringify(foundedStates[role].AUTOMATIC));
+                    if (foundedStates[role].MANUAL!.type === 'triggered') {
+                        foundedStates[role].MANUAL!.read = 'return !val';
+                        foundedStates[role].MANUAL!.write = 'return !val';
+                    }
+                } else if (!foundedStates[role].AUTOMATIC && foundedStates[role].MANUAL) {
+                    foundedStates[role].AUTOMATIC = JSON.parse(JSON.stringify(foundedStates[role].MANUAL));
+                    if (foundedStates[role].AUTOMATIC!.type === 'triggered') {
+                        foundedStates[role].AUTOMATIC!.read = 'return !val';
+                        foundedStates[role].AUTOMATIC!.write = 'return !val';
+                    }
+                }
+
+                if (foundedStates[role].AUTOMATIC) {
+                    gridItem.pageItems.push({
+                        role: 'button',
+                        type: 'button',
+                        dpInit: '',
+                        data: {
+                            icon: {
+                                true: {
+                                    value: { type: 'const', constVal: 'alpha-a-circle' },
+                                    color: { type: 'const', constVal: Color.activated },
+                                },
+                                false: {
+                                    value: { type: 'const', constVal: 'alpha-a-circle-outline' },
+                                    color: { type: 'const', constVal: Color.deactivated },
+                                },
+                            },
+                            entity1: {
+                                value: foundedStates[role].AUTOMATIC,
+                                set: foundedStates[role].AUTOMATIC,
+                            },
+                        },
+                    });
+                }
+                //Manual
+                if (foundedStates[role].MANUAL) {
+                    gridItem.pageItems.push({
+                        role: 'button',
+                        type: 'button',
+                        dpInit: '',
+                        data: {
+                            icon: {
+                                true: {
+                                    value: { type: 'const', constVal: 'alpha-m-circle' },
+                                    color: { type: 'const', constVal: Color.activated },
+                                },
+                                false: {
+                                    value: { type: 'const', constVal: 'alpha-m-circle-outline' },
+                                    color: { type: 'const', constVal: Color.deactivated },
+                                },
+                            },
+                            entity1: {
+                                value: foundedStates[role].MANUAL,
+                                set: foundedStates[role].MANUAL,
+                            },
+                        },
+                    });
+                }
+                if (foundedStates[role].OFF) {
+                    gridItem.pageItems.push({
+                        role: 'button',
+                        type: 'button',
+                        dpInit: '',
+                        data: {
+                            icon: {
+                                true: {
+                                    value: { type: 'const', constVal: 'power-off' },
+                                    color: { type: 'const', constVal: Color.activated },
+                                },
+                                false: {
+                                    value: { type: 'const', constVal: 'power-off' },
+                                    color: { type: 'const', constVal: Color.deactivated },
+                                },
+                            },
+                            entity1: {
+                                value: foundedStates[role].OFF,
+                                set: foundedStates[role].OFF,
+                            },
+                        },
+                    });
+                }
+            } else if (foundedStates[role]?.MODE) {
+                // airCondition with mode
+                let states: string[] | Record<string, string> = ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'];
+                if (foundedStates[role].MODE.dp) {
+                    const o = await adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
+                    if (o?.common?.states) {
+                        states = o.common.states;
+                    }
+                }
+
+                const tempItem: typePageItem.PageItemDataItemsOptions = {
+                    role: 'button',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'power-off' },
+                                color: { type: 'const', constVal: Color.activated },
+                            },
+                            false: {
+                                value: undefined,
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: { ...foundedStates[role].MODE, read: `return val == index}` },
+                            set: { ...foundedStates[role].MODE, write: `return index}` },
+                        },
+                    },
+                };
+                if (tempItem?.data?.icon?.true && tempItem?.data?.icon?.false && tempItem?.data?.entity1) {
+                    let index: any =
+                        typeof states == 'object'
+                            ? Array.isArray(states)
+                                ? states.findIndex(item => item === 'OFF')
+                                : states.OFF !== undefined
+                                  ? 'OFF'
+                                  : -1
+                            : -1;
+                    if (index != -1) {
+                        tempItem.data.icon.true.value = { type: 'const', constVal: 'power-off' };
+                        tempItem.data.icon.false.value = undefined;
+                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                    }
+                    index =
+                        typeof states == 'object'
+                            ? Array.isArray(states)
+                                ? states.findIndex(item => item === 'AUTO')
+                                : states.AUTO !== undefined
+                                  ? 'AUTO'
+                                  : -1
+                            : -1;
+                    if (index != -1) {
+                        tempItem.data.icon.true.value = { type: 'const', constVal: 'alpha-a-circle' };
+                        tempItem.data.icon.false.value = { type: 'const', constVal: 'alpha-a-circle-outline' };
+                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                    }
+                    index =
+                        typeof states == 'object'
+                            ? Array.isArray(states)
+                                ? states.findIndex(item => item === 'COOL')
+                                : states.COOL !== undefined
+                                  ? 'COOL'
+                                  : -1
+                            : -1;
+                    if (index != -1) {
+                        tempItem.data.icon.true.value = { type: 'const', constVal: 'snowflake' };
+                        tempItem.data.icon.false.value = undefined;
+                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                    }
+
+                    let token = 'HEAT';
+                    index =
+                        typeof states == 'object'
+                            ? Array.isArray(states)
+                                ? states.findIndex(item => item === token)
+                                : states[token] !== undefined
+                                  ? token
+                                  : -1
+                            : -1;
+                    if (index != -1) {
+                        tempItem.data.icon.true.value = { type: 'const', constVal: 'fire' };
+                        tempItem.data.icon.false.value = undefined;
+                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                    }
+
+                    token = 'ECO';
+                    index =
+                        typeof states == 'object'
+                            ? Array.isArray(states)
+                                ? states.findIndex(item => item === token)
+                                : states[token] !== undefined
+                                  ? token
+                                  : -1
+                            : -1;
+                    if (index != -1) {
+                        tempItem.data.icon.true.value = { type: 'const', constVal: 'alpha-e-circle-outline' };
+                        tempItem.data.icon.false.value = undefined;
+                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                    }
+                    token = 'FAN_ONLY';
+                    index =
+                        typeof states == 'object'
+                            ? Array.isArray(states)
+                                ? states.findIndex(item => item === token)
+                                : states[token] !== undefined
+                                  ? token
+                                  : -1
+                            : -1;
+                    if (index != -1) {
+                        tempItem.data.icon.true.value = { type: 'const', constVal: 'fan' };
+                        tempItem.data.icon.false.value = undefined;
+                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                    }
+                    token = 'DRY';
+                    index =
+                        typeof states == 'object'
+                            ? Array.isArray(states)
+                                ? states.findIndex(item => item === token)
+                                : states[token] !== undefined
+                                  ? token
+                                  : -1
+                            : -1;
+                    if (index != -1) {
+                        tempItem.data.icon.true.value = { type: 'const', constVal: 'water-percent' };
+                        tempItem.data.icon.false.value = undefined;
+                        tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+                        tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+                        gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                    }
+                }
+            }
+            if (foundedStates[role].POWER) {
+                gridItem.pageItems.push({
+                    role: 'button',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'power-standby' },
+                                color: { type: 'const', constVal: Color.activated },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'power-standby' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].POWER,
+                            set: foundedStates[role].POWER,
+                        },
+                    },
+                });
+            }
+
+            //Boost
+            if (foundedStates[role].BOOST) {
+                gridItem.pageItems.push({
+                    role: 'button',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'fast-forward-60' },
+                                color: { type: 'const', constVal: Color.activated },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fast-forward-60' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].BOOST,
+                            set: foundedStates[role].BOOST,
+                        },
+                    },
+                });
+            }
+            //Fenster
+            if (foundedStates[role].WINDOWOPEN) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'window-open-variant' },
+                                color: { type: 'const', constVal: Color.open },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'window-closed-variant' },
+                                color: { type: 'const', constVal: Color.close },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].WINDOWOPEN,
+                        },
+                    },
+                });
+            }
+            //Party
+            if (foundedStates[role].PARTY) {
+                gridItem.pageItems.push({
+                    role: 'button',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'party-popper' },
+                                color: { type: 'const', constVal: Color.activated },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'party-popper' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].PARTY,
+                            set: foundedStates[role].PARTY,
+                        },
+                    },
+                });
+            }
+            if (foundedStates[role].MAINTAIN) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'account-wrench' },
+                                color: { type: 'const', constVal: Color.bad },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'account-wrench' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].MAINTAIN,
+                        },
+                    },
+                });
+            }
+            if (foundedStates[role].UNREACH) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'wifi-off' },
+                                color: { type: 'const', constVal: Color.bad },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'wifi' },
+                                color: { type: 'const', constVal: Color.good },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].UNREACH,
+                        },
+                    },
+                });
+            }
+            if (foundedStates[role].MAINTAIN) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'account-wrench' },
+                                color: { type: 'const', constVal: Color.true },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'account-wrench' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].MAINTAIN,
+                        },
+                    },
+                });
+            }
+            if (foundedStates[role].LOWBAT) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'battery-low' },
+                                color: { type: 'const', constVal: Color.bad },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'battery-high' },
+                                color: { type: 'const', constVal: Color.good },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].LOWBAT,
+                        },
+                    },
+                });
+            }
+            if (foundedStates[role].ERROR) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'alert-circle' },
+                                color: { type: 'const', constVal: Color.bad },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'alert-circle' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].ERROR,
+                        },
+                    },
+                });
+            }
+            if (foundedStates[role].VACATION) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'palm-tree' },
+                                color: { type: 'const', constVal: Color.activated },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'palm-tree' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].VACATION,
+                        },
+                    },
+                });
+            }
+            if (foundedStates[role].WORKING) {
+                gridItem.pageItems.push({
+                    role: 'indicator',
+                    type: 'button',
+                    filter: i,
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'briefcase-check' },
+                                color: { type: 'const', constVal: Color.activated },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'briefcase-check' },
+                                color: { type: 'const', constVal: Color.deactivated },
+                            },
+                        },
+                        entity1: {
+                            value: foundedStates[role].WORKING,
+                        },
+                    },
+                });
             }
         }
         return { gridItem, messages };

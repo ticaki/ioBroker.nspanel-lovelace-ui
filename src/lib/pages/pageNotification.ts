@@ -283,7 +283,7 @@ export class PageNotify extends Page {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             if (!this.pageItems || this.pageItems.length === 0) {
-                await this.createPageItems();
+                this.pageItems = await this.createPageItems(this.pageItemConfig);
             }
             this.sendType();
             await this.update();

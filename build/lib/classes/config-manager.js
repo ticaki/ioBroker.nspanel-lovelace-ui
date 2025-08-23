@@ -1083,7 +1083,7 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e;
-    if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
+    if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardThermo2") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
     }

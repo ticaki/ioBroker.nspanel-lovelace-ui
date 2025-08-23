@@ -153,7 +153,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.unload) {
           return;
         }
-        this.log.debug(`Switch page to visible!`);
+        this.log.debug(`[${this.panel.friendlyName}] Switch page to visible!`);
         this.resetLastMessage();
         this.controller && await this.controller.statesControler.activateTrigger(this);
         this.panel.info.nspanel.currentPage = this.name;
@@ -166,7 +166,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.alwaysOnState) {
           this.adapter.clearTimeout(this.alwaysOnState);
         }
-        this.log.debug(`Switch page to invisible!`);
+        this.log.debug(`[${this.panel.friendlyName}] Switch page to invisible!`);
         if (!this.neverDeactivateTrigger) {
           this.stopTriggerTimeout();
           this.controller && await this.controller.statesControler.deactivateTrigger(this);

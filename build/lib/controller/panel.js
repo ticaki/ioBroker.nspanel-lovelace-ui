@@ -1194,7 +1194,7 @@ class Panel extends import_library.BaseClass {
         }
         this.blockStartup = this.adapter.setTimeout(() => {
           this.blockStartup = null;
-        }, 5e3);
+        }, 1e4);
         this.isOnline = true;
         this.info.nspanel.displayVersion = event.opt;
         this.info.nspanel.model = event.action;
@@ -1203,26 +1203,21 @@ class Panel extends import_library.BaseClass {
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
         this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
         this.sendRules();
-        await this.adapter.delay(100);
         await this.writeInfo();
         this.sendDimmode();
         this.navigation.resetPosition();
-        const popup = this.navigation.getCurrentMainPage();
-        if (popup) {
-          if (this._activePage === popup) {
-            this._activePage.sendType(true);
-            await this._activePage.update();
-          } else {
-            await this.setActivePage(popup, false);
-          }
-        }
-        await this.adapter.delay(100);
-        this.sendScreeensaverTimeout(2);
         if (this.screenSaver) {
-          await this.screenSaver.createPageItems();
+          this.screenSaver.pageItems = await this.screenSaver.createPageItems(
+            this.screenSaver.pageItemConfig
+          );
           await this.screenSaver.HandleDate();
           await this.screenSaver.HandleTime();
         }
+        await this.adapter.delay(400);
+        const popup = this.navigation.getCurrentMainPage();
+        await this.setActivePage(popup, false);
+        await popup.setVisibility(true);
+        this.sendScreeensaverTimeout(5);
         this.log.info("Panel startup finished!");
         break;
       }

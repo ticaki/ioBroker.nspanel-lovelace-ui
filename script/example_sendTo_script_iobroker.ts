@@ -602,7 +602,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.9.3';
+const version = '0.10.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -951,7 +951,7 @@ declare namespace ScriptConfig {
     export type PageThermo2 = {
         type: 'cardThermo2';
         thermoItems: PageThermo2Item[];
-        items: PageItem[];
+        items: PageThermo2PageItems[];
     } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
@@ -1006,11 +1006,37 @@ declare namespace ScriptConfig {
         setThermoDestTemp2?: string;
     } & PageBaseItem;
 
-    export type PageThermo2Item = {
-        id: string;
-        id2?: string;
-        set: string;
+    export type PageThermo2PageItems = {
+        heatCycleIndex?: number;
+    } & PageBaseItem;
+
+    export type PageThermo2Item = (
+        | {
+              // temperature data point
+              thermoId1: string;
+              // humidity data point
+              thermoId2?: string;
+              // mode data point (common.states)
+              modeId?: string;
+              // set data point (writeable)
+              set: string;
+          }
+        | {
+            //channel with all data
+              id: string;
+          }
+    )  & {
+        // icon id
+        icon?: AllIcons | '';
+        // icon for id2
+        icon2?: AllIcons | '';
+        // icon for the pageitem
+        iconHeatCycle?: AllIcons | ''; 
+        iconHeatCycleOnColor?: RGB;
+        iconHeatCycleOffColor?: RGB;     
+        // headline
         name?: string;
+        // 100 === 10.0
         minValue?: number;
         maxValue?: number;
         stepValue?: number;
@@ -1020,7 +1046,9 @@ declare namespace ScriptConfig {
         power?: string;
         unit2?: string;
         onColor2?: RGB;
-    } & PageBaseItem;
+        unit?: string;
+        onColor?: RGB;
+    } 
     
     // mean string start with getState(' and end with ').val
     type getStateID = string;

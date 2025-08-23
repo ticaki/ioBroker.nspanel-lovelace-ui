@@ -174,17 +174,17 @@
 | **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
 | **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost, switch.boost  |  | X |  | 
-| **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
-| **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 
-| **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
+| **"** | ~~ERROR~~ | boolean| indicator.error  |  |  | Not supported in cardThermo2 | 
+| **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  | Not supported in cardThermo2 | 
+| **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  | Not supported in cardThermo2 | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
-| **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
-| **"** | ~~PARTY~~ | boolean| switch.mode.party  |  |  |  | 
+| **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  | Not supported in cardThermo2 | 
+| **"** | ~~PARTY~~ | boolean| switch.mode.party  |  |  | Not supported in cardThermo2 | 
 | **"** | ~~POWER~~ | boolean| switch.power  |  | X |  | 
-| **"** | VACATION | boolean| state  |  |  |  | 
-| **"** | ~~WINDOWOPEN~~ | boolean| state, sensor.window  |  |  |  | 
-| **"** | ~~WORKING~~ | boolean| indicator.working  |  |  |  | 
-| **"** | USERICON | string| state  |  |  |  | 
+| **"** | VACATION | boolean| state  |  |  | Not supported in cardThermo2 | 
+| **"** | ~~WINDOWOPEN~~ | boolean| sensor.window  |  |  |  | 
+| **"** | ~~WORKING~~ | boolean| indicator.working  |  |  | Not supported in cardThermo2 | 
+| **"** | USERICON | string| state  |  |  | Not supported in cardThermo2 | 
 ### timeTable
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

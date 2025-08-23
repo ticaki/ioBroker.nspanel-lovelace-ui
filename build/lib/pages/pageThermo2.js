@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageThermo2_exports = {};
 __export(pageThermo2_exports, {
@@ -24,6 +34,7 @@ module.exports = __toCommonJS(pageThermo2_exports);
 var import_tools = require("../const/tools");
 var import_pageMenu = require("./pageMenu");
 var import_Color = require("../const/Color");
+var configManagerConst = __toESM(require("../const/config-manager-const"));
 const PageThermo2MessageDefault = {
   event: "entityUpd",
   headline: "Page Thermo",
@@ -86,6 +97,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 2e3;
   }
   async init() {
+    var _a, _b, _c, _d;
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
@@ -104,7 +116,10 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       this.heatCycles = 8;
     }
     this.pageItemConfig = this.pageItemConfig || [];
-    if (this.heatCycles > 1) {
+    if (this.heatCycles > 1 && (tempItem == null ? void 0 : tempItem.card) === "cardThermo2") {
+      if (((_a = this.config) == null ? void 0 : _a.card) === "cardThermo2" && ((_b = this.config) == null ? void 0 : _b.filterType)) {
+        this.config.filterType = this.index;
+      }
       for (let i = this.heatCycles; i > 0; --i) {
         await this.panel.statesControler.setInternalState(
           `///${this.panel.name}/${this.name}/${i - 1}`,
@@ -119,20 +134,21 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           },
           this.onInternalCommand
         );
+        const item2 = Array.isArray(tempConfig == null ? void 0 : tempConfig.data) && (tempConfig == null ? void 0 : tempConfig.data[i - 1]);
         this.pageItemConfig.unshift({
           role: "heatcycle",
           type: "button",
           dpInit: "",
           data: {
             icon: {
-              true: {
+              true: item2 && ((_c = item2 == null ? void 0 : item2.icon4) == null ? void 0 : _c.true) ? item2.icon4.true : {
                 value: { type: "const", constVal: `numeric-${i}-circle-outline` },
                 color: {
                   type: "const",
                   constVal: import_Color.Color.Green
                 }
               },
-              false: {
+              false: item2 && ((_d = item2 == null ? void 0 : item2.icon4) == null ? void 0 : _d.false) ? item2.icon4.false : {
                 value: { type: "const", constVal: `numeric-${i}-circle-outline` },
                 color: {
                   type: "const",
@@ -156,7 +172,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     await super.init();
   }
   async update() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
     if (!(this == null ? void 0 : this.visibility)) {
       return;
     }
@@ -175,24 +191,26 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         message.tempStep = (await ((_d = data.stepValue) == null ? void 0 : _d.getNumber()) || 5).toString();
         message.unit = await ((_f = (_e = data.entity3) == null ? void 0 : _e.unit) == null ? void 0 : _f.getString()) || "\xB0C";
         message.power = await ((_g = data.power) == null ? void 0 : _g.getBoolean()) || false;
+        const statesIndex = await ((_h = data.mode) == null ? void 0 : _h.getNumber()) || -1;
+        const statesText = statesIndex > -1 && ((_j = (_i = data.mode) == null ? void 0 : _i.common) == null ? void 0 : _j.states) ? Array.isArray(data.mode.common.states) ? data.mode.common.states[statesIndex][statesIndex] : typeof data.mode.common.states === "object" && statesIndex in data.mode.common.states ? data.mode.common.states[statesIndex] : "" : "";
         for (let i = 0; i < 7; i++) {
           message.options[i] = `text~${this.name}.${i}~${[
             await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon1, true, "thermometer"),
-            ((await ((_i = (_h = data == null ? void 0 : data.entity1) == null ? void 0 : _h.value) == null ? void 0 : _i.getNumber()) || 0) * 10).toString(),
-            await ((_k = (_j = data == null ? void 0 : data.entity1) == null ? void 0 : _j.unit) == null ? void 0 : _k.getString()) || "\xB0C",
-            await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon1, true, "water-percent"),
-            ((await ((_m = (_l = data == null ? void 0 : data.entity2) == null ? void 0 : _l.value) == null ? void 0 : _m.getNumber()) || 0) * 10).toString(),
-            await ((_o = (_n = data == null ? void 0 : data.entity2) == null ? void 0 : _n.unit) == null ? void 0 : _o.getString()) || "%",
-            ""
+            ((await ((_l = (_k = data == null ? void 0 : data.entity1) == null ? void 0 : _k.value) == null ? void 0 : _l.getNumber()) || 0) * 10).toString(),
+            await ((_n = (_m = data == null ? void 0 : data.entity1) == null ? void 0 : _m.unit) == null ? void 0 : _n.getString()) || "\xB0C",
+            await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon2, true, "water-percent"),
+            ((await ((_p = (_o = data == null ? void 0 : data.entity2) == null ? void 0 : _o.value) == null ? void 0 : _p.getNumber()) || 0) * 10).toString(),
+            await ((_r = (_q = data == null ? void 0 : data.entity2) == null ? void 0 : _q.unit) == null ? void 0 : _r.getString()) || "%",
+            statesText
           ][i]}~${[
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_p = data == null ? void 0 : data.power) == null ? void 0 : _p.getBoolean()), import_Color.Color.Green),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_q = data == null ? void 0 : data.power) == null ? void 0 : _q.getBoolean()), import_Color.Color.Green),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_r = data == null ? void 0 : data.power) == null ? void 0 : _r.getBoolean()), import_Color.Color.Green),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_s = data == null ? void 0 : data.power) == null ? void 0 : _s.getBoolean()), import_Color.Color.Magenta),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_t = data == null ? void 0 : data.power) == null ? void 0 : _t.getBoolean()), import_Color.Color.Magenta),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_u = data == null ? void 0 : data.power) == null ? void 0 : _u.getBoolean()), import_Color.Color.Magenta),
-            ""
-          ][i]}~~`;
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_s = data == null ? void 0 : data.power) == null ? void 0 : _s.getBoolean()), import_Color.Color.Green),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_t = data == null ? void 0 : data.power) == null ? void 0 : _t.getBoolean()), import_Color.Color.Green),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_u = data == null ? void 0 : data.power) == null ? void 0 : _u.getBoolean()), import_Color.Color.Green),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_v = data == null ? void 0 : data.power) == null ? void 0 : _v.getBoolean()), import_Color.Color.Magenta),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_w = data == null ? void 0 : data.power) == null ? void 0 : _w.getBoolean()), import_Color.Color.Magenta),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_x = data == null ? void 0 : data.power) == null ? void 0 : _x.getBoolean()), import_Color.Color.Magenta),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon5, true, import_Color.Color.Magenta)
+          ][i]}~~${["", "", "", "", "", "", statesIndex > -1 ? String(statesIndex) : ""][i]}`;
         }
       }
       const arr = (await this.getOptions([])).slice(0, this.maxItems);
@@ -233,7 +251,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       String(message.maxTemp),
       message.tempStep,
       message.unit,
-      !message.power ? "1" : "0",
+      !message.power ? "1" : "1",
       (0, import_tools.getPayloadArray)(message.options)
     );
   }
@@ -265,9 +283,12 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     this.step = 1;
   }
   onInternalCommand = async (id, state) => {
-    var _a;
+    var _a, _b, _c;
     if (state == null ? void 0 : state.val) {
       this.index = parseInt((_a = id.split("/").pop()) != null ? _a : "0");
+      if (((_b = this.config) == null ? void 0 : _b.card) === "cardThermo2" && ((_c = this.config) == null ? void 0 : _c.filterType) != null) {
+        this.config.filterType = this.index;
+      }
     }
     if (id == `///${this.panel.name}/${this.name}/${this.index}`) {
       return true;
@@ -275,6 +296,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     return false;
   };
   static async getPage(configManager, page, gridItem, messages) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     if (page.type !== "cardThermo2" || !gridItem.config || gridItem.config.card !== "cardThermo2") {
       return { gridItem, messages };
     }
@@ -286,57 +308,121 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       return { gridItem, messages };
     }
     gridItem.config.card = "cardThermo2";
+    gridItem.config.filterType = 0;
     gridItem.config.data = [];
+    let o = void 0;
+    let actual = "";
+    let humidity = "";
+    let set = "";
+    let foundedStates;
     for (let i = 0; i < page.thermoItems.length; i++) {
       const item = page.thermoItems[i];
-      if (!item || !item.id || item.id.endsWith(".")) {
-        const msg = `${page.uniqueName} id: ${item.id} is invalid!`;
+      foundedStates = void 0;
+      if (!item) {
+        const msg = `${page.uniqueName} item ${i} is invalid!`;
         messages.push(msg);
         adapter.log.error(msg);
         return { gridItem, messages };
       }
-      if (!item || !item.id2 || item.id2.endsWith(".")) {
-        const msg = `${page.uniqueName} id2: ${item.id2} is invalid!`;
-        messages.push(msg);
-        adapter.log.error(msg);
-        return { gridItem, messages };
-      }
-      if (!item || !item.set || item.set.endsWith(".")) {
-        const msg = `${page.uniqueName} set: ${item.set} is invalid!`;
-        messages.push(msg);
-        adapter.log.error(msg);
-        return { gridItem, messages };
-      }
-      const o = await adapter.getForeignObjectAsync(item.id);
-      if (!o || !o.common) {
-        const msg = `${page.uniqueName} id: ${page.items[0].id} has a invalid object!`;
-        messages.push(msg);
-        adapter.log.error(msg);
-        return { gridItem, messages };
+      if ("id" in item) {
+        if (!item || !item.id || item.id.endsWith(".")) {
+          const msg = `${page.uniqueName} id2: ${item.id} is invalid!`;
+          messages.push(msg);
+          adapter.log.error(msg);
+          return { gridItem, messages };
+        }
+        o = await adapter.getForeignObjectAsync(item.id);
+        if (!o || !o.common || !o.common.role || o.common.role !== "thermostat" && o.common.role !== "airCondition") {
+          const msg = `${page.uniqueName} id: ${item.id} ${!o || !o.common ? "has a invalid object" : o.common.role !== "thermostat" && o.common.role !== "airCondition" ? `has wrong role: ${o.common.role} check alias.md` : " something went wrong"} !`;
+          messages.push(msg);
+          adapter.log.error(msg);
+          page.thermoItems.splice(i--, 1);
+          continue;
+        }
+        try {
+          foundedStates = await configManager.searchDatapointsForItems(
+            configManagerConst.requiredScriptDataPoints,
+            o.common.role,
+            item.id,
+            messages
+          );
+        } catch {
+          return { gridItem, messages };
+        }
+        if (!foundedStates) {
+          const msg = `${page.uniqueName} id: ${item.id} has no states!`;
+          messages.push(msg);
+          adapter.log.error(msg);
+          return { gridItem, messages };
+        }
+        actual = ((_a = foundedStates[o.common.role].ACTUAL) == null ? void 0 : _a.dp) || "";
+        humidity = ((_b = foundedStates[o.common.role].HUMIDITY) == null ? void 0 : _b.dp) || "";
+        set = ((_c = foundedStates[o.common.role].SET) == null ? void 0 : _c.dp) || "";
+      } else {
+        if (!item || !item.thermoId1 || item.thermoId1.endsWith(".")) {
+          const msg = `${page.uniqueName} thermoId1: ${item.thermoId1} is invalid!`;
+          messages.push(msg);
+          adapter.log.error(msg);
+          return { gridItem, messages };
+        }
+        actual = item.thermoId1;
+        o = await adapter.getForeignObjectAsync(item.thermoId1);
+        if (!o || !o.common) {
+          const msg = `${page.uniqueName} id: ${item.thermoId1} has a invalid object!`;
+          messages.push(msg);
+          adapter.log.error(msg);
+          return { gridItem, messages };
+        }
+        if (!item || item.thermoId2 && item.thermoId2.endsWith(".")) {
+          const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
+          messages.push(msg);
+          adapter.log.error(msg);
+          return { gridItem, messages };
+        }
+        humidity = item.thermoId2 || "";
+        if (!item || !item.set || item.set.endsWith(".")) {
+          const msg = `${page.uniqueName} set: ${item.set} is invalid!`;
+          messages.push(msg);
+          adapter.log.error(msg);
+          return { gridItem, messages };
+        }
+        set = item.set;
       }
       const data = {
-        entity3: await configManager.existsAndWriteableState(item.set) ? {
-          value: { type: "triggered", dp: item.set },
-          set: { type: "state", dp: item.set }
+        entity3: await configManager.existsAndWriteableState(set) ? {
+          value: { type: "triggered", dp: set },
+          set: { type: "state", dp: set }
         } : void 0,
-        entity1: await configManager.existsState(item.id) ? {
-          value: { type: "state", dp: item.id || "" }
+        entity1: await configManager.existsState(actual) ? {
+          value: { type: "triggered", dp: actual || "" },
+          unit: { type: "const", constVal: item.unit || "\xB0C" }
         } : void 0,
         icon1: {
           true: {
             value: { type: "const", constVal: item.icon || "thermometer" },
-            color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+            color: await configManager.getIconColor(item.onColor, import_Color.Color.Green)
           }
         },
         icon2: {
           true: {
             value: { type: "const", constVal: item.icon2 || "water-percent" },
-            color: { type: "const", constVal: import_Color.Color.Magenta }
+            color: await configManager.getIconColor(item.onColor2, import_Color.Color.Magenta)
           }
         },
-        entity2: {
-          value: { type: "state", dp: item.id2 || "" }
-        },
+        icon4: item.iconHeatCycle ? {
+          true: {
+            value: { type: "const", constVal: item.iconHeatCycle },
+            color: await configManager.getIconColor(item.iconHeatCycleOnColor, import_Color.Color.Green)
+          },
+          false: {
+            value: { type: "const", constVal: item.iconHeatCycle },
+            color: await configManager.getIconColor(item.iconHeatCycleOffColor, import_Color.Color.Gray)
+          }
+        } : void 0,
+        entity2: await configManager.existsState(humidity) ? {
+          value: { type: "triggered", dp: humidity || "" },
+          unit: { type: "const", constVal: item.unit || "%" }
+        } : void 0,
         headline: { type: "const", constVal: item.name || "" },
         minValue: item.minValue != null ? {
           type: "const",
@@ -357,6 +443,449 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       };
       if (Array.isArray(gridItem.config.data)) {
         gridItem.config.data.push(data);
+      }
+      if (!foundedStates) {
+        continue;
+      }
+      const role = o.common.role;
+      if (role !== "thermostat" && role !== "airCondition") {
+        const msg = `${page.uniqueName} id: ${o._id} role '${role}' not supported for cardThermo2!`;
+        messages.push(msg);
+        adapter.log.error(msg);
+        return { gridItem, messages };
+      }
+      gridItem.pageItems = gridItem.pageItems || [];
+      if (role === "thermostat" || role === "airCondition" && !foundedStates[role].MODE) {
+        if (foundedStates[role].AUTOMATIC && !foundedStates[role].MANUAL) {
+          foundedStates[role].MANUAL = JSON.parse(JSON.stringify(foundedStates[role].AUTOMATIC));
+          if (foundedStates[role].MANUAL.type === "triggered") {
+            foundedStates[role].MANUAL.read = "return !val";
+            foundedStates[role].MANUAL.write = "return !val";
+          }
+        } else if (!foundedStates[role].AUTOMATIC && foundedStates[role].MANUAL) {
+          foundedStates[role].AUTOMATIC = JSON.parse(JSON.stringify(foundedStates[role].MANUAL));
+          if (foundedStates[role].AUTOMATIC.type === "triggered") {
+            foundedStates[role].AUTOMATIC.read = "return !val";
+            foundedStates[role].AUTOMATIC.write = "return !val";
+          }
+        }
+        if (foundedStates[role].AUTOMATIC) {
+          gridItem.pageItems.push({
+            role: "button",
+            type: "button",
+            dpInit: "",
+            data: {
+              icon: {
+                true: {
+                  value: { type: "const", constVal: "alpha-a-circle" },
+                  color: { type: "const", constVal: import_Color.Color.activated }
+                },
+                false: {
+                  value: { type: "const", constVal: "alpha-a-circle-outline" },
+                  color: { type: "const", constVal: import_Color.Color.deactivated }
+                }
+              },
+              entity1: {
+                value: foundedStates[role].AUTOMATIC,
+                set: foundedStates[role].AUTOMATIC
+              }
+            }
+          });
+        }
+        if (foundedStates[role].MANUAL) {
+          gridItem.pageItems.push({
+            role: "button",
+            type: "button",
+            dpInit: "",
+            data: {
+              icon: {
+                true: {
+                  value: { type: "const", constVal: "alpha-m-circle" },
+                  color: { type: "const", constVal: import_Color.Color.activated }
+                },
+                false: {
+                  value: { type: "const", constVal: "alpha-m-circle-outline" },
+                  color: { type: "const", constVal: import_Color.Color.deactivated }
+                }
+              },
+              entity1: {
+                value: foundedStates[role].MANUAL,
+                set: foundedStates[role].MANUAL
+              }
+            }
+          });
+        }
+        if (foundedStates[role].OFF) {
+          gridItem.pageItems.push({
+            role: "button",
+            type: "button",
+            dpInit: "",
+            data: {
+              icon: {
+                true: {
+                  value: { type: "const", constVal: "power-off" },
+                  color: { type: "const", constVal: import_Color.Color.activated }
+                },
+                false: {
+                  value: { type: "const", constVal: "power-off" },
+                  color: { type: "const", constVal: import_Color.Color.deactivated }
+                }
+              },
+              entity1: {
+                value: foundedStates[role].OFF,
+                set: foundedStates[role].OFF
+              }
+            }
+          });
+        }
+      } else if ((_d = foundedStates[role]) == null ? void 0 : _d.MODE) {
+        let states = ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN", "DRY"];
+        if (foundedStates[role].MODE.dp) {
+          const o2 = await adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
+          if ((_e = o2 == null ? void 0 : o2.common) == null ? void 0 : _e.states) {
+            states = o2.common.states;
+          }
+        }
+        const tempItem = {
+          role: "button",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "power-off" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              },
+              false: {
+                value: void 0,
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: { ...foundedStates[role].MODE, read: `return val == index}` },
+              set: { ...foundedStates[role].MODE, write: `return index}` }
+            }
+          }
+        };
+        if (((_g = (_f = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _f.icon) == null ? void 0 : _g.true) && ((_i = (_h = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _h.icon) == null ? void 0 : _i.false) && ((_j = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _j.entity1)) {
+          let index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === "OFF") : states.OFF !== void 0 ? "OFF" : -1 : -1;
+          if (index != -1) {
+            tempItem.data.icon.true.value = { type: "const", constVal: "power-off" };
+            tempItem.data.icon.false.value = void 0;
+            tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+            tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+            gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+          }
+          index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === "AUTO") : states.AUTO !== void 0 ? "AUTO" : -1 : -1;
+          if (index != -1) {
+            tempItem.data.icon.true.value = { type: "const", constVal: "alpha-a-circle" };
+            tempItem.data.icon.false.value = { type: "const", constVal: "alpha-a-circle-outline" };
+            tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+            tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+            gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+          }
+          index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === "COOL") : states.COOL !== void 0 ? "COOL" : -1 : -1;
+          if (index != -1) {
+            tempItem.data.icon.true.value = { type: "const", constVal: "snowflake" };
+            tempItem.data.icon.false.value = void 0;
+            tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+            tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+            gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+          }
+          let token = "HEAT";
+          index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
+          if (index != -1) {
+            tempItem.data.icon.true.value = { type: "const", constVal: "fire" };
+            tempItem.data.icon.false.value = void 0;
+            tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+            tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+            gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+          }
+          token = "ECO";
+          index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
+          if (index != -1) {
+            tempItem.data.icon.true.value = { type: "const", constVal: "alpha-e-circle-outline" };
+            tempItem.data.icon.false.value = void 0;
+            tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+            tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+            gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+          }
+          token = "FAN_ONLY";
+          index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
+          if (index != -1) {
+            tempItem.data.icon.true.value = { type: "const", constVal: "fan" };
+            tempItem.data.icon.false.value = void 0;
+            tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+            tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+            gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+          }
+          token = "DRY";
+          index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
+          if (index != -1) {
+            tempItem.data.icon.true.value = { type: "const", constVal: "water-percent" };
+            tempItem.data.icon.false.value = void 0;
+            tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
+            tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
+            gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+          }
+        }
+      }
+      if (foundedStates[role].POWER) {
+        gridItem.pageItems.push({
+          role: "button",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "power-standby" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              },
+              false: {
+                value: { type: "const", constVal: "power-standby" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].POWER,
+              set: foundedStates[role].POWER
+            }
+          }
+        });
+      }
+      if (foundedStates[role].BOOST) {
+        gridItem.pageItems.push({
+          role: "button",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "fast-forward-60" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              },
+              false: {
+                value: { type: "const", constVal: "fast-forward-60" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].BOOST,
+              set: foundedStates[role].BOOST
+            }
+          }
+        });
+      }
+      if (foundedStates[role].WINDOWOPEN) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "window-open-variant" },
+                color: { type: "const", constVal: import_Color.Color.open }
+              },
+              false: {
+                value: { type: "const", constVal: "window-closed-variant" },
+                color: { type: "const", constVal: import_Color.Color.close }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].WINDOWOPEN
+            }
+          }
+        });
+      }
+      if (foundedStates[role].PARTY) {
+        gridItem.pageItems.push({
+          role: "button",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "party-popper" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              },
+              false: {
+                value: { type: "const", constVal: "party-popper" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].PARTY,
+              set: foundedStates[role].PARTY
+            }
+          }
+        });
+      }
+      if (foundedStates[role].MAINTAIN) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "account-wrench" },
+                color: { type: "const", constVal: import_Color.Color.bad }
+              },
+              false: {
+                value: { type: "const", constVal: "account-wrench" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].MAINTAIN
+            }
+          }
+        });
+      }
+      if (foundedStates[role].UNREACH) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "wifi-off" },
+                color: { type: "const", constVal: import_Color.Color.bad }
+              },
+              false: {
+                value: { type: "const", constVal: "wifi" },
+                color: { type: "const", constVal: import_Color.Color.good }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].UNREACH
+            }
+          }
+        });
+      }
+      if (foundedStates[role].MAINTAIN) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "account-wrench" },
+                color: { type: "const", constVal: import_Color.Color.true }
+              },
+              false: {
+                value: { type: "const", constVal: "account-wrench" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].MAINTAIN
+            }
+          }
+        });
+      }
+      if (foundedStates[role].LOWBAT) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "battery-low" },
+                color: { type: "const", constVal: import_Color.Color.bad }
+              },
+              false: {
+                value: { type: "const", constVal: "battery-high" },
+                color: { type: "const", constVal: import_Color.Color.good }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].LOWBAT
+            }
+          }
+        });
+      }
+      if (foundedStates[role].ERROR) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "alert-circle" },
+                color: { type: "const", constVal: import_Color.Color.bad }
+              },
+              false: {
+                value: { type: "const", constVal: "alert-circle" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].ERROR
+            }
+          }
+        });
+      }
+      if (foundedStates[role].VACATION) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "palm-tree" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              },
+              false: {
+                value: { type: "const", constVal: "palm-tree" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].VACATION
+            }
+          }
+        });
+      }
+      if (foundedStates[role].WORKING) {
+        gridItem.pageItems.push({
+          role: "indicator",
+          type: "button",
+          filter: i,
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "briefcase-check" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              },
+              false: {
+                value: { type: "const", constVal: "briefcase-check" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].WORKING
+            }
+          }
+        });
       }
     }
     return { gridItem, messages };

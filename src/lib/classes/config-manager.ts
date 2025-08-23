@@ -1221,7 +1221,8 @@ export class ConfigManager extends BaseClass {
                 page.type === 'cardGrid' ||
                 page.type === 'cardGrid2' ||
                 page.type === 'cardGrid3' ||
-                page.type === 'cardEntities'
+                page.type === 'cardEntities' ||
+                page.type === 'cardThermo2'
             ) ||
             !item.targetPage ||
             !item.navigate

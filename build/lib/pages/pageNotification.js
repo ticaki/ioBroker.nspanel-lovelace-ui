@@ -290,7 +290,7 @@ ${message.text}`;
   async onVisibilityChange(val) {
     if (val) {
       if (!this.pageItems || this.pageItems.length === 0) {
-        await this.createPageItems();
+        this.pageItems = await this.createPageItems(this.pageItemConfig);
       }
       this.sendType();
       await this.update();

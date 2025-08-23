@@ -686,7 +686,7 @@ export type cardGridDataItemOptions = {
     card: 'cardGrid' | 'cardGrid2' | 'cardGrid3';
     cardRole?: CardRole;
     scrollType?: 'page';
-    filterType?: 'true' | 'false';
+    filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardGridDataItems = {
@@ -698,7 +698,7 @@ export type cardEntitiesDataItemOptions = {
     card: 'cardEntities';
     cardRole?: CardRole;
     scrollType?: 'page';
-    filterType?: 'true' | 'false';
+    filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardEntitiesDataItems = {
@@ -710,7 +710,7 @@ export type cardScheduleDataItemOptions = {
     card: 'cardSchedule';
     cardRole?: CardRole;
     scrollType?: 'page';
-    filterType?: 'true' | 'false';
+    filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardScheduleDataItems = {
@@ -874,7 +874,7 @@ export type PageGridPowerConfigElement =
 
 export type cardThermo2DataItemOptions = {
     card: 'cardThermo2';
-    filterType?: 'true' | 'false';
+    filterType?: 'true' | 'false' | number;
     scrollType?: 'page';
     cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
@@ -892,11 +892,14 @@ type Thermo2DataSetBase = {
     icon1?: typePageItem.IconEntryType;
     entity2?: typePageItem.ValueEntryType; // humidity
     icon2?: typePageItem.IconEntryType;
+    icon4?: typePageItem.IconEntryType;
+    icon5?: typePageItem.IconEntryType;
     headline?: string;
     minValue?: number;
     maxValue?: number;
     stepValue?: number;
     power?: boolean;
+    mode?: string;
 };
 
 /*type ThermoDataSetBase = {

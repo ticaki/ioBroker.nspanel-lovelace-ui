@@ -324,7 +324,7 @@ declare namespace ScriptConfig {
     export type PageThermo2 = {
         type: 'cardThermo2';
         thermoItems: PageThermo2Item[];
-        items: PageItem[];
+        items: PageThermo2PageItems[];
     } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
@@ -375,6 +375,10 @@ declare namespace ScriptConfig {
         crossfade?: boolean;
     } & PageBaseItem;
 
+    export type PageThermo2PageItems = {
+        heatCycleIndex?: number;
+    } & PageBaseItem;
+
     export type PageThermoItem = {
         popupThermoMode1?: string[];
         popupThermoMode2?: string[];
@@ -384,10 +388,22 @@ declare namespace ScriptConfig {
         setThermoDestTemp2?: string;
     } & PageBaseItem;
 
-    export type PageThermo2Item = {
-        id: string;
-        id2?: string;
-        set: string;
+    export type PageThermo2Item = (
+        | {
+              thermoId1: string;
+              thermoId2?: string;
+              modeId?: string;
+              set: string;
+          }
+        | {
+              id: string;
+          }
+    ) & {
+        icon?: AllIcons | '';
+        icon2?: AllIcons | '';
+        iconHeatCycle?: AllIcons | '';
+        iconHeatCycleOnColor?: RGB;
+        iconHeatCycleOffColor?: RGB;
         name?: string;
         minValue?: number;
         maxValue?: number;
