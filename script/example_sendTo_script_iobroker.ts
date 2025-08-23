@@ -549,8 +549,8 @@ async function configuration(): Promise<void> {
         // DE: Konfiguration des linken Schalters des NSPanels
         // EN: Configuration of the left switch of the NSPanel
         buttonLeft: {
-            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'toggle', 'set' - Wenn nicht definiert --> mode: null
-            // EN: Possible values if Rule2 defined: 'page', 'toggle', 'set' - If not defined --> mode: null
+            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'switch', 'set' - Wenn nicht definiert --> mode: null
+            // EN: Possible values if Rule2 defined: 'page', 'switch', 'set' - If not defined --> mode: null
             mode: 'page',
             // DE: Zielpage - Verwendet wenn mode = page
             // EN: Target page - Used if mode = page

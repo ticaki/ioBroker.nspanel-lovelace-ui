@@ -358,6 +358,7 @@ export type DeviceRole =
     | 'temperature'
     | 'fan'
     | 'value.uv'
+    | 'heatcycle'
     | '';
 
 export function isStateRole(F: string): F is StateRole {

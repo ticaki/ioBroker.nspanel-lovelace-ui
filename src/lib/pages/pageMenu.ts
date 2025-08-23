@@ -93,7 +93,10 @@ export class PageMenu extends Page {
                     pageItems = this.tempItems;
                 }
 
-                const isEntities = this.config.card === 'cardEntities' || this.config.card === 'cardSchedule';
+                const isEntities =
+                    this.config.card === 'cardEntities' ||
+                    this.config.card === 'cardSchedule' ||
+                    this.config.card === 'cardThermo2';
                 let maxItems = this.maxItems;
                 let a = 0;
                 if (this.pageItems.length > maxItems) {
@@ -101,13 +104,22 @@ export class PageMenu extends Page {
                     maxItems = a + maxItems;
                 }
                 let b = 0;
-
+                /*if (this.config.card === 'cardThermo2') {
+                    const temp = pageItems.filter(p => p?.config?.role === 'heatcycle');
+                    for (let i = 0; i < temp.length && b < this.maxItems; i++) {
+                        const temp2 = temp[i];
+                        result[b++] = temp2 ? await temp2.getPageItemPayload() : '~~~~~';
+                    }
+                    a -= b * this.step;
+                    maxItems -= b * this.step;
+                }*/
                 if (this.config.scrollType === 'page') {
                     for (; a < maxItems; a++) {
                         const temp = pageItems[a];
                         result[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
                     }
-                } else { // das hier scheint falsch zu sein übergeht das erste element
+                } else {
+                    // das hier scheint falsch zu sein übergeht das erste element
                     let a = this.step;
                     for (; a < this.maxItems + this.step; a++) {
                         const temp = pageItems[a];

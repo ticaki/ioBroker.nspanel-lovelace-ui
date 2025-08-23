@@ -57,13 +57,11 @@ const PageThermo2MessageDefault = {
 class PageThermo2 extends import_pageMenu.PageMenu {
   //config: pages.cardThermoDataItemOptions;
   items;
-  step = 1;
   heatCycles = 1;
-  maxItems = 17;
+  maxItems = 8;
   headlinePos = 0;
   titelPos = 0;
   convertValue = 1;
-  nextArrow = false;
   index = 0;
   constructor(config, options) {
     if (config.card !== "cardThermo2") {
@@ -106,47 +104,53 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       this.heatCycles = 8;
     }
     this.pageItemConfig = this.pageItemConfig || [];
-    for (let i = this.heatCycles; i > 0; --i) {
-      await this.panel.statesControler.setInternalState(
-        `///${this.panel.name}/${this.name}/${i - 1}`,
-        i === this.index - 1 ? true : false,
-        true,
-        {
-          type: "boolean",
-          role: "button",
-          name: `Thermo2 ${this.name} ${i}`,
-          read: true,
-          write: true
-        },
-        this.onInternalCommand
-      );
-      this.pageItemConfig.unshift({
-        role: "",
-        type: "button",
-        dpInit: "",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: `numeric-${i}-circle-outline` },
-              color: {
-                type: "const",
-                constVal: import_Color.Color.Green
+    if (this.heatCycles > 1) {
+      for (let i = this.heatCycles; i > 0; --i) {
+        await this.panel.statesControler.setInternalState(
+          `///${this.panel.name}/${this.name}/${i - 1}`,
+          i === this.index - 1 ? true : false,
+          true,
+          {
+            type: "boolean",
+            role: "button",
+            name: `Thermo2 ${this.name} ${i}`,
+            read: true,
+            write: true
+          },
+          this.onInternalCommand
+        );
+        this.pageItemConfig.unshift({
+          role: "heatcycle",
+          type: "button",
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: `numeric-${i}-circle-outline` },
+                color: {
+                  type: "const",
+                  constVal: import_Color.Color.Green
+                }
+              },
+              false: {
+                value: { type: "const", constVal: `numeric-${i}-circle-outline` },
+                color: {
+                  type: "const",
+                  constVal: import_Color.Color.Gray
+                }
               }
             },
-            false: {
-              value: { type: "const", constVal: `numeric-${i}-circle-outline` },
-              color: {
-                type: "const",
-                constVal: import_Color.Color.Gray
+            entity1: {
+              value: {
+                type: "internal",
+                dp: `///${this.panel.name}/${this.name}/${i - 1}`,
+                change: "ts"
               }
-            }
-          },
-          entity1: {
-            value: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}`, change: "ts" }
-          },
-          setValue2: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}` }
-        }
-      });
+            },
+            setValue2: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}` }
+          }
+        });
+      }
     }
     this.items = tempItem;
     await super.init();
@@ -213,10 +217,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         }
       }
     } else if (event.action === "hvac_action" && this.pageItems && this.pageItems[Number(event.opt.split("?")[1])]) {
-      if (this.nextArrow && event.opt.split("?")[1] === "0") {
-        this.step++;
-        await this.update();
-      } else if (await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", "")) {
+      if (await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", "")) {
         return;
       }
     }

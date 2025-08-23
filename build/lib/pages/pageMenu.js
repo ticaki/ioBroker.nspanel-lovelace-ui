@@ -90,7 +90,7 @@ class PageMenu extends import_Page.Page {
           }
           pageItems = this.tempItems;
         }
-        const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule";
+        const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardThermo2";
         let maxItems = this.maxItems;
         let a = 0;
         if (this.pageItems.length > maxItems) {

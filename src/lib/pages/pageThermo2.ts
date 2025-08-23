@@ -54,13 +54,11 @@ export const a: MyValidType = { c: 'c' };*/
 export class PageThermo2 extends PageMenu {
     //config: pages.cardThermoDataItemOptions;
     items: pages.cardThermo2DataItems | undefined;
-    step: number = 1;
     heatCycles: number = 1;
-    protected maxItems: number = 17;
+    protected maxItems: number = 8;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     public convertValue: 1 | 10 = 1;
-    private nextArrow: boolean = false;
     public index = 0;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -111,47 +109,53 @@ export class PageThermo2 extends PageMenu {
             this.heatCycles = 8;
         }
         this.pageItemConfig = this.pageItemConfig || [];
-        for (let i = this.heatCycles; i > 0; --i) {
-            await this.panel.statesControler.setInternalState(
-                `///${this.panel.name}/${this.name}/${i - 1}`,
-                i === this.index - 1 ? true : false,
-                true,
-                {
-                    type: 'boolean',
-                    role: 'button',
-                    name: `Thermo2 ${this.name} ${i}`,
-                    read: true,
-                    write: true,
-                },
-                this.onInternalCommand,
-            );
-            this.pageItemConfig.unshift({
-                role: '',
-                type: 'button',
-                dpInit: '',
-                data: {
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
-                            color: {
-                                type: 'const',
-                                constVal: Color.Green,
+        if (this.heatCycles > 1) {
+            for (let i = this.heatCycles; i > 0; --i) {
+                await this.panel.statesControler.setInternalState(
+                    `///${this.panel.name}/${this.name}/${i - 1}`,
+                    i === this.index - 1 ? true : false,
+                    true,
+                    {
+                        type: 'boolean',
+                        role: 'button',
+                        name: `Thermo2 ${this.name} ${i}`,
+                        read: true,
+                        write: true,
+                    },
+                    this.onInternalCommand,
+                );
+                this.pageItemConfig.unshift({
+                    role: 'heatcycle',
+                    type: 'button',
+                    dpInit: '',
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                                color: {
+                                    type: 'const',
+                                    constVal: Color.Green,
+                                },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                                color: {
+                                    type: 'const',
+                                    constVal: Color.Gray,
+                                },
                             },
                         },
-                        false: {
-                            value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
-                            color: {
-                                type: 'const',
-                                constVal: Color.Gray,
+                        entity1: {
+                            value: {
+                                type: 'internal',
+                                dp: `///${this.panel.name}/${this.name}/${i - 1}`,
+                                change: 'ts',
                             },
                         },
+                        setValue2: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
                     },
-                    entity1: {
-                        value: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}`, change: 'ts' },
-                    },
-                    setValue2: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
-                },
-            });
+                });
+            }
         }
 
         this.items = tempItem as pages.cardThermo2DataItems;
@@ -238,10 +242,7 @@ export class PageThermo2 extends PageMenu {
             this.pageItems &&
             this.pageItems[Number(event.opt.split('?')[1])]
         ) {
-            if (this.nextArrow && event.opt.split('?')[1] === '0') {
-                this.step++;
-                await this.update();
-            } else if (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', '')) {
+            if (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', '')) {
                 return;
             }
         }
