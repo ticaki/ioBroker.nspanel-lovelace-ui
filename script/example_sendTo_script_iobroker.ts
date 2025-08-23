@@ -1142,6 +1142,7 @@ declare namespace ScriptConfig {
             popupVersion?: number
             shutterType?: string;
             sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
+            filter?: number;
     };
 
     type sliderItems = {

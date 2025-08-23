@@ -493,6 +493,7 @@ declare namespace ScriptConfig {
         alwaysOnDisplay?: boolean;
         shutterType?: string;
         sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
+        filter?: number;
     };
 
     type sliderItems = {

@@ -111,7 +111,7 @@ export class PageMenu extends Page {
                     this.config.card === 'cardThermo2';
                 let maxItems = this.maxItems;
                 let a = 0;
-                if (this.pageItems.length > maxItems) {
+                if (pageItems.length > maxItems) {
                     a = (isEntities ? maxItems : maxItems / 2) * this.step;
                     maxItems = a + maxItems;
                 }

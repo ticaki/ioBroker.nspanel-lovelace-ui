@@ -1790,6 +1790,9 @@ class ConfigManager extends import_library.BaseClass {
         (0, import_pages.exhaustiveCheck)(role);
         throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
     }
+    if (item.filter != null && itemConfig) {
+      itemConfig.filter = item.filter;
+    }
     return itemConfig;
   }
   async searchDatapointsForItems(db, role, dpInit, messages) {
@@ -2914,6 +2917,9 @@ class ConfigManager extends import_library.BaseClass {
           default:
             (0, import_pages.exhaustiveCheck)(role);
             throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+        }
+        if (item.filter != null && itemConfig) {
+          itemConfig.filter = item.filter;
         }
         return { itemConfig, messages };
       }

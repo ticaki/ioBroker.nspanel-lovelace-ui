@@ -101,7 +101,7 @@ class PageMenu extends import_Page.Page {
         const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardThermo2";
         let maxItems = this.maxItems;
         let a = 0;
-        if (this.pageItems.length > maxItems) {
+        if (pageItems.length > maxItems) {
           a = (isEntities ? maxItems : maxItems / 2) * this.step;
           maxItems = a + maxItems;
         }

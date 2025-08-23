@@ -2033,6 +2033,9 @@ export class ConfigManager extends BaseClass {
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
         }
+        if (item.filter != null && itemConfig) {
+            itemConfig.filter = item.filter;
+        }
         return itemConfig;
     }
 
@@ -3487,6 +3490,9 @@ export class ConfigManager extends BaseClass {
 
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+                }
+                if (item.filter != null && itemConfig) {
+                    itemConfig.filter = item.filter;
                 }
                 return { itemConfig, messages };
             }
