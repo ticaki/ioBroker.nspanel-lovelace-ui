@@ -442,7 +442,9 @@ export class ConfigManager extends BaseClass {
                     gridItem.config.card === 'cardGrid' ||
                     gridItem.config.card === 'cardGrid2' ||
                     gridItem.config.card === 'cardGrid3' ||
-                    gridItem.config.card === 'cardEntities'
+                    gridItem.config.card === 'cardEntities' ||
+                    gridItem.config.card === 'cardSchedule' ||
+                    gridItem.config.card === 'cardThermo2'
                 ) {
                     gridItem.config.scrollType = 'page';
                 }
