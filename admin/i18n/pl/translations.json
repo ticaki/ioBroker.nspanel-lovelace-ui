@@ -219,5 +219,8 @@
     "labelmaxXAxisLabels": "Liczba etykiet osi x",
     "openLinkWikiPageChart": "Otwórz stronę Wiki dla Pagechart",
     "shutterClosedIsZero": "Pozycja 0 jest wyświetlana jako w pełni zamknięta (maksymalnie rozszerzona).",
-    "hideCards": "Ukryj strony"
+    "hideCards": "Ukryj strony",
+    "hiddenByTrigger": "Ukryj stronę",
+    "headerShutter": "Kontrola migawki",
+    "notifyMqttServer": "Zalecamy korzystanie z wewnętrznego serwera MQTT adaptera, który działa bezpośrednio z panelem. To optymalizuje wymianę danych."
 }

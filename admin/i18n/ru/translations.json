@@ -78,7 +78,7 @@
     "overviewOfPanels": "Обзор панелей",
     "macAdressOfPanel": "MAC -адрес панели",
     "ipFromPanel": "IP панели",
-    "tasmotaDeviceTools": "Tasmota Device Tools",
+    "tasmotaDeviceTools": "Инструменты устройства TASMOTA",
     "tasmotaAdminPassword": "TASMOTA WEBUI Пароль",
     "selectTool": "Выберите инструмент TASMOTA",
     "tasmotaTool": "Отправить настройки Tasmota на панель",
@@ -219,5 +219,8 @@
     "labelmaxXAxisLabels": "Количество ярлыков оси X",
     "openLinkWikiPageChart": "Открыть страницу вики для PageChart",
     "shutterClosedIsZero": "Положение 0 отображается как полностью закрытое (максимально расширенное).",
-    "hideCards": "Скрыть страницы"
+    "hideCards": "Скрыть страницы",
+    "hiddenByTrigger": "Скрыть страницу",
+    "headerShutter": "Контроль затвора",
+    "notifyMqttServer": "Мы рекомендуем использовать внутренний сервер MQTT адаптера, который работает непосредственно с панелью. Это оптимизирует обмен данными."
 }

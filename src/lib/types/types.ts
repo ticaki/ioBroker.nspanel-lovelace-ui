@@ -17,9 +17,19 @@ export type PageTemplateIdent =
     | 'entities.fahrplan.routes'
     | 'thermo.hmip.valve'
     | 'thermo.hmip.wallthermostat'
-    | 'thermo.script';
+    | 'thermo.script'
+    | 'media.amazon';
 
 export type TemplateIdent =
+    | 'text.pirate-weather.hourlyweather'
+    | 'text.custom.windarrow'
+    | 'text.pirate-weather.windgust'
+    | 'text.pirate-weather.uvindex'
+    | 'text.pirate-weather.winddirection'
+    | 'text.pirate-weather.windspeed'
+    | 'text.pirate-weather.bot2values'
+    | 'text.pirate-weather.favorit'
+    | 'text.pirate-weather.sunriseset'
     | 'text.openweathermap.windgust'
     | 'text.openweathermap.uvindex'
     | 'text.openweathermap.winddirection'

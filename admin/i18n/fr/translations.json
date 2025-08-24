@@ -84,7 +84,7 @@
     "tasmotaTool": "Envoyez des paramètres Tasmota au panneau",
     "berryTool": "Installer Berry Driver",
     "tftTool": "Installer le firmware TFT",
-    "internalServerIp": "IP de l'Iobroker",
+    "internalServerIp": "IP de l'iobroker",
     "tasmotaAddTableSendTo": "Ajouter un panneau à la liste",
     "tasmotaSendTo": "Envoyez des paramètres Tasmota au panneau",
     "berryInstallSendTo": "Installer Berry Driver",
@@ -177,7 +177,7 @@
     "vTFT": "Version TFT",
     "vTasmota": "Tasmota-version",
     "alwaysOnDisplay": "Affichez toujours cette page",
-    "openLinkWikiPagePower": "Ouvrez la page Wiki pour Pagepower",
+    "openLinkWikiPagePower": "Ouvrez la page Wiki pour PagePower",
     "pagePowerdata": "Paramètres pour PagePower",
     "power1": "Puissance 1",
     "power2": "Puissance 2",
@@ -219,5 +219,8 @@
     "labelmaxXAxisLabels": "Nombre d'étiquettes de l'axe X",
     "openLinkWikiPageChart": "Page wiki ouverte pour Pagechart",
     "shutterClosedIsZero": "La position de 0 est affichée comme entièrement fermée (étendues au maximum).",
-    "hideCards": "Masquer les pages"
+    "hideCards": "Masquer les pages",
+    "hiddenByTrigger": "Cachette",
+    "headerShutter": "Contrôle de l'obturateur",
+    "notifyMqttServer": "Nous vous recommandons d'utiliser le serveur MQTT interne de l'adaptateur, qui fonctionne directement avec le panneau. Cela optimise l'échange de données."
 }

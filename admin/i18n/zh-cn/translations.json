@@ -219,5 +219,8 @@
     "labelmaxXAxisLabels": "X轴标签的数量",
     "openLinkWikiPageChart": "打开Wiki页面的PageChart",
     "shutterClosedIsZero": "0的位置显示为完全闭合（最大扩展）。",
-    "hideCards": "隐藏页面"
+    "hideCards": "隐藏页面",
+    "hiddenByTrigger": "隐藏页面",
+    "headerShutter": "快门控制",
+    "notifyMqttServer": "我们建议使用适配器的内部MQTT服务器，该服务器直接与面板一起使用。这将优化数据交换。"
 }

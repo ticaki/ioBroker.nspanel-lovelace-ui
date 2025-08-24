@@ -52,7 +52,7 @@ export class PageSchedule extends PageMenu {
     }
 
     public async update(): Promise<void> {
-        if (!this.visibility) {
+        if (!this.visibility || this.items?.card !== 'cardSchedule') {
             return;
         }
         const message: Partial<pages.PageScheduleMessage> = {};

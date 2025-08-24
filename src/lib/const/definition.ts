@@ -1313,7 +1313,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'channel',
                     common: {
-                        name: 'StateObjects.alarm',
+                        name: 'alarm',
                     },
                     native: {},
                 },
@@ -1322,7 +1322,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'channel',
                         common: {
-                            name: 'StateObjects.cardAlarm',
+                            name: 'cardAlarm',
                         },
                         native: {},
                     },

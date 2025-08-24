@@ -201,6 +201,10 @@ const stateRoleArray = arrayOfAllStateRole([
   "date.sunrise",
   "date.sunset",
   "weather.icon",
+  "weather.icon.name",
+  "value.uv",
+  "value.direction.wind",
+  "value.speed.wind",
   ""
 ]);
 function isStateRole(F) {

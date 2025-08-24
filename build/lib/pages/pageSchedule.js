@@ -59,15 +59,15 @@ class PageSchedule extends import_pageMenu.PageMenu {
     await super.init();
   }
   async update() {
-    var _a;
-    if (!this.visibility) {
+    var _a, _b;
+    if (!this.visibility || ((_a = this.items) == null ? void 0 : _a.card) !== "cardSchedule") {
       return;
     }
     const message = {};
     const arr = (await this.getOptions([])).slice(0, this.maxItems);
     message.options = arr;
     message.headline = this.library.getTranslation(
-      (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
+      (_b = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _b : ""
     );
     message.navigation = this.getNavigation();
     const msg = Object.assign(structuredClone(PageScheduleMessageDefault), message);

@@ -3,7 +3,6 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { getPayload } from '../const/tools';
-import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -167,10 +166,13 @@ export class PageQR extends Page {
         this.sendToPanel(this.getMessage(message), false);
     }
     static async getQRPageConfig(
-        adapter: NspanelLovelaceUi,
-        index: number,
         configManager: ConfigManager,
-    ): Promise<pages.PageBaseConfig> {
+        page: ScriptConfig.PageQR,
+        index: number,
+        gridItem: pages.PageBaseConfig,
+        messages: string[],
+    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+        const adapter = configManager.adapter;
         const config = adapter.config.pageQRdata[index];
         if (config) {
             let text1 = '',
@@ -205,20 +207,22 @@ export class PageQR extends Page {
                     break;
             }
             const stateExist = config.setState && (await configManager.existsState(config.setState || ''));
-            const result: pages.PageBaseConfig = {
+            gridItem = {
+                ...gridItem,
                 uniqueID: config.pageName,
-                alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
-                hidden: config.hiddenByTrigger || false,
+                alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? 'always' : 'none',
+                hidden: gridItem.hidden || config.hiddenByTrigger,
                 config: {
                     card: 'cardQR',
                     index: index,
                     data: {
-                        headline: { type: 'const', constVal: config.headline || '' },
+                        headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
                     },
                 },
                 pageItems: [],
             };
-            result.pageItems.push({
+            gridItem.pageItems = gridItem.pageItems || [];
+            gridItem.pageItems.push({
                 type: 'text',
                 dpInit: '',
                 role: 'button',
@@ -294,7 +298,7 @@ export class PageQR extends Page {
                     break;
             }
             if (config.setState && stateExist) {
-                result.pageItems.push({
+                gridItem.pageItems.push({
                     type: 'button',
                     dpInit: '',
                     role: 'button',
@@ -334,7 +338,7 @@ export class PageQR extends Page {
                     },
                 });
             } else {
-                result.pageItems.push({
+                gridItem.pageItems.push({
                     type: 'text',
                     dpInit: '',
                     role: 'button',
@@ -368,7 +372,7 @@ export class PageQR extends Page {
                     },
                 });
             }
-            return result;
+            return { gridItem, messages };
         }
         throw new Error('No config for cardQR found');
     }

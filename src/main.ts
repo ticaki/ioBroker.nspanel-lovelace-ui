@@ -153,6 +153,11 @@ class NspanelLovelaceUi extends utils.Adapter {
         if (obj && obj.native) {
             const config = [];
             if (obj.native.scriptConfigRaw) {
+                const panelsText = (this.config.panels || []).map(a => `[${a.name}#${a.topic}]`).join(', ');
+                const configsText = (obj.native.scriptConfigRaw as any[]).map(a => `${a.panelTopic}`).join(', ');
+
+                this.log.info(`Configured panels: name#topic -> ${panelsText}`);
+                this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
                 const manager = new ConfigManager(this, true);
                 manager.log.warn = function (_msg: string) {
                     //nothing
@@ -647,6 +652,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
+                    }
+                    if (obj.message?.restartAdapter) {
+                        await this.delay(100);
+                        this.log.info('Restart adapter after script config update');
+                        this.restart();
                     }
                     break;
                 }

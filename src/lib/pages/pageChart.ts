@@ -3,7 +3,6 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { getIconEntryColor, getPayload } from '../const/tools';
-import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -80,10 +79,13 @@ export class PageChart extends Page {
     }
 
     static async getChartPageConfig(
-        adapter: NspanelLovelaceUi,
-        index: number,
         configManager: ConfigManager,
-    ): Promise<pages.PageBaseConfig> {
+        index: number,
+        gridItem: pages.PageBaseConfig,
+        messages: string[],
+        page: ScriptConfig.PageChart,
+    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+        const adapter = configManager.adapter;
         const config = adapter.config.pageChartdata[index];
         let stateExistValue = '';
         let stateExistTicks = '';
@@ -105,15 +107,16 @@ export class PageChart extends Page {
                 stateExistTicks = config.setStateForTicks;
             }
 
-            const result: pages.PageBaseConfig = {
+            gridItem = {
+                ...gridItem,
                 uniqueID: config.pageName,
-                alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
-                hidden: config.hiddenByTrigger || false,
+                alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? 'always' : 'none',
+                hidden: page.hiddenByTrigger || config.hiddenByTrigger,
                 config: {
                     card: card,
                     index: index,
                     data: {
-                        headline: { type: 'const', constVal: config.headline || '' },
+                        headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
                         text: { type: 'const', constVal: config.txtlabelYAchse || '' },
                         color: { true: { color: { type: 'const', constVal: config.chart_color } } },
                         ticks: { type: 'triggered', dp: stateExistTicks },
@@ -122,7 +125,7 @@ export class PageChart extends Page {
                 },
                 pageItems: [],
             };
-            return result;
+            return { gridItem, messages };
         }
         throw new Error('No config for cardChart found');
     }

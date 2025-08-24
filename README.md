@@ -74,7 +74,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - [x] popupLight
 - [x] popupLight2
 - [x] popupTimer
-- [ ] popupSlider
+- [x] popupSlider
 - [ ] popupColor (new - in progress)
 
 ---
@@ -84,6 +84,11 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) extended pirate-weather templates 
+- (tt-tom17) added pirate-weather templates
+- (ticaki) PagePower decimal places problem fixed
+  
 ### 0.2.4 (2025-08-06)
 - (ticaki) popupSlider added
 - (ticaki) Auto update of berry driver

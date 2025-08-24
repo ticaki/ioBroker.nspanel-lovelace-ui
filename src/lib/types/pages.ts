@@ -12,6 +12,7 @@ export type PageTypeCards =
     | 'cardGrid2'
     | 'cardGrid3'
     | 'cardThermo'
+    | 'cardThermo2'
     | 'cardMedia'
     | 'cardUnlock'
     | 'cardQR'
@@ -200,10 +201,18 @@ export const stateRoleArray = arrayOfAllStateRole([
     'date.sunrise',
     'date.sunset',
     'weather.icon',
+    'weather.icon.name',
+    'value.uv',
+    'value.direction.wind',
+    'value.speed.wind',
     '',
 ]);
 
 export type StateRole =
+    | 'value.speed.wind'
+    | 'value.direction.wind'
+    | 'value.uv'
+    | 'weather.icon.name'
     | 'weather.icon'
     | 'date.sunrise'
     | 'date.sunset'
@@ -348,6 +357,7 @@ export type DeviceRole =
     | 'humidity'
     | 'temperature'
     | 'fan'
+    | 'value.uv'
     | '';
 
 export function isStateRole(F: string): F is StateRole {
@@ -456,6 +466,7 @@ export type PageBaseConfigTemplate =
               | cardMediaDataItemOptions
               | cardGridDataItemOptions
               | cardThermoDataItemOptions
+              | cardThermo2DataItemOptions
               | cardEntitiesDataItemOptions
               | cardAlarmDataItemOptions
               | cardQRDataItemOptions
@@ -505,6 +516,7 @@ export type PageBaseConfig = (
                     | cardMediaDataItemOptions
                     | cardGridDataItemOptions
                     | cardThermoDataItemOptions
+                    | cardThermo2DataItemOptions
                     | cardEntitiesDataItemOptions
                     | cardAlarmDataItemOptions
                     | cardNotifyDataItemOptions
@@ -548,6 +560,7 @@ export type PageBaseConfig = (
         | cardMediaDataItems
         | cardGridDataItems
         | cardThermoDataItems
+        | cardThermo2DataItems
         | cardAlarmDataItems
         | cardNotifyDataItems
         | cardNotify2DataItems
@@ -715,7 +728,9 @@ export type cardThermoDataItems = {
 
 export type cardMediaDataItemOptions = {
     card: 'cardMedia';
-    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & { logo: toolboxItem | undefined };
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
+        logo?: toolboxItem | undefined;
+    };
 };
 
 export type cardMediaDataItems = {
@@ -807,21 +822,21 @@ export type ChangeTypeOfKeysGeneric<Obj, N> = Obj extends object
 
 type PageMediaBaseConfig = {
     headline: string;
-    alwaysOnDisplay: boolean;
-    album: string;
-    title: listItem;
-    duration: string;
-    elapsed: string;
-    artist: listItem;
-    shuffle: typePageItem.ScaledNumberType;
-    volume: typePageItem.ScaledNumberType;
-    icon: string;
-    play: string;
-    mediaState: string;
-    stop: string;
-    pause: string;
-    forward: string;
-    backward: string;
+    alwaysOnDisplay?: boolean;
+    album?: string;
+    title?: listItem;
+    duration?: string;
+    elapsed?: string;
+    artist?: listItem;
+    shuffle?: typePageItem.ScaledNumberType;
+    volume?: typePageItem.ScaledNumberType;
+    icon?: string;
+    play?: string;
+    mediaState?: string;
+    stop?: string;
+    pause?: string;
+    forward?: string;
+    backward?: string;
 };
 
 type PageGridBaseConfig = {
@@ -855,6 +870,29 @@ export type PageGridPowerConfigElement =
           text?: typePageItem.TextEntryType;
       }
     | undefined;
+
+export type cardThermo2DataItemOptions = {
+    card: 'cardThermo2';
+    data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardThermo2DataItems = {
+    card: 'cardThermo2';
+    data: ChangeTypeOfKeys<PageThermo2BaseConfig, dataItem.Dataitem | undefined>;
+};
+
+type PageThermo2BaseConfig = ThermoDataSetBase | ThermoDataSetBase[];
+
+type ThermoDataSetBase = {
+    entity1: typePageItem.ValueEntryType;
+    humidity?: typePageItem.ValueEntryType;
+    set: boolean;
+    unit: string;
+    headline: string;
+    minTemp: number; // *10
+    maxTemp: number; // *10
+    tempStep: number; // *10
+    power: boolean;
+};
 
 type PageThermoBaseConfig = {
     auto?: boolean;
@@ -1046,6 +1084,39 @@ export type PageScheduleMessage = {
     headline: string;
     navigation: string;
     options: [string?, string?, string?, string?, string?, string?, string?, string?];
+};
+export type PageThermo2Message = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    dstTemp: number | string; // *10
+    minTemp: number | string; // *10
+    maxTemp: number | string; // *10
+    tempStep: string; // *10
+    unit: string;
+    power: boolean;
+    options: [
+        /*Info*/
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        /** option */
+        string?,
+        /** Pageitems */
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+        string?,
+    ];
 };
 
 export type PageThermoMessage = {

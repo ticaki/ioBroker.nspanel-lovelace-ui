@@ -239,7 +239,10 @@ declare namespace ScriptConfig {
         uniqueName: string;
         heading: string;
         items: PageItem[];
-        useColor: boolean;
+        /* 
+        @deprecated not used 
+        */
+        useColor?: boolean;
         subPage?: boolean;
         parent?: string;
         parentIcon?: string;
@@ -265,6 +268,7 @@ declare namespace ScriptConfig {
         | 'cardGrid2'
         | 'cardGrid3'
         | 'cardThermo'
+        | 'cardThermo2'
         | 'cardMedia'
         | 'cardUnlock'
         | 'cardQR'
@@ -278,6 +282,7 @@ declare namespace ScriptConfig {
         | PageGrid2
         | PageGrid3
         | PageThermo
+        | PageThermo2
         | PageMedia
         | PageUnlock
         | PageQR
@@ -293,27 +298,33 @@ declare namespace ScriptConfig {
 
     export type PageEntities = {
         type: 'cardEntities';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; //5
     } & PageBaseType;
 
     export type PageGrid = {
         type: 'cardGrid';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; // 6
     } & PageBaseType;
 
     export type PageGrid2 = {
         type: 'cardGrid2';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; // 8
     } & PageBaseType;
 
     export type PageGrid3 = {
         type: 'cardGrid3';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[]; //4
     } & PageBaseType;
 
     export type PageThermo = {
         type: 'cardThermo';
         items: [PageThermoItem];
+    } & Omit<PageBaseType, 'useColor'>;
+
+    export type PageThermo2 = {
+        type: 'cardThermo2';
+        thermoItems: PageThermo2Item[];
+        items: PageItem[];
     } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
@@ -329,24 +340,26 @@ declare namespace ScriptConfig {
     export type PageUnlock = {
         type: 'cardUnlock';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'> &
-        Partial<Pick<PageBaseType, 'useColor'>>;
+    } & Omit<PageBaseType, 'useColor'>;
 
     export type PageQR = {
         type: 'cardQR';
-    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
+        Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
     export type PagePower = {
         type: 'cardPower';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
+        Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
     export type PageChart = {
         type: 'cardChart' | 'cardLChart';
         items: PageItem[];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
+        Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
-    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
+    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem | PageThermo2Item;
 
     export type PageMediaItem = {
         adapterPlayerInstance: adapterPlayerInstanceType;
@@ -370,6 +383,20 @@ declare namespace ScriptConfig {
         setThermoAlias?: string[];
         setThermoDestTemp2?: string;
     } & PageBaseItem;
+
+    export type PageThermo2Item = {
+        id: string;
+        name?: string;
+        minValue?: number;
+        maxValue?: number;
+        stepValue?: number;
+        /**
+         * The unit of the 2. line. can string, icon or state
+         */
+        unit2?: string;
+        onColor2: RGB;
+    } & PageBaseItem;
+
     // mean string start with getState(' and end with ').val
     type getStateID = string;
     export type PageBaseItem = {

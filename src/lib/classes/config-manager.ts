@@ -69,7 +69,17 @@ export class ConfigManager extends BaseClass {
             this.log.error(
                 `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : 'undefined'}`,
             );
-            return { messages: ['Invalid configuration'], panelConfig: undefined };
+            return { messages: ['Abort: Invalid configuration'], panelConfig: undefined };
+        }
+        const panelItem = this.adapter.config.panels.find(item => item.topic === config.panelTopic);
+        if (!panelItem) {
+            this.log.error(`Panel for Topic: ${config.panelTopic} not found in adapter config!`);
+            return {
+                messages: [
+                    `Abort: Topic: ${config.panelTopic} not found in Adapter configuration! Maybe wrong topic?!`,
+                ],
+                panelConfig: undefined,
+            };
         }
         let messages: string[] = [];
 
@@ -86,23 +96,25 @@ export class ConfigManager extends BaseClass {
 
         if (version < breakingVersion) {
             messages.push(
-                `Update Script! Panel for Topic: ${config.panelTopic} - Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`,
+                `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`,
             );
             this.log.error(messages[messages.length - 1]);
-            return { messages: ['Invalid configuration'], panelConfig: undefined };
+            return { messages, panelConfig: undefined };
         }
         if (version < requiredVersion) {
             messages.push(
-                `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is lower than the required version ${scriptVersion}!`,
+                `Update Script! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is lower than the required version ${scriptVersion}!`,
             );
             this.log.warn(messages[messages.length - 1]);
         } else if (version > requiredVersion) {
             messages.push(
-                `Update Adapter! Panel for Topic: ${config.panelTopic} Script version ${config.version} is higher than the required version ${scriptVersion}!`,
+                `Update Adapter! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is higher than the required version ${scriptVersion}!`,
             );
             this.log.warn(messages[messages.length - 1]);
         } else {
-            messages.push(`Panel for Topic: ${config.panelTopic} Script version ${config.version} is correct!`);
+            messages.push(
+                `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is correct!`,
+            );
         }
 
         // start configuration
@@ -404,59 +416,6 @@ export class ConfigManager extends BaseClass {
                         panelConfig.navigation.push(navItem);
                     }
                 }
-                // PageQR einlesen
-                if (page.type === 'cardQR') {
-                    if (!Array.isArray(this.adapter.config.pageQRdata)) {
-                        messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
-                    if (index === -1) {
-                        messages.push(`No pageQRdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    panelConfig.pages.push(await PageQR.getQRPageConfig(this.adapter, index, this));
-                    continue;
-                }
-                // PagePower einlesen
-                if (page.type === 'cardPower') {
-                    if (!Array.isArray(this.adapter.config.pagePowerdata)) {
-                        messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pagePowerdata.findIndex(
-                        item => item.pageName === page.uniqueName,
-                    );
-                    if (index === -1) {
-                        messages.push(`No pagePowerdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    panelConfig.pages.push(await PagePower.getPowerPageConfig(this.adapter, index, this));
-                    continue;
-                }
-
-                // PageChart einlesen
-                if (page.type === 'cardChart' || page.type === 'cardLChart') {
-                    if (!Array.isArray(this.adapter.config.pageChartdata)) {
-                        messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageChartdata.findIndex(
-                        item => item.pageName === page.uniqueName,
-                    );
-                    if (index === -1) {
-                        messages.push(`No pageChartdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    panelConfig.pages.push(await PageChart.getChartPageConfig(this.adapter, index, this));
-                    continue;
-                }
 
                 let gridItem: pages.PageBaseConfig = {
                     dpInit: '',
@@ -473,6 +432,7 @@ export class ConfigManager extends BaseClass {
                         data: {
                             headline: await this.getFieldAsDataItemConfig(page.heading || ''),
                         },
+                        index: 0,
                     },
                     pageItems: [],
                 };
@@ -495,6 +455,92 @@ export class ConfigManager extends BaseClass {
                     this.log.warn(messages[messages.length - 1]);
                     continue;
                 }
+                // PageQR einlesen
+                if (page.type === 'cardQR') {
+                    if (!Array.isArray(this.adapter.config.pageQRdata)) {
+                        messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
+                    if (index === -1) {
+                        messages.push(`No pageQRdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    try {
+                        ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
+                    } catch (error: any) {
+                        messages.push(
+                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                        );
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                }
+                // PagePower einlesen
+                if (page.type === 'cardPower') {
+                    if (!Array.isArray(this.adapter.config.pagePowerdata)) {
+                        messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pagePowerdata.findIndex(
+                        item => item.pageName === page.uniqueName,
+                    );
+                    if (index === -1) {
+                        messages.push(`No pagePowerdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    try {
+                        ({ gridItem, messages } = await PagePower.getPowerPageConfig(
+                            this,
+                            page,
+                            index,
+                            gridItem,
+                            messages,
+                        ));
+                    } catch (error: any) {
+                        messages.push(
+                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                        );
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                }
+                // PageChart einlesen
+                if (page.type === 'cardChart' || page.type === 'cardLChart') {
+                    if (!Array.isArray(this.adapter.config.pageChartdata)) {
+                        messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pageChartdata.findIndex(
+                        item => item.pageName === page.uniqueName,
+                    );
+                    if (index === -1) {
+                        messages.push(`No pageChartdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    try {
+                        ({ gridItem, messages } = await PageChart.getChartPageConfig(
+                            this,
+                            index,
+                            gridItem,
+                            messages,
+                            page,
+                        ));
+                    } catch (error: any) {
+                        messages.push(
+                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                        );
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                }
+
                 if (page.items) {
                     for (let a = 0; a < page.items.length; a++) {
                         const item = page.items[a];
@@ -518,8 +564,8 @@ export class ConfigManager extends BaseClass {
                             this.log.warn(messages[messages.length - 1]);
                         }
                     }
-                    panelConfig.pages.push(gridItem);
                 }
+                panelConfig.pages.push(gridItem);
             }
         }
         return { panelConfig, messages };
@@ -1200,7 +1246,7 @@ export class ConfigManager extends BaseClass {
         };
         const getButtonsTextFalse = async (
             item: ScriptConfig.PageItem,
-            def1: string = '',
+            def1: string,
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonTextOff
                 ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
@@ -1729,11 +1775,20 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'info': {
+                let adapterRole: pages.DeviceRole = '';
+                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                    if (o?.common?.type === 'boolean') {
+                        adapterRole = 'iconNotText';
+                    } else {
+                        adapterRole = item.useValue ? specialRole : '';
+                    }
+                }
                 itemConfig = {
                     template: 'text.info',
                     dpInit: item.id,
                     type: 'button',
-                    role: 'info',
+                    role: adapterRole,
                     color: {
                         true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
                         false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
@@ -2720,7 +2775,6 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'motion':
-                    case 'info':
                     case 'humidity':
                     case 'value.humidity':
                     case 'thermostat':
@@ -2763,19 +2817,6 @@ export class ConfigManager extends BaseClass {
                                 adapterRole = 'iconNotText';
                                 textOn = 'opened';
                                 textOff = 'closed';
-                                break;
-                            }
-                            case 'info': {
-                                iconOn = 'information-outline';
-                                iconOff = 'information-off-outline';
-                                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                                    if (o?.common?.type === 'boolean') {
-                                        adapterRole = 'iconNotText';
-                                    } else {
-                                        adapterRole = item.useValue ? specialRole : '';
-                                    }
-                                }
                                 break;
                             }
                             case 'thermostat':
@@ -2871,7 +2912,6 @@ export class ConfigManager extends BaseClass {
                                 entity2:
                                     role === 'temperature' ||
                                     role === 'humidity' ||
-                                    role === 'info' ||
                                     role === 'value.temperature' ||
                                     role === 'value.humidity'
                                         ? {
@@ -2882,6 +2922,86 @@ export class ConfigManager extends BaseClass {
                                                       : undefined,
                                           }
                                         : undefined,
+                            },
+                        };
+                        itemConfig = tempItem;
+                        break;
+                    }
+                    case 'info': {
+                        let adapterRole: pages.DeviceRole = '';
+                        let commonUnit = '';
+                        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                            if (o && o.common) {
+                                if (o.common.unit) {
+                                    commonUnit = o.common.unit;
+                                }
+                                if (o.common.type === 'boolean') {
+                                    adapterRole = 'iconNotText';
+                                } else {
+                                    adapterRole = item.useValue ? specialRole : '';
+                                }
+                            }
+                        }
+
+                        const icontemp = item.icon2 || item.icon;
+                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                            type: 'text',
+                            role: adapterRole,
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: item.icon
+                                            ? await this.getFieldAsDataItemConfig(item.icon)
+                                            : (await this.existsState(`${item.id}.USERICON`))
+                                              ? { type: 'triggered', dp: `${item.id}.USERICON` }
+                                              : { type: 'const', constVal: 'information-outline' },
+                                        color: item.onColor
+                                            ? await this.getIconColor(item.onColor, this.colorOn)
+                                            : (await this.existsState(`${item.id}.COLORDEC`))
+                                              ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
+                                              : { type: 'const', constVal: this.colorOn },
+                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                            ? {
+                                                  value: foundedStates[role].ACTUAL,
+                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                                  textSize: item.fontSize
+                                                      ? { type: 'const', constVal: item.fontSize }
+                                                      : undefined,
+                                              }
+                                            : undefined,
+                                    },
+                                    false: {
+                                        value: icontemp
+                                            ? await this.getFieldAsDataItemConfig(icontemp)
+                                            : (await this.existsState(`${item.id}.USERICON`))
+                                              ? { type: 'triggered', dp: `${item.id}.USERICON` }
+                                              : { type: 'const', constVal: 'information-off-outline' },
+                                        color: item.offColor
+                                            ? await this.getIconColor(item.offColor, this.colorOff)
+                                            : (await this.existsState(`${item.id}.COLORDEC`))
+                                              ? { type: 'triggered', dp: `${item.id}.COLORDEC` }
+                                              : { type: 'const', constVal: this.colorOff },
+                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                            ? {
+                                                  value: foundedStates[role].ACTUAL,
+                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                                  textSize: item.fontSize
+                                                      ? { type: 'const', constVal: item.fontSize }
+                                                      : undefined,
+                                              }
+                                            : undefined,
+                                    },
+                                },
+                                text: text,
+                                text1: { true: foundedStates[role].ACTUAL },
+                                entity1: { value: foundedStates[role].ACTUAL },
+                                entity2: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit: item.unit
+                                        ? { type: 'const', constVal: item.unit }
+                                        : { type: 'const', constVal: commonUnit },
+                                },
                             },
                         };
                         itemConfig = tempItem;
@@ -3553,6 +3673,90 @@ export class ConfigManager extends BaseClass {
                         {
                             template: 'text.openweathermap.winddirection',
                             dpInit: `/^openweathermap\\.${instance}./`,
+                            modeScr: 'bottom',
+                        },
+                    ]);
+                }
+            } else if (config.weatherEntity.startsWith('pirate-weather.') && config.weatherEntity.endsWith('.')) {
+                const instance = config.weatherEntity.split('.')[1];
+                if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
+                    pageItems.push({
+                        template: 'text.pirate-weather.favorit',
+                        dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently\\./`,
+                        modeScr: 'favorit',
+                    });
+                }
+                if (config.weatherAddDefaultItems) {
+                    pageItems = pageItems.concat([
+                        // Bottom 1 - pirate-weather.0. sunset
+                        {
+                            template: 'text.pirate-weather.sunriseset',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.daily\\.00.+/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 2 - pirate-weather.0. Forecast Day 1
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.01/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 3 - pirate-weather.0. Forecast Day 2
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.02/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 4 - pirate-weather.0. Forecast Day 3
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.03/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 5 - pirate-weather.0. Forecast Day 4
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.04/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 6 - pirate-weather.0. Forecast Day 5
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.05/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 7 - pirate-weather.0. Forecast Day 6
+                        {
+                            template: 'text.pirate-weather.bot2values',
+                            dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.06/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 8 - Windgeschwindigkeit
+                        {
+                            template: 'text.pirate-weather.windspeed',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 9 - Böen
+                        {
+                            template: 'text.pirate-weather.windgust',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 10 - Windrichtung
+                        {
+                            template: 'text.pirate-weather.winddirection',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 10 - UV-Index
+                        {
+                            template: 'text.pirate-weather.uvindex',
+                            dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
                         },
                     ]);

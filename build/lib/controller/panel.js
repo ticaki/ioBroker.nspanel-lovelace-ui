@@ -278,6 +278,11 @@ class Panel extends import_library.BaseClass {
           this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
           break;
         }
+        case "cardThermo2": {
+          pageConfig = Panel.getPage(pageConfig, this);
+          this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
+          break;
+        }
         case "cardMedia": {
           pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageMedia.PageMedia(pmconfig, pageConfig);
@@ -745,7 +750,6 @@ class Panel extends import_library.BaseClass {
       }
     } else if (topic.endsWith("/tele/LWT")) {
       if (message === "Offline") {
-        this.isOnline = false;
       }
     } else if (topic.endsWith("/tele/INFO1")) {
       this.restartLoops();

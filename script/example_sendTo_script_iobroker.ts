@@ -4,17 +4,36 @@ async function configuration(): Promise<void> {
         // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
         // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
         // panelTopic: 'nspanel/ns_panel4',
-        weatherEntity: 'openweathermap.0.',
+        weatherEntity: 'pirate-weather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
         weatherAddDefaultItems: false,
     }
+
+        /**************************************************************************************
+         **                                                                                  **
+         ** https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation **
+         **                                                                                  **
+         *************************************************************************************/
+        
+         
 
         /***********************************************************************
          **                                                                   **
          **                       Page Configuration                          **
          **                                                                   **
          ***********************************************************************/
+
+
+    // Beispiel Hauptseite / Mainpage
+    // Diese Seite ist die Hauptseite, sie wird immer als erstes angezeigt und hat den uniqueName 'main'.
+    // uniqueName 'main' muß mindestens einmal vorkommen, damit die Navigation funktioniert.
+    const Hauptseite: ScriptConfig.PageGrid = {
+        type: 'cardGrid',
+        uniqueName: 'main',
+        heading: 'Die Leere',
+        items: []
+    };
 
     // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
     // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
@@ -50,7 +69,6 @@ async function configuration(): Promise<void> {
         type: 'cardGrid',
         uniqueName: 'main',
         heading: 'Wohnzimmer',
-        useColor: true,
         items: [
             {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
             {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
@@ -79,12 +97,11 @@ async function configuration(): Promise<void> {
             {id: 'alias.0.NSPanel.allgemein.shutter'}
         ],
         type: 'cardGrid',
-        useColor: true
     } */ 
 
     const config: ScriptConfig.Config = {
         panelTopic: 'topic',
-        weatherEntity: 'openweathermap.0.',
+        weatherEntity: 'pirate-weather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
         defaultBackgroundColor: HMIDark,
@@ -97,6 +114,7 @@ async function configuration(): Promise<void> {
         // Seiteneinteilung / Page division
         // Hauptseiten / Mainpages
         pages: [
+            Hauptseite
             //irgendeinName,
             //grid1,
             //qrCode,
@@ -117,8 +135,8 @@ async function configuration(): Promise<void> {
         favoritScreensaverEntity: [
             {
                 type: 'template',
-                template: 'text.openweathermap.favorit',
-                dpInit: `/^openweathermap\\.0.+/`,
+                template: 'text.pirate-weather.favorit',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\./`,
                 modeScr: 'favorit',
             }
         ],
@@ -193,8 +211,8 @@ async function configuration(): Promise<void> {
             // bottomScreensaverEntity 1
             {
                 type: 'template',
-                template: 'text.openweathermap.sunriseset',
-                dpInit: `/^openweathermap\\.0\\.forecast\\.current.+/`,
+                template: 'text.pirate-weather.sunriseset',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
                 modeScr: 'bottom',
             },
             // bottomScreensaverEntity 2
@@ -207,7 +225,7 @@ async function configuration(): Promise<void> {
             },*/ 
             {
                 type: 'script',
-                ScreensaverEntity: 'openweathermap.0.forecast.current.windSpeed',
+                ScreensaverEntity: 'pirate-weather.0.weather.currently.windSpeed',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
                 ScreensaverEntityIconOn: 'weather-windy',
@@ -219,7 +237,7 @@ async function configuration(): Promise<void> {
             // bottomScreensaverEntity 3
             {
                 type: 'script',
-                ScreensaverEntity: 'openweathermap.0.forecast.current.windGust',
+                ScreensaverEntity: 'pirate-weather.0.weather.currently.windGust',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
                 ScreensaverEntityIconOn: 'weather-tornado',
@@ -231,14 +249,14 @@ async function configuration(): Promise<void> {
             // bottomScreensaverEntity 4
             {
                 type: 'template',
-                template: 'text.openweathermap.winddirection',
-                dpInit: `/^openweathermap\\.0./`,
+                template: 'text.pirate-weather.winddirection',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
                 modeScr: 'bottom',
             },
             // bottomScreensaverEntity 5 (Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'openweathermap.0.forecast.current.humidity',
+                ScreensaverEntity: 'pirate-weather.0.weather.currently.humidity',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
                 ScreensaverEntityIconOn: 'water-percent',
@@ -248,11 +266,12 @@ async function configuration(): Promise<void> {
                 ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 60}
             },
             // bottomScreensaverEntity 6 (for Advanced Screensaver)
-            // the 6th day from dasWetter
             {
-                type: 'native',
-                native: dasWetterBottomScreensaverEntity6
-            },
+                type: 'template',
+                template: 'text.pirate-weather.uvindex',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            }
             // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
 
             // Some templates for the screensaver uncomment the lines to use them
@@ -264,6 +283,9 @@ async function configuration(): Promise<void> {
             // Wenn du sie alle haben willst, setze weatherAddDefaultItems=true in der Konfiguration ganz oben und lass die folgenden Zeilen so wie sie sind!
 
             /*
+
+            OPENWEATHERMAP
+
             // Bottom 1 - sunrise/set
             {
                 type: 'template',
@@ -346,6 +368,111 @@ async function configuration(): Promise<void> {
                 type: 'template',
                 template: 'text.accuweather.uvindex',
                 dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+            */
+
+
+            /*
+            
+            PIRATE-WEATHER
+
+            // Bottom 1 - sunrise/set
+            {
+                type: 'template',
+                template: 'text.pirate-weather.sunriseset',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 -  Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.01/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.02/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.03/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.04/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.05/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 -  Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.06/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windspeed',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windgust',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.pirate-weather.winddirection',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 11 - UV-Index
+            {
+                type: 'template',
+                template: 'text.pirate-weather.uvindex',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+            // hier kann man dann eine Stundenübersicht erzeugen durch anpassen der 02 bzw. 04
+            // die sind nicht in addDefaultWeather enthalten.
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.02/`,
+                modeScr: 'bottom',
+            },
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.04/`,
                 modeScr: 'bottom',
             },
             */
@@ -475,7 +602,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.9.0';
+const version = '0.9.3';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -740,7 +867,7 @@ declare namespace ScriptConfig {
         uniqueName: string;
         heading: string;
         items: PageItem[];
-        useColor: boolean;
+        useColor?: boolean;
         subPage?: boolean;
         parent?: string;
         parentIcon?: string;
@@ -815,23 +942,22 @@ declare namespace ScriptConfig {
     export type PageThermo = {
         type: 'cardThermo';
         items: [PageThermoItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & PageBaseType;
 
     export type PageMedia = {
         type: 'cardMedia';
         items: [PageMediaItem];
-    } & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'>;
+    } & Omit<PageBaseType, 'autoCreateAlias'>;
 
     export type PageAlarm = {
         type: 'cardAlarm';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & PageBaseType;
 
     export type PageUnlock = {
         type: 'cardUnlock';
         items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'> &
-        Partial<Pick<PageBaseType, 'useColor'>>;
+    } & PageBaseType;
 
     export type PageQR = {
         type: 'cardQR';
@@ -1069,6 +1195,7 @@ declare namespace ScriptConfig {
         defaultBackgroundColor: RGB;
         pages: PageType[];
         subPages: PageType[];
+        restartAdapter?: boolean;
         /**
      * Represents the configuration for a button function.
      * This type can be one of the following modes:
@@ -8195,179 +8322,5 @@ declare namespace ScriptConfig {
     | 'zodiac-virgo'
     | '';
 
-}
-// bottomScreensaverEntity 6 - daswetter.0. Forecast Day 6
-const dasWetterBottomScreensaverEntity6 = 
-{
-    type: 'native',
-    native: {            
-        role: '2values',
-        dpInit: '',
-        type: 'text',
-        modeScr: 'bottom',
-        data: {
-            entity1: {
-                value: { type: 'triggered', dp: 'daswetter.0.NextDays.Location_1.Day_6.Minimale_Temperatur_value' },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                factor: undefined,
-                unit: {
-                    type: 'const',
-                    constVal: '° ',
-                },
-            },
-            entity2: {
-                value: { type: 'triggered', dp: 'daswetter.0.NextDays.Location_1.Day_6.Maximale_Temperatur_value' },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                factor: undefined,
-                unit: {
-                    type: 'const',
-                    constVal: '°',
-                },
-            },
-            icon: {
-                true: {
-                    value: {
-                        type: 'triggered',
-                        dp: 'daswetter.0.NextDays.Location_1.Day_6.Wetter_Symbol_id',
-                        read: `{
-                                    switch (val) {
-                                        case 1:         // Sonnig
-                                            return 'weather-sunny';  // sunny
-
-                                        case 2:         // Teils bewölkt
-                                        case 3:         // Bewölkt
-                                            return 'weather-partly-cloudy';  // partlycloudy
-            
-                                        case 4:         // Bedeckt
-                                            return 'weather-cloudy';  // cloudy
-            
-                                        case 5:        // Teils bewölkt mit leichtem Regen
-                                        case 6:        // Bewölkt mit leichtem Regen
-                                        case 8:        // Teils bewölkt mit mäßigem Regen
-                                        case 9:        // Bewölkt mit mäßigem Regen
-                                            return 'weather-partly-rainy';  // partly-rainy
-            
-                                        case 7:        // Bedeckt mit leichtem Regen
-                                            return 'weather-rainy';  // rainy
-            
-                                        case 10:        // Bedeckt mit mäßigem Regen
-                                            return 'weather-pouring';  // pouring
-            
-                                        case 11:        // Teils bewölkt mit starken Regenschauern
-                                        case 12:        // Bewölkt mit stürmischen Regenschauern
-                                            return 'weather-partly-lightning';  // partlylightning
-            
-                                        case 13:        // Bedeckt mit stürmischen Regenschauern
-                                            return 'weather-lightning';  // lightning
-            
-                                        case 14:        // Teils bewölkt mit stürmischen Regenschauern und Hagel
-                                        case 15:        // Bewölkt mit stürmischen Regenschauern und Hagel
-                                        case 16:        // Bedeckt mit stürmischen Regenschauern und Hagel
-                                            return 'weather-hail';  // Hail
-
-                                        case 17:        // Teils bewölkt mit Schnee
-                                        case 18:        // Bewölkt mit Schnee
-                                            return 'weather-partly-snowy';  // partlysnowy
-
-                                        case 19:        // Bedeckt mit Schneeschauern
-                                            return 'weather-snowy';  // snowy
-
-                                        case 20:        // Teils bewölkt mit Schneeregen
-                                        case 21:        // Bewölkt mit Schneeregen
-                                            return 'weather-partly-snowy-rainy';
-
-                                        case 22:        // Bedeckt mit Schneeregen
-                                            return 'weather-snowy-rainy';  // snowy-rainy
-
-                                        default:
-                                            return 'alert-circle-outline';
-                                    }
-                                }`,
-                    },
-                    color: {
-                        type: 'triggered',
-                        dp: 'daswetter.0.NextDays.Location_1.Day_6.Wetter_Symbol_id',
-                        read: `{
-                                    switch (val) {
-                                        case 1:         // Sonnig
-                                            return Color.swSunny;
-
-                                        case 2:         // Teils bewölkt
-                                        case 3:         // Bewölkt
-                                            return Color.swPartlycloudy;
-
-                                        case 4:         // Bedeckt
-                                            return Color.swCloudy;
-
-                                        case 5:        // Teils bewölkt mit leichtem Regen
-                                        case 6:        // Bewölkt mit leichtem Regen
-                                        case 8:        // Teils bewölkt mit mäßigem Regen
-                                        case 9:        // Bewölkt mit mäßigem Regen
-                                            return Color.swRainy;
-
-                                        case 7:        // Bedeckt mit leichtem Regen
-                                            return Color.swRainy;
-
-                                        case 10:        // Bedeckt mit mäßigem Regen
-                                            return Color.swPouring;
-
-                                        case 11:        // Teils bewölkt mit starken Regenschauern
-                                        case 12:        // Bewölkt mit stürmischen Regenschauern
-                                            return Color.swLightningRainy;
-
-                                        case 13:        // Bedeckt mit stürmischen Regenschauern
-                                            return Color.swLightning;
-
-                                        case 14:        // Teils bewölkt mit stürmischen Regenschauern und Hagel
-                                        case 15:        // Bewölkt mit stürmischen Regenschauern und Hagel
-                                        case 16:        // Bedeckt mit stürmischen Regenschauern und Hagel
-                                            return Color.swHail;
-
-                                        case 17:        // Teils bewölkt mit Schnee
-                                        case 18:        // Bewölkt mit Schnee
-                                            return Color.swSnowy;
-
-                                        case 19:        // Bedeckt mit Schneeschauern
-                                            return Color.swSnowy;
-
-                                        case 20:        // Teils bewölkt mit Schneeregen
-                                        case 21:        // Bewölkt mit Schneeregen
-                                            return Color.swSnowyRainy;  // snowy-rainy
-
-                                        case 22:        // Bedeckt mit Schneeregen
-                                            return Color.swSnowyRainy;
-
-                                        default:
-                                            return Color.White;
-                                    }
-                                }`,
-                    },
-                },
-                false: {
-                    value: undefined,
-                    color: undefined
-                },
-                scale: undefined,
-                maxBri: undefined,
-                minBri: undefined,
-            },
-            text: {
-                true: {
-                    type: 'triggered',
-                    dp: 'daswetter.0.NextDays.Location_1.Day_6.Tag_value',                        
-                    read:  `{
-                                return (val).substring(0,2);
-                            }`,
-                },
-                false: undefined,
-            },
-        },
-    },
 }
 configuration();

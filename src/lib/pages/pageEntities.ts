@@ -52,7 +52,7 @@ export class PageEntities extends PageMenu {
     }
 
     public async update(): Promise<void> {
-        if (!this.visibility) {
+        if (!this.visibility || this.items?.card !== 'cardEntities') {
             return;
         }
         const message: Partial<pages.PageEntitiesMessage> = {};
