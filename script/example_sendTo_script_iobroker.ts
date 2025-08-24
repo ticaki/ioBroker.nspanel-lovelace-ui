@@ -219,7 +219,7 @@ async function configuration(): Promise<void> {
             /*{
                 type: 'template',
                 template: 'text.hmip.windcombo',
-                dpInit: 'hmip.0.devices.3014F711A000185F2999676C',
+                dpInit: 'hmip.0.devices.3014G71HA0001XXXXXXXXXX',
                 modeScr: 'bottom',
                 //readOptions: {directionOfPanel: 81}
             },*/ 
@@ -549,8 +549,8 @@ async function configuration(): Promise<void> {
         // DE: Konfiguration des linken Schalters des NSPanels
         // EN: Configuration of the left switch of the NSPanel
         buttonLeft: {
-            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'toggle', 'set' - Wenn nicht definiert --> mode: null
-            // EN: Possible values if Rule2 defined: 'page', 'toggle', 'set' - If not defined --> mode: null
+            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'switch', 'set' - Wenn nicht definiert --> mode: null
+            // EN: Possible values if Rule2 defined: 'page', 'switch', 'set' - If not defined --> mode: null
             mode: 'page',
             // DE: Zielpage - Verwendet wenn mode = page
             // EN: Target page - Used if mode = page
@@ -602,7 +602,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.9.3';
+const version = '0.10.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -696,11 +696,13 @@ type PageItem = ScriptConfig.PageItem;
 type PageBaseItem = ScriptConfig.PageBaseItem;
 type PageMediaItem = ScriptConfig.PageMediaItem;
 type PageThermoItem = ScriptConfig.PageThermoItem;
+type PageThermo2Item = ScriptConfig.PageThermo2Item;
 type PageEntities = ScriptConfig.PageEntities;
 type PageGrid = ScriptConfig.PageGrid;
 type PageGrid2 = ScriptConfig.PageGrid2;
 type PageGrid3 = ScriptConfig.PageGrid3;
 type PageThermo = ScriptConfig.PageThermo;
+type PageThermo2 = ScriptConfig.PageThermo2;
 type PageMedia = ScriptConfig.PageMedia;
 type PageAlarm = ScriptConfig.PageAlarm;
 type PageUnlock = ScriptConfig.PageUnlock;
@@ -893,6 +895,7 @@ declare namespace ScriptConfig {
         | 'cardGrid2'
         | 'cardGrid3'
         | 'cardThermo'
+        | 'cardThermo2'
         | 'cardMedia'
         | 'cardUnlock'
         | 'cardQR'
@@ -906,6 +909,7 @@ declare namespace ScriptConfig {
         | PageGrid2
         | PageGrid3
         | PageThermo
+        | PageThermo2
         | PageMedia
         | PageUnlock
         | PageQR
@@ -943,6 +947,12 @@ declare namespace ScriptConfig {
         type: 'cardThermo';
         items: [PageThermoItem];
     } & PageBaseType;
+
+    export type PageThermo2 = {
+        type: 'cardThermo2';
+        thermoItems: PageThermo2Item[];
+        items: PageThermo2PageItems[];
+    } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
         type: 'cardMedia';
@@ -995,6 +1005,53 @@ declare namespace ScriptConfig {
         setThermoAlias?: string[];
         setThermoDestTemp2?: string;
     } & PageBaseItem;
+
+    export type PageThermo2PageItems = {
+        heatCycleIndex?: number;
+    } & PageBaseItem;
+
+    export type PageThermo2Item = (
+        | {
+              // temperature data point
+              thermoId1: string;
+              // humidity data point
+              thermoId2?: string;
+              // mode data point (common.states)
+              modeId?: string;
+              // set data point (writeable)
+              set: string;
+          }
+        | {
+            //channel with all data
+              id: string;
+          }
+    )  & {
+        // icon id
+        icon?: AllIcons | '';
+        // icon for id2
+        icon2?: AllIcons | '';
+        // icon for the pageitem
+        iconHeatCycle?: AllIcons | ''; 
+        iconHeatCycleOnColor?: RGB;
+        iconHeatCycleOffColor?: RGB;     
+        // headline
+        name?: string;
+        // 100 === 10.0
+        minValue?: number;
+        maxValue?: number;
+        stepValue?: number;
+        /**
+         * The unit of the 2. line. can string, icon or state
+         */
+        power?: string;
+        unit2?: string;
+        onColor2?: RGB;
+        unit?: string;
+        onColor?: RGB;
+        // array of stings for mode
+        modeList?: string[];
+    } 
+    
     // mean string start with getState(' and end with ').val
     type getStateID = string;
 
@@ -1085,6 +1142,7 @@ declare namespace ScriptConfig {
             popupVersion?: number
             shutterType?: string;
             sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
+            filter?: number;
     };
 
     type sliderItems = {

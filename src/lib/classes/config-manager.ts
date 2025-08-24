@@ -16,6 +16,7 @@ import { isNavigationItemConfigArray, type NavigationItemConfig } from './naviga
 import { getVersionAsNumber } from '../const/tools';
 import * as fs from 'fs';
 import path from 'path';
+import { PageThermo2 } from '../pages/pageThermo2';
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
     colorOn: RGB = Color.On;
@@ -378,6 +379,7 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardGrid3' &&
                     page.type !== 'cardEntities' &&
                     page.type !== 'cardThermo' &&
+                    page.type !== 'cardThermo2' &&
                     page.type !== 'cardQR' &&
                     page.type !== 'cardPower' &&
                     page.type !== 'cardChart' &&
@@ -440,7 +442,9 @@ export class ConfigManager extends BaseClass {
                     gridItem.config.card === 'cardGrid' ||
                     gridItem.config.card === 'cardGrid2' ||
                     gridItem.config.card === 'cardGrid3' ||
-                    gridItem.config.card === 'cardEntities'
+                    gridItem.config.card === 'cardEntities' ||
+                    gridItem.config.card === 'cardSchedule' ||
+                    gridItem.config.card === 'cardThermo2'
                 ) {
                     gridItem.config.scrollType = 'page';
                 }
@@ -450,7 +454,18 @@ export class ConfigManager extends BaseClass {
                     }
                 } catch (error: any) {
                     messages.push(
-                        `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                        `Configuration error in page thermo ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                    );
+                    this.log.warn(messages[messages.length - 1]);
+                    continue;
+                }
+                try {
+                    if (page.type === 'cardThermo2') {
+                        ({ gridItem, messages } = await PageThermo2.getPage(this, page, gridItem, messages));
+                    }
+                } catch (error: any) {
+                    messages.push(
+                        `Configuration error in page thermo2 ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                     );
                     this.log.warn(messages[messages.length - 1]);
                     continue;
@@ -1208,7 +1223,8 @@ export class ConfigManager extends BaseClass {
                 page.type === 'cardGrid' ||
                 page.type === 'cardGrid2' ||
                 page.type === 'cardGrid3' ||
-                page.type === 'cardEntities'
+                page.type === 'cardEntities' ||
+                page.type === 'cardThermo2'
             ) ||
             !item.targetPage ||
             !item.navigate
@@ -1338,7 +1354,7 @@ export class ConfigManager extends BaseClass {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: icon,
+                                    constVal: String(icon),
                                 },
                                 color: await this.getIconColor(item.onColor, this.colorOn),
                             },
@@ -2018,6 +2034,9 @@ export class ConfigManager extends BaseClass {
 
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
+        }
+        if (item.filter != null && itemConfig) {
+            itemConfig.filter = item.filter;
         }
         return itemConfig;
     }
@@ -3473,6 +3492,9 @@ export class ConfigManager extends BaseClass {
 
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+                }
+                if (item.filter != null && itemConfig) {
+                    itemConfig.filter = item.filter;
                 }
                 return { itemConfig, messages };
             }

@@ -45,6 +45,7 @@ var import_navigation = require("./navigation");
 var import_tools = require("../const/tools");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
+var import_pageThermo2 = require("../pages/pageThermo2");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -341,7 +342,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -389,7 +390,7 @@ class ConfigManager extends import_library.BaseClass {
           },
           pageItems: []
         };
-        if (gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities") {
+        if (gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities" || gridItem.config.card === "cardSchedule" || gridItem.config.card === "cardThermo2") {
           gridItem.config.scrollType = "page";
         }
         try {
@@ -398,7 +399,18 @@ class ConfigManager extends import_library.BaseClass {
           }
         } catch (error) {
           messages.push(
-            `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+            `Configuration error in page thermo ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+          );
+          this.log.warn(messages[messages.length - 1]);
+          continue;
+        }
+        try {
+          if (page.type === "cardThermo2") {
+            ({ gridItem, messages } = await import_pageThermo2.PageThermo2.getPage(this, page, gridItem, messages));
+          }
+        } catch (error) {
+          messages.push(
+            `Configuration error in page thermo2 ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
           );
           this.log.warn(messages[messages.length - 1]);
           continue;
@@ -1071,7 +1083,7 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e;
-    if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
+    if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardThermo2") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
     }
@@ -1157,7 +1169,7 @@ class ConfigManager extends import_library.BaseClass {
               true: {
                 value: {
                   type: "const",
-                  constVal: icon
+                  constVal: String(icon)
                 },
                 color: await this.getIconColor(item.onColor, this.colorOn)
               },
@@ -1777,6 +1789,9 @@ class ConfigManager extends import_library.BaseClass {
       default:
         (0, import_pages.exhaustiveCheck)(role);
         throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
+    }
+    if (item.filter != null && itemConfig) {
+      itemConfig.filter = item.filter;
     }
     return itemConfig;
   }
@@ -2902,6 +2917,9 @@ class ConfigManager extends import_library.BaseClass {
           default:
             (0, import_pages.exhaustiveCheck)(role);
             throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+        }
+        if (item.filter != null && itemConfig) {
+          itemConfig.filter = item.filter;
         }
         return { itemConfig, messages };
       }
