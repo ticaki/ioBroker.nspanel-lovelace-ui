@@ -244,7 +244,7 @@ export class PageNotify extends Page {
                         data.setValue2 && (await data.setValue2.setStateTrue());
                     }
                 } else {
-                    data.setValue1 && (await data.setValue1.setStateAsync(_event.opt === 'yes'));
+                    data.setValue1 && (await data.setValue1.setState(_event.opt === 'yes'));
                 }
 
                 const cb = (data.closingBehaviour && (await data.closingBehaviour.getString())) ?? '';
