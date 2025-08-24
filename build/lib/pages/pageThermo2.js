@@ -361,7 +361,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           adapter.log.error(msg);
           continue;
         }
-        headline = airCondition ? item.name2 || "COOLING" : headline || typeof o.common.name === "object" ? o.common[configManager.adapter.language || "en"] : o.common.name || "HEATING";
+        headline = airCondition ? item.name2 || "COOLING" : item.name || (typeof o.common.name === "object" ? o.common[configManager.adapter.language || "en"] : o.common.name) || "HEATING";
         actual = ((_a = foundedStates[role].ACTUAL) == null ? void 0 : _a.dp) || "";
         humidity = ((_b = foundedStates[role].HUMIDITY) == null ? void 0 : _b.dp) || "";
         set = airCondition ? ((_c = foundedStates[role].SET2) == null ? void 0 : _c.dp) || "" : ((_d = foundedStates[role].SET) == null ? void 0 : _d.dp) || "";

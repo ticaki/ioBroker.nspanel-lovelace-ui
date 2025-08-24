@@ -402,9 +402,11 @@ export class PageThermo2 extends PageMenu {
                 }
                 headline = airCondition
                     ? item.name2 || 'COOLING'
-                    : headline || typeof o.common.name === 'object'
-                      ? o.common[configManager.adapter.language || 'en']
-                      : o.common.name || 'HEATING';
+                    : item.name ||
+                      (typeof o.common.name === 'object'
+                          ? o.common[configManager.adapter.language || 'en']
+                          : o.common.name) ||
+                      'HEATING';
                 actual = foundedStates[role].ACTUAL?.dp || '';
                 humidity = foundedStates[role].HUMIDITY?.dp || '';
                 set = airCondition ? foundedStates[role].SET2?.dp || '' : foundedStates[role].SET?.dp || '';
