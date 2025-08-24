@@ -62,9 +62,9 @@ export async function setValueEntry(
         }
     }
     if (i.set && i.set.writeable) {
-        await i.set.setStateAsync(res);
+        await i.set.setState(res);
     } else if (i.value.writeable) {
-        await i.value.setStateAsync(res);
+        await i.value.setState(res);
     } else if (i.set || i.value) {
         const t = i.set || i.value;
         t.log.warn(t.name || '???' + ' is not writeable');
@@ -253,9 +253,9 @@ export async function setSliderCTFromValue(
         }
     }
     if (i.set && i.set.writeable) {
-        await i.value.setStateAsync(r);
+        await i.value.setState(r);
     } else {
-        await i.value.setStateAsync(r);
+        await i.value.setState(r);
     }
 }
 
@@ -272,9 +272,9 @@ export async function setScaledNumber(
             value = getScaledNumberRaw(value, await i.minScale.getNumber(), await i.maxScale.getNumber(), value);
         }
         if (i.set && i.set.writeable) {
-            await i.set.setStateAsync(value);
+            await i.set.setState(value);
         } else if (i.value.writeable && nval !== value) {
-            await i.value.setStateAsync(value);
+            await i.value.setState(value);
         }
     }
 }
@@ -955,9 +955,9 @@ export const setRGBThreefromRGB = async (item: PageItemLightDataItems['data'], c
     if (!item || !item.Red || !item.Green || !item.Blue) {
         return;
     }
-    await item.Red.setStateAsync(c.r);
-    await item.Green.setStateAsync(c.g);
-    await item.Blue.setStateAsync(c.b);
+    await item.Red.setState(c.r);
+    await item.Green.setState(c.g);
+    await item.Blue.setState(c.b);
 };
 
 export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
@@ -986,7 +986,7 @@ export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB
     //let saturation = Math.abs((item.saturation && (await item.saturation.getNumber())) ?? 1);
     //if (saturation > 1) saturation = 1;
     const hue = Color.getHue(c.r, c.g, c.b);
-    await item.hue.setStateAsync(hue);
+    await item.hue.setState(hue);
 };
 
 export function formatInSelText(Text: string[] | string): string {

@@ -239,10 +239,12 @@ export class Page extends BaseClassPage {
         this.panel.lastCard = this.card;
     }
 
-    protected async createPageItems(): Promise<void> {
-        if (this.pageItemConfig) {
-            this.pageItems = [];
-            for (let a = 0; a < this.pageItemConfig.length; a++) {
+    async createPageItems(
+        pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined,
+    ): Promise<(PageItem | undefined)[] | undefined> {
+        const result = [];
+        if (pageItemsConfig) {
+            for (let a = 0; a < pageItemsConfig.length; a++) {
                 const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
                     name: 'PI',
                     adapter: this.adapter,
@@ -252,9 +254,10 @@ export class Page extends BaseClassPage {
                     id: `${this.id}?${a}`,
                     parent: this,
                 };
-                this.pageItems[a] = await PageItem.getPageItem(config, this.pageItemConfig[a]);
+                result[a] = await PageItem.getPageItem(config, pageItemsConfig[a]);
             }
         }
+        return result;
     }
 
     goLeft(): void {
@@ -266,7 +269,7 @@ export class Page extends BaseClassPage {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             if (!this.pageItems || this.pageItems.length === 0) {
-                await this.createPageItems();
+                this.pageItems = await this.createPageItems(this.pageItemConfig);
             }
             //if (this.card !== 'cardLChart') {
             this.sendType();

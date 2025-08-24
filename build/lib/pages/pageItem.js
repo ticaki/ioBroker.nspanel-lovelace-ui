@@ -1542,7 +1542,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               const message = await item.popup.getMessage.getString();
               const headline = (_b = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _b : "";
               if (message) {
-                await item.popup.setMessage.setStateAsync(
+                await item.popup.setMessage.setState(
                   JSON.stringify({ headline, message })
                 );
               }
@@ -1693,7 +1693,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
                 if (import_Color.Color.isRGB(rgb) && ((_m = item == null ? void 0 : item.color) == null ? void 0 : _m.true) && item.color.true.options.role !== "level.color.rgb") {
-                  await item.color.true.setStateAsync(JSON.stringify(rgb));
+                  await item.color.true.setState(JSON.stringify(rgb));
                   break;
                 }
               }
@@ -1701,9 +1701,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               case "rgb.hex": {
                 const rgb = import_Color.Color.resultToRgb(value);
                 if (import_Color.Color.isRGB(rgb)) {
-                  item.color && item.color.true && await item.color.true.setStateAsync(
-                    import_Color.Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b)
-                  );
+                  item.color && item.color.true && await item.color.true.setState(import_Color.Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b));
                 }
                 break;
               }
@@ -1969,7 +1967,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
       case "timer-begin": {
         if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-          this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setStateAsync(2);
+          this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setState(2);
         }
         switch (this.tempData.role) {
           case "ex-alarm":
@@ -2022,7 +2020,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_n = this.dataItems.data.entity1) == null ? void 0 : _n.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_n = this.dataItems.data.entity1) == null ? void 0 : _n.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2032,7 +2030,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_o = this.dataItems.data.entity1) == null ? void 0 : _o.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_o = this.dataItems.data.entity1) == null ? void 0 : _o.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2055,7 +2053,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
       case "timer-clear": {
         if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-          this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setStateAsync(0);
+          this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setState(0);
         }
         if (this.tempData) {
           switch (this.tempData.role) {
@@ -2063,7 +2061,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_p = this.dataItems.data.entity1) == null ? void 0 : _p.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+                ((_p = this.dataItems.data.entity1) == null ? void 0 : _p.set) && await this.dataItems.data.entity1.set.setState(r);
               }
               break;
             }
@@ -2085,7 +2083,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
       case "timer-pause": {
         if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-          this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setStateAsync(1);
+          this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setState(1);
         }
         if (this.tempData) {
           switch (this.tempData.role) {
@@ -2167,13 +2165,13 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     );
     if (sList) {
       if (entry.role === "spotify-playlist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
-        await item.setValue1.setStateAsync(parseInt(value) + 1);
+        await item.setValue1.setState(parseInt(value) + 1);
         return true;
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
         if (((_b = (_a = item.entityInSel.value) == null ? void 0 : _a.common) == null ? void 0 : _b.type) === "number") {
-          await item.entityInSel.value.setStateAsync(parseInt(sList.states[parseInt(value)]));
+          await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
         } else {
-          await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+          await item.entityInSel.value.setState(sList.states[parseInt(value)]);
         }
         return true;
       }
@@ -2207,9 +2205,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         }
         if (Array.isArray(list2) && list2.length > parseInt(value)) {
           if (item.entityInSel.set) {
-            await item.entityInSel.set.setStateAsync(value);
+            await item.entityInSel.set.setState(value);
           } else {
-            await item.entityInSel.value.setStateAsync(value);
+            await item.entityInSel.value.setState(value);
           }
           return true;
         }

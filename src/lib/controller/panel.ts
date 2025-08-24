@@ -30,6 +30,7 @@ import { deepAssign, getRegExp, isVersionGreaterOrEqual } from '../const/tools';
 import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 import axios from 'axios';
+import { PageThermo2 } from '../pages/pageThermo2';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -299,7 +300,7 @@ export class Panel extends BaseClass {
                 }
                 case 'cardThermo2': {
                     pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageThermo(pmconfig, pageConfig);
+                    this.pages[a] = new PageThermo2(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardMedia': {
@@ -1303,7 +1304,7 @@ export class Panel extends BaseClass {
                 }
                 this.blockStartup = this.adapter.setTimeout(() => {
                     this.blockStartup = null;
-                }, 5000);
+                }, 10000);
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;
@@ -1314,30 +1315,25 @@ export class Panel extends BaseClass {
                 this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
 
                 this.sendRules();
-                await this.adapter.delay(100);
                 await this.writeInfo();
                 this.sendDimmode();
                 this.navigation.resetPosition();
-                //const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
-                //const popup = i !== -1 ? this.pages[i] : undefined;
-                const popup = this.navigation.getCurrentMainPage();
-                if (popup) {
-                    if (this._activePage === popup) {
-                        this._activePage.sendType(true);
-                        await this._activePage.update();
-                    } else {
-                        await this.setActivePage(popup, false);
-                    }
-                }
-                await this.adapter.delay(100);
-                this.sendScreeensaverTimeout(2);
 
+                await this.adapter.delay(50);
+
+                const popup = this.navigation.getCurrentMainPage();
+                await this.setActivePage(popup, false);
                 if (this.screenSaver) {
-                    await this.screenSaver.createPageItems();
+                    this.screenSaver.pageItems = await this.screenSaver.createPageItems(
+                        this.screenSaver.pageItemConfig,
+                    );
                     //this.controller && (await this.controller.statesControler.activateTrigger(this.screenSaver));
                     await this.screenSaver.HandleDate();
                     await this.screenSaver.HandleTime();
                 }
+
+                this.sendScreeensaverTimeout(3);
+
                 this.log.info('Panel startup finished!');
                 break;
             }

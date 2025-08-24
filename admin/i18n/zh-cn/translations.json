@@ -222,5 +222,12 @@
     "hideCards": "隐藏页面",
     "hiddenByTrigger": "隐藏页面",
     "headerShutter": "快门控制",
-    "notifyMqttServer": "我们建议使用适配器的内部MQTT服务器，该服务器直接与面板一起使用。这将优化数据交换。"
+    "notifyMqttServer": "我们建议使用适配器的内部MQTT服务器，该服务器直接与面板一起使用。这将优化数据交换。",
+    "OFF": "离开",
+    "AUTO": "汽车",
+    "COOL": "凉爽的",
+    "HEAT": "热",
+    "ECO": "生态",
+    "FAN": "扇子",
+    "DRY": "干燥"
 }

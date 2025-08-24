@@ -209,7 +209,7 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemTextDataItems
         | PageItemFanDataItems
         | PageItemTimerDataItems
-    );
+    ) & { filter?: true | false | number };
 
 export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data' | 'type'> &
     (
@@ -222,7 +222,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
         | PageItemTextDataItemsOptions
         | PageItemFanDataItemsOptions
         | PageItemTimerDataItemsOptions
-    );
+    ) & { filter?: true | false | number };
 export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
@@ -234,6 +234,7 @@ export type PageItemDataItemsOptions =
           color?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions; scale?: Types.IconScaleElement };
           icon?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
           iconText?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
+          filter?: true | false | number;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
               pages.ChangeDeepPartial<
@@ -290,6 +291,7 @@ export type PageItemOptionsTemplate = {
 
 export type PageItemTimer = Pick<
     PageItemBase,
+    | 'filter'
     // value or set the time
     | 'entity1'
     | 'text'
@@ -311,7 +313,16 @@ export type PageItemTimerDataItems = {
 
 export type PageItemFan = Pick<
     PageItemBase,
-    'entity1' | 'speed' | 'text' | 'headline' | 'icon' | 'entityInSel' | 'valueList' | 'valueList2' | 'setList'
+    | 'filter'
+    | 'entity1'
+    | 'speed'
+    | 'text'
+    | 'headline'
+    | 'icon'
+    | 'entityInSel'
+    | 'valueList'
+    | 'valueList2'
+    | 'setList'
 >;
 export type PageItemFanDataItemsOptions = {
     type: 'fan';
@@ -324,6 +335,7 @@ export type PageItemFanDataItems = {
 
 export type PageItemNumber = Pick<
     PageItemBase,
+    | 'filter'
     | 'switch1'
     | 'text'
     | 'icon'
@@ -357,6 +369,7 @@ export type PageItemNumberDataItems = {
 
 export type PageItemButton = Pick<
     PageItemBase,
+    | 'filter'
     | 'setValue1'
     | 'setValue2'
     | 'text'
@@ -382,7 +395,7 @@ export type PageItemButtonDataItems = {
 
 export type PageItemText = Pick<
     PageItemBase,
-    'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
+    'filter' | 'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
 >;
 export type PageItemTextDataItemsOptions = {
     type: 'text';
@@ -395,6 +408,7 @@ export type PageItemTextDataItems = {
 
 export type PageItemLight = Pick<
     PageItemBase,
+    | 'filter'
     | 'valueList'
     | 'valueList2'
     | 'setList'
@@ -429,6 +443,7 @@ export type PageItemLightDataItems = {
 
 export type PageItemInputSel = Pick<
     PageItemBase,
+    | 'filter'
     | 'entityInSel'
     | 'text'
     | 'entity2'
@@ -453,6 +468,7 @@ export type PageItemInputSelDataItems = {
 
 export type PageItemShutter = Pick<
     PageItemBase,
+    | 'filter'
     | 'up'
     | 'down'
     | 'stop'
@@ -483,6 +499,7 @@ export type PageItemShutterDataItems = {
 
 export type PageItemShutter2 = Pick<
     PageItemBase,
+    | 'filter'
     | 'up'
     | 'down'
     | 'stop'
@@ -581,6 +598,7 @@ export type PageItemBase = {
     up2?: number;
     stop2?: number;
     down2?: number;
+    filter?: number; // filter for PageMenu
 };
 
 export type PageTypeUnionTemplate = {

@@ -222,5 +222,12 @@
     "hideCards": "Verberg pagina's",
     "hiddenByTrigger": "Verberg pagina",
     "headerShutter": "Sluiterregeling",
-    "notifyMqttServer": "We raden aan de interne MQTT -server van de adapter te gebruiken, die rechtstreeks met het paneel werkt. Dit optimaliseert gegevensuitwisseling."
+    "notifyMqttServer": "We raden aan de interne MQTT -server van de adapter te gebruiken, die rechtstreeks met het paneel werkt. Dit optimaliseert gegevensuitwisseling.",
+    "OFF": "Uit",
+    "AUTO": "Auto",
+    "COOL": "Koel",
+    "HEAT": "Warmte",
+    "ECO": "Eco",
+    "FAN": "Fan",
+    "DRY": "Droog"
 }

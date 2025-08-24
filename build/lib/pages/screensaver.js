@@ -82,7 +82,7 @@ class Screensaver extends import_Page.Page {
   }
   async init() {
     await super.init();
-    await this.createPageItems();
+    this.pageItems = await this.createPageItems(this.pageItemConfig);
     await this.panel.setScreensaverSwipe(this.screensaverSwipe);
     if (this.pageItems) {
       const indicators = this.pageItems.filter((x) => x && x.config && x.config.modeScr === "indicator");
@@ -211,8 +211,8 @@ class Screensaver extends import_Page.Page {
     this.sendToPanel(msg, false);
     await this.HandleScreensaverStatusIcons();
   }
-  async createPageItems() {
-    await super.createPageItems();
+  async createPageItems(pageItemsConfig) {
+    return await super.createPageItems(pageItemsConfig);
   }
   async onVisibilityChange(v) {
     this.step = 0;
