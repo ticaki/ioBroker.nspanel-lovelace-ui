@@ -1026,6 +1026,9 @@ declare namespace ScriptConfig {
             id: string;
             // for cooling part of a airCondition
             name2?: string;
+            iconHeatCycle2?: AllIcons | '';
+            iconHeatCycleOnColor2?: RGB;
+            iconHeatCycleOffColor2?: RGB;
         }
     ) & {
         // icon id
@@ -1036,10 +1039,6 @@ declare namespace ScriptConfig {
         iconHeatCycle?: AllIcons | '';
         iconHeatCycleOnColor?: RGB;
         iconHeatCycleOffColor?: RGB;
-        // same for cooling
-        iconHeatCycle2?: AllIcons | '';
-        iconHeatCycleOnColor2?: RGB;
-        iconHeatCycleOffColor2?: RGB;
         // headline
         name?: string;
         // 100 === 10.0
