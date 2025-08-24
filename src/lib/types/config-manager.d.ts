@@ -397,13 +397,20 @@ declare namespace ScriptConfig {
           }
         | {
               id: string;
+              name2?: string;
           }
     ) & {
         icon?: AllIcons | '';
         icon2?: AllIcons | '';
+
         iconHeatCycle?: AllIcons | '';
         iconHeatCycleOnColor?: RGB;
         iconHeatCycleOffColor?: RGB;
+
+        iconHeatCycle2?: AllIcons | '';
+        iconHeatCycleOnColor2?: RGB;
+        iconHeatCycleOffColor2?: RGB;
+
         name?: string;
         minValue?: number;
         maxValue?: number;

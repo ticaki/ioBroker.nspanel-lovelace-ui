@@ -136,26 +136,33 @@ export class PageThermo2 extends PageMenu {
                     dpInit: '',
                     data: {
                         icon: {
-                            true:
-                                item2 && item2?.icon4?.true
-                                    ? item2.icon4.true
-                                    : {
-                                          value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
-                                          color: {
+                            true: {
+                                value:
+                                    item2 && item2.icon4?.true?.value
+                                        ? item2.icon4.true.value
+                                        : { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                                color:
+                                    item2 && item2.icon4?.true?.color
+                                        ? item2.icon4.true.color
+                                        : {
                                               type: 'const',
                                               constVal: Color.Green,
                                           },
-                                      },
-                            false:
-                                item2 && item2?.icon4?.false
-                                    ? item2.icon4.false
-                                    : {
-                                          value: { type: 'const', constVal: `numeric-${i}-circle-outline` },
-                                          color: {
+                            },
+
+                            false: {
+                                value:
+                                    item2 && item2.icon4?.false?.value
+                                        ? item2.icon4.false.value
+                                        : { type: 'const', constVal: `numeric-${i}-circle-outline` },
+                                color:
+                                    item2 && item2.icon4?.false?.color
+                                        ? item2.icon4.false.color
+                                        : {
                                               type: 'const',
                                               constVal: Color.Gray,
                                           },
-                                      },
+                            },
                         },
                         entity1: {
                             value: {
@@ -336,27 +343,32 @@ export class PageThermo2 extends PageMenu {
         gridItem.config.filterType = 0;
         gridItem.config.data = [];
         let o = undefined;
-
-        for (let i = 0; i < page.thermoItems.length; i++) {
+        let airCondition = false;
+        const thermoItems = JSON.parse(JSON.stringify(page.thermoItems)) as ScriptConfig.PageThermo2['thermoItems'];
+        let filterIndex = -1;
+        for (let i = 0; i < thermoItems.length; i++) {
             let actual = '';
             let humidity = '';
             let set = '';
+            let role: ScriptConfig.channelRoles = 'thermostat';
             let mode: Types.DataItemsOptions | undefined;
             let foundedStates: configManagerConst.checkedDatapointsUnion | undefined;
-            const item = page.thermoItems[i];
+            const item = thermoItems[i];
             foundedStates = undefined;
             if (!item) {
                 const msg = `${page.uniqueName} item ${i} is invalid!`;
                 messages.push(msg);
                 adapter.log.error(msg);
-                return { gridItem, messages };
+                continue;
             }
+            let headline = item.name || '';
+
             if ('id' in item) {
                 if (!item || !item.id || item.id.endsWith('.')) {
                     const msg = `${page.uniqueName} id2: ${item.id} is invalid!`;
                     messages.push(msg);
                     adapter.log.error(msg);
-                    return { gridItem, messages };
+                    continue;
                 }
                 o = await adapter.getForeignObjectAsync(item.id);
                 if (
@@ -368,41 +380,48 @@ export class PageThermo2 extends PageMenu {
                     const msg = `${page.uniqueName} id: ${item.id} ${!o || !o.common ? 'has a invalid object' : o.common.role !== 'thermostat' && o.common.role !== 'airCondition' ? `has wrong role: ${o.common.role} check alias.md` : ' something went wrong'} !`;
                     messages.push(msg);
                     adapter.log.error(msg);
-                    page.thermoItems.splice(i--, 1);
+                    thermoItems.splice(i--, 1);
                     continue;
                 }
+                role = o.common.role;
                 try {
                     foundedStates = await configManager.searchDatapointsForItems(
                         configManagerConst.requiredScriptDataPoints,
-                        o.common.role,
+                        role,
                         item.id,
                         messages,
                     );
                 } catch {
-                    return { gridItem, messages };
+                    continue;
                 }
                 if (!foundedStates) {
                     const msg = `${page.uniqueName} id: ${item.id} has no states!`;
                     messages.push(msg);
                     adapter.log.error(msg);
-                    return { gridItem, messages };
+                    continue;
                 }
-                actual = foundedStates[o.common.role].ACTUAL?.dp || '';
-                humidity = foundedStates[o.common.role].HUMIDITY?.dp || '';
-                set = foundedStates[o.common.role].SET?.dp || '';
-                const role = o.common.role;
+                headline = airCondition
+                    ? item.name2 || 'COOLING'
+                    : headline || typeof o.common.name === 'object'
+                      ? o.common[configManager.adapter.language || 'en']
+                      : o.common.name || 'HEATING';
+                actual = foundedStates[role].ACTUAL?.dp || '';
+                humidity = foundedStates[role].HUMIDITY?.dp || '';
+                set = airCondition ? foundedStates[role].SET2?.dp || '' : foundedStates[role].SET?.dp || '';
+                role = o.common.role;
+
                 if (foundedStates[role].MODE) {
-                    const dp = foundedStates[role].MODE.dp;
-                    if (dp) {
-                        const o2 = await adapter.getForeignObjectAsync(dp);
+                    mode = foundedStates[role].MODE;
+                    if (mode && mode.dp) {
+                        const o2 = await adapter.getForeignObjectAsync(mode.dp);
                         if (o2?.common?.states) {
                             mode = {
-                                ...foundedStates[role].MODE,
+                                ...mode,
                                 read: `return ${JSON.stringify(o2.common.states)}[val]`,
                             };
                         } else {
                             mode = {
-                                ...foundedStates[role].MODE,
+                                ...mode,
                                 read: `return ${JSON.stringify(
                                     item.modeList
                                         ? item.modeList
@@ -412,12 +431,20 @@ export class PageThermo2 extends PageMenu {
                         }
                     }
                 }
+                if (o.common.role === 'airCondition') {
+                    if (!airCondition) {
+                        airCondition = true;
+                        thermoItems.splice(i, 0, item);
+                    } else if (airCondition) {
+                        airCondition = false;
+                    }
+                }
             } else {
                 if (!item || !item.thermoId1 || item.thermoId1.endsWith('.')) {
                     const msg = `${page.uniqueName} thermoId1: ${item.thermoId1} is invalid!`;
                     messages.push(msg);
                     adapter.log.error(msg);
-                    return { gridItem, messages };
+                    continue;
                 }
                 actual = item.thermoId1;
                 o = await adapter.getForeignObjectAsync(item.thermoId1);
@@ -425,7 +452,7 @@ export class PageThermo2 extends PageMenu {
                     const msg = `${page.uniqueName} id: ${item.thermoId1} has a invalid object!`;
                     messages.push(msg);
                     adapter.log.error(msg);
-                    return { gridItem, messages };
+                    continue;
                 }
                 if (
                     !item ||
@@ -435,7 +462,7 @@ export class PageThermo2 extends PageMenu {
                     const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
                     messages.push(msg);
                     adapter.log.error(msg);
-                    return { gridItem, messages };
+                    continue;
                 }
                 humidity = item.thermoId2 || '';
                 if (
@@ -445,7 +472,7 @@ export class PageThermo2 extends PageMenu {
                     const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
                     messages.push(msg);
                     adapter.log.error(msg);
-                    return { gridItem, messages };
+                    continue;
                 }
                 if (item.modeId) {
                     let states: string[] | Record<string, string> = [
@@ -495,26 +522,53 @@ export class PageThermo2 extends PageMenu {
                         color: await configManager.getIconColor(item.onColor2, Color.Magenta),
                     },
                 },
-                icon4: item.iconHeatCycle
-                    ? {
-                          true: {
-                              value: { type: 'const', constVal: item.iconHeatCycle },
-                              color: await configManager.getIconColor(item.iconHeatCycleOnColor, Color.Green),
-                          },
+                icon4:
+                    role !== 'airCondition' || airCondition
+                        ? {
+                              true: {
+                                  value: item.iconHeatCycle
+                                      ? { type: 'const', constVal: item.iconHeatCycle }
+                                      : undefined,
+                                  color: item.iconHeatCycleOnColor
+                                      ? await configManager.getIconColor(item.iconHeatCycleOnColor, Color.Green)
+                                      : undefined,
+                              },
 
-                          false: {
-                              value: { type: 'const', constVal: item.iconHeatCycle },
-                              color: await configManager.getIconColor(item.iconHeatCycleOffColor, Color.Gray),
+                              false: {
+                                  value: item.iconHeatCycle
+                                      ? { type: 'const', constVal: item.iconHeatCycle }
+                                      : undefined,
+                                  color: item.iconHeatCycleOffColor
+                                      ? await configManager.getIconColor(item.iconHeatCycleOffColor, Color.Gray)
+                                      : undefined,
+                              },
+                          }
+                        : {
+                              true: {
+                                  value: item.iconHeatCycle2
+                                      ? { type: 'const', constVal: item.iconHeatCycle2 }
+                                      : undefined,
+                                  color: await configManager.getIconColor(item.iconHeatCycleOnColor2, Color.Blue),
+                              },
+
+                              false: {
+                                  value: item.iconHeatCycle2
+                                      ? { type: 'const', constVal: item.iconHeatCycle2 }
+                                      : undefined,
+                                  color: await configManager.getIconColor(item.iconHeatCycleOffColor2, {
+                                      r: 80,
+                                      g: 80,
+                                      b: 140,
+                                  }),
+                              },
                           },
-                      }
-                    : undefined,
                 entity2: (await configManager.existsState(humidity))
                     ? {
                           value: { type: 'triggered', dp: humidity || '' },
                           unit: { type: 'const', constVal: item.unit || '%' },
                       }
                     : undefined,
-                headline: { type: 'const', constVal: item.name || '' },
+                headline: { type: 'const', constVal: headline || 'HEATING' },
                 minValue:
                     item.minValue != null
                         ? {
@@ -550,14 +604,15 @@ export class PageThermo2 extends PageMenu {
             if (!foundedStates) {
                 continue;
             }
-            const role = o.common.role as ScriptConfig.channelRoles;
 
             if (role !== 'thermostat' && role !== 'airCondition') {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 const msg = `${page.uniqueName} id: ${o._id} role '${role}' not supported for cardThermo2!`;
                 messages.push(msg);
                 adapter.log.error(msg);
-                return { gridItem, messages };
+                continue;
             }
+            filterIndex++;
 
             gridItem.pageItems = gridItem.pageItems || [];
             if (role === 'thermostat' || role === 'airCondition') {
@@ -580,6 +635,7 @@ export class PageThermo2 extends PageMenu {
                     gridItem.pageItems.push({
                         role: 'button',
                         type: 'button',
+                        filter: filterIndex,
                         dpInit: '',
                         data: {
                             icon: {
@@ -604,6 +660,7 @@ export class PageThermo2 extends PageMenu {
                     gridItem.pageItems.push({
                         role: 'button',
                         type: 'button',
+                        filter: filterIndex,
                         dpInit: '',
                         data: {
                             icon: {
@@ -627,6 +684,7 @@ export class PageThermo2 extends PageMenu {
                     gridItem.pageItems.push({
                         role: 'button',
                         type: 'button',
+                        filter: filterIndex,
                         dpInit: '',
                         data: {
                             icon: {
@@ -653,7 +711,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'button',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -679,7 +737,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'button',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -704,7 +762,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -728,7 +786,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'button',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -752,7 +810,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -775,7 +833,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -798,7 +856,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -821,7 +879,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -844,7 +902,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -867,7 +925,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {
@@ -890,7 +948,7 @@ export class PageThermo2 extends PageMenu {
                 gridItem.pageItems.push({
                     role: 'indicator',
                     type: 'button',
-                    filter: i,
+                    filter: filterIndex,
                     dpInit: '',
                     data: {
                         icon: {

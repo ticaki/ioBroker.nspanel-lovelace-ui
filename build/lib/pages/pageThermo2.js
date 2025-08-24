@@ -97,7 +97,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
@@ -141,16 +141,16 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           dpInit: "",
           data: {
             icon: {
-              true: item2 && ((_c = item2 == null ? void 0 : item2.icon4) == null ? void 0 : _c.true) ? item2.icon4.true : {
-                value: { type: "const", constVal: `numeric-${i}-circle-outline` },
-                color: {
+              true: {
+                value: item2 && ((_d = (_c = item2.icon4) == null ? void 0 : _c.true) == null ? void 0 : _d.value) ? item2.icon4.true.value : { type: "const", constVal: `numeric-${i}-circle-outline` },
+                color: item2 && ((_f = (_e = item2.icon4) == null ? void 0 : _e.true) == null ? void 0 : _f.color) ? item2.icon4.true.color : {
                   type: "const",
                   constVal: import_Color.Color.Green
                 }
               },
-              false: item2 && ((_d = item2 == null ? void 0 : item2.icon4) == null ? void 0 : _d.false) ? item2.icon4.false : {
-                value: { type: "const", constVal: `numeric-${i}-circle-outline` },
-                color: {
+              false: {
+                value: item2 && ((_h = (_g = item2.icon4) == null ? void 0 : _g.false) == null ? void 0 : _h.value) ? item2.icon4.false.value : { type: "const", constVal: `numeric-${i}-circle-outline` },
+                color: item2 && ((_j = (_i = item2.icon4) == null ? void 0 : _i.false) == null ? void 0 : _j.color) ? item2.icon4.false.color : {
                   type: "const",
                   constVal: import_Color.Color.Gray
                 }
@@ -295,7 +295,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     return false;
   };
   static async getPage(configManager, page, gridItem, messages) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (page.type !== "cardThermo2" || !gridItem.config || gridItem.config.card !== "cardThermo2") {
       return { gridItem, messages };
     }
@@ -310,67 +310,74 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     gridItem.config.filterType = 0;
     gridItem.config.data = [];
     let o = void 0;
-    for (let i = 0; i < page.thermoItems.length; i++) {
+    let airCondition = false;
+    const thermoItems = JSON.parse(JSON.stringify(page.thermoItems));
+    let filterIndex = -1;
+    for (let i = 0; i < thermoItems.length; i++) {
       let actual = "";
       let humidity = "";
       let set = "";
+      let role = "thermostat";
       let mode;
       let foundedStates;
-      const item = page.thermoItems[i];
+      const item = thermoItems[i];
       foundedStates = void 0;
       if (!item) {
         const msg = `${page.uniqueName} item ${i} is invalid!`;
         messages.push(msg);
         adapter.log.error(msg);
-        return { gridItem, messages };
+        continue;
       }
+      let headline = item.name || "";
       if ("id" in item) {
         if (!item || !item.id || item.id.endsWith(".")) {
           const msg = `${page.uniqueName} id2: ${item.id} is invalid!`;
           messages.push(msg);
           adapter.log.error(msg);
-          return { gridItem, messages };
+          continue;
         }
         o = await adapter.getForeignObjectAsync(item.id);
         if (!o || !o.common || !o.common.role || o.common.role !== "thermostat" && o.common.role !== "airCondition") {
           const msg = `${page.uniqueName} id: ${item.id} ${!o || !o.common ? "has a invalid object" : o.common.role !== "thermostat" && o.common.role !== "airCondition" ? `has wrong role: ${o.common.role} check alias.md` : " something went wrong"} !`;
           messages.push(msg);
           adapter.log.error(msg);
-          page.thermoItems.splice(i--, 1);
+          thermoItems.splice(i--, 1);
           continue;
         }
+        role = o.common.role;
         try {
           foundedStates = await configManager.searchDatapointsForItems(
             configManagerConst.requiredScriptDataPoints,
-            o.common.role,
+            role,
             item.id,
             messages
           );
         } catch {
-          return { gridItem, messages };
+          continue;
         }
         if (!foundedStates) {
           const msg = `${page.uniqueName} id: ${item.id} has no states!`;
           messages.push(msg);
           adapter.log.error(msg);
-          return { gridItem, messages };
+          continue;
         }
-        actual = ((_a = foundedStates[o.common.role].ACTUAL) == null ? void 0 : _a.dp) || "";
-        humidity = ((_b = foundedStates[o.common.role].HUMIDITY) == null ? void 0 : _b.dp) || "";
-        set = ((_c = foundedStates[o.common.role].SET) == null ? void 0 : _c.dp) || "";
-        const role2 = o.common.role;
-        if (foundedStates[role2].MODE) {
-          const dp = foundedStates[role2].MODE.dp;
-          if (dp) {
-            const o2 = await adapter.getForeignObjectAsync(dp);
-            if ((_d = o2 == null ? void 0 : o2.common) == null ? void 0 : _d.states) {
+        headline = airCondition ? item.name2 || "COOLING" : headline || typeof o.common.name === "object" ? o.common[configManager.adapter.language || "en"] : o.common.name || "HEATING";
+        actual = ((_a = foundedStates[role].ACTUAL) == null ? void 0 : _a.dp) || "";
+        humidity = ((_b = foundedStates[role].HUMIDITY) == null ? void 0 : _b.dp) || "";
+        set = airCondition ? ((_c = foundedStates[role].SET2) == null ? void 0 : _c.dp) || "" : ((_d = foundedStates[role].SET) == null ? void 0 : _d.dp) || "";
+        role = o.common.role;
+        if (foundedStates[role].MODE) {
+          mode = foundedStates[role].MODE;
+          if (mode && mode.dp) {
+            const o2 = await adapter.getForeignObjectAsync(mode.dp);
+            if ((_e = o2 == null ? void 0 : o2.common) == null ? void 0 : _e.states) {
               mode = {
-                ...foundedStates[role2].MODE,
+                ...mode,
                 read: `return ${JSON.stringify(o2.common.states)}[val]`
               };
             } else {
               mode = {
-                ...foundedStates[role2].MODE,
+                ...mode,
                 read: `return ${JSON.stringify(
                   item.modeList ? item.modeList : ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN", "DRY"]
                 )}[val]`
@@ -378,12 +385,20 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             }
           }
         }
+        if (o.common.role === "airCondition") {
+          if (!airCondition) {
+            airCondition = true;
+            thermoItems.splice(i, 0, item);
+          } else if (airCondition) {
+            airCondition = false;
+          }
+        }
       } else {
         if (!item || !item.thermoId1 || item.thermoId1.endsWith(".")) {
           const msg = `${page.uniqueName} thermoId1: ${item.thermoId1} is invalid!`;
           messages.push(msg);
           adapter.log.error(msg);
-          return { gridItem, messages };
+          continue;
         }
         actual = item.thermoId1;
         o = await adapter.getForeignObjectAsync(item.thermoId1);
@@ -391,20 +406,20 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           const msg = `${page.uniqueName} id: ${item.thermoId1} has a invalid object!`;
           messages.push(msg);
           adapter.log.error(msg);
-          return { gridItem, messages };
+          continue;
         }
         if (!item || item.thermoId2 && (item.thermoId2.endsWith(".") || !await configManager.existsState(item.thermoId2))) {
           const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
           messages.push(msg);
           adapter.log.error(msg);
-          return { gridItem, messages };
+          continue;
         }
         humidity = item.thermoId2 || "";
         if (!item || item.modeId && (item.modeId.endsWith(".") || !await configManager.existsState(item.modeId))) {
           const msg = `${page.uniqueName} thermoId2: ${item.thermoId2} is invalid!`;
           messages.push(msg);
           adapter.log.error(msg);
-          return { gridItem, messages };
+          continue;
         }
         if (item.modeId) {
           let states = [
@@ -418,7 +433,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           ];
           if (!item.modeList || !Array.isArray(item.modeList) || item.modeList.length < 1) {
             const o2 = await adapter.getForeignObjectAsync(item.modeId);
-            if ((_e = o2 == null ? void 0 : o2.common) == null ? void 0 : _e.states) {
+            if ((_f = o2 == null ? void 0 : o2.common) == null ? void 0 : _f.states) {
               states = o2.common.states;
             }
           } else {
@@ -449,21 +464,34 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             color: await configManager.getIconColor(item.onColor2, import_Color.Color.Magenta)
           }
         },
-        icon4: item.iconHeatCycle ? {
+        icon4: role !== "airCondition" || airCondition ? {
           true: {
-            value: { type: "const", constVal: item.iconHeatCycle },
-            color: await configManager.getIconColor(item.iconHeatCycleOnColor, import_Color.Color.Green)
+            value: item.iconHeatCycle ? { type: "const", constVal: item.iconHeatCycle } : void 0,
+            color: item.iconHeatCycleOnColor ? await configManager.getIconColor(item.iconHeatCycleOnColor, import_Color.Color.Green) : void 0
           },
           false: {
-            value: { type: "const", constVal: item.iconHeatCycle },
-            color: await configManager.getIconColor(item.iconHeatCycleOffColor, import_Color.Color.Gray)
+            value: item.iconHeatCycle ? { type: "const", constVal: item.iconHeatCycle } : void 0,
+            color: item.iconHeatCycleOffColor ? await configManager.getIconColor(item.iconHeatCycleOffColor, import_Color.Color.Gray) : void 0
           }
-        } : void 0,
+        } : {
+          true: {
+            value: item.iconHeatCycle2 ? { type: "const", constVal: item.iconHeatCycle2 } : void 0,
+            color: await configManager.getIconColor(item.iconHeatCycleOnColor2, import_Color.Color.Blue)
+          },
+          false: {
+            value: item.iconHeatCycle2 ? { type: "const", constVal: item.iconHeatCycle2 } : void 0,
+            color: await configManager.getIconColor(item.iconHeatCycleOffColor2, {
+              r: 80,
+              g: 80,
+              b: 140
+            })
+          }
+        },
         entity2: await configManager.existsState(humidity) ? {
           value: { type: "triggered", dp: humidity || "" },
           unit: { type: "const", constVal: item.unit || "%" }
         } : void 0,
-        headline: { type: "const", constVal: item.name || "" },
+        headline: { type: "const", constVal: headline || "HEATING" },
         minValue: item.minValue != null ? {
           type: "const",
           constVal: item.minValue
@@ -488,13 +516,13 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       if (!foundedStates) {
         continue;
       }
-      const role = o.common.role;
       if (role !== "thermostat" && role !== "airCondition") {
         const msg = `${page.uniqueName} id: ${o._id} role '${role}' not supported for cardThermo2!`;
         messages.push(msg);
         adapter.log.error(msg);
-        return { gridItem, messages };
+        continue;
       }
+      filterIndex++;
       gridItem.pageItems = gridItem.pageItems || [];
       if (role === "thermostat" || role === "airCondition") {
         if (foundedStates[role].AUTOMATIC && !foundedStates[role].MANUAL) {
@@ -514,6 +542,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           gridItem.pageItems.push({
             role: "button",
             type: "button",
+            filter: filterIndex,
             dpInit: "",
             data: {
               icon: {
@@ -537,6 +566,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           gridItem.pageItems.push({
             role: "button",
             type: "button",
+            filter: filterIndex,
             dpInit: "",
             data: {
               icon: {
@@ -560,6 +590,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           gridItem.pageItems.push({
             role: "button",
             type: "button",
+            filter: filterIndex,
             dpInit: "",
             data: {
               icon: {
@@ -584,7 +615,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "button",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -608,7 +639,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "button",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -632,7 +663,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -655,7 +686,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "button",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -679,7 +710,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -702,7 +733,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -725,7 +756,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -748,7 +779,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -771,7 +802,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -794,7 +825,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {
@@ -817,7 +848,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         gridItem.pageItems.push({
           role: "indicator",
           type: "button",
-          filter: i,
+          filter: filterIndex,
           dpInit: "",
           data: {
             icon: {

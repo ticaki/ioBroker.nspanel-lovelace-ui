@@ -47,7 +47,7 @@
 | **"** | ~~SPEED~~ | number| level.mode.fan  |  | X |  | 
 | **"** | ~~SWING~~ | number| level.mode.swing  |  | X |  | 
 | **"** | ~~SWING2~~ | boolean| switch.mode.swing  |  | X |  | 
-| **"** | ~~UNREACH~~ | boolean| indicator.maintenance  |  |  |  | 
+| **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
 ### blind
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -175,8 +175,8 @@
 | **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost, switch.boost  |  | X |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  | Not supported in cardThermo2 | 
-| **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  | Not supported in cardThermo2 | 
-| **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  | Not supported in cardThermo2 | 
+| **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 
+| **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  | Not supported in cardThermo2 | 
 | **"** | ~~PARTY~~ | boolean| switch.mode.party  |  |  | Not supported in cardThermo2 | 

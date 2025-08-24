@@ -324,6 +324,24 @@ const checkedDatapoints = {
     ACTUAL: null
   }
 };
+const templateDatapoint = {
+  UNREACH: {
+    role: "indicator.maintenance.unreach",
+    type: "boolean",
+    required: false,
+    writeable: false,
+    trigger: true,
+    description: ""
+  },
+  LOWBAT: {
+    role: "indicator.maintenance.lowbat",
+    type: "boolean",
+    required: false,
+    writeable: false,
+    trigger: true,
+    description: ""
+  }
+};
 const requiredScriptDataPoints = {
   airCondition: {
     name: "airCondition",
@@ -372,13 +390,7 @@ const requiredScriptDataPoints = {
       SPEED: { role: "level.mode.fan", type: "number", required: false, writeable: true, trigger: true },
       SWING: { role: "level.mode.swing", type: "number", required: false, writeable: true, trigger: true },
       SWING2: { role: "switch.mode.swing", type: "boolean", required: false, writeable: true, trigger: true },
-      UNREACH: {
-        role: "indicator.maintenance",
-        type: "boolean",
-        required: false,
-        writeable: false,
-        trigger: true
-      }
+      UNREACH: templateDatapoint.UNREACH
     }
   },
   blind: {
@@ -744,22 +756,8 @@ const requiredScriptDataPoints = {
         trigger: true,
         description: "Not supported in cardThermo2"
       },
-      LOWBAT: {
-        role: "indicator.maintenance.lowbat",
-        type: "boolean",
-        required: false,
-        writeable: false,
-        trigger: true,
-        description: "Not supported in cardThermo2"
-      },
-      UNREACH: {
-        role: "indicator.maintenance.unreach",
-        type: "boolean",
-        required: false,
-        writeable: false,
-        trigger: true,
-        description: "Not supported in cardThermo2"
-      },
+      LOWBAT: templateDatapoint.LOWBAT,
+      UNREACH: templateDatapoint.UNREACH,
       HUMIDITY: { role: "value.humidity", type: "number", required: false, writeable: false, trigger: true },
       MAINTAIN: {
         role: "indicator.maintenance",
