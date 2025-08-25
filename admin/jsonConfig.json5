@@ -694,6 +694,22 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "_headerCardThermo": {
+                    "type": "header",
+                    "text": "headerCardThermo",
+                    "size": 3
+                },
+                "defaultValueCradThermo": {
+                    "type": "checkbox",
+                    "label": "defaultValueCradThermo",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
