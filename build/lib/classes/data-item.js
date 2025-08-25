@@ -309,10 +309,10 @@ class Dataitem extends import_library.BaseClass {
     }
   }
   async setStateTrue() {
-    await this.setStateAsync(true);
+    await this.setState(true);
   }
   async setStateFalse() {
-    await this.setStateAsync(false);
+    await this.setState(false);
   }
   /**
    * Flip this 'ON'/'OFF', 0/1 or true/false. Depend on this.type
@@ -322,13 +322,13 @@ class Dataitem extends import_library.BaseClass {
     this.log.debug(String(value));
     switch (this.type) {
       case "boolean":
-        await this.setStateAsync(!value);
+        await this.setState(!value);
         break;
       case "number":
-        await this.setStateAsync(value ? 0 : 1);
+        await this.setState(value ? 0 : 1);
         break;
       case "string":
-        await this.setStateAsync(value ? "OFF" : "ON");
+        await this.setState(value ? "OFF" : "ON");
         break;
     }
   }
@@ -338,7 +338,7 @@ class Dataitem extends import_library.BaseClass {
    * @param val number | boolean | string | null
    * @returns void
    */
-  async setStateAsync(val) {
+  async setState(val) {
     if (val === void 0) {
       return;
     }
@@ -348,7 +348,7 @@ class Dataitem extends import_library.BaseClass {
       if (this.options.write) {
         val = new Function("val", "Color", `${String(this.options.write)}`)(val, import_Color.Color);
       }
-      await this.stateDB.setStateAsync(this, val, this._writeable);
+      await this.stateDB.setState(this, val, this._writeable);
     }
   }
 }

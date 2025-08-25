@@ -220,10 +220,10 @@ class Page extends import_baseClassPage.BaseClassPage {
     }
     this.panel.lastCard = this.card;
   }
-  async createPageItems() {
-    if (this.pageItemConfig) {
-      this.pageItems = [];
-      for (let a = 0; a < this.pageItemConfig.length; a++) {
+  async createPageItems(pageItemsConfig) {
+    const result = [];
+    if (pageItemsConfig) {
+      for (let a = 0; a < pageItemsConfig.length; a++) {
         const config = {
           name: "PI",
           adapter: this.adapter,
@@ -233,9 +233,10 @@ class Page extends import_baseClassPage.BaseClassPage {
           id: `${this.id}?${a}`,
           parent: this
         };
-        this.pageItems[a] = await import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a]);
+        result[a] = await import_pageItem.PageItem.getPageItem(config, pageItemsConfig[a]);
       }
     }
+    return result;
   }
   goLeft() {
     this.panel.navigation.goLeft();
@@ -246,7 +247,7 @@ class Page extends import_baseClassPage.BaseClassPage {
   async onVisibilityChange(val) {
     if (val) {
       if (!this.pageItems || this.pageItems.length === 0) {
-        await this.createPageItems();
+        this.pageItems = await this.createPageItems(this.pageItemConfig);
       }
       this.sendType();
       await this.update();

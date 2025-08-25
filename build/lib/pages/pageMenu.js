@@ -53,6 +53,9 @@ class PageMenu extends import_Page.Page {
         case "cardEntities":
           this.maxItems = this.panel.info.nspanel.model === "us-p" ? 5 : 4;
           break;
+        case "cardThermo2":
+          this.maxItems = 9;
+          break;
         case "cardChart":
         case "cardLChart":
         case "cardThermo":
@@ -75,7 +78,7 @@ class PageMenu extends import_Page.Page {
   }
   async getOptions(result) {
     if (this.pageItems) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
+      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardThermo2" || this.config.card === "cardGrid2")) {
         let pageItems = this.pageItems;
         if (this.config.filterType === "true" || this.config.filterType === "false") {
           this.tempItems = [];
@@ -86,11 +89,19 @@ class PageMenu extends import_Page.Page {
             }
           }
           pageItems = this.tempItems;
+        } else if (typeof this.config.filterType === "number") {
+          this.tempItems = [];
+          for (const p of this.pageItems) {
+            if (p && p.dataItems && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)) {
+              this.tempItems.push(p);
+            }
+          }
+          pageItems = this.tempItems;
         }
-        const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule";
+        const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardThermo2";
         let maxItems = this.maxItems;
         let a = 0;
-        if (this.pageItems.length > maxItems) {
+        if (pageItems.length > maxItems) {
           a = (isEntities ? maxItems : maxItems / 2) * this.step;
           maxItems = a + maxItems;
         }
@@ -113,7 +124,7 @@ class PageMenu extends import_Page.Page {
   }
   async onVisibilityChange(val) {
     if (val) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
+      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardThermo2" || this.config.card === "cardGrid2")) {
         switch (this.config.card) {
           case "cardSchedule":
           case "cardGrid":
@@ -128,11 +139,11 @@ class PageMenu extends import_Page.Page {
           case "cardEntities":
             this.maxItems = this.panel.info.nspanel.model === "us-p" ? 5 : 4;
             break;
+          case "cardThermo2":
+            this.maxItems = 9;
+            break;
           default:
-            this.log.error(
-              //@ts-expect-error
-              `PageMenu: ${this.config.card} is not supported in onVisibilityChange!`
-            );
+            this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
             break;
         }
         const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
@@ -144,7 +155,7 @@ class PageMenu extends import_Page.Page {
     await super.onVisibilityChange(val);
   }
   goLeft(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardThermo2" && this.config.card !== "cardGrid3") {
       return;
     }
     if (!single) {
@@ -175,7 +186,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   goRight(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardThermo2" && this.config.card !== "cardGrid3") {
       return;
     }
     if (!single) {
@@ -210,7 +221,11 @@ class PageMenu extends import_Page.Page {
     }
   }
   getNavigation() {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
+    var _a;
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3" && this.config.card !== "cardThermo2") {
+      this.log.error(
+        `PageMenu: ${(_a = this.config) == null ? void 0 : _a.card} is not supported in getNavigation! Please use the correct class for this card.`
+      );
       return "";
     }
     const pageScroll = this.config.scrollType === "page";

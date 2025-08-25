@@ -222,5 +222,14 @@
     "hideCards": "Masquer les pages",
     "hiddenByTrigger": "Cachette",
     "headerShutter": "Contrôle de l'obturateur",
-    "notifyMqttServer": "Nous vous recommandons d'utiliser le serveur MQTT interne de l'adaptateur, qui fonctionne directement avec le panneau. Cela optimise l'échange de données."
+    "notifyMqttServer": "Nous vous recommandons d'utiliser le serveur MQTT interne de l'adaptateur, qui fonctionne directement avec le panneau. Cela optimise l'échange de données.",
+    "OFF": "Désactivé",
+    "AUTO": "Auto",
+    "COOL": "Cool",
+    "HEAT": "Chaleur",
+    "ECO": "Écos",
+    "FAN": "Ventilateur",
+    "DRY": "Sec",
+    "defaultValueCardThermo": "Valeurs en dixièmes",
+    "defaultValueCardThermoHint": "(CardThermo2 uniquement) lorsqu'il est activé, Minvalue, MaxValue et Stepvalue sont spécifiés en dixièmes (par exemple 25 = 2,5 ° C). Lorsqu'ils sont désactivés, les valeurs sont utilisées directement (par exemple 2,5 = 2,5 ° C)."
 }

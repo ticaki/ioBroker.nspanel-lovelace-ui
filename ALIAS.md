@@ -47,7 +47,7 @@
 | **"** | ~~SPEED~~ | number| level.mode.fan  |  | X |  | 
 | **"** | ~~SWING~~ | number| level.mode.swing  |  | X |  | 
 | **"** | ~~SWING2~~ | boolean| switch.mode.swing  |  | X |  | 
-| **"** | ~~UNREACH~~ | boolean| indicator.maintenance  |  |  |  | 
+| **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
 ### blind
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -174,17 +174,17 @@
 | **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
 | **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost, switch.boost  |  | X |  | 
-| **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
+| **"** | ~~ERROR~~ | boolean| indicator.error  |  |  | Not supported in cardThermo2 | 
 | **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 
 | **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
-| **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
-| **"** | ~~PARTY~~ | boolean| switch.mode.party  |  |  |  | 
+| **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  | Not supported in cardThermo2 | 
+| **"** | ~~PARTY~~ | boolean| switch.mode.party  |  |  | Not supported in cardThermo2 | 
 | **"** | ~~POWER~~ | boolean| switch.power  |  | X |  | 
-| **"** | VACATION | boolean| state  |  |  |  | 
-| **"** | ~~WINDOWOPEN~~ | boolean| state, sensor.window  |  |  |  | 
-| **"** | ~~WORKING~~ | boolean| indicator.working  |  |  |  | 
-| **"** | USERICON | string| state  |  |  |  | 
+| **"** | VACATION | boolean| state  |  |  | Not supported in cardThermo2 | 
+| **"** | ~~WINDOWOPEN~~ | boolean| sensor.window  |  |  |  | 
+| **"** | ~~WORKING~~ | boolean| indicator.working  |  |  | Not supported in cardThermo2 | 
+| **"** | USERICON | string| state  |  |  | Not supported in cardThermo2 | 
 ### timeTable
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

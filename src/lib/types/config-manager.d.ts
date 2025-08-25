@@ -324,7 +324,7 @@ declare namespace ScriptConfig {
     export type PageThermo2 = {
         type: 'cardThermo2';
         thermoItems: PageThermo2Item[];
-        items: PageItem[];
+        items: PageThermo2PageItems[];
     } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
@@ -359,7 +359,7 @@ declare namespace ScriptConfig {
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
         Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
-    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem | PageThermo2Item;
+    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
 
     export type PageMediaItem = {
         adapterPlayerInstance: adapterPlayerInstanceType;
@@ -375,6 +375,10 @@ declare namespace ScriptConfig {
         crossfade?: boolean;
     } & PageBaseItem;
 
+    export type PageThermo2PageItems = {
+        heatCycleIndex?: number;
+    } & PageBaseItem;
+
     export type PageThermoItem = {
         popupThermoMode1?: string[];
         popupThermoMode2?: string[];
@@ -384,8 +388,29 @@ declare namespace ScriptConfig {
         setThermoDestTemp2?: string;
     } & PageBaseItem;
 
-    export type PageThermo2Item = {
-        id: string;
+    export type PageThermo2Item = (
+        | {
+              thermoId1: string;
+              thermoId2?: string;
+              modeId?: string;
+              set: string;
+          }
+        | {
+              id: string;
+              name2?: string;
+          }
+    ) & {
+        icon?: AllIcons | '';
+        icon2?: AllIcons | '';
+
+        iconHeatCycle?: AllIcons | '';
+        iconHeatCycleOnColor?: RGB;
+        iconHeatCycleOffColor?: RGB;
+
+        iconHeatCycle2?: AllIcons | '';
+        iconHeatCycleOnColor2?: RGB;
+        iconHeatCycleOffColor2?: RGB;
+
         name?: string;
         minValue?: number;
         maxValue?: number;
@@ -393,9 +418,13 @@ declare namespace ScriptConfig {
         /**
          * The unit of the 2. line. can string, icon or state
          */
+        power: string;
+        unit: string;
+        onColor?: RGB;
         unit2?: string;
-        onColor2: RGB;
-    } & PageBaseItem;
+        onColor2?: RGB;
+        modeList?: string[];
+    };
 
     // mean string start with getState(' and end with ').val
     type getStateID = string;
@@ -471,6 +500,7 @@ declare namespace ScriptConfig {
         alwaysOnDisplay?: boolean;
         shutterType?: string;
         sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
+        filter?: number;
     };
 
     type sliderItems = {

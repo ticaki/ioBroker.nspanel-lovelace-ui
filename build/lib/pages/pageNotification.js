@@ -252,7 +252,7 @@ ${message.text}`;
             data.setValue2 && await data.setValue2.setStateTrue();
           }
         } else {
-          data.setValue1 && await data.setValue1.setStateAsync(_event.opt === "yes");
+          data.setValue1 && await data.setValue1.setState(_event.opt === "yes");
         }
         const cb = (_a = data.closingBehaviour && await data.closingBehaviour.getString()) != null ? _a : "";
         if (pages.isClosingBehavior(cb)) {
@@ -290,7 +290,7 @@ ${message.text}`;
   async onVisibilityChange(val) {
     if (val) {
       if (!this.pageItems || this.pageItems.length === 0) {
-        await this.createPageItems();
+        this.pageItems = await this.createPageItems(this.pageItemConfig);
       }
       this.sendType();
       await this.update();

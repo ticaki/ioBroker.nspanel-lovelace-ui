@@ -37,7 +37,7 @@ export class BaseClassTriggerd extends BaseClass {
     public panel: Panel;
     protected filterDuplicateMessages: boolean = true;
     neverDeactivateTrigger: boolean = false;
-    sleep: boolean = true;
+    sleep: boolean = false;
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
     dpInit: string | RegExp = '';
@@ -80,8 +80,10 @@ export class BaseClassTriggerd extends BaseClass {
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
         if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload) {
+            this.log.debug(`[${this.panel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
             return false;
         }
+
         if (this.sleep && !this.neverDeactivateTrigger) {
             return false;
         }
@@ -179,7 +181,7 @@ export class BaseClassTriggerd extends BaseClass {
                     }
                 }*/
 
-                this.log.debug(`Switch page to visible!`);
+                this.log.debug(`[${this.panel.friendlyName}] Switch page to visible!`);
                 this.resetLastMessage();
                 this.controller && (await this.controller.statesControler.activateTrigger(this));
 
@@ -193,7 +195,7 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.alwaysOnState) {
                     this.adapter.clearTimeout(this.alwaysOnState);
                 }
-                this.log.debug(`Switch page to invisible!`);
+                this.log.debug(`[${this.panel.friendlyName}] Switch page to invisible!`);
                 if (!this.neverDeactivateTrigger) {
                     this.stopTriggerTimeout();
                     this.controller && (await this.controller.statesControler.deactivateTrigger(this));

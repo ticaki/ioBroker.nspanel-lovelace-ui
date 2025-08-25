@@ -22,6 +22,7 @@ declare global {
             monthFormat:number;
             yearFormat: boolean;
             shutterClosedIsZero: boolean;
+            defaultValueCardThermo: boolean;
             
             fixBrokenCommonTypes: boolean;
 
