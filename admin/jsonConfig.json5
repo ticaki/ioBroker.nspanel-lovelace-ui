@@ -700,9 +700,9 @@
                     "text": "headerCardThermo",
                     "size": 3
                 },
-                "defaultValueCradThermo": {
+                "defaultValueCardThermo": {
                     "type": "checkbox",
-                    "label": "defaultValueCradThermo",
+                    "label": "defaultValueCardThermo",
                     "default": true,
                     "newLine": true,
                     "xs": 12,
