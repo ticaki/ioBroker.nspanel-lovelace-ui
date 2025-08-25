@@ -198,10 +198,10 @@ export class PageThermo2 extends PageMenu {
                 message.headline = this.library.getTranslation(
                     (data && data.headline && (await data.headline.getString())) ?? '',
                 );
-                message.dstTemp = (((await getValueEntryNumber(data.entity3)) || 0) * 10).toString();
-                message.minTemp = (((await data.minValue?.getNumber()) || 15) * 10).toString();
-                message.maxTemp = (((await data.maxValue?.getNumber()) || 28) * 10).toString();
-                message.tempStep = ((await data.stepValue?.getNumber()) || 5).toString();
+                message.dstTemp = Math.round(((await getValueEntryNumber(data.entity3)) || 0) * 10).toString();
+                message.minTemp = Math.round(((await data.minValue?.getNumber()) || 15) * 10).toString();
+                message.maxTemp = Math.round(((await data.maxValue?.getNumber()) || 28) * 10).toString();
+                message.tempStep = Math.round(((await data.stepValue?.getNumber()) || 0.5) * 10).toString();
                 message.unit = (await data.entity3?.unit?.getString()) || '°C';
                 message.power = (await data.power?.getBoolean()) || false;
                 const statesText = (await data.mode?.getString()) || '';
@@ -497,6 +497,14 @@ export class PageThermo2 extends PageMenu {
                     mode = { type: 'triggered', dp: item.modeId, read: `return ${JSON.stringify(states)}[val]` };
                 }
                 set = item.set;
+            }
+            for (const im of [item.minValue, item.maxValue, item.stepValue]) {
+                if (im != null && (typeof im !== 'number' || im < 0)) {
+                    const msg = `${page.uniqueName} item: ${i} val: ${im} invalid - Error in minValue, maxValue or stepValue!`;
+                    messages.push(msg);
+                    adapter.log.warn(msg);
+                    continue;
+                }
             }
             const data: pages.cardThermo2DataItemOptions['data'] = {
                 entity3: (await configManager.existsAndWriteableState(set))

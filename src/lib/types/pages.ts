@@ -4,15 +4,25 @@ import type * as typePageItem from './type-pageItem';
 import type * as Types from './types';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates';
+
+export function isCardEntitiesRole(F: any): F is cardEntitiesTypes {
+    return ['cardEntities', 'cardSchedule'].indexOf(F) !== -1;
+}
+export function isCardGridRole(F: any): F is cardGridTypes {
+    return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'].indexOf(F) !== -1;
+}
+
+export function isCardMenuRole(F: any): F is cardGridTypes | cardEntitiesTypes {
+    return isCardEntitiesRole(F) || isCardGridRole(F);
+}
+export type cardEntitiesTypes = 'cardEntities' | 'cardSchedule';
+export type cardGridTypes = 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2';
 export type PageTypeCards =
+    | cardEntitiesTypes
+    | cardGridTypes
     | 'cardChart'
     | 'cardLChart'
-    | 'cardEntities'
-    | 'cardGrid'
-    | 'cardGrid2'
-    | 'cardGrid3'
     | 'cardThermo'
-    | 'cardThermo2'
     | 'cardMedia'
     | 'cardUnlock'
     | 'cardQR'

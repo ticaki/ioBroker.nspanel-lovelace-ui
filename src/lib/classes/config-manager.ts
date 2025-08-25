@@ -7,7 +7,7 @@ import { PagePower } from '../pages/pagePower';
 import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import type * as pages from '../types/pages';
+import * as pages from '../types/pages';
 import { exhaustiveCheck } from '../types/pages';
 import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
@@ -487,7 +487,7 @@ export class ConfigManager extends BaseClass {
                         ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
                     } catch (error: any) {
                         messages.push(
-                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Configuration error in page qr ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                         );
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -518,7 +518,7 @@ export class ConfigManager extends BaseClass {
                         ));
                     } catch (error: any) {
                         messages.push(
-                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Configuration error in page power ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                         );
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -549,7 +549,7 @@ export class ConfigManager extends BaseClass {
                         ));
                     } catch (error: any) {
                         messages.push(
-                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Configuration error in page chart ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                         );
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -574,7 +574,7 @@ export class ConfigManager extends BaseClass {
                             }
                         } catch (error: any) {
                             messages.push(
-                                `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                                `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} pageitem - ${error}`,
                             );
                             this.log.warn(messages[messages.length - 1]);
                         }
@@ -1218,25 +1218,12 @@ export class ConfigManager extends BaseClass {
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
     ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
-        if (
-            !(
-                page.type === 'cardGrid' ||
-                page.type === 'cardGrid2' ||
-                page.type === 'cardGrid3' ||
-                page.type === 'cardEntities' ||
-                page.type === 'cardThermo2'
-            ) ||
-            !item.targetPage ||
-            !item.navigate
-        ) {
+        if (!pages.isCardMenuRole(page.type) || !item.targetPage || !item.navigate) {
             this.log.warn(`Page type ${page.type} not supported for navigation item!`);
             return undefined;
         }
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
-        const specialRole: pages.DeviceRole =
-            page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
-                ? 'textNotIcon'
-                : 'iconNotText';
+        const specialRole: pages.DeviceRole = pages.isCardGridRole(page.type) ? 'textNotIcon' : 'iconNotText';
 
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
         if (obj && (!obj.common || !obj.common.role)) {
@@ -2129,6 +2116,9 @@ export class ConfigManager extends BaseClass {
             return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
         }
         if (item.id && !item.id.endsWith('.')) {
+            if (['delete', 'empty'].includes(item.id)) {
+                return { itemConfig: { type: 'empty', data: undefined }, messages };
+            }
             const obj = await this.adapter.getForeignObjectAsync(item.id);
             if (obj) {
                 if (!(obj.common && obj.common.role)) {

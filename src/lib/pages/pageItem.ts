@@ -6,7 +6,7 @@ import * as tools from '../const/tools';
 import type { PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
-import type { ChangeTypeOfKeys, DeviceRole } from '../types/pages';
+import { isCardEntitiesRole, isCardGridRole, type ChangeTypeOfKeys, type DeviceRole } from '../types/pages';
 import type { Screensaver } from './screensaver';
 import { BaseClassTriggerd } from '../classes/baseClassPage';
 
@@ -69,6 +69,9 @@ export class PageItem extends BaseClassTriggerd {
         switch (this.dataItems.type) {
             case 'number':
             case 'button':
+            case 'switch':
+            case 'shutter2':
+            case 'empty':
             case 'input_sel':
             case 'light':
             case 'light2':
@@ -194,7 +197,7 @@ export class PageItem extends BaseClassTriggerd {
                     const item = entry.data;
                     message.type =
                         this.parent &&
-                        this.parent.card.startsWith('cardGrid') &&
+                        isCardGridRole(this.parent.card) &&
                         (this.config.role === 'light' || this.config.role === 'socket')
                             ? 'switch'
                             : this.panel.overrideLightPopup
@@ -420,7 +423,7 @@ export class PageItem extends BaseClassTriggerd {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                         } else if (entry.type === 'button') {
                             message.optionalValue = (value ?? true) ? '1' : '0';
-                            if (this.parent && this.parent.card === 'cardEntities') {
+                            if (this.parent && isCardEntitiesRole(this.parent.card)) {
                                 message.optionalValue =
                                     this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value)) ??
                                     message.optionalValue;
@@ -478,7 +481,7 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         if (entry.type === 'button' && entry.data.confirm) {
                             if (this.confirmClick === 'unlock') {
-                                if (this.parent && this.parent.card === 'cardEntities') {
+                                if (this.parent && isCardEntitiesRole(this.parent.card)) {
                                     message.optionalValue =
                                         (await entry.data.confirm.getString()) ?? message.optionalValue;
                                 }
@@ -530,7 +533,7 @@ export class PageItem extends BaseClassTriggerd {
                                         '',
                                         null,
                                         (this.parent &&
-                                            this.parent.card !== 'cardEntities' &&
+                                            isCardEntitiesRole(this.parent.card) &&
                                             !this.parent.card.startsWith('screens')) ??
                                             false,
                                     )) ?? '';
@@ -674,6 +677,11 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     break;
                 }
+                case 'empty':
+                    {
+                        return tools.getPayload('', 'delete', '', '', '', '');
+                    }
+                    break;
             }
         }
         this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
@@ -1741,7 +1749,7 @@ export class PageItem extends BaseClassTriggerd {
             case 'mode-preset_modes':
             case 'mode':
                 {
-                    if (!('entityInSel' in entry.data)) {
+                    if (entry.data && !('entityInSel' in entry.data)) {
                         break;
                     }
                     await this.setListCommand(entry, value);
@@ -2435,7 +2443,7 @@ export class PageItem extends BaseClassTriggerd {
     async setListCommand(entry: typePageItem.PageItemDataItems, value: string): Promise<boolean> {
         //if (entry.type !== 'input_sel') return false;
         const item = entry.data;
-        if (!('entityInSel' in item)) {
+        if (!item || !('entityInSel' in item)) {
             return false;
         }
 

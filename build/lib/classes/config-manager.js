@@ -38,6 +38,7 @@ var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
 var import_readme = require("../tools/readme");
+var pages = __toESM(require("../types/pages"));
 var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
 var import_library = require("./library");
@@ -431,7 +432,7 @@ class ConfigManager extends import_library.BaseClass {
             ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, page, index, gridItem, messages));
           } catch (error) {
             messages.push(
-              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Configuration error in page qr ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
             );
             this.log.warn(messages[messages.length - 1]);
             continue;
@@ -461,7 +462,7 @@ class ConfigManager extends import_library.BaseClass {
             ));
           } catch (error) {
             messages.push(
-              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Configuration error in page power ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
             );
             this.log.warn(messages[messages.length - 1]);
             continue;
@@ -491,7 +492,7 @@ class ConfigManager extends import_library.BaseClass {
             ));
           } catch (error) {
             messages.push(
-              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Configuration error in page chart ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
             );
             this.log.warn(messages[messages.length - 1]);
             continue;
@@ -515,7 +516,7 @@ class ConfigManager extends import_library.BaseClass {
               }
             } catch (error) {
               messages.push(
-                `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+                `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} pageitem - ${error}`
               );
               this.log.warn(messages[messages.length - 1]);
             }
@@ -1083,12 +1084,12 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e;
-    if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardThermo2") || !item.targetPage || !item.navigate) {
+    if (!pages.isCardMenuRole(page.type) || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
     }
     let itemConfig = void 0;
-    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+    const specialRole = pages.isCardGridRole(page.type) ? "textNotIcon" : "iconNotText";
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     if (obj && (!obj.common || !obj.common.role)) {
       throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
@@ -1869,6 +1870,9 @@ class ConfigManager extends import_library.BaseClass {
       return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
     }
     if (item.id && !item.id.endsWith(".")) {
+      if (["delete", "empty"].includes(item.id)) {
+        return { itemConfig: { type: "empty", data: void 0 }, messages };
+      }
       const obj = await this.adapter.getForeignObjectAsync(item.id);
       if (obj) {
         if (!(obj.common && obj.common.role)) {

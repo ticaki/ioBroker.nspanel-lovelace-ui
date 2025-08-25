@@ -45,6 +45,10 @@ export type entityUpdateDetailMessage =
           headline: string;
       }
     | {
+          type: 'seperator';
+          entityName: string;
+      }
+    | {
           type: 'popupThermo';
           headline: string;
           entityName: string;
@@ -209,6 +213,7 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemTextDataItems
         | PageItemFanDataItems
         | PageItemTimerDataItems
+        | PageItemSeparator
     ) & { filter?: true | false | number };
 
 export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data' | 'type'> &
@@ -222,6 +227,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
         | PageItemTextDataItemsOptions
         | PageItemFanDataItemsOptions
         | PageItemTimerDataItemsOptions
+        | PageItemSeparator
     ) & { filter?: true | false | number };
 export type PageItemDataItemsOptions =
     | ({
@@ -247,6 +253,7 @@ export type PageItemDataItemsOptions =
                   | PageItemTextDataItemsOptions
                   | PageItemFanDataItemsOptions
                   | PageItemTimerDataItemsOptions
+                  | PageItemSeparator
               >
       >)
     | PageItemDataItemsOptionsWithOutTemplate;
@@ -432,6 +439,14 @@ export type PageItemLight = Pick<
     | 'setValue1'
     | 'setValue2'
 >;
+export type PageItemSeparator = {
+    type: 'empty';
+    data: undefined;
+};
+export type PageItemSeparatorDataItems = {
+    type: 'empty';
+    data: undefined;
+};
 export type PageItemLightDataItemsOptions = {
     type: 'light' | 'light2';
     data: pages.ChangeTypeOfKeys<PageItemLight, Types.DataItemsOptions | undefined>;

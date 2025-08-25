@@ -35,6 +35,7 @@ var import_Color = require("../const/Color");
 var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
 var import_icon_mapping = require("../const/icon_mapping");
+var import_pages = require("../types/pages");
 var import_baseClassPage = require("../classes/baseClassPage");
 class PageItem extends import_baseClassPage.BaseClassTriggerd {
   defaultOnColor = import_Color.Color.White;
@@ -87,6 +88,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     switch (this.dataItems.type) {
       case "number":
       case "button":
+      case "switch":
+      case "shutter2":
+      case "empty":
       case "input_sel":
       case "light":
       case "light2":
@@ -181,7 +185,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         case "light":
         case "light2": {
           const item = entry.data;
-          message.type = this.parent && this.parent.card.startsWith("cardGrid") && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.panel.overrideLightPopup ? this.panel.lightPopupV2 && this.panel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
+          message.type = this.parent && (0, import_pages.isCardGridRole)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.panel.overrideLightPopup ? this.panel.lightPopupV2 && this.panel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_a = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _a : null;
           let rgb = (_c = (_b = await tools.getRGBfromRGBThree(item)) != null ? _b : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _c : null;
@@ -353,7 +357,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
             } else if (entry.type === "button") {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
-              if (this.parent && this.parent.card === "cardEntities") {
+              if (this.parent && (0, import_pages.isCardEntitiesRole)(this.parent.card)) {
                 message.optionalValue = (_F = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _F : message.optionalValue;
               }
             } else {
@@ -403,7 +407,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                if (this.parent && this.parent.card === "cardEntities") {
+                if (this.parent && (0, import_pages.isCardEntitiesRole)(this.parent.card)) {
                   message.optionalValue = (_I = await entry.data.confirm.getString()) != null ? _I : message.optionalValue;
                 }
                 this.confirmClick = Date.now();
@@ -437,7 +441,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                   !!value,
                   "",
                   null,
-                  (_P = this.parent && this.parent.card !== "cardEntities" && !this.parent.card.startsWith("screens")) != null ? _P : false
+                  (_P = this.parent && (0, import_pages.isCardEntitiesRole)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _P : false
                 )) != null ? _Q : "";
               }
             }
@@ -559,6 +563,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
           break;
         }
+        case "empty":
+          {
+            return tools.getPayload("", "delete", "", "", "", "");
+          }
+          break;
       }
     }
     this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
@@ -1501,7 +1510,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       case "mode-preset_modes":
       case "mode":
         {
-          if (!("entityInSel" in entry.data)) {
+          if (entry.data && !("entityInSel" in entry.data)) {
             break;
           }
           await this.setListCommand(entry, value);
@@ -2154,7 +2163,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
   async setListCommand(entry, value) {
     var _a, _b;
     const item = entry.data;
-    if (!("entityInSel" in item)) {
+    if (!item || !("entityInSel" in item)) {
       return false;
     }
     const sList = item.entityInSel && await this.getListFromStates(

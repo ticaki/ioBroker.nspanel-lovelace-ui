@@ -185,10 +185,10 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         message.headline = this.library.getTranslation(
           (_a = data && data.headline && await data.headline.getString()) != null ? _a : ""
         );
-        message.dstTemp = ((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10).toString();
-        message.minTemp = ((await ((_b = data.minValue) == null ? void 0 : _b.getNumber()) || 15) * 10).toString();
-        message.maxTemp = ((await ((_c = data.maxValue) == null ? void 0 : _c.getNumber()) || 28) * 10).toString();
-        message.tempStep = (await ((_d = data.stepValue) == null ? void 0 : _d.getNumber()) || 5).toString();
+        message.dstTemp = Math.round((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10).toString();
+        message.minTemp = Math.round((await ((_b = data.minValue) == null ? void 0 : _b.getNumber()) || 15) * 10).toString();
+        message.maxTemp = Math.round((await ((_c = data.maxValue) == null ? void 0 : _c.getNumber()) || 28) * 10).toString();
+        message.tempStep = Math.round((await ((_d = data.stepValue) == null ? void 0 : _d.getNumber()) || 0.5) * 10).toString();
         message.unit = await ((_f = (_e = data.entity3) == null ? void 0 : _e.unit) == null ? void 0 : _f.getString()) || "\xB0C";
         message.power = await ((_g = data.power) == null ? void 0 : _g.getBoolean()) || false;
         const statesText = await ((_h = data.mode) == null ? void 0 : _h.getString()) || "";
@@ -442,6 +442,14 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           mode = { type: "triggered", dp: item.modeId, read: `return ${JSON.stringify(states)}[val]` };
         }
         set = item.set;
+      }
+      for (const im of [item.minValue, item.maxValue, item.stepValue]) {
+        if (im != null && (typeof im !== "number" || im < 0)) {
+          const msg = `${page.uniqueName} item: ${i} val: ${im} invalid - Error in minValue, maxValue or stepValue!`;
+          messages.push(msg);
+          adapter.log.warn(msg);
+          continue;
+        }
       }
       const data = {
         entity3: await configManager.existsAndWriteableState(set) ? {
