@@ -229,5 +229,7 @@
     "HEAT": "Calor",
     "ECO": "Ecológico",
     "FAN": "Admirador",
-    "DRY": "Seco"
+    "DRY": "Seco",
+    "defaultValueCardThermo": "Valores en décimas",
+    "defaultValueCardThermoHint": "(solo CardThermo2) Cuando está habilitado, MinValue, MaxValue y Stepalue se especifican en décimas (por ejemplo, 25 = 2.5 ° C). Cuando se deshabilitan, los valores se usan directamente (por ejemplo, 2.5 = 2.5 ° C)."
 }

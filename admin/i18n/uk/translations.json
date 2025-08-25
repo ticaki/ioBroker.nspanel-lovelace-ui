@@ -229,5 +229,7 @@
     "HEAT": "Спека",
     "ECO": "Економ",
     "FAN": "Фанат",
-    "DRY": "Сухий"
+    "DRY": "Сухий",
+    "defaultValueCardThermo": "Значення в десятих",
+    "defaultValueCardThermoHint": "(лише Cardthermo2) Якщо ввімкнено, Minvalue, MaxValue та StepValue вказані в десятих (наприклад, 25 = 2,5 ° C). При відключенні значення використовуються безпосередньо (наприклад, 2,5 = 2,5 ° C)."
 }

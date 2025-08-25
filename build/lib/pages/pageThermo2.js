@@ -451,6 +451,17 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           continue;
         }
       }
+      if (adapter.config.defaultValueCardThermo) {
+        if (item.minValue != null) {
+          item.minValue /= 10;
+        }
+        if (item.maxValue != null) {
+          item.maxValue /= 10;
+        }
+        if (item.stepValue != null) {
+          item.stepValue /= 10;
+        }
+      }
       const data = {
         entity3: await configManager.existsAndWriteableState(set) ? {
           value: { type: "triggered", dp: set },

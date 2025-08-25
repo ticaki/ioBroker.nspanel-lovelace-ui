@@ -506,6 +506,17 @@ export class PageThermo2 extends PageMenu {
                     continue;
                 }
             }
+            if (adapter.config.defaultValueCardThermo) {
+                if (item.minValue != null) {
+                    item.minValue /= 10;
+                }
+                if (item.maxValue != null) {
+                    item.maxValue /= 10;
+                }
+                if (item.stepValue != null) {
+                    item.stepValue /= 10;
+                }
+            }
             const data: pages.cardThermo2DataItemOptions['data'] = {
                 entity3: (await configManager.existsAndWriteableState(set))
                     ? {

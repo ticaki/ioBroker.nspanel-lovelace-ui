@@ -703,6 +703,7 @@
                 "defaultValueCardThermo": {
                     "type": "checkbox",
                     "label": "defaultValueCardThermo",
+                    "help": "defaultValueCardThermoHint",
                     "default": true,
                     "newLine": true,
                     "xs": 12,

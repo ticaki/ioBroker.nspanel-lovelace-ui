@@ -229,5 +229,7 @@
     "HEAT": "Heizen",
     "ECO": "Eco",
     "FAN": "Ventil.",
-    "DRY": "Entfeucht."
+    "DRY": "Entfeucht.",
+    "defaultValueCardThermo": "Werte in Zehnteln",
+    "defaultValueCardThermoHint": "(nur cardThermo2) Wenn aktiviert, werden minValue, maxValue und stepValue in Zehnteln angegeben (z. B. 25 = 2,5 °C). Wenn deaktiviert, werden die Werte direkt verwendet (z. B. 2,5 = 2,5 °C)."
 }

@@ -229,5 +229,7 @@
     "HEAT": "热",
     "ECO": "生态",
     "FAN": "扇子",
-    "DRY": "干燥"
+    "DRY": "干燥",
+    "defaultValueCardThermo": "十分之一",
+    "defaultValueCardThermoHint": "（仅CardThermo2）启用时，在第十秒（例如25 = 2.5°C）指定了MinValue，MaxValue和Stepvalue。禁用时，直接使用值（例如2.5 = 2.5°C）。"
 }
