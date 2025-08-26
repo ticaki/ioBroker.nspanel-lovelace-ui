@@ -550,9 +550,9 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             const dp = dataItem.dp;
             const o2 = await adapter.getForeignObjectAsync(dp);
             if (o2 == null ? void 0 : o2.common) {
-              let nativ = (_g = o2.common.nativ) == null ? void 0 : _g.nspanelIcons;
-              if (nativ != null && !Array.isArray(nativ)) {
-                nativ = void 0;
+              let native = (_g = o2.common.native) == null ? void 0 : _g.nspanelIcons;
+              if (native != null && !Array.isArray(native)) {
+                native = void 0;
               }
               gridItem.pageItems.push({
                 role: "",
@@ -565,7 +565,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
                       value: {
                         ...dataItem,
                         read: `
-                                                    ${nativ && nativ.length > 0 && nativ.every((e) => "icon" in e) ? `return ${JSON.stringify(nativ)}.icon[val] || val` : ""}
+                                                    ${native && native.length > 0 && native.every((e) => "icon" in e) ? `return ${JSON.stringify(native)}.icon[val] || val` : ""}
                                                     switch(val) {
                                                     case 0: return 'power-off';
                                                     case 1: return 'heat-wave';
@@ -577,7 +577,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
                       color: {
                         ...dataItem,
                         read: `
-                                                    ${nativ && nativ.length > 0 && nativ.every((e) => "color" in e) ? `return ${JSON.stringify(nativ)}.color[val] || Color.Gray` : ""}
+                                                    ${native && native.length > 0 && native.every((e) => "color" in e) ? `return ${JSON.stringify(native)}.color[val] || Color.Gray` : ""}
                                                     switch(val) {
                                                     case 0: return 'Color.Gray';
                                                     case 1: return 'Color.Red';
@@ -591,7 +591,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
                       value: {
                         ...dataItem,
                         read: `
-                                                    ${nativ && nativ.length > 0 ? `return ${JSON.stringify(nativ)}[val] || val` : ""}
+                                                    ${native && native.length > 0 ? `return ${JSON.stringify(native)}[val] || val` : ""}
                                                     switch(val) {
                                                     case 0: return 'power-off';
                                                     case 1: return 'heat-wave';

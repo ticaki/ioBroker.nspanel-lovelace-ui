@@ -643,10 +643,10 @@ export class PageThermo2 extends PageMenu {
                         const dp = dataItem.dp;
                         const o = await adapter.getForeignObjectAsync(dp);
                         if (o?.common) {
-                            let nativ: { icon: string; color: ScriptConfig.RGB } | undefined =
-                                o.common.nativ?.nspanelIcons;
-                            if (nativ != null && !Array.isArray(nativ)) {
-                                nativ = undefined;
+                            let native: { icon: string; color: ScriptConfig.RGB } | undefined =
+                                o.common.native?.nspanelIcons;
+                            if (native != null && !Array.isArray(native)) {
+                                native = undefined;
                             }
                             gridItem.pageItems.push({
                                 role: '',
@@ -660,8 +660,8 @@ export class PageThermo2 extends PageMenu {
                                                 ...dataItem,
                                                 read: `
                                                     ${
-                                                        nativ && nativ.length > 0 && nativ.every(e => 'icon' in e)
-                                                            ? `return ${JSON.stringify(nativ)}.icon[val] || val`
+                                                        native && native.length > 0 && native.every(e => 'icon' in e)
+                                                            ? `return ${JSON.stringify(native)}.icon[val] || val`
                                                             : ''
                                                     }
                                                     switch(val) {
@@ -676,8 +676,8 @@ export class PageThermo2 extends PageMenu {
                                                 ...dataItem,
                                                 read: `
                                                     ${
-                                                        nativ && nativ.length > 0 && nativ.every(e => 'color' in e)
-                                                            ? `return ${JSON.stringify(nativ)}.color[val] || Color.Gray`
+                                                        native && native.length > 0 && native.every(e => 'color' in e)
+                                                            ? `return ${JSON.stringify(native)}.color[val] || Color.Gray`
                                                             : ''
                                                     }
                                                     switch(val) {
@@ -695,8 +695,8 @@ export class PageThermo2 extends PageMenu {
                                                 ...dataItem,
                                                 read: `
                                                     ${
-                                                        nativ && nativ.length > 0
-                                                            ? `return ${JSON.stringify(nativ)}[val] || val`
+                                                        native && native.length > 0
+                                                            ? `return ${JSON.stringify(native)}[val] || val`
                                                             : ''
                                                     }
                                                     switch(val) {
