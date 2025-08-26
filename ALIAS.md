@@ -42,7 +42,8 @@
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
-| **"** | ~~MODE~~ | number| level.mode.airconditioner  |  |  | 0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more | 
+| **"** | ~~MODE~~ | number| value.mode.airconditioner  |  |  | 0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more | 
+| **"** | ~~MODESET~~ | number| level.mode.airconditioner  |  | X | 0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more | 
 | **"** | ~~POWER~~ | boolean| switch  |  | X | use MODE for on/off | 
 | **"** | ~~SPEED~~ | number| level.mode.fan  |  | X |  | 
 | **"** | ~~SWING~~ | number| level.mode.swing  |  | X |  | 

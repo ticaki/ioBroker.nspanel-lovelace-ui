@@ -215,10 +215,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'value.uv',
     'value.direction.wind',
     'value.speed.wind',
+    'value.mode.airconditioner',
     '',
 ]);
 
 export type StateRole =
+    | 'value.mode.airconditioner'
     | 'value.speed.wind'
     | 'value.direction.wind'
     | 'value.uv'

@@ -164,6 +164,7 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         HUMIDITY: null,
         MAINTAIN: null,
         MODE: null,
+        MODESET: null,
         POWER: null,
         SPEED: null,
         SWING: null,
@@ -387,7 +388,8 @@ export type mydps =
     | 'WORKING'
     | 'ACTUAL2'
     | 'ACTUAL3'
-    | 'SET3';
+    | 'SET3'
+    | 'MODESET';
 
 export type requiredDatapoints = Pick<requiredDatapoints2, ScriptConfig.channelRoles>;
 
@@ -402,6 +404,7 @@ type requiredDatapoints2 = {
             HUMIDITY: Datapoint;
             MAINTAIN: Datapoint;
             MODE: Datapoint;
+            MODESET: Datapoint;
             POWER: Datapoint;
             SPEED: Datapoint;
             SWING: Datapoint;
@@ -772,12 +775,20 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 trigger: true,
             },
             MODE: {
-                role: 'level.mode.airconditioner',
-                type: 'number',
+                role: 'value.mode.airconditioner',
+                type: ['number'],
                 required: false,
                 writeable: false,
                 trigger: true,
                 description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`,
+            },
+            MODESET: {
+                role: 'level.mode.airconditioner',
+                type: ['number'],
+                required: false,
+                writeable: true,
+                trigger: true,
+                description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`,
             },
             POWER: {
                 role: 'switch',
