@@ -172,7 +172,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     await super.init();
   }
   async update() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
     if (!(this == null ? void 0 : this.visibility)) {
       return;
     }
@@ -209,7 +209,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_u = data == null ? void 0 : data.power) == null ? void 0 : _u.getBoolean()), import_Color.Color.Magenta),
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_v = data == null ? void 0 : data.power) == null ? void 0 : _v.getBoolean()), import_Color.Color.Magenta),
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon5, true, import_Color.Color.MSYellow)
-          ][i]}~~${["", "", "", "", "", "", statesText ? String(3) : ""][i]}`;
+          ][i]}~~${["", "", "", "", "", "", (_x = await ((_w = data == null ? void 0 : data.power) == null ? void 0 : _w.getNumber())) != null ? _x : 1][i]}`;
         }
       }
       const arr = (await this.getOptions([])).slice(0, this.maxItems);
@@ -314,6 +314,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       let actual = "";
       let humidity = "";
       let set = "";
+      let power;
       let role = "thermostat";
       let mode;
       let foundedStates;
@@ -363,6 +364,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         humidity = ((_b = foundedStates[role].HUMIDITY) == null ? void 0 : _b.dp) || "";
         set = airCondition ? ((_c = foundedStates[role].SET2) == null ? void 0 : _c.dp) || "" : ((_d = foundedStates[role].SET) == null ? void 0 : _d.dp) || "";
         role = o.common.role;
+        power = foundedStates[role].MODESET;
         if (foundedStates[role].MODE) {
           mode = foundedStates[role].MODE;
           if (mode && mode.dp) {
@@ -437,6 +439,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             states = item.modeList;
           }
           mode = { type: "triggered", dp: item.modeId, read: `return ${JSON.stringify(states)}[val]` };
+          power = { type: "triggered", dp: item.modeId, read: `return val !== 0 ? 1 : 0;` };
         }
         set = item.set;
       }
@@ -523,7 +526,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         power: await configManager.existsState(item.power) ? {
           type: "triggered",
           dp: item.power
-        } : void 0,
+        } : power,
         mode
       };
       if (Array.isArray(gridItem.config.data)) {

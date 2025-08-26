@@ -85,6 +85,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Fixes [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409) 
 - (ticaki) cardThermo2 integrated
 - (ticaki) extended pirate-weather templates 
 - (tt-tom17) added pirate-weather templates

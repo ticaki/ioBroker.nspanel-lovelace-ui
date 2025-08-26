@@ -228,7 +228,7 @@ export class PageThermo2 extends PageMenu {
                             await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
                             await getIconEntryColor(data?.icon5, true, Color.MSYellow),
                         ][i]
-                    }~~${['', '', '', '', '', '', statesText ? String(3) : ''][i]}`;
+                    }~~${['', '', '', '', '', '', (await data?.power?.getNumber()) ?? 1][i]}`;
                 }
             }
             const arr = (await this.getOptions([])).slice(0, this.maxItems);
@@ -347,6 +347,7 @@ export class PageThermo2 extends PageMenu {
             let actual = '';
             let humidity = '';
             let set = '';
+            let power: Types.DataItemsOptions | undefined;
             let role: ScriptConfig.channelRoles = 'thermostat';
             let mode: Types.DataItemsOptions | undefined;
             let foundedStates: configManagerConst.checkedDatapointsUnion | undefined;
@@ -408,6 +409,7 @@ export class PageThermo2 extends PageMenu {
                 humidity = foundedStates[role].HUMIDITY?.dp || '';
                 set = airCondition ? foundedStates[role].SET2?.dp || '' : foundedStates[role].SET?.dp || '';
                 role = o.common.role;
+                power = foundedStates[role].MODESET;
 
                 if (foundedStates[role].MODE) {
                     mode = foundedStates[role].MODE;
@@ -492,6 +494,7 @@ export class PageThermo2 extends PageMenu {
                         states = item.modeList;
                     }
                     mode = { type: 'triggered', dp: item.modeId, read: `return ${JSON.stringify(states)}[val]` };
+                    power = { type: 'triggered', dp: item.modeId, read: `return val !== 0 ? 1 : 0;` };
                 }
                 set = item.set;
             }
@@ -613,7 +616,7 @@ export class PageThermo2 extends PageMenu {
                           type: 'triggered',
                           dp: item.power,
                       }
-                    : undefined,
+                    : power,
                 mode: mode,
             };
             if (Array.isArray(gridItem.config.data)) {

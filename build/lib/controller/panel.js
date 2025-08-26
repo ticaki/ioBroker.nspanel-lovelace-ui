@@ -1215,6 +1215,7 @@ class Panel extends import_library.BaseClass {
         }
         start.setLastPage((_a = this._activePage) != null ? _a : void 0);
         await start.setVisibility(true);
+        this._activePage = start;
         if (this.screenSaver) {
           this.screenSaver.pageItems = await this.screenSaver.createPageItems(
             this.screenSaver.pageItemConfig

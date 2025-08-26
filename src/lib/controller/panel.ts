@@ -1328,6 +1328,7 @@ export class Panel extends BaseClass {
                 }
                 start.setLastPage(this._activePage ?? undefined);
                 await start.setVisibility(true);
+                this._activePage = start;
 
                 if (this.screenSaver) {
                     this.screenSaver.pageItems = await this.screenSaver.createPageItems(
