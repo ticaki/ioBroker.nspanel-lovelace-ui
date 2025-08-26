@@ -191,7 +191,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         message.tempStep = Math.round((await ((_d = data.stepValue) == null ? void 0 : _d.getNumber()) || 0.5) * 10).toString();
         message.unit = await ((_f = (_e = data.entity3) == null ? void 0 : _e.unit) == null ? void 0 : _f.getString()) || "\xB0C";
         message.power = await ((_g = data.power) == null ? void 0 : _g.getBoolean()) || false;
-        const statesText = await ((_h = data.mode) == null ? void 0 : _h.getString()) || "";
+        const statesText = this.library.getTranslation(await ((_h = data.mode) == null ? void 0 : _h.getString()) || "");
         for (let i = 0; i < 7; i++) {
           message.options[i] = `text~${this.name}.${i}~${[
             await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon1, true, "thermometer"),
@@ -373,14 +373,14 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             if ((_e = o2 == null ? void 0 : o2.common) == null ? void 0 : _e.states) {
               mode = {
                 ...mode,
-                read: `return ${JSON.stringify(o2.common.states)}[val]`
+                read: `return ${JSON.stringify(o2.common.states)}[val] || val`
               };
             } else {
               mode = {
                 ...mode,
                 read: `return ${JSON.stringify(
                   item.modeList ? item.modeList : ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN", "DRY"]
-                )}[val]`
+                )}[val] || val`
               };
             }
           }

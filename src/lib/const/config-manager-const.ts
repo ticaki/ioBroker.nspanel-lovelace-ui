@@ -775,7 +775,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 role: 'level.mode.airconditioner',
                 type: 'number',
                 required: false,
-                writeable: true,
+                writeable: false,
                 trigger: true,
                 description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`,
             },

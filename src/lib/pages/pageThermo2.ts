@@ -204,7 +204,7 @@ export class PageThermo2 extends PageMenu {
                 message.tempStep = Math.round(((await data.stepValue?.getNumber()) || 0.5) * 10).toString();
                 message.unit = (await data.entity3?.unit?.getString()) || '°C';
                 message.power = (await data.power?.getBoolean()) || false;
-                const statesText = (await data.mode?.getString()) || '';
+                const statesText = this.library.getTranslation((await data.mode?.getString()) || '');
 
                 //build pageitem strings for thermo2 - spezial case
                 for (let i = 0; i < 7; i++) {
@@ -419,7 +419,7 @@ export class PageThermo2 extends PageMenu {
                         if (o2?.common?.states) {
                             mode = {
                                 ...mode,
-                                read: `return ${JSON.stringify(o2.common.states)}[val]`,
+                                read: `return ${JSON.stringify(o2.common.states)}[val] || val`,
                             };
                         } else {
                             mode = {
@@ -428,7 +428,7 @@ export class PageThermo2 extends PageMenu {
                                     item.modeList
                                         ? item.modeList
                                         : ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'],
-                                )}[val]`,
+                                )}[val] || val`,
                             };
                         }
                     }
