@@ -417,11 +417,11 @@ export class StatesControler extends BaseClass {
             }
         }
     }
-    async setStateAsync(item: Dataitem, val: ioBroker.StateValue, writeable: boolean): Promise<void> {
+    async setState(item: Dataitem, val: ioBroker.StateValue, writeable: boolean): Promise<void> {
         if (item.options.type === 'state' || item.options.type === 'triggered') {
             if (item.options.dp) {
                 const ack = item.options.dp.startsWith(this.adapter.namespace);
-                this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
+                this.log.debug(`setState(${item.options.dp}, ${val}, ${ack})`);
                 if (item.trueType() === 'number' && typeof val === 'string') {
                     val = parseFloat(val);
                 } else if (item.trueType() === 'number' && typeof val === 'boolean') {

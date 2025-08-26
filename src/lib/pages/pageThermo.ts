@@ -244,11 +244,11 @@ export class PageThermo extends Page {
             const newValHigh = parseInt(values[1]) / 10;
             const valLow = (this.items && this.items.data.set1 && (await this.items.data.set1.getNumber())) ?? null;
             const valHigh = (this.items && this.items.data.set2 && (await this.items.data.set2.getNumber())) ?? null;
-            if (valLow !== null && newValLow !== valLow) {
-                await this.items.data.set1!.setStateAsync(newValLow);
+            if (valLow !== null && newValLow !== valLow && this.items.data.set1) {
+                await this.items.data.set1.setState(newValLow);
             }
-            if (valHigh !== null && newValHigh !== valHigh) {
-                await this.items.data.set2!.setStateAsync(newValHigh);
+            if (valHigh !== null && newValHigh !== valHigh && this.items.data.set2) {
+                await this.items.data.set2.setState(newValHigh);
             }
         } else if (event.action === 'tempUpd') {
             if (!this.items) {
@@ -256,8 +256,8 @@ export class PageThermo extends Page {
             }
             const newValLow = parseInt(event.opt) / 10;
             const valLow = (this.items && this.items.data.set1 && (await this.items.data.set1.getNumber())) ?? null;
-            if (valLow !== null && newValLow !== valLow) {
-                await this.items.data.set1!.setStateAsync(newValLow);
+            if (valLow !== null && newValLow !== valLow && this.items.data.set1) {
+                await this.items.data.set1.setState(newValLow);
             }
         } else if (
             event.action === 'hvac_action' &&

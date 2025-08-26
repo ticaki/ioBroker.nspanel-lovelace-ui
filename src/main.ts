@@ -1402,7 +1402,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             'utf8',
                         );
                     }
-                    const vTemp = file?.match(/const.version.+'(\d\.\d\.\d)';/) || [];
+                    const vTemp = file?.match(/const.version.+'(\d+\.\d+\.\d)+';/) || [];
                     const version = vTemp[1] ? vTemp[1] : '';
 
                     for (let a = 0; a < this.config.panels.length; a++) {
@@ -1428,7 +1428,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             );
                             const o = await this.getForeignObjectAsync(scriptId);
                             if (o) {
-                                const temp = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)?.[1] ?? '';
+                                const temp = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)?.[1] ?? '';
                                 if (temp !== version) {
                                     check = true;
                                     sv = `${temp} (${updateText}: v${version})`;

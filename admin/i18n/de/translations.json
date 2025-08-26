@@ -223,5 +223,14 @@
     "hiddenByTrigger": "Seite verbergen",
     "headerShutter": "Rollladensteuerung",
     "notifyMqttServer": "Wir empfehlen den internen MQTT-Server des Adapters zu nutzen, dieser arbeitet direkt mit dem Panel. Dadurch konnte der Datenaustausch optimiert werden.",
-    "mqttServerSetting": "MQTT-Server Einstellungen"
+    "mqttServerSetting": "MQTT-Server Einstellungen",
+    "OFF": "Aus",
+    "AUTO": "Auto",
+    "COOL": "Kühlen",
+    "HEAT": "Heizen",
+    "ECO": "Eco",
+    "FAN": "Ventil.",
+    "DRY": "Entfeucht.",
+    "defaultValueCardThermo": "Werte in Zehnteln",
+    "defaultValueCardThermoHint": "(nur cardThermo2) Wenn aktiviert, werden minValue, maxValue und stepValue in Zehnteln angegeben (z. B. 25 = 2,5 °C). Wenn deaktiviert, werden die Werte direkt verwendet (z. B. 2,5 = 2,5 °C)."
 }

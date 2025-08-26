@@ -161,6 +161,7 @@ const checkedDatapoints = {
     HUMIDITY: null,
     MAINTAIN: null,
     MODE: null,
+    MODESET: null,
     POWER: null,
     SPEED: null,
     SWING: null,
@@ -324,6 +325,24 @@ const checkedDatapoints = {
     ACTUAL: null
   }
 };
+const templateDatapoint = {
+  UNREACH: {
+    role: "indicator.maintenance.unreach",
+    type: "boolean",
+    required: false,
+    writeable: false,
+    trigger: true,
+    description: ""
+  },
+  LOWBAT: {
+    role: "indicator.maintenance.lowbat",
+    type: "boolean",
+    required: false,
+    writeable: false,
+    trigger: true,
+    description: ""
+  }
+};
 const requiredScriptDataPoints = {
   airCondition: {
     name: "airCondition",
@@ -355,12 +374,20 @@ const requiredScriptDataPoints = {
         trigger: true
       },
       MODE: {
+        role: "value.mode.airconditioner",
+        type: ["number"],
+        required: false,
+        writeable: false,
+        trigger: true,
+        description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`
+      },
+      MODESET: {
         role: "level.mode.airconditioner",
-        type: "number",
+        type: ["number"],
         required: false,
         writeable: true,
         trigger: true,
-        description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`
+        description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`
       },
       POWER: {
         role: "switch",
@@ -372,13 +399,7 @@ const requiredScriptDataPoints = {
       SPEED: { role: "level.mode.fan", type: "number", required: false, writeable: true, trigger: true },
       SWING: { role: "level.mode.swing", type: "number", required: false, writeable: true, trigger: true },
       SWING2: { role: "switch.mode.swing", type: "boolean", required: false, writeable: true, trigger: true },
-      UNREACH: {
-        role: "indicator.maintenance",
-        type: "boolean",
-        required: false,
-        writeable: false,
-        trigger: true
-      }
+      UNREACH: templateDatapoint.UNREACH
     }
   },
   blind: {
@@ -736,41 +757,65 @@ const requiredScriptDataPoints = {
         writeable: true,
         trigger: true
       },
-      ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false, trigger: true },
-      LOWBAT: {
-        role: "indicator.maintenance.lowbat",
+      ERROR: {
+        role: "indicator.error",
         type: "boolean",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        description: "Not supported in cardThermo2"
       },
-      UNREACH: {
-        role: "indicator.maintenance.unreach",
-        type: "boolean",
-        required: false,
-        writeable: false,
-        trigger: true
-      },
+      LOWBAT: templateDatapoint.LOWBAT,
+      UNREACH: templateDatapoint.UNREACH,
       HUMIDITY: { role: "value.humidity", type: "number", required: false, writeable: false, trigger: true },
       MAINTAIN: {
         role: "indicator.maintenance",
         type: "boolean",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        description: "Not supported in cardThermo2"
       },
-      PARTY: { role: "switch.mode.party", type: "boolean", required: false, trigger: true },
+      PARTY: {
+        role: "switch.mode.party",
+        type: "boolean",
+        required: false,
+        trigger: true,
+        description: "Not supported in cardThermo2"
+      },
       POWER: { role: "switch.power", type: "boolean", required: false, writeable: true, trigger: true },
-      VACATION: { role: "state", type: "boolean", useKey: true, required: false, trigger: true },
+      VACATION: {
+        role: "state",
+        type: "boolean",
+        useKey: true,
+        required: false,
+        trigger: true,
+        description: "Not supported in cardThermo2"
+      },
       WINDOWOPEN: {
-        role: ["state", "sensor.window"],
+        role: ["sensor.window"],
         type: "boolean",
         required: false,
         writeable: false,
         trigger: true
       },
-      WORKING: { role: "indicator.working", type: "boolean", required: false, writeable: false, trigger: true },
-      USERICON: { role: "state", type: "string", useKey: true, required: false, writeable: false, trigger: true }
+      WORKING: {
+        role: "indicator.working",
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true,
+        description: "Not supported in cardThermo2"
+      },
+      USERICON: {
+        role: "state",
+        type: "string",
+        useKey: true,
+        required: false,
+        writeable: false,
+        trigger: true,
+        description: "Not supported in cardThermo2"
+      }
     }
   },
   timeTable: {

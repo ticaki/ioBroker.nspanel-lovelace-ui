@@ -7,7 +7,7 @@ import { PagePower } from '../pages/pagePower';
 import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import type * as pages from '../types/pages';
+import * as pages from '../types/pages';
 import { exhaustiveCheck } from '../types/pages';
 import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
@@ -16,6 +16,7 @@ import { isNavigationItemConfigArray, type NavigationItemConfig } from './naviga
 import { getVersionAsNumber } from '../const/tools';
 import * as fs from 'fs';
 import path from 'path';
+import { PageThermo2 } from '../pages/pageThermo2';
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
     colorOn: RGB = Color.On;
@@ -378,6 +379,7 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardGrid3' &&
                     page.type !== 'cardEntities' &&
                     page.type !== 'cardThermo' &&
+                    page.type !== 'cardThermo2' &&
                     page.type !== 'cardQR' &&
                     page.type !== 'cardPower' &&
                     page.type !== 'cardChart' &&
@@ -440,7 +442,9 @@ export class ConfigManager extends BaseClass {
                     gridItem.config.card === 'cardGrid' ||
                     gridItem.config.card === 'cardGrid2' ||
                     gridItem.config.card === 'cardGrid3' ||
-                    gridItem.config.card === 'cardEntities'
+                    gridItem.config.card === 'cardEntities' ||
+                    gridItem.config.card === 'cardSchedule' ||
+                    gridItem.config.card === 'cardThermo2'
                 ) {
                     gridItem.config.scrollType = 'page';
                 }
@@ -450,7 +454,18 @@ export class ConfigManager extends BaseClass {
                     }
                 } catch (error: any) {
                     messages.push(
-                        `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                        `Configuration error in page thermo ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                    );
+                    this.log.warn(messages[messages.length - 1]);
+                    continue;
+                }
+                try {
+                    if (page.type === 'cardThermo2') {
+                        ({ gridItem, messages } = await PageThermo2.getPage(this, page, gridItem, messages));
+                    }
+                } catch (error: any) {
+                    messages.push(
+                        `Configuration error in page thermo2 ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                     );
                     this.log.warn(messages[messages.length - 1]);
                     continue;
@@ -472,7 +487,7 @@ export class ConfigManager extends BaseClass {
                         ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
                     } catch (error: any) {
                         messages.push(
-                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Configuration error in page qr ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                         );
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -503,7 +518,7 @@ export class ConfigManager extends BaseClass {
                         ));
                     } catch (error: any) {
                         messages.push(
-                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Configuration error in page power ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                         );
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -534,7 +549,7 @@ export class ConfigManager extends BaseClass {
                         ));
                     } catch (error: any) {
                         messages.push(
-                            `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Configuration error in page chart ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                         );
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -559,7 +574,7 @@ export class ConfigManager extends BaseClass {
                             }
                         } catch (error: any) {
                             messages.push(
-                                `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                                `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} pageitem - ${error}`,
                             );
                             this.log.warn(messages[messages.length - 1]);
                         }
@@ -1203,24 +1218,12 @@ export class ConfigManager extends BaseClass {
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
     ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
-        if (
-            !(
-                page.type === 'cardGrid' ||
-                page.type === 'cardGrid2' ||
-                page.type === 'cardGrid3' ||
-                page.type === 'cardEntities'
-            ) ||
-            !item.targetPage ||
-            !item.navigate
-        ) {
+        if (!pages.isCardMenuRole(page.type) || !item.targetPage || !item.navigate) {
             this.log.warn(`Page type ${page.type} not supported for navigation item!`);
             return undefined;
         }
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
-        const specialRole: pages.DeviceRole =
-            page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
-                ? 'textNotIcon'
-                : 'iconNotText';
+        const specialRole: pages.DeviceRole = pages.isCardGridRole(page.type) ? 'textNotIcon' : 'iconNotText';
 
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
         if (obj && (!obj.common || !obj.common.role)) {
@@ -1338,7 +1341,7 @@ export class ConfigManager extends BaseClass {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: icon,
+                                    constVal: String(icon),
                                 },
                                 color: await this.getIconColor(item.onColor, this.colorOn),
                             },
@@ -2019,6 +2022,9 @@ export class ConfigManager extends BaseClass {
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
         }
+        if (item.filter != null && itemConfig) {
+            itemConfig.filter = item.filter;
+        }
         return itemConfig;
     }
 
@@ -2110,6 +2116,9 @@ export class ConfigManager extends BaseClass {
             return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
         }
         if (item.id && !item.id.endsWith('.')) {
+            if (['delete', 'empty'].includes(item.id)) {
+                return { itemConfig: { type: 'empty', data: undefined }, messages };
+            }
             const obj = await this.adapter.getForeignObjectAsync(item.id);
             if (obj) {
                 if (!(obj.common && obj.common.role)) {
@@ -3048,11 +3057,13 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'select': {
+                        item.icon2 = item.icon2 || item.icon;
+
                         itemConfig = {
                             type: 'input_sel',
                             dpInit: item.id,
                             role: '',
-                            color: {
+                            /* color: {
                                 true: await this.getIconColor(item.onColor, this.colorOn),
                                 false: await this.getIconColor(item.offColor, this.colorOff),
                                 scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
@@ -3060,7 +3071,7 @@ export class ConfigManager extends BaseClass {
                             icon: {
                                 true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
                                 false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                            },
+                            }, */
                             data: {
                                 entityInSel: {
                                     value: foundedStates[role].ACTUAL,
@@ -3070,12 +3081,12 @@ export class ConfigManager extends BaseClass {
                                 valueList: item.modeList ? { type: 'const', constVal: item.modeList } : undefined,
                                 icon: {
                                     true: {
-                                        value: { type: 'const', constVal: 'clipboard-list-outline' },
-                                        color: { type: 'const', constVal: Color.Green },
+                                        value: { type: 'const', constVal: item.icon || 'clipboard-list-outline' },
+                                        color: { type: 'const', constVal: item.onColor || Color.Green },
                                     },
                                     false: {
-                                        value: { type: 'const', constVal: 'clipboard-list' },
-                                        color: { type: 'const', constVal: Color.Red },
+                                        value: { type: 'const', constVal: item.icon2 || 'clipboard-list' },
+                                        color: { type: 'const', constVal: item.offColor || Color.Red },
                                     },
                                 },
                                 headline: { type: 'const', constVal: item.name || commonName || role },
@@ -3473,6 +3484,9 @@ export class ConfigManager extends BaseClass {
 
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+                }
+                if (item.filter != null && itemConfig) {
+                    itemConfig.filter = item.filter;
                 }
                 return { itemConfig, messages };
             }

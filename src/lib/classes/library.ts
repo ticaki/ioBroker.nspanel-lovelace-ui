@@ -339,7 +339,7 @@ export class Library extends BaseClass {
                 val = this.convertToType(val, typ);
             }
             if (!del) {
-                await this.adapter.setStateAsync(dp, {
+                await this.adapter.setState(dp, {
                     val: val,
                     ts: Date.now(),
                     ack: ack,

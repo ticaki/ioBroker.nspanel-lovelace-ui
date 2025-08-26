@@ -38,6 +38,7 @@ var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
 var import_readme = require("../tools/readme");
+var pages = __toESM(require("../types/pages"));
 var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
 var import_library = require("./library");
@@ -45,6 +46,7 @@ var import_navigation = require("./navigation");
 var import_tools = require("../const/tools");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
+var import_pageThermo2 = require("../pages/pageThermo2");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -341,7 +343,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -389,7 +391,7 @@ class ConfigManager extends import_library.BaseClass {
           },
           pageItems: []
         };
-        if (gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities") {
+        if (gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities" || gridItem.config.card === "cardSchedule" || gridItem.config.card === "cardThermo2") {
           gridItem.config.scrollType = "page";
         }
         try {
@@ -398,7 +400,18 @@ class ConfigManager extends import_library.BaseClass {
           }
         } catch (error) {
           messages.push(
-            `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+            `Configuration error in page thermo ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+          );
+          this.log.warn(messages[messages.length - 1]);
+          continue;
+        }
+        try {
+          if (page.type === "cardThermo2") {
+            ({ gridItem, messages } = await import_pageThermo2.PageThermo2.getPage(this, page, gridItem, messages));
+          }
+        } catch (error) {
+          messages.push(
+            `Configuration error in page thermo2 ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
           );
           this.log.warn(messages[messages.length - 1]);
           continue;
@@ -419,7 +432,7 @@ class ConfigManager extends import_library.BaseClass {
             ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, page, index, gridItem, messages));
           } catch (error) {
             messages.push(
-              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Configuration error in page qr ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
             );
             this.log.warn(messages[messages.length - 1]);
             continue;
@@ -449,7 +462,7 @@ class ConfigManager extends import_library.BaseClass {
             ));
           } catch (error) {
             messages.push(
-              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Configuration error in page power ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
             );
             this.log.warn(messages[messages.length - 1]);
             continue;
@@ -479,7 +492,7 @@ class ConfigManager extends import_library.BaseClass {
             ));
           } catch (error) {
             messages.push(
-              `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Configuration error in page chart ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
             );
             this.log.warn(messages[messages.length - 1]);
             continue;
@@ -503,7 +516,7 @@ class ConfigManager extends import_library.BaseClass {
               }
             } catch (error) {
               messages.push(
-                `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+                `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} pageitem - ${error}`
               );
               this.log.warn(messages[messages.length - 1]);
             }
@@ -1071,12 +1084,12 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e;
-    if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
+    if (!pages.isCardMenuRole(page.type) || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
     }
     let itemConfig = void 0;
-    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+    const specialRole = pages.isCardGridRole(page.type) ? "textNotIcon" : "iconNotText";
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     if (obj && (!obj.common || !obj.common.role)) {
       throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
@@ -1157,7 +1170,7 @@ class ConfigManager extends import_library.BaseClass {
               true: {
                 value: {
                   type: "const",
-                  constVal: icon
+                  constVal: String(icon)
                 },
                 color: await this.getIconColor(item.onColor, this.colorOn)
               },
@@ -1778,6 +1791,9 @@ class ConfigManager extends import_library.BaseClass {
         (0, import_pages.exhaustiveCheck)(role);
         throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
     }
+    if (item.filter != null && itemConfig) {
+      itemConfig.filter = item.filter;
+    }
     return itemConfig;
   }
   async searchDatapointsForItems(db, role, dpInit, messages) {
@@ -1854,6 +1870,9 @@ class ConfigManager extends import_library.BaseClass {
       return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
     }
     if (item.id && !item.id.endsWith(".")) {
+      if (["delete", "empty"].includes(item.id)) {
+        return { itemConfig: { type: "empty", data: void 0 }, messages };
+      }
       const obj = await this.adapter.getForeignObjectAsync(item.id);
       if (obj) {
         if (!(obj.common && obj.common.role)) {
@@ -2611,19 +2630,20 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "select": {
+            item.icon2 = item.icon2 || item.icon;
             itemConfig = {
               type: "input_sel",
               dpInit: item.id,
               role: "",
-              color: {
-                true: await this.getIconColor(item.onColor, this.colorOn),
-                false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
+              /* color: {
+                  true: await this.getIconColor(item.onColor, this.colorOn),
+                  false: await this.getIconColor(item.offColor, this.colorOff),
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
               },
               icon: {
-                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
-              },
+                  true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                  false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+              }, */
               data: {
                 entityInSel: {
                   value: foundedStates[role].ACTUAL,
@@ -2633,12 +2653,12 @@ class ConfigManager extends import_library.BaseClass {
                 valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
                 icon: {
                   true: {
-                    value: { type: "const", constVal: "clipboard-list-outline" },
-                    color: { type: "const", constVal: import_Color.Color.Green }
+                    value: { type: "const", constVal: item.icon || "clipboard-list-outline" },
+                    color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
                   },
                   false: {
-                    value: { type: "const", constVal: "clipboard-list" },
-                    color: { type: "const", constVal: import_Color.Color.Red }
+                    value: { type: "const", constVal: item.icon2 || "clipboard-list" },
+                    color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
                   }
                 },
                 headline: { type: "const", constVal: item.name || commonName || role }
@@ -2902,6 +2922,9 @@ class ConfigManager extends import_library.BaseClass {
           default:
             (0, import_pages.exhaustiveCheck)(role);
             throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+        }
+        if (item.filter != null && itemConfig) {
+          itemConfig.filter = item.filter;
         }
         return { itemConfig, messages };
       }

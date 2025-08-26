@@ -1201,7 +1201,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               "utf8"
             );
           }
-          const vTemp = (file == null ? void 0 : file.match(/const.version.+'(\d\.\d\.\d)';/)) || [];
+          const vTemp = (file == null ? void 0 : file.match(/const.version.+'(\d+\.\d+\.\d)+';/)) || [];
           const version = vTemp[1] ? vTemp[1] : "";
           for (let a = 0; a < this.config.panels.length; a++) {
             const panel = this.config.panels[a];
@@ -1225,7 +1225,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp2 = (_n = (_m = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)) == null ? void 0 : _m[1]) != null ? _n : "";
+                const temp2 = (_n = (_m = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _m[1]) != null ? _n : "";
                 if (temp2 !== version) {
                   check = true;
                   sv = `${temp2} (${updateText}: v${version})`;

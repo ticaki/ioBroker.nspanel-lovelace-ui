@@ -4,15 +4,25 @@ import type * as typePageItem from './type-pageItem';
 import type * as Types from './types';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates';
+
+export function isCardEntitiesRole(F: any): F is cardEntitiesTypes {
+    return ['cardEntities', 'cardSchedule'].indexOf(F) !== -1;
+}
+export function isCardGridRole(F: any): F is cardGridTypes {
+    return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'].indexOf(F) !== -1;
+}
+
+export function isCardMenuRole(F: any): F is cardGridTypes | cardEntitiesTypes {
+    return isCardEntitiesRole(F) || isCardGridRole(F);
+}
+export type cardEntitiesTypes = 'cardEntities' | 'cardSchedule';
+export type cardGridTypes = 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2';
 export type PageTypeCards =
+    | cardEntitiesTypes
+    | cardGridTypes
     | 'cardChart'
     | 'cardLChart'
-    | 'cardEntities'
-    | 'cardGrid'
-    | 'cardGrid2'
-    | 'cardGrid3'
     | 'cardThermo'
-    | 'cardThermo2'
     | 'cardMedia'
     | 'cardUnlock'
     | 'cardQR'
@@ -205,10 +215,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'value.uv',
     'value.direction.wind',
     'value.speed.wind',
+    'value.mode.airconditioner',
     '',
 ]);
 
 export type StateRole =
+    | 'value.mode.airconditioner'
     | 'value.speed.wind'
     | 'value.direction.wind'
     | 'value.uv'
@@ -358,6 +370,7 @@ export type DeviceRole =
     | 'temperature'
     | 'fan'
     | 'value.uv'
+    | 'heatcycle'
     | '';
 
 export function isStateRole(F: string): F is StateRole {
@@ -685,7 +698,7 @@ export type cardGridDataItemOptions = {
     card: 'cardGrid' | 'cardGrid2' | 'cardGrid3';
     cardRole?: CardRole;
     scrollType?: 'page';
-    filterType?: 'true' | 'false';
+    filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardGridDataItems = {
@@ -697,7 +710,7 @@ export type cardEntitiesDataItemOptions = {
     card: 'cardEntities';
     cardRole?: CardRole;
     scrollType?: 'page';
-    filterType?: 'true' | 'false';
+    filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardEntitiesDataItems = {
@@ -709,7 +722,7 @@ export type cardScheduleDataItemOptions = {
     card: 'cardSchedule';
     cardRole?: CardRole;
     scrollType?: 'page';
-    filterType?: 'true' | 'false';
+    filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardScheduleDataItems = {
@@ -873,6 +886,9 @@ export type PageGridPowerConfigElement =
 
 export type cardThermo2DataItemOptions = {
     card: 'cardThermo2';
+    filterType?: 'true' | 'false' | number;
+    scrollType?: 'page';
+    cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardThermo2DataItems = {
@@ -880,9 +896,25 @@ export type cardThermo2DataItems = {
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, dataItem.Dataitem | undefined>;
 };
 
-type PageThermo2BaseConfig = ThermoDataSetBase | ThermoDataSetBase[];
+type PageThermo2BaseConfig = Thermo2DataSetBase | Thermo2DataSetBase[];
 
-type ThermoDataSetBase = {
+type Thermo2DataSetBase = {
+    entity3?: typePageItem.ValueEntryType; // Thermostat
+    entity1: typePageItem.ValueEntryType; // sensor
+    icon1?: typePageItem.IconEntryType;
+    entity2?: typePageItem.ValueEntryType; // humidity
+    icon2?: typePageItem.IconEntryType;
+    icon4?: typePageItem.IconEntryType;
+    icon5?: typePageItem.IconEntryType;
+    headline?: string;
+    minValue?: number;
+    maxValue?: number;
+    stepValue?: number;
+    power?: boolean;
+    mode?: string;
+};
+
+/*type ThermoDataSetBase = {
     entity1: typePageItem.ValueEntryType;
     humidity?: typePageItem.ValueEntryType;
     set: boolean;
@@ -892,7 +924,7 @@ type ThermoDataSetBase = {
     maxTemp: number; // *10
     tempStep: number; // *10
     power: boolean;
-};
+};*/
 
 type PageThermoBaseConfig = {
     auto?: boolean;
@@ -1089,6 +1121,7 @@ export type PageThermo2Message = {
     event: 'entityUpd';
     headline: string;
     navigation: string;
+    internalName: string;
     dstTemp: number | string; // *10
     minTemp: number | string; // *10
     maxTemp: number | string; // *10
