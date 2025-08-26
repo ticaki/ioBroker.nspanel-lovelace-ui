@@ -579,10 +579,10 @@ class PageThermo2 extends import_pageMenu.PageMenu {
                         read: `
                                                     ${native && native.length > 0 && native.every((e) => "color" in e) ? `return ${JSON.stringify(native)}.color[val] || Color.Gray` : ""}
                                                     switch(val) {
-                                                    case 0: return 'Color.Gray';
-                                                    case 1: return 'Color.Red';
-                                                    case 2: return 'Color.Blue';
-                                                    case 3: return 'Color.MSYellow';
+                                                    case 0: return Color.Gray;
+                                                    case 1: return Color.Red;
+                                                    case 2: return Color.Blue;
+                                                    case 3: return Color.MSYellow;
                                                     }
                                                 `
                       }

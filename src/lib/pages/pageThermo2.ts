@@ -681,10 +681,10 @@ export class PageThermo2 extends PageMenu {
                                                             : ''
                                                     }
                                                     switch(val) {
-                                                    case 0: return 'Color.Gray';
-                                                    case 1: return 'Color.Red';
-                                                    case 2: return 'Color.Blue';
-                                                    case 3: return 'Color.MSYellow';
+                                                    case 0: return Color.Gray;
+                                                    case 1: return Color.Red;
+                                                    case 2: return Color.Blue;
+                                                    case 3: return Color.MSYellow;
                                                     }
                                                 `,
                                             },
