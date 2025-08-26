@@ -668,8 +668,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106690238,
-    "val": 0,
-    "ack": true
+    "val": 28,
+    "ack": false
   },
   "0_userdata.0.Aircondition.Speed": {
     "common": {
@@ -720,7 +720,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106690085,
-    "val": 2,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Aircondition.Swing2": {
@@ -4025,6 +4025,1793 @@
     "val": true,
     "ack": false
   },
+  "0_userdata.0.Heizkreise": {
+    "common": {
+      "name": "Heizkreise"
+    },
+    "type": "folder",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168680958,
+    "_id": "0_userdata.0.Heizkreise",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "0_userdata.0.Heizkreise.Thermostat1": {
+    "common": {
+      "name": "Thermostat",
+      "desc": "Manuell erzeugt",
+      "role": "thermostat",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "0_userdata.0.Heizkreise.Thermostat1",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743438
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Actual": {
+    "common": {
+      "name": "Actual",
+      "desc": "Manuell erzeugt",
+      "role": "value.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Actual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743110,
+    "val": 24,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Automatic": {
+    "common": {
+      "name": "Automatic",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Automatic",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743134,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Boost": {
+    "common": {
+      "name": "Boost",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.boost",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Boost",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743152,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Error": {
+    "common": {
+      "name": "Error",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.error",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Error",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743171,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Humidity": {
+    "common": {
+      "name": "Humidity",
+      "desc": "Manuell erzeugt",
+      "role": "value.humidity",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Humidity",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743195,
+    "val": 30,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Lowbat": {
+    "common": {
+      "name": "Lowbat",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.lowbat",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Lowbat",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743212,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Maintain": {
+    "common": {
+      "name": "Maintain",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Maintain",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743233,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Manual": {
+    "common": {
+      "name": "Manual",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Manual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743252,
+    "val": true,
+    "ack": true
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Mode": {
+    "common": {
+      "name": "Mode",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.thermostat",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Mode",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743273,
+    "val": 1,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Party": {
+    "common": {
+      "name": "Party",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.party",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Party",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743290,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Power": {
+    "common": {
+      "name": "Power",
+      "desc": "Manuell erzeugt",
+      "role": "switch.power",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Power",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743307,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Set": {
+    "common": {
+      "name": "Set",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Set",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743332,
+    "val": 14,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.SetPoint": {
+    "common": {
+      "name": "SetPoint",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.SetPoint",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743355,
+    "val": 11.6,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Unreach": {
+    "common": {
+      "name": "Unreach",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.unreach",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Unreach",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743377,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Vacation": {
+    "common": {
+      "name": "Vacation",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Vacation",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743393,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.WindowOpen": {
+    "common": {
+      "name": "WindowOpen",
+      "desc": "Manuell erzeugt",
+      "role": "sensor.window",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.WindowOpen",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743413,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat1.Working": {
+    "common": {
+      "name": "Working",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.working",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat1.Working",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168743430,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2": {
+    "common": {
+      "name": "Thermostat",
+      "desc": "Manuell erzeugt",
+      "role": "thermostat",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "0_userdata.0.Heizkreise.Thermostat2",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766907
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Actual": {
+    "common": {
+      "name": "Actual",
+      "desc": "Manuell erzeugt",
+      "role": "value.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Actual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766574,
+    "val": 24,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Automatic": {
+    "common": {
+      "name": "Automatic",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Automatic",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766593,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Boost": {
+    "common": {
+      "name": "Boost",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.boost",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Boost",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766624,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Error": {
+    "common": {
+      "name": "Error",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.error",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Error",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766647,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Humidity": {
+    "common": {
+      "name": "Humidity",
+      "desc": "Manuell erzeugt",
+      "role": "value.humidity",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Humidity",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766667,
+    "val": 30,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Lowbat": {
+    "common": {
+      "name": "Lowbat",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.lowbat",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Lowbat",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766681,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Maintain": {
+    "common": {
+      "name": "Maintain",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Maintain",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766698,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Manual": {
+    "common": {
+      "name": "Manual",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Manual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766722,
+    "val": true,
+    "ack": true
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Mode": {
+    "common": {
+      "name": "Mode",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.thermostat",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Mode",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766750,
+    "val": 1,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Party": {
+    "common": {
+      "name": "Party",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.party",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Party",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766769,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Power": {
+    "common": {
+      "name": "Power",
+      "desc": "Manuell erzeugt",
+      "role": "switch.power",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Power",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766793,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Set": {
+    "common": {
+      "name": "Set",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Set",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766808,
+    "val": 14,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.SetPoint": {
+    "common": {
+      "name": "SetPoint",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.SetPoint",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766829,
+    "val": 11.6,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Unreach": {
+    "common": {
+      "name": "Unreach",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.unreach",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Unreach",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766844,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Vacation": {
+    "common": {
+      "name": "Vacation",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Vacation",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766861,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.WindowOpen": {
+    "common": {
+      "name": "WindowOpen",
+      "desc": "Manuell erzeugt",
+      "role": "sensor.window",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.WindowOpen",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766879,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat2.Working": {
+    "common": {
+      "name": "Working",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.working",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat2.Working",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168766897,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3": {
+    "common": {
+      "name": "Thermostat",
+      "desc": "Manuell erzeugt",
+      "role": "thermostat",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "0_userdata.0.Heizkreise.Thermostat3",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776451
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Actual": {
+    "common": {
+      "name": "Actual",
+      "desc": "Manuell erzeugt",
+      "role": "value.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Actual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776173,
+    "val": 24,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Automatic": {
+    "common": {
+      "name": "Automatic",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Automatic",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776193,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Boost": {
+    "common": {
+      "name": "Boost",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.boost",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Boost",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776220,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Error": {
+    "common": {
+      "name": "Error",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.error",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Error",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776236,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Humidity": {
+    "common": {
+      "name": "Humidity",
+      "desc": "Manuell erzeugt",
+      "role": "value.humidity",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Humidity",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776249,
+    "val": 30,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Lowbat": {
+    "common": {
+      "name": "Lowbat",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.lowbat",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Lowbat",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776269,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Maintain": {
+    "common": {
+      "name": "Maintain",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Maintain",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776281,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Manual": {
+    "common": {
+      "name": "Manual",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Manual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776292,
+    "val": true,
+    "ack": true
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Mode": {
+    "common": {
+      "name": "Mode",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.thermostat",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Mode",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776307,
+    "val": 1,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Party": {
+    "common": {
+      "name": "Party",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.party",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Party",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776322,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Power": {
+    "common": {
+      "name": "Power",
+      "desc": "Manuell erzeugt",
+      "role": "switch.power",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Power",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776341,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Set": {
+    "common": {
+      "name": "Set",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Set",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776354,
+    "val": 14,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.SetPoint": {
+    "common": {
+      "name": "SetPoint",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.SetPoint",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776368,
+    "val": 11.6,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Unreach": {
+    "common": {
+      "name": "Unreach",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.unreach",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Unreach",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776381,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Vacation": {
+    "common": {
+      "name": "Vacation",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Vacation",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776403,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.WindowOpen": {
+    "common": {
+      "name": "WindowOpen",
+      "desc": "Manuell erzeugt",
+      "role": "sensor.window",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.WindowOpen",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776420,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat3.Working": {
+    "common": {
+      "name": "Working",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.working",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat3.Working",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168776439,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4": {
+    "common": {
+      "name": "Thermostat",
+      "desc": "Manuell erzeugt",
+      "role": "thermostat",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "0_userdata.0.Heizkreise.Thermostat4",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790232
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Actual": {
+    "common": {
+      "name": "Actual",
+      "desc": "Manuell erzeugt",
+      "role": "value.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Actual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168789873,
+    "val": 24,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Automatic": {
+    "common": {
+      "name": "Automatic",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Automatic",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168789892,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Boost": {
+    "common": {
+      "name": "Boost",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.boost",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Boost",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168789918,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Error": {
+    "common": {
+      "name": "Error",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.error",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Error",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168789935,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Humidity": {
+    "common": {
+      "name": "Humidity",
+      "desc": "Manuell erzeugt",
+      "role": "value.humidity",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Humidity",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168789948,
+    "val": 30,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Lowbat": {
+    "common": {
+      "name": "Lowbat",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.lowbat",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Lowbat",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168789962,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Maintain": {
+    "common": {
+      "name": "Maintain",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Maintain",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168789986,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Manual": {
+    "common": {
+      "name": "Manual",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Manual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790012,
+    "val": true,
+    "ack": true
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Mode": {
+    "common": {
+      "name": "Mode",
+      "desc": "Manuell erzeugt",
+      "role": "level.mode.thermostat",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Mode",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790033,
+    "val": 1,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Party": {
+    "common": {
+      "name": "Party",
+      "desc": "Manuell erzeugt",
+      "role": "switch.mode.party",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Party",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790063,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Power": {
+    "common": {
+      "name": "Power",
+      "desc": "Manuell erzeugt",
+      "role": "switch.power",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Power",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790085,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Set": {
+    "common": {
+      "name": "Set",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Set",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790112,
+    "val": 14,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.SetPoint": {
+    "common": {
+      "name": "SetPoint",
+      "desc": "Manuell erzeugt",
+      "role": "level.temperature",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.SetPoint",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790140,
+    "val": 11.6,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Unreach": {
+    "common": {
+      "name": "Unreach",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.maintenance.unreach",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Unreach",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790158,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Vacation": {
+    "common": {
+      "name": "Vacation",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Vacation",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790183,
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.WindowOpen": {
+    "common": {
+      "name": "WindowOpen",
+      "desc": "Manuell erzeugt",
+      "role": "sensor.window",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.WindowOpen",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790207,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.Heizkreise.Thermostat4.Working": {
+    "common": {
+      "name": "Working",
+      "desc": "Manuell erzeugt",
+      "role": "indicator.working",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Heizkreise.Thermostat4.Working",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1756168790224,
+    "val": false,
+    "ack": false
+  },
   "0_userdata.0.Hue": {
     "common": {
       "name": "testHue",
@@ -4291,7 +6078,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": "258",
+    "val": "2",
     "ack": false
   },
   "0_userdata.0.Info.Buttontextoff": {
@@ -4315,7 +6102,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": "46",
+    "val": "4",
     "ack": false
   },
   "0_userdata.0.Info.Farbe": {
@@ -4340,7 +6127,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753644311727,
-    "val": "#085C18",
+    "val": "#45aa77",
     "ack": false
   },
   "0_userdata.0.Info.Icon": {
@@ -4550,7 +6337,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104676402,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "0_userdata.0.Light.Set": {
@@ -5174,8 +6961,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1752493014789,
-    "val": -99,
+    "ts": 1755384444406,
+    "val": 19.1,
     "ack": false
   },
   "0_userdata.0.Powerseite.power2": {
@@ -5200,7 +6987,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493014841,
-    "val": 20,
+    "val": 17.32,
     "ack": false
   },
   "0_userdata.0.Powerseite.power3": {
@@ -5211,7 +6998,8 @@
       "type": "number",
       "read": true,
       "write": true,
-      "def": 0
+      "def": 0,
+      "unit": ""
     },
     "type": "state",
     "native": {},
@@ -5224,8 +7012,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1752493014892,
-    "val": 0,
+    "ts": 1755384454835,
+    "val": 67.67,
     "ack": false
   },
   "0_userdata.0.Powerseite.power4": {
@@ -5275,7 +7063,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493014998,
-    "val": 100,
+    "val": 90,
     "ack": false
   },
   "0_userdata.0.Powerseite.power6": {
@@ -5822,7 +7610,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103792898,
-    "val": 5,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Select.Set": {
@@ -5847,7 +7635,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103809226,
-    "val": 5,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Sensor_Alarm_Flood": {
@@ -5998,7 +7786,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": 100,
+    "val": 50,
     "ack": false
   },
   "0_userdata.0.Slider.Actual2": {
@@ -6073,7 +7861,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104083308,
-    "val": 57,
+    "val": 72,
     "ack": false
   },
   "0_userdata.0.Slider.Set2": {
@@ -6399,7 +8187,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": true,
+    "val": false,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493016232,
@@ -6502,7 +8290,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493016456,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "0_userdata.0.Thermostat.Power": {
@@ -6552,8 +8340,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103432466,
-    "val": 0,
-    "ack": true
+    "val": 14,
+    "ack": false
   },
   "0_userdata.0.Thermostat.SetPoint": {
     "common": {
@@ -6599,7 +8387,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": true,
+    "val": false,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493016608,
@@ -6627,7 +8415,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493016662,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "0_userdata.0.Thermostat.WindowOpen": {
@@ -6652,7 +8440,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493016718,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Thermostat.Working": {
@@ -6677,7 +8465,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493016768,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "0_userdata.0.Thermostat2": {
@@ -7272,7 +9060,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493017159,
-    "val": 99,
+    "val": 44,
     "ack": false
   },
   "0_userdata.0.Ventilator2": {
@@ -7313,7 +9101,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493017257,
-    "val": 1,
+    "val": 3,
     "ack": false
   },
   "0_userdata.0.Ventilator2.Switch": {
@@ -7456,7 +9244,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753104476896,
-    "val": 63,
+    "val": 85,
     "ack": false
   },
   "0_userdata.0.Warning": {
@@ -7662,8 +9450,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493017414,
-    "val": 7,
-    "ack": true
+    "val": 12,
+    "ack": false
   },
   "0_userdata.0.example_state_array": {
     "common": {
