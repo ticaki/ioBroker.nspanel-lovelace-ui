@@ -4,7 +4,7 @@
     "items": {
         "general": {
             "type": "panel",
-            "label": "general",
+            "label": "mqttServerSetting",
             "items": {
                 "mqttServer": {
                     "type": "checkbox",
@@ -21,7 +21,7 @@
                     "type": "staticText",
                     "text": "notifyMqttServer",
                     "style": {
-                        "color": "red",
+                        "color": "red"
                     },
                     "newLine": true,
                     "hidden": "data.mqttServer",
@@ -149,123 +149,6 @@
                 },
                 "_divider": {
                     "type": "divider",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },                
-                "pw1": {
-                    "type": "password",
-                    "label": "Service-Pin (numbers only)",
-                    "newLine": true,
-                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
-                    "validatorNoSaveOnError": true,
-                    "validatorErrorText": "mustBeNumber",
-                    "xs": 12,
-                    "sm": 8,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 3
-                },
-                "fixBrokenCommonTypes": {
-                    "type": "checkbox",
-                    "label": "fixBrokenCommonTypes",
-                    "default": false,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_header": {
-                    "type": "header",
-                    "label": "Not used",
-                    "size": 3,
-                    "text": "Not used",
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "topic": {
-                    "type": "text",
-                    "label": "topic",
-                    "newLine": true,
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "name": {
-                    "type": "text",
-                    "label": "name",
-                    "newLine": false,
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "timeout": {
-                    "type": "number",
-                    "label": "timeout",
-                    "newLine": true,
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mediaid": {
-                    "type": "text",
-                    "label": "mediaid",
-                    "newLine": false,
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "onlyStartFromSystemConfig": {
-                    "type": "checkbox",
-                    "label": "onlyStartFromSystemConfig",
-                    "default": true,
-                    "newLine": true,
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "logUnknownTokens": {
-                    "type": "checkbox",
-                    "label": "logUnknownTokens",
-                    "default": false,
-                    "newLine": true,
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },                
-                "doubleClickTime": {
-                    "type": "number",
-                    "label": "doubleClickTime",
-                    "default": 350,
-                    "min": 1,
-                    "max": 2000,
                     "newLine": true,
                     "xs": 12,
                     "sm": 12,
@@ -711,6 +594,32 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },                
+                "doubleClickTime": {
+                    "type": "number",
+                    "label": "doubleClickTime",
+                    "default": 350,
+                    "min": 1,
+                    "max": 2000,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },                
+                "pw1": {
+                    "type": "password",
+                    "label": "Service-Pin (numbers only)",
+                    "newLine": true,
+                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
+                    "validatorNoSaveOnError": true,
+                    "validatorErrorText": "mustBeNumber",
+                    "xs": 12,
+                    "sm": 8,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
                 }
             }
         },
@@ -3361,6 +3270,49 @@
                     "md": 6,
                     "lg": 3,
                     "xl": 2
+                },
+                "_divider": {
+                    "type": "divider",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "fixBrokenCommonTypes": {
+                    "type": "checkbox",
+                    "label": "fixBrokenCommonTypes",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_header": {
+                    "type": "header",
+                    "label": "Not used",
+                    "size": 3,
+                    "text": "Not used",
+                    "hidden": "false",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "logUnknownTokens": {
+                    "type": "checkbox",
+                    "label": "logUnknownTokens",
+                    "default": false,
+                    "hidden": "false",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         }

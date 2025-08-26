@@ -756,6 +756,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                       `${topic}/cmnd/Backlog`,
                       `FlashNextionAdv0 http://nspanel.de/${fileName}`
                     );
+                    await this.delay(100);
+                    await this.mqttClient.publish(`${topic}/cmnd/Backlog`, ``);
                   }
                   this.log.info(
                     `Installing tft on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
@@ -910,6 +912,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                   if (index !== -1) {
                     const panel = this.controller.panels[index];
                     panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                    await this.delay(100);
+                    panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, ``);
                   }
                 }
                 if (obj.callback) {

@@ -223,6 +223,7 @@
     "hiddenByTrigger": "Seite verbergen",
     "headerShutter": "Rollladensteuerung",
     "notifyMqttServer": "Wir empfehlen den internen MQTT-Server des Adapters zu nutzen, dieser arbeitet direkt mit dem Panel. Dadurch konnte der Datenaustausch optimiert werden.",
+    "mqttServerSetting": "MQTT-Server Einstellungen",
     "OFF": "Aus",
     "AUTO": "Auto",
     "COOL": "Kühlen",

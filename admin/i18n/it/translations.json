@@ -231,5 +231,6 @@
     "FAN": "Fan",
     "DRY": "Asciutto",
     "defaultValueCardThermo": "Valori in decimi",
-    "defaultValueCardThermoHint": "(Solo CardtHermo2) quando abilitato, il minvo, maxValue e StepValue sono specificati in decimi (ad esempio 25 = 2,5 ° C). Quando disabilitati, i valori vengono utilizzati direttamente (ad es. 2,5 = 2,5 ° C)."
+    "defaultValueCardThermoHint": "(Solo CardtHermo2) quando abilitato, il minvo, maxValue e StepValue sono specificati in decimi (ad esempio 25 = 2,5 ° C). Quando disabilitati, i valori vengono utilizzati direttamente (ad es. 2,5 = 2,5 ° C).",
+    "mqttServerSetting": "Impostazioni del server MQTT"
 }

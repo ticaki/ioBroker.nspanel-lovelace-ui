@@ -10,12 +10,7 @@ declare global {
             mqttUsername: string;
             mqttIp: string;
             mqttPort: number;
-            topic: string;
-            name: string;
-            timeout: number;
-            mediaid: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
-            scstype: string;
             timezone: string;
             useBetaTFT: boolean;
             weekdayFormat:boolean;
@@ -26,7 +21,7 @@ declare global {
             
             fixBrokenCommonTypes: boolean;
 
-            onlyStartFromSystemConfig: boolean;
+            //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
             doubleClickTime: number;
             
