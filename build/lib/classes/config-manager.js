@@ -1663,6 +1663,16 @@ class ConfigManager extends import_library.BaseClass {
             false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
+            icon: {
+              true: {
+                value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "clipboard-list-outline" },
+                color: item.onColor ? { type: "const", constVal: item.onColor } : { type: "const", constVal: import_Color.Color.Green }
+              },
+              false: {
+                value: item.icon2 ? { type: "const", constVal: item.icon2 } : { type: "const", constVal: "clipboard-list" },
+                color: item.offColor ? { type: "const", constVal: item.offColor } : { type: "const", constVal: import_Color.Color.Red }
+              }
+            },
             entity1: {
               value: foundedStates[role].ACTUAL
               //set: foundedStates[role].SET,
@@ -2630,6 +2640,7 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "select": {
+            item.icon2 = item.icon2 || item.icon;
             itemConfig = {
               type: "input_sel",
               dpInit: item.id,
@@ -2652,12 +2663,12 @@ class ConfigManager extends import_library.BaseClass {
                 valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
                 icon: {
                   true: {
-                    value: { type: "const", constVal: "clipboard-list-outline" },
-                    color: { type: "const", constVal: import_Color.Color.Green }
+                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "clipboard-list-outline" },
+                    color: item.onColor ? { type: "const", constVal: item.onColor } : { type: "const", constVal: import_Color.Color.Green }
                   },
                   false: {
-                    value: { type: "const", constVal: "clipboard-list" },
-                    color: { type: "const", constVal: import_Color.Color.Red }
+                    value: item.icon2 ? { type: "const", constVal: item.icon2 } : { type: "const", constVal: "clipboard-list" },
+                    color: item.offColor ? { type: "const", constVal: item.offColor } : { type: "const", constVal: import_Color.Color.Red }
                   }
                 },
                 headline: { type: "const", constVal: item.name || commonName || role }

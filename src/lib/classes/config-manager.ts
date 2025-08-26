@@ -1878,6 +1878,24 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
+                        icon: {
+                            true: {
+                                value: item.icon
+                                    ? { type: 'const', constVal: item.icon }
+                                    : { type: 'const', constVal: 'clipboard-list-outline' },
+                                color: item.onColor
+                                    ? { type: 'const', constVal: item.onColor }
+                                    : { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: item.icon2
+                                    ? { type: 'const', constVal: item.icon2 }
+                                    : { type: 'const', constVal: 'clipboard-list' },
+                                color: item.offColor
+                                    ? { type: 'const', constVal: item.offColor }
+                                    : { type: 'const', constVal: Color.Red },
+                            },
+                        },
                         entity1: {
                             value: foundedStates[role].ACTUAL,
                             //set: foundedStates[role].SET,
@@ -3057,6 +3075,8 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'select': {
+                        item.icon2 = item.icon2 || item.icon;
+
                         itemConfig = {
                             type: 'input_sel',
                             dpInit: item.id,
@@ -3079,12 +3099,20 @@ export class ConfigManager extends BaseClass {
                                 valueList: item.modeList ? { type: 'const', constVal: item.modeList } : undefined,
                                 icon: {
                                     true: {
-                                        value: { type: 'const', constVal: 'clipboard-list-outline' },
-                                        color: { type: 'const', constVal: Color.Green },
+                                        value: item.icon
+                                            ? { type: 'const', constVal: item.icon }
+                                            : { type: 'const', constVal: 'clipboard-list-outline' },
+                                        color: item.onColor
+                                            ? { type: 'const', constVal: item.onColor }
+                                            : { type: 'const', constVal: Color.Green },
                                     },
                                     false: {
-                                        value: { type: 'const', constVal: 'clipboard-list' },
-                                        color: { type: 'const', constVal: Color.Red },
+                                        value: item.icon2
+                                            ? { type: 'const', constVal: item.icon2 }
+                                            : { type: 'const', constVal: 'clipboard-list' },
+                                        color: item.offColor
+                                            ? { type: 'const', constVal: item.offColor }
+                                            : { type: 'const', constVal: Color.Red },
                                     },
                                 },
                                 headline: { type: 'const', constVal: item.name || commonName || role },
