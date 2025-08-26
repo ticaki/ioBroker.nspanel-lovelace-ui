@@ -1663,16 +1663,6 @@ class ConfigManager extends import_library.BaseClass {
             false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
-            icon: {
-              true: {
-                value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "clipboard-list-outline" },
-                color: item.onColor ? { type: "const", constVal: item.onColor } : { type: "const", constVal: import_Color.Color.Green }
-              },
-              false: {
-                value: item.icon2 ? { type: "const", constVal: item.icon2 } : { type: "const", constVal: "clipboard-list" },
-                color: item.offColor ? { type: "const", constVal: item.offColor } : { type: "const", constVal: import_Color.Color.Red }
-              }
-            },
             entity1: {
               value: foundedStates[role].ACTUAL
               //set: foundedStates[role].SET,
@@ -2645,15 +2635,15 @@ class ConfigManager extends import_library.BaseClass {
               type: "input_sel",
               dpInit: item.id,
               role: "",
-              color: {
-                true: await this.getIconColor(item.onColor, this.colorOn),
-                false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
+              /* color: {
+                  true: await this.getIconColor(item.onColor, this.colorOn),
+                  false: await this.getIconColor(item.offColor, this.colorOff),
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
               },
               icon: {
-                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
-              },
+                  true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                  false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+              }, */
               data: {
                 entityInSel: {
                   value: foundedStates[role].ACTUAL,
@@ -2663,12 +2653,12 @@ class ConfigManager extends import_library.BaseClass {
                 valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
                 icon: {
                   true: {
-                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "clipboard-list-outline" },
-                    color: item.onColor ? { type: "const", constVal: item.onColor } : { type: "const", constVal: import_Color.Color.Green }
+                    value: { type: "const", constVal: item.icon || "clipboard-list-outline" },
+                    color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
                   },
                   false: {
-                    value: item.icon2 ? { type: "const", constVal: item.icon2 } : { type: "const", constVal: "clipboard-list" },
-                    color: item.offColor ? { type: "const", constVal: item.offColor } : { type: "const", constVal: import_Color.Color.Red }
+                    value: { type: "const", constVal: item.icon2 || "clipboard-list" },
+                    color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
                   }
                 },
                 headline: { type: "const", constVal: item.name || commonName || role }
