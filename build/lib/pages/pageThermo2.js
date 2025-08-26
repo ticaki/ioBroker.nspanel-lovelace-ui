@@ -278,9 +278,6 @@ class PageThermo2 extends import_pageMenu.PageMenu {
   async onStateTrigger() {
     await this.update();
   }
-  async reset() {
-    this.step = 1;
-  }
   onInternalCommand = async (id, state) => {
     var _a, _b, _c;
     if (state == null ? void 0 : state.val) {

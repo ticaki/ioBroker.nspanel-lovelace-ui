@@ -79,7 +79,7 @@ class PageMenu extends import_Page.Page {
   async getOptions(result) {
     if (this.pageItems) {
       if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardThermo2" || this.config.card === "cardGrid2")) {
-        let pageItems = this.pageItems;
+        this.tempItems = this.pageItems;
         if (this.config.filterType === "true" || this.config.filterType === "false") {
           this.tempItems = [];
           const testIt = this.config.filterType === "true";
@@ -88,7 +88,6 @@ class PageMenu extends import_Page.Page {
               this.tempItems.push(p);
             }
           }
-          pageItems = this.tempItems;
         } else if (typeof this.config.filterType === "number") {
           this.tempItems = [];
           for (const p of this.pageItems) {
@@ -96,25 +95,24 @@ class PageMenu extends import_Page.Page {
               this.tempItems.push(p);
             }
           }
-          pageItems = this.tempItems;
         }
         const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardThermo2";
         let maxItems = this.maxItems;
         let a = 0;
-        if (pageItems.length > maxItems) {
+        if (this.tempItems.length > maxItems) {
           a = (isEntities ? maxItems : maxItems / 2) * this.step;
           maxItems = a + maxItems;
         }
         let b = 0;
         if (this.config.scrollType === "page") {
           for (; a < maxItems; a++) {
-            const temp = pageItems[a];
+            const temp = this.tempItems[a];
             result[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
           }
         } else {
           let a2 = this.step;
           for (; a2 < this.maxItems + this.step; a2++) {
-            const temp = pageItems[a2];
+            const temp = this.tempItems[a2];
             result[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
           }
         }
@@ -273,6 +271,7 @@ class PageMenu extends import_Page.Page {
       this.adapter.clearTimeout(this.doubleClick);
       this.doubleClick = void 0;
     }
+    this.tempItems = void 0;
     await super.delete();
   }
 }

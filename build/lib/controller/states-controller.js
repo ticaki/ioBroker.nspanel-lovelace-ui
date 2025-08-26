@@ -129,6 +129,9 @@ class StatesControler extends import_library.BaseClass {
         if (!obj || !obj.common || obj.type !== "state") {
           throw new Error(`Got invalid object for ${id}`);
         }
+        if (this.unload) {
+          return;
+        }
         this.triggerDB[id].state = state;
         this.triggerDB[id].common = obj.common;
         await this.adapter.subscribeForeignStatesAsync(id);

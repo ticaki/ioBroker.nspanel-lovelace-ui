@@ -1321,8 +1321,14 @@ export class Panel extends BaseClass {
 
                 await this.adapter.delay(50);
 
-                const popup = this.navigation.getCurrentMainPage();
-                await this.setActivePage(popup, false);
+                const start = this.navigation.getCurrentMainPage();
+                if (start === undefined) {
+                    this.log.error('No start page defined!');
+                    return;
+                }
+                start.setLastPage(this._activePage ?? undefined);
+                await start.setVisibility(true);
+
                 if (this.screenSaver) {
                     this.screenSaver.pageItems = await this.screenSaver.createPageItems(
                         this.screenSaver.pageItemConfig,

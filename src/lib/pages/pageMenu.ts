@@ -73,7 +73,7 @@ export class PageMenu extends Page {
                 /**
                  * Live update von gefilterten Adaptern.
                  */
-                let pageItems = this.pageItems;
+                this.tempItems = this.pageItems;
                 if (this.config.filterType === 'true' || this.config.filterType === 'false') {
                     this.tempItems = [];
                     const testIt = this.config.filterType === 'true';
@@ -90,7 +90,6 @@ export class PageMenu extends Page {
                             this.tempItems.push(p);
                         }
                     }
-                    pageItems = this.tempItems;
                 } else if (typeof this.config.filterType === 'number') {
                     this.tempItems = [];
                     for (const p of this.pageItems) {
@@ -102,7 +101,6 @@ export class PageMenu extends Page {
                             this.tempItems.push(p);
                         }
                     }
-                    pageItems = this.tempItems;
                 }
 
                 const isEntities =
@@ -111,7 +109,7 @@ export class PageMenu extends Page {
                     this.config.card === 'cardThermo2';
                 let maxItems = this.maxItems;
                 let a = 0;
-                if (pageItems.length > maxItems) {
+                if (this.tempItems.length > maxItems) {
                     a = (isEntities ? maxItems : maxItems / 2) * this.step;
                     maxItems = a + maxItems;
                 }
@@ -127,14 +125,14 @@ export class PageMenu extends Page {
                 }*/
                 if (this.config.scrollType === 'page') {
                     for (; a < maxItems; a++) {
-                        const temp = pageItems[a];
+                        const temp = this.tempItems[a];
                         result[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
                     }
                 } else {
                     // das hier scheint falsch zu sein übergeht das erste element
                     let a = this.step;
                     for (; a < this.maxItems + this.step; a++) {
-                        const temp = pageItems[a];
+                        const temp = this.tempItems[a];
                         result[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
                     }
                 }
@@ -347,6 +345,7 @@ export class PageMenu extends Page {
             this.adapter.clearTimeout(this.doubleClick);
             this.doubleClick = undefined;
         }
+        this.tempItems = undefined;
         await super.delete();
     }
 }

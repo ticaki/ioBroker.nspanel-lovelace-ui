@@ -450,7 +450,7 @@ export class Navigation extends BaseClass {
     async delete(): Promise<void> {
         await super.delete();
         this.navigationConfig = [];
-        this.database = [];
+        //this.database = [];
         this.panel = {} as Panel;
         if (this.doubleClickTimeout) {
             this.adapter.clearTimeout(this.doubleClickTimeout);

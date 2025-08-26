@@ -1174,6 +1174,7 @@ class Panel extends import_library.BaseClass {
    * @returns void
    */
   async HandleIncomingMessage(event) {
+    var _a;
     if (!event.method) {
       return;
     }
@@ -1207,8 +1208,13 @@ class Panel extends import_library.BaseClass {
         this.sendDimmode();
         this.navigation.resetPosition();
         await this.adapter.delay(50);
-        const popup = this.navigation.getCurrentMainPage();
-        await this.setActivePage(popup, false);
+        const start = this.navigation.getCurrentMainPage();
+        if (start === void 0) {
+          this.log.error("No start page defined!");
+          return;
+        }
+        start.setLastPage((_a = this._activePage) != null ? _a : void 0);
+        await start.setVisibility(true);
         if (this.screenSaver) {
           this.screenSaver.pageItems = await this.screenSaver.createPageItems(
             this.screenSaver.pageItemConfig

@@ -306,9 +306,6 @@ export class PageThermo2 extends PageMenu {
     protected async onStateTrigger(): Promise<void> {
         await this.update();
     }
-    async reset(): Promise<void> {
-        this.step = 1;
-    }
 
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (state?.val) {
