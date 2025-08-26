@@ -6,7 +6,7 @@ import * as tools from '../const/tools';
 import type { PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
-import type { ChangeTypeOfKeys, DeviceRole } from '../types/pages';
+import { isCardEntitiesRole, isCardGridRole, type ChangeTypeOfKeys, type DeviceRole } from '../types/pages';
 import type { Screensaver } from './screensaver';
 import { BaseClassTriggerd } from '../classes/baseClassPage';
 
@@ -69,6 +69,9 @@ export class PageItem extends BaseClassTriggerd {
         switch (this.dataItems.type) {
             case 'number':
             case 'button':
+            case 'switch':
+            case 'shutter2':
+            case 'empty':
             case 'input_sel':
             case 'light':
             case 'light2':
@@ -194,7 +197,7 @@ export class PageItem extends BaseClassTriggerd {
                     const item = entry.data;
                     message.type =
                         this.parent &&
-                        this.parent.card.startsWith('cardGrid') &&
+                        isCardGridRole(this.parent.card) &&
                         (this.config.role === 'light' || this.config.role === 'socket')
                             ? 'switch'
                             : this.panel.overrideLightPopup
@@ -420,7 +423,7 @@ export class PageItem extends BaseClassTriggerd {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                         } else if (entry.type === 'button') {
                             message.optionalValue = (value ?? true) ? '1' : '0';
-                            if (this.parent && this.parent.card === 'cardEntities') {
+                            if (this.parent && isCardEntitiesRole(this.parent.card)) {
                                 message.optionalValue =
                                     this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value)) ??
                                     message.optionalValue;
@@ -478,7 +481,7 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         if (entry.type === 'button' && entry.data.confirm) {
                             if (this.confirmClick === 'unlock') {
-                                if (this.parent && this.parent.card === 'cardEntities') {
+                                if (this.parent && isCardEntitiesRole(this.parent.card)) {
                                     message.optionalValue =
                                         (await entry.data.confirm.getString()) ?? message.optionalValue;
                                 }
@@ -530,7 +533,7 @@ export class PageItem extends BaseClassTriggerd {
                                         '',
                                         null,
                                         (this.parent &&
-                                            this.parent.card !== 'cardEntities' &&
+                                            isCardEntitiesRole(this.parent.card) &&
                                             !this.parent.card.startsWith('screens')) ??
                                             false,
                                     )) ?? '';
@@ -674,6 +677,11 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     break;
                 }
+                case 'empty':
+                    {
+                        return tools.getPayload('', 'delete', '', '', '', '');
+                    }
+                    break;
             }
         }
         this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
@@ -1741,7 +1749,7 @@ export class PageItem extends BaseClassTriggerd {
             case 'mode-preset_modes':
             case 'mode':
                 {
-                    if (!('entityInSel' in entry.data)) {
+                    if (entry.data && !('entityInSel' in entry.data)) {
                         break;
                     }
                     await this.setListCommand(entry, value);
@@ -1785,7 +1793,7 @@ export class PageItem extends BaseClassTriggerd {
                             const headline =
                                 (item.popup.getHeadline && (await item.popup.getHeadline.getString())) ?? '';
                             if (message) {
-                                await item.popup.setMessage.setStateAsync(
+                                await item.popup.setMessage.setState(
                                     JSON.stringify({ headline: headline, message: message }),
                                 );
                             }
@@ -1949,7 +1957,7 @@ export class PageItem extends BaseClassTriggerd {
                                     item?.color?.true &&
                                     item.color.true.options.role !== 'level.color.rgb'
                                 ) {
-                                    await item.color.true.setStateAsync(JSON.stringify(rgb));
+                                    await item.color.true.setState(JSON.stringify(rgb));
                                     break;
                                 }
                                 // jump to next case if we have a rgb.hex
@@ -1960,9 +1968,7 @@ export class PageItem extends BaseClassTriggerd {
                                 if (Color.isRGB(rgb)) {
                                     item.color &&
                                         item.color.true &&
-                                        (await item.color.true.setStateAsync(
-                                            Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b),
-                                        ));
+                                        (await item.color.true.setState(Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b)));
                                 }
 
                                 break;
@@ -2234,7 +2240,7 @@ export class PageItem extends BaseClassTriggerd {
             }
             case 'timer-begin': {
                 if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
-                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setStateAsync(2));
+                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setState(2));
                 }
                 switch (this.tempData.role) {
                     case 'ex-alarm':
@@ -2295,8 +2301,7 @@ export class PageItem extends BaseClassTriggerd {
                         });
                         const r = new Date(new Date().setHours(0, parseInt(t), 0, 0)).getTime();
                         if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
-                            this.dataItems.data.entity1?.set &&
-                                (await this.dataItems.data.entity1.set.setStateAsync(r));
+                            this.dataItems.data.entity1?.set && (await this.dataItems.data.entity1.set.setState(r));
                         }
                         break;
                     }
@@ -2306,8 +2311,7 @@ export class PageItem extends BaseClassTriggerd {
                         });
                         const r = new Date(new Date().setHours(0, 0, parseInt(t), 0)).getTime();
                         if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
-                            this.dataItems.data.entity1?.set &&
-                                (await this.dataItems.data.entity1.set.setStateAsync(r));
+                            this.dataItems.data.entity1?.set && (await this.dataItems.data.entity1.set.setState(r));
                         }
                         break;
                     }
@@ -2330,7 +2334,7 @@ export class PageItem extends BaseClassTriggerd {
             }
             case 'timer-clear': {
                 if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
-                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setStateAsync(0));
+                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setState(0));
                 }
 
                 if (this.tempData) {
@@ -2339,8 +2343,7 @@ export class PageItem extends BaseClassTriggerd {
                         case 'ex-timer': {
                             const r = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
                             if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
-                                this.dataItems.data.entity1?.set &&
-                                    (await this.dataItems.data.entity1.set.setStateAsync(r));
+                                this.dataItems.data.entity1?.set && (await this.dataItems.data.entity1.set.setState(r));
                             }
                             break;
                         }
@@ -2363,7 +2366,7 @@ export class PageItem extends BaseClassTriggerd {
             }
             case 'timer-pause': {
                 if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
-                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setStateAsync(1));
+                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setState(1));
                 }
 
                 if (this.tempData) {
@@ -2440,7 +2443,7 @@ export class PageItem extends BaseClassTriggerd {
     async setListCommand(entry: typePageItem.PageItemDataItems, value: string): Promise<boolean> {
         //if (entry.type !== 'input_sel') return false;
         const item = entry.data;
-        if (!('entityInSel' in item)) {
+        if (!item || !('entityInSel' in item)) {
             return false;
         }
 
@@ -2461,7 +2464,7 @@ export class PageItem extends BaseClassTriggerd {
                 sList.list[parseInt(value)] !== undefined &&
                 item.setValue1
             ) {
-                await item.setValue1.setStateAsync(parseInt(value) + 1);
+                await item.setValue1.setState(parseInt(value) + 1);
 
                 return true;
             } else if (
@@ -2471,9 +2474,9 @@ export class PageItem extends BaseClassTriggerd {
                 item.entityInSel.value
             ) {
                 if (item.entityInSel.value?.common?.type === 'number') {
-                    await item.entityInSel.value.setStateAsync(parseInt(sList.states[parseInt(value)]));
+                    await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
                 } else {
-                    await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+                    await item.entityInSel.value.setState(sList.states[parseInt(value)]);
                 }
                 return true;
             }
@@ -2512,9 +2515,9 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 if (Array.isArray(list) && list.length > parseInt(value)) {
                     if (item.entityInSel.set) {
-                        await item.entityInSel.set.setStateAsync(value);
+                        await item.entityInSel.set.setState(value);
                     } else {
-                        await item.entityInSel.value.setStateAsync(value);
+                        await item.entityInSel.value.setState(value);
                     }
                     return true;
                 }

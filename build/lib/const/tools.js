@@ -92,9 +92,9 @@ async function setValueEntry(i, value, sca = true) {
     }
   }
   if (i.set && i.set.writeable) {
-    await i.set.setStateAsync(res);
+    await i.set.setState(res);
   } else if (i.value.writeable) {
-    await i.value.setStateAsync(res);
+    await i.value.setState(res);
   } else if (i.set || i.value) {
     const t = i.set || i.value;
     t.log.warn(t.name || "??? is not writeable");
@@ -257,9 +257,9 @@ async function setSliderCTFromValue(i, value) {
     }
   }
   if (i.set && i.set.writeable) {
-    await i.value.setStateAsync(r);
+    await i.value.setState(r);
   } else {
-    await i.value.setStateAsync(r);
+    await i.value.setState(r);
   }
 }
 async function setScaledNumber(i, value) {
@@ -273,9 +273,9 @@ async function setScaledNumber(i, value) {
       value = getScaledNumberRaw(value, await i.minScale.getNumber(), await i.maxScale.getNumber(), value);
     }
     if (i.set && i.set.writeable) {
-      await i.set.setStateAsync(value);
+      await i.set.setState(value);
     } else if (i.value.writeable && nval !== value) {
-      await i.value.setStateAsync(value);
+      await i.value.setState(value);
     }
   }
 }
@@ -821,9 +821,9 @@ const setRGBThreefromRGB = async (item, c) => {
   if (!item || !item.Red || !item.Green || !item.Blue) {
     return;
   }
-  await item.Red.setStateAsync(c.r);
-  await item.Green.setStateAsync(c.g);
-  await item.Blue.setStateAsync(c.b);
+  await item.Red.setState(c.r);
+  await item.Green.setState(c.g);
+  await item.Blue.setState(c.b);
 };
 const getDecfromHue = async (item) => {
   var _a;
@@ -849,7 +849,7 @@ const setHuefromRGB = async (item, c) => {
     return;
   }
   const hue = import_Color.Color.getHue(c.r, c.g, c.b);
-  await item.hue.setStateAsync(hue);
+  await item.hue.setState(hue);
 };
 function formatInSelText(Text) {
   if (Text === void 0 || Text === null) {

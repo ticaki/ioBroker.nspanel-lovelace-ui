@@ -222,5 +222,14 @@
     "hideCards": "Ukryj strony",
     "hiddenByTrigger": "Ukryj stronę",
     "headerShutter": "Kontrola migawki",
-    "notifyMqttServer": "Zalecamy korzystanie z wewnętrznego serwera MQTT adaptera, który działa bezpośrednio z panelem. To optymalizuje wymianę danych."
+    "notifyMqttServer": "Zalecamy korzystanie z wewnętrznego serwera MQTT adaptera, który działa bezpośrednio z panelem. To optymalizuje wymianę danych.",
+    "OFF": "Wyłączony",
+    "AUTO": "Automatyczny",
+    "COOL": "Fajny",
+    "HEAT": "Ciepło",
+    "ECO": "Eco",
+    "FAN": "Wentylator",
+    "DRY": "Suchy",
+    "defaultValueCardThermo": "Wartości w dziesiątych",
+    "defaultValueCardThermoHint": "(Tylko Cardthermo2) Po włączeniu MinValue, MaxValue i StepValue są określone w dziesiątej (np. 25 = 2,5 ° C). Po wyłączeniu wartości są używane bezpośrednio (np. 2,5 = 2,5 ° C)."
 }

@@ -22,6 +22,9 @@ __export(pages_exports, {
   exhaustiveCheck: () => exhaustiveCheck,
   isAlarmButtonEvent: () => isAlarmButtonEvent,
   isButtonActionType: () => isButtonActionType,
+  isCardEntitiesRole: () => isCardEntitiesRole,
+  isCardGridRole: () => isCardGridRole,
+  isCardMenuRole: () => isCardMenuRole,
   isClosingBehavior: () => isClosingBehavior,
   isColorEntryType: () => isColorEntryType,
   isPlaceholderType: () => isPlaceholderType,
@@ -35,6 +38,15 @@ __export(pages_exports, {
   stateRoleArray: () => stateRoleArray
 });
 module.exports = __toCommonJS(pages_exports);
+function isCardEntitiesRole(F) {
+  return ["cardEntities", "cardSchedule"].indexOf(F) !== -1;
+}
+function isCardGridRole(F) {
+  return ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"].indexOf(F) !== -1;
+}
+function isCardMenuRole(F) {
+  return isCardEntitiesRole(F) || isCardGridRole(F);
+}
 const arrayOfAll = () => (array) => array;
 function exhaustiveCheck(_param) {
 }
@@ -205,6 +217,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "value.uv",
   "value.direction.wind",
   "value.speed.wind",
+  "value.mode.airconditioner",
   ""
 ]);
 function isStateRole(F) {
@@ -338,6 +351,9 @@ function isPlaceholderType(F) {
   exhaustiveCheck,
   isAlarmButtonEvent,
   isButtonActionType,
+  isCardEntitiesRole,
+  isCardGridRole,
+  isCardMenuRole,
   isClosingBehavior,
   isColorEntryType,
   isPlaceholderType,

@@ -222,5 +222,15 @@
     "hideCards": "Hide pages",
     "hiddenByTrigger": "Hide page",
     "headerShutter": "Shutter control",
-    "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange."
+    "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange.", 
+    "OFF": "Off",
+    "AUTO": "Auto",
+    "COOL": "Cool",
+    "HEAT": "Heat",
+    "ECO": "Eco",
+    "FAN": "Fan",
+    "DRY": "Dry",
+    "defaultValueCardThermo": "Values in tenths",
+    "defaultValueCardThermoHint": "(cardThermo2 only) When enabled, minValue, maxValue and stepValue are specified in tenths (e.g. 25 = 2.5 °C). When disabled, values are used directly (e.g. 2.5 = 2.5 °C)."
+
 }
