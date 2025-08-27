@@ -190,7 +190,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         const max = Math.round((await ((_e = data.maxValue) == null ? void 0 : _e.getNumber()) || 28) * 10);
         let dstTemp = Math.round((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10);
         dstTemp = Math.min(Math.max(dstTemp, min), max);
-        dstTemp = Math.round((dstTemp - min) / step + min) * step;
+        dstTemp = Math.round((dstTemp - min) / step) * step + min;
         message.dstTemp = dstTemp.toString();
         message.minTemp = min.toString();
         message.maxTemp = max.toString();
