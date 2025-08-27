@@ -111,6 +111,16 @@ export class Screensaver extends Page {
                 alternate: [],
             },
         };
+        const overwrite: Record<Types.ScreenSaverPlaces, string[]> = {
+            indicator: [],
+            left: [],
+            time: [],
+            date: [],
+            bottom: [],
+            mricon: [],
+            favorit: [],
+            alternate: [],
+        };
 
         if (this.pageItems) {
             const model = config.model;
@@ -130,11 +140,26 @@ export class Screensaver extends Page {
                     if (places.indexOf(place) === -1) {
                         continue;
                     }
+                    const enabled = await pageItems.dataItems?.data?.enabled?.getNumber();
+                    if (enabled != null) {
+                        if (enabled >= 0) {
+                            overwrite[place][enabled] = await pageItems.getPageItemPayload();
+                        }
+                        continue;
+                    }
+                    const enabled2 = await pageItems.dataItems?.data?.enabled?.getBoolean();
+                    if (enabled2 === false) {
+                        continue;
+                    }
 
                     const arr = options[place] || [];
                     arr.push(await pageItems.getPageItemPayload());
                     options[place] = arr;
                 }
+            }
+            for (const x in message.options) {
+                const place = x as Types.ScreenSaverPlaces;
+                message.options[place] = Object.assign(message.options[place], overwrite[place]);
             }
             for (const x in message.options) {
                 const place = x as Types.ScreenSaverPlaces;

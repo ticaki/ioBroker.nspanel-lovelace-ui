@@ -890,6 +890,7 @@ export type cardThermo2DataItemOptions = {
     card: 'cardThermo2';
     filterType?: 'true' | 'false' | number;
     scrollType?: 'page';
+    sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
     cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
 };

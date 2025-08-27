@@ -1794,6 +1794,17 @@ class ConfigManager extends import_library.BaseClass {
     if (item.filter != null && itemConfig) {
       itemConfig.filter = item.filter;
     }
+    if (item.enabled === false && itemConfig) {
+      if (!itemConfig.data) {
+        itemConfig.data = {};
+      }
+      itemConfig.data.enabled = { type: "const", constVal: false };
+    } else if (itemConfig && await this.existsState(`${item.id}.ENABLED`)) {
+      if (!itemConfig.data) {
+        itemConfig.data = {};
+      }
+      itemConfig.data.enabled = { type: "triggered", dp: `${item.id}.ENABLED` };
+    }
     return itemConfig;
   }
   async searchDatapointsForItems(db, role, dpInit, messages) {
@@ -1889,7 +1900,7 @@ class ConfigManager extends import_library.BaseClass {
           item.id,
           messages
         );
-        const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+        const specialRole = pages.isCardGridRole(page.type) ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         const getButtonsTextTrue = async (item2, def1) => {
           return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
@@ -2926,6 +2937,17 @@ class ConfigManager extends import_library.BaseClass {
         if (item.filter != null && itemConfig) {
           itemConfig.filter = item.filter;
         }
+        if (item.enabled === false && itemConfig) {
+          if (!itemConfig.data) {
+            itemConfig.data = {};
+          }
+          itemConfig.data.enabled = { type: "const", constVal: false };
+        } else if (itemConfig && await this.existsState(`${item.id}.ENABLED`)) {
+          if (!itemConfig.data) {
+            itemConfig.data = {};
+          }
+          itemConfig.data.enabled = { type: "triggered", dp: `${item.id}.ENABLED` };
+        }
         return { itemConfig, messages };
       }
       throw new Error(`Object ${item.id} not found!`);
@@ -3614,6 +3636,11 @@ class ConfigManager extends import_library.BaseClass {
         type: "const",
         constVal: { local: "de", format: entity.ScreensaverEntityDateFormat }
       };
+    }
+    if (entity.ScreensaverEntityEnabled === false) {
+      result.data.enabled = { type: "const", constVal: false };
+    } else if (typeof entity.ScreensaverEntityEnabled === "string" && await this.existsState(entity.ScreensaverEntityEnabled)) {
+      result.data.enabled = { type: "triggered", dp: entity.ScreensaverEntityEnabled };
     }
     let color = void 0;
     if (entity.ScreensaverEntityOnColor) {

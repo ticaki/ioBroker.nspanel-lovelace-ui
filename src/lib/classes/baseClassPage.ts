@@ -39,6 +39,7 @@ export class BaseClassTriggerd extends BaseClass {
     neverDeactivateTrigger: boolean = false;
     sleep: boolean = false;
     parent: BaseClassTriggerd | undefined = undefined;
+    canBeHidden: boolean = false;
     triggerParent: boolean = false;
     dpInit: string | RegExp = '';
     protected enums: string | string[] = '';
@@ -79,7 +80,15 @@ export class BaseClassTriggerd extends BaseClass {
     async reset(): Promise<void> {}
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
-        if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload) {
+        if (
+            (!this.visibility &&
+                !(
+                    this.neverDeactivateTrigger ||
+                    (this.canBeHidden && this.parent?.visibility) ||
+                    from.neverDeactivateTrigger
+                )) ||
+            this.unload
+        ) {
             this.log.debug(`[${this.panel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
             return false;
         }

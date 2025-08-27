@@ -65,7 +65,7 @@ export class PageItem extends BaseClassTriggerd {
             config.readOptions,
         )) as typePageItem.PageItemDataItems['data'];
         this.dataItems = { ...config, data: tempItem } as typePageItem.PageItemDataItems;
-
+        this.canBeHidden = !!this.dataItems.data?.enabled;
         switch (this.dataItems.type) {
             case 'number':
             case 'button':
@@ -191,6 +191,12 @@ export class PageItem extends BaseClassTriggerd {
             const entry = this.dataItems;
             const message: Partial<typePageItem.MessageItem> = {};
             message.intNameEntity = this.id;
+            if (entry.data?.enabled) {
+                const en = await entry.data.enabled.getBoolean();
+                if (en === false) {
+                    return '';
+                }
+            }
             switch (entry.type) {
                 case 'light':
                 case 'light2': {

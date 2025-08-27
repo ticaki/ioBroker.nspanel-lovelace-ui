@@ -308,6 +308,7 @@ export type PageItemTimer = Pick<
     | 'setValue1'
     // set current status
     | 'setValue2'
+    | 'enabled'
 >;
 export type PageItemTimerDataItemsOptions = {
     type: 'timer';
@@ -330,6 +331,7 @@ export type PageItemFan = Pick<
     | 'valueList'
     | 'valueList2'
     | 'setList'
+    | 'enabled'
 >;
 export type PageItemFanDataItemsOptions = {
     type: 'fan';
@@ -364,6 +366,7 @@ export type PageItemNumber = Pick<
     | 'heading1'
     | 'heading2'
     | 'heading3'
+    | 'enabled'
 >;
 export type PageItemNumberDataItemsOptions = {
     type: 'number';
@@ -390,6 +393,7 @@ export type PageItemButton = Pick<
     | 'confirm'
     | 'entity4'
     | 'popup'
+    | 'enabled'
 >;
 export type PageItemButtonDataItemsOptions = {
     type: 'button' | 'switch';
@@ -438,6 +442,7 @@ export type PageItemLight = Pick<
     | 'colorMode'
     | 'setValue1'
     | 'setValue2'
+    | 'enabled'
 >;
 export type PageItemSeparator = {
     type: 'empty';
@@ -469,6 +474,7 @@ export type PageItemInputSel = Pick<
     | 'valueList2'
     | 'setList'
     | 'setValue1'
+    | 'enabled'
 >;
 
 export type PageItemInputSelDataItemsOptions = {
@@ -502,6 +508,7 @@ export type PageItemShutter = Pick<
     | 'setList'
     | 'setValue1'
     | 'setValue2'
+    | 'enabled'
 >;
 export type PageItemShutterDataItemsOptions = {
     type: 'shutter';
@@ -529,6 +536,7 @@ export type PageItemShutter2 = Pick<
     | 'icon2'
     | 'icon3'
     | 'icon4'
+    | 'enabled'
 >;
 
 export type PageItemShutter2DataItemsOptions = {
@@ -614,6 +622,7 @@ export type PageItemBase = {
     stop2?: number;
     down2?: number;
     filter?: number; // filter for PageMenu
+    enabled?: boolean;
 };
 
 export type PageTypeUnionTemplate = {

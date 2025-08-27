@@ -2025,6 +2025,17 @@ export class ConfigManager extends BaseClass {
         if (item.filter != null && itemConfig) {
             itemConfig.filter = item.filter;
         }
+        if (item.enabled === false && itemConfig) {
+            if (!itemConfig.data) {
+                itemConfig.data = {};
+            }
+            itemConfig.data.enabled = { type: 'const', constVal: false };
+        } else if (itemConfig && (await this.existsState(`${item.id}.ENABLED`))) {
+            if (!itemConfig.data) {
+                itemConfig.data = {};
+            }
+            itemConfig.data.enabled = { type: 'triggered', dp: `${item.id}.ENABLED` };
+        }
         return itemConfig;
     }
 
@@ -2139,10 +2150,7 @@ export class ConfigManager extends BaseClass {
                 /*if (!(await this.checkRequiredDatapoints(role, item))) {
                     return { itemConfig: undefined, messages };
                 }*/
-                const specialRole: pages.DeviceRole =
-                    page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
-                        ? 'textNotIcon'
-                        : 'iconNotText';
+                const specialRole: pages.DeviceRole = pages.isCardGridRole(page.type) ? 'textNotIcon' : 'iconNotText';
                 const commonName =
                     typeof obj.common.name === 'string'
                         ? obj.common.name
@@ -3488,6 +3496,17 @@ export class ConfigManager extends BaseClass {
                 if (item.filter != null && itemConfig) {
                     itemConfig.filter = item.filter;
                 }
+                if (item.enabled === false && itemConfig) {
+                    if (!itemConfig.data) {
+                        itemConfig.data = {};
+                    }
+                    itemConfig.data.enabled = { type: 'const', constVal: false };
+                } else if (itemConfig && (await this.existsState(`${item.id}.ENABLED`))) {
+                    if (!itemConfig.data) {
+                        itemConfig.data = {};
+                    }
+                    itemConfig.data.enabled = { type: 'triggered', dp: `${item.id}.ENABLED` };
+                }
                 return { itemConfig, messages };
             }
             throw new Error(`Object ${item.id} not found!`);
@@ -4255,6 +4274,14 @@ export class ConfigManager extends BaseClass {
                 type: 'const',
                 constVal: { local: 'de', format: entity.ScreensaverEntityDateFormat },
             };
+        }
+        if (entity.ScreensaverEntityEnabled === false) {
+            result.data.enabled = { type: 'const', constVal: false };
+        } else if (
+            typeof entity.ScreensaverEntityEnabled === 'string' &&
+            (await this.existsState(entity.ScreensaverEntityEnabled))
+        ) {
+            result.data.enabled = { type: 'triggered', dp: entity.ScreensaverEntityEnabled };
         }
 
         let color: Types.DataItemsOptions | undefined = undefined;

@@ -325,6 +325,7 @@ declare namespace ScriptConfig {
         type: 'cardThermo2';
         thermoItems: PageThermo2Item[];
         items: PageThermo2PageItems[];
+        sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
     } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
@@ -501,6 +502,7 @@ declare namespace ScriptConfig {
         shutterType?: string;
         sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
         filter?: number;
+        enabled?: boolean | string;
     };
 
     type sliderItems = {
@@ -623,6 +625,7 @@ declare namespace ScriptConfig {
                     ]
                */
               ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
+              ScreensaverEntityEnabled?: string | boolean | null;
           }
         | { type: 'native'; native: any }
         | {

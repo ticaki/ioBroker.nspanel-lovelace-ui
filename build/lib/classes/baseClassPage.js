@@ -40,6 +40,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   neverDeactivateTrigger = false;
   sleep = false;
   parent = void 0;
+  canBeHidden = false;
   triggerParent = false;
   dpInit = "";
   enums = "";
@@ -74,7 +75,8 @@ class BaseClassTriggerd extends import_library.BaseClass {
   async reset() {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
-    if (!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger) || this.unload) {
+    var _a;
+    if (!this.visibility && !(this.neverDeactivateTrigger || this.canBeHidden && ((_a = this.parent) == null ? void 0 : _a.visibility) || from.neverDeactivateTrigger) || this.unload) {
       this.log.debug(`[${this.panel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
       return false;
     }

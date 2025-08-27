@@ -685,7 +685,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.10.1';
+const version = '0.10.3';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1035,6 +1035,7 @@ declare namespace ScriptConfig {
         type: 'cardThermo2';
         thermoItems: PageThermo2Item[];
         items: PageThermo2PageItems[];
+        sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
     } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {
@@ -1231,6 +1232,7 @@ declare namespace ScriptConfig {
             shutterType?: string;
             sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
             filter?: number;
+            enabled?: boolean | string;
         };
 
     type sliderItems = {
@@ -1427,6 +1429,7 @@ declare namespace ScriptConfig {
                   ]
              */
             ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
+            ScreensaverEntityEnabled?: string | boolean | null;
         }
         | {type: 'native'; native: any}
         | {
