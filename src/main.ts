@@ -875,7 +875,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     const url =
                                         `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                                        `&cmnd=Backlog UfsDelete autoexec.be2; UfsRename autoexec.be, autoexec.be2; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                                        `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                                     this.log.info(
                                         `Installing berry on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
                                     );
@@ -987,7 +987,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const url =
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                                    `&cmnd=Backlog UfsDelete autoexec.be2; UfsRename autoexec.be, autoexec.be2; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                                    `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
 
                                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                                 await axios.get(url);
