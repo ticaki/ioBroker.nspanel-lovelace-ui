@@ -185,10 +185,16 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         message.headline = this.library.getTranslation(
           (_a = data && data.headline && await data.headline.getString()) != null ? _a : ""
         );
-        message.dstTemp = Math.round((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10).toString();
-        message.minTemp = Math.round((await ((_b = data.minValue) == null ? void 0 : _b.getNumber()) || 15) * 10).toString();
-        message.maxTemp = Math.round((await ((_c = data.maxValue) == null ? void 0 : _c.getNumber()) || 28) * 10).toString();
-        message.tempStep = Math.round((await ((_d = data.stepValue) == null ? void 0 : _d.getNumber()) || 0.5) * 10).toString();
+        const step = Math.round((await ((_b = data.stepValue) == null ? void 0 : _b.getNumber()) || 0.5) * 10);
+        const min = Math.round((await ((_c = data.minValue) == null ? void 0 : _c.getNumber()) || 15) * 10);
+        const max = Math.round((await ((_d = data.maxValue) == null ? void 0 : _d.getNumber()) || 28) * 10);
+        let dstTemp = Math.round((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10);
+        dstTemp = Math.min(Math.max(dstTemp, min), max);
+        dstTemp = Math.round((dstTemp - min) / step + min) * step;
+        message.dstTemp = dstTemp.toString();
+        message.minTemp = min.toString();
+        message.maxTemp = max.toString();
+        message.tempStep = step.toString();
         message.unit = await ((_f = (_e = data.entity3) == null ? void 0 : _e.unit) == null ? void 0 : _f.getString()) || "\xB0C";
         message.power = await ((_g = data.power) == null ? void 0 : _g.getBoolean()) || false;
         const statesText = this.library.getTranslation(await ((_h = data.mode) == null ? void 0 : _h.getString()) || "");

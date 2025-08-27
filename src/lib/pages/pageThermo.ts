@@ -160,7 +160,9 @@ export class PageThermo extends Page {
             let v: string | number | null = (item.data.set1 && (await item.data.set1.getNumber())) ?? null;
             if (v !== null) {
                 message.dstTemp = v * 10;
+                message.dstTemp = Math.round(Number(message.dstTemp));
             }
+
             v = (item.data.minTemp && (await item.data.minTemp.getNumber())) ?? null;
             if (v !== null) {
                 message.minTemp = v * this.convertValue;
@@ -177,6 +179,28 @@ export class PageThermo extends Page {
                 message.maxTemp = item.data.set1.common.max * 10;
             } else {
                 message.maxTemp = 300;
+            }
+
+            v = (item.data.tempStep && (await item.data.tempStep.getNumber())) ?? null;
+            if (v !== null) {
+                message.tempStep = String(v * this.convertValue);
+            } else if (item.data.set1 && item.data.set1.common.step) {
+                message.tempStep = String(item.data.set1.common.step * 10);
+            } else {
+                message.tempStep = '5';
+            }
+            message.tempStep = parseFloat(message.tempStep) < 1 ? '1' : message.tempStep;
+
+            if (
+                typeof message.minTemp === 'number' &&
+                typeof message.maxTemp === 'number' &&
+                typeof message.dstTemp === 'number' &&
+                typeof message.tempStep === 'string'
+            ) {
+                message.dstTemp = Math.min(Math.max(message.dstTemp, message.minTemp), message.maxTemp);
+                message.dstTemp =
+                    Math.round((message.dstTemp - message.minTemp) / parseInt(message.tempStep) + message.minTemp) *
+                    parseInt(message.tempStep);
             }
 
             v = (item.data.set2 && (await item.data.set2.getNumber())) ?? null;
@@ -208,15 +232,6 @@ export class PageThermo extends Page {
                     }
                 }
             }
-            v = (item.data.tempStep && (await item.data.tempStep.getNumber())) ?? null;
-            if (v !== null) {
-                message.tempStep = String(v * this.convertValue);
-            } else if (item.data.set1 && item.data.set1.common.step) {
-                message.tempStep = String(item.data.set1.common.step * 10);
-            } else {
-                message.tempStep = '5';
-            }
-            message.tempStep = parseFloat(message.tempStep) < 1 ? '1' : message.tempStep;
 
             message.tCurTempLbl = this.library.getTranslation((await getValueEntryString(item.data.mixed1)) ?? '');
             message.currentTemp = this.library.getTranslation((await getValueEntryString(item.data.mixed2)) ?? '');

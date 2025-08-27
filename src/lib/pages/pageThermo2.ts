@@ -198,10 +198,16 @@ export class PageThermo2 extends PageMenu {
                 message.headline = this.library.getTranslation(
                     (data && data.headline && (await data.headline.getString())) ?? '',
                 );
-                message.dstTemp = Math.round(((await getValueEntryNumber(data.entity3)) || 0) * 10).toString();
-                message.minTemp = Math.round(((await data.minValue?.getNumber()) || 15) * 10).toString();
-                message.maxTemp = Math.round(((await data.maxValue?.getNumber()) || 28) * 10).toString();
-                message.tempStep = Math.round(((await data.stepValue?.getNumber()) || 0.5) * 10).toString();
+                const step = Math.round(((await data.stepValue?.getNumber()) || 0.5) * 10);
+                const min = Math.round(((await data.minValue?.getNumber()) || 15) * 10);
+                const max = Math.round(((await data.maxValue?.getNumber()) || 28) * 10);
+                let dstTemp = Math.round(((await getValueEntryNumber(data.entity3)) || 0) * 10);
+                dstTemp = Math.min(Math.max(dstTemp, min), max);
+                dstTemp = Math.round((dstTemp - min) / step + min) * step;
+                message.dstTemp = dstTemp.toString();
+                message.minTemp = min.toString();
+                message.maxTemp = max.toString();
+                message.tempStep = step.toString();
                 message.unit = (await data.entity3?.unit?.getString()) || '°C';
                 message.power = (await data.power?.getBoolean()) || false;
                 const statesText = this.library.getTranslation((await data.mode?.getString()) || '');

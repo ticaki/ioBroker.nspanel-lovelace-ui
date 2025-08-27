@@ -152,6 +152,7 @@ class PageThermo extends import_Page.Page {
       let v = (_b = item.data.set1 && await item.data.set1.getNumber()) != null ? _b : null;
       if (v !== null) {
         message.dstTemp = v * 10;
+        message.dstTemp = Math.round(Number(message.dstTemp));
       }
       v = (_c = item.data.minTemp && await item.data.minTemp.getNumber()) != null ? _c : null;
       if (v !== null) {
@@ -169,11 +170,24 @@ class PageThermo extends import_Page.Page {
       } else {
         message.maxTemp = 300;
       }
-      v = (_e = item.data.set2 && await item.data.set2.getNumber()) != null ? _e : null;
+      v = (_e = item.data.tempStep && await item.data.tempStep.getNumber()) != null ? _e : null;
+      if (v !== null) {
+        message.tempStep = String(v * this.convertValue);
+      } else if (item.data.set1 && item.data.set1.common.step) {
+        message.tempStep = String(item.data.set1.common.step * 10);
+      } else {
+        message.tempStep = "5";
+      }
+      message.tempStep = parseFloat(message.tempStep) < 1 ? "1" : message.tempStep;
+      if (typeof message.minTemp === "number" && typeof message.maxTemp === "number" && typeof message.dstTemp === "number" && typeof message.tempStep === "string") {
+        message.dstTemp = Math.min(Math.max(message.dstTemp, message.minTemp), message.maxTemp);
+        message.dstTemp = Math.round((message.dstTemp - message.minTemp) / parseInt(message.tempStep) + message.minTemp) * parseInt(message.tempStep);
+      }
+      v = (_f = item.data.set2 && await item.data.set2.getNumber()) != null ? _f : null;
       if (v !== null) {
         message.temp2 = v * 10;
       }
-      v = (_f = item.data.unit && await item.data.unit.getString()) != null ? _f : null;
+      v = (_g = item.data.unit && await item.data.unit.getString()) != null ? _g : null;
       if (v !== null) {
         message.tCF = v;
         message.currentTemp += v;
@@ -196,15 +210,6 @@ class PageThermo extends import_Page.Page {
           }
         }
       }
-      v = (_g = item.data.tempStep && await item.data.tempStep.getNumber()) != null ? _g : null;
-      if (v !== null) {
-        message.tempStep = String(v * this.convertValue);
-      } else if (item.data.set1 && item.data.set1.common.step) {
-        message.tempStep = String(item.data.set1.common.step * 10);
-      } else {
-        message.tempStep = "5";
-      }
-      message.tempStep = parseFloat(message.tempStep) < 1 ? "1" : message.tempStep;
       message.tCurTempLbl = this.library.getTranslation((_h = await (0, import_tools.getValueEntryString)(item.data.mixed1)) != null ? _h : "");
       message.currentTemp = this.library.getTranslation((_i = await (0, import_tools.getValueEntryString)(item.data.mixed2)) != null ? _i : "");
       message.tStateLbl = this.library.getTranslation((_j = await (0, import_tools.getValueEntryString)(item.data.mixed3)) != null ? _j : "");
