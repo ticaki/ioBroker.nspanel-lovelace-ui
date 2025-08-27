@@ -172,22 +172,22 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     await super.init();
   }
   async update() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     if (!(this == null ? void 0 : this.visibility)) {
       return;
     }
     const message = {};
     message.options = [];
     message.navigation = this.getNavigation();
-    if (this.items) {
+    if (this.items && ((_a = this.config) == null ? void 0 : _a.card) === "cardThermo2") {
       const data = Array.isArray(this.items.data) ? this.items.data[this.index] ? this.items.data[this.index] : null : this.items.data;
       if (data) {
         message.headline = this.library.getTranslation(
-          (_a = data && data.headline && await data.headline.getString()) != null ? _a : ""
+          (_b = data && data.headline && await data.headline.getString()) != null ? _b : ""
         );
-        const step = Math.round((await ((_b = data.stepValue) == null ? void 0 : _b.getNumber()) || 0.5) * 10);
-        const min = Math.round((await ((_c = data.minValue) == null ? void 0 : _c.getNumber()) || 15) * 10);
-        const max = Math.round((await ((_d = data.maxValue) == null ? void 0 : _d.getNumber()) || 28) * 10);
+        const step = Math.round((await ((_c = data.stepValue) == null ? void 0 : _c.getNumber()) || 0.5) * 10);
+        const min = Math.round((await ((_d = data.minValue) == null ? void 0 : _d.getNumber()) || 15) * 10);
+        const max = Math.round((await ((_e = data.maxValue) == null ? void 0 : _e.getNumber()) || 28) * 10);
         let dstTemp = Math.round((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10);
         dstTemp = Math.min(Math.max(dstTemp, min), max);
         dstTemp = Math.round((dstTemp - min) / step + min) * step;
@@ -195,30 +195,59 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         message.minTemp = min.toString();
         message.maxTemp = max.toString();
         message.tempStep = step.toString();
-        message.unit = await ((_f = (_e = data.entity3) == null ? void 0 : _e.unit) == null ? void 0 : _f.getString()) || "\xB0C";
-        message.power = await ((_g = data.power) == null ? void 0 : _g.getBoolean()) || false;
-        const statesText = this.library.getTranslation(await ((_h = data.mode) == null ? void 0 : _h.getString()) || "");
+        message.unit = await ((_g = (_f = data.entity3) == null ? void 0 : _f.unit) == null ? void 0 : _g.getString()) || "\xB0C";
+        message.power = await ((_h = data.power) == null ? void 0 : _h.getBoolean()) || false;
+        const statesText = this.library.getTranslation(await ((_i = data.mode) == null ? void 0 : _i.getString()) || "");
         for (let i = 0; i < 7; i++) {
           message.options[i] = `text~${this.name}.${i}~${[
             await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon1, true, "thermometer"),
-            ((await ((_j = (_i = data == null ? void 0 : data.entity1) == null ? void 0 : _i.value) == null ? void 0 : _j.getNumber()) || 0) * 10).toString(),
-            await ((_l = (_k = data == null ? void 0 : data.entity1) == null ? void 0 : _k.unit) == null ? void 0 : _l.getString()) || "\xB0C",
+            ((await ((_k = (_j = data == null ? void 0 : data.entity1) == null ? void 0 : _j.value) == null ? void 0 : _k.getNumber()) || 0) * 10).toString(),
+            await ((_m = (_l = data == null ? void 0 : data.entity1) == null ? void 0 : _l.unit) == null ? void 0 : _m.getString()) || "\xB0C",
             await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon2, true, "water-percent"),
-            ((await ((_n = (_m = data == null ? void 0 : data.entity2) == null ? void 0 : _m.value) == null ? void 0 : _n.getNumber()) || 0) * 10).toString(),
-            await ((_p = (_o = data == null ? void 0 : data.entity2) == null ? void 0 : _o.unit) == null ? void 0 : _p.getString()) || "%",
+            ((await ((_o = (_n = data == null ? void 0 : data.entity2) == null ? void 0 : _n.value) == null ? void 0 : _o.getNumber()) || 0) * 10).toString(),
+            await ((_q = (_p = data == null ? void 0 : data.entity2) == null ? void 0 : _p.unit) == null ? void 0 : _q.getString()) || "%",
             statesText
           ][i]}~${[
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_q = data == null ? void 0 : data.power) == null ? void 0 : _q.getBoolean()), import_Color.Color.Green),
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_r = data == null ? void 0 : data.power) == null ? void 0 : _r.getBoolean()), import_Color.Color.Green),
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_s = data == null ? void 0 : data.power) == null ? void 0 : _s.getBoolean()), import_Color.Color.Green),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_t = data == null ? void 0 : data.power) == null ? void 0 : _t.getBoolean()), import_Color.Color.Magenta),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_t = data == null ? void 0 : data.power) == null ? void 0 : _t.getBoolean()), import_Color.Color.Green),
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_u = data == null ? void 0 : data.power) == null ? void 0 : _u.getBoolean()), import_Color.Color.Magenta),
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_v = data == null ? void 0 : data.power) == null ? void 0 : _v.getBoolean()), import_Color.Color.Magenta),
+            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_w = data == null ? void 0 : data.power) == null ? void 0 : _w.getBoolean()), import_Color.Color.Magenta),
             await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon5, true, import_Color.Color.MSYellow)
-          ][i]}~~${["", "", "", "", "", "", (_x = await ((_w = data == null ? void 0 : data.power) == null ? void 0 : _w.getNumber())) != null ? _x : 1][i]}`;
+          ][i]}~~${["", "", "", "", "", "", (_y = await ((_x = data == null ? void 0 : data.power) == null ? void 0 : _x.getNumber())) != null ? _y : 1][i]}`;
         }
       }
-      const arr = (await this.getOptions([])).slice(0, this.maxItems);
+      let arr = (await this.getOptions([])).slice(0, this.maxItems);
+      if (arr && this.config.sortOrder !== "V") {
+        const temp = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
+        let sort = [];
+        switch (this.config.sortOrder) {
+          case "H":
+            sort = [0, 4, 1, 5, 2, 6, 3, 7];
+            break;
+          case "HM":
+            sort = [1, 5, 2, 6, 0, 4, 3, 7];
+            break;
+          case "VM":
+            sort = [3, 0, 1, 2, 7, 4, 5, 6];
+            break;
+          case "HB":
+            sort = [0, 5, 7, 2, 1, 4, 6, 3];
+            break;
+          case "VB":
+            sort = [0, 4, 5, 1, 2, 6, 7, 3];
+            break;
+          default:
+            sort = [0, 1, 2, 3, 4, 5, 6, 7];
+            break;
+        }
+        for (let i = 0; i < 8; i++) {
+          const index = sort[i];
+          temp[i] = arr[index] ? arr[index] : "~~~~~";
+        }
+        arr = temp;
+      }
       message.options = message.options.concat(arr);
       const msg = Object.assign(PageThermo2MessageDefault, message);
       const msg2 = this.getMessage(msg);
@@ -311,6 +340,8 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     }
     gridItem.config.card = "cardThermo2";
     gridItem.config.filterType = 0;
+    gridItem.config.scrollType = "page";
+    gridItem.config.sortOrder = page.sortOrder || "V";
     gridItem.config.data = [];
     let o = void 0;
     let airCondition = false;

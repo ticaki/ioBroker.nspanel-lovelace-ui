@@ -325,6 +325,7 @@ declare namespace ScriptConfig {
         type: 'cardThermo2';
         thermoItems: PageThermo2Item[];
         items: PageThermo2PageItems[];
+        sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
     } & Omit<PageBaseType, 'useColor'>;
 
     export type PageMedia = {

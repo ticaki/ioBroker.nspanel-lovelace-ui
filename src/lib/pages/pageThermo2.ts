@@ -188,7 +188,7 @@ export class PageThermo2 extends PageMenu {
         const message: Partial<pages.PageThermo2Message> = {};
         message.options = [];
         message.navigation = this.getNavigation();
-        if (this.items) {
+        if (this.items && this.config?.card === 'cardThermo2') {
             const data = Array.isArray(this.items.data)
                 ? this.items.data[this.index]
                     ? this.items.data[this.index]
@@ -237,7 +237,37 @@ export class PageThermo2 extends PageMenu {
                     }~~${['', '', '', '', '', '', (await data?.power?.getNumber()) ?? 1][i]}`;
                 }
             }
-            const arr = (await this.getOptions([])).slice(0, this.maxItems);
+            let arr = (await this.getOptions([])).slice(0, this.maxItems);
+            if (arr && this.config.sortOrder !== 'V') {
+                const temp = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
+                // fill up to 8 items
+                let sort = [];
+                switch (this.config.sortOrder) {
+                    case 'H':
+                        sort = [0, 4, 1, 5, 2, 6, 3, 7];
+                        break;
+                    case 'HM':
+                        sort = [1, 5, 2, 6, 0, 4, 3, 7];
+                        break;
+                    case 'VM':
+                        sort = [3, 0, 1, 2, 7, 4, 5, 6];
+                        break;
+                    case 'HB':
+                        sort = [0, 5, 7, 2, 1, 4, 6, 3];
+                        break;
+                    case 'VB':
+                        sort = [0, 4, 5, 1, 2, 6, 7, 3];
+                        break;
+                    default:
+                        sort = [0, 1, 2, 3, 4, 5, 6, 7];
+                        break;
+                }
+                for (let i = 0; i < 8; i++) {
+                    const index = sort[i];
+                    temp[i] = arr[index] ? arr[index] : '~~~~~';
+                }
+                arr = temp;
+            }
             message.options = message.options.concat(arr) as typeof message.options;
 
             const msg: pages.PageThermo2Message = Object.assign(PageThermo2MessageDefault, message);
@@ -344,6 +374,8 @@ export class PageThermo2 extends PageMenu {
         }
         gridItem.config.card = 'cardThermo2';
         gridItem.config.filterType = 0;
+        gridItem.config.scrollType = 'page';
+        gridItem.config.sortOrder = page.sortOrder || 'V';
         gridItem.config.data = [];
         let o = undefined;
         let airCondition = false;
