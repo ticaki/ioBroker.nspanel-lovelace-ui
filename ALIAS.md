@@ -42,8 +42,8 @@
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
-| **"** | ~~MODE~~ | number| value.mode.airconditioner  |  |  | 0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more | 
-| **"** | ~~MODESET~~ | number| level.mode.airconditioner  |  | X | 0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more | 
+| **"** | ~~MODE~~ | number, string| value.mode.airconditioner  |  |  | 0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display) iif missed pick ModeSet - | 
+| **"** | ~~MODESET~~ | number| level.mode.airconditioner  |  | X | 0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more. | 
 | **"** | ~~POWER~~ | boolean| switch  |  | X | use MODE for on/off | 
 | **"** | ~~SPEED~~ | number| level.mode.fan  |  | X |  | 
 | **"** | ~~SWING~~ | number| level.mode.swing  |  | X |  | 
@@ -173,7 +173,8 @@
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **thermostat** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
 | **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
-| **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
+| **"** | ~~MODE~~ | number, string| value.mode.thermostat  |  |  | 0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display) iif missed pick ModeSet - | 
+| **"** | ~~MODESET~~ | number| level.mode.thermostat  |  | X | 0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more. | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost, switch.boost  |  | X |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  | Not supported in cardThermo2 | 
 | **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 

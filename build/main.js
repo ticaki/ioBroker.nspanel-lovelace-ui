@@ -724,7 +724,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                   }
                   const version = obj.message.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
-                  const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                  const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.be2; UfsRename autoexec.be, autoexec.be2; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                   this.log.info(
                     `Installing berry on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
                   );
@@ -821,7 +821,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   break;
                 }
                 const version = obj.message.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
-                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.be2; UfsRename autoexec.be, autoexec.be2; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                 await import_axios.default.get(url);
                 if (obj.callback) {
