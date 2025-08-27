@@ -2150,10 +2150,7 @@ export class ConfigManager extends BaseClass {
                 /*if (!(await this.checkRequiredDatapoints(role, item))) {
                     return { itemConfig: undefined, messages };
                 }*/
-                const specialRole: pages.DeviceRole =
-                    page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
-                        ? 'textNotIcon'
-                        : 'iconNotText';
+                const specialRole: pages.DeviceRole = pages.isCardGridRole(page.type) ? 'textNotIcon' : 'iconNotText';
                 const commonName =
                     typeof obj.common.name === 'string'
                         ? obj.common.name

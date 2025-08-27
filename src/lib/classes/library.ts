@@ -208,13 +208,18 @@ export class Library extends BaseClass {
                         }
                         break;
                     case 'string':
+                        {
+                            result.common.type = 'string';
+                            result.common.role = 'text';
+                        }
+                        break;
                     case 'symbol':
                     case 'undefined':
                     case 'object':
                     case 'function':
                         {
                             result.common.type = 'string';
-                            result.common.role = 'text';
+                            result.common.role = 'json';
                         }
                         break;
                 }
