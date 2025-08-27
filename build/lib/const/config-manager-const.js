@@ -273,6 +273,7 @@ const checkedDatapoints = {
     ACTUAL: null,
     SET: null,
     MODE: null,
+    MODESET: null,
     BOOST: null,
     ERROR: null,
     LOWBAT: null,
@@ -346,7 +347,7 @@ const templateDatapoint = {
 const requiredScriptDataPoints = {
   airCondition: {
     name: "airCondition",
-    description: "",
+    description: "Not everything for every card",
     data: {
       ACTUAL: {
         role: "value.temperature",
@@ -379,7 +380,7 @@ const requiredScriptDataPoints = {
         required: false,
         writeable: false,
         trigger: true,
-        description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display)`
+        description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display) iif missed pick ModeSet -`
       },
       MODESET: {
         role: "level.mode.airconditioner",
@@ -749,7 +750,22 @@ const requiredScriptDataPoints = {
         alternate: "SET"
       },
       SET: { role: "level.temperature", type: "number", required: true, writeable: true },
-      MODE: { role: "level.mode.thermostat", type: "number", required: false, writeable: true, trigger: true },
+      MODE: {
+        role: "value.mode.thermostat",
+        type: ["number", "string"],
+        required: false,
+        writeable: false,
+        trigger: true,
+        description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display) iif missed pick ModeSet -`
+      },
+      MODESET: {
+        role: "level.mode.thermostat",
+        type: ["number"],
+        required: false,
+        writeable: true,
+        trigger: true,
+        description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.`
+      },
       BOOST: {
         role: ["switch.mode.boost", "switch.boost"],
         type: "boolean",

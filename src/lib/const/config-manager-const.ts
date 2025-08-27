@@ -276,6 +276,7 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         ACTUAL: null,
         SET: null,
         MODE: null,
+        MODESET: null,
         BOOST: null,
         ERROR: null,
         LOWBAT: null,
