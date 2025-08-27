@@ -420,6 +420,10 @@ export class PageThermo2 extends PageMenu {
                                 ...mode,
                                 read: `return ${JSON.stringify(o2.common.states)}[val] || val`,
                             };
+                        } else if (o.common?.type === 'string') {
+                            mode = {
+                                ...mode,
+                            };
                         } else {
                             mode = {
                                 ...mode,

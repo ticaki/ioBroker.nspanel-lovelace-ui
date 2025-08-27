@@ -747,7 +747,7 @@ const templateDatapoint: Record<Extract<mydps, 'LOWBAT' | 'UNREACH'>, Datapoint>
 export const requiredScriptDataPoints: requiredDatapoints = {
     airCondition: {
         name: 'airCondition',
-        description: '',
+        description: 'Not everything for every card',
         data: {
             ACTUAL: {
                 role: 'value.temperature',
@@ -776,11 +776,11 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             },
             MODE: {
                 role: 'value.mode.airconditioner',
-                type: ['number'],
+                type: ['number', 'string'],
                 required: false,
                 writeable: false,
                 trigger: true,
-                description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`,
+                description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display) iif missed pick ModeSet -`,
             },
             MODESET: {
                 role: 'level.mode.airconditioner',
@@ -788,7 +788,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: true,
                 trigger: true,
-                description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`,
+                description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.`,
             },
             POWER: {
                 role: 'switch',
@@ -1150,7 +1150,22 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 alternate: 'SET',
             },
             SET: { role: 'level.temperature', type: 'number', required: true, writeable: true },
-            MODE: { role: 'level.mode.thermostat', type: 'number', required: false, writeable: true, trigger: true },
+            MODE: {
+                role: 'value.mode.thermostat',
+                type: ['number', 'string'],
+                required: false,
+                writeable: false,
+                trigger: true,
+                description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display) iif missed pick ModeSet -`,
+            },
+            MODESET: {
+                role: 'level.mode.thermostat',
+                type: ['number'],
+                required: false,
+                writeable: true,
+                trigger: true,
+                description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.`,
+            },
             BOOST: {
                 role: ['switch.mode.boost', 'switch.boost'],
                 type: 'boolean',

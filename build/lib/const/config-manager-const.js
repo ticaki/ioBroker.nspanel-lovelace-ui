@@ -375,11 +375,11 @@ const requiredScriptDataPoints = {
       },
       MODE: {
         role: "value.mode.airconditioner",
-        type: ["number"],
+        type: ["number", "string"],
         required: false,
         writeable: false,
         trigger: true,
-        description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`
+        description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.  (alternative type: 'string' for direct display)`
       },
       MODESET: {
         role: "level.mode.airconditioner",
@@ -387,7 +387,7 @@ const requiredScriptDataPoints = {
         required: false,
         writeable: true,
         trigger: true,
-        description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`
+        description: `0: OFF, 1: COOL, 2: HEAT, 3: AUTO,//soweit eingebaut 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more.`
       },
       POWER: {
         role: "switch",

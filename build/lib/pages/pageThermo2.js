@@ -292,7 +292,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     return false;
   };
   static async getPage(configManager, page, gridItem, messages) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (page.type !== "cardThermo2" || !gridItem.config || gridItem.config.card !== "cardThermo2") {
       return { gridItem, messages };
     }
@@ -374,6 +374,10 @@ class PageThermo2 extends import_pageMenu.PageMenu {
                 ...mode,
                 read: `return ${JSON.stringify(o2.common.states)}[val] || val`
               };
+            } else if (((_f = o.common) == null ? void 0 : _f.type) === "string") {
+              mode = {
+                ...mode
+              };
             } else {
               mode = {
                 ...mode,
@@ -432,7 +436,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           ];
           if (!item.modeList || !Array.isArray(item.modeList) || item.modeList.length < 1) {
             const o2 = await adapter.getForeignObjectAsync(item.modeId);
-            if ((_f = o2 == null ? void 0 : o2.common) == null ? void 0 : _f.states) {
+            if ((_g = o2 == null ? void 0 : o2.common) == null ? void 0 : _g.states) {
               states = o2.common.states;
             }
           } else {
@@ -550,7 +554,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             const dp = dataItem.dp;
             const o2 = await adapter.getForeignObjectAsync(dp);
             if (o2 == null ? void 0 : o2.common) {
-              let native = (_g = o2.common.native) == null ? void 0 : _g.nspanelIcons;
+              let native = (_h = o2.common.native) == null ? void 0 : _h.nspanelIcons;
               if (native != null && !Array.isArray(native)) {
                 native = void 0;
               }
