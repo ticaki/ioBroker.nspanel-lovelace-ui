@@ -21,8 +21,15 @@ export type PageTemplateIdent =
     | 'media.amazon';
 
 export type TemplateIdent =
+    | 'text.brightsky.hourlyweather'
+    | 'text.brightsky.windgust'
+    | 'text.brightsky.solar'
+    | 'text.brightsky.winddirection'
+    | 'text.brightsky.windspeed'
+    | 'text.brightsky.bot2values'
+    | 'text.brightsky.favorit'
+    | 'text.brightsky.sunriseset'
     | 'text.pirate-weather.hourlyweather'
-    | 'text.custom.windarrow'
     | 'text.pirate-weather.windgust'
     | 'text.pirate-weather.uvindex'
     | 'text.pirate-weather.winddirection'
@@ -30,6 +37,7 @@ export type TemplateIdent =
     | 'text.pirate-weather.bot2values'
     | 'text.pirate-weather.favorit'
     | 'text.pirate-weather.sunriseset'
+    | 'text.custom.windarrow'
     | 'text.openweathermap.windgust'
     | 'text.openweathermap.uvindex'
     | 'text.openweathermap.winddirection'

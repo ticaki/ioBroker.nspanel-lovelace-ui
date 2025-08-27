@@ -476,6 +476,89 @@ async function configuration(): Promise<void> {
                 modeScr: 'bottom',
             },
             */
+
+            /* Bright Sky
+            {
+                type: 'template',
+                template: 'text.brightsky.sunriseset',
+                dpInit: `/^brightsky\\.0\\.daily\\.00.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 - brightsky.0. Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.01/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - brightsky.0. Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.02/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - brightsky.0. Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.03/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - brightsky.0. Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.04/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - brightsky.0. Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.05/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 - brightsky.0. Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.06/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.brightsky.windspeed',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                template: 'text.brightsky.windgust',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.brightsky.winddirection',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+            // Bottom 10 - Solar
+            {
+                type: 'template',
+                template: 'text.brightsky.solar',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+            */
         ],
 
         leftScreensaverEntity: [

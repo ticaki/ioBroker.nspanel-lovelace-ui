@@ -3775,6 +3775,90 @@ export class ConfigManager extends BaseClass {
                         },
                     ]);
                 }
+            } else if (config.weatherEntity.startsWith('brightsky.') && config.weatherEntity.endsWith('.')) {
+                const instance = config.weatherEntity.split('.')[1];
+                if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
+                    pageItems.push({
+                        template: 'text.brightsky.favorit',
+                        dpInit: `/^brightsky\\.${instance}\\.weather\\.currently\\./`,
+                        modeScr: 'favorit',
+                    });
+                }
+                if (config.weatherAddDefaultItems) {
+                    pageItems = pageItems.concat([
+                        // Bottom 1 - brightsky.0. sunset
+                        {
+                            template: 'text.brightsky.sunriseset',
+                            dpInit: `/^brightsky\\.${instance}\\.daily\\.00.+/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 2 - brightsky.0. Forecast Day 1
+                        {
+                            template: 'text.brightsky.bot2values',
+                            dpInit: `/^brightsky\\.${instance}\\.daily\\.01/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 3 - brightsky.0. Forecast Day 2
+                        {
+                            template: 'text.brightsky.bot2values',
+                            dpInit: `/^brightsky\\.${instance}\\.daily\\.02/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 4 - brightsky.0. Forecast Day 3
+                        {
+                            template: 'text.brightsky.bot2values',
+                            dpInit: `/^brightsky\\.${instance}\\.daily\\.03/`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 5 - brightsky.0. Forecast Day 4
+                        {
+                            template: 'text.brightsky.bot2values',
+                            dpInit: `/^brightsky\\.${instance}\\.daily\\.04/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 6 - brightsky.0. Forecast Day 5
+                        {
+                            template: 'text.brightsky.bot2values',
+                            dpInit: `/^brightsky\\.${instance}\\.daily\\.05/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 7 - brightsky.0. Forecast Day 6
+                        {
+                            template: 'text.brightsky.bot2values',
+                            dpInit: `/^brightsky\\.${instance}\\.daily\\.06/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 8 - Windgeschwindigkeit
+                        {
+                            template: 'text.brightsky.windspeed',
+                            dpInit: `/^brightsky\\.${instance}\\.current./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 9 - Böen
+                        {
+                            template: 'text.brightsky.windgust',
+                            dpInit: `/^brightsky\\.${instance}\\.current./`,
+                            modeScr: 'bottom',
+                        },
+
+                        // Bottom 10 - Windrichtung
+                        {
+                            template: 'text.brightsky.winddirection',
+                            dpInit: `/^brightsky\\.${instance}\\.current./`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 10 - UV-Index
+                        {
+                            template: 'text.brightsky.solar',
+                            dpInit: `/^brightsky\\.${instance}\\.current./`,
+                            modeScr: 'bottom',
+                        },
+                    ]);
+                }
             }
         }
         if (config.indicatorScreensaverEntity) {
