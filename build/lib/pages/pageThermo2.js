@@ -365,8 +365,8 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         set = airCondition ? ((_c = foundedStates[role].SET2) == null ? void 0 : _c.dp) || "" : ((_d = foundedStates[role].SET) == null ? void 0 : _d.dp) || "";
         role = o.common.role;
         power = foundedStates[role].MODESET;
-        if (foundedStates[role].MODE) {
-          mode = foundedStates[role].MODE;
+        if (foundedStates[role].MODE || foundedStates[role].MODESET) {
+          mode = foundedStates[role].MODE || foundedStates[role].MODESET;
           if (mode && mode.dp) {
             const o2 = await adapter.getForeignObjectAsync(mode.dp);
             if ((_e = o2 == null ? void 0 : o2.common) == null ? void 0 : _e.states) {

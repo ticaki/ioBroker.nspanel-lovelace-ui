@@ -411,8 +411,8 @@ export class PageThermo2 extends PageMenu {
                 role = o.common.role;
                 power = foundedStates[role].MODESET;
 
-                if (foundedStates[role].MODE) {
-                    mode = foundedStates[role].MODE;
+                if (foundedStates[role].MODE || foundedStates[role].MODESET) {
+                    mode = foundedStates[role].MODE || foundedStates[role].MODESET;
                     if (mode && mode.dp) {
                         const o2 = await adapter.getForeignObjectAsync(mode.dp);
                         if (o2?.common?.states) {
