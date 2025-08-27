@@ -502,6 +502,7 @@ declare namespace ScriptConfig {
         shutterType?: string;
         sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
         filter?: number;
+        enabled?: boolean | string;
     };
 
     type sliderItems = {
@@ -624,6 +625,7 @@ declare namespace ScriptConfig {
                     ]
                */
               ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
+              ScreensaverEntityEnabled?: string | boolean | null;
           }
         | { type: 'native'; native: any }
         | {

@@ -1101,6 +1101,13 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
     }
     return Object.assign(def, source);
 }
+export async function filterArray(
+    arr: any[],
+    func: (item: any, index: number, array: any[]) => Promise<boolean>,
+): Promise<any[]> {
+    const results = await Promise.all(arr.map(func));
+    return arr.filter((v, index) => results[index]);
+}
 
 export function getInternalDefaults(
     type: ioBroker.StateCommon['type'],

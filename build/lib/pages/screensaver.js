@@ -96,6 +96,7 @@ class Screensaver extends import_Page.Page {
     }
   }
   async getData(places) {
+    var _a, _b, _c, _d, _e, _f;
     const config = this.config;
     if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
       return null;
@@ -116,6 +117,16 @@ class Screensaver extends import_Page.Page {
         alternate: []
       }
     };
+    const overwrite = {
+      indicator: [],
+      left: [],
+      time: [],
+      date: [],
+      bottom: [],
+      mricon: [],
+      favorit: [],
+      alternate: []
+    };
     if (this.pageItems) {
       const model = config.model;
       const layout = this.mode;
@@ -134,10 +145,25 @@ class Screensaver extends import_Page.Page {
           if (places.indexOf(place) === -1) {
             continue;
           }
+          const enabled = await ((_c = (_b = (_a = pageItems.dataItems) == null ? void 0 : _a.data) == null ? void 0 : _b.enabled) == null ? void 0 : _c.getNumber());
+          if (enabled != null) {
+            if (enabled >= 0) {
+              overwrite[place][enabled] = await pageItems.getPageItemPayload();
+            }
+            continue;
+          }
+          const enabled2 = await ((_f = (_e = (_d = pageItems.dataItems) == null ? void 0 : _d.data) == null ? void 0 : _e.enabled) == null ? void 0 : _f.getBoolean());
+          if (enabled2 === false) {
+            continue;
+          }
           const arr = options[place] || [];
           arr.push(await pageItems.getPageItemPayload());
           options[place] = arr;
         }
+      }
+      for (const x in message.options) {
+        const place = x;
+        message.options[place] = Object.assign(message.options[place], overwrite[place]);
       }
       for (const x in message.options) {
         const place = x;
