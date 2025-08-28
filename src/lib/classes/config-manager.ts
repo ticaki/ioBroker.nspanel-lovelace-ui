@@ -1228,10 +1228,6 @@ export class ConfigManager extends BaseClass {
         if (obj && (!obj.common || !obj.common.role)) {
             throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
-        const specialRole: pages.DeviceRole =
-            pages.isCardGridRole(page.type) && item.useValue && obj?.common?.type === 'number'
-                ? 'textNotIcon'
-                : 'iconNotText';
 
         const role = obj ? (obj.common.role as ScriptConfig.channelRoles) : null;
         const commonName =
@@ -1240,6 +1236,11 @@ export class ConfigManager extends BaseClass {
                     ? obj.common.name
                     : obj.common.name[this.library.getLocalLanguage()]
                 : undefined;
+        const specialRole: pages.DeviceRole =
+            pages.isCardGridRole(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
+        this.log.debug(
+            `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`,
+        );
 
         const getButtonsTextTrue = async (
             item: ScriptConfig.PageItem,
@@ -2155,9 +2156,11 @@ export class ConfigManager extends BaseClass {
                     return { itemConfig: undefined, messages };
                 }*/
                 const specialRole: pages.DeviceRole =
-                    pages.isCardGridRole(page.type) && item.useValue && obj.common.type === 'number'
-                        ? 'textNotIcon'
-                        : 'iconNotText';
+                    pages.isCardGridRole(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
+                this.log.debug(
+                    `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`,
+                );
+
                 const commonName =
                     typeof obj.common.name === 'string'
                         ? obj.common.name
