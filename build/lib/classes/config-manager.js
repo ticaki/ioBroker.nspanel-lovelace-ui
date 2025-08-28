@@ -1100,17 +1100,29 @@ class ConfigManager extends import_library.BaseClass {
       `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`
     );
     const getButtonsTextTrue = async (item2, def1) => {
-      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
+      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText, true) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1, true);
     };
     const getButtonsTextFalse = async (item2, def1) => {
-      return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
+      return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff, true) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText, true) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1, true);
     };
     const text = {
-      true: await getButtonsTextTrue(item, role || ""),
-      false: await getButtonsTextFalse(item, role || ""),
+      true: {
+        value: await getButtonsTextTrue(item, role || ""),
+        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
+        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+      },
+      false: {
+        value: await getButtonsTextFalse(item, role || ""),
+        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
+        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+      },
+      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+    };
+    const iconTextDefaults = {
+      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
       textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0,
-      prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
-      suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+      prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+      suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
     };
     if (!item.id) {
       return {
@@ -1306,18 +1318,16 @@ class ConfigManager extends import_library.BaseClass {
                 value: item.icon ? { type: "const", constVal: item.icon } : void 0,
                 color: await this.getIconColor(item.onColor, this.colorOn),
                 text: {
-                  value: foundedStates[role].ACTUAL,
-                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
-                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                  ...iconTextDefaults,
+                  value: foundedStates[role].ACTUAL
                 }
               },
               false: {
                 value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
                 color: await this.getIconColor(item.offColor, this.colorOff),
                 text: {
-                  value: foundedStates[role].ACTUAL,
-                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
-                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                  ...iconTextDefaults,
+                  value: foundedStates[role].ACTUAL
                 }
               },
               scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : {
@@ -1357,18 +1367,16 @@ class ConfigManager extends import_library.BaseClass {
                 value: item.icon ? { type: "const", constVal: item.icon } : void 0,
                 color: await this.getIconColor(item.onColor, this.colorOn),
                 text: {
-                  value: foundedStates[role].ACTUAL,
-                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
-                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                  ...iconTextDefaults,
+                  value: foundedStates[role].ACTUAL
                 }
               },
               false: {
                 value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
                 color: await this.getIconColor(item.offColor, this.colorOff),
                 text: {
-                  value: foundedStates[role].ACTUAL,
-                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
-                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                  ...iconTextDefaults,
+                  value: foundedStates[role].ACTUAL
                 }
               },
               scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
@@ -1915,14 +1923,26 @@ class ConfigManager extends import_library.BaseClass {
           return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
         };
         const text = {
-          true: await getButtonsTextTrue(item, role || ""),
-          false: await getButtonsTextFalse(item, role || ""),
-          textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0,
-          prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
-          suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+          true: {
+            value: await getButtonsTextTrue(item, role || ""),
+            prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
+            suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+          },
+          false: {
+            value: await getButtonsTextFalse(item, role || ""),
+            prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
+            suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+          },
+          textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
         };
         const headline = await getButtonsTextTrue(item, role || "");
         item.icon2 = item.icon2 || item.icon;
+        const iconTextDefaults = {
+          unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
+          textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0,
+          prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+          suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
+        };
         switch (role) {
           case "timeTable": {
             itemConfig = {
@@ -2506,6 +2526,7 @@ class ConfigManager extends import_library.BaseClass {
             const tempItem = {
               type: "text",
               role: adapterRole,
+              template: "",
               data: {
                 icon: {
                   true: {
@@ -2515,9 +2536,8 @@ class ConfigManager extends import_library.BaseClass {
                       this.colorOn
                     ),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
-                      value: foundedStates[role].ACTUAL,
-                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
-                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                      ...iconTextDefaults,
+                      value: foundedStates[role].ACTUAL
                     } : void 0
                   },
                   false: {
@@ -2527,9 +2547,8 @@ class ConfigManager extends import_library.BaseClass {
                       this.colorOff
                     ),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
-                      value: foundedStates[role].ACTUAL,
-                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
-                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                      ...iconTextDefaults,
+                      value: foundedStates[role].ACTUAL
                     } : void 0
                   },
                   unstable: {
@@ -2549,6 +2568,8 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 entity2: role === "temperature" || role === "humidity" || role === "value.temperature" || role === "value.humidity" ? {
                   value: foundedStates[role].ACTUAL,
+                  prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+                  suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0,
                   unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
                 } : void 0
               }
@@ -2576,24 +2597,23 @@ class ConfigManager extends import_library.BaseClass {
             const tempItem = {
               type: "text",
               role: adapterRole,
+              template: "",
               data: {
                 icon: {
                   true: {
                     value: item.icon ? await this.getFieldAsDataItemConfig(item.icon) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-outline" },
                     color: item.onColor ? await this.getIconColor(item.onColor, this.colorOn) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: this.colorOn },
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
-                      value: foundedStates[role].ACTUAL,
-                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
-                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                      ...iconTextDefaults,
+                      value: foundedStates[role].ACTUAL
                     } : void 0
                   },
                   false: {
                     value: icontemp ? await this.getFieldAsDataItemConfig(icontemp) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-off-outline" },
                     color: item.offColor ? await this.getIconColor(item.offColor, this.colorOff) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: this.colorOff },
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
-                      value: foundedStates[role].ACTUAL,
-                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
-                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                      ...iconTextDefaults,
+                      value: foundedStates[role].ACTUAL
                     } : void 0
                   }
                 },
@@ -2602,7 +2622,9 @@ class ConfigManager extends import_library.BaseClass {
                 entity1: { value: foundedStates[role].ACTUAL },
                 entity2: {
                   value: foundedStates[role].ACTUAL,
-                  unit: item.unit ? { type: "const", constVal: item.unit } : { type: "const", constVal: commonUnit }
+                  unit: item.unit ? { type: "const", constVal: item.unit } : { type: "const", constVal: commonUnit },
+                  prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+                  suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
                 }
               }
             };
@@ -2744,29 +2766,27 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "slider": {
-            let commonUnit = "";
-            if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-              if (o && o.common && o.common.unit) {
-                commonUnit = o.common.unit;
-              }
-            }
             itemConfig = {
               dpInit: item.id,
               type: "number",
               role: specialRole,
+              template: "",
               data: {
                 icon: {
                   true: {
                     value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "plus-minus-variant" },
                     text: {
-                      value: foundedStates[role].ACTUAL,
-                      unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+                      ...iconTextDefaults,
+                      value: foundedStates[role].ACTUAL
                     },
                     color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: item.icon2 ? {
                     value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
+                    text: {
+                      ...iconTextDefaults,
+                      value: foundedStates[role].ACTUAL
+                    },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   } : void 0,
                   scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0

@@ -474,6 +474,8 @@ declare namespace ScriptConfig {
         stepValue?: number;
         prefixName?: string;
         suffixName?: string;
+        prefixValue?: string;
+        suffixValue?: string;
         name?: string;
         secondRow?: string;
         buttonText?: string;

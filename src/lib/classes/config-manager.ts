@@ -1247,31 +1247,55 @@ export class ConfigManager extends BaseClass {
             def1: string,
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonText
-                ? await this.getFieldAsDataItemConfig(item.buttonText)
+                ? await this.getFieldAsDataItemConfig(item.buttonText, true)
                 : (await this.existsState(`${item.id}.BUTTONTEXT`))
                   ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                  : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
+                  : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
         };
         const getButtonsTextFalse = async (
             item: ScriptConfig.PageItem,
             def1: string,
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonTextOff
-                ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                ? await this.getFieldAsDataItemConfig(item.buttonTextOff, true)
                 : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
                   ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
                   : item.buttonText
-                    ? await this.getFieldAsDataItemConfig(item.buttonText)
+                    ? await this.getFieldAsDataItemConfig(item.buttonText, true)
                     : (await this.existsState(`${item.id}.BUTTONTEXT`))
                       ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                      : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
+                      : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
         };
         const text = {
-            true: await getButtonsTextTrue(item, role || ''),
-            false: await getButtonsTextFalse(item, role || ''),
+            true: {
+                value: await getButtonsTextTrue(item, role || ''),
+                prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
+                suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+            },
+            false: {
+                value: await getButtonsTextFalse(item, role || ''),
+                prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
+                suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+            },
             textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
-            prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
-            suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+        };
+
+        const iconTextDefaults: {
+            unit?: Types.DataItemsOptions | null | undefined;
+            textSize?: Types.DataItemsOptions | null | undefined;
+            prefix?: Types.DataItemsOptions | null | undefined;
+            suffix?: Types.DataItemsOptions | null | undefined;
+        } = {
+            unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+            textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+            prefix:
+                pages.isCardEntitiesRole(page.type) && item.prefixValue
+                    ? await this.getFieldAsDataItemConfig(item.prefixValue)
+                    : undefined,
+            suffix:
+                pages.isCardEntitiesRole(page.type) && item.suffixValue
+                    ? await this.getFieldAsDataItemConfig(item.suffixValue)
+                    : undefined,
         };
 
         if (!item.id) {
@@ -1314,13 +1338,6 @@ export class ConfigManager extends BaseClass {
             item.id,
             [],
         );
-
-        // check if role and types are correct
-        /*if (role) {
-            if (!(await this.checkRequiredDatapoints(role, item))) {
-                return;
-            }
-        }*/
 
         item.icon2 = item.icon2 || item.icon;
         switch (role) {
@@ -1489,24 +1506,16 @@ export class ConfigManager extends BaseClass {
                                 value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
                                 color: await this.getIconColor(item.onColor, this.colorOn),
                                 text: {
+                                    ...iconTextDefaults,
                                     value: foundedStates[role].ACTUAL,
-                                    unit:
-                                        item.unit || commonUnit
-                                            ? { type: 'const', constVal: item.unit || commonUnit }
-                                            : undefined,
-                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
                                 },
                             },
                             false: {
                                 value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                                 text: {
+                                    ...iconTextDefaults,
                                     value: foundedStates[role].ACTUAL,
-                                    unit:
-                                        item.unit || commonUnit
-                                            ? { type: 'const', constVal: item.unit || commonUnit }
-                                            : undefined,
-                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
                                 },
                             },
                             scale: Types.isIconColorScaleElement(item.colorScale)
@@ -1552,24 +1561,16 @@ export class ConfigManager extends BaseClass {
                                 value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
                                 color: await this.getIconColor(item.onColor, this.colorOn),
                                 text: {
+                                    ...iconTextDefaults,
                                     value: foundedStates[role].ACTUAL,
-                                    unit:
-                                        item.unit || commonUnit
-                                            ? { type: 'const', constVal: item.unit || commonUnit }
-                                            : undefined,
-                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
                                 },
                             },
                             false: {
                                 value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                                 text: {
+                                    ...iconTextDefaults,
                                     value: foundedStates[role].ACTUAL,
-                                    unit:
-                                        item.unit || commonUnit
-                                            ? { type: 'const', constVal: item.unit || commonUnit }
-                                            : undefined,
-                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
                                 },
                             },
                             scale: Types.isIconColorScaleElement(item.colorScale)
@@ -2191,16 +2192,39 @@ export class ConfigManager extends BaseClass {
                               : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
                 };
                 const text = {
-                    true: await getButtonsTextTrue(item, role || ''),
-                    false: await getButtonsTextFalse(item, role || ''),
+                    true: {
+                        value: await getButtonsTextTrue(item, role || ''),
+                        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
+                        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+                    },
+                    false: {
+                        value: await getButtonsTextFalse(item, role || ''),
+                        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
+                        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+                    },
                     textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
-                    prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
-                    suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
                 };
                 const headline = await getButtonsTextTrue(item, role || '');
 
                 item.icon2 = item.icon2 || item.icon;
 
+                const iconTextDefaults: {
+                    unit?: Types.DataItemsOptions | null | undefined;
+                    textSize?: Types.DataItemsOptions | null | undefined;
+                    prefix?: Types.DataItemsOptions | null | undefined;
+                    suffix?: Types.DataItemsOptions | null | undefined;
+                } = {
+                    unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                    prefix:
+                        pages.isCardEntitiesRole(page.type) && item.prefixValue
+                            ? await this.getFieldAsDataItemConfig(item.prefixValue)
+                            : undefined,
+                    suffix:
+                        pages.isCardEntitiesRole(page.type) && item.suffixValue
+                            ? await this.getFieldAsDataItemConfig(item.suffixValue)
+                            : undefined,
+                };
                 switch (role) {
                     case 'timeTable': {
                         itemConfig = {
@@ -2882,6 +2906,7 @@ export class ConfigManager extends BaseClass {
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'text',
                             role: adapterRole,
+                            template: '',
                             data: {
                                 icon: {
                                     true: {
@@ -2893,11 +2918,8 @@ export class ConfigManager extends BaseClass {
 
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
+                                                  ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
-                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
-                                                  textSize: item.fontSize
-                                                      ? { type: 'const', constVal: item.fontSize }
-                                                      : undefined,
                                               }
                                             : undefined,
                                     },
@@ -2909,11 +2931,8 @@ export class ConfigManager extends BaseClass {
                                         ),
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
+                                                  ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
-                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
-                                                  textSize: item.fontSize
-                                                      ? { type: 'const', constVal: item.fontSize }
-                                                      : undefined,
                                               }
                                             : undefined,
                                     },
@@ -2943,6 +2962,14 @@ export class ConfigManager extends BaseClass {
                                     role === 'value.humidity'
                                         ? {
                                               value: foundedStates[role].ACTUAL,
+                                              prefix:
+                                                  pages.isCardEntitiesRole(page.type) && item.prefixValue
+                                                      ? await this.getFieldAsDataItemConfig(item.prefixValue)
+                                                      : undefined,
+                                              suffix:
+                                                  pages.isCardEntitiesRole(page.type) && item.suffixValue
+                                                      ? await this.getFieldAsDataItemConfig(item.suffixValue)
+                                                      : undefined,
                                               unit:
                                                   item.unit || commonUnit
                                                       ? { type: 'const', constVal: item.unit || commonUnit }
@@ -2975,6 +3002,7 @@ export class ConfigManager extends BaseClass {
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'text',
                             role: adapterRole,
+                            template: '',
                             data: {
                                 icon: {
                                     true: {
@@ -2990,11 +3018,8 @@ export class ConfigManager extends BaseClass {
                                               : { type: 'const', constVal: this.colorOn },
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
+                                                  ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
-                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
-                                                  textSize: item.fontSize
-                                                      ? { type: 'const', constVal: item.fontSize }
-                                                      : undefined,
                                               }
                                             : undefined,
                                     },
@@ -3011,11 +3036,8 @@ export class ConfigManager extends BaseClass {
                                               : { type: 'const', constVal: this.colorOff },
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
+                                                  ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
-                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
-                                                  textSize: item.fontSize
-                                                      ? { type: 'const', constVal: item.fontSize }
-                                                      : undefined,
                                               }
                                             : undefined,
                                     },
@@ -3028,6 +3050,14 @@ export class ConfigManager extends BaseClass {
                                     unit: item.unit
                                         ? { type: 'const', constVal: item.unit }
                                         : { type: 'const', constVal: commonUnit },
+                                    prefix:
+                                        pages.isCardEntitiesRole(page.type) && item.prefixValue
+                                            ? await this.getFieldAsDataItemConfig(item.prefixValue)
+                                            : undefined,
+                                    suffix:
+                                        pages.isCardEntitiesRole(page.type) && item.suffixValue
+                                            ? await this.getFieldAsDataItemConfig(item.suffixValue)
+                                            : undefined,
                                 },
                             },
                         };
@@ -3182,17 +3212,11 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'slider': {
-                        let commonUnit = '';
-                        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                            if (o && o.common && o.common.unit) {
-                                commonUnit = o.common.unit;
-                            }
-                        }
                         itemConfig = {
                             dpInit: item.id,
                             type: 'number',
                             role: specialRole,
+                            template: '',
 
                             data: {
                                 icon: {
@@ -3201,17 +3225,18 @@ export class ConfigManager extends BaseClass {
                                             ? { type: 'const', constVal: item.icon }
                                             : { type: 'const', constVal: 'plus-minus-variant' },
                                         text: {
+                                            ...iconTextDefaults,
                                             value: foundedStates[role].ACTUAL,
-                                            unit:
-                                                item.unit || commonUnit
-                                                    ? { type: 'const', constVal: item.unit || commonUnit }
-                                                    : undefined,
                                         },
                                         color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
                                     false: item.icon2
                                         ? {
                                               value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                              text: {
+                                                  ...iconTextDefaults,
+                                                  value: foundedStates[role].ACTUAL,
+                                              },
                                               color: await this.getIconColor(item.offColor, this.colorOff),
                                           }
                                         : undefined,

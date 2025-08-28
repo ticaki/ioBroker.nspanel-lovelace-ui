@@ -663,8 +663,8 @@ async function getValueEntryString(i, v = null) {
         res2 = String(nval);
       }
     }
-    res2 = res2 + ((_e = (_d = await ((_c = i.unit) == null ? void 0 : _c.getString())) != null ? _d : i.value.common.unit) != null ? _e : "");
-    res2 += (_g = await ((_f = i.prefix) == null ? void 0 : _f.getString())) != null ? _g : "";
+    res2 += (_e = (_d = await ((_c = i.unit) == null ? void 0 : _c.getString())) != null ? _d : i.value.common.unit) != null ? _e : "";
+    res2 = ((_g = await ((_f = i.prefix) == null ? void 0 : _f.getString())) != null ? _g : "") + res2;
     res2 += (_i = await ((_h = i.suffix) == null ? void 0 : _h.getString())) != null ? _i : "";
     let opt2 = "";
     if (isTextSizeEntryType(i)) {
@@ -685,8 +685,8 @@ async function getValueEntryString(i, v = null) {
     if (isTextSizeEntryType(i)) {
       opt = String((_m = i.textSize && await i.textSize.getNumber()) != null ? _m : "");
     }
-    res = res + ((_p = (_o = await ((_n = i.unit) == null ? void 0 : _n.getString())) != null ? _o : i.value.common.unit) != null ? _p : "");
-    res += (_r = await ((_q = i.prefix) == null ? void 0 : _q.getString())) != null ? _r : "";
+    res += (_p = (_o = await ((_n = i.unit) == null ? void 0 : _n.getString())) != null ? _o : i.value.common.unit) != null ? _p : "";
+    res = ((_r = await ((_q = i.prefix) == null ? void 0 : _q.getString())) != null ? _r : "") + res;
     res += (_t = await ((_s = i.suffix) == null ? void 0 : _s.getString())) != null ? _t : "";
     res += opt ? `\xAC${opt}` : "";
   }

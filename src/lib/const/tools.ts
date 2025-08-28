@@ -714,8 +714,8 @@ export async function getValueEntryString(
                 res = String(nval);
             }
         }
-        res = res + ((await i.unit?.getString()) ?? i.value.common.unit ?? '');
-        res += (await i.prefix?.getString()) ?? '';
+        res += (await i.unit?.getString()) ?? i.value.common.unit ?? '';
+        res = ((await i.prefix?.getString()) ?? '') + res;
         res += (await i.suffix?.getString()) ?? '';
         let opt = '';
         if (isTextSizeEntryType(i)) {
@@ -736,8 +736,8 @@ export async function getValueEntryString(
         if (isTextSizeEntryType(i)) {
             opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
         }
-        res = res + ((await i.unit?.getString()) ?? i.value.common.unit ?? '');
-        res += (await i.prefix?.getString()) ?? '';
+        res += (await i.unit?.getString()) ?? i.value.common.unit ?? '';
+        res = ((await i.prefix?.getString()) ?? '') + res;
         res += (await i.suffix?.getString()) ?? '';
         res += opt ? `¬${opt}` : '';
     }
