@@ -639,7 +639,7 @@ function isTextSizeEntryType(F) {
   return "textSize" in F;
 }
 async function getValueEntryString(i, v = null) {
-  var _a, _b, _c, _d, _e, _f, _g, _h;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
   if (!i || !i.value) {
     return null;
   }
@@ -663,10 +663,12 @@ async function getValueEntryString(i, v = null) {
         res2 = String(nval);
       }
     }
-    res2 = res2 + ((_d = (_c = i.unit && await i.unit.getString()) != null ? _c : i.value.common.unit) != null ? _d : "");
+    res2 = res2 + ((_e = (_d = await ((_c = i.unit) == null ? void 0 : _c.getString())) != null ? _d : i.value.common.unit) != null ? _e : "");
+    res2 += (_g = await ((_f = i.prefix) == null ? void 0 : _f.getString())) != null ? _g : "";
+    res2 += (_i = await ((_h = i.suffix) == null ? void 0 : _h.getString())) != null ? _i : "";
     let opt2 = "";
     if (isTextSizeEntryType(i)) {
-      opt2 = String((_e = i.textSize && await i.textSize.getNumber()) != null ? _e : "");
+      opt2 = String((_j = i.textSize && await i.textSize.getNumber()) != null ? _j : "");
     }
     return res2 + (opt2 ? `\xAC${opt2}` : "");
   }
@@ -679,10 +681,13 @@ async function getValueEntryString(i, v = null) {
         res = temp.toLocaleString(format.local, format.format);
       }
     }
-    res += (_g = (_f = i.unit && await i.unit.getString()) != null ? _f : i.value.common.unit) != null ? _g : "";
+    res += (_l = (_k = i.unit && await i.unit.getString()) != null ? _k : i.value.common.unit) != null ? _l : "";
     if (isTextSizeEntryType(i)) {
-      opt = String((_h = i.textSize && await i.textSize.getNumber()) != null ? _h : "");
+      opt = String((_m = i.textSize && await i.textSize.getNumber()) != null ? _m : "");
     }
+    res = res + ((_p = (_o = await ((_n = i.unit) == null ? void 0 : _n.getString())) != null ? _o : i.value.common.unit) != null ? _p : "");
+    res += (_r = await ((_q = i.prefix) == null ? void 0 : _q.getString())) != null ? _r : "";
+    res += (_t = await ((_s = i.suffix) == null ? void 0 : _s.getString())) != null ? _t : "";
     res += opt ? `\xAC${opt}` : "";
   }
   return res;

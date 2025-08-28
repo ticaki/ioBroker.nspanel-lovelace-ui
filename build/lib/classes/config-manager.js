@@ -1083,17 +1083,17 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (!pages.isCardMenuRole(page.type) || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
     }
     let itemConfig = void 0;
-    const specialRole = pages.isCardGridRole(page.type) ? "textNotIcon" : "iconNotText";
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     if (obj && (!obj.common || !obj.common.role)) {
       throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
     }
+    const specialRole = pages.isCardGridRole(page.type) && item.useValue && ((_a = obj == null ? void 0 : obj.common) == null ? void 0 : _a.type) === "number" ? "textNotIcon" : "iconNotText";
     const role = obj ? obj.common.role : null;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
     const getButtonsTextTrue = async (item2, def1) => {
@@ -1291,7 +1291,7 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = {
           type: "button",
           dpInit: item.id,
-          role: item.useValue ? specialRole : "",
+          role: specialRole,
           template: "button.humidity",
           data: {
             entity1: {
@@ -1342,7 +1342,7 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = {
           type: "button",
           dpInit: item.id,
-          role: item.useValue ? specialRole : "",
+          role: specialRole,
           template: "button.temperature",
           data: {
             entity1: {
@@ -1405,8 +1405,8 @@ class ConfigManager extends import_library.BaseClass {
               },
               entity1: {
                 value: foundedStates[role].ACTUAL,
-                minScale: { type: "const", constVal: (_a = item.minValueLevel) != null ? _a : tempMinScale },
-                maxScale: { type: "const", constVal: (_b = item.maxValueLevel) != null ? _b : tempMaxScale }
+                minScale: { type: "const", constVal: (_b = item.minValueLevel) != null ? _b : tempMinScale },
+                maxScale: { type: "const", constVal: (_c = item.maxValueLevel) != null ? _c : tempMaxScale }
               },
               setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
             }
@@ -1572,10 +1572,10 @@ class ConfigManager extends import_library.BaseClass {
         let adapterRole = "";
         if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
           const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-          if (((_c = o == null ? void 0 : o.common) == null ? void 0 : _c.type) === "boolean") {
+          if (((_d = o == null ? void 0 : o.common) == null ? void 0 : _d.type) === "boolean") {
             adapterRole = "iconNotText";
           } else {
-            adapterRole = item.useValue ? specialRole : "";
+            adapterRole = specialRole;
           }
         }
         itemConfig = {
@@ -1637,8 +1637,8 @@ class ConfigManager extends import_library.BaseClass {
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
-              minScale: { type: "const", constVal: (_d = item.minValueLevel) != null ? _d : tempMinScale },
-              maxScale: { type: "const", constVal: (_e = item.maxValueLevel) != null ? _e : tempMaxScale }
+              minScale: { type: "const", constVal: (_e = item.minValueLevel) != null ? _e : tempMinScale },
+              maxScale: { type: "const", constVal: (_f = item.maxValueLevel) != null ? _f : tempMaxScale }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1900,7 +1900,7 @@ class ConfigManager extends import_library.BaseClass {
           item.id,
           messages
         );
-        const specialRole = pages.isCardGridRole(page.type) ? "textNotIcon" : "iconNotText";
+        const specialRole = pages.isCardGridRole(page.type) && item.useValue && obj.common.type === "number" ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         const getButtonsTextTrue = async (item2, def1) => {
           return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
@@ -2471,7 +2471,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "thermometer";
                 iconOff = "snowflake-thermometer";
                 iconUnstable = "sun-thermometer";
-                adapterRole = item.useValue ? specialRole : "";
+                adapterRole = specialRole;
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2486,7 +2486,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "water-percent";
                 iconOff = "water-off";
                 iconUnstable = "water-percent-alert";
-                adapterRole = item.useValue ? specialRole : "";
+                adapterRole = specialRole;
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2562,7 +2562,7 @@ class ConfigManager extends import_library.BaseClass {
                 if (o.common.type === "boolean") {
                   adapterRole = "iconNotText";
                 } else {
-                  adapterRole = item.useValue ? specialRole : "";
+                  adapterRole = specialRole;
                 }
               }
             }
@@ -2616,7 +2616,7 @@ class ConfigManager extends import_library.BaseClass {
               template: "number.volume",
               dpInit: item.id,
               type: "number",
-              role: item.useValue ? specialRole : "",
+              role: specialRole,
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
@@ -2748,7 +2748,7 @@ class ConfigManager extends import_library.BaseClass {
             itemConfig = {
               dpInit: item.id,
               type: "number",
-              role: item.useValue ? specialRole : "",
+              role: specialRole,
               data: {
                 icon: {
                   true: {

@@ -513,7 +513,13 @@ export class PageItem extends BaseClassTriggerd {
                         message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
                         switch (entry.role) {
                             case 'textNotIcon': {
-                                message.icon = (await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '';
+                                if (typeof value === 'number') {
+                                    message.icon =
+                                        (await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '';
+                                } else {
+                                    message.icon =
+                                        (await tools.getIconEntryValue(item.icon, value, '', null, false)) ?? '';
+                                }
                                 break;
                             }
                             case 'iconNotText': {
@@ -539,7 +545,7 @@ export class PageItem extends BaseClassTriggerd {
                                         '',
                                         null,
                                         (this.parent &&
-                                            isCardEntitiesRole(this.parent.card) &&
+                                            !isCardEntitiesRole(this.parent.card) &&
                                             !this.parent.card.startsWith('screens')) ??
                                             false,
                                     )) ?? '';

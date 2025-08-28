@@ -711,6 +711,8 @@ export type ValueEntryType =
           set?: number;
           dateFormat?: string;
           math?: string;
+          suffix?: string;
+          prefix?: string;
       }
     | undefined;
 export type ScaledNumberType =

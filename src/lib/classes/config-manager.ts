@@ -1223,12 +1223,16 @@ export class ConfigManager extends BaseClass {
             return undefined;
         }
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
-        const specialRole: pages.DeviceRole = pages.isCardGridRole(page.type) ? 'textNotIcon' : 'iconNotText';
 
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
         if (obj && (!obj.common || !obj.common.role)) {
             throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
+        const specialRole: pages.DeviceRole =
+            pages.isCardGridRole(page.type) && item.useValue && obj?.common?.type === 'number'
+                ? 'textNotIcon'
+                : 'iconNotText';
+
         const role = obj ? (obj.common.role as ScriptConfig.channelRoles) : null;
         const commonName =
             obj && obj.common
@@ -1469,7 +1473,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = {
                     type: 'button',
                     dpInit: item.id,
-                    role: item.useValue ? specialRole : '',
+                    role: specialRole,
                     template: 'button.humidity',
                     data: {
                         entity1: {
@@ -1532,7 +1536,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = {
                     type: 'button',
                     dpInit: item.id,
-                    role: item.useValue ? specialRole : '',
+                    role: specialRole,
                     template: 'button.temperature',
                     data: {
                         entity1: {
@@ -1784,7 +1788,7 @@ export class ConfigManager extends BaseClass {
                     if (o?.common?.type === 'boolean') {
                         adapterRole = 'iconNotText';
                     } else {
-                        adapterRole = item.useValue ? specialRole : '';
+                        adapterRole = specialRole;
                     }
                 }
                 itemConfig = {
@@ -2150,7 +2154,10 @@ export class ConfigManager extends BaseClass {
                 /*if (!(await this.checkRequiredDatapoints(role, item))) {
                     return { itemConfig: undefined, messages };
                 }*/
-                const specialRole: pages.DeviceRole = pages.isCardGridRole(page.type) ? 'textNotIcon' : 'iconNotText';
+                const specialRole: pages.DeviceRole =
+                    pages.isCardGridRole(page.type) && item.useValue && obj.common.type === 'number'
+                        ? 'textNotIcon'
+                        : 'iconNotText';
                 const commonName =
                     typeof obj.common.name === 'string'
                         ? obj.common.name
@@ -2843,7 +2850,7 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'thermometer';
                                 iconOff = 'snowflake-thermometer';
                                 iconUnstable = 'sun-thermometer';
-                                adapterRole = item.useValue ? specialRole : '';
+                                adapterRole = specialRole;
                                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                                     const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                                     if (o && o.common && o.common.unit) {
@@ -2858,7 +2865,7 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'water-percent';
                                 iconOff = 'water-off';
                                 iconUnstable = 'water-percent-alert';
-                                adapterRole = item.useValue ? specialRole : '';
+                                adapterRole = specialRole;
                                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                                     const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                                     if (o && o.common && o.common.unit) {
@@ -2956,7 +2963,7 @@ export class ConfigManager extends BaseClass {
                                 if (o.common.type === 'boolean') {
                                     adapterRole = 'iconNotText';
                                 } else {
-                                    adapterRole = item.useValue ? specialRole : '';
+                                    adapterRole = specialRole;
                                 }
                             }
                         }
@@ -3037,7 +3044,7 @@ export class ConfigManager extends BaseClass {
                             template: 'number.volume',
                             dpInit: item.id,
                             type: 'number',
-                            role: item.useValue ? specialRole : '',
+                            role: specialRole,
                             color: {
                                 true: await this.getIconColor(item.onColor, this.colorOn),
                                 false: await this.getIconColor(item.offColor, this.colorOff),
@@ -3182,7 +3189,7 @@ export class ConfigManager extends BaseClass {
                         itemConfig = {
                             dpInit: item.id,
                             type: 'number',
-                            role: item.useValue ? specialRole : '',
+                            role: specialRole,
 
                             data: {
                                 icon: {
