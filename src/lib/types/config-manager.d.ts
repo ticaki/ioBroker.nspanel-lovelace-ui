@@ -496,7 +496,7 @@ declare namespace ScriptConfig {
         iconArray?: string[];
         customIcons?: any[];
         shutterIcons?: [shutterIcons?, shutterIcons?, shutterIcons?] | null;
-        fontSize?: number;
+        fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
         actionStringArray?: string[];
         alwaysOnDisplay?: boolean;
         shutterType?: string;
