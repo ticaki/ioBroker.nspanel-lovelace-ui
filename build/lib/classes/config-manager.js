@@ -47,6 +47,7 @@ var import_tools = require("../const/tools");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_pageThermo2 = require("../pages/pageThermo2");
+var import_pageMedia = require("../pages/pageMedia");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -343,7 +344,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart" && page.type !== "cardMedia") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -412,6 +413,17 @@ class ConfigManager extends import_library.BaseClass {
         } catch (error) {
           messages.push(
             `Configuration error in page thermo2 ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+          );
+          this.log.warn(messages[messages.length - 1]);
+          continue;
+        }
+        try {
+          if (page.type === "cardMedia") {
+            ({ gridItem, messages } = await import_pageMedia.PageMedia.getPage(this, page, gridItem, messages));
+          }
+        } catch (error) {
+          messages.push(
+            `Configuration error in page media ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
           );
           this.log.warn(messages[messages.length - 1]);
           continue;

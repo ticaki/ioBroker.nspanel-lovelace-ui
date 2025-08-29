@@ -17,6 +17,7 @@ import { getVersionAsNumber } from '../const/tools';
 import * as fs from 'fs';
 import path from 'path';
 import { PageThermo2 } from '../pages/pageThermo2';
+import { PageMedia } from '../pages/pageMedia';
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
     colorOn: RGB = Color.On;
@@ -383,7 +384,8 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardQR' &&
                     page.type !== 'cardPower' &&
                     page.type !== 'cardChart' &&
-                    page.type !== 'cardLChart'
+                    page.type !== 'cardLChart' &&
+                    page.type !== 'cardMedia'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -466,6 +468,17 @@ export class ConfigManager extends BaseClass {
                 } catch (error: any) {
                     messages.push(
                         `Configuration error in page thermo2 ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                    );
+                    this.log.warn(messages[messages.length - 1]);
+                    continue;
+                }
+                try {
+                    if (page.type === 'cardMedia') {
+                        ({ gridItem, messages } = await PageMedia.getPage(this, page, gridItem, messages));
+                    }
+                } catch (error: any) {
+                    messages.push(
+                        `Configuration error in page media ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                     );
                     this.log.warn(messages[messages.length - 1]);
                     continue;

@@ -8,6 +8,7 @@ import { Page, isMediaButtonActionType } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { getPayload, getPayloadArray, getScaledNumber, setScaledNumber } from '../const/tools';
 
+import type { ConfigManager } from '../classes/config-manager';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
@@ -410,6 +411,455 @@ export class PageMedia extends Page {
             }
         }
     }
+    static async getPage(
+        configManager: ConfigManager,
+        page: ScriptConfig.PageMedia,
+        gridItem: pages.PageBaseConfig,
+        messages: string[],
+    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+        const adapter = configManager.adapter;
+        if (page.type !== 'cardMedia' || !gridItem.config || gridItem.config.card !== 'cardMedia') {
+            const msg = `Error in page ${page.uniqueName}: Not a media page!`;
+            messages.push(msg);
+            adapter.log.warn(msg);
+            return { gridItem, messages };
+        }
+        if (!page.id) {
+            const msg = `${page.uniqueName}: Media page has no device id!`;
+            messages.push(msg);
+            adapter.log.warn(msg);
+            return { gridItem, messages };
+        }
+        gridItem.config.card = 'cardMedia';
+        let o;
+        try {
+            o = await adapter.getForeignObjectAsync(page.id);
+        } catch {
+            //nothing
+        }
+        if (!o) {
+            const msg = `${page.uniqueName}: Media page id ${page.id} has no object!`;
+            messages.push(msg);
+            adapter.log.warn(msg);
+            return { gridItem, messages };
+        }
+        gridItem.dpInit = page.id;
+        gridItem = {
+            ...gridItem,
+            config: {
+                card: 'cardMedia',
+                data: {
+                    headline: {
+                        type: 'const',
+                        constVal: 'home',
+                    },
+                    album: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'media.album',
+                        dp: '',
+                    },
+                    title: {
+                        on: {
+                            type: 'const',
+                            constVal: true,
+                        },
+                        text: {
+                            mode: 'auto',
+                            type: 'triggered',
+                            role: 'media.title',
+                            dp: '',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: { r: 250, g: 2, b: 3 },
+                        },
+                    },
+                    duration: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'media.duration',
+                        dp: '',
+                    },
+                    elapsed: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        role: ['media.elapsed', 'media.elapsed.text'],
+                        dp: '',
+                    },
+                    volume: {
+                        value: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: ['level.volume'],
+
+                            scale: { min: 0, max: 100 },
+                            dp: '',
+                        },
+                        set: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: ['level.volume'],
+
+                            scale: { min: 0, max: 100 },
+                            dp: '',
+                        },
+                    },
+                    artist: {
+                        on: {
+                            type: 'const',
+                            constVal: true,
+                        },
+                        text: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: 'media.artist',
+                            dp: '',
+                        },
+                        color: undefined,
+                        icon: {
+                            type: 'const',
+                            constVal: 'diameter',
+                        },
+                        list: undefined,
+                    },
+                    shuffle: {
+                        value: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: 'media.mode.shuffle',
+                            dp: '',
+                        },
+                        set: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: 'media.mode.shuffle',
+                            dp: '',
+                        },
+                    },
+                    icon: {
+                        type: 'const',
+                        constVal: 'dialpad',
+                    },
+                    play: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['button.play'],
+                        dp: '',
+                    },
+                    mediaState: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        role: ['media.state'],
+                        dp: '',
+                    },
+                    stop: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['button.stop'],
+                        dp: '',
+                    },
+                    pause: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'button.pause',
+                        dp: '',
+                    },
+                    forward: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'button.next',
+                        dp: '',
+                    },
+                    backward: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'button.prev',
+                        dp: '',
+                    },
+                    logo: {
+                        on: {
+                            type: 'const',
+                            constVal: true,
+                        },
+                        text: { type: 'const', constVal: '1' },
+                        icon: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
+                        list: undefined,
+                        action: 'cross',
+                    },
+                },
+            },
+            items: undefined,
+            pageItems: [
+                {
+                    role: 'spotify-playlist',
+                    type: 'input_sel',
+                    dpInit: '',
+
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'arrow-up' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entityInSel: {
+                            value: {
+                                type: 'state',
+                                dp: '0_userdata.0.spotify-premium.0.player.playlist.trackNo',
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                        /**
+                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                         */
+                        valueList: {
+                            type: 'state',
+                            dp: '0_userdata.0.spotify-premium.0.player.playlist.trackListArray',
+                        },
+                        /**
+                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                         */
+                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: '',
+
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: '',
+
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: '',
+
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: '',
+
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: '',
+
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                    },
+                },
+            ],
+            uniqueID: page.uniqueName,
+        };
+
+        return { gridItem, messages };
+    }
 }
 
 type _SelectValueFromBoolean = 'color' | 'string';
@@ -460,11 +910,9 @@ async function getValueFromData(item: Dataitem, type: _SelectValueFromBoolean): 
     switch (type) {
         case 'string': {
             return item.getString();
-            break;
         }
         case 'color': {
             return item.getRGBDec();
-            break;
         }
     }
 }

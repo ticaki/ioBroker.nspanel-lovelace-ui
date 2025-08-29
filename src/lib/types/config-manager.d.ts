@@ -330,7 +330,8 @@ declare namespace ScriptConfig {
 
     export type PageMedia = {
         type: 'cardMedia';
-        items: [PageMediaItem];
+        id: string; // datapoint with adapter.instance.device
+        items: PageItem[];
     } & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'>;
 
     export type PageAlarm = {

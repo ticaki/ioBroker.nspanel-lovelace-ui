@@ -56,6 +56,8 @@ class ColorBase {
   static option4 = "default.color.from.start.option3";
   static open = "default.color.from.start.open";
   static close = "default.color.from.start.close";
+  static hot = "default.color.from.start.hot";
+  static cold = "default.color.from.start.cold";
 }
 class Color extends ColorBase {
   static HMIOff = { r: 68, g: 115, b: 158 };
@@ -170,6 +172,14 @@ class Color extends ColorBase {
           return Color.option3;
         case "default.color.from.start.option4":
           return Color.option4;
+        case "default.color.from.start.open":
+          return Color.open;
+        case "default.color.from.start.close":
+          return Color.close;
+        case "default.color.from.start.hot":
+          return Color.hot;
+        case "default.color.from.start.cold":
+          return Color.cold;
       }
     }
     return s;
@@ -188,7 +198,9 @@ class Color extends ColorBase {
     option3: Color.MSRed,
     option4: Color.MSGreen,
     open: Color.Red,
-    close: Color.Green
+    close: Color.Green,
+    hot: Color.Red,
+    cold: Color.Blue
   };
   /**
    * set color theme...

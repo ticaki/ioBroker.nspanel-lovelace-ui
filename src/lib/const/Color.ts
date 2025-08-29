@@ -29,6 +29,8 @@ export interface ColorThemenInterface {
     option4: RGB;
     open: RGB;
     close: RGB;
+    hot: RGB;
+    cold: RGB;
 }
 
 /**
@@ -56,6 +58,8 @@ class ColorBase {
     static option4: RGB | string = 'default.color.from.start.option3';
     static open: RGB | string = 'default.color.from.start.open';
     static close: RGB | string = 'default.color.from.start.close';
+    static hot: RGB | string = 'default.color.from.start.hot';
+    static cold: RGB | string = 'default.color.from.start.cold';
 }
 
 export class Color extends ColorBase {
@@ -172,6 +176,14 @@ export class Color extends ColorBase {
                     return Color.option3;
                 case 'default.color.from.start.option4':
                     return Color.option4;
+                case 'default.color.from.start.open':
+                    return Color.open;
+                case 'default.color.from.start.close':
+                    return Color.close;
+                case 'default.color.from.start.hot':
+                    return Color.hot;
+                case 'default.color.from.start.cold':
+                    return Color.cold;
             }
         }
         return s;
@@ -191,6 +203,8 @@ export class Color extends ColorBase {
         option4: Color.MSGreen,
         open: Color.Red,
         close: Color.Green,
+        hot: Color.Red,
+        cold: Color.Blue,
     };
 
     /**
