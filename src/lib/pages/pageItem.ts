@@ -180,6 +180,31 @@ export class PageItem extends BaseClassTriggerd {
                 await this.controller.statesControler.activateTrigger(this);
             }
         }
+        // search for alexa devices
+        if (this.config.role === 'alexa-speaker') {
+            const devices = await this.adapter.getObjectViewAsync('system', 'device', {
+                startkey: `alexa2.0.Echo-Devices.`,
+                endkey: `alexa2.0.Echo-Devices${String.fromCharCode(0xfffd)}`,
+            });
+            this.tempData = [];
+            if (devices && devices.rows && devices.rows.length > 0) {
+                for (const instance of devices.rows) {
+                    if (instance && instance.value && instance.id && instance.id.split('.').length === 4) {
+                        this.log.debug(
+                            `Alexa device: ${typeof instance.value.common.name === 'object' ? instance.value.common.name.en : instance.value.common.name} deviceId: ${instance.id}`,
+                        );
+                        this.tempData.push({
+                            id: instance.id,
+                            name:
+                                typeof instance.value.common.name === 'object'
+                                    ? instance.value.common.name.en
+                                    : instance.value.common.name,
+                        });
+                    }
+                }
+                this.log.debug(`Alexa devices found: ${this.tempData.length}`);
+            }
+        }
     }
 
     async getPageItemPayload(): Promise<string> {
@@ -2480,6 +2505,15 @@ export class PageItem extends BaseClassTriggerd {
 
                 return true;
             } else if (
+                entry.role === 'alexa-speaker' &&
+                sList.list !== undefined &&
+                sList.list[parseInt(value)] !== undefined &&
+                item.entityInSel &&
+                item.entityInSel.set
+            ) {
+                await item.entityInSel.set.setState(`Schiebe Musik auf ${sList.list[parseInt(value)]}`);
+                return true;
+            } else if (
                 sList.states !== undefined &&
                 sList.states[parseInt(value)] !== undefined &&
                 item.entityInSel &&
@@ -2637,61 +2671,77 @@ export class PageItem extends BaseClassTriggerd {
         valueList2: Dataitem | undefined = undefined,
     ): Promise<{ value?: string | undefined; list?: string[] | undefined; states?: string[] }> {
         const list: { value?: string | undefined; list?: string[] | undefined; states?: string[] } = {};
-        if (
-            entityInSel &&
-            entityInSel.value &&
-            ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
-            (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()) || valueList2 != null)
-        ) {
-            let states: Record<string | number, string> | undefined = undefined;
-            const value = await tools.getValueEntryString(entityInSel);
-            if (valueList && valueList2) {
-                role = '2values';
-            }
-            switch (role) {
-                case 'spotify-playlist': {
-                    if (valueList) {
-                        const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
-                        if (val) {
-                            states = {};
-                            for (let a = 0; a < val.length; a++) {
-                                states[a + 1] = val[a].title;
+
+        if (entityInSel && entityInSel.value) {
+            if (role === 'alexa-speaker') {
+                // Alexa Speaker
+                if (entityInSel.value.options.dp) {
+                    list.list = [];
+                    list.states = [];
+                    for (const a in this.tempData) {
+                        list.list.push(this.tempData[a].name);
+                        list.states.push(a);
+                    }
+
+                    const index = this.tempData.findIndex((a: any) => entityInSel?.value?.options.dp?.includes(a.id));
+                    if (index !== -1 && !list.value) {
+                        list.value = this.tempData[index].name;
+                    }
+                }
+            } else if (
+                ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
+                (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()) || valueList2 != null)
+            ) {
+                let states: Record<string | number, string> | undefined = undefined;
+                const value = await tools.getValueEntryString(entityInSel);
+                if (valueList && valueList2) {
+                    role = '2values';
+                }
+                switch (role) {
+                    case 'spotify-playlist': {
+                        if (valueList) {
+                            const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
+                            if (val) {
+                                states = {};
+                                for (let a = 0; a < val.length; a++) {
+                                    states[a + 1] = val[a].title;
+                                }
+                                list.value = value ?? undefined;
                             }
-                            list.value = value ?? undefined;
                         }
+                        break;
                     }
-                    break;
-                }
-                case '2values': {
-                    if (!valueList || !valueList2) {
-                        this.log.error('2values without valueList or valueList2!');
-                        return {};
+                    case '2values': {
+                        if (!valueList || !valueList2) {
+                            this.log.error('2values without valueList or valueList2!');
+                            return {};
+                        }
+                        const val1: string[] = (await valueList.getObject()) as string[]; //key
+                        const val2: string[] = (await valueList2.getObject()) as string[]; //value
+                        if (!Array.isArray(val1) || !Array.isArray(val2)) {
+                            this.log.error('2values valueList or valueList2 is not a array!');
+                            return {};
+                        }
+                        states = {};
+                        for (let a = 0; a < val1.length; a++) {
+                            states[val1[a]] = val2[a];
+                        }
+                        break;
                     }
-                    const val1: string[] = (await valueList.getObject()) as string[]; //key
-                    const val2: string[] = (await valueList2.getObject()) as string[]; //value
-                    if (!Array.isArray(val1) || !Array.isArray(val2)) {
-                        this.log.error('2values valueList or valueList2 is not a array!');
-                        return {};
+                    default: {
+                        states = await entityInSel.value.getCommonStates();
                     }
-                    states = {};
-                    for (let a = 0; a < val1.length; a++) {
-                        states[val1[a]] = val2[a];
+                }
+                if (value !== null && states) {
+                    list.list = [];
+                    list.states = [];
+                    for (const a in states) {
+                        list.list.push(this.library.getTranslation(String(states[a])));
+                        list.states.push(a);
                     }
-                    break;
-                }
-                default: {
-                    states = await entityInSel.value.getCommonStates();
-                }
-            }
-            if (value !== null && states) {
-                list.list = [];
-                list.states = [];
-                for (const a in states) {
-                    list.list.push(this.library.getTranslation(String(states[a])));
-                    list.states.push(a);
-                }
-                if (!list.value) {
-                    list.value = states[value];
+                    if (!list.value) {
+                        list.value = states[value];
+                    }
                 }
             }
         }

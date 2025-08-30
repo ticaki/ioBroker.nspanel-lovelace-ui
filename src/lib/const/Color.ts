@@ -31,6 +31,10 @@ export interface ColorThemenInterface {
     close: RGB;
     hot: RGB;
     cold: RGB;
+    on: RGB;
+    off: RGB;
+    light: RGB;
+    dark: RGB;
 }
 
 /**
@@ -60,6 +64,10 @@ class ColorBase {
     static close: RGB | string = 'default.color.from.start.close';
     static hot: RGB | string = 'default.color.from.start.hot';
     static cold: RGB | string = 'default.color.from.start.cold';
+    static on: RGB | string = 'default.color.from.start.on';
+    static off: RGB | string = 'default.color.from.start.off';
+    static light: RGB | string = 'default.color.from.start.light';
+    static dark: RGB | string = 'default.color.from.start.dark';
 }
 
 export class Color extends ColorBase {
@@ -150,7 +158,7 @@ export class Color extends ColorBase {
     static readonly swWindy: RGB = { r: 150, g: 150, b: 150 };
 
     static getColorFromDefault(s: any): RGB | string {
-        if (typeof s === 'string') {
+        if (typeof s === 'string' && s && s.startsWith('default.color.from.start.')) {
             switch (s) {
                 case 'default.color.from.start.good':
                     return Color.good;
@@ -184,6 +192,16 @@ export class Color extends ColorBase {
                     return Color.hot;
                 case 'default.color.from.start.cold':
                     return Color.cold;
+                case 'default.color.from.start.on':
+                    return Color.on;
+                case 'default.color.from.start.off':
+                    return Color.off;
+                case 'default.color.from.start.light':
+                    return Color.light;
+                case 'default.color.from.start.dark':
+                    return Color.dark;
+                default:
+                    console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
             }
         }
         return s;
@@ -205,6 +223,10 @@ export class Color extends ColorBase {
         close: Color.Green,
         hot: Color.Red,
         cold: Color.Blue,
+        on: Color.On,
+        off: Color.Off,
+        light: Color.White,
+        dark: Color.Gray,
     };
 
     /**

@@ -488,15 +488,25 @@ export type DataItemsOptions = {
     | DataItemsOptionsInternalState
 );
 
-type DataItemsOptionsAuto = {
-    mode: 'auto' | 'done' | 'fail'; // not set means custom
-    role: pages.StateRole | pages.StateRole[];
+type RequireAtLeastOne<T, K extends keyof T = keyof T> = Pick<T, Exclude<keyof T, K>> &
+    { [P in K]-?: Required<Pick<T, P>> & Partial<Pick<T, Exclude<K, P>>> }[K];
+
+type Base = {
+    mode: 'auto' | 'done' | 'fail';
+    role?: pages.StateRole | pages.StateRole[];
     commonType?: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][] | '';
     regexp?: RegExp;
     def?: string | number | boolean | RGB;
     required?: boolean;
     writeable?: boolean;
 };
+
+type AutoNeedOne = RequireAtLeastOne<Pick<Base, 'role' | 'commonType' | 'regexp'>, 'role' | 'commonType' | 'regexp'>;
+
+type Rest = Omit<Base, 'mode' | 'role' | 'commonType' | 'regexp'>;
+
+export type DataItemsOptionsAuto = { mode: 'auto' | 'done' | 'fail' } & Rest & AutoNeedOne; // bei 'auto': mind. eins von role/commonType/regexp
+
 type DataItemsOptionsCustom = {
     mode?: 'custom'; // not set means custom
     role?: string;

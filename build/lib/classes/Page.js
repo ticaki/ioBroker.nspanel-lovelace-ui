@@ -73,7 +73,7 @@ class Page extends import_baseClassPage.BaseClassPage {
    * ...
    */
   async init() {
-    var _a, _b;
+    var _a;
     if (this.pageItemConfig) {
       for (let a = 0; a < this.pageItemConfig.length; a++) {
         let options = this.pageItemConfig[a];
@@ -99,11 +99,15 @@ class Page extends import_baseClassPage.BaseClassPage {
         const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
         const enums = this.enums ? this.enums : options.enums;
         options.data = dpInit || enums ? await this.panel.statesControler.getDataItemsFromAuto(
-          (_b = this.dpInit ? this.dpInit : options.dpInit) != null ? _b : "",
+          dpInit,
           options.data,
           "appendix" in options ? options.appendix : void 0,
           this.enums ? this.enums : options.enums
         ) : options.data;
+        options = JSON.parse(JSON.stringify(options));
+        if (options) {
+          options.dpInit = dpInit;
+        }
         this.pageItemConfig[a] = options;
       }
     }

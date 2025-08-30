@@ -171,6 +171,27 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         await this.controller.statesControler.activateTrigger(this);
       }
     }
+    if (this.config.role === "alexa-speaker") {
+      const devices = await this.adapter.getObjectViewAsync("system", "device", {
+        startkey: `alexa2.0.Echo-Devices.`,
+        endkey: `alexa2.0.Echo-Devices${String.fromCharCode(65533)}`
+      });
+      this.tempData = [];
+      if (devices && devices.rows && devices.rows.length > 0) {
+        for (const instance of devices.rows) {
+          if (instance && instance.value && instance.id && instance.id.split(".").length === 4) {
+            this.log.debug(
+              `Alexa device: ${typeof instance.value.common.name === "object" ? instance.value.common.name.en : instance.value.common.name} deviceId: ${instance.id}`
+            );
+            this.tempData.push({
+              id: instance.id,
+              name: typeof instance.value.common.name === "object" ? instance.value.common.name.en : instance.value.common.name
+            });
+          }
+        }
+        this.log.debug(`Alexa devices found: ${this.tempData.length}`);
+      }
+    }
   }
   async getPageItemPayload() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa;
@@ -2187,6 +2208,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       if (entry.role === "spotify-playlist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
         await item.setValue1.setState(parseInt(value) + 1);
         return true;
+      } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
+        await item.entityInSel.set.setState(`Schiebe Musik auf ${sList.list[parseInt(value)]}`);
+        return true;
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
         if (((_b = (_a = item.entityInSel.value) == null ? void 0 : _a.common) == null ? void 0 : _b.type) === "number") {
           await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
@@ -2326,56 +2350,74 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
     var _a;
     const list = {};
-    if (entityInSel && entityInSel.value && ["string", "number"].indexOf((_a = entityInSel.value.type) != null ? _a : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
-      let states = void 0;
-      const value = await tools.getValueEntryString(entityInSel);
-      if (valueList && valueList2) {
-        role = "2values";
-      }
-      switch (role) {
-        case "spotify-playlist": {
-          if (valueList) {
-            const val = await valueList.getObject();
-            if (val) {
-              states = {};
-              for (let a = 0; a < val.length; a++) {
-                states[a + 1] = val[a].title;
+    if (entityInSel && entityInSel.value) {
+      if (role === "alexa-speaker") {
+        if (entityInSel.value.options.dp) {
+          list.list = [];
+          list.states = [];
+          for (const a in this.tempData) {
+            list.list.push(this.tempData[a].name);
+            list.states.push(a);
+          }
+          const index = this.tempData.findIndex((a) => {
+            var _a2, _b;
+            return (_b = (_a2 = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _a2.options.dp) == null ? void 0 : _b.includes(a.id);
+          });
+          if (index !== -1 && !list.value) {
+            list.value = this.tempData[index].name;
+          }
+        }
+      } else if (["string", "number"].indexOf((_a = entityInSel.value.type) != null ? _a : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
+        let states = void 0;
+        const value = await tools.getValueEntryString(entityInSel);
+        if (valueList && valueList2) {
+          role = "2values";
+        }
+        switch (role) {
+          case "spotify-playlist": {
+            if (valueList) {
+              const val = await valueList.getObject();
+              if (val) {
+                states = {};
+                for (let a = 0; a < val.length; a++) {
+                  states[a + 1] = val[a].title;
+                }
+                list.value = value != null ? value : void 0;
               }
-              list.value = value != null ? value : void 0;
             }
+            break;
           }
-          break;
-        }
-        case "2values": {
-          if (!valueList || !valueList2) {
-            this.log.error("2values without valueList or valueList2!");
-            return {};
+          case "2values": {
+            if (!valueList || !valueList2) {
+              this.log.error("2values without valueList or valueList2!");
+              return {};
+            }
+            const val1 = await valueList.getObject();
+            const val2 = await valueList2.getObject();
+            if (!Array.isArray(val1) || !Array.isArray(val2)) {
+              this.log.error("2values valueList or valueList2 is not a array!");
+              return {};
+            }
+            states = {};
+            for (let a = 0; a < val1.length; a++) {
+              states[val1[a]] = val2[a];
+            }
+            break;
           }
-          const val1 = await valueList.getObject();
-          const val2 = await valueList2.getObject();
-          if (!Array.isArray(val1) || !Array.isArray(val2)) {
-            this.log.error("2values valueList or valueList2 is not a array!");
-            return {};
+          default: {
+            states = await entityInSel.value.getCommonStates();
           }
-          states = {};
-          for (let a = 0; a < val1.length; a++) {
-            states[val1[a]] = val2[a];
+        }
+        if (value !== null && states) {
+          list.list = [];
+          list.states = [];
+          for (const a in states) {
+            list.list.push(this.library.getTranslation(String(states[a])));
+            list.states.push(a);
           }
-          break;
-        }
-        default: {
-          states = await entityInSel.value.getCommonStates();
-        }
-      }
-      if (value !== null && states) {
-        list.list = [];
-        list.states = [];
-        for (const a in states) {
-          list.list.push(this.library.getTranslation(String(states[a])));
-          list.states.push(a);
-        }
-        if (!list.value) {
-          list.value = states[value];
+          if (!list.value) {
+            list.value = states[value];
+          }
         }
       }
     }

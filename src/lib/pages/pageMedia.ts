@@ -227,7 +227,17 @@ export class PageMedia extends Page {
 
         //Logo
         if (item.data.logo) {
-            message.logo = '~~~~~'; //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
+            message.logo = getPayload(
+                '',
+                '',
+                item.data.logo.icon && 'true' in item.data.logo.icon && item.data.logo.icon.true
+                    ? ((await item.data.logo.icon.true.getString()) ?? '')
+                    : '',
+
+                '',
+                '',
+                '',
+            ); //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
 
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
@@ -260,6 +270,11 @@ export class PageMedia extends Page {
             id: 'media',
             options: opts,
         });
+        /*const m = this.getMessage(msg);
+
+        this.log.debug(
+            `Media message: 22=${m.split('~')[22]} 23=${m.split('~')[22]} 24=${m.split('~')[24]} 25=${m.split('~')[25]} 26=${m.split('~')[26]} 27=${m.split('~')[27]} 28${m.split('~')[28]}`,
+        );*/
         this.sendToPanel(this.getMessage(msg), false);
         //this.log.warn(JSON.stringify(this.getMessage(msg)));
     }
@@ -457,6 +472,7 @@ export class PageMedia extends Page {
                         mode: 'auto',
                         type: 'state',
                         role: 'media.album',
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     title: {
@@ -468,6 +484,7 @@ export class PageMedia extends Page {
                             mode: 'auto',
                             type: 'triggered',
                             role: 'media.title',
+                            regexp: /.?\.Player\..?/,
                             dp: '',
                         },
                         color: {
@@ -479,12 +496,14 @@ export class PageMedia extends Page {
                         mode: 'auto',
                         type: 'state',
                         role: 'media.duration',
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     elapsed: {
                         mode: 'auto',
                         type: 'triggered',
                         role: ['media.elapsed', 'media.elapsed.text'],
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     volume: {
@@ -492,16 +511,16 @@ export class PageMedia extends Page {
                             mode: 'auto',
                             type: 'state',
                             role: ['level.volume'],
-
                             scale: { min: 0, max: 100 },
+                            regexp: /.?\.Player\..?/,
                             dp: '',
                         },
                         set: {
                             mode: 'auto',
                             type: 'state',
                             role: ['level.volume'],
-
                             scale: { min: 0, max: 100 },
+                            regexp: /.?\.Player\..?/,
                             dp: '',
                         },
                     },
@@ -514,6 +533,7 @@ export class PageMedia extends Page {
                             mode: 'auto',
                             type: 'state',
                             role: 'media.artist',
+                            regexp: /.?\.Player\..?/,
                             dp: '',
                         },
                         color: undefined,
@@ -528,12 +548,14 @@ export class PageMedia extends Page {
                             mode: 'auto',
                             type: 'state',
                             role: 'media.mode.shuffle',
+                            regexp: /.?\.Player\..?/,
                             dp: '',
                         },
                         set: {
                             mode: 'auto',
                             type: 'state',
                             role: 'media.mode.shuffle',
+                            regexp: /.?\.Player\..?/,
                             dp: '',
                         },
                     },
@@ -545,36 +567,42 @@ export class PageMedia extends Page {
                         mode: 'auto',
                         type: 'state',
                         role: ['button.play'],
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     mediaState: {
                         mode: 'auto',
                         type: 'triggered',
                         role: ['media.state'],
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     stop: {
                         mode: 'auto',
                         type: 'state',
                         role: ['button.stop'],
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     pause: {
                         mode: 'auto',
                         type: 'state',
                         role: 'button.pause',
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     forward: {
                         mode: 'auto',
                         type: 'state',
                         role: 'button.next',
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     backward: {
                         mode: 'auto',
                         type: 'state',
                         role: 'button.prev',
+                        regexp: /.?\.Player\..?/,
                         dp: '',
                     },
                     logo: {
@@ -583,7 +611,7 @@ export class PageMedia extends Page {
                             constVal: true,
                         },
                         text: { type: 'const', constVal: '1' },
-                        icon: { type: 'const', constVal: 'home' },
+                        icon: { true: { type: 'const', constVal: 'logo-alexa' } },
                         color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
                         list: undefined,
                         action: 'cross',
@@ -593,9 +621,8 @@ export class PageMedia extends Page {
             items: undefined,
             pageItems: [
                 {
-                    role: 'spotify-playlist',
+                    role: 'alexa-speaker',
                     type: 'input_sel',
-                    dpInit: '',
 
                     data: {
                         color: {
@@ -620,8 +647,16 @@ export class PageMedia extends Page {
                         },
                         entityInSel: {
                             value: {
+                                mode: 'auto',
+                                type: 'triggered',
+                                regexp: /.?\.Info\.name$/,
+                                dp: '',
+                            },
+                            set: {
+                                mode: 'auto',
                                 type: 'state',
-                                dp: '0_userdata.0.spotify-premium.0.player.playlist.trackNo',
+                                regexp: /.?\.Commands\.speak$/,
+                                dp: '',
                             },
                             decimal: undefined,
                             factor: undefined,

@@ -58,6 +58,10 @@ class ColorBase {
   static close = "default.color.from.start.close";
   static hot = "default.color.from.start.hot";
   static cold = "default.color.from.start.cold";
+  static on = "default.color.from.start.on";
+  static off = "default.color.from.start.off";
+  static light = "default.color.from.start.light";
+  static dark = "default.color.from.start.dark";
 }
 class Color extends ColorBase {
   static HMIOff = { r: 68, g: 115, b: 158 };
@@ -146,7 +150,7 @@ class Color extends ColorBase {
   static swSunny = { r: 255, g: 255, b: 0 };
   static swWindy = { r: 150, g: 150, b: 150 };
   static getColorFromDefault(s) {
-    if (typeof s === "string") {
+    if (typeof s === "string" && s && s.startsWith("default.color.from.start.")) {
       switch (s) {
         case "default.color.from.start.good":
           return Color.good;
@@ -180,6 +184,16 @@ class Color extends ColorBase {
           return Color.hot;
         case "default.color.from.start.cold":
           return Color.cold;
+        case "default.color.from.start.on":
+          return Color.on;
+        case "default.color.from.start.off":
+          return Color.off;
+        case "default.color.from.start.light":
+          return Color.light;
+        case "default.color.from.start.dark":
+          return Color.dark;
+        default:
+          console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
       }
     }
     return s;
@@ -200,7 +214,11 @@ class Color extends ColorBase {
     open: Color.Red,
     close: Color.Green,
     hot: Color.Red,
-    cold: Color.Blue
+    cold: Color.Blue,
+    on: Color.On,
+    off: Color.Off,
+    light: Color.White,
+    dark: Color.Gray
   };
   /**
    * set color theme...

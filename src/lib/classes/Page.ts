@@ -95,13 +95,16 @@ export class Page extends BaseClassPage {
                 options.data =
                     dpInit || enums
                         ? await this.panel.statesControler.getDataItemsFromAuto(
-                              (this.dpInit ? this.dpInit : options.dpInit) ?? '',
+                              dpInit,
                               options.data,
                               'appendix' in options ? options.appendix : undefined,
                               this.enums ? this.enums : options.enums,
                           )
                         : options.data;
-
+                options = JSON.parse(JSON.stringify(options));
+                if (options) {
+                    options.dpInit = dpInit;
+                }
                 this.pageItemConfig[a] = options;
             }
         }

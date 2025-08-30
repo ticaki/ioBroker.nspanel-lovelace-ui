@@ -95,6 +95,7 @@ class PageMedia extends import_Page.Page {
     }
   }
   async update() {
+    var _a;
     if (!this.visibility) {
       return;
     }
@@ -216,7 +217,14 @@ class PageMedia extends import_Page.Page {
       }
     }
     if (item.data.logo) {
-      message.logo = "~~~~~";
+      message.logo = (0, import_tools.getPayload)(
+        "",
+        "",
+        item.data.logo.icon && "true" in item.data.logo.icon && item.data.logo.icon.true ? (_a = await item.data.logo.icon.true.getString()) != null ? _a : "" : "",
+        "",
+        "",
+        ""
+      );
     }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     if (this.pageItems) {
@@ -430,6 +438,7 @@ class PageMedia extends import_Page.Page {
             mode: "auto",
             type: "state",
             role: "media.album",
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           title: {
@@ -441,6 +450,7 @@ class PageMedia extends import_Page.Page {
               mode: "auto",
               type: "triggered",
               role: "media.title",
+              regexp: /.?\.Player\..?/,
               dp: ""
             },
             color: {
@@ -452,12 +462,14 @@ class PageMedia extends import_Page.Page {
             mode: "auto",
             type: "state",
             role: "media.duration",
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           elapsed: {
             mode: "auto",
             type: "triggered",
             role: ["media.elapsed", "media.elapsed.text"],
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           volume: {
@@ -466,6 +478,7 @@ class PageMedia extends import_Page.Page {
               type: "state",
               role: ["level.volume"],
               scale: { min: 0, max: 100 },
+              regexp: /.?\.Player\..?/,
               dp: ""
             },
             set: {
@@ -473,6 +486,7 @@ class PageMedia extends import_Page.Page {
               type: "state",
               role: ["level.volume"],
               scale: { min: 0, max: 100 },
+              regexp: /.?\.Player\..?/,
               dp: ""
             }
           },
@@ -485,6 +499,7 @@ class PageMedia extends import_Page.Page {
               mode: "auto",
               type: "state",
               role: "media.artist",
+              regexp: /.?\.Player\..?/,
               dp: ""
             },
             color: void 0,
@@ -499,12 +514,14 @@ class PageMedia extends import_Page.Page {
               mode: "auto",
               type: "state",
               role: "media.mode.shuffle",
+              regexp: /.?\.Player\..?/,
               dp: ""
             },
             set: {
               mode: "auto",
               type: "state",
               role: "media.mode.shuffle",
+              regexp: /.?\.Player\..?/,
               dp: ""
             }
           },
@@ -516,36 +533,42 @@ class PageMedia extends import_Page.Page {
             mode: "auto",
             type: "state",
             role: ["button.play"],
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           mediaState: {
             mode: "auto",
             type: "triggered",
             role: ["media.state"],
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           stop: {
             mode: "auto",
             type: "state",
             role: ["button.stop"],
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           pause: {
             mode: "auto",
             type: "state",
             role: "button.pause",
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           forward: {
             mode: "auto",
             type: "state",
             role: "button.next",
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           backward: {
             mode: "auto",
             type: "state",
             role: "button.prev",
+            regexp: /.?\.Player\..?/,
             dp: ""
           },
           logo: {
@@ -554,7 +577,7 @@ class PageMedia extends import_Page.Page {
               constVal: true
             },
             text: { type: "const", constVal: "1" },
-            icon: { type: "const", constVal: "home" },
+            icon: { true: { type: "const", constVal: "logo-alexa" } },
             color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
             list: void 0,
             action: "cross"
@@ -564,9 +587,8 @@ class PageMedia extends import_Page.Page {
       items: void 0,
       pageItems: [
         {
-          role: "spotify-playlist",
+          role: "alexa-speaker",
           type: "input_sel",
-          dpInit: "",
           data: {
             color: {
               true: {
@@ -590,8 +612,16 @@ class PageMedia extends import_Page.Page {
             },
             entityInSel: {
               value: {
+                mode: "auto",
+                type: "triggered",
+                regexp: /.?\.Info\.name$/,
+                dp: ""
+              },
+              set: {
+                mode: "auto",
                 type: "state",
-                dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
+                regexp: /.?\.Commands\.speak$/,
+                dp: ""
               },
               decimal: void 0,
               factor: void 0,

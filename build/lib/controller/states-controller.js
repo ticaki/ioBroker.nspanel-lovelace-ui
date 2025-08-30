@@ -619,9 +619,9 @@ class StatesControler extends import_library.BaseClass {
             continue;
           }
           if (tempObjectDB.keys.length === 0) {
-            this.log.warn(`Dont find states for ${dpInit}!`);
+            this.log.warn(`Dont finds states for ${dpInit}!`);
           }
-          for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
+          for (const role of Array.isArray(d.role) ? d.role : [d.role || ""]) {
             for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType || ""]) {
               for (const id of tempObjectDB.keys) {
                 const obj = tempObjectDB.data[id];

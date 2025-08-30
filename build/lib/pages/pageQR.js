@@ -250,14 +250,14 @@ class PageQR extends import_Page.Page {
                 type: "const",
                 constVal: icon1
               },
-              color: await configManager.getIconColor(configManager.colorOn)
+              color: await configManager.getIconColor(import_Color.Color.on)
             },
             false: {
               value: {
                 type: "const",
                 constVal: icon1
               },
-              color: await configManager.getIconColor(configManager.colorOff)
+              color: await configManager.getIconColor(import_Color.Color.off)
             },
             scale: void 0,
             maxBri: void 0,
@@ -323,14 +323,14 @@ class PageQR extends import_Page.Page {
                   type: "const",
                   constVal: "wifi"
                 },
-                color: await configManager.getIconColor(import_Color.Color.Green, configManager.colorOn)
+                color: await configManager.getIconColor(import_Color.Color.Green, import_Color.Color.on)
               },
               false: {
                 value: {
                   type: "const",
                   constVal: "wifi-off"
                 },
-                color: await configManager.getIconColor(configManager.colorOff)
+                color: await configManager.getIconColor(import_Color.Color.off)
               },
               scale: void 0,
               maxBri: void 0,
@@ -363,14 +363,14 @@ class PageQR extends import_Page.Page {
                   type: "const",
                   constVal: icon2
                 },
-                color: await configManager.getIconColor(configManager.colorOn)
+                color: await configManager.getIconColor(import_Color.Color.on)
               },
               false: {
                 value: {
                   type: "const",
                   constVal: icon2
                 },
-                color: await configManager.getIconColor(configManager.colorOff)
+                color: await configManager.getIconColor(import_Color.Color.off)
               },
               scale: void 0,
               maxBri: void 0,
