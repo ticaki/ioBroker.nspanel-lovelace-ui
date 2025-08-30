@@ -274,10 +274,18 @@ class PageMedia extends import_Page.Page {
       }
       const maxSteps = localStep * this.step + 1;
       const minStep = localStep * (this.step - 1) + 1;
+      let b = minStep;
       for (let a = minStep; a < maxSteps; a++) {
-        const temp = this.pageItems[a];
+        const temp = this.pageItems[b++];
         if (temp) {
-          opts[a - minStep] = await temp.getPageItemPayload();
+          const msg2 = await temp.getPageItemPayload();
+          if (msg2) {
+            opts[a - minStep] = await temp.getPageItemPayload();
+          } else {
+            a--;
+          }
+        } else {
+          opts[a - minStep] = "~~~~~";
         }
       }
       if (localStep === 4) {
@@ -657,6 +665,35 @@ class PageMedia extends import_Page.Page {
       items: void 0,
       pageItems: [
         {
+          //reminder
+          role: "text.list",
+          type: "text",
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "reminder" },
+                color: { type: "const", constVal: import_Color.Color.attention }
+              }
+            },
+            entity1: {
+              value: {
+                type: "const",
+                constVal: true
+              }
+            },
+            enabled: {
+              mode: "auto",
+              type: "triggered",
+              role: "value",
+              regexp: /.?\.Reminder\.triggered$/,
+              dp: "",
+              read: "return (val != null && lc <= Date.now() + 900000 ? true : false);"
+            }
+          }
+        },
+        {
+          //speaker select
           role: "alexa-speaker",
           type: "input_sel",
           data: {
@@ -715,6 +752,7 @@ class PageMedia extends import_Page.Page {
           }
         },
         {
+          //equalizer
           role: "",
           type: "number",
           dpInit: "",
@@ -833,26 +871,19 @@ class PageMedia extends import_Page.Page {
           }
         },
         {
-          role: "text.list",
-          type: "button",
+          // online
+          role: "",
+          type: "text",
           dpInit: "",
           data: {
-            color: {
-              true: {
-                type: "const",
-                constVal: import_Color.Color.HMIOn
-              },
-              false: void 0,
-              scale: void 0
-            },
             icon: {
               true: {
-                value: { type: "const", constVal: "home" },
-                color: { type: "const", constVal: import_Color.Color.Green }
+                value: { type: "const", constVal: "wifi" },
+                color: { type: "const", constVal: import_Color.Color.good }
               },
               false: {
-                value: { type: "const", constVal: "fan" },
-                color: { type: "const", constVal: import_Color.Color.Red }
+                value: { type: "const", constVal: "wifi-off" },
+                color: { type: "const", constVal: import_Color.Color.attention }
               },
               scale: void 0,
               maxBri: void 0,
@@ -860,57 +891,12 @@ class PageMedia extends import_Page.Page {
             },
             entity1: {
               value: {
-                type: "const",
-                constVal: true
-              },
-              decimal: void 0,
-              factor: void 0,
-              unit: void 0
-            },
-            text: {
-              true: void 0,
-              false: void 0
-            }
-          }
-        },
-        {
-          role: "text.list",
-          type: "button",
-          dpInit: "",
-          data: {
-            color: {
-              true: {
-                type: "const",
-                constVal: import_Color.Color.HMIOn
-              },
-              false: void 0,
-              scale: void 0
-            },
-            icon: {
-              true: {
-                value: { type: "const", constVal: "home" },
-                color: { type: "const", constVal: import_Color.Color.Green }
-              },
-              false: {
-                value: { type: "const", constVal: "fan" },
-                color: { type: "const", constVal: import_Color.Color.Red }
-              },
-              scale: void 0,
-              maxBri: void 0,
-              minBri: void 0
-            },
-            entity1: {
-              value: {
-                type: "const",
-                constVal: true
-              },
-              decimal: void 0,
-              factor: void 0,
-              unit: void 0
-            },
-            text: {
-              true: void 0,
-              false: void 0
+                mode: "auto",
+                type: "triggered",
+                role: "indicator.reachable",
+                regexp: /.?\.online$/,
+                dp: ""
+              }
             }
           }
         },

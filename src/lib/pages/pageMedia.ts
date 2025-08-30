@@ -290,11 +290,18 @@ export class PageMedia extends Page {
             // arrow is at index [0]
             const maxSteps = localStep * this.step + 1;
             const minStep = localStep * (this.step - 1) + 1;
-
+            let b = minStep;
             for (let a = minStep; a < maxSteps; a++) {
-                const temp = this.pageItems[a];
+                const temp = this.pageItems[b++];
                 if (temp) {
-                    opts[a - minStep] = await temp.getPageItemPayload();
+                    const msg = await temp.getPageItemPayload();
+                    if (msg) {
+                        opts[a - minStep] = await temp.getPageItemPayload();
+                    } else {
+                        a--;
+                    }
+                } else {
+                    opts[a - minStep] = '~~~~~';
                 }
             }
 
@@ -691,6 +698,36 @@ export class PageMedia extends Page {
             items: undefined,
             pageItems: [
                 {
+                    //reminder
+                    role: 'text.list',
+                    type: 'text',
+                    dpInit: '',
+
+                    data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'reminder' },
+                                color: { type: 'const', constVal: Color.attention },
+                            },
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                        },
+                        enabled: {
+                            mode: 'auto',
+                            type: 'triggered',
+                            role: 'value',
+                            regexp: /.?\.Reminder\.triggered$/,
+                            dp: '',
+                            read: 'return (val != null && lc <= Date.now() + 900000 ? true : false);',
+                        },
+                    },
+                },
+                {
+                    //speaker select
                     role: 'alexa-speaker',
                     type: 'input_sel',
 
@@ -750,6 +787,7 @@ export class PageMedia extends Page {
                     },
                 },
                 {
+                    //equalizer
                     role: '',
                     type: 'number',
                     dpInit: '',
@@ -870,27 +908,20 @@ export class PageMedia extends Page {
                     },
                 },
                 {
-                    role: 'text.list',
-                    type: 'button',
+                    // online
+                    role: '',
+                    type: 'text',
                     dpInit: '',
 
                     data: {
-                        color: {
-                            true: {
-                                type: 'const',
-                                constVal: Color.HMIOn,
-                            },
-                            false: undefined,
-                            scale: undefined,
-                        },
                         icon: {
                             true: {
-                                value: { type: 'const', constVal: 'home' },
-                                color: { type: 'const', constVal: Color.Green },
+                                value: { type: 'const', constVal: 'wifi' },
+                                color: { type: 'const', constVal: Color.good },
                             },
                             false: {
-                                value: { type: 'const', constVal: 'fan' },
-                                color: { type: 'const', constVal: Color.Red },
+                                value: { type: 'const', constVal: 'wifi-off' },
+                                color: { type: 'const', constVal: Color.attention },
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -898,61 +929,16 @@ export class PageMedia extends Page {
                         },
                         entity1: {
                             value: {
-                                type: 'const',
-                                constVal: true,
+                                mode: 'auto',
+                                type: 'triggered',
+                                role: 'indicator.reachable',
+                                regexp: /.?\.online$/,
+                                dp: '',
                             },
-                            decimal: undefined,
-                            factor: undefined,
-                            unit: undefined,
-                        },
-                        text: {
-                            true: undefined,
-                            false: undefined,
                         },
                     },
                 },
-                {
-                    role: 'text.list',
-                    type: 'button',
-                    dpInit: '',
 
-                    data: {
-                        color: {
-                            true: {
-                                type: 'const',
-                                constVal: Color.HMIOn,
-                            },
-                            false: undefined,
-                            scale: undefined,
-                        },
-                        icon: {
-                            true: {
-                                value: { type: 'const', constVal: 'home' },
-                                color: { type: 'const', constVal: Color.Green },
-                            },
-                            false: {
-                                value: { type: 'const', constVal: 'fan' },
-                                color: { type: 'const', constVal: Color.Red },
-                            },
-                            scale: undefined,
-                            maxBri: undefined,
-                            minBri: undefined,
-                        },
-                        entity1: {
-                            value: {
-                                type: 'const',
-                                constVal: true,
-                            },
-                            decimal: undefined,
-                            factor: undefined,
-                            unit: undefined,
-                        },
-                        text: {
-                            true: undefined,
-                            false: undefined,
-                        },
-                    },
-                },
                 {
                     role: 'text.list',
                     type: 'button',

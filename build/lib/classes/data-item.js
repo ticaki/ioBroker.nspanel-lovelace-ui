@@ -159,10 +159,11 @@ class Dataitem extends import_library.BaseClass {
       if (this.options.type !== "const" && this.options.read) {
         try {
           if (typeof this.options.read === "string") {
-            state.val = new Function("val", "Color", "language", "options", `${this.options.read}`)(
+            state.val = new Function("val", "Color", "language", "lc", "options", `${this.options.read}`)(
               state.val,
               import_Color.Color,
               this.adapter.language,
+              state.lc,
               this.options.constants
             );
           } else {
