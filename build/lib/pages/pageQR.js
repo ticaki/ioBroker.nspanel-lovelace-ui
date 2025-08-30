@@ -84,8 +84,8 @@ class PageQR extends import_Page.Page {
   }
   async init() {
     const config = structuredClone(this.config);
-    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
-    const tempItem = await this.panel.statesControler.createDataItems(
+    const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
+    const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
       this
     );

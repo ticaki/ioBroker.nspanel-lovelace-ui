@@ -45,13 +45,13 @@ class PageMenu extends import_Page.Page {
           this.maxItems = 6;
           break;
         case "cardGrid2":
-          this.maxItems = this.panel.info.nspanel.model === "us-p" ? 9 : 8;
+          this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 9 : 8;
           break;
         case "cardGrid3":
           this.maxItems = 4;
           break;
         case "cardEntities":
-          this.maxItems = this.panel.info.nspanel.model === "us-p" ? 5 : 4;
+          this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 5 : 4;
           break;
         case "cardThermo2":
           this.maxItems = 9;
@@ -135,13 +135,13 @@ class PageMenu extends import_Page.Page {
             this.maxItems = 6;
             break;
           case "cardGrid2":
-            this.maxItems = this.panel.info.nspanel.model === "us-p" ? 9 : 8;
+            this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 9 : 8;
             break;
           case "cardGrid3":
             this.maxItems = 4;
             break;
           case "cardEntities":
-            this.maxItems = this.panel.info.nspanel.model === "us-p" ? 5 : 4;
+            this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 5 : 4;
             break;
           case "cardThermo2":
             this.maxItems = 9;
@@ -167,7 +167,7 @@ class PageMenu extends import_Page.Page {
         this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
         if (this.lastdirection == "right") {
-          this.panel.navigation.goLeft();
+          this.basePanel.navigation.goLeft();
           return;
         }
       } else {
@@ -184,7 +184,7 @@ class PageMenu extends import_Page.Page {
     }
     if (--this.step < 0) {
       this.step = 0;
-      this.panel.navigation.goLeft();
+      this.basePanel.navigation.goLeft();
     } else {
       void this.update();
     }
@@ -198,7 +198,7 @@ class PageMenu extends import_Page.Page {
         this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
         if (this.lastdirection == "right") {
-          this.panel.navigation.goRight();
+          this.basePanel.navigation.goRight();
           return;
         }
       } else {
@@ -219,7 +219,7 @@ class PageMenu extends import_Page.Page {
     const maxItemsPagePlus = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? 0 : this.maxItems / 2;
     if (!pageScroll ? ++this.step + this.maxItems > length : ++this.step * maxItemsPage + maxItemsPagePlus >= length) {
       this.step--;
-      this.panel.navigation.goRight();
+      this.basePanel.navigation.goRight();
     } else {
       void this.update();
     }
@@ -240,12 +240,12 @@ class PageMenu extends import_Page.Page {
     let left = "";
     let right = "";
     if (this.step <= 0) {
-      left = this.panel.navigation.buildNavigationString("left");
+      left = this.basePanel.navigation.buildNavigationString("left");
     }
     const maxItemsPage = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? this.maxItems : this.maxItems / 2;
     const maxItemsPagePlus = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? 0 : this.maxItems / 2;
     if (!pageScroll ? this.step + this.maxItems >= length : (this.step + 1) * maxItemsPage + maxItemsPagePlus >= length) {
-      right = this.panel.navigation.buildNavigationString("right");
+      right = this.basePanel.navigation.buildNavigationString("right");
     }
     if (!left) {
       left = (0, import_tools.getPayload)(

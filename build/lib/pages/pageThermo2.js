@@ -99,8 +99,8 @@ class PageThermo2 extends import_pageMenu.PageMenu {
   async init() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const config = structuredClone(this.config);
-    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
-    const tempItem = await this.panel.statesControler.createDataItems(
+    const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
+    const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
       this
     );
@@ -121,8 +121,8 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         this.config.filterType = this.index;
       }
       for (let i = this.heatCycles; i > 0; --i) {
-        await this.panel.statesControler.setInternalState(
-          `///${this.panel.name}/${this.name}/${i - 1}`,
+        await this.basePanel.statesControler.setInternalState(
+          `///${this.basePanel.name}/${this.name}/${i - 1}`,
           i === this.index - 1 ? true : false,
           true,
           {
@@ -159,11 +159,11 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             entity1: {
               value: {
                 type: "internal",
-                dp: `///${this.panel.name}/${this.name}/${i - 1}`,
+                dp: `///${this.basePanel.name}/${this.name}/${i - 1}`,
                 change: "ts"
               }
             },
-            setValue2: { type: "internal", dp: `///${this.panel.name}/${this.name}/${i - 1}` }
+            setValue2: { type: "internal", dp: `///${this.basePanel.name}/${this.name}/${i - 1}` }
           }
         });
       }
@@ -321,7 +321,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         this.config.filterType = this.index;
       }
     }
-    if (id == `///${this.panel.name}/${this.name}/${this.index}`) {
+    if (id == `///${this.basePanel.name}/${this.name}/${this.index}`) {
       return true;
     }
     return false;

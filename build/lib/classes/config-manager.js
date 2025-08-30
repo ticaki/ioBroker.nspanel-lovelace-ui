@@ -314,8 +314,22 @@ class ConfigManager extends import_library.BaseClass {
         }
         if (page.type === void 0 && page.native) {
           if ((config.subPages || []).includes(page)) {
-            const left = page.prev || page.parent || void 0;
-            const right = page.next || page.home || void 0;
+            let left = page.prev || page.parent || void 0;
+            let right = page.next || page.home || void 0;
+            if (left === page.uniqueName) {
+              left = "";
+              messages.push(
+                `Page: ${page.native.uniqueID || "unknown"} has left navigation to itself! Removed!`
+              );
+              this.log.warn(messages[messages.length - 1]);
+            }
+            if (right === page.uniqueName) {
+              right = "";
+              messages.push(
+                `Page: ${page.native.uniqueID || "unknown"} has right navigation to itself! Removed!`
+              );
+              this.log.warn(messages[messages.length - 1]);
+            }
             if (left || right) {
               const navItem = {
                 name: page.native.uniqueID || "",

@@ -9,6 +9,7 @@ import type { Dataitem } from '../classes/data-item';
 import { isCardEntitiesRole, isCardGridRole, type ChangeTypeOfKeys, type DeviceRole } from '../types/pages';
 import type { Screensaver } from './screensaver';
 import { BaseClassTriggerd } from '../classes/baseClassPage';
+import type { PageMedia } from './pageMedia';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
@@ -18,21 +19,20 @@ export class PageItem extends BaseClassTriggerd {
     dataItems: typePageItem.PageItemDataItems | undefined;
     id: string;
     lastPopupType: PopupType | undefined = undefined;
-    parent: Page | undefined;
+    parent: Page;
     tempData: any = undefined; // use this to save some data while object is active
     tempInterval: ioBroker.Interval | undefined;
     confirmClick: number | 'lock' | 'unlock' = 'lock';
     timeouts: Record<string, ioBroker.Timeout | undefined> = {};
     constructor(
-        config: Omit<PageItemInterface, 'pageItemsConfig'>,
+        config: Omit<PageItemInterface, 'pageItemsConfig' | 'parent'> & { parent: Page },
         options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
     ) {
         super({ ...config });
-        this.panel = config.panel;
         this.id = config.id;
         this.config = options;
         this.parent = config && config.parent;
-        this.name = this.parent ? `${this.parent.name}.${this.id}` : this.id;
+        this.name = `${this.parent.name}.${this.id}`;
         this.sleep = false;
         this.enums = options && 'enums' in options && options.enums ? options.enums : '';
     }
@@ -57,13 +57,14 @@ export class PageItem extends BaseClassTriggerd {
         }
         const config = structuredClone(this.config);
 
-        const tempItem: typePageItem.PageItemDataItems['data'] = (await this.panel.statesControler.createDataItems(
-            config.data,
-            this,
-            {},
-            'data',
-            config.readOptions,
-        )) as typePageItem.PageItemDataItems['data'];
+        const tempItem: typePageItem.PageItemDataItems['data'] =
+            (await this.parent.currentPanel.statesControler.createDataItems(
+                config.data,
+                this,
+                {},
+                'data',
+                config.readOptions,
+            )) as typePageItem.PageItemDataItems['data'];
         this.dataItems = { ...config, data: tempItem } as typePageItem.PageItemDataItems;
         this.canBeHidden = !!this.dataItems.data?.enabled;
         switch (this.dataItems.type) {
@@ -96,7 +97,7 @@ export class PageItem extends BaseClassTriggerd {
                             list &&
                             list[a] &&
                             list[a].id &&
-                            (await this.panel.statesControler.getObjectAsync(list[a].id));
+                            (await this.parent.currentPanel.statesControler.getObjectAsync(list[a].id));
                         if (test && test.common && test.common.write) {
                             this.tempData[a] = true;
                         }
@@ -146,19 +147,18 @@ export class PageItem extends BaseClassTriggerd {
                         break;
                     }
                     this.tempData = { status: 'pause', value: 0, role: 'timer' };
-                    if (!this.panel.persistentPageItems[this.id]) {
-                        this.panel.persistentPageItems[this.id] = this;
+                    if (!this.parent.currentPanel.persistentPageItems[this.id]) {
+                        this.parent.currentPanel.persistentPageItems[this.id] = this;
                     }
                 }
                 break;
             }
         }
         if (
-            this.parent &&
             ['screensaver', 'screensaver2', 'screensaver3', 'popupNotify', 'popupNotify2'].indexOf(this.parent.card) !==
-                -1
+            -1
         ) {
-            if (!this.panel.persistentPageItems[this.id]) {
+            if (!this.parent.currentPanel.persistentPageItems[this.id]) {
                 if (this.config.modeScr) {
                     switch (this.config.modeScr) {
                         case 'left':
@@ -176,7 +176,7 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 }
 
-                this.panel.persistentPageItems[this.id] = this;
+                this.parent.currentPanel.persistentPageItems[this.id] = this;
                 await this.controller.statesControler.activateTrigger(this);
             }
         }
@@ -188,21 +188,27 @@ export class PageItem extends BaseClassTriggerd {
             });
             this.tempData = [];
             if (devices && devices.rows && devices.rows.length > 0) {
-                for (const instance of devices.rows) {
-                    if (instance && instance.value && instance.id && instance.id.split('.').length === 4) {
-                        this.log.debug(
-                            `Alexa device: ${typeof instance.value.common.name === 'object' ? instance.value.common.name.en : instance.value.common.name} deviceId: ${instance.id}`,
-                        );
-                        this.tempData.push({
-                            id: instance.id,
-                            name:
+                if (this.dataItems && this.dataItems.type === 'input_sel') {
+                    const data = this.dataItems.data;
+                    let filter = ((await data?.valueList?.getObject()) as string[] | null) || null;
+                    filter = Array.isArray(filter) && filter.length > 0 ? filter : null;
+                    for (const instance of devices.rows) {
+                        if (instance && instance.value && instance.id && instance.id.split('.').length === 4) {
+                            const name =
                                 typeof instance.value.common.name === 'object'
                                     ? instance.value.common.name.en
-                                    : instance.value.common.name,
-                        });
+                                    : instance.value.common.name;
+                            if (!filter || filter.includes(name)) {
+                                this.log.debug(`Alexa device: ${name} deviceId: ${instance.id}`);
+                                this.tempData.push({
+                                    id: instance.id,
+                                    name: name,
+                                });
+                            }
+                        }
                     }
                 }
-                this.log.debug(`Alexa devices found: ${this.tempData.length}`);
+                this.log.debug(`Alexa devices found: ${this.tempData.length} from ${devices.rows.length}`);
             }
         }
     }
@@ -227,12 +233,11 @@ export class PageItem extends BaseClassTriggerd {
                 case 'light2': {
                     const item = entry.data;
                     message.type =
-                        this.parent &&
                         isCardGridRole(this.parent.card) &&
                         (this.config.role === 'light' || this.config.role === 'socket')
                             ? 'switch'
-                            : this.panel.overrideLightPopup
-                              ? this.panel.lightPopupV2 && this.panel.meetsVersion('4.7.5')
+                            : this.parent.currentPanel.overrideLightPopup
+                              ? this.parent.currentPanel.lightPopupV2 && this.parent.currentPanel.meetsVersion('4.7.5')
                                   ? 'light2'
                                   : 'light'
                               : entry.type;
@@ -454,7 +459,7 @@ export class PageItem extends BaseClassTriggerd {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                         } else if (entry.type === 'button') {
                             message.optionalValue = (value ?? true) ? '1' : '0';
-                            if (this.parent && isCardEntitiesRole(this.parent.card)) {
+                            if (isCardEntitiesRole(this.parent.card)) {
                                 message.optionalValue =
                                     this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value)) ??
                                     message.optionalValue;
@@ -512,7 +517,7 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         if (entry.type === 'button' && entry.data.confirm) {
                             if (this.confirmClick === 'unlock') {
-                                if (this.parent && isCardEntitiesRole(this.parent.card)) {
+                                if (isCardEntitiesRole(this.parent.card)) {
                                     message.optionalValue =
                                         (await entry.data.confirm.getString()) ?? message.optionalValue;
                                 }
@@ -522,7 +527,7 @@ export class PageItem extends BaseClassTriggerd {
                             }
                         }
                         /*if (
-                            this.parent &&
+                            
                             !this.parent.card.startsWith('screensaver') &&
                             entry.type === 'button' &&
                             entry.data.entity1 &&
@@ -569,8 +574,7 @@ export class PageItem extends BaseClassTriggerd {
                                         !!value,
                                         '',
                                         null,
-                                        (this.parent &&
-                                            !isCardEntitiesRole(this.parent.card) &&
+                                        (!isCardEntitiesRole(this.parent.card) &&
                                             !this.parent.card.startsWith('screens')) ??
                                             false,
                                     )) ?? '';
@@ -594,9 +598,12 @@ export class PageItem extends BaseClassTriggerd {
                 case 'input_sel': {
                     const item = entry.data;
                     message.type = 'input_sel';
-                    const value =
+                    let value =
                         (await tools.getValueEntryNumber(item.entityInSel)) ??
                         (await tools.getValueEntryBoolean(item.entityInSel));
+                    if (entry.role === 'alexa-speaker') {
+                        value = (this.parent as PageMedia).currentItems === (this.parent as PageMedia).items[0];
+                    }
                     message.icon = await tools.getIconEntryValue(item.icon, !!(value ?? true), 'gesture-tap-button');
 
                     message.iconColor =
@@ -1288,8 +1295,10 @@ export class PageItem extends BaseClassTriggerd {
                     return null;
                 }
 
-                const value = (await tools.getValueEntryBoolean(item.entityInSel)) ?? true;
-
+                let value = (await tools.getValueEntryBoolean(item.entityInSel)) ?? true;
+                if (entry.role === 'alexa-speaker') {
+                    value = (this.parent as PageMedia).currentItems === (this.parent as PageMedia).items[0];
+                }
                 message.textColor = await tools.getEntryColor(item.color, value, Color.White);
 
                 message.currentState =
@@ -1762,16 +1771,15 @@ export class PageItem extends BaseClassTriggerd {
     async delete(): Promise<void> {
         this.visibility = false;
         await this.controller.statesControler.deactivateTrigger(this);
-        if (this.panel.persistentPageItems[this.id]) {
-            if (!this.panel.unload) {
+        if (this.parent.currentPanel.persistentPageItems[this.id]) {
+            if (!this.parent.currentPanel.unload) {
                 return;
             }
 
-            delete this.panel.persistentPageItems[this.id];
+            delete this.parent.currentPanel.persistentPageItems[this.id];
         }
         await super.delete();
         this.controller.statesControler.deletePageLoop();
-        this.parent = undefined;
     }
 
     async onCommand(action: string, value: string): Promise<boolean> {
@@ -1796,15 +1804,15 @@ export class PageItem extends BaseClassTriggerd {
 
             case 'button': {
                 if (entry.type === 'button' || entry.type === 'switch') {
-                    if (this.parent && this.parent.isScreensaver) {
+                    if (this.parent.isScreensaver) {
                         if (!(this.parent as Screensaver).screensaverIndicatorButtons) {
-                            this.panel.navigation.resetPosition();
-                            await this.panel.navigation.setCurrentPage();
+                            this.parent.currentPanel.navigation.resetPosition();
+                            await this.parent.currentPanel.navigation.setCurrentPage();
                             break;
                         }
                     }
                     if (entry.role === 'indicator') {
-                        if (this.parent && this.parent.card === 'cardThermo') {
+                        if (this.parent.card === 'cardThermo') {
                             this.log.debug(`Button indicator ${this.id} was pressed!`);
                             await this.parent.update();
                         }
@@ -1815,13 +1823,13 @@ export class PageItem extends BaseClassTriggerd {
                     if (item.confirm) {
                         if (this.confirmClick === 'lock') {
                             this.confirmClick = 'unlock';
-                            this.parent && (await this.parent.update());
+                            await this.parent.update();
                             return true;
                         } else if (this.confirmClick === 'unlock' || this.confirmClick - 300 > Date.now()) {
                             return true;
                         }
                         this.confirmClick = 'lock';
-                        this.parent && (await this.parent.update());
+                        await this.parent.update();
                     }
                     if (item.popup) {
                         const test = (item.popup.isActive && (await item.popup.isActive.getBoolean())) ?? true;
@@ -1839,7 +1847,7 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
-                        await this.panel.navigation.setTargetPageByName(value);
+                        await this.parent.currentPanel.navigation.setTargetPageByName(value);
                         break;
                     }
                     value = (item.entity1 && item.entity1.set && (await item.entity1.set.getBoolean())) ?? null;
@@ -2308,7 +2316,7 @@ export class PageItem extends BaseClassTriggerd {
                                     (await this.dataItems.data.setValue1.setStateTrue());
                                 if (this.visibility) {
                                     await this.onStateTrigger();
-                                } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
+                                } else if (!this.parent.sleep && this.parent.getVisibility()) {
                                     await this.parent.onStateTriggerSuperDoNotOverride('timer', this);
                                 }
                                 if (this.tempInterval) {
@@ -2318,7 +2326,7 @@ export class PageItem extends BaseClassTriggerd {
                             } else if (this.tempData.value > 0) {
                                 if (this.visibility) {
                                     await this.onStateTrigger();
-                                } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
+                                } else if (!this.parent.sleep && this.parent.getVisibility()) {
                                     await this.parent.onStateTriggerSuperDoNotOverride('timer', this);
                                 }
                             }
@@ -2437,7 +2445,7 @@ export class PageItem extends BaseClassTriggerd {
     protected async onStateTrigger(id: string = '', from?: BaseClassTriggerd): Promise<void> {
         if (this.lastPopupType) {
             if (this.lastPopupType === 'popupThermo') {
-                this.parent && (await this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null));
+                await this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null);
                 return;
             }
             const msg = await this.GeneratePopup(this.lastPopupType);
@@ -2445,8 +2453,13 @@ export class PageItem extends BaseClassTriggerd {
                 this.sendToPanel(msg, false);
             }
         }
-        if (from && this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
-            await this.panel.screenSaver.onStateTrigger(id, from);
+        if (
+            from &&
+            this.parent.currentPanel.isOnline &&
+            this.parent === this.parent.currentPanel.screenSaver &&
+            this.parent.currentPanel.screenSaver
+        ) {
+            await this.parent.currentPanel.screenSaver.onStateTrigger(id, from);
         }
     }
     async getListCommands(setList: Dataitem | undefined): Promise<typePageItem.listCommand[] | null> {
@@ -2511,7 +2524,26 @@ export class PageItem extends BaseClassTriggerd {
                 item.entityInSel &&
                 item.entityInSel.set
             ) {
-                await item.entityInSel.set.setState(`Schiebe Musik auf ${sList.list[parseInt(value)]}`);
+                const v = parseInt(value);
+                const index = sList.states?.[v] || -1;
+                if ((this.parent as PageMedia).currentItems?.dpInit) {
+                    await this.adapter.setForeignStateAsync(
+                        `${(this.parent as PageMedia).currentItems!.dpInit}.Commands.textCommand`,
+                        `Schiebe Musik auf ${sList.list[v]}`,
+                    );
+                }
+                if (index !== -1) {
+                    this.parent.card == 'cardMedia' &&
+                        (await (this.parent as PageMedia).updateCurrentPlayer(
+                            this.tempData[index]?.id || '',
+                            this.tempData[index]?.name || '',
+                        ));
+                }
+                const msg = await this.GeneratePopup('popupInSel');
+                if (msg) {
+                    this.sendToPanel(msg, false);
+                }
+
                 return true;
             } else if (
                 sList.states !== undefined &&
@@ -2574,7 +2606,7 @@ export class PageItem extends BaseClassTriggerd {
         const v = value as keyof typeof list;
         if (list && list[v]) {
             try {
-                const obj = await this.panel.statesControler.getObjectAsync(list[v].id);
+                const obj = await this.parent.currentPanel.statesControler.getObjectAsync(list[v].id);
                 if (!obj || !obj.common || obj.type !== 'state') {
                     throw new Error('Dont get obj!');
                 }
@@ -2682,8 +2714,8 @@ export class PageItem extends BaseClassTriggerd {
                         list.list.push(this.tempData[a].name);
                         list.states.push(a);
                     }
-
-                    const index = this.tempData.findIndex((a: any) => entityInSel?.value?.options.dp?.includes(a.id));
+                    const dp = (this.parent as PageMedia).currentItems?.dpInit || entityInSel?.value?.options.dp || '';
+                    const index = this.tempData.findIndex((a: any) => dp.includes(a.id));
                     if (index !== -1 && !list.value) {
                         list.value = this.tempData[index].name;
                     }

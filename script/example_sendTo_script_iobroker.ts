@@ -685,7 +685,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.10.5';
+const version = '0.10.6';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1040,9 +1040,9 @@ declare namespace ScriptConfig {
 
     export type PageMedia = {
         type: 'cardMedia';
-        id: string; // datapoint with adapter.instance.device
+        media: PageMediaItem & PageBaseItem;
         items: PageItem[];
-    } & Omit<PageBaseType, 'autoCreateAlias'>;
+    } & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'>;
 
     export type PageAlarm = {
         type: 'cardAlarm';
@@ -1066,10 +1066,13 @@ declare namespace ScriptConfig {
         type: 'cardChart' | 'cardLChart';
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
-    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
+    export type PageItem = PageBaseItem | PageThermoItem;
 
     export type PageMediaItem = {
-        adapterPlayerInstance: adapterPlayerInstanceType;
+        /**
+         * The media dp to use, most a folder, device or channel. Not a state.
+         */
+        id: string;
         mediaDevice?: string;
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;
@@ -1080,7 +1083,7 @@ declare namespace ScriptConfig {
         repeatList?: string[];
         globalTracklist?: string[];
         crossfade?: boolean;
-    } & PageBaseItem;
+    };
 
     export type PageThermoItem = {
         popupThermoMode1?: string[];

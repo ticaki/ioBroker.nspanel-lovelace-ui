@@ -32,11 +32,14 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
  */
 export class PageMedia extends Page {
     config: pages.PageBaseConfig['config'];
-    items: pages.PageBaseConfig['items'];
+    items: pages.cardMediaDataItems[] = [];
+    currentItems: pages.cardMediaDataItems | undefined;
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
+    public currentPlayer: string;
+    private playerName: string = '';
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (options && options.pageItems) {
@@ -56,32 +59,43 @@ export class PageMedia extends Page {
             });
         }
         super(config, options);
-
-        this.config = options.config;
-        if (this.items && this.items.card === 'cardMedia') {
-            this.items = options.items;
+        if (typeof this.dpInit !== 'string') {
+            throw new Error('Media page must have a dpInit string');
         }
+        this.currentPlayer = this.dpInit;
+        this.config = options.config;
         this.minUpdateInterval = 2000;
     }
 
     async init(): Promise<void> {
-        const config = structuredClone(this.config);
+        if (this.config?.card === 'cardMedia') {
+            this.items.push(await this.createMainItems(this.config, this.enums, this.dpInit));
+        }
+        await super.init();
+    }
+    async createMainItems(
+        c: pages.cardMediaDataItemOptions,
+        enums: string | string[],
+        dpInit: string | RegExp,
+    ): Promise<pages.cardMediaDataItems> {
+        const config = structuredClone(c);
         // search states for mode auto
         const tempConfig: Partial<pages.PageBaseConfig['config']> =
-            this.enums || this.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+            enums || dpInit
+                ? await this.basePanel.statesControler.getDataItemsFromAuto(dpInit, config, undefined, enums)
                 : config;
-        // create Dataitems
-        //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.PageBaseConfig['items']> = await this.panel.statesControler.createDataItems(
+
+        const tempItem: Partial<pages.PageBaseConfig['items']> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
             this,
         );
         if (tempItem) {
             tempItem.card = 'cardMedia';
         }
-        this.items = tempItem as pages.PageBaseConfig['items'];
-        await super.init();
+        return {
+            ...(tempItem as pages.cardMediaDataItems),
+            dpInit: typeof dpInit === 'string' ? dpInit : dpInit.toString(),
+        };
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         await super.onVisibilityChange(val);
@@ -90,20 +104,45 @@ export class PageMedia extends Page {
             this.titelPos = 0;
         }
     }
+
+    async updateCurrentPlayer(dp: string, name: string): Promise<void> {
+        if (this.currentPlayer === dp) {
+            return;
+        }
+        let index = this.items.findIndex(i => i.dpInit === dp);
+        if (index === -1) {
+            if (this.config?.card === 'cardMedia') {
+                this.items.push(await this.createMainItems(this.config, '', dp));
+                index = this.items.length - 1;
+            }
+        }
+        if (index === 0) {
+            this.playerName = '';
+        } else {
+            this.playerName = name;
+        }
+        this.currentItems = this.items[index];
+        this.currentPlayer = dp;
+        await this.update();
+    }
+
     async update(): Promise<void> {
         if (!this.visibility) {
             return;
         }
-        const item = this.items;
+        let index = this.items.findIndex(i => i.dpInit === this.currentPlayer);
+        index = index === -1 ? 0 : index;
+        if (index === 0) {
+            this.playerName = '';
+        }
+        this.currentItems = this.items[index];
+        const item = this.currentItems;
         if (item === undefined) {
             return;
         }
         const message: Partial<pages.PageMediaMessage> = {};
         // title
         {
-            if (item.card !== 'cardMedia') {
-                return;
-            }
             const test: Record<string, string> = {};
             test.bla = 'dd';
             let duration = '0:00',
@@ -116,6 +155,7 @@ export class PageMedia extends Page {
                     title = v;
                 }
             }
+            title = this.playerName ? `${this.playerName} - ${title}` : title;
             if (item.data.artist && item.data.artist.text) {
                 const v = await item.data.artist.text.getString();
                 if (v !== null) {
@@ -279,10 +319,10 @@ export class PageMedia extends Page {
         //this.log.warn(JSON.stringify(this.getMessage(msg)));
     }
     private async getMediaState(): Promise<boolean | null> {
-        if (!this.items || this.items.card !== 'cardMedia') {
+        if (!this.currentItems) {
             return null;
         }
-        const item = this.items.data.mediaState;
+        const item = this.currentItems.data.mediaState;
         if (item) {
             const v = await item.getString();
             if (v !== null) {
@@ -292,10 +332,10 @@ export class PageMedia extends Page {
         return null;
     }
     private async getOnOffState(): Promise<boolean | null> {
-        if (!this.items || this.items.card !== 'cardMedia') {
+        if (!this.currentItems) {
             return null;
         }
-        const item = this.items.data.mediaState;
+        const item = this.currentItems.data.mediaState;
         if (item) {
             const v = await item.getString();
             if (v !== null) {
@@ -328,7 +368,7 @@ export class PageMedia extends Page {
         await this.update();
     };
     async reset(): Promise<void> {
-        this.step = 0;
+        this.step = 1;
         this.headlinePos = 0;
         this.titelPos = 0;
     }
@@ -342,8 +382,8 @@ export class PageMedia extends Page {
         } else {
             return;
         }
-        const items = this.items;
-        if (!items || items.card !== 'cardMedia') {
+        const items = this.currentItems;
+        if (!items) {
             return;
         }
         switch (event.action) {
@@ -439,7 +479,7 @@ export class PageMedia extends Page {
             adapter.log.warn(msg);
             return { gridItem, messages };
         }
-        if (!page.id) {
+        if (!page.media.id) {
             const msg = `${page.uniqueName}: Media page has no device id!`;
             messages.push(msg);
             adapter.log.warn(msg);
@@ -448,17 +488,17 @@ export class PageMedia extends Page {
         gridItem.config.card = 'cardMedia';
         let o;
         try {
-            o = await adapter.getForeignObjectAsync(page.id);
+            o = await adapter.getForeignObjectAsync(page.media.id);
         } catch {
             //nothing
         }
         if (!o) {
-            const msg = `${page.uniqueName}: Media page id ${page.id} has no object!`;
+            const msg = `${page.uniqueName}: Media page id ${page.media.id} has no object!`;
             messages.push(msg);
             adapter.log.warn(msg);
             return { gridItem, messages };
         }
-        gridItem.dpInit = page.id;
+        gridItem.dpInit = page.media.id;
         gridItem = {
             ...gridItem,
             config: {
@@ -634,12 +674,12 @@ export class PageMedia extends Page {
                         },
                         icon: {
                             true: {
-                                value: { type: 'const', constVal: 'arrow-up' },
-                                color: { type: 'const', constVal: Color.Green },
+                                value: { type: 'const', constVal: 'speaker-multiple' },
+                                color: { type: 'const', constVal: Color.good },
                             },
                             false: {
-                                value: { type: 'const', constVal: 'fan' },
-                                color: { type: 'const', constVal: Color.Red },
+                                value: { type: 'const', constVal: 'speaker-multiple' },
+                                color: { type: 'const', constVal: Color.bad },
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -655,7 +695,7 @@ export class PageMedia extends Page {
                             set: {
                                 mode: 'auto',
                                 type: 'state',
-                                regexp: /.?\.Commands\.speak$/,
+                                regexp: /.?\.Commands\.textCommand$/,
                                 dp: '',
                             },
                             decimal: undefined,
@@ -670,8 +710,8 @@ export class PageMedia extends Page {
                          * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                          */
                         valueList: {
-                            type: 'state',
-                            dp: '0_userdata.0.spotify-premium.0.player.playlist.trackListArray',
+                            type: 'const',
+                            constVal: JSON.stringify(page.media.speakerList || []),
                         },
                         /**
                          * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}

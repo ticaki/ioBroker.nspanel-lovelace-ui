@@ -330,7 +330,7 @@ declare namespace ScriptConfig {
 
     export type PageMedia = {
         type: 'cardMedia';
-        id: string; // datapoint with adapter.instance.device
+        media: PageMediaItem;
         items: PageItem[];
     } & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'>;
 
@@ -361,10 +361,13 @@ declare namespace ScriptConfig {
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
         Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
-    export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
+    export type PageItem = PageBaseItem;
 
     export type PageMediaItem = {
-        adapterPlayerInstance: adapterPlayerInstanceType;
+        /**
+         * The media dp to use, most a folder, device or channel. Not a state.
+         */
+        id: string;
         mediaDevice?: string;
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;

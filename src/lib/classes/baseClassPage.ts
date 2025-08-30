@@ -2,7 +2,6 @@ import type { PageInterface } from './PageInterface';
 import type { PageItem } from '../pages/pageItem';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import type { Panel } from '../controller/panel';
-import type { PanelSend } from '../controller/panel-message';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import { BaseClass } from './library';
 import { genericStateObjects } from '../const/definition';
@@ -12,7 +11,6 @@ import type { IClientPublishOptions } from 'mqtt';
 export interface BaseClassTriggerdInterface {
     name: string;
     adapter: NspanelLovelaceUi;
-    panelSend: PanelSend;
     alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
     panel: Panel;
     dpInit?: string | RegExp;
@@ -29,12 +27,11 @@ export class BaseClassTriggerd extends BaseClass {
     private doUpdate: boolean = true;
     protected minUpdateInterval: number;
     protected visibility: boolean = false;
-    protected controller: Controller;
-    readonly panelSend: PanelSend;
     public alwaysOn: 'none' | 'always' | 'action' | 'ignore';
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
-    public panel: Panel;
+    readonly basePanel: Panel;
+    public _currentPanel: Panel | undefined;
     protected filterDuplicateMessages: boolean = true;
     neverDeactivateTrigger: boolean = false;
     sleep: boolean = false;
@@ -59,7 +56,6 @@ export class BaseClassTriggerd extends BaseClass {
     resetLastMessage(): void {
         this.lastMessage = '';
     }
-    private sendToPanelClass: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = () => {};
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
@@ -67,16 +63,24 @@ export class BaseClassTriggerd extends BaseClass {
         if (!this.adapter.controller) {
             throw new Error('No controller! bye bye');
         }
-        this.controller = this.adapter.controller;
-        this.panelSend = card.panelSend;
         this.alwaysOn = card.alwaysOn ?? 'none';
-        this.panel = card.panel;
-
-        if (typeof this.panelSend.addMessage === 'function') {
-            this.sendToPanelClass = card.panelSend.addMessage;
-        }
+        this.basePanel = card.panel;
+        this._currentPanel = card.panel;
     }
 
+    get currentPanel(): Panel {
+        return this._currentPanel ?? this.basePanel;
+    }
+    set currentPanel(p: Panel | undefined) {
+        this._currentPanel = p;
+    }
+    protected sendToPanelClass(payload: string, ackForType: boolean, opt?: IClientPublishOptions): void {
+        this.currentPanel.panelSend.addMessage(payload, ackForType, opt);
+    }
+    get controller(): Controller {
+        // checked in constructor
+        return this.adapter.controller!;
+    }
     async reset(): Promise<void> {}
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
@@ -89,7 +93,7 @@ export class BaseClassTriggerd extends BaseClass {
                 )) ||
             this.unload
         ) {
-            this.log.debug(`[${this.panel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
+            this.log.debug(`[${this.basePanel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
             return false;
         }
 
@@ -118,9 +122,9 @@ export class BaseClassTriggerd extends BaseClass {
                 }
                 this.alwaysOnState = this.adapter.setTimeout(
                     () => {
-                        this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                        this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
                     },
-                    this.panel.timeout * 1000 || 5000,
+                    this.basePanel.timeout * 1000 || 5000,
                 );
             }
         }, 20);
@@ -190,13 +194,13 @@ export class BaseClassTriggerd extends BaseClass {
                     }
                 }*/
 
-                this.log.debug(`[${this.panel.friendlyName}] Switch page to visible!`);
+                this.log.debug(`[${this.basePanel.friendlyName}] Switch page to visible!`);
                 this.resetLastMessage();
                 this.controller && (await this.controller.statesControler.activateTrigger(this));
 
-                this.panel.info.nspanel.currentPage = this.name;
+                this.basePanel.info.nspanel.currentPage = this.name;
                 await this.library.writedp(
-                    `panels.${this.panel.name}.info.nspanel.currentPage`,
+                    `panels.${this.basePanel.name}.info.nspanel.currentPage`,
                     this.name,
                     genericStateObjects.panel.panels.info.nspanel.currentPage,
                 );
@@ -204,7 +208,7 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.alwaysOnState) {
                     this.adapter.clearTimeout(this.alwaysOnState);
                 }
-                this.log.debug(`[${this.panel.friendlyName}] Switch page to invisible!`);
+                this.log.debug(`[${this.basePanel.friendlyName}] Switch page to invisible!`);
                 if (!this.neverDeactivateTrigger) {
                     this.stopTriggerTimeout();
                     this.controller && (await this.controller.statesControler.deactivateTrigger(this));
@@ -223,15 +227,15 @@ export class BaseClassTriggerd extends BaseClass {
                             }
                             this.alwaysOnState = this.adapter.setTimeout(
                                 async () => {
-                                    this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                                    this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
                                 },
-                                this.panel.timeout * 2 * 1000 || 5000,
+                                this.basePanel.timeout * 2 * 1000 || 5000,
                             );
                         } else {
-                            this.panel.sendScreeensaverTimeout(0);
+                            this.basePanel.sendScreeensaverTimeout(0);
                         }
                     } else {
-                        this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                        this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
                     }
                 }
             }

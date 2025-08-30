@@ -349,8 +349,22 @@ export class ConfigManager extends BaseClass {
                 }
                 if (page.type === undefined && page.native) {
                     if ((config.subPages || []).includes(page)) {
-                        const left = page.prev || page.parent || undefined;
-                        const right = page.next || page.home || undefined;
+                        let left = page.prev || page.parent || undefined;
+                        let right = page.next || page.home || undefined;
+                        if (left === page.uniqueName) {
+                            left = '';
+                            messages.push(
+                                `Page: ${page.native.uniqueID || 'unknown'} has left navigation to itself! Removed!`,
+                            );
+                            this.log.warn(messages[messages.length - 1]);
+                        }
+                        if (right === page.uniqueName) {
+                            right = '';
+                            messages.push(
+                                `Page: ${page.native.uniqueID || 'unknown'} has right navigation to itself! Removed!`,
+                            );
+                            this.log.warn(messages[messages.length - 1]);
+                        }
                         if (left || right) {
                             const navItem: NavigationItemConfig = {
                                 name: page.native.uniqueID || '',

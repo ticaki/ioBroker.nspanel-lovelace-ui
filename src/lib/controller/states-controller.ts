@@ -60,7 +60,7 @@ export class StatesControler extends BaseClass {
                 if (item.unload) {
                     //this.log.debug('Unload element:  ' + entry.to[i].name);
                     removeIndex.push(Number(i));
-                } else if (item.parent?.panel?.unload) {
+                } else if (item.parent?.basePanel?.unload) {
                     //this.log.debug('Unload element:  ' + entry.to[i].name);
                     removeIndex.push(Number(i));
                 }
@@ -159,7 +159,7 @@ export class StatesControler extends BaseClass {
                     delete this.stateDB[id];
                 }
                 if (this.adapter.config.debugLogStates) {
-                    this.log.debug(`Set a new trigger for ${from.panel.name}.${from.name} to ${id}`);
+                    this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
                 }
             } else {
                 delete this.triggerDB[id];

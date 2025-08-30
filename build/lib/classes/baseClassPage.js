@@ -30,12 +30,11 @@ class BaseClassTriggerd extends import_library.BaseClass {
   doUpdate = true;
   minUpdateInterval;
   visibility = false;
-  controller;
-  panelSend;
   alwaysOn;
   alwaysOnState;
   lastMessage = "";
-  panel;
+  basePanel;
+  _currentPanel;
   filterDuplicateMessages = true;
   neverDeactivateTrigger = false;
   sleep = false;
@@ -55,8 +54,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
   resetLastMessage() {
     this.lastMessage = "";
   }
-  sendToPanelClass = () => {
-  };
   constructor(card) {
     var _a;
     super(card.adapter, card.name);
@@ -64,20 +61,29 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (!this.adapter.controller) {
       throw new Error("No controller! bye bye");
     }
-    this.controller = this.adapter.controller;
-    this.panelSend = card.panelSend;
     this.alwaysOn = (_a = card.alwaysOn) != null ? _a : "none";
-    this.panel = card.panel;
-    if (typeof this.panelSend.addMessage === "function") {
-      this.sendToPanelClass = card.panelSend.addMessage;
-    }
+    this.basePanel = card.panel;
+    this._currentPanel = card.panel;
+  }
+  get currentPanel() {
+    var _a;
+    return (_a = this._currentPanel) != null ? _a : this.basePanel;
+  }
+  set currentPanel(p) {
+    this._currentPanel = p;
+  }
+  sendToPanelClass(payload, ackForType, opt) {
+    this.currentPanel.panelSend.addMessage(payload, ackForType, opt);
+  }
+  get controller() {
+    return this.adapter.controller;
   }
   async reset() {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
     var _a;
     if (!this.visibility && !(this.neverDeactivateTrigger || this.canBeHidden && ((_a = this.parent) == null ? void 0 : _a.visibility) || from.neverDeactivateTrigger) || this.unload) {
-      this.log.debug(`[${this.panel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
+      this.log.debug(`[${this.basePanel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
       return false;
     }
     if (this.sleep && !this.neverDeactivateTrigger) {
@@ -105,9 +111,9 @@ class BaseClassTriggerd extends import_library.BaseClass {
         }
         this.alwaysOnState = this.adapter.setTimeout(
           () => {
-            this.panel.sendScreeensaverTimeout(this.panel.timeout);
+            this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
           },
-          this.panel.timeout * 1e3 || 5e3
+          this.basePanel.timeout * 1e3 || 5e3
         );
       }
     }, 20);
@@ -156,12 +162,12 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.unload) {
           return;
         }
-        this.log.debug(`[${this.panel.friendlyName}] Switch page to visible!`);
+        this.log.debug(`[${this.basePanel.friendlyName}] Switch page to visible!`);
         this.resetLastMessage();
         this.controller && await this.controller.statesControler.activateTrigger(this);
-        this.panel.info.nspanel.currentPage = this.name;
+        this.basePanel.info.nspanel.currentPage = this.name;
         await this.library.writedp(
-          `panels.${this.panel.name}.info.nspanel.currentPage`,
+          `panels.${this.basePanel.name}.info.nspanel.currentPage`,
           this.name,
           import_definition.genericStateObjects.panel.panels.info.nspanel.currentPage
         );
@@ -169,7 +175,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.alwaysOnState) {
           this.adapter.clearTimeout(this.alwaysOnState);
         }
-        this.log.debug(`[${this.panel.friendlyName}] Switch page to invisible!`);
+        this.log.debug(`[${this.basePanel.friendlyName}] Switch page to invisible!`);
         if (!this.neverDeactivateTrigger) {
           this.stopTriggerTimeout();
           this.controller && await this.controller.statesControler.deactivateTrigger(this);
@@ -188,15 +194,15 @@ class BaseClassTriggerd extends import_library.BaseClass {
               }
               this.alwaysOnState = this.adapter.setTimeout(
                 async () => {
-                  this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                  this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
                 },
-                this.panel.timeout * 2 * 1e3 || 5e3
+                this.basePanel.timeout * 2 * 1e3 || 5e3
               );
             } else {
-              this.panel.sendScreeensaverTimeout(0);
+              this.basePanel.sendScreeensaverTimeout(0);
             }
           } else {
-            this.panel.sendScreeensaverTimeout(this.panel.timeout);
+            this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
           }
         }
       }

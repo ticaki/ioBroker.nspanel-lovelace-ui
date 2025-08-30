@@ -68,7 +68,7 @@ class PageAlarm extends import_Page.Page {
   async setMode(m) {
     if (this.useStates) {
       await this.library.writedp(
-        `panels.${this.panel.name}.alarm.${this.name}.mode`,
+        `panels.${this.basePanel.name}.alarm.${this.name}.mode`,
         m,
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
       );
@@ -76,7 +76,7 @@ class PageAlarm extends import_Page.Page {
   }
   async getStatus() {
     if (this.useStates) {
-      const state = this.library.readdb(`panels.${this.panel.name}.alarm.${this.name}.status`);
+      const state = this.library.readdb(`panels.${this.basePanel.name}.alarm.${this.name}.status`);
       if (state) {
         if (typeof state.val === "number") {
           this.status = alarmStates[state.val];
@@ -89,7 +89,7 @@ class PageAlarm extends import_Page.Page {
     this.status = value;
     if (this.useStates) {
       await this.library.writedp(
-        `panels.${this.panel.name}.alarm.${this.name}.status`,
+        `panels.${this.basePanel.name}.alarm.${this.name}.status`,
         alarmStates.indexOf(this.status),
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
       );
@@ -108,8 +108,8 @@ class PageAlarm extends import_Page.Page {
   async init() {
     var _a, _b, _c, _d;
     const config = structuredClone(this.config);
-    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
-    const tempItem = await this.panel.statesControler.createDataItems(
+    const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
+    const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
       this
     );
@@ -125,7 +125,7 @@ class PageAlarm extends import_Page.Page {
         import_definition.genericStateObjects.panel.panels.alarm._channel
       );
       await this.library.writedp(
-        `panels.${this.panel.name}.alarm.${this.name}`,
+        `panels.${this.basePanel.name}.alarm.${this.name}`,
         void 0,
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
       );
@@ -363,7 +363,7 @@ class PageAlarm extends import_Page.Page {
           const item = entry.data;
           const value2 = (_a = item.setNavi && await item.setNavi.getString()) != null ? _a : null;
           if (value2 !== null) {
-            await this.panel.navigation.setTargetPageByName(value2);
+            await this.basePanel.navigation.setTargetPageByName(value2);
             break;
           }
           await this.setStatus("disarmed");

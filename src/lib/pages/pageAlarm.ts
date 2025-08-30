@@ -43,7 +43,7 @@ export class PageAlarm extends Page {
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         if (this.useStates) {
             await this.library.writedp(
-                `panels.${this.panel.name}.alarm.${this.name}.mode`,
+                `panels.${this.basePanel.name}.alarm.${this.name}.mode`,
                 m,
                 genericStateObjects.panel.panels.alarm.cardAlarm.mode,
             );
@@ -52,7 +52,7 @@ export class PageAlarm extends Page {
 
     async getStatus(): Promise<pages.AlarmStates> {
         if (this.useStates) {
-            const state = this.library.readdb(`panels.${this.panel.name}.alarm.${this.name}.status`);
+            const state = this.library.readdb(`panels.${this.basePanel.name}.alarm.${this.name}.status`);
             if (state) {
                 if (typeof state.val === 'number') {
                     this.status = alarmStates[state.val];
@@ -66,7 +66,7 @@ export class PageAlarm extends Page {
         this.status = value;
         if (this.useStates) {
             await this.library.writedp(
-                `panels.${this.panel.name}.alarm.${this.name}.status`,
+                `panels.${this.basePanel.name}.alarm.${this.name}.status`,
                 alarmStates.indexOf(this.status),
                 genericStateObjects.panel.panels.alarm.cardAlarm.status,
             );
@@ -89,11 +89,11 @@ export class PageAlarm extends Page {
         // search states for mode auto
         const tempConfig: Partial<pages.cardAlarmDataItemOptions> =
             this.enums || this.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardAlarmDataItems> = await this.panel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardAlarmDataItems> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
             this,
         );
@@ -113,7 +113,7 @@ export class PageAlarm extends Page {
                 genericStateObjects.panel.panels.alarm._channel,
             );
             await this.library.writedp(
-                `panels.${this.panel.name}.alarm.${this.name}`,
+                `panels.${this.basePanel.name}.alarm.${this.name}`,
                 undefined,
                 genericStateObjects.panel.panels.alarm.cardAlarm._channel,
             );
@@ -376,7 +376,7 @@ export class PageAlarm extends Page {
                     const item = entry.data;
                     const value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
-                        await this.panel.navigation.setTargetPageByName(value);
+                        await this.basePanel.navigation.setTargetPageByName(value);
                         break;
                     }
                     await this.setStatus('disarmed');

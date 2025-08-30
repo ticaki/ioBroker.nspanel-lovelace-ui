@@ -83,12 +83,12 @@ class Screensaver extends import_Page.Page {
   async init() {
     await super.init();
     this.pageItems = await this.createPageItems(this.pageItemConfig);
-    await this.panel.setScreensaverSwipe(this.screensaverSwipe);
+    await this.basePanel.setScreensaverSwipe(this.screensaverSwipe);
     if (this.pageItems) {
       const indicators = this.pageItems.filter((x) => x && x.config && x.config.modeScr === "indicator");
       for (let a = 0; a < indicators.length; a++) {
         await this.library.writedp(
-          `panels.${this.panel.name}.buttons.indicator-${a + 1}`,
+          `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
           void 0,
           Definition.genericStateObjects.panel.panels.buttons.indicator
         );
@@ -198,7 +198,7 @@ class Screensaver extends import_Page.Page {
     return message;
   }
   sendNotify(enabled) {
-    if (!this.panel.isOnline) {
+    if (!this.basePanel.isOnline) {
       return;
     }
     if (enabled) {
@@ -320,7 +320,7 @@ class Screensaver extends import_Page.Page {
     }
   };
   async HandleTime() {
-    if (this.panel.isOnline === false) {
+    if (this.basePanel.isOnline === false) {
       return;
     }
     const message = await this.getData(["time"]);
@@ -334,7 +334,7 @@ class Screensaver extends import_Page.Page {
     );
   }
   async HandleDate() {
-    if (this.panel.isOnline === false) {
+    if (this.basePanel.isOnline === false) {
       return;
     }
     const message = await this.getData(["date"]);
@@ -361,8 +361,8 @@ class Screensaver extends import_Page.Page {
       (_b = mrIcon1[3]) != null ? _b : "",
       (_c = mrIcon2[2]) != null ? _c : "",
       (_d = mrIcon2[3]) != null ? _d : "",
-      this.panel.info.nspanel.bigIconLeft ? "1" : "",
-      this.panel.info.nspanel.bigIconRight ? "1" : ""
+      this.basePanel.info.nspanel.bigIconLeft ? "1" : "",
+      this.basePanel.info.nspanel.bigIconRight ? "1" : ""
     ];
     const msg = tools.getPayloadArray(msgArray);
     this.sendToPanel(msg, false);
@@ -376,7 +376,7 @@ class Screensaver extends import_Page.Page {
       for (let a = 0; a < indicators.length; a++) {
         if (indicators[a] === this.pageItems[event.id]) {
           await this.library.writedp(
-            `panels.${this.panel.name}.buttons.indicator-${a + 1}`,
+            `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
             true,
             Definition.genericStateObjects.panel.panels.buttons.indicator
           );

@@ -34,7 +34,6 @@ export class Page extends BaseClassPage {
         this.isScreensaver = isScreensaver;
         this.card = card.card;
         this.id = card.id;
-        this.panel = card.panel;
         this.hidden = pageItemsConfig && 'hidden' in pageItemsConfig ? !!pageItemsConfig.hidden : false;
         this.enums =
             pageItemsConfig && 'enums' in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : '';
@@ -94,7 +93,7 @@ export class Page extends BaseClassPage {
 
                 options.data =
                     dpInit || enums
-                        ? await this.panel.statesControler.getDataItemsFromAuto(
+                        ? await this.basePanel.statesControler.getDataItemsFromAuto(
                               dpInit,
                               options.data,
                               'appendix' in options ? options.appendix : undefined,
@@ -231,7 +230,7 @@ export class Page extends BaseClassPage {
                 pages.exhaustiveCheck(this.card);
                 break;
         }
-        if (force || this.panel.lastCard !== this.card || this.card === 'cardThermo') {
+        if (force || this.basePanel.lastCard !== this.card || this.card === 'cardThermo') {
             this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
         } else {
             if (this.lastCardCounter++ > 10) {
@@ -239,7 +238,7 @@ export class Page extends BaseClassPage {
                 this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
             }
         }
-        this.panel.lastCard = this.card;
+        this.basePanel.lastCard = this.card;
     }
 
     async createPageItems(
@@ -251,8 +250,7 @@ export class Page extends BaseClassPage {
                 const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
                     name: 'PI',
                     adapter: this.adapter,
-                    panel: this.panel,
-                    panelSend: this.panelSend,
+                    panel: this.basePanel,
                     card: 'cardItemSpecial',
                     id: `${this.id}?${a}`,
                     parent: this,
@@ -264,10 +262,10 @@ export class Page extends BaseClassPage {
     }
 
     goLeft(): void {
-        this.panel.navigation.goLeft();
+        this.basePanel.navigation.goLeft();
     }
     goRight(): void {
-        this.panel.navigation.goRight();
+        this.basePanel.navigation.goRight();
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
@@ -292,7 +290,7 @@ export class Page extends BaseClassPage {
     removeLastPage(_p: Page | undefined): void {}
 
     protected getNavigation(): string {
-        return this.panel.navigation.buildNavigationString();
+        return this.basePanel.navigation.buildNavigationString();
     }
 
     public async update(): Promise<void> {
@@ -331,7 +329,7 @@ export class Page extends BaseClassPage {
         if (action && value !== undefined && (await item.onCommand(action, value))) {
             return;
         } else if (isPopupType(popup) && action !== 'bExit') {
-            this.panel.lastCard = '';
+            this.basePanel.lastCard = '';
             msg = await item.GeneratePopup(popup);
         }
         if (msg !== null) {

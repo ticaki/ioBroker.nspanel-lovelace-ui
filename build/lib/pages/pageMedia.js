@@ -45,11 +45,14 @@ const PageMediaMessageDefault = {
 };
 class PageMedia extends import_Page.Page {
   config;
-  items;
+  items = [];
+  currentItems;
   step = 1;
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
+  currentPlayer;
+  playerName = "";
   constructor(config, options) {
     if (options && options.pageItems) {
       options.pageItems.unshift({
@@ -68,24 +71,34 @@ class PageMedia extends import_Page.Page {
       });
     }
     super(config, options);
-    this.config = options.config;
-    if (this.items && this.items.card === "cardMedia") {
-      this.items = options.items;
+    if (typeof this.dpInit !== "string") {
+      throw new Error("Media page must have a dpInit string");
     }
+    this.currentPlayer = this.dpInit;
+    this.config = options.config;
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    const config = structuredClone(this.config);
-    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
-    const tempItem = await this.panel.statesControler.createDataItems(
+    var _a;
+    if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
+      this.items.push(await this.createMainItems(this.config, this.enums, this.dpInit));
+    }
+    await super.init();
+  }
+  async createMainItems(c, enums, dpInit) {
+    const config = structuredClone(c);
+    const tempConfig = enums || dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(dpInit, config, void 0, enums) : config;
+    const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
       this
     );
     if (tempItem) {
       tempItem.card = "cardMedia";
     }
-    this.items = tempItem;
-    await super.init();
+    return {
+      ...tempItem,
+      dpInit: typeof dpInit === "string" ? dpInit : dpInit.toString()
+    };
   }
   async onVisibilityChange(val) {
     await super.onVisibilityChange(val);
@@ -94,20 +107,44 @@ class PageMedia extends import_Page.Page {
       this.titelPos = 0;
     }
   }
+  async updateCurrentPlayer(dp, name) {
+    var _a;
+    if (this.currentPlayer === dp) {
+      return;
+    }
+    let index = this.items.findIndex((i) => i.dpInit === dp);
+    if (index === -1) {
+      if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
+        this.items.push(await this.createMainItems(this.config, "", dp));
+        index = this.items.length - 1;
+      }
+    }
+    if (index === 0) {
+      this.playerName = "";
+    } else {
+      this.playerName = name;
+    }
+    this.currentItems = this.items[index];
+    this.currentPlayer = dp;
+    await this.update();
+  }
   async update() {
     var _a;
     if (!this.visibility) {
       return;
     }
-    const item = this.items;
+    let index = this.items.findIndex((i) => i.dpInit === this.currentPlayer);
+    index = index === -1 ? 0 : index;
+    if (index === 0) {
+      this.playerName = "";
+    }
+    this.currentItems = this.items[index];
+    const item = this.currentItems;
     if (item === void 0) {
       return;
     }
     const message = {};
     {
-      if (item.card !== "cardMedia") {
-        return;
-      }
       const test = {};
       test.bla = "dd";
       let duration = "0:00", elapsed = "0:00", title = "unknown";
@@ -117,6 +154,7 @@ class PageMedia extends import_Page.Page {
           title = v;
         }
       }
+      title = this.playerName ? `${this.playerName} - ${title}` : title;
       if (item.data.artist && item.data.artist.text) {
         const v = await item.data.artist.text.getString();
         if (v !== null) {
@@ -256,10 +294,10 @@ class PageMedia extends import_Page.Page {
     this.sendToPanel(this.getMessage(msg), false);
   }
   async getMediaState() {
-    if (!this.items || this.items.card !== "cardMedia") {
+    if (!this.currentItems) {
       return null;
     }
-    const item = this.items.data.mediaState;
+    const item = this.currentItems.data.mediaState;
     if (item) {
       const v = await item.getString();
       if (v !== null) {
@@ -269,10 +307,10 @@ class PageMedia extends import_Page.Page {
     return null;
   }
   async getOnOffState() {
-    if (!this.items || this.items.card !== "cardMedia") {
+    if (!this.currentItems) {
       return null;
     }
-    const item = this.items.data.mediaState;
+    const item = this.currentItems.data.mediaState;
     if (item) {
       const v = await item.getString();
       if (v !== null) {
@@ -304,7 +342,7 @@ class PageMedia extends import_Page.Page {
     await this.update();
   };
   async reset() {
-    this.step = 0;
+    this.step = 1;
     this.headlinePos = 0;
     this.titelPos = 0;
   }
@@ -317,8 +355,8 @@ class PageMedia extends import_Page.Page {
     } else {
       return;
     }
-    const items = this.items;
-    if (!items || items.card !== "cardMedia") {
+    const items = this.currentItems;
+    if (!items) {
       return;
     }
     switch (event.action) {
@@ -406,7 +444,7 @@ class PageMedia extends import_Page.Page {
       adapter.log.warn(msg);
       return { gridItem, messages };
     }
-    if (!page.id) {
+    if (!page.media.id) {
       const msg = `${page.uniqueName}: Media page has no device id!`;
       messages.push(msg);
       adapter.log.warn(msg);
@@ -415,16 +453,16 @@ class PageMedia extends import_Page.Page {
     gridItem.config.card = "cardMedia";
     let o;
     try {
-      o = await adapter.getForeignObjectAsync(page.id);
+      o = await adapter.getForeignObjectAsync(page.media.id);
     } catch {
     }
     if (!o) {
-      const msg = `${page.uniqueName}: Media page id ${page.id} has no object!`;
+      const msg = `${page.uniqueName}: Media page id ${page.media.id} has no object!`;
       messages.push(msg);
       adapter.log.warn(msg);
       return { gridItem, messages };
     }
-    gridItem.dpInit = page.id;
+    gridItem.dpInit = page.media.id;
     gridItem = {
       ...gridItem,
       config: {
@@ -599,12 +637,12 @@ class PageMedia extends import_Page.Page {
             },
             icon: {
               true: {
-                value: { type: "const", constVal: "arrow-up" },
-                color: { type: "const", constVal: import_Color.Color.Green }
+                value: { type: "const", constVal: "speaker-multiple" },
+                color: { type: "const", constVal: import_Color.Color.good }
               },
               false: {
-                value: { type: "const", constVal: "fan" },
-                color: { type: "const", constVal: import_Color.Color.Red }
+                value: { type: "const", constVal: "speaker-multiple" },
+                color: { type: "const", constVal: import_Color.Color.bad }
               },
               scale: void 0,
               maxBri: void 0,
@@ -620,7 +658,7 @@ class PageMedia extends import_Page.Page {
               set: {
                 mode: "auto",
                 type: "state",
-                regexp: /.?\.Commands\.speak$/,
+                regexp: /.?\.Commands\.textCommand$/,
                 dp: ""
               },
               decimal: void 0,
@@ -635,8 +673,8 @@ class PageMedia extends import_Page.Page {
              * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
              */
             valueList: {
-              type: "state",
-              dp: "0_userdata.0.spotify-premium.0.player.playlist.trackListArray"
+              type: "const",
+              constVal: JSON.stringify(page.media.speakerList || [])
             },
             /**
              * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
