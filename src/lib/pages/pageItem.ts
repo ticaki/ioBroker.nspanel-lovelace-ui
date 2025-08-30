@@ -614,7 +614,6 @@ export class PageItem extends BaseClassTriggerd {
                     message.optionalValue = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.text, !!value, true)) ?? 'PRESS',
                     );
-                    this.log.debug(JSON.stringify(message));
                     return tools.getItemMesssage(message);
 
                     break;

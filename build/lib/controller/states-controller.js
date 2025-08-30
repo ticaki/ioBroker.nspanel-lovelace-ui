@@ -147,7 +147,7 @@ class StatesControler extends import_library.BaseClass {
     }
   }
   /**
-   * Activate the triggers of a page. First subscribes to the state.
+   * Activate the triggers of a pageItem for self or parent. First subscribes to the state.
    *
    * @param to Page
    */
@@ -157,7 +157,7 @@ class StatesControler extends import_library.BaseClass {
     }
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
-      const index = entry.to.indexOf(to);
+      const index = entry.to.findIndex((a) => a === to || a.parent && a.parent === to);
       if (index === -1) {
         continue;
       }
@@ -179,7 +179,7 @@ class StatesControler extends import_library.BaseClass {
     }
   }
   /**
-   * Deactivate the triggers of a page. Last unsubscribes to the state.
+   * Deactivate the triggers of a pageItem for self or parent page. Last unsubscribes to the state.
    *
    * @param to Page
    */
@@ -194,6 +194,10 @@ class StatesControler extends import_library.BaseClass {
       }
       const index = entry.to.indexOf(to);
       if (index === -1) {
+        continue;
+      }
+      const indexParent = entry.to.findIndex((a) => a.parent && a.parent === to);
+      if (indexParent !== -1 && entry.subscribed[indexParent]) {
         continue;
       }
       if (!entry.subscribed[index]) {

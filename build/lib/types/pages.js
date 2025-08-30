@@ -219,6 +219,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "value.speed.wind",
   "value.mode.airconditioner",
   "value.mode.thermostat",
+  "indicator",
   ""
 ]);
 function isStateRole(F) {

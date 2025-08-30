@@ -215,24 +215,26 @@ export class PageMedia extends Page {
         message.shuffle_icon = '';
         if (item.data.shuffle && item.data.shuffle.value && item.data.shuffle.value.type) {
             let value: null | true | false = null;
-            switch (item.data.shuffle.value.type) {
-                case 'string': {
-                    const v = await item.data.shuffle.value.getString();
-                    if (v !== null) {
-                        value = ['OFF', 'FALSE'].indexOf(v.toUpperCase()) === -1;
+            if (!item.data.shuffle.enabled || (await item.data.shuffle.enabled.getBoolean()) === true) {
+                switch (item.data.shuffle.value.type) {
+                    case 'string': {
+                        const v = await item.data.shuffle.value.getString();
+                        if (v !== null) {
+                            value = ['OFF', 'FALSE'].indexOf(v.toUpperCase()) === -1;
+                        }
+                        break;
                     }
-                    break;
-                }
-                case 'number':
-                case 'boolean': {
-                    value = await item.data.shuffle.value.getBoolean();
-                    break;
-                }
-                case 'object':
-                case 'array':
-                case 'mixed': {
-                    value = null;
-                    break;
+                    case 'number':
+                    case 'boolean': {
+                        value = await item.data.shuffle.value.getBoolean();
+                        break;
+                    }
+                    case 'object':
+                    case 'array':
+                    case 'mixed': {
+                        value = null;
+                        break;
+                    }
                 }
             }
             if (value !== null) {
@@ -268,15 +270,14 @@ export class PageMedia extends Page {
         //Logo
         if (item.data.logo) {
             message.logo = getPayload(
-                '',
-                '',
+                `media-OnOff`,
+                `${this.name}-logo`,
                 item.data.logo.icon && 'true' in item.data.logo.icon && item.data.logo.icon.true
                     ? ((await item.data.logo.icon.true.getString()) ?? '')
                     : '',
-
-                '',
-                '',
-                '',
+                '4',
+                '5',
+                '6',
             ); //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
 
@@ -327,6 +328,10 @@ export class PageMedia extends Page {
             const v = await item.getString();
             if (v !== null) {
                 return ['PLAY', '1', 'TRUE'].indexOf(v.toUpperCase()) !== -1;
+            }
+            const b = await item.getBoolean();
+            if (b !== null) {
+                return b;
             }
         }
         return null;
@@ -461,6 +466,24 @@ export class PageMedia extends Page {
                 if (event.id === '0' && this.nextArrow) {
                     this.step++;
                     await this.update();
+                } else if (event.id === `${this.name}-logo`) {
+                    let onoff = true;
+                    if (items.data.mediaState) {
+                        onoff = (await this.getMediaState()) ?? true;
+                        if (items.data.mediaState.common.write === true) {
+                            await items.data.mediaState.setState(!onoff);
+                            break;
+                        }
+                    }
+                    if (onoff) {
+                        if (items.data.stop) {
+                            await items.data.stop.setStateTrue();
+                        } else if (items.data.pause) {
+                            await items.data.pause.setStateTrue();
+                        }
+                    } else if (items.data.play) {
+                        await items.data.play.setStateTrue();
+                    }
                 }
                 break;
             }
@@ -598,6 +621,13 @@ export class PageMedia extends Page {
                             regexp: /.?\.Player\..?/,
                             dp: '',
                         },
+                        enabled: {
+                            mode: 'auto',
+                            type: 'triggered',
+                            role: 'indicator',
+                            regexp: /.?\.Player\.allowShuffle$/,
+                            dp: '',
+                        },
                     },
                     icon: {
                         type: 'const',
@@ -720,44 +750,122 @@ export class PageMedia extends Page {
                     },
                 },
                 {
-                    role: 'text.list',
-                    type: 'button',
+                    role: '',
+                    type: 'number',
                     dpInit: '',
 
                     data: {
-                        color: {
-                            true: {
-                                type: 'const',
-                                constVal: Color.HMIOn,
-                            },
-                            false: undefined,
-                            scale: undefined,
-                        },
                         icon: {
                             true: {
-                                value: { type: 'const', constVal: 'home' },
-                                color: { type: 'const', constVal: Color.Green },
+                                value: { type: 'const', constVal: 'equalizer-outline' },
+                                color: { type: 'const', constVal: Color.activated },
                             },
-                            false: {
-                                value: { type: 'const', constVal: 'fan' },
-                                color: { type: 'const', constVal: Color.Red },
-                            },
+
                             scale: undefined,
                             maxBri: undefined,
                             minBri: undefined,
                         },
+                        heading1: {
+                            type: 'const',
+                            constVal: 'treble',
+                        },
+                        heading2: {
+                            type: 'const',
+                            constVal: 'mid',
+                        },
+                        heading3: {
+                            type: 'const',
+                            constVal: 'bass',
+                        },
                         entity1: {
                             value: {
-                                type: 'const',
-                                constVal: true,
+                                mode: 'auto',
+                                type: 'state',
+                                regexp: /.?\.Preferences\.equalizerTreble$/,
+                                dp: '',
                             },
-                            decimal: undefined,
-                            factor: undefined,
-                            unit: undefined,
+                            minScale: {
+                                type: 'const',
+                                constVal: -6,
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: 6,
+                            },
+                            decimal: {
+                                type: 'const',
+                                constVal: 0,
+                            },
+                        },
+                        minValue1: {
+                            type: 'const',
+                            constVal: -6,
+                        },
+                        maxValue1: {
+                            type: 'const',
+                            constVal: 6,
+                        },
+                        entity2: {
+                            value: {
+                                mode: 'auto',
+                                type: 'state',
+                                regexp: /.?\.Preferences\.equalizerMidRange$/,
+                                dp: '',
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: -6,
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: 6,
+                            },
+                            decimal: {
+                                type: 'const',
+                                constVal: 0,
+                            },
+                        },
+                        minValue2: {
+                            type: 'const',
+                            constVal: -6,
+                        },
+                        maxValue2: {
+                            type: 'const',
+                            constVal: 6,
+                        },
+                        entity3: {
+                            value: {
+                                mode: 'auto',
+                                type: 'state',
+                                regexp: /.?\.Preferences\.equalizerBass$/,
+                                dp: '',
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: -6,
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: 6,
+                            },
+                            decimal: {
+                                type: 'const',
+                                constVal: 0,
+                            },
+                        },
+                        minValue3: {
+                            type: 'const',
+                            constVal: -6,
+                        },
+                        maxValue3: {
+                            type: 'const',
+                            constVal: 6,
                         },
                         text: {
-                            true: undefined,
-                            false: undefined,
+                            true: {
+                                type: 'const',
+                                constVal: 'equalizer',
+                            },
                         },
                     },
                 },
