@@ -751,6 +751,7 @@ export type cardMediaDataItemOptions = {
 
 export type cardMediaDataItems = {
     card: 'cardMedia';
+    dpInit?: string;
     data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined> & {
         toolbox: (toolboxItemDataItem | undefined)[];
     } & { logo: toolboxItemDataItem | undefined };

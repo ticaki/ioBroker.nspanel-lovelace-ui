@@ -37,12 +37,12 @@ export class PageNotify extends Page {
         // search states for mode auto
         const tempConfig: Partial<pages.cardNotifyDataItemOptions> =
             this.enums || this.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         setTriggeredToState(tempConfig, ['entity1', 'optinalValue']);
         // create Dataitems
 
-        const tempItem: Partial<pages.cardNotifyDataItems> = await this.panel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardNotifyDataItems> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
             this,
         );
@@ -50,7 +50,7 @@ export class PageNotify extends Page {
         // set card because we lose it
         this.items.card = this.card as any;
         await super.init();
-        await this.panel.statesControler.activateTrigger(this);
+        await this.basePanel.statesControler.activateTrigger(this);
     }
 
     setLastPage(p: Page | undefined): void {
@@ -103,7 +103,7 @@ export class PageNotify extends Page {
             if (placeholder && pages.isPlaceholderType(placeholder)) {
                 for (const key in placeholder) {
                     const target = placeholder[key];
-                    let val = (target.dp && (await this.panel.statesControler.getStateVal(target.dp))) ?? '';
+                    let val = (target.dp && (await this.basePanel.statesControler.getStateVal(target.dp))) ?? '';
                     if (val === '') {
                         val = target.text ?? '';
                     }
@@ -230,7 +230,7 @@ export class PageNotify extends Page {
         }
         this.rotationTimeout = undefined;
         this.log.debug(`state triggerd ${_dp}`);
-        /*if (_dp.includes('popupNotification'))*/ await this.panel.setActivePage(this);
+        /*if (_dp.includes('popupNotification'))*/ await this.basePanel.setActivePage(this);
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const data = this.items && this.items.card === 'popupNotify' && this.items.data;
@@ -272,11 +272,11 @@ export class PageNotify extends Page {
             if (p) {
                 p.removeLastPage(this);
                 this.log.debug(`Set active page from popup to ${p.name}`);
-                await this.panel.setActivePage(p);
+                await this.basePanel.setActivePage(p);
             } else {
-                const page = this.panel.navigation.getCurrentPage();
+                const page = this.basePanel.navigation.getCurrentPage();
                 this.log.debug(`Set active page from currentpage to ${page.name}`);
-                await this.panel.setActivePage(page);
+                await this.basePanel.setActivePage(page);
             }
         }
     }

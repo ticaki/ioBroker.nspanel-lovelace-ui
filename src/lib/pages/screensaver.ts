@@ -73,12 +73,12 @@ export class Screensaver extends Page {
     async init(): Promise<void> {
         await super.init();
         this.pageItems = await this.createPageItems(this.pageItemConfig);
-        await this.panel.setScreensaverSwipe(this.screensaverSwipe);
+        await this.basePanel.setScreensaverSwipe(this.screensaverSwipe);
         if (this.pageItems) {
             const indicators = this.pageItems.filter(x => x && x.config && x.config.modeScr === 'indicator');
             for (let a = 0; a < indicators.length; a++) {
                 await this.library.writedp(
-                    `panels.${this.panel.name}.buttons.indicator-${a + 1}`,
+                    `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
                     undefined,
                     Definition.genericStateObjects.panel.panels.buttons.indicator,
                 );
@@ -194,7 +194,7 @@ export class Screensaver extends Page {
         return message;
     }
     sendNotify(enabled: boolean): void {
-        if (!this.panel.isOnline) {
+        if (!this.basePanel.isOnline) {
             return;
         }
         if (enabled) {
@@ -331,7 +331,7 @@ export class Screensaver extends Page {
         }
     };
     async HandleTime(): Promise<void> {
-        if (this.panel.isOnline === false) {
+        if (this.basePanel.isOnline === false) {
             return;
         }
         const message = await this.getData(['time']);
@@ -347,7 +347,7 @@ export class Screensaver extends Page {
         );
     }
     async HandleDate(): Promise<void> {
-        if (this.panel.isOnline === false) {
+        if (this.basePanel.isOnline === false) {
             return;
         }
         const message = await this.getData(['date']);
@@ -375,8 +375,8 @@ export class Screensaver extends Page {
             mrIcon1[3] ?? '',
             mrIcon2[2] ?? '',
             mrIcon2[3] ?? '',
-            this.panel.info.nspanel.bigIconLeft ? '1' : '',
-            this.panel.info.nspanel.bigIconRight ? '1' : '',
+            this.basePanel.info.nspanel.bigIconLeft ? '1' : '',
+            this.basePanel.info.nspanel.bigIconRight ? '1' : '',
         ];
         const msg = tools.getPayloadArray(msgArray);
         this.sendToPanel(msg, false);
@@ -391,7 +391,7 @@ export class Screensaver extends Page {
             for (let a = 0; a < indicators.length; a++) {
                 if (indicators[a] === this.pageItems[event.id as any]) {
                     await this.library.writedp(
-                        `panels.${this.panel.name}.buttons.indicator-${a + 1}`,
+                        `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
                         true,
                         Definition.genericStateObjects.panel.panels.buttons.indicator,
                     );

@@ -53,7 +53,6 @@ class Page extends import_baseClassPage.BaseClassPage {
     this.isScreensaver = isScreensaver;
     this.card = card.card;
     this.id = card.id;
-    this.panel = card.panel;
     this.hidden = pageItemsConfig && "hidden" in pageItemsConfig ? !!pageItemsConfig.hidden : false;
     this.enums = pageItemsConfig && "enums" in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : "";
     this.device = pageItemsConfig && "device" in pageItemsConfig && pageItemsConfig.device ? pageItemsConfig.device : "";
@@ -98,7 +97,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         }
         const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
         const enums = this.enums ? this.enums : options.enums;
-        options.data = dpInit || enums ? await this.panel.statesControler.getDataItemsFromAuto(
+        options.data = dpInit || enums ? await this.basePanel.statesControler.getDataItemsFromAuto(
           dpInit,
           options.data,
           "appendix" in options ? options.appendix : void 0,
@@ -214,7 +213,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         pages.exhaustiveCheck(this.card);
         break;
     }
-    if (force || this.panel.lastCard !== this.card || this.card === "cardThermo") {
+    if (force || this.basePanel.lastCard !== this.card || this.card === "cardThermo") {
       this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
     } else {
       if (this.lastCardCounter++ > 10) {
@@ -222,7 +221,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
       }
     }
-    this.panel.lastCard = this.card;
+    this.basePanel.lastCard = this.card;
   }
   async createPageItems(pageItemsConfig) {
     const result = [];
@@ -231,8 +230,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         const config = {
           name: "PI",
           adapter: this.adapter,
-          panel: this.panel,
-          panelSend: this.panelSend,
+          panel: this.basePanel,
           card: "cardItemSpecial",
           id: `${this.id}?${a}`,
           parent: this
@@ -243,10 +241,10 @@ class Page extends import_baseClassPage.BaseClassPage {
     return result;
   }
   goLeft() {
-    this.panel.navigation.goLeft();
+    this.basePanel.navigation.goLeft();
   }
   goRight() {
-    this.panel.navigation.goRight();
+    this.basePanel.navigation.goRight();
   }
   async onVisibilityChange(val) {
     if (val) {
@@ -269,7 +267,7 @@ class Page extends import_baseClassPage.BaseClassPage {
   removeLastPage(_p) {
   }
   getNavigation() {
-    return this.panel.navigation.buildNavigationString();
+    return this.basePanel.navigation.buildNavigationString();
   }
   async update() {
     this.adapter.log.warn(
@@ -299,7 +297,7 @@ class Page extends import_baseClassPage.BaseClassPage {
     if (action && value !== void 0 && await item.onCommand(action, value)) {
       return;
     } else if ((0, import_types.isPopupType)(popup) && action !== "bExit") {
-      this.panel.lastCard = "";
+      this.basePanel.lastCard = "";
       msg = await item.GeneratePopup(popup);
     }
     if (msg !== null) {

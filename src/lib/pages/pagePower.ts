@@ -86,7 +86,7 @@ export class PagePower extends Page {
     }
 
     async init(): Promise<void> {
-        await this.panel.statesControler.setInternalState(
+        await this.basePanel.statesControler.setInternalState(
             `///${this.name}/powerSum`,
             0,
             true,
@@ -97,11 +97,11 @@ export class PagePower extends Page {
         // search states for mode auto
         const tempConfig: Partial<pages.cardPowerDataItemOptions> =
             this.enums || this.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardPowerDataItems> = await this.panel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardPowerDataItems> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
             this,
         );

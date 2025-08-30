@@ -242,7 +242,6 @@ class Panel extends import_library.BaseClass {
         name: `${pageConfig.uniqueID}`,
         alwaysOn: pageConfig.alwaysOn,
         adapter: this.adapter,
-        panelSend: this.panelSend,
         hidden: pageConfig.hidden || false,
         dpInit: pageConfig.dpInit
       };
@@ -320,7 +319,6 @@ class Panel extends import_library.BaseClass {
             id: String(a),
             name: `${pageConfig.uniqueID}`,
             adapter: this.adapter,
-            panelSend: this.panelSend,
             dpInit: ""
           };
           this.screenSaver = new import_screensaver.Screensaver(ssconfig, pageConfig);

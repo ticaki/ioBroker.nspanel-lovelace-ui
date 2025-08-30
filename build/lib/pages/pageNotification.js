@@ -54,16 +54,16 @@ class PageNotify extends import_Page.Page {
   }
   async init() {
     const config = structuredClone(this.config);
-    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
+    const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     (0, import_tools.setTriggeredToState)(tempConfig, ["entity1", "optinalValue"]);
-    const tempItem = await this.panel.statesControler.createDataItems(
+    const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
       this
     );
     this.items = tempItem;
     this.items.card = this.card;
     await super.init();
-    await this.panel.statesControler.activateTrigger(this);
+    await this.basePanel.statesControler.activateTrigger(this);
   }
   setLastPage(p) {
     if (p !== this) {
@@ -109,7 +109,7 @@ class PageNotify extends import_Page.Page {
       if (placeholder && pages.isPlaceholderType(placeholder)) {
         for (const key in placeholder) {
           const target = placeholder[key];
-          let val = (_g = target.dp && await this.panel.statesControler.getStateVal(target.dp)) != null ? _g : "";
+          let val = (_g = target.dp && await this.basePanel.statesControler.getStateVal(target.dp)) != null ? _g : "";
           if (val === "") {
             val = (_h = target.text) != null ? _h : "";
           }
@@ -237,7 +237,7 @@ ${message.text}`;
     }
     this.rotationTimeout = void 0;
     this.log.debug(`state triggerd ${_dp}`);
-    await this.panel.setActivePage(this);
+    await this.basePanel.setActivePage(this);
   }
   async onButtonEvent(_event) {
     var _a;
@@ -279,11 +279,11 @@ ${message.text}`;
       if (p) {
         p.removeLastPage(this);
         this.log.debug(`Set active page from popup to ${p.name}`);
-        await this.panel.setActivePage(p);
+        await this.basePanel.setActivePage(p);
       } else {
-        const page = this.panel.navigation.getCurrentPage();
+        const page = this.basePanel.navigation.getCurrentPage();
         this.log.debug(`Set active page from currentpage to ${page.name}`);
-        await this.panel.setActivePage(page);
+        await this.basePanel.setActivePage(page);
       }
     }
   }

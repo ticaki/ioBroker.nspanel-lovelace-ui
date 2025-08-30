@@ -79,11 +79,11 @@ export class PageThermo extends Page {
         // search states for mode auto
         const tempConfig: Partial<pages.cardThermoDataItems> =
             this.enums || this.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardThermoDataItems> = await this.panel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardThermoDataItems> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
             this,
         );

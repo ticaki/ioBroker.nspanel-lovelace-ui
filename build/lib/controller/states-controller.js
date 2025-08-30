@@ -52,7 +52,7 @@ class StatesControler extends import_library.BaseClass {
         const item = entry.to[i];
         if (item.unload) {
           removeIndex.push(Number(i));
-        } else if ((_b = (_a = item.parent) == null ? void 0 : _a.panel) == null ? void 0 : _b.unload) {
+        } else if ((_b = (_a = item.parent) == null ? void 0 : _a.basePanel) == null ? void 0 : _b.unload) {
           removeIndex.push(Number(i));
         }
       }
@@ -139,7 +139,7 @@ class StatesControler extends import_library.BaseClass {
           delete this.stateDB[id];
         }
         if (this.adapter.config.debugLogStates) {
-          this.log.debug(`Set a new trigger for ${from.panel.name}.${from.name} to ${id}`);
+          this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
         }
       } else {
         delete this.triggerDB[id];

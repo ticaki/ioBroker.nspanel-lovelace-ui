@@ -90,11 +90,11 @@ export class PageThermo2 extends PageMenu {
         // search states for mode auto
         const tempConfig: Partial<pages.cardThermo2DataItemOptions> =
             this.enums || this.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardThermo2DataItems> = await this.panel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardThermo2DataItems> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
             this,
         );
@@ -115,8 +115,8 @@ export class PageThermo2 extends PageMenu {
                 this.config.filterType = this.index;
             }
             for (let i = this.heatCycles; i > 0; --i) {
-                await this.panel.statesControler.setInternalState(
-                    `///${this.panel.name}/${this.name}/${i - 1}`,
+                await this.basePanel.statesControler.setInternalState(
+                    `///${this.basePanel.name}/${this.name}/${i - 1}`,
                     i === this.index - 1 ? true : false,
                     true,
                     {
@@ -167,11 +167,11 @@ export class PageThermo2 extends PageMenu {
                         entity1: {
                             value: {
                                 type: 'internal',
-                                dp: `///${this.panel.name}/${this.name}/${i - 1}`,
+                                dp: `///${this.basePanel.name}/${this.name}/${i - 1}`,
                                 change: 'ts',
                             },
                         },
-                        setValue2: { type: 'internal', dp: `///${this.panel.name}/${this.name}/${i - 1}` },
+                        setValue2: { type: 'internal', dp: `///${this.basePanel.name}/${this.name}/${i - 1}` },
                     },
                 });
             }
@@ -351,7 +351,7 @@ export class PageThermo2 extends PageMenu {
             }
             //this.adapter.setTimeout(() => this.update, 100);
         }
-        if (id == `///${this.panel.name}/${this.name}/${this.index}`) {
+        if (id == `///${this.basePanel.name}/${this.name}/${this.index}`) {
             return true;
         }
         return false;

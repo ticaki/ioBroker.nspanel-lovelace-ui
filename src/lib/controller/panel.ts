@@ -260,7 +260,6 @@ export class Panel extends BaseClass {
                 name: `${pageConfig.uniqueID}`,
                 alwaysOn: pageConfig.alwaysOn,
                 adapter: this.adapter,
-                panelSend: this.panelSend,
                 hidden: pageConfig.hidden || false,
                 dpInit: pageConfig.dpInit,
             };
@@ -342,7 +341,6 @@ export class Panel extends BaseClass {
                         id: String(a),
                         name: `${pageConfig.uniqueID}`,
                         adapter: this.adapter,
-                        panelSend: this.panelSend,
                         dpInit: '',
                     };
                     this.screenSaver = new Screensaver(ssconfig, pageConfig);

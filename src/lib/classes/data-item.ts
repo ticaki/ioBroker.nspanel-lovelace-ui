@@ -39,7 +39,7 @@ export class Dataitem extends BaseClass {
             case 'internalState':
             case 'internal': {
                 if (!this.options.dp.startsWith('///')) {
-                    this.options.dp = `${this.parent.panel.name}/${this.options.dp}`;
+                    this.options.dp = `${this.parent.basePanel.name}/${this.options.dp}`;
                 }
                 this.type = undefined;
             }
@@ -66,7 +66,7 @@ export class Dataitem extends BaseClass {
                 }
                 this.options.dp = this.options.dp.replace(
                     '${this.namespace}',
-                    `${this.adapter.namespace}.panels.${this.parent.panel.name}`,
+                    `${this.adapter.namespace}.panels.${this.parent.basePanel.name}`,
                 );
                 const obj = await this.stateDB.getObjectAsync(this.options.dp);
                 if (!obj || obj.type != 'state' || !obj.common) {

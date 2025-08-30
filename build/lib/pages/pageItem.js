@@ -52,11 +52,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
   timeouts = {};
   constructor(config, options) {
     super({ ...config });
-    this.panel = config.panel;
     this.id = config.id;
     this.config = options;
     this.parent = config && config.parent;
-    this.name = this.parent ? `${this.parent.name}.${this.id}` : this.id;
+    this.name = `${this.parent.name}.${this.id}`;
     this.sleep = false;
     this.enums = options && "enums" in options && options.enums ? options.enums : "";
   }
@@ -72,12 +71,12 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     return p;
   }
   async init() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (!this.config) {
       return;
     }
     const config = structuredClone(this.config);
-    const tempItem = await this.panel.statesControler.createDataItems(
+    const tempItem = await this.parent.currentPanel.statesControler.createDataItems(
       config.data,
       this,
       {},
@@ -111,7 +110,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         const list = await this.getListCommands(data.setList);
         if (list) {
           for (let a = 0; a < 6; a++) {
-            const test = list && list[a] && list[a].id && await this.panel.statesControler.getObjectAsync(list[a].id);
+            const test = list && list[a] && list[a].id && await this.parent.currentPanel.statesControler.getObjectAsync(list[a].id);
             if (test && test.common && test.common.write) {
               this.tempData[a] = true;
             }
@@ -142,15 +141,15 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             break;
           }
           this.tempData = { status: "pause", value: 0, role: "timer" };
-          if (!this.panel.persistentPageItems[this.id]) {
-            this.panel.persistentPageItems[this.id] = this;
+          if (!this.parent.currentPanel.persistentPageItems[this.id]) {
+            this.parent.currentPanel.persistentPageItems[this.id] = this;
           }
         }
         break;
       }
     }
-    if (this.parent && ["screensaver", "screensaver2", "screensaver3", "popupNotify", "popupNotify2"].indexOf(this.parent.card) !== -1) {
-      if (!this.panel.persistentPageItems[this.id]) {
+    if (["screensaver", "screensaver2", "screensaver3", "popupNotify", "popupNotify2"].indexOf(this.parent.card) !== -1) {
+      if (!this.parent.currentPanel.persistentPageItems[this.id]) {
         if (this.config.modeScr) {
           switch (this.config.modeScr) {
             case "left":
@@ -167,7 +166,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               break;
           }
         }
-        this.panel.persistentPageItems[this.id] = this;
+        this.parent.currentPanel.persistentPageItems[this.id] = this;
         await this.controller.statesControler.activateTrigger(this);
       }
     }
@@ -178,18 +177,24 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       });
       this.tempData = [];
       if (devices && devices.rows && devices.rows.length > 0) {
-        for (const instance of devices.rows) {
-          if (instance && instance.value && instance.id && instance.id.split(".").length === 4) {
-            this.log.debug(
-              `Alexa device: ${typeof instance.value.common.name === "object" ? instance.value.common.name.en : instance.value.common.name} deviceId: ${instance.id}`
-            );
-            this.tempData.push({
-              id: instance.id,
-              name: typeof instance.value.common.name === "object" ? instance.value.common.name.en : instance.value.common.name
-            });
+        if (this.dataItems && this.dataItems.type === "input_sel") {
+          const data = this.dataItems.data;
+          let filter = await ((_e = data == null ? void 0 : data.valueList) == null ? void 0 : _e.getObject()) || null;
+          filter = Array.isArray(filter) && filter.length > 0 ? filter : null;
+          for (const instance of devices.rows) {
+            if (instance && instance.value && instance.id && instance.id.split(".").length === 4) {
+              const name = typeof instance.value.common.name === "object" ? instance.value.common.name.en : instance.value.common.name;
+              if (!filter || filter.includes(name)) {
+                this.log.debug(`Alexa device: ${name} deviceId: ${instance.id}`);
+                this.tempData.push({
+                  id: instance.id,
+                  name
+                });
+              }
+            }
           }
         }
-        this.log.debug(`Alexa devices found: ${this.tempData.length}`);
+        this.log.debug(`Alexa devices found: ${this.tempData.length} from ${devices.rows.length}`);
       }
     }
   }
@@ -213,7 +218,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         case "light":
         case "light2": {
           const item = entry.data;
-          message.type = this.parent && (0, import_pages.isCardGridRole)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.panel.overrideLightPopup ? this.panel.lightPopupV2 && this.panel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
+          message.type = (0, import_pages.isCardGridRole)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.parent.currentPanel.overrideLightPopup ? this.parent.currentPanel.lightPopupV2 && this.parent.currentPanel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_b = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _b : null;
           let rgb = (_d = (_c = await tools.getRGBfromRGBThree(item)) != null ? _c : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _d : null;
@@ -385,7 +390,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
             } else if (entry.type === "button") {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
-              if (this.parent && (0, import_pages.isCardEntitiesRole)(this.parent.card)) {
+              if ((0, import_pages.isCardEntitiesRole)(this.parent.card)) {
                 message.optionalValue = (_G = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _G : message.optionalValue;
               }
             } else {
@@ -435,7 +440,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                if (this.parent && (0, import_pages.isCardEntitiesRole)(this.parent.card)) {
+                if ((0, import_pages.isCardEntitiesRole)(this.parent.card)) {
                   message.optionalValue = (_J = await entry.data.confirm.getString()) != null ? _J : message.optionalValue;
                 }
                 this.confirmClick = Date.now();
@@ -473,7 +478,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                   !!value,
                   "",
                   null,
-                  (_R = this.parent && !(0, import_pages.isCardEntitiesRole)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _R : false
+                  (_R = !(0, import_pages.isCardEntitiesRole)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _R : false
                 )) != null ? _S : "";
               }
             }
@@ -492,7 +497,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          const value = (_T = await tools.getValueEntryNumber(item.entityInSel)) != null ? _T : await tools.getValueEntryBoolean(item.entityInSel);
+          let value = (_T = await tools.getValueEntryNumber(item.entityInSel)) != null ? _T : await tools.getValueEntryBoolean(item.entityInSel);
+          if (entry.role === "alexa-speaker") {
+            value = this.parent.currentItems === this.parent.items[0];
+          }
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
           message.iconColor = (_U = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOff)) != null ? _U : import_Color.Color.HMIOn;
           message.displayName = this.library.getTranslation(
@@ -1119,7 +1127,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         if (!(message.type === "insel")) {
           return null;
         }
-        const value = (_F = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _F : true;
+        let value = (_F = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _F : true;
+        if (entry.role === "alexa-speaker") {
+          value = this.parent.currentItems === this.parent.items[0];
+        }
         message.textColor = await tools.getEntryColor(item.color, value, import_Color.Color.White);
         message.currentState = mode === "popupThermo" ? this.library.getTranslation((_G = item.headline && await item.headline.getString()) != null ? _G : "") : "entity2" in item ? (_H = await tools.getValueEntryString(item.entity2)) != null ? _H : "" : "";
         message.headline = this.library.getTranslation(
@@ -1519,15 +1530,14 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
   async delete() {
     this.visibility = false;
     await this.controller.statesControler.deactivateTrigger(this);
-    if (this.panel.persistentPageItems[this.id]) {
-      if (!this.panel.unload) {
+    if (this.parent.currentPanel.persistentPageItems[this.id]) {
+      if (!this.parent.currentPanel.unload) {
         return;
       }
-      delete this.panel.persistentPageItems[this.id];
+      delete this.parent.currentPanel.persistentPageItems[this.id];
     }
     await super.delete();
     this.controller.statesControler.deletePageLoop();
-    this.parent = void 0;
   }
   async onCommand(action, value) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
@@ -1550,15 +1560,15 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         break;
       case "button": {
         if (entry.type === "button" || entry.type === "switch") {
-          if (this.parent && this.parent.isScreensaver) {
+          if (this.parent.isScreensaver) {
             if (!this.parent.screensaverIndicatorButtons) {
-              this.panel.navigation.resetPosition();
-              await this.panel.navigation.setCurrentPage();
+              this.parent.currentPanel.navigation.resetPosition();
+              await this.parent.currentPanel.navigation.setCurrentPage();
               break;
             }
           }
           if (entry.role === "indicator") {
-            if (this.parent && this.parent.card === "cardThermo") {
+            if (this.parent.card === "cardThermo") {
               this.log.debug(`Button indicator ${this.id} was pressed!`);
               await this.parent.update();
             }
@@ -1569,13 +1579,13 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           if (item.confirm) {
             if (this.confirmClick === "lock") {
               this.confirmClick = "unlock";
-              this.parent && await this.parent.update();
+              await this.parent.update();
               return true;
             } else if (this.confirmClick === "unlock" || this.confirmClick - 300 > Date.now()) {
               return true;
             }
             this.confirmClick = "lock";
-            this.parent && await this.parent.update();
+            await this.parent.update();
           }
           if (item.popup) {
             const test = (_a = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _a : true;
@@ -1592,7 +1602,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
           let value2 = (_c = item.setNavi && await item.setNavi.getString()) != null ? _c : null;
           if (value2 !== null) {
-            await this.panel.navigation.setTargetPageByName(value2);
+            await this.parent.currentPanel.navigation.setTargetPageByName(value2);
             break;
           }
           value2 = (_d = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _d : null;
@@ -2033,7 +2043,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 this.dataItems && this.dataItems.type == "timer" && this.dataItems.data && this.dataItems.data.setValue1 && await this.dataItems.data.setValue1.setStateTrue();
                 if (this.visibility) {
                   await this.onStateTrigger();
-                } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
+                } else if (!this.parent.sleep && this.parent.getVisibility()) {
                   await this.parent.onStateTriggerSuperDoNotOverride("timer", this);
                 }
                 if (this.tempInterval) {
@@ -2043,7 +2053,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               } else if (this.tempData.value > 0) {
                 if (this.visibility) {
                   await this.onStateTrigger();
-                } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
+                } else if (!this.parent.sleep && this.parent.getVisibility()) {
                   await this.parent.onStateTriggerSuperDoNotOverride("timer", this);
                 }
               }
@@ -2156,7 +2166,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
   async onStateTrigger(id = "", from) {
     if (this.lastPopupType) {
       if (this.lastPopupType === "popupThermo") {
-        this.parent && await this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
+        await this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
         return;
       }
       const msg = await this.GeneratePopup(this.lastPopupType);
@@ -2164,8 +2174,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         this.sendToPanel(msg, false);
       }
     }
-    if (from && this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
-      await this.panel.screenSaver.onStateTrigger(id, from);
+    if (from && this.parent.currentPanel.isOnline && this.parent === this.parent.currentPanel.screenSaver && this.parent.currentPanel.screenSaver) {
+      await this.parent.currentPanel.screenSaver.onStateTrigger(id, from);
     }
   }
   async getListCommands(setList) {
@@ -2193,7 +2203,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
    * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
    */
   async setListCommand(entry, value) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     const item = entry.data;
     if (!item || !("entityInSel" in item)) {
       return false;
@@ -2209,10 +2219,27 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         await item.setValue1.setState(parseInt(value) + 1);
         return true;
       } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
-        await item.entityInSel.set.setState(`Schiebe Musik auf ${sList.list[parseInt(value)]}`);
+        const v2 = parseInt(value);
+        const index = ((_a = sList.states) == null ? void 0 : _a[v2]) || -1;
+        if ((_b = this.parent.currentItems) == null ? void 0 : _b.dpInit) {
+          await this.adapter.setForeignStateAsync(
+            `${this.parent.currentItems.dpInit}.Commands.textCommand`,
+            `Schiebe Musik auf ${sList.list[v2]}`
+          );
+        }
+        if (index !== -1) {
+          this.parent.card == "cardMedia" && await this.parent.updateCurrentPlayer(
+            ((_c = this.tempData[index]) == null ? void 0 : _c.id) || "",
+            ((_d = this.tempData[index]) == null ? void 0 : _d.name) || ""
+          );
+        }
+        const msg = await this.GeneratePopup("popupInSel");
+        if (msg) {
+          this.sendToPanel(msg, false);
+        }
         return true;
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
-        if (((_b = (_a = item.entityInSel.value) == null ? void 0 : _a.common) == null ? void 0 : _b.type) === "number") {
+        if (((_f = (_e = item.entityInSel.value) == null ? void 0 : _e.common) == null ? void 0 : _f.type) === "number") {
           await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
         } else {
           await item.entityInSel.value.setState(sList.states[parseInt(value)]);
@@ -2262,7 +2289,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     const v = value;
     if (list && list[v]) {
       try {
-        const obj = await this.panel.statesControler.getObjectAsync(list[v].id);
+        const obj = await this.parent.currentPanel.statesControler.getObjectAsync(list[v].id);
         if (!obj || !obj.common || obj.type !== "state") {
           throw new Error("Dont get obj!");
         }
@@ -2348,7 +2375,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     return false;
   }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
-    var _a;
+    var _a, _b, _c;
     const list = {};
     if (entityInSel && entityInSel.value) {
       if (role === "alexa-speaker") {
@@ -2359,15 +2386,13 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             list.list.push(this.tempData[a].name);
             list.states.push(a);
           }
-          const index = this.tempData.findIndex((a) => {
-            var _a2, _b;
-            return (_b = (_a2 = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _a2.options.dp) == null ? void 0 : _b.includes(a.id);
-          });
+          const dp = ((_a = this.parent.currentItems) == null ? void 0 : _a.dpInit) || ((_b = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _b.options.dp) || "";
+          const index = this.tempData.findIndex((a) => dp.includes(a.id));
           if (index !== -1 && !list.value) {
             list.value = this.tempData[index].name;
           }
         }
-      } else if (["string", "number"].indexOf((_a = entityInSel.value.type) != null ? _a : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
+      } else if (["string", "number"].indexOf((_c = entityInSel.value.type) != null ? _c : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
         let states = void 0;
         const value = await tools.getValueEntryString(entityInSel);
         if (valueList && valueList2) {
