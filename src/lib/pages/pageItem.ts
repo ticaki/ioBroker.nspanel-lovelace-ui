@@ -1375,9 +1375,9 @@ export class PageItem extends BaseClassTriggerd {
 
                 message.list = (list as string[]).join('?');
 
-                if (message.list && message.list.length > 940) {
-                    message.list = message.list.slice(0, 940);
-                    this.log.warn('Value list has more as 940 chars!');
+                if (message.list && message.list.length > 900) {
+                    message.list = message.list.slice(0, 900);
+                    this.log.warn('Value list has more as 900 chars!');
                 }
                 const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
                 if (Array.isArray(list) && n != null && n < list.length) {
@@ -1712,7 +1712,8 @@ export class PageItem extends BaseClassTriggerd {
                     if (!entity || !entity.value) {
                         continue;
                     }
-                    message[`hSlider${b}CurVal`] = String((await tools.getScaledNumber(entity)) ?? '');
+                    let v = await tools.getScaledNumber(entity);
+                    message[`hSlider${b}CurVal`] = String(v ?? '');
                     message[`hSlider${b}Visibility`] = 'enable';
                     const heading = item[`heading${b}`];
                     if (heading) {
@@ -1722,20 +1723,24 @@ export class PageItem extends BaseClassTriggerd {
                     message[`tIconS${b}P`] = Icons.GetIcon('plus-box');
 
                     const minValue = item[`minValue${b}`];
-                    message[`hSlider${b}MinVal`] = '0'; // default value
+                    let min = 0; // default value
                     if (minValue) {
-                        message[`hSlider${b}MinVal`] = String((await minValue.getNumber()) ?? '0');
+                        min = (await minValue.getNumber()) ?? 0;
                     } else if (entity && entity.value && entity.value.common.min != undefined) {
-                        message[`hSlider${b}MinVal`] = String(entity.value.common.min);
+                        min = entity.value.common.min;
                     }
+                    message[`hSlider${b}MinVal`] = String(min);
 
                     const maxValue = item[`maxValue${b}`];
-                    message[`hSlider${b}MaxVal`] = '100'; // default value
+                    let max = 100;
                     if (maxValue) {
-                        message[`hSlider${b}MaxVal`] = String((await maxValue.getNumber()) ?? '100');
+                        max = (await maxValue.getNumber()) ?? 100;
                     } else if (entity && entity.value && entity.value.common.max != undefined) {
-                        message[`hSlider${b}MaxVal`] = String(entity.value.common.max);
+                        max = entity.value.common.max;
                     }
+                    message[`hSlider${b}MaxVal`] = String(max);
+                    v = v != null ? Color.scale(v, 0, 100, min, max) : v;
+                    message[`hSlider${b}CurVal`] = String(v ?? '');
                     const steps = item[`steps${b}`];
                     message[`hSlider${b}Step`] = '1'; // default value
                     if (steps) {
@@ -2251,8 +2256,25 @@ export class PageItem extends BaseClassTriggerd {
                         const entity = item[`entity${b}`];
                         if (entity) {
                             {
-                                const v = parseInt(value.trim());
-                                await tools.setScaledNumber(entity, v);
+                                let v = parseInt(value.trim());
+                                const minValue = item[`minValue${b}`];
+                                let min = 0; // default value
+                                if (minValue) {
+                                    min = (await minValue.getNumber()) ?? 0;
+                                } else if (entity && entity.value && entity.value.common.min != undefined) {
+                                    min = entity.value.common.min;
+                                }
+
+                                const maxValue = item[`maxValue${b}`];
+                                let max = 100;
+                                if (maxValue) {
+                                    max = (await maxValue.getNumber()) ?? 100;
+                                } else if (entity && entity.value && entity.value.common.max != undefined) {
+                                    max = entity.value.common.max;
+                                }
+
+                                v = v != null ? Color.scale(v, min, max, 0, 100) : v;
+                                await tools.setScaledNumber(entity, Math.round(v));
                             }
                         }
                     }

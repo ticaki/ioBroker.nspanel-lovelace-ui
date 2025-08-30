@@ -915,7 +915,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za;
     if (!this.config || !this.dataItems) {
       return null;
     }
@@ -1186,9 +1186,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         }
         list = list.map((a) => tools.formatInSelText(this.library.getTranslation(a)));
         message.list = list.join("?");
-        if (message.list && message.list.length > 940) {
-          message.list = message.list.slice(0, 940);
-          this.log.warn("Value list has more as 940 chars!");
+        if (message.list && message.list.length > 900) {
+          message.list = message.list.slice(0, 900);
+          this.log.warn("Value list has more as 900 chars!");
         }
         const n = (_N = await tools.getValueEntryNumber(item.entityInSel)) != null ? _N : 0;
         if (Array.isArray(list) && n != null && n < list.length) {
@@ -1480,38 +1480,43 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           if (!entity || !entity.value) {
             continue;
           }
-          message[`hSlider${b}CurVal`] = String((_va = await tools.getScaledNumber(entity)) != null ? _va : "");
+          let v = await tools.getScaledNumber(entity);
+          message[`hSlider${b}CurVal`] = String(v != null ? v : "");
           message[`hSlider${b}Visibility`] = "enable";
           const heading = item[`heading${b}`];
           if (heading) {
-            message[`tSlider${b}`] = this.library.getTranslation((_wa = await heading.getString()) != null ? _wa : "");
+            message[`tSlider${b}`] = this.library.getTranslation((_va = await heading.getString()) != null ? _va : "");
           }
           message[`tIconS${b}M`] = import_icon_mapping.Icons.GetIcon("minus-box");
           message[`tIconS${b}P`] = import_icon_mapping.Icons.GetIcon("plus-box");
           const minValue = item[`minValue${b}`];
-          message[`hSlider${b}MinVal`] = "0";
+          let min = 0;
           if (minValue) {
-            message[`hSlider${b}MinVal`] = String((_xa = await minValue.getNumber()) != null ? _xa : "0");
+            min = (_wa = await minValue.getNumber()) != null ? _wa : 0;
           } else if (entity && entity.value && entity.value.common.min != void 0) {
-            message[`hSlider${b}MinVal`] = String(entity.value.common.min);
+            min = entity.value.common.min;
           }
+          message[`hSlider${b}MinVal`] = String(min);
           const maxValue = item[`maxValue${b}`];
-          message[`hSlider${b}MaxVal`] = "100";
+          let max = 100;
           if (maxValue) {
-            message[`hSlider${b}MaxVal`] = String((_ya = await maxValue.getNumber()) != null ? _ya : "100");
+            max = (_xa = await maxValue.getNumber()) != null ? _xa : 100;
           } else if (entity && entity.value && entity.value.common.max != void 0) {
-            message[`hSlider${b}MaxVal`] = String(entity.value.common.max);
+            max = entity.value.common.max;
           }
+          message[`hSlider${b}MaxVal`] = String(max);
+          v = v != null ? import_Color.Color.scale(v, 0, 100, min, max) : v;
+          message[`hSlider${b}CurVal`] = String(v != null ? v : "");
           const steps = item[`steps${b}`];
           message[`hSlider${b}Step`] = "1";
           if (steps) {
-            message[`hSlider${b}Step`] = String((_za = await steps.getNumber()) != null ? _za : "1");
+            message[`hSlider${b}Step`] = String((_ya = await steps.getNumber()) != null ? _ya : "1");
           } else if (entity && entity.value && entity.value.common.step != void 0) {
             message[`hSlider${b}Step`] = String(entity.value.common.step);
           }
           const zero = item[`zero${b}`];
           if (zero) {
-            message[`hSlider${b}ZeroVal`] = String((_Aa = await zero.getNumber()) != null ? _Aa : "");
+            message[`hSlider${b}ZeroVal`] = String((_za = await zero.getNumber()) != null ? _za : "");
           }
         }
         break;
@@ -1539,7 +1544,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.controller.statesControler.deletePageLoop();
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1984,8 +1989,23 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             const entity = item[`entity${b}`];
             if (entity) {
               {
-                const v = parseInt(value.trim());
-                await tools.setScaledNumber(entity, v);
+                let v = parseInt(value.trim());
+                const minValue = item[`minValue${b}`];
+                let min = 0;
+                if (minValue) {
+                  min = (_n = await minValue.getNumber()) != null ? _n : 0;
+                } else if (entity && entity.value && entity.value.common.min != void 0) {
+                  min = entity.value.common.min;
+                }
+                const maxValue = item[`maxValue${b}`];
+                let max = 100;
+                if (maxValue) {
+                  max = (_o = await maxValue.getNumber()) != null ? _o : 100;
+                } else if (entity && entity.value && entity.value.common.max != void 0) {
+                  max = entity.value.common.max;
+                }
+                v = v != null ? import_Color.Color.scale(v, min, max, 0, 100) : v;
+                await tools.setScaledNumber(entity, Math.round(v));
               }
             }
           }
@@ -2070,7 +2090,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_n = this.dataItems.data.entity1) == null ? void 0 : _n.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_p = this.dataItems.data.entity1) == null ? void 0 : _p.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2080,7 +2100,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_o = this.dataItems.data.entity1) == null ? void 0 : _o.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_q = this.dataItems.data.entity1) == null ? void 0 : _q.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2111,7 +2131,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_p = this.dataItems.data.entity1) == null ? void 0 : _p.set) && await this.dataItems.data.entity1.set.setState(r);
+                ((_r = this.dataItems.data.entity1) == null ? void 0 : _r.set) && await this.dataItems.data.entity1.set.setState(r);
               }
               break;
             }

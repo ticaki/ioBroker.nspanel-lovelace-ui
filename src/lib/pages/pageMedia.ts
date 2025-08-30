@@ -815,6 +815,18 @@ export class PageMedia extends Page {
                             type: 'const',
                             constVal: 'bass',
                         },
+                        zero1: {
+                            type: 'const',
+                            constVal: 6,
+                        },
+                        zero2: {
+                            type: 'const',
+                            constVal: 6,
+                        },
+                        zero3: {
+                            type: 'const',
+                            constVal: 6,
+                        },
                         entity1: {
                             value: {
                                 mode: 'auto',
@@ -837,12 +849,13 @@ export class PageMedia extends Page {
                         },
                         minValue1: {
                             type: 'const',
-                            constVal: -6,
+                            constVal: 0,
                         },
                         maxValue1: {
                             type: 'const',
-                            constVal: 6,
+                            constVal: 12,
                         },
+
                         entity2: {
                             value: {
                                 mode: 'auto',
@@ -865,11 +878,11 @@ export class PageMedia extends Page {
                         },
                         minValue2: {
                             type: 'const',
-                            constVal: -6,
+                            constVal: 0,
                         },
                         maxValue2: {
                             type: 'const',
-                            constVal: 6,
+                            constVal: 12,
                         },
                         entity3: {
                             value: {
@@ -893,11 +906,11 @@ export class PageMedia extends Page {
                         },
                         minValue3: {
                             type: 'const',
-                            constVal: -6,
+                            constVal: 0,
                         },
                         maxValue3: {
                             type: 'const',
-                            constVal: 6,
+                            constVal: 12,
                         },
                         text: {
                             true: {

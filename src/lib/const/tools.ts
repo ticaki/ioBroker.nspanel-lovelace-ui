@@ -113,13 +113,13 @@ function getScaledNumberRaw(
             n = Math.round(Color.scale(n, min, max, 0, 100));
         } else {
             n = Color.scale(n, 0, 100, min, max);
-            if (oldValue !== false) {
-                if (oldValue >= n) {
+            /*if (oldValue !== false) {
+                if (oldValue > n) {
                     n = Math.floor(n);
                 } else {
                     n = Math.ceil(n);
                 }
-            } else {
+            } else */ {
                 n = Math.round(n);
             }
         }

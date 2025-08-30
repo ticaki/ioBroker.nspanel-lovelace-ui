@@ -1286,7 +1286,7 @@ export class Panel extends BaseClass {
         if (this._activePage && this._activePage.card !== 'cardAlarm' && this.adapter.config.debugLogMqtt) {
             this.log.debug(`Receive message:${JSON.stringify(event)}`);
         }
-
+        this.log.debug(`Receive message:${JSON.stringify(event)}`);
         if (!this.screenSaver) {
             return;
         }

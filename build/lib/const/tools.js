@@ -136,13 +136,7 @@ function getScaledNumberRaw(n, min, max, oldValue = null) {
       n = Math.round(import_Color.Color.scale(n, min, max, 0, 100));
     } else {
       n = import_Color.Color.scale(n, 0, 100, min, max);
-      if (oldValue !== false) {
-        if (oldValue >= n) {
-          n = Math.floor(n);
-        } else {
-          n = Math.ceil(n);
-        }
-      } else {
+      {
         n = Math.round(n);
       }
     }
