@@ -196,6 +196,13 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         }
         this.log.debug(`Alexa devices found: ${this.tempData.length} from ${devices.rows.length}`);
       }
+    } else if (this.config.role === "alexa-playlist" && this.dataItems && this.dataItems.type === "input_sel" && this.parent.card === "cardMedia") {
+      const states = await this.adapter.getForeignStatesAsync(
+        `${this.parent.currentItems ? this.parent.currentItems.dpInit : this.parent.items[0].dpInit}.Music-Provider.*`
+      );
+      if (states) {
+        this.tempData = Object.keys(states);
+      }
     }
   }
   async getPageItemPayload() {
@@ -2222,7 +2229,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
    * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
    */
   async setListCommand(entry, value) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g;
     const item = entry.data;
     if (!item || !("entityInSel" in item)) {
       return false;
@@ -2257,8 +2264,16 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           this.sendToPanel(msg, false);
         }
         return true;
+      } else if (entry.role === "alexa-playlist" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && sList.states && sList.states[parseInt(value)] !== void 0 && this.tempData.length > 0) {
+        const v2 = parseInt(value);
+        if (((_e = this.dataItems) == null ? void 0 : _e.type) === "input_sel" && this.dataItems.data.valueList) {
+          const dp = sList.states[v2];
+          if (dp) {
+            await this.adapter.setForeignStateAsync(dp, sList.list[v2], false);
+          }
+        }
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
-        if (((_f = (_e = item.entityInSel.value) == null ? void 0 : _e.common) == null ? void 0 : _f.type) === "number") {
+        if (((_g = (_f = item.entityInSel.value) == null ? void 0 : _f.common) == null ? void 0 : _g.type) === "number") {
           await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
         } else {
           await item.entityInSel.value.setState(sList.states[parseInt(value)]);
@@ -2394,7 +2409,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     return false;
   }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const list = {};
     if (entityInSel && entityInSel.value) {
       if (role === "alexa-speaker") {
@@ -2411,7 +2426,38 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             list.value = this.tempData[index].name;
           }
         }
-      } else if (["string", "number"].indexOf((_c = entityInSel.value.type) != null ? _c : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
+      } else if (role === "alexa-playlist") {
+        if (((_c = this.dataItems) == null ? void 0 : _c.type) === "input_sel" && this.dataItems.data.valueList) {
+          const playList = await this.dataItems.data.valueList.getObject();
+          if (playList) {
+            const temp = playList.map((a) => {
+              const t = a.split(".");
+              if (t.length !== 2) {
+                this.log.warn(`Alexa Playlist entry ${a} is not valid!`);
+                return null;
+              }
+              return { state: t[0], val: t[1] };
+            }).filter((a) => {
+              if (a === null) {
+                return false;
+              }
+              const index = this.tempData.findIndex((b) => b.includes(a.state));
+              if (index !== -1) {
+                return true;
+              }
+              return false;
+            });
+            list.list = [];
+            list.states = [];
+            for (let a = 0; a < temp.length; a++) {
+              list.list.push(temp[a].val);
+              const index = this.tempData.findIndex((b) => b.includes(temp[a].state));
+              list.states.push(this.tempData[index]);
+            }
+            list.value = "";
+          }
+        }
+      } else if (["string", "number"].indexOf((_d = entityInSel.value.type) != null ? _d : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
         let states = void 0;
         const value = await tools.getValueEntryString(entityInSel);
         if (valueList && valueList2) {

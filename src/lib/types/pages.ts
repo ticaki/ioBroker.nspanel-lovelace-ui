@@ -339,6 +339,7 @@ export type StateRole =
     | '';
 
 export type DeviceRole =
+    | 'alexa-playlist'
     | 'alexa-speaker'
     | '2values'
     | '4values'

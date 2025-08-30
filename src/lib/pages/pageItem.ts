@@ -210,6 +210,18 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 this.log.debug(`Alexa devices found: ${this.tempData.length} from ${devices.rows.length}`);
             }
+        } else if (
+            this.config.role === 'alexa-playlist' &&
+            this.dataItems &&
+            this.dataItems.type === 'input_sel' &&
+            this.parent.card === 'cardMedia'
+        ) {
+            const states = await this.adapter.getForeignStatesAsync(
+                `${(this.parent as PageMedia).currentItems ? (this.parent as PageMedia).currentItems!.dpInit : (this.parent as PageMedia).items[0].dpInit}.Music-Provider.*`,
+            );
+            if (states) {
+                this.tempData = Object.keys(states);
+            }
         }
     }
 
@@ -2567,6 +2579,21 @@ export class PageItem extends BaseClassTriggerd {
 
                 return true;
             } else if (
+                entry.role === 'alexa-playlist' &&
+                sList.list !== undefined &&
+                sList.list[parseInt(value)] !== undefined &&
+                sList.states &&
+                sList.states[parseInt(value)] !== undefined &&
+                this.tempData.length > 0
+            ) {
+                const v = parseInt(value);
+                if (this.dataItems?.type === 'input_sel' && this.dataItems.data.valueList) {
+                    const dp = sList.states[v];
+                    if (dp) {
+                        await this.adapter.setForeignStateAsync(dp, sList.list[v], false);
+                    }
+                }
+            } else if (
                 sList.states !== undefined &&
                 sList.states[parseInt(value)] !== undefined &&
                 item.entityInSel &&
@@ -2739,6 +2766,40 @@ export class PageItem extends BaseClassTriggerd {
                     const index = this.tempData.findIndex((a: any) => dp.includes(a.id));
                     if (index !== -1 && !list.value) {
                         list.value = this.tempData[index].name;
+                    }
+                }
+            } else if (role === 'alexa-playlist') {
+                // Alexa Playlist
+                if (this.dataItems?.type === 'input_sel' && this.dataItems.data.valueList) {
+                    const playList = (await this.dataItems.data.valueList.getObject()) as string[] | null;
+                    if (playList) {
+                        const temp: { state: string; val: string }[] = playList
+                            .map(a => {
+                                const t = a.split('.');
+                                if (t.length !== 2) {
+                                    this.log.warn(`Alexa Playlist entry ${a} is not valid!`);
+                                    return null;
+                                }
+                                return { state: t[0], val: t[1] };
+                            })
+                            .filter(a => {
+                                if (a === null) {
+                                    return false;
+                                }
+                                const index = (this.tempData as string[]).findIndex(b => b.includes(a.state));
+                                if (index !== -1) {
+                                    return true;
+                                }
+                                return false;
+                            }) as { state: string; val: string }[];
+                        list.list = [];
+                        list.states = [];
+                        for (let a = 0; a < temp.length; a++) {
+                            list.list.push(temp[a].val);
+                            const index = (this.tempData as string[]).findIndex(b => b.includes(temp[a].state));
+                            list.states.push((this.tempData as string[])[index]);
+                        }
+                        list.value = '';
                     }
                 }
             } else if (

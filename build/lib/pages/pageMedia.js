@@ -688,7 +688,7 @@ class PageMedia extends import_Page.Page {
               role: "value",
               regexp: /.?\.Reminder\.triggered$/,
               dp: "",
-              read: "return (val != null && lc <= Date.now() + 900000 ? true : false);"
+              read: "return (val != null && lc <= Date.now() + 120000 ? true : false);"
             }
           }
         },
@@ -913,43 +913,25 @@ class PageMedia extends import_Page.Page {
           }
         },
         {
-          role: "text.list",
-          type: "button",
+          role: "alexa-playlist",
+          type: "input_sel",
           dpInit: "",
           data: {
-            color: {
-              true: {
-                type: "const",
-                constVal: import_Color.Color.HMIOn
-              },
-              false: void 0,
-              scale: void 0
-            },
             icon: {
               true: {
-                value: { type: "const", constVal: "home" },
-                color: { type: "const", constVal: import_Color.Color.Green }
-              },
-              false: {
-                value: { type: "const", constVal: "fan" },
-                color: { type: "const", constVal: import_Color.Color.Red }
-              },
-              scale: void 0,
-              maxBri: void 0,
-              minBri: void 0
+                value: { type: "const", constVal: "playlist-play" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              }
             },
-            entity1: {
+            entityInSel: {
               value: {
                 type: "const",
-                constVal: true
-              },
-              decimal: void 0,
-              factor: void 0,
-              unit: void 0
+                constVal: "My Playlist"
+              }
             },
-            text: {
-              true: void 0,
-              false: void 0
+            valueList: {
+              type: "const",
+              constVal: JSON.stringify(page.media.playList || [])
             }
           }
         },

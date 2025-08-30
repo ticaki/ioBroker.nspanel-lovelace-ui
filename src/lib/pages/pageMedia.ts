@@ -722,7 +722,7 @@ export class PageMedia extends Page {
                             role: 'value',
                             regexp: /.?\.Reminder\.triggered$/,
                             dp: '',
-                            read: 'return (val != null && lc <= Date.now() + 900000 ? true : false);',
+                            read: 'return (val != null && lc <= Date.now() + 120000 ? true : false);',
                         },
                     },
                 },
@@ -953,44 +953,26 @@ export class PageMedia extends Page {
                 },
 
                 {
-                    role: 'text.list',
-                    type: 'button',
+                    role: 'alexa-playlist',
+                    type: 'input_sel',
                     dpInit: '',
 
                     data: {
-                        color: {
-                            true: {
-                                type: 'const',
-                                constVal: Color.HMIOn,
-                            },
-                            false: undefined,
-                            scale: undefined,
-                        },
                         icon: {
                             true: {
-                                value: { type: 'const', constVal: 'home' },
-                                color: { type: 'const', constVal: Color.Green },
+                                value: { type: 'const', constVal: 'playlist-play' },
+                                color: { type: 'const', constVal: Color.activated },
                             },
-                            false: {
-                                value: { type: 'const', constVal: 'fan' },
-                                color: { type: 'const', constVal: Color.Red },
-                            },
-                            scale: undefined,
-                            maxBri: undefined,
-                            minBri: undefined,
                         },
-                        entity1: {
+                        entityInSel: {
                             value: {
                                 type: 'const',
-                                constVal: true,
+                                constVal: 'My Playlist',
                             },
-                            decimal: undefined,
-                            factor: undefined,
-                            unit: undefined,
                         },
-                        text: {
-                            true: undefined,
-                            false: undefined,
+                        valueList: {
+                            type: 'const',
+                            constVal: JSON.stringify(page.media.playList || []),
                         },
                     },
                 },
