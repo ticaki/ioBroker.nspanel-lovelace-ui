@@ -133,7 +133,7 @@ export class Dataitem extends BaseClass {
             if (this.options.type !== 'const' && this.options.read) {
                 try {
                     if (typeof this.options.read === 'string') {
-                        state.val = new Function('val', 'Color', 'language','lc', 'options', `${this.options.read}`)(
+                        state.val = new Function('val', 'Color', 'language', 'lc', 'options', `${this.options.read}`)(
                             state.val,
                             Color,
                             this.adapter.language,
