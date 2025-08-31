@@ -174,7 +174,7 @@ export class PageMedia extends Page {
             }
             if (item.data.duration && item.data.elapsed) {
                 const d = await item.data.duration.getNumber(); // medialength in seconds
-                if (d !== null) {
+                if (d) {
                     const t = new Date().setHours(0, 0, d, 0);
                     duration = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
                 }
