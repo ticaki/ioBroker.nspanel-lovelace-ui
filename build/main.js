@@ -35,7 +35,7 @@ var import_axios = __toESM(require("axios"));
 var import_url = require("url");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
-import_axios.default.defaults.timeout = 3e3;
+import_axios.default.defaults.timeout = 15e3;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -724,7 +724,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                   }
                   const version = obj.message.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
-                  const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                  const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                   this.log.info(
                     `Installing berry on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
                   );

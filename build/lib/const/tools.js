@@ -989,27 +989,35 @@ function getRegExp(s) {
   return new RegExp(reg, arg ? arg : void 0);
 }
 function insertLinebreak(text, lineLength) {
-  let counter = 0;
-  let a = 0;
-  let olda = a;
-  while (counter++ < 30) {
-    if (a + lineLength >= text.length) {
-      break;
-    }
-    const n = text.lastIndexOf("\n", lineLength + a);
-    if (n > a) {
-      a = n;
+  if (lineLength <= 0 || !text) {
+    return text;
+  }
+  const result = [];
+  const lines = text.split("\n");
+  for (const line of lines) {
+    if (line.length <= lineLength) {
+      result.push(line);
       continue;
     }
-    a = text.lastIndexOf(" ", lineLength + a);
-    if (olda === a) {
-      break;
+    let start = 0;
+    const len = line.length;
+    while (start < len) {
+      const end = Math.min(start + lineLength, len);
+      if (end === len) {
+        result.push(line.slice(start));
+        break;
+      }
+      const breakPos = line.lastIndexOf(" ", end);
+      if (breakPos <= start) {
+        result.push(line.slice(start, end));
+        start = end;
+      } else {
+        result.push(line.slice(start, breakPos));
+        start = breakPos + 1;
+      }
     }
-    olda = a;
-    text = `${text.slice(0, a)}
-${text.slice(++a)}`;
   }
-  return text;
+  return result.join("\n");
 }
 function isValidDate(d) {
   if (!d) {

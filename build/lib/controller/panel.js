@@ -1172,7 +1172,6 @@ class Panel extends import_library.BaseClass {
    * @returns void
    */
   async HandleIncomingMessage(event) {
-    var _a;
     if (!event.method) {
       return;
     }
@@ -1212,7 +1211,10 @@ class Panel extends import_library.BaseClass {
           this.log.error("No start page defined!");
           return;
         }
-        start.setLastPage((_a = this._activePage) != null ? _a : void 0);
+        if (this._activePage) {
+          await this._activePage.setVisibility(false);
+        }
+        start.setLastPage(void 0);
         await start.setVisibility(true);
         this._activePage = start;
         if (this.screenSaver) {
@@ -1222,7 +1224,9 @@ class Panel extends import_library.BaseClass {
           await this.screenSaver.HandleDate();
           await this.screenSaver.HandleTime();
         }
-        this.sendScreeensaverTimeout(3);
+        if (start.alwaysOn === "none") {
+          this.sendScreeensaverTimeout(3);
+        }
         this.log.info("Panel startup finished!");
         break;
       }

@@ -1156,7 +1156,7 @@ export function getRegExp(s: string): RegExp | null {
     return new RegExp(reg, arg ? arg : undefined);
 }
 
-export function insertLinebreak(text: string, lineLength: number): string {
+/*export function insertLinebreak(text: string, lineLength: number): string {
     let counter = 0;
     let a = 0;
     let olda = a;
@@ -1177,6 +1177,48 @@ export function insertLinebreak(text: string, lineLength: number): string {
         text = `${text.slice(0, a)}\n${text.slice(++a)}`;
     }
     return text;
+}*/
+export function insertLinebreak(text: string, lineLength: number): string {
+    if (lineLength <= 0 || !text) {
+        return text;
+    }
+
+    const result: string[] = [];
+    const lines = text.split('\n'); // vorhandene Zeilen beibehalten
+
+    for (const line of lines) {
+        if (line.length <= lineLength) {
+            result.push(line);
+            continue;
+        }
+
+        let start = 0;
+        const len = line.length;
+
+        while (start < len) {
+            const end = Math.min(start + lineLength, len);
+
+            // Wenn wir am Zeilenende sind -> einfach pushen
+            if (end === len) {
+                result.push(line.slice(start));
+                break;
+            }
+
+            // Versuche, an der letzten Leerstelle vor end zu umbrechen
+            const breakPos = line.lastIndexOf(' ', end);
+            if (breakPos <= start) {
+                // Kein Leerzeichen im Bereich -> harter Umbruch
+                result.push(line.slice(start, end));
+                start = end;
+            } else {
+                // Weiches Wrapping an Leerzeichen
+                result.push(line.slice(start, breakPos));
+                start = breakPos + 1; // Leerzeichen überspringen
+            }
+        }
+    }
+
+    return result.join('\n');
 }
 
 export function isValidDate(d: Date): d is Date {

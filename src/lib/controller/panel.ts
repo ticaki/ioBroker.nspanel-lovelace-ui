@@ -1324,7 +1324,10 @@ export class Panel extends BaseClass {
                     this.log.error('No start page defined!');
                     return;
                 }
-                start.setLastPage(this._activePage ?? undefined);
+                if (this._activePage) {
+                    await this._activePage.setVisibility(false);
+                }
+                start.setLastPage(undefined);
                 await start.setVisibility(true);
                 this._activePage = start;
 
@@ -1337,7 +1340,9 @@ export class Panel extends BaseClass {
                     await this.screenSaver.HandleTime();
                 }
 
-                this.sendScreeensaverTimeout(3);
+                if (start.alwaysOn === 'none') {
+                    this.sendScreeensaverTimeout(3);
+                }
 
                 this.log.info('Panel startup finished!');
                 break;
