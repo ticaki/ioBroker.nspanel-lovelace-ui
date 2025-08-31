@@ -160,7 +160,7 @@ class PageMedia extends import_Page.Page {
     {
       const test = {};
       test.bla = "dd";
-      let duration = "0:00", elapsed = "0:00", title = "unknown", album = "", artist = "";
+      let duration = "", elapsed = "", title = "unknown", album = "", artist = "";
       {
         const v = await tools.getValueEntryString(item.data.title);
         if (v !== null) {
@@ -178,7 +178,7 @@ class PageMedia extends import_Page.Page {
         const d = await item.data.duration.getNumber();
         if (d !== null) {
           const t = (/* @__PURE__ */ new Date()).setHours(0, 0, d, 0);
-          duration = new Date(t).toLocaleTimeString("de-DE", { minute: "2-digit", second: "2-digit" });
+          duration = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
         }
         if (item.data.elapsed.type === "string") {
           const e = await item.data.elapsed.getString();
@@ -189,7 +189,7 @@ class PageMedia extends import_Page.Page {
           const e = await item.data.elapsed.getNumber();
           if (e !== null) {
             const t = (/* @__PURE__ */ new Date()).setHours(0, 0, e, 0);
-            elapsed = new Date(t).toLocaleTimeString("de-DE", { minute: "2-digit", second: "2-digit" });
+            elapsed = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
           }
         }
       }

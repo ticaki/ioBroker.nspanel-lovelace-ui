@@ -149,8 +149,8 @@ export class PageMedia extends Page {
         {
             const test: Record<string, string> = {};
             test.bla = 'dd';
-            let duration = '0:00',
-                elapsed = '0:00',
+            let duration = '',
+                elapsed = '',
                 title = 'unknown',
                 album = '',
                 artist = '';
@@ -176,7 +176,7 @@ export class PageMedia extends Page {
                 const d = await item.data.duration.getNumber(); // medialength in seconds
                 if (d !== null) {
                     const t = new Date().setHours(0, 0, d, 0);
-                    duration = new Date(t).toLocaleTimeString('de-DE', { minute: '2-digit', second: '2-digit' });
+                    duration = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
                 }
                 if (item.data.elapsed.type === 'string') {
                     const e = await item.data.elapsed.getString();
@@ -187,7 +187,7 @@ export class PageMedia extends Page {
                     const e = await item.data.elapsed.getNumber();
                     if (e !== null) {
                         const t = new Date().setHours(0, 0, e, 0);
-                        elapsed = new Date(t).toLocaleTimeString('de-DE', { minute: '2-digit', second: '2-digit' });
+                        elapsed = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
                     }
                 }
             }
