@@ -21,7 +21,6 @@ __export(tools_exports, {
   GetIconColor: () => GetIconColor,
   alignText: () => alignText,
   deepAssign: () => deepAssign,
-  filterArray: () => filterArray,
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
   getDecfromRGBThree: () => getDecfromRGBThree,
@@ -946,10 +945,6 @@ function deepAssign(def, source, level = 0) {
   }
   return Object.assign(def, source);
 }
-async function filterArray(arr, func) {
-  const results = await Promise.all(arr.map(func));
-  return arr.filter((v, index) => results[index]);
-}
 function getInternalDefaults(type, role, write = true) {
   return {
     name: "",
@@ -1034,7 +1029,6 @@ function isVersionGreaterOrEqual(a, b) {
   GetIconColor,
   alignText,
   deepAssign,
-  filterArray,
   formatInSelText,
   getDecfromHue,
   getDecfromRGBThree,

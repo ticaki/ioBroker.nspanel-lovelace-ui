@@ -368,7 +368,7 @@ declare namespace ScriptConfig {
          * The media dp to use, most a folder, device or channel. Not a state.
          */
         id: string;
-        mediaDevice?: string;
+        mediaDevice?: string; //???
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;
         colorMediaTitle?: RGB;

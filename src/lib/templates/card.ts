@@ -141,17 +141,9 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     dp: '',
                 },
                 title: {
-                    on: {
-                        type: 'const',
-                        constVal: true,
-                    },
-                    text: {
+                    value: {
                         type: 'triggered',
                         dp: '0_userdata.0.spotify-premium.0.player.playlist.trackNo',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: { r: 250, g: 2, b: 3 },
                     },
                 },
                 duration: {
@@ -185,22 +177,12 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
                 artist: {
-                    on: {
-                        type: 'const',
-                        constVal: true,
-                    },
-                    text: {
+                    value: {
                         mode: 'auto',
                         type: 'state',
                         role: 'media.artist',
                         dp: '',
                     },
-                    color: undefined,
-                    icon: {
-                        type: 'const',
-                        constVal: 'diameter',
-                    },
-                    list: undefined,
                 },
                 shuffle: {
                     value: {
@@ -606,19 +588,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     regexp: /\.player\.album$/,
                 },
                 title: {
-                    on: {
-                        type: 'const',
-                        constVal: true,
-                    },
-                    text: {
+                    value: {
                         mode: 'auto',
                         role: 'value',
                         type: 'triggered',
                         dp: '.player.trackName',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: { r: 250, g: 2, b: 3 },
                     },
                 },
                 duration: {
@@ -654,22 +628,12 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
                 artist: {
-                    on: {
-                        type: 'const',
-                        constVal: true,
-                    },
-                    text: {
+                    value: {
                         mode: 'auto',
                         type: 'state',
                         role: 'value',
                         dp: '.player.artistName',
                     },
-                    color: undefined,
-                    icon: {
-                        type: 'const',
-                        constVal: 'diameter',
-                    },
-                    list: undefined,
                 },
                 shuffle: {
                     value: {

@@ -6,9 +6,10 @@ import type * as pages from '../types/pages';
 import type { BooleanUnion, IncomingEvent } from '../types/types';
 import { Page, isMediaButtonActionType } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
-import { getPayload, getPayloadArray, getScaledNumber, setScaledNumber } from '../const/tools';
+import * as tools from '../const/tools';
 
 import type { ConfigManager } from '../classes/config-manager';
+import type { PageItem } from './pageItem';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
@@ -38,8 +39,9 @@ export class PageMedia extends Page {
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
-    public currentPlayer: string;
     private playerName: string = '';
+    private tempItems: (PageItem | undefined)[] | undefined;
+    public currentPlayer: string;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (options && options.pageItems) {
@@ -114,6 +116,7 @@ export class PageMedia extends Page {
             if (this.config?.card === 'cardMedia') {
                 this.items.push(await this.createMainItems(this.config, '', dp));
                 index = this.items.length - 1;
+                await this.controller.statesControler.activateTrigger(this);
             }
         }
         if (index === 0) {
@@ -149,15 +152,15 @@ export class PageMedia extends Page {
                 elapsed = '0:00',
                 title = 'unknown';
 
-            if (item.data.title && item.data.title.text) {
-                const v = await item.data.title.text.getString();
+            {
+                const v = await tools.getValueEntryString(item.data.title);
                 if (v !== null) {
                     title = v;
                 }
             }
             title = this.playerName ? `${this.playerName} - ${title}` : title;
-            if (item.data.artist && item.data.artist.text) {
-                const v = await item.data.artist.text.getString();
+            {
+                const v = await tools.getValueEntryString(item.data.artist);
                 if (v !== null) {
                     message.artist = v;
                 }
@@ -182,7 +185,7 @@ export class PageMedia extends Page {
                 }
             }
 
-            message.headline = `${title}`;
+            message.headline = (item.data.headline && (await item.data.headline.getString())) || `${title}`;
 
             {
                 const maxSize = 18;
@@ -242,7 +245,7 @@ export class PageMedia extends Page {
             }
         }
         if (item.data.volume) {
-            const v = await getScaledNumber(item.data.volume);
+            const v = await tools.getScaledNumber(item.data.volume);
             if (v !== null) {
                 message.volume = String(v);
             }
@@ -260,16 +263,23 @@ export class PageMedia extends Page {
             }
         }
 
-        if (item.data.title && item.data.title.color) {
-            const v = await getValueFromBoolean(item.data.title.color, 'color');
+        if (item.data.title) {
+            const v = await tools.getIconEntryColor(item.data.title, await this.isPlaying(), Color.Red, Color.Gray);
             if (v !== null) {
                 message.titelColor = v;
             }
         }
 
+        if (item.data.artist) {
+            const v = await tools.getIconEntryColor(item.data.artist, await this.isPlaying(), Color.White, Color.Gray);
+            if (v !== null) {
+                message.artistColor = v;
+            }
+        }
+
         //Logo
         if (item.data.logo) {
-            message.logo = getPayload(
+            message.logo = tools.getPayload(
                 `media-OnOff`,
                 `${this.name}-logo`,
                 item.data.logo.icon && 'true' in item.data.logo.icon && item.data.logo.icon.true
@@ -280,11 +290,22 @@ export class PageMedia extends Page {
                 '6',
             ); //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
+        if (item.data.onOffColor) {
+            const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), Color.White);
+            if (v !== null) {
+                message.onoffbuttonColor = v;
+            } else {
+                message.onoffbuttonColor = 'disable';
+            }
+        }
 
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
-        if (this.pageItems) {
-            const localStep = this.pageItems.length > 6 ? 4 : 5;
-            if (this.pageItems.length - 1 <= localStep * (this.step - 1)) {
+        if (!this.tempItems || this.step <= 1) {
+            this.tempItems = await this.getEnabledPageItems();
+        }
+        if (this.tempItems) {
+            const localStep = this.tempItems.length > 6 ? 4 : 5;
+            if (this.tempItems.length - 1 <= localStep * (this.step - 1)) {
                 this.step = 1;
             }
             // arrow is at index [0]
@@ -292,7 +313,7 @@ export class PageMedia extends Page {
             const minStep = localStep * (this.step - 1) + 1;
             let b = minStep;
             for (let a = minStep; a < maxSteps; a++) {
-                const temp = this.pageItems[b++];
+                const temp = this.tempItems[b++];
                 if (temp) {
                     const msg = await temp.getPageItemPayload();
                     if (msg) {
@@ -307,7 +328,7 @@ export class PageMedia extends Page {
 
             if (localStep === 4) {
                 this.nextArrow = true;
-                const temp = this.pageItems[0];
+                const temp = this.tempItems[0];
                 if (temp) {
                     opts[4] = await temp.getPageItemPayload();
                 }
@@ -358,7 +379,7 @@ export class PageMedia extends Page {
     }
 
     private getMessage(message: pages.PageMediaMessage): string {
-        return getPayload(
+        return tools.getPayload(
             'entityUpd',
             message.headline,
             message.navigation,
@@ -372,7 +393,7 @@ export class PageMedia extends Page {
             message.onoffbuttonColor,
             Icons.GetIcon(message.shuffle_icon),
             message.logo, //'~~~~~'
-            getPayloadArray(message.options),
+            tools.getPayloadArray(message.options),
         );
     }
 
@@ -405,7 +426,7 @@ export class PageMedia extends Page {
             }
             case 'media-pause': {
                 if (items.data.pause && items.data.play) {
-                    if (await this.getMediaState()) {
+                    if (await this.isPlaying()) {
                         await items.data.pause.setStateTrue();
                     } else {
                         await items.data.play.setStateTrue();
@@ -428,7 +449,7 @@ export class PageMedia extends Page {
             case 'volumeSlider': {
                 if (items.data.volume) {
                     const v = parseInt(event.opt);
-                    await setScaledNumber(items.data.volume, v);
+                    await tools.setScaledNumber(items.data.volume, v);
                 } else {
                     this.log.error(`Missing volumen controller. Report to dev`);
                 }
@@ -474,9 +495,8 @@ export class PageMedia extends Page {
                     this.step++;
                     await this.update();
                 } else if (event.id === `${this.name}-logo`) {
-                    let onoff = true;
+                    const onoff = await this.isPlaying();
                     if (items.data.mediaState) {
-                        onoff = (await this.getMediaState()) ?? true;
                         if (items.data.mediaState.common.write === true) {
                             await items.data.mediaState.setState(!onoff);
                             break;
@@ -534,10 +554,10 @@ export class PageMedia extends Page {
             config: {
                 card: 'cardMedia',
                 data: {
-                    headline: {
-                        type: 'const',
-                        constVal: 'home',
-                    },
+                    headline: page.media.name
+                        ? await configManager.getFieldAsDataItemConfig(page.media.name)
+                        : undefined,
+
                     album: {
                         mode: 'auto',
                         type: 'state',
@@ -546,21 +566,19 @@ export class PageMedia extends Page {
                         dp: '',
                     },
                     title: {
-                        on: {
-                            type: 'const',
-                            constVal: true,
-                        },
-                        text: {
+                        value: {
                             mode: 'auto',
                             type: 'triggered',
                             role: 'media.title',
                             regexp: /.?\.Player\..?/,
                             dp: '',
                         },
-                        color: {
-                            type: 'const',
-                            constVal: { r: 250, g: 2, b: 3 },
-                        },
+
+                        true: page.media.colorMediaArtist
+                            ? {
+                                  color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist),
+                              }
+                            : undefined,
                     },
                     duration: {
                         mode: 'auto',
@@ -568,6 +586,11 @@ export class PageMedia extends Page {
                         role: 'media.duration',
                         regexp: /.?\.Player\..?/,
                         dp: '',
+                    },
+                    onOffColor: {
+                        true: page.media.colorMediaIcon
+                            ? { color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaIcon) }
+                            : undefined,
                     },
                     elapsed: {
                         mode: 'auto',
@@ -595,23 +618,18 @@ export class PageMedia extends Page {
                         },
                     },
                     artist: {
-                        on: {
-                            type: 'const',
-                            constVal: true,
-                        },
-                        text: {
+                        value: {
                             mode: 'auto',
                             type: 'state',
                             role: 'media.artist',
                             regexp: /.?\.Player\..?/,
                             dp: '',
                         },
-                        color: undefined,
-                        icon: {
-                            type: 'const',
-                            constVal: 'diameter',
-                        },
-                        list: undefined,
+                        true: page.media.colorMediaArtist
+                            ? {
+                                  color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist),
+                              }
+                            : undefined,
                     },
                     shuffle: {
                         value: {
@@ -644,6 +662,13 @@ export class PageMedia extends Page {
                         mode: 'auto',
                         type: 'state',
                         role: ['button.play'],
+                        regexp: /.?\.Player\..?/,
+                        dp: '',
+                    },
+                    isPlaying: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        role: ['media.state'],
                         regexp: /.?\.Player\..?/,
                         dp: '',
                     },
@@ -1023,6 +1048,9 @@ export class PageMedia extends Page {
         };
 
         return { gridItem, messages };
+    }
+    public async isPlaying(): Promise<boolean> {
+        return (await this.currentItems?.data.isPlaying?.getBoolean()) ?? false;
     }
 }
 

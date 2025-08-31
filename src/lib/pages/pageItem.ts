@@ -619,12 +619,12 @@ export class PageItem extends BaseClassTriggerd {
                     message.icon = await tools.getIconEntryValue(item.icon, !!(value ?? true), 'gesture-tap-button');
 
                     message.iconColor =
-                        (await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOff)) ?? Color.HMIOn;
+                        (await tools.getIconEntryColor(item.icon, !!(value ?? true), Color.HMIOff)) ?? Color.HMIOn;
                     message.displayName = this.library.getTranslation(
-                        (await tools.getEntryTextOnOff(item.headline, true)) ?? message.displayName ?? '',
+                        (await tools.getEntryTextOnOff(item.headline, !!(value ?? true))) ?? message.displayName ?? '',
                     );
                     message.optionalValue = this.library.getTranslation(
-                        (await tools.getEntryTextOnOff(item.text, !!value, true)) ?? 'PRESS',
+                        (await tools.getEntryTextOnOff(item.text, !!(value ?? true), true)) ?? 'PRESS',
                     );
                     return tools.getItemMesssage(message);
 
@@ -1044,6 +1044,15 @@ export class PageItem extends BaseClassTriggerd {
         }
         return '';
     }
+    async isEnabled(): Promise<boolean> {
+        if (this.config && this.dataItems) {
+            const entry = this.dataItems;
+            if (entry.data?.enabled) {
+                return (await entry.data.enabled.getBoolean()) ?? true;
+            }
+        }
+        return true;
+    }
 
     async GeneratePopup(mode: PopupType): Promise<string | null> {
         if (!this.config || !this.dataItems) {
@@ -1306,11 +1315,14 @@ export class PageItem extends BaseClassTriggerd {
                     return null;
                 }
 
-                let value = (await tools.getValueEntryBoolean(item.entityInSel)) ?? true;
+                let value =
+                    (await tools.getValueEntryNumber(item.entityInSel)) ??
+                    (await tools.getValueEntryBoolean(item.entityInSel));
                 if (entry.role === 'alexa-speaker') {
                     value = (this.parent as PageMedia).currentItems === (this.parent as PageMedia).items[0];
                 }
-                message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+                message.textColor =
+                    (await tools.getIconEntryColor(item.icon, !!(value ?? true), Color.HMIOff)) ?? Color.HMIOn;
 
                 message.currentState =
                     mode === 'popupThermo'
@@ -1331,7 +1343,6 @@ export class PageItem extends BaseClassTriggerd {
                         'valueList2' in item ? item.valueList2 : undefined,
                     ));
                 if (sList !== undefined && sList.list !== undefined && sList.value !== undefined) {
-                    message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
                     if (sList.list.length > 0) {
                         sList.list.splice(48);
                         message.list = Array.isArray(sList.list)
@@ -2770,6 +2781,7 @@ export class PageItem extends BaseClassTriggerd {
                 }
             } else if (role === 'alexa-playlist') {
                 // Alexa Playlist
+                this.log.debug(`Get Alexa Playlist start`);
                 if (this.dataItems?.type === 'input_sel' && this.dataItems.data.valueList) {
                     const playList = (await this.dataItems.data.valueList.getObject()) as string[] | null;
                     if (playList) {
@@ -2802,6 +2814,7 @@ export class PageItem extends BaseClassTriggerd {
                         list.value = '';
                     }
                 }
+                this.log.debug(`Alexa Playlist list: finish`);
             } else if (
                 ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
                 (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()) || valueList2 != null)

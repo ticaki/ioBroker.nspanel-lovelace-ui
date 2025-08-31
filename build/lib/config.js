@@ -684,17 +684,9 @@ const pageMediaTest = {
         dp: ""
       },
       title: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
+        value: {
           type: "triggered",
           dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
-        },
-        color: {
-          type: "const",
-          constVal: { r: 250, g: 2, b: 3 }
         }
       },
       duration: {
@@ -726,22 +718,12 @@ const pageMediaTest = {
         }
       },
       artist: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
+        value: {
           mode: "auto",
           type: "state",
           role: "media.artist",
           dp: ""
-        },
-        color: void 0,
-        icon: {
-          type: "const",
-          constVal: "diameter"
-        },
-        list: void 0
+        }
       },
       shuffle: {
         value: {
@@ -1147,19 +1129,11 @@ const pageMediaTest2 = {
         dp: ""
       },
       title: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
+        value: {
           mode: "auto",
           type: "triggered",
           role: "media.title",
           dp: ""
-        },
-        color: {
-          type: "const",
-          constVal: { r: 250, g: 2, b: 3 }
         }
       },
       duration: {
@@ -1191,22 +1165,12 @@ const pageMediaTest2 = {
         }
       },
       artist: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
+        value: {
           mode: "auto",
           type: "state",
           role: "media.artist",
           dp: ""
-        },
-        color: void 0,
-        icon: {
-          type: "const",
-          constVal: "diameter"
-        },
-        list: void 0
+        }
       },
       shuffle: {
         value: {

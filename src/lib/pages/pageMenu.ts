@@ -2,7 +2,7 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { filterArray, getPayload } from '../const/tools';
+import { getPayload } from '../const/tools';
 import type * as pages from '../types/pages';
 import { handleCardRole } from './data-collection-functions';
 import type { PageItem } from './pageItem';
@@ -73,12 +73,7 @@ export class PageMenu extends Page {
                 /**
                  * Live update von gefilterten Adaptern.
                  */
-                this.tempItems = await filterArray(this.pageItems, async p => {
-                    if (!p || (p.dataitem?.enabled && (await p.dataitem.enabled.getBoolean()) === false)) {
-                        return false;
-                    }
-                    return true;
-                });
+                this.tempItems = await this.getEnabledPageItems();
 
                 if (this.config.filterType === 'true' || this.config.filterType === 'false') {
                     this.tempItems = [];

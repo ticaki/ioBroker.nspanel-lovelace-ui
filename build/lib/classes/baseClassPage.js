@@ -235,6 +235,21 @@ class BaseClassPage extends BaseClassTriggerd {
     super(card);
     this.pageItemConfig = pageItemsConfig;
   }
+  async getEnabledPageItems() {
+    if (this.pageItems) {
+      const pageItems = [];
+      for (let a = 0; a < this.pageItems.length; a++) {
+        if (this.pageItems[a] == null) {
+          continue;
+        }
+        if (await this.pageItems[a].isEnabled()) {
+          pageItems.push(this.pageItems[a]);
+        }
+      }
+      return pageItems;
+    }
+    return this.pageItems;
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

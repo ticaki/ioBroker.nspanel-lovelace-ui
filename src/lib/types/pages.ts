@@ -590,13 +590,13 @@ export type PageBaseConfig = (
 type PageNotifyConfig = {
     headline: string;
     entity1?: typePageItem.ValueEntryType;
-    colorHeadline: typePageItem.ColorEntryTypeNew;
+    colorHeadline: typePageItem.ColorEntryTypeBooleanStandard;
     buttonLeft: string;
-    colorButtonLeft: typePageItem.ColorEntryTypeNew;
+    colorButtonLeft: typePageItem.ColorEntryTypeBooleanStandard;
     buttonRight: string;
-    colorButtonRight: typePageItem.ColorEntryTypeNew;
+    colorButtonRight: typePageItem.ColorEntryTypeBooleanStandard;
     text: string;
-    colorText: typePageItem.ColorEntryTypeNew;
+    colorText: typePageItem.ColorEntryTypeBooleanStandard;
     timeout: number;
     optionalValue?: string;
     setValue1?: string;
@@ -634,7 +634,7 @@ export type cardNotify2DataItems = {
 type PageChartConfig = {
     headline: string;
     text: string;
-    color: typePageItem.ColorEntryTypeNew;
+    color: typePageItem.ColorEntryTypeBooleanStandard;
     ticks: string;
     value: string;
     entity1: typePageItem.ValueEntryType;
@@ -844,15 +844,17 @@ type PageMediaBaseConfig = {
     headline: string;
     alwaysOnDisplay?: boolean;
     album?: string;
-    title?: listItem;
+    title?: typePageItem.ValueEntryTypeWithColor;
     duration?: string;
     elapsed?: string;
-    artist?: listItem;
+    artist?: typePageItem.ValueEntryTypeWithColor;
     shuffle?: typePageItem.ScaledNumberType;
     volume?: typePageItem.ScaledNumberType;
     icon?: string;
     play?: string;
+    onOffColor?: typePageItem.ColorEntryTypeBooleanStandard;
     mediaState?: string;
+    isPlaying?: boolean;
     stop?: string;
     pause?: string;
     forward?: string;

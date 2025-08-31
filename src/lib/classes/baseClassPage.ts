@@ -269,4 +269,19 @@ export class BaseClassPage extends BaseClassTriggerd {
         super(card);
         this.pageItemConfig = pageItemsConfig;
     }
+    async getEnabledPageItems(): Promise<(PageItem | undefined)[] | undefined> {
+        if (this.pageItems) {
+            const pageItems = [];
+            for (let a = 0; a < this.pageItems.length; a++) {
+                if (this.pageItems[a] == null) {
+                    continue;
+                }
+                if (await this.pageItems[a]!.isEnabled()) {
+                    pageItems.push(this.pageItems[a]);
+                }
+            }
+            return pageItems;
+        }
+        return this.pageItems;
+    }
 }

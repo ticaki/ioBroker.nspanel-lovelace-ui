@@ -672,7 +672,7 @@ export type PageItemUnion = {
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };
 
-export type ColorEntryTypeNew =
+export type ColorEntryTypeBooleanStandard =
     | (Partial<Record<Types.BooleanUnion, { color: RGB }>> & {
           scale?: Types.IconScaleElement | undefined;
           maxBri?: string;
@@ -681,7 +681,7 @@ export type ColorEntryTypeNew =
     | undefined;
 export type IconEntryType =
     | (Partial<Record<Types.BooleanUnion, { value: string; text?: TextSizeEntryType }>> &
-          ColorEntryTypeNew & { unstable: { value: string; text?: TextSizeEntryType; color: RGB } })
+          ColorEntryTypeBooleanStandard & { unstable: { value: string; text?: TextSizeEntryType; color: RGB } })
     | undefined;
 
 export type TextEntryType = Record<Types.BooleanUnion, string>;
@@ -697,6 +697,7 @@ export type PopupEntryType =
       }
     | undefined;
 
+export type ValueEntryTypeWithColor = (ValueEntryType & ColorEntryTypeBooleanStandard) | undefined;
 export type ValueEntryType =
     | {
           value: number;

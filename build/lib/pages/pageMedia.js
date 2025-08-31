@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageMedia_exports = {};
 __export(pageMedia_exports, {
@@ -26,7 +36,7 @@ var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_Page = require("../classes/Page");
-var import_tools = require("../const/tools");
+var tools = __toESM(require("../const/tools"));
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
@@ -51,8 +61,9 @@ class PageMedia extends import_Page.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
-  currentPlayer;
   playerName = "";
+  tempItems;
+  currentPlayer;
   constructor(config, options) {
     if (options && options.pageItems) {
       options.pageItems.unshift({
@@ -117,6 +128,7 @@ class PageMedia extends import_Page.Page {
       if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
         this.items.push(await this.createMainItems(this.config, "", dp));
         index = this.items.length - 1;
+        await this.controller.statesControler.activateTrigger(this);
       }
     }
     if (index === 0) {
@@ -148,15 +160,15 @@ class PageMedia extends import_Page.Page {
       const test = {};
       test.bla = "dd";
       let duration = "0:00", elapsed = "0:00", title = "unknown";
-      if (item.data.title && item.data.title.text) {
-        const v = await item.data.title.text.getString();
+      {
+        const v = await tools.getValueEntryString(item.data.title);
         if (v !== null) {
           title = v;
         }
       }
       title = this.playerName ? `${this.playerName} - ${title}` : title;
-      if (item.data.artist && item.data.artist.text) {
-        const v = await item.data.artist.text.getString();
+      {
+        const v = await tools.getValueEntryString(item.data.artist);
         if (v !== null) {
           message.artist = v;
         }
@@ -180,7 +192,7 @@ class PageMedia extends import_Page.Page {
           }
         }
       }
-      message.headline = `${title}`;
+      message.headline = item.data.headline && await item.data.headline.getString() || `${title}`;
       {
         const maxSize2 = 18;
         if (message.headline.length > maxSize2) {
@@ -234,7 +246,7 @@ class PageMedia extends import_Page.Page {
       }
     }
     if (item.data.volume) {
-      const v = await (0, import_tools.getScaledNumber)(item.data.volume);
+      const v = await tools.getScaledNumber(item.data.volume);
       if (v !== null) {
         message.volume = String(v);
       }
@@ -250,14 +262,20 @@ class PageMedia extends import_Page.Page {
         }
       }
     }
-    if (item.data.title && item.data.title.color) {
-      const v = await getValueFromBoolean(item.data.title.color, "color");
+    if (item.data.title) {
+      const v = await tools.getIconEntryColor(item.data.title, await this.isPlaying(), import_Color.Color.Red, import_Color.Color.Gray);
       if (v !== null) {
         message.titelColor = v;
       }
     }
+    if (item.data.artist) {
+      const v = await tools.getIconEntryColor(item.data.artist, await this.isPlaying(), import_Color.Color.White, import_Color.Color.Gray);
+      if (v !== null) {
+        message.artistColor = v;
+      }
+    }
     if (item.data.logo) {
-      message.logo = (0, import_tools.getPayload)(
+      message.logo = tools.getPayload(
         `media-OnOff`,
         `${this.name}-logo`,
         item.data.logo.icon && "true" in item.data.logo.icon && item.data.logo.icon.true ? (_a = await item.data.logo.icon.true.getString()) != null ? _a : "" : "",
@@ -266,17 +284,28 @@ class PageMedia extends import_Page.Page {
         "6"
       );
     }
+    if (item.data.onOffColor) {
+      const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), import_Color.Color.White);
+      if (v !== null) {
+        message.onoffbuttonColor = v;
+      } else {
+        message.onoffbuttonColor = "disable";
+      }
+    }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
-    if (this.pageItems) {
-      const localStep = this.pageItems.length > 6 ? 4 : 5;
-      if (this.pageItems.length - 1 <= localStep * (this.step - 1)) {
+    if (!this.tempItems || this.step <= 1) {
+      this.tempItems = await this.getEnabledPageItems();
+    }
+    if (this.tempItems) {
+      const localStep = this.tempItems.length > 6 ? 4 : 5;
+      if (this.tempItems.length - 1 <= localStep * (this.step - 1)) {
         this.step = 1;
       }
       const maxSteps = localStep * this.step + 1;
       const minStep = localStep * (this.step - 1) + 1;
       let b = minStep;
       for (let a = minStep; a < maxSteps; a++) {
-        const temp = this.pageItems[b++];
+        const temp = this.tempItems[b++];
         if (temp) {
           const msg2 = await temp.getPageItemPayload();
           if (msg2) {
@@ -290,7 +319,7 @@ class PageMedia extends import_Page.Page {
       }
       if (localStep === 4) {
         this.nextArrow = true;
-        const temp = this.pageItems[0];
+        const temp = this.tempItems[0];
         if (temp) {
           opts[4] = await temp.getPageItemPayload();
         }
@@ -334,7 +363,7 @@ class PageMedia extends import_Page.Page {
     return null;
   }
   getMessage(message) {
-    return (0, import_tools.getPayload)(
+    return tools.getPayload(
       "entityUpd",
       message.headline,
       message.navigation,
@@ -349,7 +378,7 @@ class PageMedia extends import_Page.Page {
       import_icon_mapping.Icons.GetIcon(message.shuffle_icon),
       message.logo,
       //'~~~~~'
-      (0, import_tools.getPayloadArray)(message.options)
+      tools.getPayloadArray(message.options)
     );
   }
   onStateTrigger = async () => {
@@ -361,7 +390,6 @@ class PageMedia extends import_Page.Page {
     this.titelPos = 0;
   }
   async onButtonEvent(event) {
-    var _a;
     if (!this.getVisibility() || this.sleep) {
       return;
     }
@@ -381,7 +409,7 @@ class PageMedia extends import_Page.Page {
       }
       case "media-pause": {
         if (items.data.pause && items.data.play) {
-          if (await this.getMediaState()) {
+          if (await this.isPlaying()) {
             await items.data.pause.setStateTrue();
           } else {
             await items.data.play.setStateTrue();
@@ -401,7 +429,7 @@ class PageMedia extends import_Page.Page {
       case "volumeSlider": {
         if (items.data.volume) {
           const v = parseInt(event.opt);
-          await (0, import_tools.setScaledNumber)(items.data.volume, v);
+          await tools.setScaledNumber(items.data.volume, v);
         } else {
           this.log.error(`Missing volumen controller. Report to dev`);
         }
@@ -447,9 +475,8 @@ class PageMedia extends import_Page.Page {
           this.step++;
           await this.update();
         } else if (event.id === `${this.name}-logo`) {
-          let onoff = true;
+          const onoff = await this.isPlaying();
           if (items.data.mediaState) {
-            onoff = (_a = await this.getMediaState()) != null ? _a : true;
             if (items.data.mediaState.common.write === true) {
               await items.data.mediaState.setState(!onoff);
               break;
@@ -501,10 +528,7 @@ class PageMedia extends import_Page.Page {
       config: {
         card: "cardMedia",
         data: {
-          headline: {
-            type: "const",
-            constVal: "home"
-          },
+          headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : void 0,
           album: {
             mode: "auto",
             type: "state",
@@ -513,21 +537,16 @@ class PageMedia extends import_Page.Page {
             dp: ""
           },
           title: {
-            on: {
-              type: "const",
-              constVal: true
-            },
-            text: {
+            value: {
               mode: "auto",
               type: "triggered",
               role: "media.title",
               regexp: /.?\.Player\..?/,
               dp: ""
             },
-            color: {
-              type: "const",
-              constVal: { r: 250, g: 2, b: 3 }
-            }
+            true: page.media.colorMediaArtist ? {
+              color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist)
+            } : void 0
           },
           duration: {
             mode: "auto",
@@ -535,6 +554,9 @@ class PageMedia extends import_Page.Page {
             role: "media.duration",
             regexp: /.?\.Player\..?/,
             dp: ""
+          },
+          onOffColor: {
+            true: page.media.colorMediaIcon ? { color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaIcon) } : void 0
           },
           elapsed: {
             mode: "auto",
@@ -562,23 +584,16 @@ class PageMedia extends import_Page.Page {
             }
           },
           artist: {
-            on: {
-              type: "const",
-              constVal: true
-            },
-            text: {
+            value: {
               mode: "auto",
               type: "state",
               role: "media.artist",
               regexp: /.?\.Player\..?/,
               dp: ""
             },
-            color: void 0,
-            icon: {
-              type: "const",
-              constVal: "diameter"
-            },
-            list: void 0
+            true: page.media.colorMediaArtist ? {
+              color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist)
+            } : void 0
           },
           shuffle: {
             value: {
@@ -611,6 +626,13 @@ class PageMedia extends import_Page.Page {
             mode: "auto",
             type: "state",
             role: ["button.play"],
+            regexp: /.?\.Player\..?/,
+            dp: ""
+          },
+          isPlaying: {
+            mode: "auto",
+            type: "triggered",
+            role: ["media.state"],
             regexp: /.?\.Player\..?/,
             dp: ""
           },
@@ -980,6 +1002,10 @@ class PageMedia extends import_Page.Page {
       uniqueID: page.uniqueName
     };
     return { gridItem, messages };
+  }
+  async isPlaying() {
+    var _a, _b, _c;
+    return (_c = await ((_b = (_a = this.currentItems) == null ? void 0 : _a.data.isPlaying) == null ? void 0 : _b.getBoolean())) != null ? _c : false;
   }
 }
 async function getValueFromBoolean(item, type, value = true) {
