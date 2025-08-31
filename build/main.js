@@ -726,8 +726,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                   const version = obj.message.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
                   const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                   this.log.info(
-                    `Installing berry on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
+                    `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`
                   );
+                  this.log.debug(`URL: ${url2}`);
                   await import_axios.default.get(url2);
                   this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 2e4);
                   await this.delay(7e3);

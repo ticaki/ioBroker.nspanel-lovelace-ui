@@ -877,8 +877,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                                     this.log.info(
-                                        `Installing berry on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
+                                        `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
                                     );
+                                    this.log.debug(`URL: ${url}`);
                                     await axios.get(url);
                                     this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20000));
                                     await this.delay(7000);
