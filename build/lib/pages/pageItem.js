@@ -2256,7 +2256,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
         const index = ((_a = sList.states) == null ? void 0 : _a[v2]) || -1;
-        if ((_b = this.parent.currentItems) == null ? void 0 : _b.dpInit) {
+        if (((_b = this.parent.currentItems) == null ? void 0 : _b.dpInit) && await this.parent.isPlaying()) {
           await this.adapter.setForeignStateAsync(
             `${this.parent.currentItems.dpInit}.Commands.textCommand`,
             `Schiebe Musik auf ${sList.list[v2]}`

@@ -20,6 +20,7 @@ var tools_exports = {};
 __export(tools_exports, {
   GetIconColor: () => GetIconColor,
   alignText: () => alignText,
+  buildScrollingText: () => buildScrollingText,
   deepAssign: () => deepAssign,
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
@@ -1024,10 +1025,33 @@ function isVersionGreaterOrEqual(a, b) {
   const bNum = getVersionAsNumber(b);
   return aNum >= bNum;
 }
+function buildScrollingText(title, options = {}) {
+  var _a;
+  const { maxSize = 35, prefix = "", suffix = "", sep = " ", rightFixed, gap = "   ", pos = 0 } = options;
+  const right = (_a = rightFixed != null ? rightFixed : suffix) != null ? _a : "";
+  const leftAvailable = maxSize - prefix.length - sep.length - right.length;
+  if (leftAvailable <= 0) {
+    const cut = right.slice(-maxSize);
+    return { text: cut, nextPos: pos };
+  }
+  if (title.length <= leftAvailable) {
+    const left2 = title.padEnd(leftAvailable, " ");
+    return { text: `${prefix}${left2}${sep}${right}`, nextPos: pos };
+  }
+  const cycle = title + gap;
+  const cycleLen = cycle.length;
+  const posNorm = pos % cycleLen;
+  const doubled = cycle + cycle;
+  const left = doubled.substr(posNorm, leftAvailable);
+  const full = `${prefix}${left}${sep}${right}`;
+  const nextPos = (posNorm + 1) % cycleLen;
+  return { text: full, nextPos };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
   alignText,
+  buildScrollingText,
   deepAssign,
   formatInSelText,
   getDecfromHue,

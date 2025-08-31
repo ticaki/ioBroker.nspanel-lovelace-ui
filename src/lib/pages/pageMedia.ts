@@ -38,6 +38,7 @@ export class PageMedia extends Page {
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
+    private artistPos: number = 0;
     private nextArrow: boolean = false;
     private playerName: string = '';
     private tempItems: (PageItem | undefined)[] | undefined;
@@ -150,7 +151,9 @@ export class PageMedia extends Page {
             test.bla = 'dd';
             let duration = '0:00',
                 elapsed = '0:00',
-                title = 'unknown';
+                title = 'unknown',
+                album = '',
+                artist = '';
 
             {
                 const v = await tools.getValueEntryString(item.data.title);
@@ -158,11 +161,15 @@ export class PageMedia extends Page {
                     title = v;
                 }
             }
-            title = this.playerName ? `${this.playerName} - ${title}` : title;
+            message.headline =
+                (item.data.headline && (await item.data.headline.getString())) || this.playerName
+                    ? `${this.playerName}: ${title}`
+                    : title;
+
             {
                 const v = await tools.getValueEntryString(item.data.artist);
                 if (v !== null) {
-                    message.artist = v;
+                    artist = v;
                 }
             }
             if (item.data.duration && item.data.elapsed) {
@@ -185,8 +192,12 @@ export class PageMedia extends Page {
                 }
             }
 
-            message.headline = (item.data.headline && (await item.data.headline.getString())) || `${title}`;
-
+            if (item.data.album) {
+                const v = await item.data.album.getString();
+                if (v !== null) {
+                    album = v;
+                }
+            }
             {
                 const maxSize = 18;
                 if (message.headline.length > maxSize) {
@@ -198,23 +209,33 @@ export class PageMedia extends Page {
                 }
             }
 
-            const maxSize = 35;
-            message.name = `(${elapsed}|${duration})`;
-            if (item.data.album) {
-                const v = await item.data.album.getString();
-                if (v !== null) {
-                    if (`${v} ${message.name}`.length > maxSize) {
-                        const s = `${v}          `;
-                        this.titelPos = this.titelPos % s.length;
-                        message.name = `${v
-                            .substring(this.titelPos++ % `${v} ${message.name}${s}`.length)
-                            .substring(0, 35)} ${message.name}`;
-                    } else {
-                        message.name = `${v} ${message.name}`;
-                    }
-                }
+            const maxSize = 38;
+
+            message.name = `|${elapsed}${duration ? `-${duration}` : ''}`;
+
+            const { text, nextPos } = tools.buildScrollingText(title, {
+                maxSize, // wie bisher: 35
+                suffix: message.name, // der feste rechte Block (elapsed|duration)
+                sep: ' ', // Trenner zwischen Titel und Suffix
+                pos: this.titelPos, // aktuelle Scrollposition übernehmen
+            });
+
+            message.name = text;
+            this.titelPos = nextPos;
+            if (album || artist) {
+                const div = album && artist ? ' | ' : '';
+                const scrollText = album + div + artist;
+
+                const { text, nextPos } = tools.buildScrollingText(scrollText, {
+                    maxSize, // Gesamtbreite wie gehabt
+                    pos: this.artistPos, // eigene Scrollposition für Artist/Album
+                });
+
+                message.artist = text;
+                this.artistPos = nextPos;
             }
         }
+
         message.shuffle_icon = '';
         if (item.data.shuffle && item.data.shuffle.value && item.data.shuffle.value.type) {
             let value: null | true | false = null;

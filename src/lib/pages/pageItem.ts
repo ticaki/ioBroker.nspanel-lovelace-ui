@@ -2570,7 +2570,7 @@ export class PageItem extends BaseClassTriggerd {
             ) {
                 const v = parseInt(value);
                 const index = sList.states?.[v] || -1;
-                if ((this.parent as PageMedia).currentItems?.dpInit) {
+                if ((this.parent as PageMedia).currentItems?.dpInit && (await (this.parent as PageMedia).isPlaying())) {
                     await this.adapter.setForeignStateAsync(
                         `${(this.parent as PageMedia).currentItems!.dpInit}.Commands.textCommand`,
                         `Schiebe Musik auf ${sList.list[v]}`,

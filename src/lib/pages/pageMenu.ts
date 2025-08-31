@@ -73,7 +73,7 @@ export class PageMenu extends Page {
                 /**
                  * Live update von gefilterten Adaptern.
                  */
-                this.tempItems = await this.getEnabledPageItems();
+                this.tempItems = (await this.getEnabledPageItems()) || [];
 
                 if (this.config.filterType === 'true' || this.config.filterType === 'false') {
                     this.tempItems = [];

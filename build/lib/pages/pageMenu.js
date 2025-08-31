@@ -79,7 +79,7 @@ class PageMenu extends import_Page.Page {
   async getOptions(result) {
     if (this.pageItems) {
       if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardThermo2" || this.config.card === "cardGrid2")) {
-        this.tempItems = await this.getEnabledPageItems();
+        this.tempItems = await this.getEnabledPageItems() || [];
         if (this.config.filterType === "true" || this.config.filterType === "false") {
           this.tempItems = [];
           const testIt = this.config.filterType === "true";

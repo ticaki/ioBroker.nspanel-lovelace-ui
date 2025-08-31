@@ -1198,3 +1198,68 @@ export function isVersionGreaterOrEqual(a: string, b: string): boolean {
     const bNum = getVersionAsNumber(b);
     return aNum >= bNum;
 }
+/**
+ * Baut einen scrollenden Text mit festem Suffix (rechts), optional Prefix (links),
+ * Separator und fixer Gesamtbreite.
+ *
+ * @param title     Der scrollende Text (z. B. Songtitel)
+ * @param options   Optionen:
+ *  - maxSize: Gesamtlänge (Standard 35)
+ *  - prefix: fester Text ganz links (Standard "")
+ *  - suffix: fester Text rechts (z. B. "(2:35|4:20)")
+ *  - sep: Trenner zwischen Titel und Suffix (Standard " ")
+ *  - rightFixed: weiterer Text, der immer ganz rechts stehen soll (überschreibt Suffix)
+ *  - gap: Lücke beim Scrollen (Standard "   ")
+ *  - pos: aktuelle Scrollposition (wird erhöht zurückgegeben)
+ * @param options.maxSize The total maximum length of the resulting string (default is 35).
+ * @param options.prefix Fixed text to display on the left (e.g., a static label or icon)
+ * @param options.suffix   Fixed text to display on the right (e.g., duration or additional info)
+ * @param options.sep Separator string to insert between the scrolling text and the suffix or rightFixed text.
+ * @param options.rightFixed Fixed text that will always appear at the far right, overriding the suffix if provided.
+ * @param options.gap Gap string to insert between repetitions of the scrolling text (default is "   ").
+ * @param options.pos Current scroll position (will be incremented and returned).
+ * @returns An object containing the resulting text and the next scroll position.
+ */
+export function buildScrollingText(
+    title: string,
+    options: {
+        maxSize?: number;
+        prefix?: string;
+        suffix?: string;
+        sep?: string;
+        rightFixed?: string;
+        gap?: string;
+        pos?: number;
+    } = {},
+): { text: string; nextPos: number } {
+    const { maxSize = 35, prefix = '', suffix = '', sep = ' ', rightFixed, gap = '   ', pos = 0 } = options;
+
+    const right = rightFixed ?? suffix ?? '';
+    const leftAvailable = maxSize - prefix.length - sep.length - right.length;
+
+    if (leftAvailable <= 0) {
+        // passt gar nicht → nur rechten Teil anzeigen (rechts abgeschnitten)
+        const cut = right.slice(-maxSize);
+        return { text: cut, nextPos: pos };
+    }
+
+    if (title.length <= leftAvailable) {
+        // passt ohne Scrollen
+        const left = title.padEnd(leftAvailable, ' ');
+        return { text: `${prefix}${left}${sep}${right}`, nextPos: pos };
+    }
+
+    // scrollender Teil
+    const cycle = title + gap;
+    const cycleLen = cycle.length;
+    const posNorm = pos % cycleLen;
+
+    // doppeln für einfaches Schneiden über Zyklusende
+    const doubled = cycle + cycle;
+    const left = doubled.substr(posNorm, leftAvailable);
+
+    const full = `${prefix}${left}${sep}${right}`;
+    const nextPos = (posNorm + 1) % cycleLen;
+
+    return { text: full, nextPos };
+}

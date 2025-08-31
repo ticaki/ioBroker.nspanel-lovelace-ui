@@ -60,6 +60,7 @@ class PageMedia extends import_Page.Page {
   step = 1;
   headlinePos = 0;
   titelPos = 0;
+  artistPos = 0;
   nextArrow = false;
   playerName = "";
   tempItems;
@@ -159,18 +160,18 @@ class PageMedia extends import_Page.Page {
     {
       const test = {};
       test.bla = "dd";
-      let duration = "0:00", elapsed = "0:00", title = "unknown";
+      let duration = "0:00", elapsed = "0:00", title = "unknown", album = "", artist = "";
       {
         const v = await tools.getValueEntryString(item.data.title);
         if (v !== null) {
           title = v;
         }
       }
-      title = this.playerName ? `${this.playerName} - ${title}` : title;
+      message.headline = item.data.headline && await item.data.headline.getString() || this.playerName ? `${this.playerName}: ${title}` : title;
       {
         const v = await tools.getValueEntryString(item.data.artist);
         if (v !== null) {
-          message.artist = v;
+          artist = v;
         }
       }
       if (item.data.duration && item.data.elapsed) {
@@ -192,7 +193,12 @@ class PageMedia extends import_Page.Page {
           }
         }
       }
-      message.headline = item.data.headline && await item.data.headline.getString() || `${title}`;
+      if (item.data.album) {
+        const v = await item.data.album.getString();
+        if (v !== null) {
+          album = v;
+        }
+      }
       {
         const maxSize2 = 18;
         if (message.headline.length > maxSize2) {
@@ -201,19 +207,31 @@ class PageMedia extends import_Page.Page {
           message.headline = (s + message.headline).substring(this.headlinePos++ % (message.headline + s).length).substring(0, 23);
         }
       }
-      const maxSize = 35;
-      message.name = `(${elapsed}|${duration})`;
-      if (item.data.album) {
-        const v = await item.data.album.getString();
-        if (v !== null) {
-          if (`${v} ${message.name}`.length > maxSize) {
-            const s = `${v}          `;
-            this.titelPos = this.titelPos % s.length;
-            message.name = `${v.substring(this.titelPos++ % `${v} ${message.name}${s}`.length).substring(0, 35)} ${message.name}`;
-          } else {
-            message.name = `${v} ${message.name}`;
-          }
-        }
+      const maxSize = 38;
+      message.name = `|${elapsed}${duration ? `-${duration}` : ""}`;
+      const { text, nextPos } = tools.buildScrollingText(title, {
+        maxSize,
+        // wie bisher: 35
+        suffix: message.name,
+        // der feste rechte Block (elapsed|duration)
+        sep: " ",
+        // Trenner zwischen Titel und Suffix
+        pos: this.titelPos
+        // aktuelle Scrollposition übernehmen
+      });
+      message.name = text;
+      this.titelPos = nextPos;
+      if (album || artist) {
+        const div = album && artist ? " | " : "";
+        const scrollText = album + div + artist;
+        const { text: text2, nextPos: nextPos2 } = tools.buildScrollingText(scrollText, {
+          maxSize,
+          // Gesamtbreite wie gehabt
+          pos: this.artistPos
+          // eigene Scrollposition für Artist/Album
+        });
+        message.artist = text2;
+        this.artistPos = nextPos2;
       }
     }
     message.shuffle_icon = "";
