@@ -68,23 +68,31 @@ class Controller extends Library.BaseClass {
     this.log.debug(`${this.name} created`);
   }
   minuteLoop = async () => {
-    const minute = (/* @__PURE__ */ new Date()).getMinutes();
-    if (minute === 0) {
-      this.panels.forEach((panel) => {
-        panel.sendDimmode();
-      });
+    const now = /* @__PURE__ */ new Date();
+    const minute = now.getMinutes();
+    try {
+      if (minute === 0) {
+        for (const panel of this.panels) {
+          panel.sendDimmode();
+        }
+      }
+      if (minute % 5 === 1) {
+        for (const panel of this.panels) {
+          panel.requestStatusTasmota();
+        }
+      }
+      const currentTime = await this.getCurrentTime();
+      await this.statesControler.setInternalState("///time", currentTime, true);
+    } catch {
     }
-    if (minute % 5 === 1) {
-      this.panels.forEach((panel) => {
-        panel.requestStatusTasmota();
-      });
-    }
-    await this.statesControler.setInternalState("///time", await this.getCurrentTime(), true);
-    const diff = 6e4 - Date.now() % 6e4 + 10;
     if (this.unload) {
       return;
     }
-    this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
+    const next = new Date(now);
+    next.setSeconds(0, 10);
+    next.setMinutes(now.getMinutes() + 1);
+    const diff = next.getTime() - Date.now();
+    this.minuteLoopTimeout = this.adapter.setTimeout(() => this.minuteLoop(), diff);
   };
   /**
    * Update Date every day at 0:00:01....
@@ -92,16 +100,22 @@ class Controller extends Library.BaseClass {
    * @returns void
    */
   dateUpdateLoop = async () => {
-    const d = /* @__PURE__ */ new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(0, 0, 1);
-    const diff = d.getTime() - Date.now();
-    this.log.debug(`Set current Date with time: ${new Date(await this.getCurrentTime()).toString()}`);
-    await this.statesControler.setInternalState("///date", this.getCurrentTime(), true);
+    const now = /* @__PURE__ */ new Date();
+    const next = new Date(now);
+    next.setDate(now.getDate() + 1);
+    next.setHours(0, 0, 1, 0);
+    const diff = next.getTime() - now.getTime();
     if (this.unload) {
       return;
     }
-    this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
+    try {
+      const currentTime = await this.getCurrentTime();
+      this.log.debug(`Set current Date with time: ${new Date(currentTime).toString()}`);
+      await this.statesControler.setInternalState("///date", currentTime, true);
+    } catch (err) {
+      this.log.error(`dateUpdateLoop failed: ${err}`);
+    }
+    this.dateUpdateTimeout = this.adapter.setTimeout(() => this.dateUpdateLoop(), diff);
   };
   getCurrentTime = async () => {
     return new Promise((resolve) => resolve(Date.now()));

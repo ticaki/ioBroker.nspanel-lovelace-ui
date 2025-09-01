@@ -1073,6 +1073,11 @@ export class PageMedia extends Page {
     public async isPlaying(): Promise<boolean> {
         return (await this.currentItems?.data.isPlaying?.getBoolean()) ?? false;
     }
+
+    async delete(): Promise<void> {
+        await super.delete();
+        this.tempItems = undefined;
+    }
 }
 
 type _SelectValueFromBoolean = 'color' | 'string';

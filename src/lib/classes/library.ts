@@ -97,31 +97,40 @@ export class Library extends BaseClass {
     }
 
     /**
-     * Write/create from a Json with defined keys, the associated states and channels.
+    /**
+     * Write/create states and channels from a JSON subtree using a definition.
      *
-     * @param prefix iobroker datapoint prefix where to write
-     * @param objNode Entry point into the definition json.
-     * @param def the definition json
-     * @param data The Json to read
-     * @param expandTree expand arrays up to 99
-     * @returns  void
+     * Parallelization:
+     * - Parent channel is created first (sequential).
+     * - Children (array items or object keys) are processed in parallel with a concurrency limit.
+     *
+     * @param prefix       ioBroker datapoint prefix to write into (e.g., "adapter.0.foo")
+     * @param objNode      JSON-path into the definition (used by getObjectDefFromJson)
+     * @param def          Definition JSON (mapping of nodes to Channel/State object definitions)
+     * @param data         Source JSON subtree to materialize under `prefix`
+     * @param expandTree   If true, arrays below a state are expanded into channels instead of being stringified
+     * @param concurrency  Max number of parallel child writes (default: 8)
+     * @returns Promise<void>
      */
     async writeFromJson(
-        // provider.dwd.*warncellid*.warnung*1-5*
         prefix: string,
-        objNode: string, // the json path to object def for jsonata
-        def: /*statesObjectsType*/ any,
-        data: any,
+        objNode: string,
+        def: any, // keep as-is if your defs are large/complex; can be tightened later
+        data: unknown,
         expandTree: boolean = false,
+        concurrency: number = 8,
     ): Promise<void> {
+        // Type guards
         if (!def || typeof def !== 'object') {
             return;
         }
-        if (data === undefined || ['string', 'number', 'boolean', 'object'].indexOf(typeof data) == -1) {
+        const t = typeof data;
+        if (data === undefined || (t !== 'string' && t !== 'number' && t !== 'boolean' && t !== 'object')) {
             return;
         }
 
-        const objectDefinition = objNode ? await this.getObjectDefFromJson(`${objNode}`, def, data) : null;
+        // Resolve object definition for the current node
+        const objectDefinition = objNode ? await this.getObjectDefFromJson(`${objNode}`, def, data as any) : null;
 
         if (objectDefinition) {
             objectDefinition.native = {
@@ -130,47 +139,88 @@ export class Library extends BaseClass {
             };
         }
 
+        // Simple concurrency limiter (no dependency)
+        const queue: Array<() => Promise<void>> = [];
+        let active = 0;
+        const runLimited = async <T>(task: () => Promise<T>): Promise<T> => {
+            if (active >= concurrency) {
+                await new Promise<void>(resolve => queue.push(async () => resolve()));
+            }
+            active++;
+            try {
+                return await task();
+            } finally {
+                active--;
+                const next = queue.shift();
+                if (next) {
+                    next().catch(() => void 0);
+                }
+            }
+        };
+
+        // Helper to process an array element (index -> channel + recurse)
+        const processArrayItem = (idx: number, item: unknown): Promise<void> =>
+            runLimited(async () => {
+                if (!objectDefinition) {
+                    return;
+                }
+                const defChannel = this.getChannelObject(objectDefinition);
+                const dp = `${prefix}${`00${idx}`.slice(-2)}`; // e.g. foo.00, foo.01
+                await this.writedp(dp, null, defChannel); // create folder
+                await this.writeFromJson(dp, `${objNode}`, def, item, expandTree, concurrency);
+            });
+
+        // Helper to process an object key (key -> recurse)
+        const processObjectKey = (key: string, value: unknown): Promise<void> =>
+            runLimited(async () => {
+                await this.writeFromJson(`${prefix}.${key}`, `${objNode}.${key}`, def, value, expandTree, concurrency);
+            });
+
+        // Branch: objects/arrays
         if (typeof data === 'object' && data !== null) {
-            // handle array
+            // Arrays
             if (Array.isArray(data)) {
                 if (!objectDefinition) {
                     return;
                 }
-                if (objectDefinition.type !== 'state' || expandTree) {
-                    let a = 0;
-                    for (const k of data) {
-                        const defChannel = this.getChannelObject(objectDefinition);
 
-                        const dp = `${prefix}${`00${a++}`.slice(-2)}`;
-                        // create folder
-                        await this.writedp(dp, null, defChannel);
-
-                        await this.writeFromJson(dp, `${objNode}`, def, k, expandTree);
-                    }
-                } else {
-                    await this.writeFromJson(prefix, objNode, def, JSON.stringify(data) || '[]', expandTree);
-                }
-                //objectDefinition._id = `${this.adapter.name}.${this.adapter.instance}.${prefix}.${key}`;
-            } else {
-                // create folder
-                if (objectDefinition) {
-                    const defChannel = this.getChannelObject(objectDefinition);
-                    await this.writedp(prefix, null, defChannel);
-                }
-                if (data === null) {
+                // When definition says "state" and we don't expand: stringify once
+                if (objectDefinition.type === 'state' && !expandTree) {
+                    const serialized = JSON.stringify(data) || '[]';
+                    await this.writeFromJson(prefix, objNode, def, serialized, expandTree, concurrency);
                     return;
                 }
 
-                for (const k in data) {
-                    await this.writeFromJson(`${prefix}.${k}`, `${objNode}.${k}`, def, data[k], expandTree);
-                }
-            }
-        } else {
-            if (!objectDefinition) {
+                // Else: expand array to child channels, process items in parallel (limited)
+                const tasks = data.map((item, idx) => processArrayItem(idx, item));
+                await Promise.all(tasks);
                 return;
             }
-            await this.writedp(prefix, data, objectDefinition);
+
+            // Plain object
+            // Ensure parent folder exists if we have a definition
+            if (objectDefinition) {
+                const defChannel = this.getChannelObject(objectDefinition);
+                await this.writedp(prefix, null, defChannel);
+            }
+
+            // Null → nothing to do
+            if (data === null) {
+                return;
+            }
+
+            // Process keys in parallel (limited)
+            const entries = Object.entries(data as Record<string, unknown>);
+            const tasks = entries.map(([k, v]) => processObjectKey(k, v));
+            await Promise.all(tasks);
+            return;
         }
+
+        // Primitives (string/number/boolean) — must be a state
+        if (!objectDefinition) {
+            return;
+        }
+        await this.writedp(prefix, data as ioBroker.StateValue, objectDefinition);
     }
 
     /**
@@ -181,7 +231,11 @@ export class Library extends BaseClass {
      * @param data  is the definition dataset
      * @returns ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.StateObject
      */
-    async getObjectDefFromJson(key: string, def: any, data: any): Promise<ioBroker.Object> {
+    async getObjectDefFromJson(
+        key: string,
+        def: any,
+        data: any,
+    ): Promise<ioBroker.StateObject | ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.FolderObject | null> {
         //let result = await jsonata(`${key}`).evaluate(data);
         let result = this.deepJsonValue(key, def);
         if (result === null || result === undefined) {
@@ -268,86 +322,117 @@ export class Library extends BaseClass {
     }
 
     /**
-     * Write/Create the specified data point with value, will only be written if val != oldval and obj.type == state or the data point value in the DB is not undefined. Channel and Devices have an undefined value.
+     * Write/create the specified datapoint with a value.
      *
-     * @param dp Data point to be written. Library.clean() is called with it.
-     * @param val Value for this data point. Channel vals (old and new) are undefined so they never will be written.
-     * @param obj The object definition for this data point (ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.StateObject)
-     * @param ack set ack to false if needed - NEVER after u subscript to states)
-     * @param forceWrite write the value even if it is the same as the old value
-     * @returns void
+     * Behavior:
+     * - Creates/extends the ioBroker object when it does not exist in the in-memory DB.
+     * - Channels/Devices are created/updated but never written as states.
+     * - For states, writes only when:
+     *   - `val !== undefined` and
+     *   - (`defaults.updateStateOnChangeOnly` is true) OR (old value differs) OR (`forceWrite` is true) OR (`!node.ack`)
+     * - Values are converted to the target ioBroker common.type (if available).
+     * - Skips write operations for disallowed directories (as per `isDirAllowed`).
+     *
+     * @param dp         Datapoint id (will be normalized via `cleandp`).
+     * @param val        New value (channels/devices use `undefined` and will not be written).
+     * @param obj        Object definition for creation/extension (Channel/Device/State); required if the node is new.
+     * @param ack        Acknowledged flag for state write.
+     * @param forceWrite Force write even if `val` equals old value.
+     * @returns Promise<void>
+     * @throws Error if a new state must be created but `obj` is missing.
      */
     async writedp(
         dp: string,
         val: ioBroker.StateValue | undefined,
-        obj: ioBroker.Object | null = null,
+        obj:
+            | ioBroker.ChannelObject
+            | ioBroker.DeviceObject
+            | ioBroker.FolderObject
+            | ioBroker.StateObject
+            | null = null,
         ack: boolean = true,
         forceWrite: boolean = false,
     ): Promise<void> {
+        // Normalize id and check DB
         dp = this.cleandp(dp);
         let node = this.readdb(dp);
-        const del = !this.isDirAllowed(dp);
+        const disallowed = !this.isDirAllowed(dp);
 
+        // Create/extend object if not known yet
         if (node === undefined) {
             if (!obj) {
-                throw new Error('writedp try to create a state without object informations.');
+                throw new Error('writedp: trying to create a state without object information.');
             }
+
+            // Ensure full _id (adapter namespace)
             obj._id = `${this.adapter.name}.${this.adapter.instance}.${dp}`;
-            if (typeof obj.common.name == 'string') {
+
+            // Translate name if string
+            if (typeof obj.common.name === 'string') {
                 obj.common.name = await this.getTranslationObj(obj.common.name);
             }
-            if (!del) {
-                if (obj.common.states) {
-                    const temp = await this.adapter.getObjectAsync(dp);
-                    if (temp) {
-                        temp.common.states = obj.common.states;
-                        await this.adapter.setObjectAsync(dp, temp);
+
+            // Persist object unless path is disallowed
+            if (!disallowed) {
+                // Preserve/merge `states` explicitly if provided
+                if (obj.type === 'state' && obj.common.states) {
+                    const existing = await this.adapter.getObjectAsync(dp);
+                    if (existing) {
+                        existing.common.states = obj.common.states;
+                        await this.adapter.setObjectAsync(dp, existing);
                     }
                 }
-                await this.adapter.extendObjectAsync(dp, obj);
+                await this.adapter.extendObject(dp, obj);
             }
-            const stateType = obj && obj.common && obj.common.type;
+
+            const stateType = obj.type !== 'state' ? undefined : obj?.common?.type;
             node = this.setdb(dp, obj.type, undefined, stateType, true, Date.now(), obj);
         } else if (node.init && obj) {
-            if (typeof obj.common.name == 'string') {
+            // Object already known in DB but marked as init → extend/update once
+            if (typeof obj.common.name === 'string') {
                 obj.common.name = await this.getTranslationObj(obj.common.name);
             }
-            if (!del) {
-                if (obj.common.states) {
-                    const temp = await this.adapter.getObjectAsync(dp);
-                    if (temp) {
-                        temp.common.states = obj.common.states;
-                        await this.adapter.setObjectAsync(dp, temp);
+
+            if (!disallowed) {
+                if (obj.type === 'state' && obj.common.states) {
+                    const existing = await this.adapter.getObjectAsync(dp);
+                    if (existing) {
+                        existing.common.states = obj.common.states;
+                        await this.adapter.setObject(dp, existing);
                     }
                 }
-                await this.adapter.extendObjectAsync(dp, obj);
-
+                await this.adapter.extendObject(dp, obj);
                 node.init = false;
             }
         }
 
+        // If the object exists and is NOT a state → nothing to write
         if (obj && obj.type !== 'state') {
             return;
         }
 
+        // Update in-memory DB value unless it is a state with undefined value
         if (node && !(node.type === 'state' && val === undefined)) {
             this.setdb(dp, node.type, val, node.stateTyp, false, undefined, undefined, node.init);
         }
 
+        // Decide whether to write the state value
         if (
             node &&
             val !== undefined &&
             (this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)
         ) {
-            const typ = (obj && obj.common && obj.common.type) || node.stateTyp;
-            if (typ && typ != typeof val && val !== undefined) {
-                val = this.convertToType(val, typ);
+            // Convert to target type if necessary
+            const targetType = obj?.common?.type ?? node.stateTyp;
+            if (targetType && typeof val !== targetType) {
+                val = this.convertToType(val, targetType as 'string' | 'number' | 'boolean' | 'array' | 'json');
             }
-            if (!del) {
+
+            if (!disallowed) {
                 await this.adapter.setState(dp, {
                     val: val,
                     ts: Date.now(),
-                    ack: ack,
+                    ack,
                 });
             }
         }
@@ -423,44 +508,98 @@ export class Library extends BaseClass {
         return lowerCase ? string.toLowerCase() : string;
     }
 
-    /* Convert a value to the given type
-     * @param {string|boolean|number} value 	then value to convert
-     * @param {string}   type  					the target type
-     * @returns
+    /**
+     * Convert an arbitrary value to the requested target type and return an ioBroker.StateValue.
+     *
+     * Rules:
+     * - 'string': primitives -> String(value); arrays/objects -> JSON string.
+     * - 'number': numbers stay; booleans -> 1/0; strings parsed with comma support ("1,23" -> 1.23); NaN -> 0.
+     * - 'boolean': booleans stay; numbers -> value !== 0; strings -> common truthy/falsey keywords; otherwise Boolean(value).
+     * - 'array' | 'json': always JSON string of the input.
+     *
+     * @param value Input value to convert (may be primitive, array, or object)
+     * @param type  Target type: 'string' | 'number' | 'boolean' | 'array' | 'json'
+     * @returns Converted value as ioBroker.StateValue (string | number | boolean | null)
+     * @throws Error if `type` is 'undefined'
      */
-    convertToType(value: ioBroker.StateValue | Array<any> | JSON, type: string): ioBroker.StateValue {
+    convertToType(
+        value: ioBroker.StateValue | unknown[] | Record<string, unknown> | null,
+        type: 'string' | 'number' | 'boolean' | 'array' | 'json' | 'undefined' | 'object' | 'mixed',
+    ): ioBroker.StateValue {
         if (value === null) {
             return null;
         }
         if (type === 'undefined') {
-            throw new Error('convertToType type undefined not allowed!');
+            throw new Error('convertToType: type "undefined" not allowed');
         }
         if (value === undefined) {
             value = '';
         }
+        if (type === 'mixed') {
+            if (['string', 'number', 'boolean'].includes(typeof value)) {
+                return value as ioBroker.StateValue;
+            }
+            type = Array.isArray(value) ? 'array' : 'json';
+        }
+        if (type === 'object') {
+            type = 'json';
+        }
 
-        const old_type = typeof value;
-        let newValue: ioBroker.StateValue = typeof value == 'object' ? JSON.stringify(value) : value;
+        // Helper: stringify objects/arrays safely
+        const toJsonString = (v: unknown): string => JSON.stringify(v);
 
-        if (type !== old_type) {
-            switch (type) {
-                case 'string':
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    newValue = value.toString() || '';
-                    break;
-                case 'number':
-                    newValue = value ? parseFloat(value as string) : 0;
-                    break;
-                case 'boolean':
-                    newValue = !!value;
-                    break;
-                case 'array':
-                case 'json':
-                    newValue = JSON.stringify(value);
-                    break;
+        switch (type) {
+            case 'string': {
+                if (typeof value === 'string') {
+                    return value;
+                }
+                if (typeof value === 'object') {
+                    return toJsonString(value);
+                }
+                return String(value);
+            }
+
+            case 'number': {
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value;
+                }
+                if (typeof value === 'boolean') {
+                    return value ? 1 : 0;
+                }
+                if (typeof value === 'string') {
+                    const n = Number(value.trim().replace(',', '.'));
+                    return Number.isFinite(n) ? n : 0;
+                }
+                // objects/arrays → cannot parse meaningfully → 0
+                return 0;
+            }
+
+            case 'boolean': {
+                if (typeof value === 'boolean') {
+                    return value;
+                }
+                if (typeof value === 'number') {
+                    return value !== 0;
+                }
+                if (typeof value === 'string') {
+                    const s = value.trim().toLowerCase();
+                    if (['true', '1', 'on', 'yes', 'y'].includes(s)) {
+                        return true;
+                    }
+                    if (['false', '0', 'off', 'no', 'n', ''].includes(s)) {
+                        return false;
+                    }
+                    return Boolean(s);
+                }
+                // objects/arrays → truthiness
+                return Boolean(value);
+            }
+            case 'array':
+            case 'json': {
+                // Always return JSON string for array/json targets
+                return toJsonString(value);
             }
         }
-        return newValue;
     }
 
     readdb(dp: string): LibraryStateVal {

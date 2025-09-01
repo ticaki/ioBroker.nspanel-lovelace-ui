@@ -86,19 +86,21 @@ export class Screensaver extends Page {
         }
     }
 
+    /**
+     * Build the screensaver message for requested places (order-preserving, parallel).
+     *
+     * - Runs only for screensaver cards.
+     * - Keeps configured order by collecting (place, index, payload) and sorting by index per place.
+     * - Numeric `enabled` → overwrite by index; boolean `enabled=false` → skip.
+     *
+     * @param places
+     */
     async getData(places: Types.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
         const config = this.config;
-        if (
-            !config ||
-            (config.card !== 'screensaver' && config.card !== 'screensaver2' && config.card !== 'screensaver3')
-        ) {
+        if (!config || !pages.isScreenSaverCardType(config.card)) {
             return null;
         }
-        if (!pages.isScreenSaverCardType(config.card)) {
-            pages.exhaustiveCheck(config.card);
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            this.log.error(`Invalid card: ${config.card}`);
-        }
+
         const message: pages.screensaverMessage = {
             options: {
                 indicator: [],
@@ -122,98 +124,165 @@ export class Screensaver extends Page {
             alternate: [],
         };
 
-        if (this.pageItems) {
-            const model = config.model;
-            const layout = this.mode;
-            for (let a = 0; a < this.pageItems.length; a++) {
-                const pageItems: PageItem | undefined = this.pageItems[a];
-                const options = message.options;
-                if (pageItems && pageItems.config && pageItems.config.modeScr) {
-                    if (pageItems.config.modeScr === 'alternate' && this.mode !== 'alternate') {
-                        continue;
-                    }
-                    const place = pageItems.config.modeScr;
-                    const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-                    if (max === 0) {
-                        continue;
-                    }
-                    if (places.indexOf(place) === -1) {
-                        continue;
-                    }
-                    const enabled = await pageItems.dataItems?.data?.enabled?.getNumber();
-                    if (enabled != null) {
-                        if (enabled >= 0) {
-                            overwrite[place][enabled] = await pageItems.getPageItemPayload();
-                        }
-                        continue;
-                    }
-                    const enabled2 = await pageItems.dataItems?.data?.enabled?.getBoolean();
-                    if (enabled2 === false) {
-                        continue;
-                    }
+        if (!this.pageItems) {
+            return message;
+        }
 
-                    const arr = options[place] || [];
-                    arr.push(await pageItems.getPageItemPayload());
-                    options[place] = arr;
+        const model = 'model' in config ? config.model : 'eu';
+        const layout = this.mode;
+
+        type AppendResult = { kind: 'append'; place: Types.ScreenSaverPlaces; idx: number; payload: string };
+        type OverwriteResult = {
+            kind: 'overwrite';
+            place: Types.ScreenSaverPlaces;
+            enabledIndex: number;
+            payload: string;
+        };
+        type Result = AppendResult | OverwriteResult | null;
+
+        // Collect results in parallel, but tagged with original index
+        const results: Result[] = await Promise.all(
+            this.pageItems.map(async (pageItem, idx): Promise<Result> => {
+                const place = pageItem?.config?.modeScr;
+                if (!place) {
+                    return null;
                 }
-            }
-            for (const x in message.options) {
-                const place = x as Types.ScreenSaverPlaces;
-                message.options[place] = Object.assign(message.options[place], overwrite[place]);
-            }
-            for (const x in message.options) {
-                const place = x as Types.ScreenSaverPlaces;
-                if (places.indexOf(place) === -1) {
-                    continue;
+
+                if (place === 'alternate' && this.mode !== 'alternate') {
+                    return null;
                 }
-                let items = message.options[place];
-                if (items) {
-                    const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-                    if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
-                        let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
-                        f = this.step % Math.ceil(f);
-                        message.options[place] = items.slice(max * f, max * (f + 1));
+                if (!places.includes(place)) {
+                    return null;
+                }
+
+                const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+                if (max === 0) {
+                    return null;
+                }
+
+                // Overwrite via numeric enabled index
+                const enabledNum = await pageItem.dataItems?.data?.enabled?.getNumber();
+                if (enabledNum != null) {
+                    if (enabledNum >= 0) {
+                        const payload = await pageItem.getPageItemPayload();
+                        return { kind: 'overwrite', place, enabledIndex: enabledNum, payload };
                     }
-                    items = message.options[place];
-                    for (let i = 0; i < max; i++) {
-                        const msg = items[i];
-                        if (!msg) {
-                            items[i] = tools.getPayload('', '', '', '', '', '');
-                        } else {
-                            const arr = items[i].split('~');
-                            arr[0] = '';
-                            if (place !== 'indicator') {
-                                arr[1] = '';
-                            }
-                            items[i] = tools.getPayloadArray(arr);
-                        }
+                    return null;
+                }
+
+                // Skip via boolean enabled=false
+                const enabledBool = await pageItem.dataItems?.data?.enabled?.getBoolean();
+                if (enabledBool === false) {
+                    return null;
+                }
+
+                // Default: append with original index
+                const payload = await pageItem.getPageItemPayload();
+                return { kind: 'append', place, idx, payload };
+            }),
+        );
+
+        // Apply overwrites and collect appends grouped by place
+        const appendsByPlace: Record<Types.ScreenSaverPlaces, Array<{ idx: number; payload: string }>> = {
+            indicator: [],
+            left: [],
+            time: [],
+            date: [],
+            bottom: [],
+            mricon: [],
+            favorit: [],
+            alternate: [],
+        };
+
+        for (const r of results) {
+            if (!r) {
+                continue;
+            }
+            if (r.kind === 'overwrite') {
+                overwrite[r.place][r.enabledIndex] = r.payload;
+            } else {
+                appendsByPlace[r.place].push({ idx: r.idx, payload: r.payload });
+            }
+        }
+
+        // Build message.options per place in original order, then apply overwrites
+        for (const key in message.options) {
+            const place = key as Types.ScreenSaverPlaces;
+            if (!places.includes(place)) {
+                continue;
+            }
+
+            // Stable order: sort by original index
+            const ordered = appendsByPlace[place].sort((a, b) => a.idx - b.idx).map(e => e.payload);
+            message.options[place].push(...ordered);
+
+            // Apply overwrites (sparse assignment is fine)
+            Object.assign(message.options[place], overwrite[place]);
+
+            // Windowing/paging
+            const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+            let items = message.options[place] || [];
+            if (items.length > max) {
+                const windows = Math.ceil(items.length / max);
+                const windowIdx = this.step % windows;
+                items = items.slice(max * windowIdx, max * (windowIdx + 1));
+                message.options[place] = items;
+            }
+
+            // Normalize payload fields per slot
+            for (let i = 0; i < max; i++) {
+                const msg = message.options[place][i];
+                if (!msg) {
+                    message.options[place][i] = tools.getPayload('', '', '', '', '', '');
+                } else {
+                    const arr = msg.split('~');
+                    arr[0] = '';
+                    if (place !== 'indicator') {
+                        arr[1] = '';
                     }
+                    message.options[place][i] = tools.getPayloadArray(arr);
                 }
             }
         }
+
         return message;
     }
+
+    /**
+     * Send (or clear) a screensaver notification to the panel if the panel is online.
+     *
+     * @param enabled When true, send heading + text; otherwise clear the notify.
+     */
     sendNotify(enabled: boolean): void {
         if (!this.basePanel.isOnline) {
             return;
         }
-        if (enabled) {
-            const msg = tools.getPayload('notify', this.headingNotification, this.textNotification);
-            this.sendToPanel(msg, false);
-        } else {
-            const msg = tools.getPayload('notify', '', '');
-            this.sendToPanel(msg, false);
-        }
+
+        const msg = enabled
+            ? tools.getPayload('notify', this.headingNotification, this.textNotification)
+            : tools.getPayload('notify', '', '');
+
+        this.sendToPanel(msg, false);
     }
 
+    /** Current info icon (readonly property wrapper). */
     get infoIcon(): string {
         return this._infoIcon;
     }
+
+    /**
+     * Update the info icon and trigger time handling refresh.
+     */
     set infoIcon(infoIcon: string) {
         this._infoIcon = infoIcon;
         void this.HandleTime();
     }
 
+    /**
+     * Update the screensaver view with data for selected places and refresh status icons.
+     * - Prepends an empty payload to 'alternate' if it contains entries
+     * - Sends a 'weatherUpdate' payload with concatenated place arrays
+     */
     async update(): Promise<void> {
         if (!this.visibility) {
             return;
@@ -223,18 +292,22 @@ export class Screensaver extends Page {
         if (message === null) {
             return;
         }
+
         if (message.options.alternate.length > 0) {
             message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
         }
-        const arr: string[] = message.options.favorit.concat(
-            message.options.left,
-            message.options.bottom,
-            message.options.alternate,
-            message.options.indicator,
-        );
-        const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
 
+        const arr: string[] = [
+            ...message.options.favorit,
+            ...message.options.left,
+            ...message.options.bottom,
+            ...message.options.alternate,
+            ...message.options.indicator,
+        ];
+
+        const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
         this.sendToPanel(msg, false);
+
         await this.HandleScreensaverStatusIcons();
     }
     public async createPageItems(

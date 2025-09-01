@@ -78,13 +78,13 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     if (config.card !== "cardThermo2") {
       return;
     }
-    super(config, options);
-    this.config = options.config;
-    this.iconLeftP = "arrow-left-bold-outline";
-    this.iconLeft = "arrow-up-bold";
-    this.iconRightP = "arrow-right-bold-outline";
-    this.iconRight = "arrow-down-bold";
     if (options.config && options.config.card == "cardThermo2") {
+      super(config, options);
+      this.config = options.config;
+      this.iconLeftP = "arrow-left-bold-outline";
+      this.iconLeft = "arrow-up-bold";
+      this.iconRightP = "arrow-right-bold-outline";
+      this.iconRight = "arrow-down-bold";
       this.config = options.config;
       this.config.scrollType = "page";
     } else {

@@ -18,6 +18,7 @@ declare global {
             yearFormat: boolean;
             shutterClosedIsZero: boolean;
             defaultValueCardThermo: boolean;
+            forceTFTVersion: string;
             
             fixBrokenCommonTypes: boolean;
 

@@ -39,7 +39,11 @@ class PageGrid extends import_pageMenu.PageMenu {
   config;
   items;
   constructor(config, options) {
+    var _a, _b, _c;
     super(config, options);
+    if (!(((_a = options.config) == null ? void 0 : _a.card) === "cardGrid" || ((_b = options.config) == null ? void 0 : _b.card) === "cardGrid2" || ((_c = options.config) == null ? void 0 : _c.card) === "cardGrid3")) {
+      throw new Error("PageGrid: invalid config card");
+    }
     this.config = options.config;
     this.iconLeftP = "arrow-left-bold-outline";
     this.iconLeft = "arrow-up-bold";

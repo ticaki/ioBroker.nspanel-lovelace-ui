@@ -95,15 +95,19 @@ class Screensaver extends import_Page.Page {
       }
     }
   }
+  /**
+   * Build the screensaver message for requested places (order-preserving, parallel).
+   *
+   * - Runs only for screensaver cards.
+   * - Keeps configured order by collecting (place, index, payload) and sorting by index per place.
+   * - Numeric `enabled` → overwrite by index; boolean `enabled=false` → skip.
+   *
+   * @param places
+   */
   async getData(places) {
-    var _a, _b, _c, _d, _e, _f;
     const config = this.config;
-    if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
+    if (!config || !pages.isScreenSaverCardType(config.card)) {
       return null;
-    }
-    if (!pages.isScreenSaverCardType(config.card)) {
-      pages.exhaustiveCheck(config.card);
-      this.log.error(`Invalid card: ${config.card}`);
     }
     const message = {
       options: {
@@ -127,95 +131,124 @@ class Screensaver extends import_Page.Page {
       favorit: [],
       alternate: []
     };
-    if (this.pageItems) {
-      const model = config.model;
-      const layout = this.mode;
-      for (let a = 0; a < this.pageItems.length; a++) {
-        const pageItems = this.pageItems[a];
-        const options = message.options;
-        if (pageItems && pageItems.config && pageItems.config.modeScr) {
-          if (pageItems.config.modeScr === "alternate" && this.mode !== "alternate") {
-            continue;
-          }
-          const place = pageItems.config.modeScr;
-          const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-          if (max === 0) {
-            continue;
-          }
-          if (places.indexOf(place) === -1) {
-            continue;
-          }
-          const enabled = await ((_c = (_b = (_a = pageItems.dataItems) == null ? void 0 : _a.data) == null ? void 0 : _b.enabled) == null ? void 0 : _c.getNumber());
-          if (enabled != null) {
-            if (enabled >= 0) {
-              overwrite[place][enabled] = await pageItems.getPageItemPayload();
-            }
-            continue;
-          }
-          const enabled2 = await ((_f = (_e = (_d = pageItems.dataItems) == null ? void 0 : _d.data) == null ? void 0 : _e.enabled) == null ? void 0 : _f.getBoolean());
-          if (enabled2 === false) {
-            continue;
-          }
-          const arr = options[place] || [];
-          arr.push(await pageItems.getPageItemPayload());
-          options[place] = arr;
+    if (!this.pageItems) {
+      return message;
+    }
+    const model = "model" in config ? config.model : "eu";
+    const layout = this.mode;
+    const results = await Promise.all(
+      this.pageItems.map(async (pageItem, idx) => {
+        var _a, _b, _c, _d, _e, _f, _g;
+        const place = (_a = pageItem == null ? void 0 : pageItem.config) == null ? void 0 : _a.modeScr;
+        if (!place) {
+          return null;
         }
-      }
-      for (const x in message.options) {
-        const place = x;
-        message.options[place] = Object.assign(message.options[place], overwrite[place]);
-      }
-      for (const x in message.options) {
-        const place = x;
-        if (places.indexOf(place) === -1) {
-          continue;
+        if (place === "alternate" && this.mode !== "alternate") {
+          return null;
         }
-        let items = message.options[place];
-        if (items) {
-          const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-          if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
-            let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
-            f = this.step % Math.ceil(f);
-            message.options[place] = items.slice(max * f, max * (f + 1));
+        if (!places.includes(place)) {
+          return null;
+        }
+        const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+        if (max === 0) {
+          return null;
+        }
+        const enabledNum = await ((_d = (_c = (_b = pageItem.dataItems) == null ? void 0 : _b.data) == null ? void 0 : _c.enabled) == null ? void 0 : _d.getNumber());
+        if (enabledNum != null) {
+          if (enabledNum >= 0) {
+            const payload2 = await pageItem.getPageItemPayload();
+            return { kind: "overwrite", place, enabledIndex: enabledNum, payload: payload2 };
           }
-          items = message.options[place];
-          for (let i = 0; i < max; i++) {
-            const msg = items[i];
-            if (!msg) {
-              items[i] = tools.getPayload("", "", "", "", "", "");
-            } else {
-              const arr = items[i].split("~");
-              arr[0] = "";
-              if (place !== "indicator") {
-                arr[1] = "";
-              }
-              items[i] = tools.getPayloadArray(arr);
-            }
+          return null;
+        }
+        const enabledBool = await ((_g = (_f = (_e = pageItem.dataItems) == null ? void 0 : _e.data) == null ? void 0 : _f.enabled) == null ? void 0 : _g.getBoolean());
+        if (enabledBool === false) {
+          return null;
+        }
+        const payload = await pageItem.getPageItemPayload();
+        return { kind: "append", place, idx, payload };
+      })
+    );
+    const appendsByPlace = {
+      indicator: [],
+      left: [],
+      time: [],
+      date: [],
+      bottom: [],
+      mricon: [],
+      favorit: [],
+      alternate: []
+    };
+    for (const r of results) {
+      if (!r) {
+        continue;
+      }
+      if (r.kind === "overwrite") {
+        overwrite[r.place][r.enabledIndex] = r.payload;
+      } else {
+        appendsByPlace[r.place].push({ idx: r.idx, payload: r.payload });
+      }
+    }
+    for (const key in message.options) {
+      const place = key;
+      if (!places.includes(place)) {
+        continue;
+      }
+      const ordered = appendsByPlace[place].sort((a, b) => a.idx - b.idx).map((e) => e.payload);
+      message.options[place].push(...ordered);
+      Object.assign(message.options[place], overwrite[place]);
+      const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+      let items = message.options[place] || [];
+      if (items.length > max) {
+        const windows = Math.ceil(items.length / max);
+        const windowIdx = this.step % windows;
+        items = items.slice(max * windowIdx, max * (windowIdx + 1));
+        message.options[place] = items;
+      }
+      for (let i = 0; i < max; i++) {
+        const msg = message.options[place][i];
+        if (!msg) {
+          message.options[place][i] = tools.getPayload("", "", "", "", "", "");
+        } else {
+          const arr = msg.split("~");
+          arr[0] = "";
+          if (place !== "indicator") {
+            arr[1] = "";
           }
+          message.options[place][i] = tools.getPayloadArray(arr);
         }
       }
     }
     return message;
   }
+  /**
+   * Send (or clear) a screensaver notification to the panel if the panel is online.
+   *
+   * @param enabled When true, send heading + text; otherwise clear the notify.
+   */
   sendNotify(enabled) {
     if (!this.basePanel.isOnline) {
       return;
     }
-    if (enabled) {
-      const msg = tools.getPayload("notify", this.headingNotification, this.textNotification);
-      this.sendToPanel(msg, false);
-    } else {
-      const msg = tools.getPayload("notify", "", "");
-      this.sendToPanel(msg, false);
-    }
+    const msg = enabled ? tools.getPayload("notify", this.headingNotification, this.textNotification) : tools.getPayload("notify", "", "");
+    this.sendToPanel(msg, false);
   }
+  /** Current info icon (readonly property wrapper). */
   get infoIcon() {
     return this._infoIcon;
   }
+  /**
+   * Update the info icon and trigger time handling refresh.
+   */
   set infoIcon(infoIcon) {
     this._infoIcon = infoIcon;
     void this.HandleTime();
   }
+  /**
+   * Update the screensaver view with data for selected places and refresh status icons.
+   * - Prepends an empty payload to 'alternate' if it contains entries
+   * - Sends a 'weatherUpdate' payload with concatenated place arrays
+   */
   async update() {
     if (!this.visibility) {
       return;
@@ -227,12 +260,13 @@ class Screensaver extends import_Page.Page {
     if (message.options.alternate.length > 0) {
       message.options.alternate.unshift(tools.getPayload("", "", "", "", "", ""));
     }
-    const arr = message.options.favorit.concat(
-      message.options.left,
-      message.options.bottom,
-      message.options.alternate,
-      message.options.indicator
-    );
+    const arr = [
+      ...message.options.favorit,
+      ...message.options.left,
+      ...message.options.bottom,
+      ...message.options.alternate,
+      ...message.options.indicator
+    ];
     const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
     this.sendToPanel(msg, false);
     await this.HandleScreensaverStatusIcons();

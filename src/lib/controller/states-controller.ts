@@ -97,13 +97,18 @@ export class StatesControler extends BaseClass {
         }
     }
     /**
-     * Set a subscript to an foreignState and write current state/value to db
+     * Registriert einen Trigger auf einen *fremden* State (nicht im eigenen Namespace)
+     * und initialisiert die Trigger-Datenbank inkl. Abo & aktuellem Wert.
      *
-     * @param id state id
-     * @param from the page that handle the trigger
-     * @param internal if the state is internal
-     * @param trigger if the state should trigger other classes
-     * @param change if the state should trigger other classes
+     * Hinweise:
+     * - Eigene States (im Adapter-Namespace) sind hier verboten.
+     * - Bei bereits existierendem Eintrag wird der Empfänger nur ergänzt.
+     *
+     * @param id        Fremd-State-ID
+     * @param from      Auslösende/abonniert-werdende Klasse
+     * @param internal  true = interner Trigger (kein Fremd-Abo erwartet)
+     * @param trigger   ob dieser Empfänger durch Änderungen ausgelöst werden darf
+     * @param change    optional: 'ts' → löse auch ohne Wert-/Ack-Änderung (Zeitstempel)
      */
     async setTrigger(
         id: string,
@@ -112,58 +117,82 @@ export class StatesControler extends BaseClass {
         trigger: boolean = true,
         change?: 'ts',
     ): Promise<void> {
+        // 1) Eigener Namespace? → verboten
         if (id.startsWith(this.adapter.namespace)) {
             this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
             return;
-            //throw new Error(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
         }
-        if (this.triggerDB[id] !== undefined) {
-            const index = this.triggerDB[id].to.findIndex(a => a == from);
-            if (index === -1) {
-                this.triggerDB[id].to.push(from);
-                this.triggerDB[id].subscribed.push(false);
-                this.triggerDB[id].triggerAllowed.push(trigger);
-                this.triggerDB[id].change.push(change ? change : 'ne');
+
+        const existing = this.triggerDB[id];
+
+        // 2) Bereits vorhanden → Empfänger anhängen (falls nicht schon drin)
+        if (existing) {
+            const idx = existing.to.findIndex(a => a === from);
+            if (idx === -1) {
+                existing.to.push(from);
+                existing.subscribed.push(false);
+                existing.triggerAllowed.push(trigger);
+                existing.change.push(change ?? 'ne');
                 if (this.adapter.config.debugLogStates) {
                     this.log.debug(`Add a trigger for ${from.name} to ${id}`);
                 }
-            } else {
-                //nothing
             }
-        } else if (internal) {
+            return;
+        }
+
+        // 3) Neu anlegen: interner Trigger zu früh?
+        if (internal) {
             this.log.error('setInternal Trigger too early');
-        } else {
-            // block the place for this trigger
-            this.triggerDB[id] = {
-                state: { val: null, ack: false, ts: Date.now(), from: '', lc: Date.now() },
-                to: [from],
-                ts: Date.now(),
-                subscribed: [false],
-                common: { name: id, type: 'number', role: 'state', write: false, read: true },
-                triggerAllowed: [trigger],
-                change: [change ? change : 'ne'],
-            };
+            return;
+        }
+
+        // 4) Platz reservieren (default-Werte), bevor wir I/O machen
+        this.triggerDB[id] = {
+            state: { val: null, ack: false, ts: Date.now(), from: '', lc: Date.now() },
+            to: [from],
+            ts: Date.now(),
+            subscribed: [false],
+            common: { name: id, type: 'number', role: 'state', write: false, read: true },
+            triggerAllowed: [trigger],
+            change: [change ?? 'ne'],
+            internal: false,
+        };
+
+        try {
+            // 5) Fremd-State & -Objekt holen
             const state = await this.adapter.getForeignStateAsync(id);
-            if (state) {
-                const obj = await this.getObjectAsync(id);
-                if (!obj || !obj.common || obj.type !== 'state') {
-                    throw new Error(`Got invalid object for ${id}`);
-                }
-                if (this.unload) {
-                    return;
-                }
-                this.triggerDB[id].state = state;
-                this.triggerDB[id].common = obj.common;
-                await this.adapter.subscribeForeignStatesAsync(id);
-                if (this.stateDB[id] !== undefined) {
-                    delete this.stateDB[id];
-                }
-                if (this.adapter.config.debugLogStates) {
-                    this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
-                }
-            } else {
+            if (!state) {
                 delete this.triggerDB[id];
+                return;
             }
+
+            const obj = await this.getObjectAsync(id);
+            if (!obj || obj.type !== 'state' || !obj.common) {
+                delete this.triggerDB[id];
+                throw new Error(`Got invalid object for ${id}`);
+            }
+
+            if (this.unload) {
+                return;
+            }
+
+            // 6) DB befüllen, abonnieren, evtl. alten stateDB-Eintrag entfernen
+            this.triggerDB[id].state = state;
+            this.triggerDB[id].common = obj.common;
+
+            await this.adapter.subscribeForeignStatesAsync(id);
+
+            if (this.stateDB[id] !== undefined) {
+                delete this.stateDB[id];
+            }
+
+            if (this.adapter.config.debugLogStates) {
+                this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
+            }
+        } catch (err) {
+            // Rollback bei Fehlern
+            delete this.triggerDB[id];
+            throw err;
         }
     }
 
@@ -339,90 +368,129 @@ export class StatesControler extends BaseClass {
         return j;
     }
 
+    isStateValue(v: unknown): v is ioBroker.StateValue {
+        return (
+            v === null || v === undefined || typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+        );
+    }
+
     /**
-     * Check if the trigger should trigger other classes. dont check if object has a active subscription. this is done in next step with visible & neverDeactiveTrigger
+     * Handle incoming state changes from ioBroker.
      *
-     * @param dp internal/external
-     * @param state iobroker state
+     * Responsibilities:
+     *  - Update the internal triggerDB entry for the given datapoint.
+     *  - Decide whether the state change should trigger dependent classes.
+     *  - Forward primitive values to library cache and panels if required.
+     *  - Forward system.host changes to systemNotification.
+     *
+     * Notes:
+     *  - Active subscriptions (visible & neverDeactivateTrigger) are checked later, not here.
+     *  - Object values are ignored (only primitive values are cached/forwarded).
+     *
+     * @param dp     Datapoint ID (internal/external state id)
+     * @param state  New ioBroker state object or null/undefined
      */
     async onStateChange(dp: string, state: nsPanelState | ioBroker.State | null | undefined): Promise<void> {
-        if (dp && state) {
-            if (this.triggerDB[dp] && this.triggerDB[dp].state) {
-                if (this.adapter.config.debugLogStates) {
-                    this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
-                }
-                this.triggerDB[dp].ts = Date.now();
-                const oldState = { val: this.triggerDB[dp].state.val, ack: this.triggerDB[dp].state.ack };
-                this.triggerDB[dp].state = state;
-                if (
-                    state.ack ||
-                    this.triggerDB[dp].internal ||
-                    dp.startsWith('0_userdata.0') ||
-                    dp.startsWith('alias.0')
-                ) {
-                    for (let i = 0; i < this.triggerDB[dp].to.length; i++) {
-                        const c = this.triggerDB[dp].to[i];
-                        if (
-                            oldState.val !== state.val ||
-                            oldState.ack !== state.ack ||
-                            this.triggerDB[dp].change[i] === 'ts'
-                        ) {
-                            if (
-                                (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i]) ||
-                                !this.triggerDB[dp].triggerAllowed[i]
-                            ) {
-                                if (i === this.triggerDB[dp].to.length - 1) {
-                                    this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
-                                    this.log.debug(
-                                        `c: ${c.name} !c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${!this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`,
-                                    );
-                                }
-                                continue;
-                            }
-                            if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
-                                c.parent.onStateTriggerSuperDoNotOverride &&
-                                    (await c.parent.onStateTriggerSuperDoNotOverride(dp, c));
-                            } else if (!c.unload) {
-                                c.onStateTriggerSuperDoNotOverride && (await c.onStateTriggerSuperDoNotOverride(dp, c));
-                            }
-                        } else {
-                            this.log.debug(`Ignore trigger from state ${dp} no change!`);
-                        }
-                    }
-                } else {
-                    this.log.debug(`Ignore trigger from state ${dp} ack is false!`);
-                }
+        if (!dp || !state) {
+            return;
+        }
+
+        const entry = this.triggerDB[dp];
+
+        // --- Trigger/ACK-Pfad ------------------------------------------------------
+        if (entry?.state) {
+            if (this.adapter.config.debugLogStates) {
+                this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
             }
-            if (state.val === null || state.val === undefined || typeof state.val !== 'object') {
-                if (dp.startsWith(this.adapter.namespace)) {
-                    const id = dp.replace(`${this.adapter.namespace}.`, '');
-                    const libState = this.library.readdb(id);
-                    if (libState) {
-                        this.library.setdb(id, {
-                            ...libState,
-                            val: state.val,
-                            ts: state.ts,
-                            ack: state.ack,
-                        });
+
+            // Update triggerDB entry
+            entry.ts = Date.now();
+            const oldState = { val: entry.state.val, ack: entry.state.ack };
+            entry.state = state;
+
+            const isSystemOrAlias = dp.startsWith('0_userdata.0') || dp.startsWith('alias.0');
+            const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
+
+            if (mayTrigger) {
+                const to = entry.to; // Ziel-Liste von Trigger-Empfängern
+                const changes = entry.change || []; // Änderungsregeln je Empfänger
+                const subscribed = entry.subscribed || [];
+                const allowed = entry.triggerAllowed || [];
+
+                for (let i = 0; i < to.length; i++) {
+                    const target = to[i];
+
+                    // Nur reagieren, wenn sich etwas geändert hat (val, ack oder "ts")
+                    const hasChange = oldState.val !== state.val || oldState.ack !== state.ack || changes[i] === 'ts';
+
+                    if (!hasChange) {
+                        this.log.debug(`Ignore trigger from state ${dp} no change!`);
+                        continue;
                     }
 
-                    if (
-                        libState &&
-                        libState.obj &&
-                        libState.obj.common &&
-                        libState.obj.common.write &&
-                        this.adapter.controller
-                    ) {
-                        for (const panel of this.adapter.controller.panels) {
-                            await panel.onStateChange(id, state);
+                    // Prüfen ob trigger erlaubt und abonniert
+                    const notSubscribedOrNotAllowed = (!target.neverDeactivateTrigger && !subscribed[i]) || !allowed[i];
+
+                    if (notSubscribedOrNotAllowed) {
+                        if (i === to.length - 1) {
+                            this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
+                            this.log.debug(
+                                `c: ${target.name} !c.neverDeactivateTrigger: ${!target.neverDeactivateTrigger} && ` +
+                                    `!this.triggerDB[dp].subscribed[i]: ${!subscribed[i]} || ` +
+                                    `!this.triggerDB[dp].triggerAllowed[i]: ${!allowed[i]}`,
+                            );
+                        }
+                        continue;
+                    }
+
+                    // Weiterreichen an Parent (falls vorhanden) oder direkt
+                    if (target.parent && target.triggerParent && !target.parent.unload && !target.parent.sleep) {
+                        if (target.parent.onStateTriggerSuperDoNotOverride) {
+                            await target.parent.onStateTriggerSuperDoNotOverride(dp, target);
+                        }
+                    } else if (!target.unload) {
+                        if (target.onStateTriggerSuperDoNotOverride) {
+                            await target.onStateTriggerSuperDoNotOverride(dp, target);
                         }
                     }
                 }
-                if (dp.startsWith('system.host')) {
-                    this.adapter.controller &&
-                        (await this.adapter.controller.systemNotification.onStateChange(dp, state as ioBroker.State));
+            } else {
+                this.log.debug(`Ignore trigger from state ${dp} ack is false!`);
+            }
+        }
+
+        // --- Primitive-Update-Pfad (nur Nicht-Objekte) -----------------------------
+        const v = state.val;
+        const isPrimitive = v === null || v === undefined || typeof v !== 'object';
+        if (!isPrimitive) {
+            return;
+        }
+
+        // Eigene States (im Adapter-Namespace) updaten
+        if (dp.startsWith(this.adapter.namespace)) {
+            const id = dp.replace(`${this.adapter.namespace}.`, '');
+            const libState = this.library.readdb(id);
+
+            if (libState) {
+                this.library.setdb(id, {
+                    ...libState,
+                    val: this.isStateValue(state.val) ? state.val : null,
+                    ts: state.ts,
+                    ack: state.ack,
+                });
+            }
+
+            // Weiterreichen an Panels nur wenn state beschreibbar ist
+            if (libState?.obj?.common?.write && this.adapter.controller) {
+                for (const panel of this.adapter.controller.panels) {
+                    await panel.onStateChange(id, state);
                 }
             }
+        }
+
+        // System-Host-Notifications weiterreichen
+        if (dp.startsWith('system.host') && this.adapter.controller) {
+            await this.adapter.controller.systemNotification.onStateChange(dp, state as ioBroker.State);
         }
     }
     async setState(item: Dataitem, val: ioBroker.StateValue, writeable: boolean): Promise<void> {

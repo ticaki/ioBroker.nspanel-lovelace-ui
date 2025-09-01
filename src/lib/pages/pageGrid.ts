@@ -17,11 +17,20 @@ const PageGrid2MessageDefault: pages.PageGridMessage = {
     options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
 export class PageGrid extends PageMenu {
-    config: pages.PageBaseConfig['config'];
+    config: pages.cardGridDataItemOptions;
     items: pages.PageBaseConfig['items'];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
+        if (
+            !(
+                options.config?.card === 'cardGrid' ||
+                options.config?.card === 'cardGrid2' ||
+                options.config?.card === 'cardGrid3'
+            )
+        ) {
+            throw new Error('PageGrid: invalid config card');
+        }
         this.config = options.config;
         this.iconLeftP = 'arrow-left-bold-outline';
         this.iconLeft = 'arrow-up-bold';

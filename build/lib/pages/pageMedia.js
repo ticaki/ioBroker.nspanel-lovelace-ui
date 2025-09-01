@@ -1025,6 +1025,10 @@ class PageMedia extends import_Page.Page {
     var _a, _b, _c;
     return (_c = await ((_b = (_a = this.currentItems) == null ? void 0 : _a.data.isPlaying) == null ? void 0 : _b.getBoolean())) != null ? _c : false;
   }
+  async delete() {
+    await super.delete();
+    this.tempItems = void 0;
+  }
 }
 async function getValueFromBoolean(item, type, value = true) {
   if (item) {

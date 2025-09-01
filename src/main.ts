@@ -67,6 +67,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             common: { name: { en: 'Nspanel Instance', de: 'Nspanel Instanze' }, type: 'meta.folder' },
             native: {},
         });
+        if (this.config.forceTFTVersion) {
+            this.log.warn(
+                `⚠️  TFT firmware is pinned to version ${this.config.forceTFTVersion}. Remember: you will always stay on this version until you change it.`,
+            );
+        }
 
         if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
             this.config.mqttPassword = this.config.mqttPassword || '';
@@ -889,7 +894,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 try {
                                     await this.delay(3000);
 
-                                    if (!result || !result.data) {
+                                    const cmnd = await this.getTFTVersionOnline(
+                                        obj.message.model,
+                                        obj.message.useBetaTFT,
+                                        this.config.forceTFTVersion,
+                                        result,
+                                    );
+                                    if (!cmnd) {
                                         this.log.error('No version found!');
                                         if (obj.callback) {
                                             this.sendTo(
@@ -901,16 +912,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         }
                                         break;
                                     }
-                                    const model = obj.message.model ? `-${obj.message.model}` : '';
-                                    const version = obj.message.useBetaTFT
-                                        ? result.data[`tft${model}-beta`].split('_')[0]
-                                        : result.data[`tft${model}`].split('_')[0];
-                                    const fileName = `nspanel-${model}v${version}.tft`;
                                     if (this.mqttClient) {
-                                        await this.mqttClient.publish(
-                                            `${topic}/cmnd/Backlog`,
-                                            `FlashNextionAdv0 http://nspanel.de/${fileName}`,
-                                        );
+                                        await this.mqttClient.publish(`${topic}/cmnd/Backlog`, `${cmnd}`);
                                         await this.delay(100);
                                         await this.mqttClient.publish(`${topic}/cmnd/Backlog`, ``);
                                     }
@@ -1013,10 +1016,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.message) {
                         if (obj.message.tasmotaIP /*&& obj.message.internalServerIp*/) {
                             try {
-                                const result = await axios.get(
-                                    'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                                const cmnd = await this.getTFTVersionOnline(
+                                    obj.message.model,
+                                    obj.message.useBetaTFT,
+                                    this.config.forceTFTVersion,
                                 );
-                                if (!result.data) {
+                                if (!cmnd) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
                                         this.sendTo(
@@ -1028,17 +1033,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     }
                                     break;
                                 }
-
-                                const model = obj.message.model ? `-${obj.message.model}` : '';
-                                const version = obj.message.useBetaTFT
-                                    ? result.data[`tft${model}-beta`].split('_')[0]
-                                    : result.data[`tft${model}`].split('_')[0];
-                                const fileName = `nspanel-${model}v${version}.tft`;
-
                                 const url =
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                                    `&cmnd=Backlog FlashNextionAdv0 http://nspanel.de/${fileName}`;
+                                    `&cmnd=Backlog ${cmnd}`;
                                 this.log.debug(url);
                                 await axios.get(url);
 
@@ -1063,10 +1061,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.message) {
                         if (obj.message.topic /*&& obj.message.internalServerIp*/) {
                             try {
-                                const result = await axios.get(
-                                    'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                                const cmnd = await this.getTFTVersionOnline(
+                                    obj.message.model,
+                                    obj.message.useBetaTFT,
+                                    this.config.forceTFTVersion,
                                 );
-                                if (!result.data) {
+                                if (!cmnd) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
                                         this.sendTo(
@@ -1079,14 +1079,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     break;
                                 }
 
-                                const model = obj.message.model ? `-${obj.message.model}` : '';
-                                const version = obj.message.useBetaTFT
-                                    ? result.data[`tft${model}-beta`].split('_')[0]
-                                    : result.data[`tft${model}`].split('_')[0];
-                                const fileName = `nspanel-v${version}.tft`;
-
-                                const cmnd = `FlashNextionAdv0 http://nspanel.de/${fileName}`;
-                                this.log.debug(cmnd);
                                 if (this.controller?.panels) {
                                     const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
                                     if (index !== -1) {
@@ -1746,7 +1738,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         source: file,
                         debug: false,
                         verbose: false,
-                        enabled: false,
+                        enabled: o?.common.enabled ?? true,
                     },
                     native: {},
                 };
@@ -1754,6 +1746,51 @@ class NspanelLovelaceUi extends utils.Adapter {
                 return [];
             }
         }
+    }
+    async getTFTVersionOnline(
+        m: string,
+        beta: boolean,
+        alpha: string,
+        result?: axios.AxiosResponse<any, any>,
+    ): Promise<string | null> {
+        if (!result) {
+            result = await axios.get(
+                'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                { timeout: 10_000 },
+            );
+        }
+        const data = result?.data;
+        if (!data) {
+            this.log.error('No version data received.');
+            return null;
+        }
+        data['tft-alpha'] = alpha;
+
+        const modelSuffix = m ? `-${m}` : '';
+        const key = alpha ? `tft${modelSuffix}-alpha` : beta ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
+
+        const entry = data[key] as string | undefined;
+        if (!entry) {
+            this.log.error(`No version entry for key "${key}".`);
+            return null;
+        }
+
+        const version = String(entry).split('_')[0]; // z.B. "1.2.3" aus "1.2.3_filename"
+        if (!version) {
+            this.log.error(`Invalid version in entry for "${key}": ${entry}`);
+            return null;
+        }
+
+        const fileName = `nspanel${modelSuffix}-v${version}.tft`;
+        const url = `http://nspanel.de/${encodeURIComponent(fileName)}`;
+        const cmnd = `FlashNextionAdv0 ${url}`;
+
+        if (alpha) {
+            this.log.warn(`⚠️  Installing pinned ${alpha} TFT firmware – for testing only.`);
+        }
+
+        this.log.debug(cmnd);
+        return cmnd;
     }
 }
 
