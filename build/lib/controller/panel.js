@@ -1207,7 +1207,6 @@ class Panel extends import_library.BaseClass {
         await this.writeInfo();
         this.sendDimmode();
         this.navigation.resetPosition();
-        await this.adapter.delay(50);
         const start = this.navigation.getCurrentMainPage();
         if (start === void 0) {
           this.log.error("No start page defined!");
@@ -1216,6 +1215,7 @@ class Panel extends import_library.BaseClass {
         if (this._activePage) {
           await this._activePage.setVisibility(false);
         }
+        await this.adapter.delay(2500);
         start.setLastPage(void 0);
         await start.setVisibility(true);
         this._activePage = start;

@@ -1319,8 +1319,6 @@ export class Panel extends BaseClass {
                 this.sendDimmode();
                 this.navigation.resetPosition();
 
-                await this.adapter.delay(50);
-
                 const start = this.navigation.getCurrentMainPage();
                 if (start === undefined) {
                     this.log.error('No start page defined!');
@@ -1329,6 +1327,9 @@ export class Panel extends BaseClass {
                 if (this._activePage) {
                     await this._activePage.setVisibility(false);
                 }
+
+                await this.adapter.delay(2500);
+
                 start.setLastPage(undefined);
                 await start.setVisibility(true);
                 this._activePage = start;
