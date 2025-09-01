@@ -733,6 +733,44 @@ class PageMedia extends import_Page.Page {
           }
         },
         {
+          // online
+          role: "",
+          type: "text",
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "wifi" },
+                color: { type: "const", constVal: import_Color.Color.good }
+              },
+              false: {
+                value: { type: "const", constVal: "wifi-off" },
+                color: { type: "const", constVal: import_Color.Color.attention }
+              },
+              scale: void 0,
+              maxBri: void 0,
+              minBri: void 0
+            },
+            entity1: {
+              value: {
+                mode: "auto",
+                type: "triggered",
+                role: "indicator.reachable",
+                regexp: /.?\.online$/,
+                dp: ""
+              }
+            },
+            enabled: {
+              mode: "auto",
+              type: "triggered",
+              role: "indicator.reachable",
+              regexp: /.?\.online$/,
+              dp: "",
+              read: "return !val;"
+            }
+          }
+        },
+        {
           //speaker select
           role: "alexa-speaker",
           type: "input_sel",
@@ -789,6 +827,29 @@ class PageMedia extends import_Page.Page {
              * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
              */
             setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+          }
+        },
+        {
+          role: "alexa-playlist",
+          type: "input_sel",
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "playlist-play" },
+                color: { type: "const", constVal: import_Color.Color.activated }
+              }
+            },
+            entityInSel: {
+              value: {
+                type: "const",
+                constVal: "My Playlist"
+              }
+            },
+            valueList: {
+              type: "const",
+              constVal: JSON.stringify(page.media.playList || [])
+            }
           }
         },
         {
@@ -923,19 +984,19 @@ class PageMedia extends import_Page.Page {
           }
         },
         {
-          // online
+          // repeat
           role: "",
           type: "text",
           dpInit: "",
           data: {
             icon: {
               true: {
-                value: { type: "const", constVal: "wifi" },
-                color: { type: "const", constVal: import_Color.Color.good }
+                value: { type: "const", constVal: "repeat-variant" },
+                color: { type: "const", constVal: import_Color.Color.activated }
               },
               false: {
-                value: { type: "const", constVal: "wifi-off" },
-                color: { type: "const", constVal: import_Color.Color.attention }
+                value: { type: "const", constVal: "repeat" },
+                color: { type: "const", constVal: import_Color.Color.deactivated }
               },
               scale: void 0,
               maxBri: void 0,
@@ -945,74 +1006,17 @@ class PageMedia extends import_Page.Page {
               value: {
                 mode: "auto",
                 type: "triggered",
-                role: "indicator.reachable",
-                regexp: /.?\.online$/,
+                role: "media.mode.repeat",
+                regexp: /\.Player\.controlRepeat$/,
                 dp: ""
               }
-            }
-          }
-        },
-        {
-          role: "alexa-playlist",
-          type: "input_sel",
-          dpInit: "",
-          data: {
-            icon: {
-              true: {
-                value: { type: "const", constVal: "playlist-play" },
-                color: { type: "const", constVal: import_Color.Color.activated }
-              }
             },
-            entityInSel: {
-              value: {
-                type: "const",
-                constVal: "My Playlist"
-              }
-            },
-            valueList: {
-              type: "const",
-              constVal: JSON.stringify(page.media.playList || [])
-            }
-          }
-        },
-        {
-          role: "text.list",
-          type: "button",
-          dpInit: "",
-          data: {
-            color: {
-              true: {
-                type: "const",
-                constVal: import_Color.Color.HMIOn
-              },
-              false: void 0,
-              scale: void 0
-            },
-            icon: {
-              true: {
-                value: { type: "const", constVal: "home" },
-                color: { type: "const", constVal: import_Color.Color.Green }
-              },
-              false: {
-                value: { type: "const", constVal: "fan" },
-                color: { type: "const", constVal: import_Color.Color.Red }
-              },
-              scale: void 0,
-              maxBri: void 0,
-              minBri: void 0
-            },
-            entity1: {
-              value: {
-                type: "const",
-                constVal: true
-              },
-              decimal: void 0,
-              factor: void 0,
-              unit: void 0
-            },
-            text: {
-              true: void 0,
-              false: void 0
+            enabled: {
+              mode: "auto",
+              type: "triggered",
+              role: "indicator",
+              regexp: /\.Player\.allowRepeat$/,
+              dp: ""
             }
           }
         }

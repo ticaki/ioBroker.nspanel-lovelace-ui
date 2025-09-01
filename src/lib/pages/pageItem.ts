@@ -67,6 +67,9 @@ export class PageItem extends BaseClassTriggerd {
             )) as typePageItem.PageItemDataItems['data'];
         this.dataItems = { ...config, data: tempItem } as typePageItem.PageItemDataItems;
         this.canBeHidden = !!this.dataItems.data?.enabled;
+        if (this.dataItems.data && 'enabled' in this.dataItems.data && this.dataItems.data.enabled) {
+            this.canBeHidden = true;
+        }
         switch (this.dataItems.type) {
             case 'number':
             case 'button':

@@ -85,6 +85,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     );
     this.dataItems = { ...config, data: tempItem };
     this.canBeHidden = !!((_a = this.dataItems.data) == null ? void 0 : _a.enabled);
+    if (this.dataItems.data && "enabled" in this.dataItems.data && this.dataItems.data.enabled) {
+      this.canBeHidden = true;
+    }
     switch (this.dataItems.type) {
       case "number":
       case "button":
