@@ -35,7 +35,7 @@ export class PageMedia extends Page {
     config: pages.PageBaseConfig['config'];
     items: pages.cardMediaDataItems[] = [];
     currentItems: pages.cardMediaDataItems | undefined;
-    private step: number = 1;
+    private step: number = 0;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private artistPos: number = 0;
@@ -103,6 +103,7 @@ export class PageMedia extends Page {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         await super.onVisibilityChange(val);
         if (val) {
+            this.step = 0;
             this.headlinePos = 0;
             this.titelPos = 0;
         } else {
@@ -323,41 +324,39 @@ export class PageMedia extends Page {
         }
 
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
-        if (!this.tempItems || this.step <= 1) {
+        if (!this.tempItems || this.tempItems.length === 0 || this.step <= 0) {
             this.tempItems = await this.getEnabledPageItems();
         }
         if (this.tempItems) {
-            const localStep = this.tempItems.length > 6 ? 4 : 5;
-            if (this.tempItems.length - 1 <= localStep * (this.step - 1)) {
-                this.step = 1;
+            const showArrow = this.tempItems.length > 6;
+            const visibleSlots = showArrow ? 4 : 5;
+            const start = this.step * visibleSlots + 1;
+
+            if (start >= this.tempItems.length) {
+                this.step = 0;
             }
-            // arrow is at index [0]
-            const maxSteps = localStep * this.step + 1;
-            const minStep = localStep * (this.step - 1) + 1;
-            let b = minStep;
-            for (let a = minStep; a < maxSteps; a++) {
-                const temp = this.tempItems[b++];
+
+            // Inhalte befüllen
+            for (let i = 0; i < visibleSlots; i++) {
+                const idx = this.step * visibleSlots + 1 + i;
+                const temp = this.tempItems[idx];
                 if (temp && !temp.unload) {
                     if (!this.visibility) {
                         return;
                     }
                     const msg = await temp.getPageItemPayload();
-                    if (msg) {
-                        opts[a - minStep] = msg;
-                    } else {
-                        a--;
-                    }
+                    opts[i] = msg || '~~~~~';
                 } else {
-                    opts[a - minStep] = '~~~~~';
+                    opts[i] = '~~~~~';
                 }
             }
 
-            if (localStep === 4) {
+            if (showArrow) {
                 this.nextArrow = true;
-                const temp = this.tempItems[0];
-                if (temp) {
-                    opts[4] = await temp.getPageItemPayload();
-                }
+                const arrowItem = this.tempItems[0];
+                opts[visibleSlots] = arrowItem ? await arrowItem.getPageItemPayload() : '~~~~~';
+            } else {
+                this.nextArrow = false;
             }
         }
         message.navigation = this.getNavigation();
@@ -422,7 +421,7 @@ export class PageMedia extends Page {
         await this.update();
     };
     async reset(): Promise<void> {
-        this.step = 1;
+        this.step = 0;
         this.headlinePos = 0;
         this.titelPos = 0;
     }

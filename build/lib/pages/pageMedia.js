@@ -57,7 +57,7 @@ class PageMedia extends import_Page.Page {
   config;
   items = [];
   currentItems;
-  step = 1;
+  step = 0;
   headlinePos = 0;
   titelPos = 0;
   artistPos = 0;
@@ -115,6 +115,7 @@ class PageMedia extends import_Page.Page {
   async onVisibilityChange(val) {
     await super.onVisibilityChange(val);
     if (val) {
+      this.step = 0;
       this.headlinePos = 0;
       this.titelPos = 0;
     } else {
@@ -313,39 +314,35 @@ class PageMedia extends import_Page.Page {
       }
     }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
-    if (!this.tempItems || this.step <= 1) {
+    if (!this.tempItems || this.tempItems.length === 0 || this.step <= 0) {
       this.tempItems = await this.getEnabledPageItems();
     }
     if (this.tempItems) {
-      const localStep = this.tempItems.length > 6 ? 4 : 5;
-      if (this.tempItems.length - 1 <= localStep * (this.step - 1)) {
-        this.step = 1;
+      const showArrow = this.tempItems.length > 6;
+      const visibleSlots = showArrow ? 4 : 5;
+      const start = this.step * visibleSlots + 1;
+      if (start >= this.tempItems.length) {
+        this.step = 0;
       }
-      const maxSteps = localStep * this.step + 1;
-      const minStep = localStep * (this.step - 1) + 1;
-      let b = minStep;
-      for (let a = minStep; a < maxSteps; a++) {
-        const temp = this.tempItems[b++];
+      for (let i = 0; i < visibleSlots; i++) {
+        const idx = this.step * visibleSlots + 1 + i;
+        const temp = this.tempItems[idx];
         if (temp && !temp.unload) {
           if (!this.visibility) {
             return;
           }
           const msg2 = await temp.getPageItemPayload();
-          if (msg2) {
-            opts[a - minStep] = msg2;
-          } else {
-            a--;
-          }
+          opts[i] = msg2 || "~~~~~";
         } else {
-          opts[a - minStep] = "~~~~~";
+          opts[i] = "~~~~~";
         }
       }
-      if (localStep === 4) {
+      if (showArrow) {
         this.nextArrow = true;
-        const temp = this.tempItems[0];
-        if (temp) {
-          opts[4] = await temp.getPageItemPayload();
-        }
+        const arrowItem = this.tempItems[0];
+        opts[visibleSlots] = arrowItem ? await arrowItem.getPageItemPayload() : "~~~~~";
+      } else {
+        this.nextArrow = false;
       }
     }
     message.navigation = this.getNavigation();
@@ -408,7 +405,7 @@ class PageMedia extends import_Page.Page {
     await this.update();
   };
   async reset() {
-    this.step = 1;
+    this.step = 0;
     this.headlinePos = 0;
     this.titelPos = 0;
   }
