@@ -30,7 +30,24 @@ export class Controller extends Library.BaseClass {
         options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] },
     ) {
         super(adapter, options.name);
-        Color.setTheme(Color.currentTheme);
+        switch (this.adapter.config.colorTheme) {
+            case 1:
+                Color.setTheme(Color.technicalTheme);
+                break;
+            case 2:
+                Color.setTheme(Color.topicalTheme);
+                break;
+            case 3:
+                Color.setTheme(Color.defaultTheme);
+                break;
+            case 4:
+                Color.setTheme(Color.sunsetTheme);
+                break;
+            case 0:
+            default:
+                Color.setTheme(Color.defaultTheme);
+                break;
+        }
         this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);

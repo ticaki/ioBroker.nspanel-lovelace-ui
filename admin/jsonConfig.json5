@@ -513,6 +513,39 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "_headerColorTheme":{
+                    "type": "header",
+                    "text": "headerDateFormat",
+                    "size": 3
+                },
+                "colorTheme":{
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 2,
+                    "lg": 1,
+                    "xl": 1,
+                    "type": "select",
+                    "label": "colorTheme",
+                    "default": 0,
+                    "options": [
+                        {
+                            "label": "default",
+                            "value": 0
+                        },
+                        {
+                            "label": "technical",
+                            "value": 1
+                        },
+                        {
+                            "label": "tropical",
+                            "value": 2
+                        },
+                        {
+                            "label": "sunset",
+                            "value": 3
+                        }
+                    ]
+                },
                 "_headerDateFormat": {
                     "type": "header",
                     "text": "headerDateFormat",

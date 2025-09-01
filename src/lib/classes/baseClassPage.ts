@@ -174,25 +174,6 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.unload) {
                     return;
                 }
-                /*if (this.alwaysOn != 'ignore') {
-                    if (this.alwaysOn != 'none') {
-                        if (this.alwaysOn === 'action') {
-                            if (this.unload) {
-                                return;
-                            }
-                            this.alwaysOnState = this.adapter.setTimeout(
-                                async () => {
-                                    this.panel.sendScreeensaverTimeout(this.panel.timeout);
-                                },
-                                this.panel.timeout * 2 * 1000 || 5000,
-                            );
-                        } else {
-                            this.panel.sendScreeensaverTimeout(0);
-                        }
-                    } else {
-                        this.panel.sendScreeensaverTimeout(this.panel.timeout);
-                    }
-                }*/
 
                 this.log.debug(`[${this.basePanel.friendlyName}] Switch page to visible!`);
                 this.resetLastMessage();

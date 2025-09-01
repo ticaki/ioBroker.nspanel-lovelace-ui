@@ -19,7 +19,7 @@ declare global {
             shutterClosedIsZero: boolean;
             defaultValueCardThermo: boolean;
             forceTFTVersion: string;
-            
+            colorTheme: number;
             fixBrokenCommonTypes: boolean;
 
             //onlyStartFromSystemConfig: boolean;

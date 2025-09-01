@@ -35,6 +35,7 @@ module.exports = __toCommonJS(Color_exports);
 var import_colord = require("colord");
 var import_names = __toESM(require("colord/plugins/names"));
 var import_mix = __toESM(require("colord/plugins/mix"));
+var _a;
 (0, import_colord.extend)([import_names.default, import_mix.default]);
 function test(k) {
   return Color[k];
@@ -62,6 +63,12 @@ class ColorBase {
   static off = "default.color.from.start.off";
   static light = "default.color.from.start.light";
   static dark = "default.color.from.start.dark";
+  static warning = "default.color.from.start.warning";
+  static success = "default.color.from.start.success";
+  static neutral = "default.color.from.start.neutral";
+  static background = "default.color.from.start.background";
+  static highlight = "default.color.from.start.highlight";
+  static disabled = "default.color.from.start.disabled";
 }
 class Color extends ColorBase {
   static HMIOff = { r: 68, g: 115, b: 158 };
@@ -96,6 +103,42 @@ class Color extends ColorBase {
   static Menu = { r: 150, g: 150, b: 100 };
   static MenuLowInd = { r: 255, g: 235, b: 156 };
   static MenuHighInd = { r: 251, g: 105, b: 98 };
+  static Coral = { r: 255, g: 127, b: 80 };
+  // Korallenrot
+  static Turquoise = { r: 64, g: 224, b: 208 };
+  // Türkis
+  static Lime = { r: 173, g: 255, b: 47 };
+  // Limettengrün
+  static Sunset = { r: 255, g: 94, b: 77 };
+  // Sonnenuntergangsrot
+  static Ocean = { r: 0, g: 119, b: 190 };
+  // Ozeanblau
+  static Palm = { r: 0, g: 153, b: 76 };
+  // Palmengrün
+  static Sand = { r: 237, g: 201, b: 175 };
+  // Sandbeige
+  static Orchid = { r: 218, g: 112, b: 214 };
+  // Tropische Blüte
+  static Mango = { r: 255, g: 166, b: 77 };
+  // Mango-Orange
+  static Orange = { r: 255, g: 165, b: 0 };
+  // Orange
+  static Sun = { r: 255, g: 223, b: 0 };
+  // Sonnengelb
+  static BlueLight = { r: 135, g: 206, b: 250 };
+  // Hellblau
+  static Purple = { r: 128, g: 0, b: 128 };
+  // Lila
+  static Pink = { r: 255, g: 192, b: 203 };
+  // Rosa
+  static Brown = { r: 165, g: 42, b: 42 };
+  // Braun
+  static Mint = { r: 189, g: 252, b: 201 };
+  // Mintgrün
+  static Violet = { r: 238, g: 130, b: 238 };
+  // Violett
+  static LightGray = { r: 211, g: 211, b: 211 };
+  // Hellgrau
   //Dynamische Indikatoren (Abstufung grün nach gelb nach rot)
   static colorScale0 = { r: 99, g: 190, b: 123 };
   static colorScale1 = { r: 129, g: 199, b: 126 };
@@ -192,13 +235,26 @@ class Color extends ColorBase {
           return Color.light;
         case "default.color.from.start.dark":
           return Color.dark;
+        case "default.color.from.start.warning":
+          return Color.warning;
+        case "default.color.from.start.success":
+          return Color.success;
+        case "default.color.from.start.neutral":
+          return Color.neutral;
+        case "default.color.from.start.background":
+          return Color.background;
+        case "default.color.from.start.highlight":
+          return Color.highlight;
+        case "default.color.from.start.disabled":
+          return Color.disabled;
         default:
           console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
       }
     }
     return s;
   }
-  static currentTheme = {
+  //default
+  static defaultTheme = {
     good: Color.Green,
     bad: Color.Red,
     true: Color.Green,
@@ -218,7 +274,161 @@ class Color extends ColorBase {
     on: Color.On,
     off: Color.Off,
     light: Color.White,
-    dark: Color.Gray
+    dark: Color.Gray,
+    warning: Color.Orange,
+    success: Color.Green,
+    neutral: Color.Gray,
+    background: Color.HMIDark,
+    highlight: Color.HMIOn,
+    disabled: Color.HMIOff
+  };
+  //tropical
+  static topicalTheme = {
+    good: Color.Palm,
+    // kräftiges Palmengrün
+    bad: Color.Coral,
+    // warmes Korallenrot
+    true: Color.Lime,
+    // spritziges Limettengrün
+    false: Color.Sunset,
+    // Sonnenuntergangsrot
+    activated: Color.Turquoise,
+    // leuchtendes Türkis
+    deactivated: Color.Sand,
+    // sandig-neutral
+    attention: Color.Mango,
+    // fruchtiges Mango-Orange
+    info: Color.Orchid,
+    // tropische Blüte (Orchideenrosa)
+    option1: Color.Turquoise,
+    // türkis als Standardoption
+    option2: Color.Mango,
+    // Mango-Orange
+    option3: Color.Coral,
+    // Korallenrot
+    option4: Color.Lime,
+    // Limettengrün
+    open: Color.Ocean,
+    // offen = Ozeanblau
+    close: Color.Palm,
+    // geschlossen = Palmengrün
+    hot: Color.Sunset,
+    // heiß = Sonnenuntergang
+    cold: Color.Turquoise,
+    // kalt = Türkis
+    on: Color.Mango,
+    // an = Mango
+    off: Color.Sand,
+    // aus = Sand
+    light: Color.Sun,
+    // ☀️ evtl. als Yellow/Weiß
+    dark: Color.Ocean,
+    // dunkel = tiefes Ozeanblau
+    warning: Color.Coral,
+    // auffälliges Korallenrot
+    success: Color.Palm,
+    // kräftiges Palmengrün
+    neutral: Color.Sand,
+    // sandfarben neutral
+    background: Color.Ocean,
+    // tiefes Ozeanblau
+    highlight: Color.Sunset,
+    // Sonnenuntergang als Highlight
+    disabled: Color.Gray
+    // neutral deaktiviert
+  };
+  // technical
+  static technicalTheme = {
+    good: Color.HMIOn,
+    // technisches Blau
+    bad: Color.MSRed,
+    // klares MS-Rot
+    true: Color.Green,
+    // Grün bleibt für "an"
+    false: Color.Red,
+    // Rot bleibt für "aus"
+    activated: Color.Cyan,
+    // Cyan für aktive Elemente
+    deactivated: Color.Gray,
+    // grau für deaktivierte
+    attention: Color.Yellow,
+    // gelb für Warnungen
+    info: Color.White,
+    // Weiß für neutrale Infos
+    option1: Color.Blue,
+    // verschiedene Blau-Töne
+    option2: Color.DarkBlue,
+    option3: Color.Cyan,
+    option4: Color.HMIOff,
+    open: Color.Cyan,
+    close: Color.DarkBlue,
+    hot: Color.Red,
+    cold: Color.Blue,
+    on: Color.HMIOn,
+    off: Color.HMIOff,
+    light: Color.White,
+    dark: Color.Black,
+    warning: Color.Yellow,
+    // starke Warnfarbe
+    success: Color.Green,
+    // klassisch grün für Erfolg
+    neutral: Color.Gray,
+    // neutral in grau
+    background: Color.HMIDark,
+    // dunkler technischer Hintergrund
+    highlight: Color.Cyan,
+    // Akzentfarbe
+    disabled: Color.HMIOff
+    // bläulich-grau für deaktiviert
+  };
+  //sunset
+  static sunsetTheme = {
+    good: Color.MSGreen,
+    // weiches Grün für "ok"
+    bad: Color.MSRed,
+    // warmes Rot für "Fehler"
+    true: Color.On,
+    // helles Gelb wie Abendsonne
+    false: Color.Off,
+    // orange-rot für "aus"
+    activated: Color.Yellow,
+    // leuchtendes Gelb
+    deactivated: Color.Gray,
+    // gedämpftes Grau
+    attention: Color.colorRadio,
+    // kräftiges Orange (Radio)
+    info: Color.White,
+    // neutraler Weißton
+    option1: Color.Red,
+    // rot wie die Sonne im Horizont
+    option2: (_a = Color.Orange) != null ? _a : { r: 255, g: 140, b: 0 },
+    // neu definierter Orange-Ton
+    option3: Color.Magenta,
+    // violett für Akzente
+    option4: Color.colorSonos,
+    // warmes Gold
+    open: Color.Red,
+    close: Color.Green,
+    hot: Color.Off,
+    // orange-rot für "heiß"
+    cold: Color.DarkBlue,
+    // blauer Abendhimmel
+    on: Color.Yellow,
+    off: Color.Off,
+    light: Color.White,
+    dark: Color.HMIDark,
+    warning: Color.Off,
+    // kräftiges Orange
+    success: Color.Green,
+    // grünlich, aber warm
+    neutral: Color.Gray,
+    // neutral gehalten
+    background: { r: 48, g: 27, b: 63 },
+    // tiefes Violett für den Himmel
+    highlight: Color.Magenta,
+    // Sonnenuntergangs-Violett
+    disabled: Color.HMIOff
+    // bläulich-grau für inaktiv
   };
   /**
    * set color theme...
@@ -227,7 +437,12 @@ class Color extends ColorBase {
    */
   static setTheme(s) {
     for (const a in s) {
-      Color[a] = s[a];
+      if (a) {
+        const value = s[a];
+        if (value !== void 0) {
+          Color[a] = value;
+        }
+      }
     }
   }
   static rgb_dec565(rgb) {

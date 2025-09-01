@@ -51,7 +51,24 @@ class Controller extends Library.BaseClass {
   systemNotification;
   constructor(adapter, options) {
     super(adapter, options.name);
-    import_Color.Color.setTheme(import_Color.Color.currentTheme);
+    switch (this.adapter.config.colorTheme) {
+      case 1:
+        import_Color.Color.setTheme(import_Color.Color.technicalTheme);
+        break;
+      case 2:
+        import_Color.Color.setTheme(import_Color.Color.topicalTheme);
+        break;
+      case 3:
+        import_Color.Color.setTheme(import_Color.Color.defaultTheme);
+        break;
+      case 4:
+        import_Color.Color.setTheme(import_Color.Color.sunsetTheme);
+        break;
+      case 0:
+      default:
+        import_Color.Color.setTheme(import_Color.Color.defaultTheme);
+        break;
+    }
     this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
