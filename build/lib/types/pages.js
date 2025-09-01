@@ -22,11 +22,12 @@ __export(pages_exports, {
   exhaustiveCheck: () => exhaustiveCheck,
   isAlarmButtonEvent: () => isAlarmButtonEvent,
   isButtonActionType: () => isButtonActionType,
-  isCardEntitiesRole: () => isCardEntitiesRole,
-  isCardGridRole: () => isCardGridRole,
+  isCardEntitiesType: () => isCardEntitiesType,
+  isCardGridType: () => isCardGridType,
   isCardMenuRole: () => isCardMenuRole,
   isClosingBehavior: () => isClosingBehavior,
   isColorEntryType: () => isColorEntryType,
+  isPageMenuConfig: () => isPageMenuConfig,
   isPlaceholderType: () => isPlaceholderType,
   isQRButtonEvent: () => isQRButtonEvent,
   isScreenSaverCardType: () => isScreenSaverCardType,
@@ -38,14 +39,20 @@ __export(pages_exports, {
   stateRoleArray: () => stateRoleArray
 });
 module.exports = __toCommonJS(pages_exports);
-function isCardEntitiesRole(F) {
+function isCardEntitiesType(F) {
   return ["cardEntities", "cardSchedule"].indexOf(F) !== -1;
 }
-function isCardGridRole(F) {
-  return ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"].indexOf(F) !== -1;
+function isCardGridType(F) {
+  return ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2", "cardMedia"].indexOf(F) !== -1;
 }
 function isCardMenuRole(F) {
-  return isCardEntitiesRole(F) || isCardGridRole(F);
+  return isCardEntitiesType(F) || isCardGridType(F);
+}
+function isPageMenuConfig(F) {
+  if (typeof F !== "object" || F === null || !("card" in F) || F.card === "cardMedia") {
+    return false;
+  }
+  return isCardMenuRole(F.card);
 }
 const arrayOfAll = () => (array) => array;
 function exhaustiveCheck(_param) {
@@ -353,11 +360,12 @@ function isPlaceholderType(F) {
   exhaustiveCheck,
   isAlarmButtonEvent,
   isButtonActionType,
-  isCardEntitiesRole,
-  isCardGridRole,
+  isCardEntitiesType,
+  isCardGridType,
   isCardMenuRole,
   isClosingBehavior,
   isColorEntryType,
+  isPageMenuConfig,
   isPlaceholderType,
   isQRButtonEvent,
   isScreenSaverCardType,

@@ -817,12 +817,9 @@ class PageMedia extends import_Page.Page {
               factor: void 0,
               unit: void 0
             },
-            text: {
-              true: {
-                type: "const",
-                constVal: "speakerList"
-              },
-              false: void 0
+            headline: {
+              type: "const",
+              constVal: "speakerList"
             },
             /**
              * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
@@ -858,11 +855,9 @@ class PageMedia extends import_Page.Page {
               type: "const",
               constVal: JSON.stringify(page.media.playList || [])
             },
-            text: {
-              true: {
-                type: "const",
-                constVal: "playList"
-              }
+            headline: {
+              type: "const",
+              constVal: "playList"
             }
           }
         },

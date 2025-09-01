@@ -231,7 +231,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         case "light":
         case "light2": {
           const item = entry.data;
-          message.type = (0, import_pages.isCardGridRole)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.parent.currentPanel.overrideLightPopup ? this.parent.currentPanel.lightPopupV2 && this.parent.currentPanel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
+          message.type = (0, import_pages.isCardGridType)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.parent.currentPanel.overrideLightPopup ? this.parent.currentPanel.lightPopupV2 && this.parent.currentPanel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_b = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _b : null;
           let rgb = (_d = (_c = await tools.getRGBfromRGBThree(item)) != null ? _c : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _d : null;
@@ -403,7 +403,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
             } else if (entry.type === "button") {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
-              if ((0, import_pages.isCardEntitiesRole)(this.parent.card)) {
+              if ((0, import_pages.isCardEntitiesType)(this.parent.card)) {
                 message.optionalValue = (_G = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _G : message.optionalValue;
               }
             } else {
@@ -453,7 +453,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                if ((0, import_pages.isCardEntitiesRole)(this.parent.card)) {
+                if ((0, import_pages.isCardEntitiesType)(this.parent.card)) {
                   message.optionalValue = (_J = await entry.data.confirm.getString()) != null ? _J : message.optionalValue;
                 }
                 this.confirmClick = Date.now();
@@ -491,7 +491,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                   !!value,
                   "",
                   null,
-                  (_R = !(0, import_pages.isCardEntitiesRole)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _R : false
+                  (_R = !(0, import_pages.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _R : false
                 )) != null ? _S : "";
               }
             }

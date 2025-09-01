@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageMenu_exports = {};
 __export(pageMenu_exports, {
@@ -25,6 +35,7 @@ var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
+var pages = __toESM(require("../types/pages"));
 var import_data_collection_functions = require("./data-collection-functions");
 class PageMenu extends import_Page.Page {
   maxItems = 4;
@@ -122,7 +133,7 @@ class PageMenu extends import_Page.Page {
   }
   async onVisibilityChange(val) {
     if (val) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardThermo2" || this.config.card === "cardGrid2")) {
+      if (this.config && pages.isPageMenuConfig(this.config)) {
         switch (this.config.card) {
           case "cardSchedule":
           case "cardGrid":
@@ -155,7 +166,7 @@ class PageMenu extends import_Page.Page {
     await super.onVisibilityChange(val);
   }
   goLeft(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardThermo2" && this.config.card !== "cardGrid3") {
+    if (!this.config || !pages.isPageMenuConfig(this.config)) {
       return;
     }
     if (!single) {
@@ -186,7 +197,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   goRight(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardThermo2" && this.config.card !== "cardGrid3") {
+    if (!this.config || !pages.isPageMenuConfig(this.config)) {
       return;
     }
     if (!single) {
@@ -222,7 +233,7 @@ class PageMenu extends import_Page.Page {
   }
   getNavigation() {
     var _a;
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3" && this.config.card !== "cardThermo2") {
+    if (!this.config || !pages.isPageMenuConfig(this.config)) {
       this.log.error(
         `PageMenu: ${(_a = this.config) == null ? void 0 : _a.card} is not supported in getNavigation! Please use the correct class for this card.`
       );

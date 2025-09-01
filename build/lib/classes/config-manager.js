@@ -1115,7 +1115,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     const role = obj ? obj.common.role : null;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
-    const specialRole = pages.isCardGridRole(page.type) && item.useValue ? "textNotIcon" : "iconNotText";
+    const specialRole = pages.isCardGridType(page.type) && item.useValue ? "textNotIcon" : "iconNotText";
     this.log.debug(
       `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`
     );
@@ -1141,8 +1141,8 @@ class ConfigManager extends import_library.BaseClass {
     const iconTextDefaults = {
       unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
       textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0,
-      prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
-      suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
+      prefix: pages.isCardEntitiesType(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+      suffix: pages.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
     };
     if (!item.id) {
       return {
@@ -1931,7 +1931,7 @@ class ConfigManager extends import_library.BaseClass {
           item.id,
           messages
         );
-        const specialRole = pages.isCardGridRole(page.type) && item.useValue ? "textNotIcon" : "iconNotText";
+        const specialRole = pages.isCardGridType(page.type) && item.useValue ? "textNotIcon" : "iconNotText";
         this.log.debug(
           `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`
         );
@@ -1960,8 +1960,8 @@ class ConfigManager extends import_library.BaseClass {
         const iconTextDefaults = {
           unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
           textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0,
-          prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
-          suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
+          prefix: pages.isCardEntitiesType(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+          suffix: pages.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
         };
         switch (role) {
           case "timeTable": {
@@ -2588,8 +2588,8 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 entity2: role === "temperature" || role === "humidity" || role === "value.temperature" || role === "value.humidity" ? {
                   value: foundedStates[role].ACTUAL,
-                  prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
-                  suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0,
+                  prefix: pages.isCardEntitiesType(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+                  suffix: pages.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0,
                   unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
                 } : void 0
               }
@@ -2643,8 +2643,8 @@ class ConfigManager extends import_library.BaseClass {
                 entity2: {
                   value: foundedStates[role].ACTUAL,
                   unit: item.unit ? { type: "const", constVal: item.unit } : { type: "const", constVal: commonUnit },
-                  prefix: pages.isCardEntitiesRole(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
-                  suffix: pages.isCardEntitiesRole(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
+                  prefix: pages.isCardEntitiesType(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+                  suffix: pages.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
                 }
               }
             };

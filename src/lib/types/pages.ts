@@ -5,18 +5,26 @@ import type * as Types from './types';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates';
 
-export function isCardEntitiesRole(F: any): F is cardEntitiesTypes {
+export function isCardEntitiesType(F: any): F is cardEntitiesTypes {
     return ['cardEntities', 'cardSchedule'].indexOf(F) !== -1;
 }
-export function isCardGridRole(F: any): F is cardGridTypes {
-    return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'].indexOf(F) !== -1;
+export function isCardGridType(F: any): F is cardGridTypes {
+    return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2', 'cardMedia'].indexOf(F) !== -1;
 }
 
 export function isCardMenuRole(F: any): F is cardGridTypes | cardEntitiesTypes {
-    return isCardEntitiesRole(F) || isCardGridRole(F);
+    return isCardEntitiesType(F) || isCardGridType(F);
+}
+
+// cardMedia use some features of cardGrid, but is not a menu card
+export function isPageMenuConfig(F: any): F is PageMenusConfigs {
+    if (typeof F !== 'object' || F === null || !('card' in F) || F.card === 'cardMedia') {
+        return false;
+    }
+    return isCardMenuRole(F.card);
 }
 export type cardEntitiesTypes = 'cardEntities' | 'cardSchedule';
-export type cardGridTypes = 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2';
+export type cardGridTypes = 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2' | 'cardMedia';
 export type PageTypeCards =
     | cardEntitiesTypes
     | cardGridTypes
@@ -508,6 +516,7 @@ export type PageMenusConfigs =
     | cardGridDataItemOptions
     | cardEntitiesDataItemOptions
     | cardScheduleDataItemOptions;
+
 export type PageOthersConfigs =
     | cardPowerDataItemOptions
     | cardMediaDataItemOptions
@@ -692,38 +701,38 @@ export type cardPowerDataItems = {
 };
 
 export type cardGridDataItemOptions = {
-    card: 'cardGrid' | 'cardGrid2' | 'cardGrid3';
+    card: Extract<cardGridTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3'>;
     cardRole?: CardRole;
     scrollType?: 'page';
     filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardGridDataItems = {
-    card: 'cardGrid' | 'cardGrid2' | 'cardGrid3';
+    card: Extract<cardGridTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3'>;
     data: ChangeTypeOfKeys<PageGridBaseConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardEntitiesDataItemOptions = {
-    card: 'cardEntities';
+    card: Extract<cardEntitiesTypes, 'cardEntities'>;
     cardRole?: CardRole;
     scrollType?: 'page';
     filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardEntitiesDataItems = {
-    card: 'cardEntities';
+    card: Extract<cardEntitiesTypes, 'cardEntities'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardScheduleDataItemOptions = {
-    card: 'cardSchedule';
+    card: Extract<cardEntitiesTypes, 'cardSchedule'>;
     cardRole?: CardRole;
     scrollType?: 'page';
     filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardScheduleDataItems = {
-    card: 'cardSchedule';
+    card: Extract<cardEntitiesTypes, 'cardSchedule'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
 
@@ -737,14 +746,14 @@ export type cardThermoDataItems = {
 };
 
 export type cardMediaDataItemOptions = {
-    card: 'cardMedia';
+    card: Extract<cardGridTypes, 'cardMedia'>;
     data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
         logo?: toolboxItem | undefined;
     };
 };
 
 export type cardMediaDataItems = {
-    card: 'cardMedia';
+    card: Extract<cardGridTypes, 'cardMedia'>;
     dpInit?: string;
     data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined> & {
         toolbox: (toolboxItemDataItem | undefined)[];
@@ -885,7 +894,7 @@ export type PageGridPowerConfigElement =
     | undefined;
 
 export type cardThermo2DataItemOptions = {
-    card: 'cardThermo2';
+    card: Extract<cardGridTypes, 'cardThermo2'>;
     filterType?: 'true' | 'false' | number;
     scrollType?: 'page';
     sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
@@ -893,7 +902,7 @@ export type cardThermo2DataItemOptions = {
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardThermo2DataItems = {
-    card: 'cardThermo2';
+    card: Extract<cardGridTypes, 'cardThermo2'>;
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, dataItem.Dataitem | undefined>;
 };
 

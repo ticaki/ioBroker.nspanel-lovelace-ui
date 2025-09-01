@@ -6,7 +6,7 @@ import * as tools from '../const/tools';
 import type { PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
-import { isCardEntitiesRole, isCardGridRole, type ChangeTypeOfKeys, type DeviceRole } from '../types/pages';
+import { isCardEntitiesType, isCardGridType, type ChangeTypeOfKeys, type DeviceRole } from '../types/pages';
 import type { Screensaver } from './screensaver';
 import { BaseClassTriggerd } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
@@ -251,7 +251,7 @@ export class PageItem extends BaseClassTriggerd {
                 case 'light2': {
                     const item = entry.data;
                     message.type =
-                        isCardGridRole(this.parent.card) &&
+                        isCardGridType(this.parent.card) &&
                         (this.config.role === 'light' || this.config.role === 'socket')
                             ? 'switch'
                             : this.parent.currentPanel.overrideLightPopup
@@ -477,7 +477,7 @@ export class PageItem extends BaseClassTriggerd {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                         } else if (entry.type === 'button') {
                             message.optionalValue = (value ?? true) ? '1' : '0';
-                            if (isCardEntitiesRole(this.parent.card)) {
+                            if (isCardEntitiesType(this.parent.card)) {
                                 message.optionalValue =
                                     this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value)) ??
                                     message.optionalValue;
@@ -535,7 +535,7 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         if (entry.type === 'button' && entry.data.confirm) {
                             if (this.confirmClick === 'unlock') {
-                                if (isCardEntitiesRole(this.parent.card)) {
+                                if (isCardEntitiesType(this.parent.card)) {
                                     message.optionalValue =
                                         (await entry.data.confirm.getString()) ?? message.optionalValue;
                                 }
@@ -592,7 +592,7 @@ export class PageItem extends BaseClassTriggerd {
                                         !!value,
                                         '',
                                         null,
-                                        (!isCardEntitiesRole(this.parent.card) &&
+                                        (!isCardEntitiesType(this.parent.card) &&
                                             !this.parent.card.startsWith('screens')) ??
                                             false,
                                     )) ?? '';

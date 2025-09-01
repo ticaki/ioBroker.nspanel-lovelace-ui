@@ -3,7 +3,7 @@ import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload } from '../const/tools';
-import type * as pages from '../types/pages';
+import * as pages from '../types/pages';
 import { handleCardRole } from './data-collection-functions';
 import type { PageItem } from './pageItem';
 
@@ -144,15 +144,7 @@ export class PageMenu extends Page {
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
-            if (
-                this.config &&
-                (this.config.card === 'cardEntities' ||
-                    this.config.card === 'cardSchedule' ||
-                    this.config.card === 'cardGrid' ||
-                    this.config.card === 'cardGrid3' ||
-                    this.config.card === 'cardThermo2' ||
-                    this.config.card === 'cardGrid2')
-            ) {
+            if (this.config && pages.isPageMenuConfig(this.config)) {
                 switch (this.config.card) {
                     case 'cardSchedule':
                     case 'cardGrid':
@@ -187,15 +179,7 @@ export class PageMenu extends Page {
     }
 
     goLeft(single: boolean = false): void {
-        if (
-            !this.config ||
-            (this.config.card !== 'cardEntities' &&
-                this.config.card !== 'cardSchedule' &&
-                this.config.card !== 'cardGrid' &&
-                this.config.card !== 'cardGrid2' &&
-                this.config.card !== 'cardThermo2' &&
-                this.config.card !== 'cardGrid3')
-        ) {
+        if (!this.config || !pages.isPageMenuConfig(this.config)) {
             return;
         }
         if (!single) {
@@ -227,15 +211,7 @@ export class PageMenu extends Page {
         }
     }
     goRight(single: boolean = false): void {
-        if (
-            !this.config ||
-            (this.config.card !== 'cardEntities' &&
-                this.config.card !== 'cardSchedule' &&
-                this.config.card !== 'cardGrid' &&
-                this.config.card !== 'cardGrid2' &&
-                this.config.card !== 'cardThermo2' &&
-                this.config.card !== 'cardGrid3')
-        ) {
+        if (!this.config || !pages.isPageMenuConfig(this.config)) {
             return;
         }
         if (!single) {
@@ -277,15 +253,7 @@ export class PageMenu extends Page {
         }
     }
     protected getNavigation(): string {
-        if (
-            !this.config ||
-            (this.config.card !== 'cardEntities' &&
-                this.config.card !== 'cardSchedule' &&
-                this.config.card !== 'cardGrid' &&
-                this.config.card !== 'cardGrid2' &&
-                this.config.card !== 'cardGrid3' &&
-                this.config.card !== 'cardThermo2')
-        ) {
+        if (!this.config || !pages.isPageMenuConfig(this.config)) {
             this.log.error(
                 `PageMenu: ${this.config?.card} is not supported in getNavigation! Please use the correct class for this card.`,
             );

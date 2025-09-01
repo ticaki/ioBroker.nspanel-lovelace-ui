@@ -1264,7 +1264,7 @@ export class ConfigManager extends BaseClass {
                     : obj.common.name[this.library.getLocalLanguage()]
                 : undefined;
         const specialRole: pages.DeviceRole =
-            pages.isCardGridRole(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
+            pages.isCardGridType(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
         this.log.debug(
             `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`,
         );
@@ -1316,11 +1316,11 @@ export class ConfigManager extends BaseClass {
             unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
             textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
             prefix:
-                pages.isCardEntitiesRole(page.type) && item.prefixValue
+                pages.isCardEntitiesType(page.type) && item.prefixValue
                     ? await this.getFieldAsDataItemConfig(item.prefixValue)
                     : undefined,
             suffix:
-                pages.isCardEntitiesRole(page.type) && item.suffixValue
+                pages.isCardEntitiesType(page.type) && item.suffixValue
                     ? await this.getFieldAsDataItemConfig(item.suffixValue)
                     : undefined,
         };
@@ -2184,7 +2184,7 @@ export class ConfigManager extends BaseClass {
                     return { itemConfig: undefined, messages };
                 }*/
                 const specialRole: pages.DeviceRole =
-                    pages.isCardGridRole(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
+                    pages.isCardGridType(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
                 this.log.debug(
                     `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`,
                 );
@@ -2244,11 +2244,11 @@ export class ConfigManager extends BaseClass {
                     unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
                     textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
                     prefix:
-                        pages.isCardEntitiesRole(page.type) && item.prefixValue
+                        pages.isCardEntitiesType(page.type) && item.prefixValue
                             ? await this.getFieldAsDataItemConfig(item.prefixValue)
                             : undefined,
                     suffix:
-                        pages.isCardEntitiesRole(page.type) && item.suffixValue
+                        pages.isCardEntitiesType(page.type) && item.suffixValue
                             ? await this.getFieldAsDataItemConfig(item.suffixValue)
                             : undefined,
                 };
@@ -2990,11 +2990,11 @@ export class ConfigManager extends BaseClass {
                                         ? {
                                               value: foundedStates[role].ACTUAL,
                                               prefix:
-                                                  pages.isCardEntitiesRole(page.type) && item.prefixValue
+                                                  pages.isCardEntitiesType(page.type) && item.prefixValue
                                                       ? await this.getFieldAsDataItemConfig(item.prefixValue)
                                                       : undefined,
                                               suffix:
-                                                  pages.isCardEntitiesRole(page.type) && item.suffixValue
+                                                  pages.isCardEntitiesType(page.type) && item.suffixValue
                                                       ? await this.getFieldAsDataItemConfig(item.suffixValue)
                                                       : undefined,
                                               unit:
@@ -3078,11 +3078,11 @@ export class ConfigManager extends BaseClass {
                                         ? { type: 'const', constVal: item.unit }
                                         : { type: 'const', constVal: commonUnit },
                                     prefix:
-                                        pages.isCardEntitiesRole(page.type) && item.prefixValue
+                                        pages.isCardEntitiesType(page.type) && item.prefixValue
                                             ? await this.getFieldAsDataItemConfig(item.prefixValue)
                                             : undefined,
                                     suffix:
-                                        pages.isCardEntitiesRole(page.type) && item.suffixValue
+                                        pages.isCardEntitiesType(page.type) && item.suffixValue
                                             ? await this.getFieldAsDataItemConfig(item.suffixValue)
                                             : undefined,
                                 },
