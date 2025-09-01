@@ -994,38 +994,47 @@ export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB
     await item.hue.setState(hue);
 };
 
-export function formatInSelText(Text: string[] | string): string {
-    if (Text === undefined || Text === null) {
-        return `error`;
-    }
-    let splitText = Text;
-    if (typeof splitText === 'string') {
-        splitText = splitText.replaceAll('?', ' ').replaceAll('__', '_').replaceAll('_', ' ').split(' ');
+/**
+ * Formatiert Eingabetext (String oder Array) in max. zwei Zeilen mit Limit.
+ * - Trennt nach 12 Zeichen für Zeile 1
+ * - Zeile 2 ggf. auf 12 Zeichen gekürzt, mit "..."
+ * - ersetzt ?, _ usw. für bessere Lesbarkeit
+ *
+ * @param text
+ */
+export function formatInSelText(text: string | string[] | null | undefined): string {
+    if (!text) {
+        return 'error';
     }
 
-    let lengthLineOne = 0;
-    const arrayLineOne: string[] = [];
-    for (let i = 0; i < splitText.length; i++) {
-        lengthLineOne += splitText[i].length + 1;
-        if (lengthLineOne > 12) {
+    // Normalisieren → Array von Wörtern
+    const words = Array.isArray(text)
+        ? text
+        : text.replaceAll('?', ' ').replaceAll('__', '_').replaceAll('_', ' ').split(/\s+/);
+
+    const MAX_LINE = 12;
+    const MAX_LINE2 = 12;
+    const TRUNCATE = 9;
+
+    // Zeile 1 aufbauen
+    const line1: string[] = [];
+    let len1 = 0;
+    for (const word of words) {
+        if (len1 + word.length + (line1.length ? 1 : 0) > MAX_LINE) {
             break;
-        } else {
-            arrayLineOne[i] = splitText[i];
         }
+        line1.push(word);
+        len1 += word.length + 1;
     }
-    const textLineOne = arrayLineOne.join(' ');
-    const arrayLineTwo: string[] = [];
-    for (let i = arrayLineOne.length; i < splitText.length; i++) {
-        arrayLineTwo[i] = splitText[i];
+
+    // Rest in Zeile 2
+    const line2Words = words.slice(line1.length);
+    let line2 = line2Words.join(' ');
+    if (line2.length > MAX_LINE2) {
+        line2 = `${line2.substring(0, TRUNCATE)}...`;
     }
-    let textLineTwo = arrayLineTwo.join(' ');
-    if (textLineTwo.length > 12) {
-        textLineTwo = `${textLineTwo.substring(0, 9)}...`;
-    }
-    if (textLineOne.length != 0) {
-        return `${textLineOne}\r\n${textLineTwo.trim()}`;
-    }
-    return textLineTwo.trim();
+
+    return line1.length > 0 ? `${line1.join(' ')}\r\n${line2.trim()}` : line2.trim();
 }
 
 /**
@@ -1066,6 +1075,135 @@ export function getPayload(...s: string[]): string {
     return s.join('~');
 }
 
+// JSON-like value incl. RegExp support
+type Jsonish = undefined | null | string | number | boolean | RegExp | Jsonish[] | { [k: string]: Jsonish };
+
+/**
+ * Strict plain-object check (no arrays, no RegExp, no Date, …).
+ *
+ * @param v
+ */
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+    Object.prototype.toString.call(v) === '[object Object]';
+
+/**
+ * Normalize `null` to `undefined` (your merging rules treat them equally).
+ *
+ * @param v
+ */
+const nn = <T extends Jsonish>(v: T): Exclude<T, null> | undefined => (v === null ? undefined : v) as any;
+
+/**
+ * Detect DataItemsOptions-like objects that must be treated atomically (no deep merge).
+ *
+ * Rules (as specified):
+ * - If `mode === 'auto'` then the object is atomic when it has at least one of:
+ * - `regexp` OR `role` OR `commonType`
+ * - If `mode` is NOT present:
+ * - atomic if `type === 'const'` AND has `constVal`
+ * - atomic if `type === 'state' | 'triggered'` AND has `dp` (string)
+ *
+ * @param o
+ */
+function isAtomicDataItem(o: unknown): boolean {
+    if (!isPlainObject(o)) {
+        return false;
+    }
+
+    const mode = (o as any).mode;
+    const type = (o as any).type;
+
+    if (mode === 'auto') {
+        const hasQualifier = 'regexp' in (o as any) || 'role' in (o as any) || 'commonType' in (o as any);
+        return !!hasQualifier;
+    }
+    if (type === 'const') {
+        return 'constVal' in (o as any);
+    }
+    if (type === 'state' || type === 'triggered') {
+        return typeof (o as any).dp === 'string';
+    }
+
+    return false;
+}
+
+/**
+ * Deep-assign for JSON-like structures with special rules:
+ * - `null` → `undefined`
+ * - `source` overrides `def`; if `source === undefined`, keep `def` (clone)
+ * - Plain objects deep-merge, EXCEPT atomic DataItemsOptions (replace whole object)
+ * - Arrays: source replaces def
+ * - Non-mutating; recursion depth guard
+ *
+ * @param def
+ * @param source
+ * @param level
+ */
+export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): any {
+    if (level > 20) {
+        throw new Error('Max level reached! Possible circular structure.');
+    }
+
+    def = nn(def) as Record<any, any>;
+    source = nn(source) as Record<any, any>;
+
+    if (source === undefined) {
+        return cloneJson(def);
+    }
+
+    if (isPlainObject(def) && isPlainObject(source)) {
+        // Atomic short-circuit (replace entire object)
+        if (isAtomicDataItem(source) || isAtomicDataItem(def)) {
+            return cloneJson(source ?? def);
+        }
+
+        const out: Record<string, Jsonish> = {};
+        const keys = new Set([...Object.keys(def), ...Object.keys(source)]);
+        for (const k of keys) {
+            const dv = nn((def as Record<string, Jsonish>)[k]);
+            const sv = nn((source as Record<string, Jsonish>)[k]);
+
+            if (sv === undefined) {
+                out[k] = cloneJson(dv);
+            } else if (isPlainObject(dv) && isPlainObject(sv)) {
+                out[k] = deepAssign(dv, sv, level + 1);
+            } else if (Array.isArray(dv) && Array.isArray(sv)) {
+                out[k] = cloneJson(sv); // arrays: replace
+            } else {
+                out[k] = cloneJson(sv);
+            }
+        }
+        return out;
+    }
+
+    // Non-plain or mixed → source wins
+    return cloneJson(source);
+}
+
+/**
+ * Safe deep clone for Jsonish (supports RegExp).
+ *
+ * @param v
+ */
+function cloneJson<T extends Jsonish>(v: any): any {
+    v = nn(v) as T;
+
+    if (v instanceof RegExp) {
+        return new RegExp(v.source, v.flags) as any as T;
+    }
+    if (Array.isArray(v)) {
+        return v.map(cloneJson) as unknown as T;
+    }
+    if (isPlainObject(v)) {
+        const o: Record<string, Jsonish> = {};
+        for (const k of Object.keys(v)) {
+            o[k] = cloneJson((v as any)[k]);
+        }
+        return o as T;
+    }
+    return v;
+}
+
 /**
  * Deep assign of jsons, dont use this for Json with objects/classes
  *
@@ -1074,7 +1212,7 @@ export function getPayload(...s: string[]): string {
  * @param level ignore
  * @returns Json with json, number, boolean, strings, null, undefined
  */
-export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): any {
+/*export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): any {
     if (level++ > 20) {
         throw new Error('Max level reached! Circulating object is suspected!');
     }
@@ -1105,7 +1243,7 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
         }
     }
     return Object.assign(def, source);
-}
+}*/
 
 export function getInternalDefaults(
     type: ioBroker.StateCommon['type'],

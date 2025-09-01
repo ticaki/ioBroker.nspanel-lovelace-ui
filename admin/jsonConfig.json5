@@ -3291,6 +3291,17 @@
                     "lg": 4,
                     "xl": 4
                 },
+                 "forceTFTVersion": {
+                    "type": "text",
+                    "label": "Pinned TFT firmware version. For testing only - no support or inquiries. Use at your own risk.",
+                    "default": "",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_header": {
                     "type": "header",
                     "label": "Not used",

@@ -196,7 +196,7 @@ class PageMenu extends import_Page.Page {
           return;
         }
       } else {
-        this.lastdirection = "right";
+        this.lastdirection = "left";
         if (this.unload) {
           return;
         }

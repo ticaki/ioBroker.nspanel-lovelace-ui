@@ -851,38 +851,30 @@ const setHuefromRGB = async (item, c) => {
   const hue = import_Color.Color.getHue(c.r, c.g, c.b);
   await item.hue.setState(hue);
 };
-function formatInSelText(Text) {
-  if (Text === void 0 || Text === null) {
-    return `error`;
+function formatInSelText(text) {
+  if (!text) {
+    return "error";
   }
-  let splitText = Text;
-  if (typeof splitText === "string") {
-    splitText = splitText.replaceAll("?", " ").replaceAll("__", "_").replaceAll("_", " ").split(" ");
-  }
-  let lengthLineOne = 0;
-  const arrayLineOne = [];
-  for (let i = 0; i < splitText.length; i++) {
-    lengthLineOne += splitText[i].length + 1;
-    if (lengthLineOne > 12) {
+  const words = Array.isArray(text) ? text : text.replaceAll("?", " ").replaceAll("__", "_").replaceAll("_", " ").split(/\s+/);
+  const MAX_LINE = 12;
+  const MAX_LINE2 = 12;
+  const TRUNCATE = 9;
+  const line1 = [];
+  let len1 = 0;
+  for (const word of words) {
+    if (len1 + word.length + (line1.length ? 1 : 0) > MAX_LINE) {
       break;
-    } else {
-      arrayLineOne[i] = splitText[i];
     }
+    line1.push(word);
+    len1 += word.length + 1;
   }
-  const textLineOne = arrayLineOne.join(" ");
-  const arrayLineTwo = [];
-  for (let i = arrayLineOne.length; i < splitText.length; i++) {
-    arrayLineTwo[i] = splitText[i];
+  const line2Words = words.slice(line1.length);
+  let line2 = line2Words.join(" ");
+  if (line2.length > MAX_LINE2) {
+    line2 = `${line2.substring(0, TRUNCATE)}...`;
   }
-  let textLineTwo = arrayLineTwo.join(" ");
-  if (textLineTwo.length > 12) {
-    textLineTwo = `${textLineTwo.substring(0, 9)}...`;
-  }
-  if (textLineOne.length != 0) {
-    return `${textLineOne}\r
-${textLineTwo.trim()}`;
-  }
-  return textLineTwo.trim();
+  return line1.length > 0 ? `${line1.join(" ")}\r
+${line2.trim()}` : line2.trim();
 }
 function getItemMesssage(msg) {
   var _a, _b, _c, _d, _e, _f;
@@ -914,37 +906,74 @@ function getPayloadArray(s) {
 function getPayload(...s) {
   return s.join("~");
 }
+const isPlainObject = (v) => Object.prototype.toString.call(v) === "[object Object]";
+const nn = (v) => v === null ? void 0 : v;
+function isAtomicDataItem(o) {
+  if (!isPlainObject(o)) {
+    return false;
+  }
+  const mode = o.mode;
+  const type = o.type;
+  if (mode === "auto") {
+    const hasQualifier = "regexp" in o || "role" in o || "commonType" in o;
+    return !!hasQualifier;
+  }
+  if (type === "const") {
+    return "constVal" in o;
+  }
+  if (type === "state" || type === "triggered") {
+    return typeof o.dp === "string";
+  }
+  return false;
+}
 function deepAssign(def, source, level = 0) {
-  if (level++ > 20) {
-    throw new Error("Max level reached! Circulating object is suspected!");
+  if (level > 20) {
+    throw new Error("Max level reached! Possible circular structure.");
   }
-  for (const k in def) {
-    if (typeof def[k] === "object") {
-      if (source[k] === null || def[k] === null) {
-        source[k] = void 0;
-        def[k] = void 0;
-      } else if (source[k] !== void 0) {
-        def[k] = deepAssign(def[k], source[k]);
-      } else if (def[k] !== void 0) {
-        source[k] = def[k];
-      }
-    } else if (source[k] === void 0) {
-      source[k] = def[k];
-    } else if (def[k] === void 0) {
-      def[k] = source[k];
+  def = nn(def);
+  source = nn(source);
+  if (source === void 0) {
+    return cloneJson(def);
+  }
+  if (isPlainObject(def) && isPlainObject(source)) {
+    if (isAtomicDataItem(source) || isAtomicDataItem(def)) {
+      return cloneJson(source != null ? source : def);
     }
-  }
-  for (const k in source) {
-    if (typeof source[k] === "object" && k in source) {
-      if (source[k] === null) {
-        source[k] = void 0;
-        def[k] = void 0;
-      } else if (def[k] === void 0) {
-        def[k] = source[k];
+    const out = {};
+    const keys = /* @__PURE__ */ new Set([...Object.keys(def), ...Object.keys(source)]);
+    for (const k of keys) {
+      const dv = nn(def[k]);
+      const sv = nn(source[k]);
+      if (sv === void 0) {
+        out[k] = cloneJson(dv);
+      } else if (isPlainObject(dv) && isPlainObject(sv)) {
+        out[k] = deepAssign(dv, sv, level + 1);
+      } else if (Array.isArray(dv) && Array.isArray(sv)) {
+        out[k] = cloneJson(sv);
+      } else {
+        out[k] = cloneJson(sv);
       }
     }
+    return out;
   }
-  return Object.assign(def, source);
+  return cloneJson(source);
+}
+function cloneJson(v) {
+  v = nn(v);
+  if (v instanceof RegExp) {
+    return new RegExp(v.source, v.flags);
+  }
+  if (Array.isArray(v)) {
+    return v.map(cloneJson);
+  }
+  if (isPlainObject(v)) {
+    const o = {};
+    for (const k of Object.keys(v)) {
+      o[k] = cloneJson(v[k]);
+    }
+    return o;
+  }
+  return v;
 }
 function getInternalDefaults(type, role, write = true) {
   return {

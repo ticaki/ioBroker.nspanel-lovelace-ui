@@ -351,7 +351,9 @@ class Panel extends import_library.BaseClass {
     await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
     await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
     this.isOnline = false;
-    const channelObj = this.library.cloneObject(definition.genericStateObjects.panel.panels._channel);
+    const channelObj = this.library.cloneObject(
+      definition.genericStateObjects.panel.panels._channel
+    );
     channelObj.common.name = this.friendlyName;
     channelObj.native = {
       topic: this.topic,

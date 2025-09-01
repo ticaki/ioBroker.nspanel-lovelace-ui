@@ -65,6 +65,7 @@ export function isScreenSaverCardType(F: any): F is screenSaverCardType {
             return false;
     }
 }
+
 export const screenSaverModeArray = arrayOfAllScreenSaverMode(['standard', 'advanced', 'alternate', 'easyview']);
 export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
     if (typeof F !== 'string') {
@@ -479,20 +480,7 @@ export type PageBaseConfigTemplate =
           pageItems: typePageItem.PageItemDataItemsOptions[];
 
           //    mediaNamespace: string;
-          config:
-              | undefined
-              | cardPowerDataItemOptions
-              | cardMediaDataItemOptions
-              | cardGridDataItemOptions
-              | cardThermoDataItemOptions
-              | cardThermo2DataItemOptions
-              | cardEntitiesDataItemOptions
-              | cardAlarmDataItemOptions
-              | cardQRDataItemOptions
-              | screensaverDataItemOptions
-              | cardNotifyDataItemOptions
-              | cardNotify2DataItemOptions
-              | cardScheduleDataItemOptions;
+          config: undefined | PageMenusConfigs | PageOthersConfigs | screensaverDataItemOptions;
           items: undefined;
       }
     | {
@@ -515,6 +503,21 @@ export function isAlarmButtonEvent(F: any): F is AlarmButtonEvents {
     return ['A1', 'A2', 'A3', 'A4', 'D1', 'U1'].indexOf(F) !== -1;
 }
 
+export type PageMenusConfigs =
+    | cardThermo2DataItemOptions
+    | cardGridDataItemOptions
+    | cardEntitiesDataItemOptions
+    | cardScheduleDataItemOptions;
+export type PageOthersConfigs =
+    | cardPowerDataItemOptions
+    | cardMediaDataItemOptions
+    | cardThermoDataItemOptions
+    | cardAlarmDataItemOptions
+    | cardNotifyDataItemOptions
+    | cardNotify2DataItemOptions
+    | cardQRDataItemOptions
+    | cardChartDataItemOptions;
+
 export type PageBaseConfig = (
     | (
           | {
@@ -530,19 +533,7 @@ export type PageBaseConfig = (
                 hidden?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 //    mediaNamespace: string;
-                config:
-                    | cardPowerDataItemOptions
-                    | cardMediaDataItemOptions
-                    | cardGridDataItemOptions
-                    | cardThermoDataItemOptions
-                    | cardThermo2DataItemOptions
-                    | cardEntitiesDataItemOptions
-                    | cardAlarmDataItemOptions
-                    | cardNotifyDataItemOptions
-                    | cardNotify2DataItemOptions
-                    | cardQRDataItemOptions
-                    | cardChartDataItemOptions
-                    | cardScheduleDataItemOptions;
+                config: PageMenusConfigs | PageOthersConfigs;
             }
           | {
                 //    type: PlayerType;

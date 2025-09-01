@@ -13,7 +13,9 @@ export type RGB = {
     g: number;
     b: number;
 };
-
+interface MixedOptions {
+    swap?: boolean;
+}
 export interface ColorThemenInterface {
     good: RGB;
     bad: RGB;
@@ -383,29 +385,42 @@ export class Color extends ColorBase {
      *                   - `swap` (boolean): If `false`, the gradient direction is reversed.
      * @returns An RGB object representing the interpolated color at the specified `factor`..
      */
-    static quadriGradColorScale(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
-        factor = Math.min(1, Math.max(0, factor));
-        let r = 0;
-        let g = 0;
-        let b = 0;
 
-        if (_options?.swap === true) {
-            factor = 1 - factor;
+    static quadriGradColorScale(_from: RGB, _to: RGB, factor: number, _options?: MixedOptions): RGB {
+        // clamp 0..1
+        let f = Math.min(1, Math.max(0, factor));
+
+        if (_options?.swap) {
+            f = 1 - f;
         }
-        factor *= 2;
-        if (factor < 0.5) {
-            r = 255;
-            g = Math.round(510 * factor);
-        } else if (factor < 1) {
-            g = 255;
-            r = Math.round(510 - 510 * factor);
-        } else if (factor < 1.5) {
-            g = 255;
-            b = Math.round(510 * (factor - 1));
-        } else {
-            b = 255;
-            g = Math.round(510 - 510 * (factor - 1));
+
+        // Skala in 4 Segmente teilen: 0–0.25, 0.25–0.5, 0.5–0.75, 0.75–1
+        const seg = Math.floor(f * 4);
+        const local = f * 4 - seg; // 0..1 innerhalb des Segments
+
+        let r = 0,
+            g = 0,
+            b = 0;
+
+        switch (seg) {
+            case 0: // Rot → Gelb
+                r = 255;
+                g = Math.round(255 * local);
+                break;
+            case 1: // Gelb → Grün
+                g = 255;
+                r = Math.round(255 * (1 - local));
+                break;
+            case 2: // Grün → Cyan
+                g = 255;
+                b = Math.round(255 * local);
+                break;
+            case 3: // Cyan → Blau
+                b = 255;
+                g = Math.round(255 * (1 - local));
+                break;
         }
+
         return { r, g, b };
     }
     /**
@@ -490,23 +505,35 @@ export class Color extends ColorBase {
      * @returns [r, g,b] in range 0 to 255
      */
     static hsv2rgb(hue: number, saturation: number, value: number): [number, number, number] {
-        hue /= 60;
-        const chroma = value * saturation;
-        const x = chroma * (1 - Math.abs((hue % 2) - 1));
-        const rgb: [number, number, number] =
-            hue <= 1
-                ? [chroma, x, 0]
-                : hue <= 2
-                  ? [x, chroma, 0]
-                  : hue <= 3
-                    ? [0, chroma, x]
-                    : hue <= 4
-                      ? [0, x, chroma]
-                      : hue <= 5
-                        ? [x, 0, chroma]
-                        : [chroma, 0, x];
+        const c = value * saturation; // chroma
+        const h = (hue % 360) / 60; // Hue-Sektor [0..6)
+        const x = c * (1 - Math.abs((h % 2) - 1));
+        const m = value - c;
 
-        return rgb.map(v => (v + value - chroma) * 255) as [number, number, number];
+        let rgb: [number, number, number];
+        switch (Math.floor(h)) {
+            case 0:
+                rgb = [c, x, 0];
+                break;
+            case 1:
+                rgb = [x, c, 0];
+                break;
+            case 2:
+                rgb = [0, c, x];
+                break;
+            case 3:
+                rgb = [0, x, c];
+                break;
+            case 4:
+                rgb = [x, 0, c];
+                break;
+            default:
+                rgb = [c, 0, x];
+                break; // sector 5
+        }
+
+        // Offset addieren + 0–255 skalieren
+        return rgb.map(v => Math.round((v + m) * 255)) as [number, number, number];
     }
     static hsv2RGB(hue: number, saturation: number, value: number): RGB {
         const arr = Color.hsv2rgb(hue, saturation, value);
@@ -526,27 +553,24 @@ export class Color extends ColorBase {
         return Color.pos_to_color(parseInt(arr[0]), parseInt(arr[1]));
     }
     static getHue(red: number, green: number, blue: number): number {
-        const min = Math.min(Math.min(red, green), blue);
-        const max = Math.max(Math.max(red, green), blue);
+        const min = Math.min(red, green, blue);
+        const max = Math.max(red, green, blue);
+        const delta = max - min;
 
-        if (min == max) {
+        if (delta === 0) {
             return 0;
-        }
+        } // grau → kein Hue
 
-        let hue = 0;
-        if (max == red) {
-            hue = (green - blue) / (max - min);
-        } else if (max == green) {
-            hue = 2 + (blue - red) / (max - min);
+        let hue: number;
+        if (max === red) {
+            hue = (green - blue) / delta;
+        } else if (max === green) {
+            hue = 2 + (blue - red) / delta;
         } else {
-            hue = 4 + (red - green) / (max - min);
+            hue = 4 + (red - green) / delta;
         }
 
-        hue = hue * 60;
-        if (hue < 0) {
-            hue = hue + 360;
-        }
-
+        hue = (hue * 60 + 360) % 360;
         return Math.round(hue);
     }
 
