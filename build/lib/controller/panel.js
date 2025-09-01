@@ -1190,7 +1190,7 @@ class Panel extends import_library.BaseClass {
     }
     switch (event.method) {
       case "startup": {
-        if (this.blockStartup) {
+        if (this.blockStartup || !this.initDone) {
           return;
         }
         this.blockStartup = this.adapter.setTimeout(() => {

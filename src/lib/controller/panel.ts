@@ -1299,7 +1299,7 @@ export class Panel extends BaseClass {
 
         switch (event.method) {
             case 'startup': {
-                if (this.blockStartup) {
+                if (this.blockStartup || !this.initDone) {
                     return;
                 }
                 this.blockStartup = this.adapter.setTimeout(() => {
