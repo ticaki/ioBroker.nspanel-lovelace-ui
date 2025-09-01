@@ -1313,9 +1313,11 @@ export class Panel extends BaseClass {
                 this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
                 this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
                 this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
-
                 this.sendRules();
                 await this.writeInfo();
+                // wait 1s to have tasmota time to be ready
+                await this.adapter.delay(1000);
+
                 this.sendDimmode();
                 this.navigation.resetPosition();
 
@@ -1328,10 +1330,10 @@ export class Panel extends BaseClass {
                     await this._activePage.setVisibility(false);
                 }
 
-                await this.adapter.delay(2500);
-
-                start.setLastPage(undefined);
+                // set last card to nothing, else the card will not be loaded if it is the same as the last one
+                this.lastCard = '';
                 await start.setVisibility(true);
+                // too be sure, that the page is set correctly
                 this._activePage = start;
 
                 if (this.screenSaver) {

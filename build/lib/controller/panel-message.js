@@ -134,9 +134,7 @@ class PanelSend extends import_library.BaseClass {
       this.messageTimeoutTasmota = void 0;
       return;
     }
-    if (this.adapter.config.debugLogMqtt) {
-      this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
-    }
+    this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
     this.messageTimeoutTasmota = true;
     await this.mqttClient.publish(msg.topic, msg.payload, { ...msg.opt, qos: 1 });
     if (this.unload) {

@@ -1205,6 +1205,7 @@ class Panel extends import_library.BaseClass {
         this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
         this.sendRules();
         await this.writeInfo();
+        await this.adapter.delay(1e3);
         this.sendDimmode();
         this.navigation.resetPosition();
         const start = this.navigation.getCurrentMainPage();
@@ -1215,8 +1216,7 @@ class Panel extends import_library.BaseClass {
         if (this._activePage) {
           await this._activePage.setVisibility(false);
         }
-        await this.adapter.delay(2500);
-        start.setLastPage(void 0);
+        this.lastCard = "";
         await start.setVisibility(true);
         this._activePage = start;
         if (this.screenSaver) {
