@@ -238,5 +238,6 @@
     "colorTheme": "Kleurthema",
     "treble": "Drievoudig",
     "bass": "Bas",
-    "midrange": "Midrange"
+    "midrange": "Midrange",
+    "headerColorTheme": "Kleurthema -instellingen"
 }

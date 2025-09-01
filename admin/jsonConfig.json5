@@ -515,7 +515,7 @@
                 },
                 "_headerColorTheme":{
                     "type": "header",
-                    "text": "headerDateFormat",
+                    "text": "headerColorTheme",
                     "size": 3
                 },
                 "colorTheme":{

@@ -238,5 +238,6 @@
     "colorTheme": "Tema de color",
     "treble": "Triplicar",
     "bass": "Bajo",
-    "midrange": "Rango medio"
+    "midrange": "Rango medio",
+    "headerColorTheme": "Configuración del tema del color"
 }

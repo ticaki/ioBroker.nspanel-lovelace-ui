@@ -238,5 +238,6 @@
     "colorTheme": "Farbthema",
     "treble": "Höhen",
     "bass": "Bass",
-    "midrange": "Mitten"
+    "midrange": "Mitten",
+    "headerColorTheme": "Farbthema -Einstellungen"
 }

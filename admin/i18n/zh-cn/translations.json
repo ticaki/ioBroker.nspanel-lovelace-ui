@@ -238,5 +238,6 @@
     "colorTheme": "颜色主题",
     "treble": "高音",
     "bass": "低音",
-    "midrange": "中距"
+    "midrange": "中距",
+    "headerColorTheme": "颜色主题设置"
 }

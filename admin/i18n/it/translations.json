@@ -238,5 +238,6 @@
     "colorTheme": "Tema del colore",
     "treble": "Acuti",
     "bass": "Basso",
-    "midrange": "Midrange"
+    "midrange": "Midrange",
+    "headerColorTheme": "Impostazioni del tema colore"
 }

@@ -238,5 +238,6 @@
     "colorTheme": "Thème de la couleur",
     "treble": "Tripler",
     "bass": "Basse",
-    "midrange": "Milieu de gamme"
+    "midrange": "Milieu de gamme",
+    "headerColorTheme": "Paramètres de thème de couleur"
 }
