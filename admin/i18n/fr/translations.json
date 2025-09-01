@@ -232,5 +232,11 @@
     "DRY": "Sec",
     "defaultValueCardThermo": "Valeurs en dixièmes",
     "defaultValueCardThermoHint": "(CardThermo2 uniquement) lorsqu'il est activé, Minvalue, MaxValue et Stepvalue sont spécifiés en dixièmes (par exemple 25 = 2,5 ° C). Lorsqu'ils sont désactivés, les valeurs sont utilisées directement (par exemple 2,5 = 2,5 ° C).",
-    "mqttServerSetting": "Paramètres du serveur MQTT"
+    "mqttServerSetting": "Paramètres du serveur MQTT",
+    "speakerList": "Liste des conférenciers",
+    "playList": "Playlist",
+    "colorTheme": "Thème de la couleur",
+    "treble": "Tripler",
+    "bass": "Basse",
+    "midrange": "Milieu de gamme"
 }

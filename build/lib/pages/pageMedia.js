@@ -818,7 +818,10 @@ class PageMedia extends import_Page.Page {
               unit: void 0
             },
             text: {
-              true: void 0,
+              true: {
+                type: "const",
+                constVal: "speakerList"
+              },
               false: void 0
             },
             /**
@@ -854,6 +857,12 @@ class PageMedia extends import_Page.Page {
             valueList: {
               type: "const",
               constVal: JSON.stringify(page.media.playList || [])
+            },
+            text: {
+              true: {
+                type: "const",
+                constVal: "playList"
+              }
             }
           }
         },
@@ -878,7 +887,7 @@ class PageMedia extends import_Page.Page {
             },
             heading2: {
               type: "const",
-              constVal: "mid"
+              constVal: "midrange"
             },
             heading3: {
               type: "const",

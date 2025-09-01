@@ -232,5 +232,11 @@
     "FAN": "Ventil.",
     "DRY": "Entfeucht.",
     "defaultValueCardThermo": "Werte in Zehnteln",
-    "defaultValueCardThermoHint": "(nur cardThermo2) Wenn aktiviert, werden minValue, maxValue und stepValue in Zehnteln angegeben (z. B. 25 = 2,5 °C). Wenn deaktiviert, werden die Werte direkt verwendet (z. B. 2,5 = 2,5 °C)."
+    "defaultValueCardThermoHint": "(nur cardThermo2) Wenn aktiviert, werden minValue, maxValue und stepValue in Zehnteln angegeben (z. B. 25 = 2,5 °C). Wenn deaktiviert, werden die Werte direkt verwendet (z. B. 2,5 = 2,5 °C).",
+    "speakerList": "Lautsprecher",
+    "playList": "Playlisten",
+    "colorTheme": "Farbthema",
+    "treble": "Höhen",
+    "bass": "Bass",
+    "midrange": "Mitten"
 }

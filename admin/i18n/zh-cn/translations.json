@@ -232,5 +232,11 @@
     "DRY": "干燥",
     "defaultValueCardThermo": "十分之一",
     "defaultValueCardThermoHint": "（仅CardThermo2）启用时，在第十秒（例如25 = 2.5°C）指定了MinValue，MaxValue和Stepvalue。禁用时，直接使用值（例如2.5 = 2.5°C）。",
-    "mqttServerSetting": "MQTT服务器设置"
+    "mqttServerSetting": "MQTT服务器设置",
+    "speakerList": "扬声器清单",
+    "playList": "播放列表",
+    "colorTheme": "颜色主题",
+    "treble": "高音",
+    "bass": "低音",
+    "midrange": "中距"
 }

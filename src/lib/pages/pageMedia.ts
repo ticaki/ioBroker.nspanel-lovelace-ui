@@ -856,7 +856,10 @@ export class PageMedia extends Page {
                             unit: undefined,
                         },
                         text: {
-                            true: undefined,
+                            true: {
+                                type: 'const',
+                                constVal: 'speakerList',
+                            },
                             false: undefined,
                         },
                         /**
@@ -894,6 +897,12 @@ export class PageMedia extends Page {
                             type: 'const',
                             constVal: JSON.stringify(page.media.playList || []),
                         },
+                        text: {
+                            true: {
+                                type: 'const',
+                                constVal: 'playList',
+                            },
+                        },
                     },
                 },
                 {
@@ -919,7 +928,7 @@ export class PageMedia extends Page {
                         },
                         heading2: {
                             type: 'const',
-                            constVal: 'mid',
+                            constVal: 'midrange',
                         },
                         heading3: {
                             type: 'const',

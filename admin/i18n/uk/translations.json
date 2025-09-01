@@ -232,5 +232,11 @@
     "DRY": "Сухий",
     "defaultValueCardThermo": "Значення в десятих",
     "defaultValueCardThermoHint": "(лише Cardthermo2) Якщо ввімкнено, Minvalue, MaxValue та StepValue вказані в десятих (наприклад, 25 = 2,5 ° C). При відключенні значення використовуються безпосередньо (наприклад, 2,5 = 2,5 ° C).",
-    "mqttServerSetting": "Налаштування сервера MQTT"
+    "mqttServerSetting": "Налаштування сервера MQTT",
+    "speakerList": "Список спікерів",
+    "playList": "Плейлист",
+    "colorTheme": "Кольорова тема",
+    "treble": "Обтяжувати",
+    "bass": "Баса",
+    "midrange": "Середній діапазон"
 }

@@ -232,5 +232,11 @@
     "DRY": "Suchy",
     "defaultValueCardThermo": "Wartości w dziesiątych",
     "defaultValueCardThermoHint": "(Tylko Cardthermo2) Po włączeniu MinValue, MaxValue i StepValue są określone w dziesiątej (np. 25 = 2,5 ° C). Po wyłączeniu wartości są używane bezpośrednio (np. 2,5 = 2,5 ° C).",
-    "mqttServerSetting": "Ustawienia serwera MQTT"
+    "mqttServerSetting": "Ustawienia serwera MQTT",
+    "speakerList": "Lista głośników",
+    "playList": "Lista odtwarzania",
+    "colorTheme": "Motyw kolorów",
+    "treble": "Potroić",
+    "bass": "Bas",
+    "midrange": "Środkowy"
 }

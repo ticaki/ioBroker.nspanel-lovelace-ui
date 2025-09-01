@@ -232,6 +232,12 @@
     "FAN": "Fan",
     "DRY": "Dry",
     "defaultValueCardThermo": "Values in tenths",
-    "defaultValueCardThermoHint": "(cardThermo2 only) When enabled, minValue, maxValue and stepValue are specified in tenths (e.g. 25 = 2.5 °C). When disabled, values are used directly (e.g. 2.5 = 2.5 °C)."
+    "defaultValueCardThermoHint": "(cardThermo2 only) When enabled, minValue, maxValue and stepValue are specified in tenths (e.g. 25 = 2.5 °C). When disabled, values are used directly (e.g. 2.5 = 2.5 °C).",
+    "speakerList": "Speaker list",
+    "playList": "Playlist",
+    "colorTheme": "Color theme",
+    "treble": "Treble",
+    "bass": "Bass",
+    "midrange": "Midrange"
 
 }

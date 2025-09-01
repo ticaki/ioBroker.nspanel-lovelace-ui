@@ -232,5 +232,11 @@
     "DRY": "Droog",
     "defaultValueCardThermo": "Waarden in tienden",
     "defaultValueCardThermoHint": "(alleen cardthermo2) wanneer ingeschakeld, worden minValue, MaxValue en StepValue gespecificeerd in tienden (bijvoorbeeld 25 = 2,5 ° C). Indien uitgeschakeld, worden waarden direct gebruikt (bijv. 2.5 = 2,5 ° C).",
-    "mqttServerSetting": "MQTT -serverinstellingen"
+    "mqttServerSetting": "MQTT -serverinstellingen",
+    "speakerList": "Speakerslijst",
+    "playList": "Afspeellijst",
+    "colorTheme": "Kleurthema",
+    "treble": "Drievoudig",
+    "bass": "Bas",
+    "midrange": "Midrange"
 }
