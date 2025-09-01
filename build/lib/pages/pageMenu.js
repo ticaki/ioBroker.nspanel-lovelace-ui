@@ -149,6 +149,8 @@ class PageMenu extends import_Page.Page {
           this.pageItemConfig = temp;
         }
       }
+    } else {
+      this.tempItems = [];
     }
     await super.onVisibilityChange(val);
   }
@@ -271,7 +273,7 @@ class PageMenu extends import_Page.Page {
       this.adapter.clearTimeout(this.doubleClick);
       this.doubleClick = void 0;
     }
-    this.tempItems = void 0;
+    this.tempItems = [];
     await super.delete();
   }
 }

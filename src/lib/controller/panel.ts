@@ -1346,7 +1346,7 @@ export class Panel extends BaseClass {
                 }
 
                 if (start.alwaysOn === 'none') {
-                    this.sendScreeensaverTimeout(3);
+                    this.sendScreeensaverTimeout(2);
                 }
 
                 this.log.info('Panel startup finished!');

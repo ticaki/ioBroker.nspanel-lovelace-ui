@@ -105,6 +105,8 @@ export class PageMedia extends Page {
         if (val) {
             this.headlinePos = 0;
             this.titelPos = 0;
+        } else {
+            this.tempItems = [];
         }
     }
 
@@ -335,10 +337,13 @@ export class PageMedia extends Page {
             let b = minStep;
             for (let a = minStep; a < maxSteps; a++) {
                 const temp = this.tempItems[b++];
-                if (temp) {
+                if (temp && !temp.unload) {
+                    if (!this.visibility) {
+                        return;
+                    }
                     const msg = await temp.getPageItemPayload();
                     if (msg) {
-                        opts[a - minStep] = await temp.getPageItemPayload();
+                        opts[a - minStep] = msg;
                     } else {
                         a--;
                     }
@@ -360,13 +365,8 @@ export class PageMedia extends Page {
             id: 'media',
             options: opts,
         });
-        /*const m = this.getMessage(msg);
 
-        this.log.debug(
-            `Media message: 22=${m.split('~')[22]} 23=${m.split('~')[22]} 24=${m.split('~')[24]} 25=${m.split('~')[25]} 26=${m.split('~')[26]} 27=${m.split('~')[27]} 28${m.split('~')[28]}`,
-        );*/
         this.sendToPanel(this.getMessage(msg), false);
-        //this.log.warn(JSON.stringify(this.getMessage(msg)));
     }
     private async getMediaState(): Promise<boolean | null> {
         if (!this.currentItems) {

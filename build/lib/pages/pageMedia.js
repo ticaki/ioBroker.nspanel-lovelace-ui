@@ -117,6 +117,8 @@ class PageMedia extends import_Page.Page {
     if (val) {
       this.headlinePos = 0;
       this.titelPos = 0;
+    } else {
+      this.tempItems = [];
     }
   }
   async updateCurrentPlayer(dp, name) {
@@ -324,10 +326,13 @@ class PageMedia extends import_Page.Page {
       let b = minStep;
       for (let a = minStep; a < maxSteps; a++) {
         const temp = this.tempItems[b++];
-        if (temp) {
+        if (temp && !temp.unload) {
+          if (!this.visibility) {
+            return;
+          }
           const msg2 = await temp.getPageItemPayload();
           if (msg2) {
-            opts[a - minStep] = await temp.getPageItemPayload();
+            opts[a - minStep] = msg2;
           } else {
             a--;
           }

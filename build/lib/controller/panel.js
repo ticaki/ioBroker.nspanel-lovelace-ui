@@ -1227,7 +1227,7 @@ class Panel extends import_library.BaseClass {
           await this.screenSaver.HandleTime();
         }
         if (start.alwaysOn === "none") {
-          this.sendScreeensaverTimeout(3);
+          this.sendScreeensaverTimeout(2);
         }
         this.log.info("Panel startup finished!");
         break;

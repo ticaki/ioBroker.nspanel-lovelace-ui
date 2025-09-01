@@ -19,7 +19,7 @@ export class PageItem extends BaseClassTriggerd {
     dataItems: typePageItem.PageItemDataItems | undefined;
     id: string;
     lastPopupType: PopupType | undefined = undefined;
-    parent: Page;
+    readonly parent: Page;
     tempData: any = undefined; // use this to save some data while object is active
     tempInterval: ioBroker.Interval | undefined;
     confirmClick: number | 'lock' | 'unlock' = 'lock';
@@ -31,6 +31,9 @@ export class PageItem extends BaseClassTriggerd {
         super({ ...config });
         this.id = config.id;
         this.config = options;
+        if (!config || !config.parent) {
+            throw new Error(`PageItem ${this.id} has no parent page`);
+        }
         this.parent = config && config.parent;
         this.name = `${this.parent.name}.${this.id}`;
         this.sleep = false;
@@ -1800,6 +1803,7 @@ export class PageItem extends BaseClassTriggerd {
     }
     async delete(): Promise<void> {
         this.visibility = false;
+        this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
         if (this.parent.currentPanel.persistentPageItems[this.id]) {
             if (!this.parent.currentPanel.unload) {
