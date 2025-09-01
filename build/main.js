@@ -75,6 +75,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.warn(
         `\u26A0\uFE0F  TFT firmware is pinned to version ${this.config.forceTFTVersion}. Remember: you will always stay on this version until you change it.`
       );
+      if (this.config.forceTFTVersion === "0.0.0") {
+        this.log.warn(
+          `\u26A0\uFE0F  Developer version of the TFT firmware is used. This version may be unstable and have bugs! No support in the forum!`
+        );
+      }
     }
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
       this.config.mqttPassword = this.config.mqttPassword || "";
