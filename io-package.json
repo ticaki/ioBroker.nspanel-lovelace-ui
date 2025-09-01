@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.2.4",
+    "version": "0.3.0",
     "news": {
+      "0.3.0": {
+        "en": "Refractor code\nactivate cardMedia (alexa2 only)\nFixes [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409) \ncardThermo2 integrated\nextended pirate-weather templates \nadded pirate-weather templates\nPagePower decimal places problem fixed",
+        "de": "Refraktärcode\ncardMedia aktivieren (nur Alexa2)\n[#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\nkarte Thermo2 integriert\nerweiterte piraten-wetter-vorlagen\nhinzufügen von piraten-wetter-vorlagen\nPagePower Dezimalstellen Problem behoben",
+        "ru": "Код рефрактора\nактивировать cardMedia (только alexa2)\nИсправления [#409] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\nкарточка Интегрированный термо2\nрасширенные шаблоны пиратской погоды\nдобавлены шаблоны пиратской погоды\nPagePower десятичные места проблема фиксированная",
+        "pt": "Código do refractário\nativar cartãoMedia (apenas alexa2)\nCorreções [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\ncartão Termo2 integrado\nmodelos de tempo de piratas estendidos\nmodelos de tempo- pirata adicionados\nPagePower problema de casas decimais corrigido",
+        "nl": "Refractorcode\nactiveer kaartMedia (alleen alexa2)\nFixes [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\nkaart Thermo2-geïntegreerd\nuitgebreide piratenweersjablonen\ntoegevoegde piratenweersjablonen\nPagePower decimale plaatsen probleem opgelost",
+        "fr": "Code du réfracteur\nactiver cardMedia (alexa2 seulement)\nCorrections [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\ncarte Thermo2 intégré\nmodèles de temps pirate étendus\najout de modèles pirate-météo\nPagePower décimal places problème corrigé",
+        "it": "Codice refrattario\nattivare cardMedia (solo Esa2)\nFissazioni [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\ncarta Thermo2 integrato\nmodelli di pirata estese\nmodelli pirata aggiunti\nPagePower decimal pone problema fisso",
+        "es": "Código de refracción\nactivar la tarjetaMedia (alexa2 solamente)\nFixes [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\ntarjeta Thermo2 integrado\nplantillas pirata-tetera extendidas\nplantillas pirata-tetera agregadas\nPagePower decimal lugares problema fijo",
+        "pl": "Kod refraktora\naktywować kardMedia (tylko alexa2)\nFixes [# 409] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 409)\nkarta Zintegrowany termo2\nrozszerzone szablony pirate- pogodowe\ndodane szablony pirate- pogodowe\nPagePower dziesiętne miejsca problem stałe",
+        "uk": "Вогнетривкий код\nактивувати CardMedia\nВиправлення [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409)\nкошик Термо2 інтегрований\nрозширені шаблони піратів\nдодано шаблони піратських ігор\nPagePower десяткові місця проблеми фіксована",
+        "zh-cn": "折叠码\n激活卡片Media( 仅使用 alexa2)\nFixs [# 409] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409) (英语)\n纸牌 热量2集成\n扩展海盗天气模板\n添加海盗天气模板\nPagepower 小数位问题已修正"
+      },
       "0.2.4": {
         "en": "popupSlider added\nAuto update of berry driver\nAdmin option added for how shutter positions are interpreted.\nadd Screensaver Notifications fixed #361 3 States or `sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });` \nHide pages - fixed #360\nRuleTimer1 changed to RuleTimer3\nhide pages for cardPower, cardQR and cardChart\nadded hide cards feature to service pages",
         "de": "popupSlider hinzugefügt\nAutomatisches Update des Berry-Treibers\nAdmin-Option hinzugefügt, wie Rollladenpositionen interpretiert werden\nScreensaver-Benachrichtigungen behoben #361 3 Datenpunkte oder `sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });`\nSeiten ausblenden – behoben #360\nRuleTimer1 geändert zu RuleTimer3\nSeiten ausblenden für cardPower, cardQR und cardChart\nFunktion zum Ausblenden von Karten auf Serviceseiten hinzugefügt",
@@ -15,8 +28,8 @@
         "pl": "popupSlider dodany\nAutomatyczna aktualizacja sterownika Berry\nDodano opcję admin dotyczącą interpretacji pozycji rolet\nNaprawiono powiadomienia wygaszacza ekranu #361 3 datapointy lub `sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });`\nUkrywanie stron – naprawione #360\nRuleTimer1 zmieniony na RuleTimer3\nUkrywanie stron dla cardPower, cardQR i cardChart\nDodano funkcję ukrywania kart na stronach serwisowych",
         "uk": "popupSlider додано\nАвтоматичне оновлення драйвера Berry\nДодано опцію адміністратора для інтерпретації позицій жалюзі\nВиправлено сповіщення Screensaver #361 3 datapoints або `sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });`\nПриховування сторінок – виправлено #360\nRuleTimer1 змінено на RuleTimer3\nПриховування сторінок для cardPower, cardQR і cardChart\nДодано функцію приховування карт на сервісних сторінках",
         "zh-cn": "已添加 popupSlider\nBerry 驱动程序自动更新\n添加了管理员选项以解释百叶窗位置\n修复了 Screensaver 通知 #361 3 个 datapoints 或 `sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });`\n隐藏页面 – 修复 #360\nRuleTimer1 改为 RuleTimer3\n隐藏 cardPower、cardQR 和 cardChart 的页面\n在服务页面中添加了隐藏卡片功能"
-        },
-    "0.2.3": {
+      },
+      "0.2.3": {
         "en": "openweathermap added as standard weather adapter\nSome adjustments due to updated firmware\nSome improvements",
         "de": "openweathermap als standard-wetteradapter hinzugefügt\nEinige Anpassungen aufgrund aktualisierter Firmware\nEinige Verbesserungen",
         "ru": "openweathermap добавлен в качестве стандартного адаптера погоды\nНекоторые корректировки из-за обновленного прошивки\nНекоторые улучшения",
@@ -80,19 +93,6 @@
         "pl": "dodana karta Wykres / kardLChart inkl. admin",
         "uk": "додано картку Графік/cardLChart inkl. admin",
         "zh-cn": "添加卡片 图表/卡片 LChart 墨水管理员"
-      },
-      "0.1.11": {
-        "en": "Admin overview revised\ninSel could not be left fixed\nMissing navigation of a page is reported\nPage Power improved",
-        "de": "Admin-Übersicht überarbeitet\ninSel konnte nicht fixiert bleiben\nFehlende Navigation einer Seite wird gemeldet\nSeite Leistung verbessert",
-        "ru": "Обзор администратора пересмотрен\ninSel нельзя было оставить фиксированным\nОтсутствует навигация по странице\nPage Power улучшен",
-        "pt": "Visão geral do administrador revisada\ninSel não pode ser deixado fixo\nA navegação perdida de uma página é relatada\nO poder da página melhorou",
-        "nl": "Beheerdersoverzicht herzien\ninSel kon niet hersteld worden\nOntbrekende navigatie van een pagina wordt gemeld\nPage Power verbeterd",
-        "fr": "Aperçu analytique révisé\ndansSel ne pouvait pas être fixé\nLa navigation manquante d'une page est signalée\nPage Puissance améliorée",
-        "it": "Panoramica degli amministratori\ninSel non poteva essere lasciato fisso\nLa navigazione mancante di una pagina è riportata\nPotere di pagina migliorato",
-        "es": "Resumen revisado\ninSel no podía ser dejado fijo\nFalta de navegación de una página se informa\nPage Power mejorado",
-        "pl": "Przegląd administracyjny zmieniony\ninSel nie mógł zostać naprawiony\nBrak nawigacji strony jest zgłaszana\nPoprawiona moc strony",
-        "uk": "Огляд адміністратора\ninSel не може бути лівим\nНавігація сторінки\nПокращена потужність сторінки",
-        "zh-cn": "订正行政概览\n在Sel 中无法被修正\n报告一个页面缺少导航\n改进了电源"
       }
     },
     "titleLang": {

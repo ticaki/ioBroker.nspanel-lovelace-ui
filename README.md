@@ -84,13 +84,15 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.3.0 (2025-09-01)
+- (ticaki) Refractor code
+- (ticaki) activate cardMedia (alexa2 only)
 - (ticaki) Fixes [#409](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/409) 
 - (ticaki) cardThermo2 integrated
 - (ticaki) extended pirate-weather templates 
 - (tt-tom17) added pirate-weather templates
 - (ticaki) PagePower decimal places problem fixed
-  
+
 ### 0.2.4 (2025-08-06)
 - (ticaki) popupSlider added
 - (ticaki) Auto update of berry driver
