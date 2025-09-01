@@ -1461,7 +1461,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 if (a.info.nspanel?.onlineVersion && nv) {
                                     const temp = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
                                     if (temp && temp[1] && temp[1] !== nv) {
-                                        nv += ` (${updateText})`;
+                                        if (nv === '0.0.0') {
+                                            nv += ` (Developer version!)`;
+                                        } else {
+                                            nv += ` (${updateText})`;
+                                        }
                                         check = true;
                                     }
                                 }
