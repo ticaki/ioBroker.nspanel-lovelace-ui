@@ -1,7 +1,6 @@
 import type { PageInterface } from '../classes/PageInterface';
 import { getPayload, getPayloadArray } from '../const/tools';
 import type * as pages from '../types/pages';
-import type { IncomingEvent } from '../types/types';
 import { PageMenu } from './pageMenu';
 
 const PageScheduleMessageDefault: pages.PageScheduleMessage = {

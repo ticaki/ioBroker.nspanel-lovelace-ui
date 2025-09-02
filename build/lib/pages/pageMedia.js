@@ -468,7 +468,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
   }
   static async getPage(configManager, page, gridItem, messages) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     const adapter = configManager.adapter;
     if (page.type !== "cardMedia" || !gridItem.config || gridItem.config.card !== "cardMedia") {
       const msg = `Error in page ${page.uniqueName}: Not a media page!`;
@@ -528,7 +528,7 @@ class PageMedia extends import_pageMenu.PageMenu {
             dp: ""
           },
           onOffColor: {
-            true: page.media.colorMediaIcon ? { color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaIcon) } : void 0
+            true: page.media.colorMediaIcon ? { color: await configManager.getIconColor(page.media.colorMediaIcon) } : void 0
           },
           elapsed: {
             mode: "auto",
@@ -564,7 +564,7 @@ class PageMedia extends import_pageMenu.PageMenu {
               dp: ""
             },
             true: page.media.colorMediaArtist ? {
-              color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist)
+              color: await configManager.getIconColor(page.media.colorMediaArtist)
             } : void 0
           },
           shuffle: {
@@ -667,10 +667,10 @@ class PageMedia extends import_pageMenu.PageMenu {
             icon: {
               true: {
                 value: { type: "const", constVal: "reminder" },
-                color: {
-                  type: "const",
-                  constVal: (_b = (_a = page.media.itemsColorOff) == null ? void 0 : _a.reminder) != null ? _b : import_Color.Color.attention
-                }
+                color: await configManager.getIconColor(
+                  (_a = page.media.itemsColorOff) == null ? void 0 : _a.reminder,
+                  import_Color.Color.attention
+                )
               }
             },
             entity1: {
@@ -698,11 +698,14 @@ class PageMedia extends import_pageMenu.PageMenu {
             icon: {
               true: {
                 value: { type: "const", constVal: "wifi" },
-                color: { type: "const", constVal: (_d = (_c = page.media.itemsColorOn) == null ? void 0 : _c.online) != null ? _d : import_Color.Color.good }
+                color: await configManager.getIconColor((_b = page.media.itemsColorOn) == null ? void 0 : _b.online, import_Color.Color.good)
               },
               false: {
                 value: { type: "const", constVal: "wifi-off" },
-                color: { type: "const", constVal: (_f = (_e = page.media.itemsColorOff) == null ? void 0 : _e.online) != null ? _f : import_Color.Color.attention }
+                color: await configManager.getIconColor(
+                  (_c = page.media.itemsColorOff) == null ? void 0 : _c.online,
+                  import_Color.Color.attention
+                )
               },
               scale: void 0,
               maxBri: void 0,
@@ -742,11 +745,17 @@ class PageMedia extends import_pageMenu.PageMenu {
             icon: {
               true: {
                 value: { type: "const", constVal: "speaker-multiple" },
-                color: { type: "const", constVal: (_h = (_g = page.media.itemsColorOn) == null ? void 0 : _g.speakerList) != null ? _h : import_Color.Color.good }
+                color: await configManager.getIconColor(
+                  (_d = page.media.itemsColorOn) == null ? void 0 : _d.speakerList,
+                  import_Color.Color.good
+                )
               },
               false: {
                 value: { type: "const", constVal: "speaker-multiple" },
-                color: { type: "const", constVal: (_j = (_i = page.media.itemsColorOff) == null ? void 0 : _i.speakerList) != null ? _j : import_Color.Color.bad }
+                color: await configManager.getIconColor(
+                  (_e = page.media.itemsColorOff) == null ? void 0 : _e.speakerList,
+                  import_Color.Color.bad
+                )
               },
               scale: void 0,
               maxBri: void 0,
@@ -795,10 +804,10 @@ class PageMedia extends import_pageMenu.PageMenu {
             icon: {
               true: {
                 value: { type: "const", constVal: "playlist-play" },
-                color: {
-                  type: "const",
-                  constVal: (_l = (_k = page.media.itemsColorOn) == null ? void 0 : _k.playList) != null ? _l : import_Color.Color.activated
-                }
+                color: await configManager.getIconColor(
+                  (_f = page.media.itemsColorOn) == null ? void 0 : _f.playList,
+                  import_Color.Color.activated
+                )
               }
             },
             entityInSel: {
@@ -826,10 +835,10 @@ class PageMedia extends import_pageMenu.PageMenu {
             icon: {
               true: {
                 value: { type: "const", constVal: "equalizer-outline" },
-                color: {
-                  type: "const",
-                  constVal: (_n = (_m = page.media.itemsColorOn) == null ? void 0 : _m.equalizer) != null ? _n : import_Color.Color.activated
-                }
+                color: await configManager.getIconColor(
+                  (_g = page.media.itemsColorOn) == null ? void 0 : _g.equalizer,
+                  import_Color.Color.activated
+                )
               },
               scale: void 0,
               maxBri: void 0,
@@ -960,14 +969,17 @@ class PageMedia extends import_pageMenu.PageMenu {
             icon: {
               true: {
                 value: { type: "const", constVal: "repeat-variant" },
-                color: { type: "const", constVal: (_p = (_o = page.media.itemsColorOn) == null ? void 0 : _o.repeat) != null ? _p : import_Color.Color.activated }
+                color: await configManager.getIconColor(
+                  (_h = page.media.itemsColorOn) == null ? void 0 : _h.repeat,
+                  import_Color.Color.activated
+                )
               },
               false: {
                 value: { type: "const", constVal: "repeat" },
-                color: {
-                  type: "const",
-                  constVal: (_r = (_q = page.media.itemsColorOff) == null ? void 0 : _q.repeat) != null ? _r : import_Color.Color.deactivated
-                }
+                color: await configManager.getIconColor(
+                  (_i = page.media.itemsColorOff) == null ? void 0 : _i.repeat,
+                  import_Color.Color.deactivated
+                )
               },
               scale: void 0,
               maxBri: void 0,

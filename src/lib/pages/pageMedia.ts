@@ -551,7 +551,7 @@ export class PageMedia extends PageMenu {
                     },
                     onOffColor: {
                         true: page.media.colorMediaIcon
-                            ? { color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaIcon) }
+                            ? { color: await configManager.getIconColor(page.media.colorMediaIcon) }
                             : undefined,
                     },
                     elapsed: {
@@ -589,7 +589,7 @@ export class PageMedia extends PageMenu {
                         },
                         true: page.media.colorMediaArtist
                             ? {
-                                  color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist),
+                                  color: await configManager.getIconColor(page.media.colorMediaArtist),
                               }
                             : undefined,
                     },
@@ -694,12 +694,13 @@ export class PageMedia extends PageMenu {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'reminder' },
-                                color: {
-                                    type: 'const',
-                                    constVal: page.media.itemsColorOff?.reminder ?? Color.attention,
-                                },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.reminder,
+                                    Color.attention,
+                                ),
                             },
                         },
+
                         entity1: {
                             value: {
                                 type: 'const',
@@ -726,11 +727,14 @@ export class PageMedia extends PageMenu {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'wifi' },
-                                color: { type: 'const', constVal: page.media.itemsColorOn?.online ?? Color.good },
+                                color: await configManager.getIconColor(page.media.itemsColorOn?.online, Color.good),
                             },
                             false: {
                                 value: { type: 'const', constVal: 'wifi-off' },
-                                color: { type: 'const', constVal: page.media.itemsColorOff?.online ?? Color.attention },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.online,
+                                    Color.attention,
+                                ),
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -772,11 +776,17 @@ export class PageMedia extends PageMenu {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'speaker-multiple' },
-                                color: { type: 'const', constVal: page.media.itemsColorOn?.speakerList ?? Color.good },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.speakerList,
+                                    Color.good,
+                                ),
                             },
                             false: {
                                 value: { type: 'const', constVal: 'speaker-multiple' },
-                                color: { type: 'const', constVal: page.media.itemsColorOff?.speakerList ?? Color.bad },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.speakerList,
+                                    Color.bad,
+                                ),
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -826,10 +836,10 @@ export class PageMedia extends PageMenu {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'playlist-play' },
-                                color: {
-                                    type: 'const',
-                                    constVal: page.media.itemsColorOn?.playList ?? Color.activated,
-                                },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.playList,
+                                    Color.activated,
+                                ),
                             },
                         },
                         entityInSel: {
@@ -858,10 +868,10 @@ export class PageMedia extends PageMenu {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'equalizer-outline' },
-                                color: {
-                                    type: 'const',
-                                    constVal: page.media.itemsColorOn?.equalizer ?? Color.activated,
-                                },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.equalizer,
+                                    Color.activated,
+                                ),
                             },
 
                             scale: undefined,
@@ -995,14 +1005,17 @@ export class PageMedia extends PageMenu {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'repeat-variant' },
-                                color: { type: 'const', constVal: page.media.itemsColorOn?.repeat ?? Color.activated },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.repeat,
+                                    Color.activated,
+                                ),
                             },
                             false: {
                                 value: { type: 'const', constVal: 'repeat' },
-                                color: {
-                                    type: 'const',
-                                    constVal: page.media.itemsColorOff?.repeat ?? Color.deactivated,
-                                },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.repeat,
+                                    Color.deactivated,
+                                ),
                             },
                             scale: undefined,
                             maxBri: undefined,
