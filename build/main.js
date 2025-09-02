@@ -303,7 +303,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         );
         await test.waitConnectAsync(5e3);
-        await test.subscript("test/123456/cmnd/#", async (topic, message) => {
+        await test.subscribe("test/123456/cmnd/#", async (topic, message) => {
           this.log.debug(`Testcase ${topic}`);
           if (message === "pageType~pageStartup") {
             await test.publish("test/123456/stat/RESULT", '{"CustomSend": "Done"}');

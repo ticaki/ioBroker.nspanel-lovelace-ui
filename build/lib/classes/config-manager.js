@@ -1559,6 +1559,7 @@ class ConfigManager extends import_library.BaseClass {
           template: "button.volume",
           dpInit: item.id,
           type: "button",
+          role: specialRole,
           color: {
             true: await this.getIconColor(item.onColor, import_Color.Color.activated),
             false: await this.getIconColor(item.offColor, import_Color.Color.deactivated),
@@ -1574,6 +1575,38 @@ class ConfigManager extends import_library.BaseClass {
               unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
             },
             text,
+            icon: {
+              false: {
+                value: { type: "const", constVal: "volume-mute" },
+                text: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: { type: "const", constVal: "%" }
+                },
+                color: { type: "const", constVal: import_Color.Color.off }
+              },
+              true: {
+                value: foundedStates[role].ACTUAL ? {
+                  ...foundedStates[role].ACTUAL,
+                  read: `{
+                                                            if (val > 66) {
+                                                                return 'volume-high';
+                                                            }
+                                                            if (val > 33) {
+                                                                return 'volume-medium';
+                                                            }
+                                                            if (val > 0) {
+                                                                return 'volume-low';
+                                                            }
+                                                            return 'volume-mute';
+                                                        }`
+                } : void 0,
+                text: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: { type: "const", constVal: "%" }
+                },
+                color: { type: "const", constVal: import_Color.Color.on }
+              }
+            },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
@@ -2683,7 +2716,41 @@ class ConfigManager extends import_library.BaseClass {
                 minValue1: item.minValue ? { type: "const", constVal: item.minValue } : void 0,
                 maxValue1: item.maxValue ? { type: "const", constVal: item.maxValue } : void 0,
                 switch1: foundedStates[role].MUTE,
-                text
+                text,
+                icon: {
+                  false: {
+                    value: { type: "const", constVal: "volume-mute" },
+                    text: {
+                      value: foundedStates[role].ACTUAL,
+                      unit: { type: "const", constVal: "%" },
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                    },
+                    color: { type: "const", constVal: import_Color.Color.off }
+                  },
+                  true: {
+                    value: foundedStates[role].ACTUAL ? {
+                      ...foundedStates[role].ACTUAL,
+                      read: `{
+                                                            if (val > 66) {
+                                                                return 'volume-high';
+                                                            }
+                                                            if (val > 33) {
+                                                                return 'volume-medium';
+                                                            }
+                                                            if (val > 0) {
+                                                                return 'volume-low';
+                                                            }
+                                                            return 'volume-mute';
+                                                        }`
+                    } : void 0,
+                    text: {
+                      value: foundedStates[role].ACTUAL,
+                      unit: { type: "const", constVal: "%" },
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                    },
+                    color: { type: "const", constVal: import_Color.Color.on }
+                  }
+                }
               }
             };
             break;

@@ -129,7 +129,7 @@ export class MQTTClientClass extends BaseClass {
                 }, timeout);
             }
 
-            void this.subscript(topic, async (_topic, _message) => {
+            void this.subscribe(topic, async (_topic, _message) => {
                 if (ref) {
                     this.adapter.clearTimeout(ref);
                 }
@@ -165,7 +165,7 @@ export class MQTTClientClass extends BaseClass {
         }
     }
 
-    async subscript(topic: string, callback: callbackMessageType): Promise<void> {
+    async subscribe(topic: string, callback: callbackMessageType): Promise<void> {
         if (this.subscriptDB.findIndex(m => m.topic === topic && m.callback === callback) !== -1) {
             return;
         }

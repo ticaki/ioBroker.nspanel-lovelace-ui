@@ -137,7 +137,7 @@ class MQTTClientClass extends import_library.BaseClass {
           reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
         }, timeout);
       }
-      void this.subscript(topic, async (_topic2, _message) => {
+      void this.subscribe(topic, async (_topic2, _message) => {
         if (ref) {
           this.adapter.clearTimeout(ref);
         }
@@ -171,7 +171,7 @@ class MQTTClientClass extends import_library.BaseClass {
       this.client.unsubscribe(topic);
     }
   }
-  async subscript(topic, callback) {
+  async subscribe(topic, callback) {
     if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) {
       return;
     }

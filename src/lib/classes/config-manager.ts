@@ -1766,6 +1766,7 @@ export class ConfigManager extends BaseClass {
                     template: 'button.volume',
                     dpInit: item.id,
                     type: 'button',
+                    role: specialRole,
                     color: {
                         true: await this.getIconColor(item.onColor, Color.activated),
                         false: await this.getIconColor(item.offColor, Color.deactivated),
@@ -1784,6 +1785,40 @@ export class ConfigManager extends BaseClass {
                                     : undefined,
                         },
                         text: text,
+                        icon: {
+                            false: {
+                                value: { type: 'const', constVal: 'volume-mute' },
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit: { type: 'const', constVal: '%' },
+                                },
+                                color: { type: 'const', constVal: Color.off },
+                            },
+                            true: {
+                                value: foundedStates[role].ACTUAL
+                                    ? {
+                                          ...foundedStates[role].ACTUAL,
+                                          read: `{
+                                                            if (val > 66) {
+                                                                return 'volume-high';
+                                                            }
+                                                            if (val > 33) {
+                                                                return 'volume-medium';
+                                                            }
+                                                            if (val > 0) {
+                                                                return 'volume-low';
+                                                            }
+                                                            return 'volume-mute';
+                                                        }`,
+                                      }
+                                    : undefined,
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit: { type: 'const', constVal: '%' },
+                                },
+                                color: { type: 'const', constVal: Color.on },
+                            },
+                        },
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -3127,6 +3162,46 @@ export class ConfigManager extends BaseClass {
                                 maxValue1: item.maxValue ? { type: 'const', constVal: item.maxValue } : undefined,
                                 switch1: foundedStates[role].MUTE,
                                 text: text,
+                                icon: {
+                                    false: {
+                                        value: { type: 'const', constVal: 'volume-mute' },
+                                        text: {
+                                            value: foundedStates[role].ACTUAL,
+                                            unit: { type: 'const', constVal: '%' },
+                                            textSize: item.fontSize
+                                                ? { type: 'const', constVal: item.fontSize }
+                                                : undefined,
+                                        },
+                                        color: { type: 'const', constVal: Color.off },
+                                    },
+                                    true: {
+                                        value: foundedStates[role].ACTUAL
+                                            ? {
+                                                  ...foundedStates[role].ACTUAL,
+                                                  read: `{
+                                                            if (val > 66) {
+                                                                return 'volume-high';
+                                                            }
+                                                            if (val > 33) {
+                                                                return 'volume-medium';
+                                                            }
+                                                            if (val > 0) {
+                                                                return 'volume-low';
+                                                            }
+                                                            return 'volume-mute';
+                                                        }`,
+                                              }
+                                            : undefined,
+                                        text: {
+                                            value: foundedStates[role].ACTUAL,
+                                            unit: { type: 'const', constVal: '%' },
+                                            textSize: item.fontSize
+                                                ? { type: 'const', constVal: item.fontSize }
+                                                : undefined,
+                                        },
+                                        color: { type: 'const', constVal: Color.on },
+                                    },
+                                },
                             },
                         };
                         break;

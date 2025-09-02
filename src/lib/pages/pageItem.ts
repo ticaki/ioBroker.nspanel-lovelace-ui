@@ -2790,34 +2790,37 @@ export class PageItem extends BaseClassTriggerd {
                 // Alexa Playlist
                 this.log.debug(`Get Alexa Playlist start`);
                 if (this.dataItems?.type === 'input_sel' && this.dataItems.data.valueList) {
-                    const playList = (await this.dataItems.data.valueList.getObject()) as string[] | null;
-                    if (playList) {
-                        const temp: { state: string; val: string }[] = playList
-                            .map(a => {
-                                const t = a.split('.');
-                                if (t.length !== 2) {
-                                    this.log.warn(`Alexa Playlist entry ${a} is not valid!`);
-                                    return null;
-                                }
-                                return { state: t[0], val: t[1] };
-                            })
-                            .filter(a => {
-                                if (a === null) {
-                                    return false;
-                                }
-                                const index = (this.tempData as string[]).findIndex(b => b.includes(a.state));
-                                if (index !== -1) {
-                                    return true;
-                                }
-                                return false;
-                            }) as { state: string; val: string }[];
-                        list.list = [];
-                        list.states = [];
-                        for (let a = 0; a < temp.length; a++) {
-                            list.list.push(temp[a].val);
-                            const index = (this.tempData as string[]).findIndex(b => b.includes(temp[a].state));
-                            list.states.push((this.tempData as string[])[index]);
+                    const raw = await this.dataItems.data.valueList.getObject();
+
+                    if (!Array.isArray(raw) || !raw.every(v => typeof v === 'string')) {
+                        this.log.error('Alexa playlist: valueList must be string[].');
+                    } else {
+                        const source = (this.tempData ?? []) as string[];
+                        const listOut: string[] = [];
+                        const statesOut: string[] = [];
+
+                        for (const entry of raw) {
+                            const sep = entry.indexOf('.');
+                            if (sep <= 0 || sep >= entry.length - 1) {
+                                this.log.warn(`Alexa playlist entry "${entry}" is invalid (expected "state.label").`);
+                                continue;
+                            }
+
+                            const stateToken = entry.slice(0, sep).trim();
+                            const label = entry.slice(sep + 1).trim();
+
+                            const matchedState = source.find(s => s.includes(stateToken));
+                            if (!matchedState) {
+                                this.log.warn(`Alexa playlist: no matching state for token "${stateToken}".`);
+                                continue;
+                            }
+
+                            listOut.push(label);
+                            statesOut.push(matchedState);
                         }
+
+                        list.list = listOut;
+                        list.states = statesOut;
                         list.value = '';
                     }
                 }
@@ -2847,19 +2850,49 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     case '2values': {
                         if (!valueList || !valueList2) {
-                            this.log.error('2values without valueList or valueList2!');
-                            return {};
+                            this.log.error('2values requires both valueList and valueList2!');
+                            states = {};
+                            break;
                         }
-                        const val1: string[] = (await valueList.getObject()) as string[]; //key
-                        const val2: string[] = (await valueList2.getObject()) as string[]; //value
-                        if (!Array.isArray(val1) || !Array.isArray(val2)) {
-                            this.log.error('2values valueList or valueList2 is not a array!');
-                            return {};
+
+                        const raw1 = await valueList.getObject();
+                        const raw2 = await valueList2.getObject();
+
+                        const isStringArray = (x: unknown): x is string[] =>
+                            Array.isArray(x) && x.every(v => typeof v === 'string');
+
+                        if (!isStringArray(raw1) || !isStringArray(raw2)) {
+                            this.log.error('2values: valueList/valueList2 must be string[]!');
+                            states = {};
+                            break;
                         }
-                        states = {};
-                        for (let a = 0; a < val1.length; a++) {
-                            states[val1[a]] = val2[a];
+
+                        const keys = raw1;
+                        const vals = raw2;
+
+                        const len = Math.min(keys.length, vals.length);
+                        if (keys.length !== vals.length) {
+                            this.log.warn(
+                                `2values: length mismatch (keys=${keys.length}, values=${vals.length}); truncating to ${len}.`,
+                            );
                         }
+
+                        const map: Record<string, string> = {};
+                        for (let i = 0; i < len; i++) {
+                            const k = keys[i];
+                            const v = vals[i] ?? '';
+                            if (!k) {
+                                continue;
+                            }
+                            if (map[k] !== undefined) {
+                                this.log.warn(
+                                    `2values: duplicate key "${k}" at index ${i} – overwriting previous value.`,
+                                );
+                            }
+                            map[k] = v;
+                        }
+
+                        states = map;
                         break;
                     }
                     default: {

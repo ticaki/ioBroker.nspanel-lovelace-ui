@@ -163,14 +163,17 @@ class PageMedia extends import_Page.Page {
     {
       const test = {};
       test.bla = "dd";
-      let duration = "", elapsed = "", title = "unknown", album = "", artist = "";
+      let duration = "", elapsed = "", title = "", album = "", artist = "";
       {
         const v = await tools.getValueEntryString(item.data.title);
         if (v !== null) {
           title = v;
         }
       }
-      message.headline = item.data.headline && await item.data.headline.getString() || this.playerName ? `${this.playerName}: ${title}` : title;
+      {
+        const v = item.data.headline && await item.data.headline.getString();
+        message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
+      }
       {
         const v = await tools.getValueEntryString(item.data.artist);
         if (v !== null) {

@@ -16,25 +16,17 @@ export class PanelSend extends BaseClass {
     private messageTimeoutTasmota: ioBroker.Timeout | true | undefined;
     private mqttClient: MQTTClientClass;
     private topic: string = '';
+    private configTopic: string = '';
     private losingMessageCount = 0;
 
     private _losingDelay = 1000;
     panel: Panel | undefined = undefined;
 
     get losingDelay(): number {
-        if (this._losingDelay < 30000) {
-            this._losingDelay = this._losingDelay + 1000;
-        }
         return this._losingDelay;
     }
-    set losingDelay(value: number) {
-        if (value > 30000) {
-            value = 30000;
-        }
-        if (value < 1000) {
-            value = 1000;
-        }
-        this._losingDelay = value;
+    set losingDelay(v: number) {
+        this._losingDelay = Math.max(1000, Math.min(30000, v));
     }
     constructor(
         adapter: AdapterClassDefinition,
@@ -42,7 +34,8 @@ export class PanelSend extends BaseClass {
     ) {
         super(adapter, config.name);
         this.mqttClient = config.mqttClient;
-        void this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
+        void this.mqttClient.subscribe(`${config.topic}/stat/RESULT`, this.onMessage);
+        this.configTopic = config.topic;
         this.topic = config.topic + SendTopicAppendix;
         this.panel = config.panel;
     }
@@ -54,29 +47,36 @@ export class PanelSend extends BaseClass {
         if (this.adapter.config.debugLogMqtt) {
             this.log.debug(`Receive command ${topic} with ${message}`);
         }
-        const msg = JSON.parse(message);
-        const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
-        if (msg) {
-            if ((ackForType && msg.CustomSend === 'renderCurrentPage') || (!ackForType && msg.CustomSend === 'Done')) {
-                if (this.messageTimeout) {
-                    this.adapter.clearTimeout(this.messageTimeout);
-                }
-                this.losingMessageCount = 0;
-                this._losingDelay = 0;
-                const oldMessage = this.messageDb.shift();
-                if (oldMessage) {
-                    if (oldMessage.payload === 'pageType~pageStartup') {
-                        this.messageDb = [];
+        try {
+            const msg = JSON.parse(message);
+            const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
+            if (msg) {
+                if (
+                    (ackForType && msg.CustomSend === 'renderCurrentPage') ||
+                    (!ackForType && msg.CustomSend === 'Done')
+                ) {
+                    if (this.messageTimeout) {
+                        this.adapter.clearTimeout(this.messageTimeout);
                     }
-                    if (this.adapter.config.debugLogMqtt) {
-                        this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
+                    this.losingMessageCount = 0;
+                    this._losingDelay = 1000;
+                    const oldMessage = this.messageDb.shift();
+                    if (oldMessage) {
+                        if (oldMessage.payload === 'pageType~pageStartup') {
+                            this.messageDb = [];
+                        }
+                        if (this.adapter.config.debugLogMqtt) {
+                            this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
+                        }
                     }
+                    if (this.unload) {
+                        return;
+                    }
+                    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
                 }
-                if (this.unload) {
-                    return;
-                }
-                this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
             }
+        } catch (err: any) {
+            this.log.error(`onMessage: ${err}`);
         }
     };
 
@@ -115,6 +115,7 @@ export class PanelSend extends BaseClass {
         if (this.unload) {
             return;
         }
+        this.losingDelay = this.losingDelay + 1000;
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     };
@@ -142,7 +143,14 @@ export class PanelSend extends BaseClass {
         this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
         //}
         this.messageTimeoutTasmota = true;
-        await this.mqttClient.publish(msg.topic, msg.payload, { ...msg.opt, qos: 1 });
+        try {
+            await this.mqttClient.publish(msg.topic, msg.payload, { ...(msg.opt ?? {}), qos: 1 });
+        } catch (e) {
+            this.log.warn(`MQTT publish failed: ${(e as Error).message}`);
+            // optional: Requeue
+            this.messageDbTasmota.unshift(msg);
+            this.losingDelay = this.losingDelay + 1000; // sanfter Backoff
+        }
         if (this.unload) {
             return;
         }
@@ -151,7 +159,7 @@ export class PanelSend extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
-        this.mqttClient.unsubscribe(`${this.topic}/stat/RESULT`);
+        this.mqttClient.unsubscribe(`${this.configTopic}/stat/RESULT`);
         if (this.messageTimeout) {
             this.adapter.clearTimeout(this.messageTimeout);
         }

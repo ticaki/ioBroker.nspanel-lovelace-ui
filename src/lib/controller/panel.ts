@@ -370,8 +370,8 @@ export class Panel extends BaseClass {
             return;
         }
         this.log.debug(`Panel ${this.name} is initialised!`);
-        await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
-        await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
+        await this.controller.mqttClient.subscribe(`${this.topic}/tele/#`, this.onMessage);
+        await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
         const channelObj = this.library.cloneObject(
             definition.genericStateObjects.panel.panels._channel,
@@ -612,36 +612,50 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon,
         );
 
-        if (this.buttons) {
-            for (const b in this.buttons) {
-                const k = b as keyof typeof this.buttons;
-                const button = this.buttons[k];
-                if (button && this.screenSaver) {
-                    switch (button.mode) {
-                        case 'page': {
-                            break;
+        if (this.buttons && this.screenSaver) {
+            const entries = Object.entries(this.buttons) as [
+                keyof typeof this.buttons,
+                (typeof this.buttons)[keyof typeof this.buttons],
+            ][];
+
+            const inits: Promise<void>[] = [];
+
+            for (const [key, button] of entries) {
+                if (!button) {
+                    continue;
+                }
+
+                switch (button.mode) {
+                    case 'page':
+                        break;
+
+                    case 'switch':
+                    case 'button': {
+                        if (typeof button.state === 'string') {
+                            const di = new Dataitem(
+                                this.adapter,
+                                { type: 'state', dp: button.state },
+                                this.screenSaver,
+                                this.statesControler,
+                            );
+                            button.state = di;
+
+                            inits.push(
+                                di.isValidAndInit().then(ok => {
+                                    if (!ok) {
+                                        if (this.buttons) {
+                                            this.buttons[key] = null;
+                                        }
+                                    }
+                                }),
+                            );
                         }
-                        case 'switch':
-                        case 'button': {
-                            if (typeof button.state === 'string') {
-                                button.state = new Dataitem(
-                                    this.adapter,
-                                    {
-                                        type: 'state',
-                                        dp: button.state,
-                                    },
-                                    this.screenSaver,
-                                    this.statesControler,
-                                );
-                                if (!(await button.state.isValidAndInit())) {
-                                    this.buttons[k] = null;
-                                }
-                            }
-                            break;
-                        }
+                        break;
                     }
                 }
             }
+
+            await Promise.all(inits);
         }
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
@@ -659,46 +673,64 @@ export class Panel extends BaseClass {
     ) => {
         this.sendToPanelClass(payload, ackForType, opt);
     };
+    /**
+     * Activate a page or toggle sleep on the current page.
+     *
+     * Behavior:
+     * - If `_page` is a boolean: `true` wakes the current page, `false` puts it to sleep.
+     * - If `_page` is a Page: activates that page; `_notSleep === true` keeps it awake, otherwise it starts asleep.
+     *
+     * @param _page Target page or boolean toggle for current page
+     * @param _notSleep When `_page` is a Page, `true` means not sleeping (visible), `false` means sleeping
+     * @returns Promise<void>
+     */
     async setActivePage(_page?: Page | boolean, _notSleep?: boolean): Promise<void> {
         if (_page === undefined) {
             return;
         }
-        let page = this._activePage;
-        let sleep = false;
+
+        let targetPage: Page | undefined = this._activePage;
+        let targetSleep = false;
+
         if (typeof _page === 'boolean') {
-            sleep = !_page;
-        } else {
-            page = _page;
-            sleep = _notSleep ?? false;
-        }
-        if (!this._activePage) {
-            if (page === undefined) {
+            if (!this._activePage) {
                 return;
             }
-            page.setLastPage(this._activePage ?? undefined);
-            await page.setVisibility(true);
+            targetSleep = !_page;
+        } else {
+            targetPage = _page;
+            targetSleep = _notSleep ?? false;
+        }
 
-            this._activePage = page;
-        } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
-            if (page != this._activePage) {
-                if (this._activePage) {
-                    await this._activePage.setVisibility(false);
-                }
-                if (page) {
-                    page.setLastPage(this._activePage ?? undefined);
-                    if (!sleep) {
-                        await page.setVisibility(true);
-                    }
-                    page.sleep = sleep;
-                    this._activePage = page;
-                }
-            } else if (sleep !== this._activePage.sleep) {
-                page.setLastPage(this._activePage ?? undefined);
-                if (!sleep) {
-                    await this._activePage.setVisibility(true);
-                }
-                this._activePage.sleep = sleep;
+        if (!this._activePage) {
+            if (!targetPage) {
+                return;
             }
+            targetPage.setLastPage(undefined);
+            if (!targetSleep) {
+                await targetPage.setVisibility(true);
+            }
+            targetPage.sleep = targetSleep;
+            this._activePage = targetPage;
+            return;
+        }
+
+        if (targetPage && targetPage !== this._activePage) {
+            await this._activePage.setVisibility(false);
+            targetPage.setLastPage(this._activePage);
+            if (!targetSleep) {
+                await targetPage.setVisibility(true);
+            }
+            targetPage.sleep = targetSleep;
+            this._activePage = targetPage;
+            return;
+        }
+
+        if (targetSleep !== this._activePage.sleep) {
+            if (!targetSleep) {
+                await this._activePage.setVisibility(true);
+            }
+            this._activePage.sleep = targetSleep;
         }
     }
     getActivePage(): Page {

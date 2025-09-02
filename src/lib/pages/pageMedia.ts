@@ -154,7 +154,7 @@ export class PageMedia extends Page {
             test.bla = 'dd';
             let duration = '',
                 elapsed = '',
-                title = 'unknown',
+                title = '',
                 album = '',
                 artist = '';
 
@@ -164,11 +164,10 @@ export class PageMedia extends Page {
                     title = v;
                 }
             }
-            message.headline =
-                (item.data.headline && (await item.data.headline.getString())) || this.playerName
-                    ? `${this.playerName}: ${title}`
-                    : title;
-
+            {
+                const v = item.data.headline && (await item.data.headline.getString());
+                message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
+            }
             {
                 const v = await tools.getValueEntryString(item.data.artist);
                 if (v !== null) {
