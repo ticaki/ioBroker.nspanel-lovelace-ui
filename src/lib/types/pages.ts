@@ -11,14 +11,17 @@ export function isCardEntitiesType(F: any): F is cardEntitiesTypes {
 export function isCardGridType(F: any): F is cardGridTypes {
     return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2', 'cardMedia'].indexOf(F) !== -1;
 }
+export function isCardMenuHalfPageScrollType(F: any): F is cardGridTypes {
+    return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'].indexOf(F) !== -1;
+}
 
 export function isCardMenuRole(F: any): F is cardGridTypes | cardEntitiesTypes {
     return isCardEntitiesType(F) || isCardGridType(F);
 }
 
 // cardMedia use some features of cardGrid, but is not a menu card
-export function isPageMenuConfig(F: any): F is PageMenusConfigs {
-    if (typeof F !== 'object' || F === null || !('card' in F) || F.card === 'cardMedia') {
+export function isPageMenuConfig(F: any): F is PageMenuConfig {
+    if (typeof F !== 'object' || F === null || !('card' in F)) {
         return false;
     }
     return isCardMenuRole(F.card);
@@ -488,7 +491,7 @@ export type PageBaseConfigTemplate =
           pageItems: typePageItem.PageItemDataItemsOptions[];
 
           //    mediaNamespace: string;
-          config: undefined | PageMenusConfigs | PageOthersConfigs | screensaverDataItemOptions;
+          config: undefined | PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
           items: undefined;
       }
     | {
@@ -511,11 +514,12 @@ export function isAlarmButtonEvent(F: any): F is AlarmButtonEvents {
     return ['A1', 'A2', 'A3', 'A4', 'D1', 'U1'].indexOf(F) !== -1;
 }
 
-export type PageMenusConfigs =
+export type PageMenuConfig =
     | cardThermo2DataItemOptions
     | cardGridDataItemOptions
     | cardEntitiesDataItemOptions
-    | cardScheduleDataItemOptions;
+    | cardScheduleDataItemOptions
+    | cardMediaDataItemOptions;
 
 export type PageOthersConfigs =
     | cardPowerDataItemOptions
@@ -542,7 +546,7 @@ export type PageBaseConfig = (
                 hidden?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 //    mediaNamespace: string;
-                config: PageMenusConfigs | PageOthersConfigs;
+                config: PageMenuConfig | PageOthersConfigs;
             }
           | {
                 //    type: PlayerType;
@@ -703,10 +707,9 @@ export type cardPowerDataItems = {
 export type cardGridDataItemOptions = {
     card: Extract<cardGridTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3'>;
     cardRole?: CardRole;
-    scrollType?: 'page';
-    filterType?: 'true' | 'false' | number;
+
     data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
-};
+} & PageMenuBaseConfig;
 export type cardGridDataItems = {
     card: Extract<cardGridTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3'>;
     data: ChangeTypeOfKeys<PageGridBaseConfig, dataItem.Dataitem | undefined>;
@@ -715,10 +718,8 @@ export type cardGridDataItems = {
 export type cardEntitiesDataItemOptions = {
     card: Extract<cardEntitiesTypes, 'cardEntities'>;
     cardRole?: CardRole;
-    scrollType?: 'page';
-    filterType?: 'true' | 'false' | number;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
-};
+} & PageMenuBaseConfig;
 export type cardEntitiesDataItems = {
     card: Extract<cardEntitiesTypes, 'cardEntities'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
@@ -727,13 +728,19 @@ export type cardEntitiesDataItems = {
 export type cardScheduleDataItemOptions = {
     card: Extract<cardEntitiesTypes, 'cardSchedule'>;
     cardRole?: CardRole;
-    scrollType?: 'page';
-    filterType?: 'true' | 'false' | number;
+
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
-};
+} & PageMenuBaseConfig;
 export type cardScheduleDataItems = {
     card: Extract<cardEntitiesTypes, 'cardSchedule'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
+};
+type PageMenuBaseConfig = {
+    scrollType?: 'page' | 'half';
+    filterType?: 'true' | 'false' | number;
+    cardRole?: CardRole;
+    /** Controls which scrolling presentation is used. Defaults to 'classic'. */
+    scrollPresentation?: 'classic' | 'arrow';
 };
 
 export type cardThermoDataItemOptions = {
@@ -750,7 +757,7 @@ export type cardMediaDataItemOptions = {
     data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
         logo?: toolboxItem | undefined;
     };
-};
+} & PageMenuBaseConfig;
 
 export type cardMediaDataItems = {
     card: Extract<cardGridTypes, 'cardMedia'>;
@@ -819,26 +826,6 @@ export type ChangeTypeOfKeysGeneric<Obj, N> = Obj extends object
               [K in keyof Obj]: ChangeTypeOfKeysGeneric<Obj[K], N>;
           }
     : N;
-/*export type DeepPartial<Obj, N> = Obj extends
-    | object
-    | listItem
-    | PageTypeCards
-    | IconBoolean
-    | TextEntryType
-    | ValueEntryType
-    | IconEntryType
-    | ScaledNumberType
-    | PageGridPowerConfigElement
-    | RGB
-    | ColorEntryType
-    | PageMediaBaseConfig
-    | Types.SerialTypePageElements
-    ? Obj extends Dataitem
-        ? Dataitem
-        : {
-              [K in keyof Obj]+?: ChangeTypeOfKeys<Obj[K], N>;
-          }
-    : Dataitem;*/
 
 type PageMediaBaseConfig = {
     headline: string;
@@ -895,12 +882,11 @@ export type PageGridPowerConfigElement =
 
 export type cardThermo2DataItemOptions = {
     card: Extract<cardGridTypes, 'cardThermo2'>;
-    filterType?: 'true' | 'false' | number;
-    scrollType?: 'page';
+
     sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
     cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
-};
+} & PageMenuBaseConfig;
 export type cardThermo2DataItems = {
     card: Extract<cardGridTypes, 'cardThermo2'>;
     data: ChangeTypeOfKeys<PageThermo2BaseConfig, dataItem.Dataitem | undefined>;

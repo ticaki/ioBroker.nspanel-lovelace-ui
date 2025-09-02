@@ -58,7 +58,7 @@ class Dataitem extends import_library.BaseClass {
     this.parent = parent;
     switch (this.options.type) {
       case "const":
-        this.options.constVal = import_Color.Color.getColorFromDefault(this.options.constVal);
+        this.options.constVal = import_Color.Color.getColorFromDefaultOrReturn(this.options.constVal);
         this.setTypeFromValue(this.options.constVal);
         break;
       case "state":

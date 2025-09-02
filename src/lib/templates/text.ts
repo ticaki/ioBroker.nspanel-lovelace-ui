@@ -597,42 +597,42 @@ export const textTemplates: TemplateItems = {
                     case 24: // Ice
                     case 30: // Hot
                     case 31: // Cold
-                        return Color.swExceptional; // exceptional
+                        return Color.exceptional; // exceptional
 
                     case 7: // Cloudy
                     case 8: // Dreary (Overcast)
                     case 38: // Mostly Cloudy
-                        return Color.swCloudy; // cloudy
+                        return Color.cloudy; // cloudy
 
                     case 11: // fog
-                        return Color.swFog; // fog
+                        return Color.fog; // fog
 
                     case 25: // Sleet
-                        return Color.swHail; // Hail
+                        return Color.hail; // Hail
 
                     case 15: // T-Storms
-                        return Color.swLightning; // lightning
+                        return Color.lightning; // lightning
 
                     case 16: // Mostly Cloudy w/ T-Storms
                     case 17: // Partly Sunny w/ T-Storms
                     case 41: // Partly Cloudy w/ T-Storms
                     case 42: // Mostly Cloudy w/ T-Storms
-                        return Color.swLightningRainy; // lightning-rainy
+                        return Color.lightningRainy; // lightning-rainy
 
                     case 33: // Clear
                     case 34: // Mostly Clear
                     case 37: // Hazy Moonlight
-                        return Color.swClearNight;
+                        return Color.clearNight;
 
                     case 3: // Partly Sunny
                     case 4: // Intermittent Clouds
                     case 6: // Mostly Cloudy
                     case 35: // Partly Cloudy
                     case 36: // Intermittent Clouds
-                        return Color.swPartlycloudy; // partlycloudy
+                        return Color.partlyCloudy; // partlycloudy
 
                     case 18: // pouring
-                        return Color.swPouring; // pouring
+                        return Color.pouring; // pouring
 
                     case 12: // Showers
                     case 13: // Mostly Cloudy w/ Showers
@@ -640,7 +640,7 @@ export const textTemplates: TemplateItems = {
                     case 26: // Freezing Rain
                     case 39: // Partly Cloudy w/ Showers
                     case 40: // Mostly Cloudy w/ Showers
-                        return Color.swRainy; // rainy
+                        return Color.rainy; // rainy
 
                     case 19: // Flurries
                     case 20: // Mostly Cloudy w/ Flurries
@@ -649,18 +649,18 @@ export const textTemplates: TemplateItems = {
                     case 23: // Mostly Cloudy w/ Snow
                     case 43: // Mostly Cloudy w/ Flurries
                     case 44: // Mostly Cloudy w/ Snow
-                        return Color.swSnowy; // snowy
+                        return Color.snowy; // snowy
 
                     case 29: // Rain and Snow
-                        return Color.swSnowyRainy; // snowy-rainy
+                        return Color.snowyRainy; // snowy-rainy
 
                     case 1: // Sunny
                     case 2: // Mostly Sunny
                     case 5: // Hazy Sunshine
-                        return Color.swSunny; // sunny
+                        return Color.sunny; // sunny
 
                     case 32: // windy
-                        return Color.swWindy; // windy
+                        return Color.windy; // windy
 
                     default:
                         return Color.White;
@@ -814,42 +814,42 @@ export const textTemplates: TemplateItems = {
                                     case 24: // Ice
                                     case 30: // Hot
                                     case 31: // Cold
-                                        return Color.swExceptional; // exceptional
+                                        return Color.tornado; // exceptional
 
                                     case 7: // Cloudy
                                     case 8: // Dreary (Overcast)
                                     case 38: // Mostly Cloudy
-                                        return Color.swCloudy; // cloudy
+                                        return Color.cloudy; // cloudy
 
                                     case 11: // fog
-                                        return Color.swFog; // fog
+                                        return Color.fog; // fog
 
                                     case 25: // Sleet
-                                        return Color.swHail; // Hail
+                                        return Color.hail; // Hail
 
                                     case 15: // T-Storms
-                                        return Color.swLightning; // lightning
+                                        return Color.lightning; // lightning
 
                                     case 16: // Mostly Cloudy w/ T-Storms
                                     case 17: // Partly Sunny w/ T-Storms
                                     case 41: // Partly Cloudy w/ T-Storms
                                     case 42: // Mostly Cloudy w/ T-Storms
-                                        return Color.swLightningRainy; // lightning-rainy
+                                        return Color.lightningRainy; // lightning-rainy
 
                                     case 33: // Clear
                                     case 34: // Mostly Clear
                                     case 37: // Hazy Moonlight
-                                        return Color.swClearNight;
+                                        return Color.clearNight;
 
                                     case 3: // Partly Sunny
                                     case 4: // Intermittent Clouds
                                     case 6: // Mostly Cloudy
                                     case 35: // Partly Cloudy
                                     case 36: // Intermittent Clouds
-                                        return Color.swPartlycloudy; // partlycloudy
+                                        return Color.partlyCloudy; // partlycloudy
 
                                     case 18: // pouring
-                                        return Color.swPouring; // pouring
+                                        return Color.pouring; // pouring
 
                                     case 12: // Showers
                                     case 13: // Mostly Cloudy w/ Showers
@@ -857,7 +857,7 @@ export const textTemplates: TemplateItems = {
                                     case 26: // Freezing Rain
                                     case 39: // Partly Cloudy w/ Showers
                                     case 40: // Mostly Cloudy w/ Showers
-                                        return Color.swRainy; // rainy
+                                        return Color.rainy; // rainy
 
                                     case 19: // Flurries
                                     case 20: // Mostly Cloudy w/ Flurries
@@ -866,18 +866,18 @@ export const textTemplates: TemplateItems = {
                                     case 23: // Mostly Cloudy w/ Snow
                                     case 43: // Mostly Cloudy w/ Flurries
                                     case 44: // Mostly Cloudy w/ Snow
-                                        return Color.swSnowy; // snowy
+                                        return Color.snowy; // snowy
 
                                     case 29: // Rain and Snow
-                                        return Color.swSnowyRainy; // snowy-rainy
+                                        return Color.snowyRainy; // snowy-rainy
 
                                     case 1: // Sunny
                                     case 2: // Mostly Sunny
                                     case 5: // Hazy Sunshine
-                                        return Color.swSunny; // sunny
+                                        return Color.sunny; // sunny
 
                                     case 32: // windy
-                                        return Color.swWindy; // windy
+                                        return Color.windy; // windy
 
                                     default:
                                         return Color.White;
@@ -2085,33 +2085,33 @@ export const textTemplates: TemplateItems = {
                             }
                             switch (val) {
                                 case "01d": //clear sky day
-                                    return Color.swSunny;
+                                    return Color.sunny;
                                 case "01n": //clear sky night
-                                    return Color.swClearNight;
+                                    return Color.clearNight;
                                 case "02d": //few clouds day
                                 case "02n": //few clouds night
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case "03d": //scattered clouds
                                 case "03n":
-                                    return Color.swCloudy;
+                                    return Color.cloudy;
                                 case "04d": //broken clouds
                                 case "04n":
-                                    return Color.swCloudy;
+                                    return Color.cloudy;
                                 case "09d": //shower rain 
                                 case "09n":
-                                    return Color.swRainy;
+                                    return Color.rainy;
                                 case "10d": //rain 
                                 case "10n":
-                                    return Color.swPouring;
+                                    return Color.pouring;
                                 case "11d": //Thunderstorm 
                                 case "11n":
-                                    return Color.swLightningRainy;
+                                    return Color.lightningRainy;
                                 case "13d": //snow 
                                 case "13n":
-                                    return Color.swSnowy;
+                                    return Color.snowy;
                                 case "50d": //mist 
                                 case "50n":
-                                    return Color.swFog;
+                                    return Color.fog;
                                 default:
                                     return Color.White;
                             }`,
@@ -2238,33 +2238,33 @@ export const textTemplates: TemplateItems = {
                             }
                             switch (val) {
                                 case "01d": //clear sky day
-                                    return Color.swSunny;
+                                    return Color.sunny;
                                 case "01n": //clear sky night
-                                    return Color.swClearNight;
+                                    return Color.clearNight;
                                 case "02d": //few clouds day
                                 case "02n": //few clouds night
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case "03d": //scattered clouds
                                 case "03n":
-                                    return Color.swCloudy;
+                                    return Color.cloudy;
                                 case "04d": //broken clouds
                                 case "04n":
-                                    return Color.swCloudy;
+                                    return Color.cloudy;
                                 case "09d": //shower rain 
                                 case "09n":
-                                    return Color.swRainy;
+                                    return Color.rainy;
                                 case "10d": //rain 
                                 case "10n":
-                                    return Color.swPouring;
+                                    return Color.pouring;
                                 case "11d": //Thunderstorm 
                                 case "11n":
-                                    return Color.swLightningRainy;
+                                    return Color.lightningRainy;
                                 case "13d": //snow 
                                 case "13n":
-                                    return Color.swSnowy;
+                                    return Color.snowy;
                                 case "50d": //mist 
                                 case "50n":
-                                    return Color.swFog;
+                                    return Color.fog;
                                 default:
                                     return Color.White;
                             }`,
@@ -2506,80 +2506,6 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-    'text.pirate-weather.sunriseset': {
-        role: '4values',
-        adapter: 'pirate-weather',
-        type: 'text',
-
-        data: {
-            icon: {
-                true: {
-                    value: { type: 'const', constVal: 'weather-sunset-up' },
-                    color: { type: 'const', constVal: { r: 253, g: 251, b: 29 } },
-                },
-                false: {
-                    value: { type: 'const', constVal: 'weather-sunset-down' },
-                    color: { type: 'const', constVal: { r: 255, g: 138, b: 18 } },
-                },
-            },
-            entity1: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'date.sunrise',
-                    dp: '',
-                    read: `
-                        if (new Date().getDate() !== new Date(val).getDate()){
-                            return null;
-                        }
-                        const t = new Date(val).getTime();
-                        if (t < Date.now()) return null;
-                        return t;`,
-                },
-                dateFormat: {
-                    type: 'const',
-                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
-                },
-            },
-            entity2: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'date.sunset',
-                    dp: '',
-                    read: `
-                    if (new Date().getDate() !== new Date(val).getDate()){
-                        return null;
-                    }
-                    const n = Date.now();
-                    const t = new Date(val).getTime();
-                    if (t < n) return null;
-                    return t;`,
-                },
-                dateFormat: {
-                    type: 'const',
-                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
-                },
-            },
-            entity3: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'date.sunrise',
-                    dp: '',
-                },
-                dateFormat: {
-                    type: 'const',
-                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
-                },
-            },
-            text: {
-                true: { type: 'const', constVal: 'sunriseToken' },
-                false: { type: 'const', constVal: 'sunsetToken' },
-            },
-            text1: undefined,
-        },
-    },
     'text.pirate-weather.favorit': {
         role: 'text',
         adapter: 'pirate-weather',
@@ -2688,34 +2614,34 @@ export const textTemplates: TemplateItems = {
                                 case 'cloudy':
                                 case 'mostly-cloudy-day':
                                 case 'mostly-cloudy-night':
-                                    return Color.swCloudy; // cloudy
+                                    return Color.cloudy; // cloudy
 
                                 case 'fog':
                                 case 'mist':
                                 case 'haze':
                                 case 'smoke':
-                                    return Color.swFog;
+                                    return Color.fog;
 
                                 case 'hail':
-                                    return Color.swHail;
+                                    return Color.hail;
 
                                 case 'thunderstorm': // T-Storms
-                                    return Color.swLightning;
+                                    return Color.lightning;
 
                                 case 'clear-night':
                                 case 'mostly-clear-night':
-                                    return Color.swClearNight;
+                                    return Color.clearNight;
 
                                 case 'partly-cloudy-day':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
 
                                 case 'partly-cloudy-night':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
 
                                 case 'rain':
                                 case 'heavy-rain':
                                 case 'precipitation':
-                                    return Color.swPouring;
+                                    return Color.pouring;
 
                                 case 'possible-rain-day':
                                 case 'possible-rain-night':
@@ -2723,7 +2649,7 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-precipitation-day':
                                 case 'drizzle':
                                 case 'light-rain':
-                                    return Color.swRainy;
+                                    return Color.rainy;
 
                                 case 'light-snow':
                                 case 'snow':
@@ -2734,21 +2660,21 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-snow-night':
                                 case 'possible-sleet-day':
                                 case 'possible-sleet-night':
-                                    return Color.swSnowy;
+                                    return Color.snowy;
 
                                 case 'sleet':
                                 case 'light-sleet':
                                 case 'very-light-sleet':
-                                    return Color.swSnowyRainy;
+                                    return Color.snowyRainy;
 
                                 case 'clear-day':
                                 case 'mostly-clear-day':
-                                    return Color.swSunny;
+                                    return Color.sunny;
 
                                 case 'dangerous-wind':
                                 case 'breezy':
                                 case 'wind':
-                                    return Color.swWindy;
+                                    return Color.windy;
 
                                 default:
                                     return Color.White;
@@ -2901,34 +2827,34 @@ export const textTemplates: TemplateItems = {
                                 case 'cloudy':
                                 case 'mostly-cloudy-day':
                                 case 'mostly-cloudy-night':
-                                    return Color.swCloudy; // cloudy
+                                    return Color.cloudy; // cloudy
                                 case 'fog':
                                 case 'mist':
                                 case 'haze':
                                 case 'smoke':
-                                    return Color.swFog;
+                                    return Color.fog;
                                 case 'hail':
-                                    return Color.swHail;
+                                    return Color.hail;
                                 case 'thunderstorm': // T-Storms
-                                    return Color.swLightning;
+                                    return Color.lightning;
                                 case 'clear-night':
                                 case 'mostly-clear-night':
-                                    return Color.swClearNight;
+                                    return Color.clearNight;
                                 case 'partly-cloudy-day':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case 'partly-cloudy-night':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case 'rain':
                                 case 'heavy-rain':
                                 case 'precipitation':
-                                    return Color.swPouring;
+                                    return Color.pouring;
                                 case 'possible-rain-day':
                                 case 'possible-rain-night':
                                 case 'possible-precipitation-night':
                                 case 'possible-precipitation-day':
                                 case 'drizzle':
                                 case 'light-rain':
-                                    return Color.swRainy;
+                                    return Color.rainy;
                                 case 'light-snow':
                                 case 'snow':
                                 case 'heavy-sleet':
@@ -2938,18 +2864,18 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-snow-night':
                                 case 'possible-sleet-day':
                                 case 'possible-sleet-night':
-                                    return Color.swSnowy
+                                    return Color.snowy
                                 case 'sleet':
                                 case 'light-sleet':
                                 case 'very-light-sleet':
-                                    return Color.swSnowyRainy;
+                                    return Color.snowyRainy;
                                 case 'clear-day':
                                 case 'mostly-clear-day':
-                                    return Color.swSunny;
+                                    return Color.sunny;
                                 case 'dangerous-wind':
                                 case 'breezy':
                                 case 'wind':
-                                    return Color.swWindy;
+                                    return Color.windy;
                                 default:
                                     return Color.White;
                             }`,
@@ -2979,492 +2905,20 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-    'text.pirate-weather.windspeed': {
-        role: 'text',
-        type: 'text',
-        modeScr: 'bottom',
-        adapter: 'pirate-weather',
-        data: {
-            entity1: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.windSpeed$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                unit: undefined,
-            },
-            entity2: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.windSpeed$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                /*unit: {
-                    type: 'const',
-                    constVal: 'km/h',
-                },*/
-            },
-            icon: {
-                true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-windy',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSRed,
-                    },
-                },
-                false: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-windy',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSGreen,
-                    },
-                },
-                scale: {
-                    type: 'const',
-                    constVal: { val_min: 0, val_max: 80 },
-                },
-                maxBri: undefined,
-                minBri: undefined,
-            },
-            text: {
-                true: {
-                    type: 'const',
-                    constVal: 'Wind',
-                },
-                false: undefined,
-            },
-        },
-    },
-    'text.pirate-weather.winddirection': {
-        role: 'text',
-        type: 'text',
-        modeScr: 'bottom',
-        adapter: 'pirate-weather',
-        data: {
-            entity2: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.windBearingText$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                factor: undefined,
-                unit: {
-                    type: 'const',
-                    constVal: '',
-                },
-            },
-            icon: {
-                true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'windsock',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: '#FFFFFF',
-                    },
-                },
-                false: {
-                    value: undefined,
-                    color: undefined,
-                },
-                scale: undefined,
-                maxBri: undefined,
-                minBri: undefined,
-            },
-            text: {
-                true: {
-                    type: 'const',
-                    constVal: 'Windr.',
-                },
-                false: undefined,
-            },
-        },
-    },
-    'text.pirate-weather.windgust': {
-        role: 'text',
-        type: 'text',
-        modeScr: 'bottom',
-        adapter: 'pirate-weather',
-        data: {
-            entity1: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.windGust$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                unit: undefined,
-            },
-            entity2: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.windGust$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                /*unit: {
-                    type: 'const',
-                    constVal: 'm/s',
-                },*/
-            },
-            icon: {
-                true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-tornado',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSRed,
-                    },
-                },
-                false: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-tornado',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSGreen,
-                    },
-                },
-                scale: {
-                    type: 'const',
-                    constVal: { val_min: 0, val_max: 80 },
-                },
-                maxBri: undefined,
-                minBri: undefined,
-            },
-            text: {
-                true: {
-                    type: 'const',
-                    constVal: 'Böen',
-                },
-                false: undefined,
-            },
-        },
-    },
-    'text.pirate-weather.uvindex': {
-        role: 'text',
-        type: 'text',
-        adapter: 'pirate-weather',
-        data: {
-            entity1: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'value.uv',
-                    dp: '',
-                    forceType: 'string',
-                },
-                decimal: undefined,
-                factor: undefined,
-                unit: undefined,
-            },
-            entity2: {
-                value: {
-                    mode: 'auto',
-                    role: 'value.uv',
-                    type: 'triggered',
-                    dp: ``,
-                    forceType: 'string',
-                },
-                decimal: undefined,
-                factor: undefined,
-                unit: undefined,
-            },
-            icon: {
-                true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'solar-power',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSRed,
-                    },
-                },
-                false: {
-                    value: {
-                        type: 'const',
-                        constVal: 'solar-power',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSGreen,
-                    },
-                },
-                scale: {
-                    type: 'const',
-                    constVal: { val_min: 0, val_max: 9 },
-                },
-                maxBri: undefined,
-                minBri: undefined,
-            },
-            text: {
-                true: {
-                    type: 'const',
-                    constVal: 'UV',
-                },
-                false: undefined,
-            },
-        },
-    },
-    'text.pirate-weather.hourlyweather': {
-        role: '',
-        type: 'text',
-        adapter: 'pirate-weather',
-        data: {
-            entity1: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    dp: '',
-                    regexp: /\.temperature$/,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                factor: undefined,
-            },
-            entity2: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    dp: '',
-                    regexp: /\.temperature$/,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                factor: undefined,
-            },
-            icon: {
-                true: {
-                    value: {
-                        type: 'state',
-                        role: '',
-                        regexp: /.icon$/,
-                        mode: 'auto',
-                        dp: '',
-                        /**
-                         * How to use
-                         * this run its own this. U dont have accress to variables that no definied for this.
-                         * Color: in a import of color.ts
-                         * val: is the incoming value - raw
-                         *
-                         * The best thing is to write the function with () => { here }. Then remove the () => {}
-                         * and convert it into a template literal, using ``. A return is mandatory.
-                         */
-                        read: `
-                            switch (val) {
-                                case 'cloudy':
-                                case 'mostly-cloudy-day':
-                                case 'mostly-cloudy-night':
-                                    return 'weather-cloudy';
-                                case 'fog':
-                                case 'mist':
-                                case 'smoke':
-                                    return 'weather-fog';
-                                case 'hail':
-                                    return 'weather-hail';
-                                case 'haze':
-                                    return 'weather-hazy'
-                                case 'thunderstorm':
-                                    return 'weather-lightning';
-                                case 'possible-precipitation-day':
-                                case 'possible-precipitation-night':
-                                    return 'weather-lightning-rainy';
-                                case 'clear-night':
-                                case 'mostly-clear-night':
-                                    return 'weather-night';
-                                case 'partly-cloudy-night':
-                                    return 'weather-night-partly-cloudy';
-                                case 'mostly-cloudy-day':
-                                case 'partly-cloudy-day':
-                                    return 'weather-partly-cloudy';
-                                case 'possible-rain-day':
-                                case 'possible-rain-night':
-                                    return 'weather-partly-rainy';
-                                case 'possible-snow-night':
-                                case 'possible-snow-day':
-                                    return 'weather-partly-snowy';
-                                case 'possible-sleet-day':
-                                case 'possible-sleet-night':
-                                    return 'weather-partly-snowy-rainy';
-                                case 'rain':
-                                case 'heavy-rain':
-                                case 'precipitation':
-                                    return 'weather-pouring';
-                                case 'drizzle':
-                                case 'light-rain':
-                                    return 'weather-rainy';
-                                case 'light-snow':
-                                case 'snow':
-                                    return 'weather-snowy';
-                                case 'heavy-sleet':
-                                case 'heavy-snow':
-                                case 'flurries':
-                                    return 'weather-snowy-heavy';
-                                case 'sleet':
-                                case 'light-sleet':
-                                case 'very-light-sleet':
-                                    return 'weather-snowy-rainy';
-                                case 'clear-day':
-                                case 'mostly-clear-day':
-                                    return 'weather-sunny';
-                                case 'dangerous-wind':
-                                    return 'weather-tornado';
-                                case 'wind':
-                                    return 'weather-windy';
-                                case 'breezy':
-                                    return 'weather-windy-variant';
-                                default:
-                                    return 'alert-circle-outline';
-                            }`,
-                    },
-                    color: {
-                        type: 'triggered',
-                        role: '',
-                        regexp: /.icon$/,
-                        mode: 'auto',
-                        dp: '',
-                        read: `
-                            switch (val) {
-                                case 'cloudy':
-                                case 'mostly-cloudy-day':
-                                case 'mostly-cloudy-night':
-                                    return Color.swCloudy; // cloudy
-                                case 'fog':
-                                case 'mist':
-                                case 'haze':
-                                case 'smoke':
-                                    return Color.swFog;
-                                case 'hail':
-                                    return Color.swHail;
-                                case 'thunderstorm': // T-Storms
-                                    return Color.swLightning;
-                                case 'clear-night':
-                                case 'mostly-clear-night':
-                                    return Color.swClearNight;
-                                case 'partly-cloudy-day':
-                                    return Color.swPartlycloudy;
-                                case 'partly-cloudy-night':
-                                    return Color.swPartlycloudy;
-                                case 'rain':
-                                case 'heavy-rain':
-                                case 'precipitation':
-                                    return Color.swPouring;
-                                case 'possible-rain-day':
-                                case 'possible-rain-night':
-                                case 'possible-precipitation-night':
-                                case 'possible-precipitation-day':
-                                case 'drizzle':
-                                case 'light-rain':
-                                    return Color.swRainy;
-                                case 'light-snow':
-                                case 'snow':
-                                case 'heavy-sleet':
-                                case 'heavy-snow':
-                                case 'flurries':
-                                case 'possible-snow-day':
-                                case 'possible-snow-night':
-                                case 'possible-sleet-day':
-                                case 'possible-sleet-night':
-                                    return Color.swSnowy
-                                case 'sleet':
-                                case 'light-sleet':
-                                case 'very-light-sleet':
-                                    return Color.swSnowyRainy;
-                                case 'clear-day':
-                                case 'mostly-clear-day':
-                                    return Color.swSunny;
-                                case 'dangerous-wind':
-                                case 'breezy':
-                                case 'wind':
-                                    return Color.swWindy;
-                                default:
-                                    return Color.White;
-                            }`,
-                    },
-                },
-                false: { value: undefined, color: undefined },
-            },
-            text: {
-                true: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    dp: '',
-                    regexp: /\.time$/,
-                    read: `{
-                        if (!val) {
-                            return null;
-                        }
-                        const date = new Date(val);
-                        if (!date) {
-                            return null;
-                        }
-                        return date.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" });
-                    }`,
-                },
-                false: undefined,
-            },
-        },
-    },
-    'text.brightsky.sunriseset': {
-        role: '4values',
-        adapter: 'brightsky',
-        type: 'text',
 
+    'text.pirate-weather.sunriseset': {
+        role: '4values',
+        adapter: 'pirate-weather',
+        type: 'text',
         data: {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-sunset-up' },
-                    color: { type: 'const', constVal: { r: 253, g: 251, b: 29 } },
+                    color: { type: 'const', constVal: Color.sunny },
                 },
                 false: {
                     value: { type: 'const', constVal: 'weather-sunset-down' },
-                    color: { type: 'const', constVal: { r: 255, g: 138, b: 18 } },
+                    color: { type: 'const', constVal: Color.warning },
                 },
             },
             entity1: {
@@ -3474,12 +2928,12 @@ export const textTemplates: TemplateItems = {
                     role: 'date.sunrise',
                     dp: '',
                     read: `
-                        if (new Date().getDate() !== new Date(val).getDate()){
-                            return null;
-                        }
-                        const t = new Date(val).getTime();
-                        if (t < Date.now()) return null;
-                        return t;`,
+            if (new Date().getDate() !== new Date(val).getDate()){
+              return null;
+            }
+            const t = new Date(val).getTime();
+            if (t < Date.now()) return null;
+            return t;`,
                 },
                 dateFormat: {
                     type: 'const',
@@ -3493,13 +2947,13 @@ export const textTemplates: TemplateItems = {
                     role: 'date.sunset',
                     dp: '',
                     read: `
-                    if (new Date().getDate() !== new Date(val).getDate()){
-                        return null;
-                    }
-                    const n = Date.now();
-                    const t = new Date(val).getTime();
-                    if (t < n) return null;
-                    return t;`,
+            if (new Date().getDate() !== new Date(val).getDate()){
+              return null;
+            }
+            const n = Date.now();
+            const t = new Date(val).getTime();
+            if (t < n) return null;
+            return t;`,
                 },
                 dateFormat: {
                     type: 'const',
@@ -3507,12 +2961,7 @@ export const textTemplates: TemplateItems = {
                 },
             },
             entity3: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'date.sunrise',
-                    dp: '',
-                },
+                value: { type: 'triggered', mode: 'auto', role: 'date.sunrise', dp: '' },
                 dateFormat: {
                     type: 'const',
                     constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
@@ -3525,6 +2974,376 @@ export const textTemplates: TemplateItems = {
             text1: undefined,
         },
     },
+
+    'text.pirate-weather.windspeed': {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'pirate-weather',
+        data: {
+            entity1: {
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.windSpeed$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
+                unit: undefined,
+            },
+            entity2: {
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.windSpeed$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
+            },
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'weather-windy' },
+                    color: { type: 'const', constVal: Color.warning },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'weather-windy' },
+                    color: { type: 'const', constVal: Color.success },
+                },
+                scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: { true: { type: 'const', constVal: 'Wind' }, false: undefined },
+        },
+    },
+
+    'text.pirate-weather.winddirection': {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'pirate-weather',
+        data: {
+            entity2: {
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.windBearingText$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
+                factor: undefined,
+                unit: { type: 'const', constVal: '' },
+            },
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'windsock' },
+                    color: { type: 'const', constVal: Color.info },
+                },
+                false: { value: undefined, color: undefined },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: { true: { type: 'const', constVal: 'Windr.' }, false: undefined },
+        },
+    },
+
+    'text.pirate-weather.windgust': {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'pirate-weather',
+        data: {
+            entity1: {
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.windGust$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
+                unit: undefined,
+            },
+            entity2: {
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.windGust$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
+            },
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'weather-tornado' },
+                    color: { type: 'const', constVal: Color.warning },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'weather-tornado' },
+                    color: { type: 'const', constVal: Color.success },
+                },
+                scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: { true: { type: 'const', constVal: 'Böen' }, false: undefined },
+        },
+    },
+
+    'text.pirate-weather.uvindex': {
+        role: 'text',
+        type: 'text',
+        adapter: 'pirate-weather',
+        data: {
+            entity1: {
+                value: { type: 'triggered', mode: 'auto', role: 'value.uv', dp: '', forceType: 'string' },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+            },
+            entity2: {
+                value: { mode: 'auto', role: 'value.uv', type: 'triggered', dp: ``, forceType: 'string' },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+            },
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'solar-power' },
+                    color: { type: 'const', constVal: Color.warning },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'solar-power' },
+                    color: { type: 'const', constVal: Color.success },
+                },
+                scale: { type: 'const', constVal: { val_min: 0, val_max: 9 } },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: { true: { type: 'const', constVal: 'UV' }, false: undefined },
+        },
+    },
+
+    'text.pirate-weather.hourlyweather': {
+        role: '',
+        type: 'text',
+        adapter: 'pirate-weather',
+        data: {
+            entity1: {
+                value: { mode: 'auto', role: '', type: 'triggered', dp: '', regexp: /\.temperature$/ },
+                decimal: { type: 'const', constVal: 0 },
+                factor: undefined,
+            },
+            entity2: {
+                value: { mode: 'auto', role: '', type: 'triggered', dp: '', regexp: /\.temperature$/ },
+                decimal: { type: 'const', constVal: 0 },
+                factor: undefined,
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'state',
+                        role: '',
+                        regexp: /.icon$/,
+                        mode: 'auto',
+                        dp: '',
+                        read: `
+              switch (val) {
+                case 'cloudy':
+                case 'mostly-cloudy-day':
+                case 'mostly-cloudy-night':
+                  return 'weather-cloudy';
+                case 'fog':
+                case 'mist':
+                case 'smoke':
+                  return 'weather-fog';
+                case 'hail':
+                  return 'weather-hail';
+                case 'haze':
+                  return 'weather-hazy'
+                case 'thunderstorm':
+                  return 'weather-lightning';
+                case 'possible-precipitation-day':
+                case 'possible-precipitation-night':
+                  return 'weather-lightning-rainy';
+                case 'clear-night':
+                case 'mostly-clear-night':
+                  return 'weather-night';
+                case 'partly-cloudy-night':
+                  return 'weather-night-partly-cloudy';
+                case 'mostly-cloudy-day':
+                case 'partly-cloudy-day':
+                  return 'weather-partly-cloudy';
+                case 'possible-rain-day':
+                case 'possible-rain-night':
+                  return 'weather-partly-rainy';
+                case 'possible-snow-night':
+                case 'possible-snow-day':
+                  return 'weather-partly-snowy';
+                case 'possible-sleet-day':
+                case 'possible-sleet-night':
+                  return 'weather-partly-snowy-rainy';
+                case 'rain':
+                case 'heavy-rain':
+                case 'precipitation':
+                  return 'weather-pouring';
+                case 'drizzle':
+                case 'light-rain':
+                  return 'weather-rainy';
+                case 'light-snow':
+                case 'snow':
+                  return 'weather-snowy';
+                case 'heavy-sleet':
+                case 'heavy-snow':
+                case 'flurries':
+                  return 'weather-snowy-heavy';
+                case 'sleet':
+                case 'light-sleet':
+                case 'very-light-sleet':
+                  return 'weather-snowy-rainy';
+                case 'clear-day':
+                case 'mostly-clear-day':
+                  return 'weather-sunny';
+                case 'dangerous-wind':
+                  return 'weather-tornado';
+                case 'wind':
+                  return 'weather-windy';
+                case 'breezy':
+                  return 'weather-windy-variant';
+                default:
+                  return 'alert-circle-outline';
+              }`,
+                    },
+                    color: {
+                        type: 'triggered',
+                        role: '',
+                        regexp: /.icon$/,
+                        mode: 'auto',
+                        dp: '',
+                        read: `
+              switch (val) {
+                case 'cloudy':
+                case 'mostly-cloudy-day':
+                case 'mostly-cloudy-night':
+                  return Color.cloudy;
+                case 'fog':
+                case 'mist':
+                case 'haze':
+                case 'smoke':
+                  return Color.fog;
+                case 'hail':
+                  return Color.hail;
+                case 'thunderstorm':
+                  return Color.lightning;
+                case 'clear-night':
+                case 'mostly-clear-night':
+                  return Color.clearNight;
+                case 'partly-cloudy-day':
+                case 'partly-cloudy-night':
+                  return Color.partlyCloudy;
+                case 'rain':
+                case 'heavy-rain':
+                case 'precipitation':
+                  return Color.pouring;
+                case 'possible-rain-day':
+                case 'possible-rain-night':
+                case 'possible-precipitation-night':
+                case 'possible-precipitation-day':
+                case 'drizzle':
+                case 'light-rain':
+                  return Color.rainy;
+                case 'light-snow':
+                case 'snow':
+                case 'heavy-sleet':
+                case 'heavy-snow':
+                case 'flurries':
+                case 'possible-snow-day':
+                case 'possible-snow-night':
+                case 'possible-sleet-day':
+                case 'possible-sleet-night':
+                  return Color.snowy
+                case 'sleet':
+                case 'light-sleet':
+                case 'very-light-sleet':
+                  return Color.snowyRainy;
+                case 'clear-day':
+                case 'mostly-clear-day':
+                  return Color.sunny;
+                case 'dangerous-wind':
+                case 'breezy':
+                case 'wind':
+                  return Color.windy;
+                default:
+                  return Color.White;
+              }`,
+                    },
+                },
+                false: { value: undefined, color: undefined },
+            },
+            text: {
+                true: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    dp: '',
+                    regexp: /\.time$/,
+                    read: `{
+            if (!val) return null;
+            const date = new Date(val);
+            if (!date) return null;
+            return date.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" });
+          }`,
+                },
+                false: undefined,
+            },
+        },
+    },
+
+    'text.brightsky.sunriseset': {
+        role: '4values',
+        adapter: 'brightsky',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'weather-sunset-up' },
+                    color: { type: 'const', constVal: Color.sunny },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'weather-sunset-down' },
+                    color: { type: 'const', constVal: Color.warning },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'date.sunrise',
+                    dp: '',
+                    read: `
+            if (new Date().getDate() !== new Date(val).getDate()){
+              return null;
+            }
+            const t = new Date(val).getTime();
+            if (t < Date.now()) return null;
+            return t;`,
+                },
+                dateFormat: {
+                    type: 'const',
+                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                },
+            },
+            entity2: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'date.sunset',
+                    dp: '',
+                    read: `
+            if (new Date().getDate() !== new Date(val).getDate()){
+              return null;
+            }
+            const n = Date.now();
+            const t = new Date(val).getTime();
+            if (t < n) return null;
+            return t;`,
+                },
+                dateFormat: {
+                    type: 'const',
+                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                },
+            },
+            entity3: {
+                value: { type: 'triggered', mode: 'auto', role: 'date.sunrise', dp: '' },
+                dateFormat: {
+                    type: 'const',
+                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'sunriseToken' },
+                false: { type: 'const', constVal: 'sunsetToken' },
+            },
+            text1: undefined,
+        },
+    },
+
+    //Brightsky favorit dayly weather
     'text.brightsky.favorit': {
         role: 'text',
         adapter: 'brightsky',
@@ -3633,34 +3452,34 @@ export const textTemplates: TemplateItems = {
                                 case 'cloudy':
                                 case 'mostly-cloudy-day':
                                 case 'mostly-cloudy-night':
-                                    return Color.swCloudy; // cloudy
+                                    return Color.cloudy; // cloudy
 
                                 case 'fog':
                                 case 'mist':
                                 case 'haze':
                                 case 'smoke':
-                                    return Color.swFog;
+                                    return Color.fog;
 
                                 case 'hail':
-                                    return Color.swHail;
+                                    return Color.hail;
 
                                 case 'thunderstorm': // T-Storms
-                                    return Color.swLightning;
+                                    return Color.lightning;
 
                                 case 'clear-night':
                                 case 'mostly-clear-night':
-                                    return Color.swClearNight;
+                                    return Color.clearNight;
 
                                 case 'partly-cloudy-day':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
 
                                 case 'partly-cloudy-night':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
 
                                 case 'rain':
                                 case 'heavy-rain':
                                 case 'precipitation':
-                                    return Color.swPouring;
+                                    return Color.pouring;
 
                                 case 'possible-rain-day':
                                 case 'possible-rain-night':
@@ -3668,7 +3487,7 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-precipitation-day':
                                 case 'drizzle':
                                 case 'light-rain':
-                                    return Color.swRainy;
+                                    return Color.rainy;
 
                                 case 'light-snow':
                                 case 'snow':
@@ -3679,21 +3498,21 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-snow-night':
                                 case 'possible-sleet-day':
                                 case 'possible-sleet-night':
-                                    return Color.swSnowy;
+                                    return Color.snowy;
 
                                 case 'sleet':
                                 case 'light-sleet':
                                 case 'very-light-sleet':
-                                    return Color.swSnowyRainy;
+                                    return Color.snowyRainy;
 
                                 case 'clear-day':
                                 case 'mostly-clear-day':
-                                    return Color.swSunny;
+                                    return Color.sunny;
 
                                 case 'dangerous-wind':
                                 case 'breezy':
                                 case 'wind':
-                                    return Color.swWindy;
+                                    return Color.windy;
 
                                 default:
                                     return Color.White;
@@ -3709,6 +3528,7 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    //Brightsky min max temperature
     'text.brightsky.bot2values': {
         role: '2values',
         type: 'text',
@@ -3846,34 +3666,34 @@ export const textTemplates: TemplateItems = {
                                 case 'cloudy':
                                 case 'mostly-cloudy-day':
                                 case 'mostly-cloudy-night':
-                                    return Color.swCloudy; // cloudy
+                                    return Color.cloudy; // cloudy
                                 case 'fog':
                                 case 'mist':
                                 case 'haze':
                                 case 'smoke':
-                                    return Color.swFog;
+                                    return Color.fog;
                                 case 'hail':
-                                    return Color.swHail;
+                                    return Color.hail;
                                 case 'thunderstorm': // T-Storms
-                                    return Color.swLightning;
+                                    return Color.lightning;
                                 case 'clear-night':
                                 case 'mostly-clear-night':
-                                    return Color.swClearNight;
+                                    return Color.clearNight;
                                 case 'partly-cloudy-day':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case 'partly-cloudy-night':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case 'rain':
                                 case 'heavy-rain':
                                 case 'precipitation':
-                                    return Color.swPouring;
+                                    return Color.pouring;
                                 case 'possible-rain-day':
                                 case 'possible-rain-night':
                                 case 'possible-precipitation-night':
                                 case 'possible-precipitation-day':
                                 case 'drizzle':
                                 case 'light-rain':
-                                    return Color.swRainy;
+                                    return Color.rainy;
                                 case 'light-snow':
                                 case 'snow':
                                 case 'heavy-sleet':
@@ -3883,18 +3703,18 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-snow-night':
                                 case 'possible-sleet-day':
                                 case 'possible-sleet-night':
-                                    return Color.swSnowy
+                                    return Color.snowy
                                 case 'sleet':
                                 case 'light-sleet':
                                 case 'very-light-sleet':
-                                    return Color.swSnowyRainy;
+                                    return Color.snowyRainy;
                                 case 'clear-day':
                                 case 'mostly-clear-day':
-                                    return Color.swSunny;
+                                    return Color.sunny;
                                 case 'dangerous-wind':
                                 case 'breezy':
                                 case 'wind':
-                                    return Color.swWindy;
+                                    return Color.windy;
                                 default:
                                     return Color.White;
                             }`,
@@ -3924,6 +3744,7 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    // Brightsky wind speed
     'text.brightsky.windspeed': {
         role: 'text',
         type: 'text',
@@ -3931,73 +3752,34 @@ export const textTemplates: TemplateItems = {
         adapter: 'brightsky',
         data: {
             entity1: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.wind_speed_10$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_speed_10$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
                 unit: undefined,
             },
             entity2: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.wind_speed_10$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                /*unit: {
-                    type: 'const',
-                    constVal: 'km/h',
-                },*/
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_speed_10$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
             },
             icon: {
                 true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-windy',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSRed,
-                    },
+                    value: { type: 'const', constVal: 'weather-windy' },
+                    color: { type: 'const', constVal: Color.warning },
                 },
                 false: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-windy',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSGreen,
-                    },
+                    value: { type: 'const', constVal: 'weather-windy' },
+                    color: { type: 'const', constVal: Color.success },
                 },
-                scale: {
-                    type: 'const',
-                    constVal: { val_min: 0, val_max: 80 },
-                },
+                scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
                 maxBri: undefined,
                 minBri: undefined,
             },
             text: {
-                true: {
-                    type: 'const',
-                    constVal: 'Wind',
-                },
+                true: { type: 'const', constVal: 'Wind' },
                 false: undefined,
             },
         },
     },
+    // Brightsky wind direction
     'text.brightsky.winddirection': {
         role: 'text',
         type: 'text',
@@ -4005,51 +3787,28 @@ export const textTemplates: TemplateItems = {
         adapter: 'brightsky',
         data: {
             entity2: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.wind_bearing_text$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_bearing_text$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
                 factor: undefined,
-                unit: {
-                    type: 'const',
-                    constVal: '',
-                },
+                unit: { type: 'const', constVal: '' },
             },
             icon: {
                 true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'windsock',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: '#FFFFFF',
-                    },
+                    value: { type: 'const', constVal: 'windsock' },
+                    color: { type: 'const', constVal: Color.info },
                 },
-                false: {
-                    value: undefined,
-                    color: undefined,
-                },
+                false: { value: undefined, color: undefined },
                 scale: undefined,
                 maxBri: undefined,
                 minBri: undefined,
             },
             text: {
-                true: {
-                    type: 'const',
-                    constVal: 'Windr.',
-                },
+                true: { type: 'const', constVal: 'Windr.' },
                 false: undefined,
             },
         },
     },
+    // Brightsky wind gust
     'text.brightsky.windgust': {
         role: 'text',
         type: 'text',
@@ -4057,86 +3816,41 @@ export const textTemplates: TemplateItems = {
         adapter: 'brightsky',
         data: {
             entity1: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.wind_gust_speed_10$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_gust_speed_10$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
                 unit: undefined,
             },
             entity2: {
-                value: {
-                    mode: 'auto',
-                    role: '',
-                    type: 'triggered',
-                    regexp: /\.wind_gust_speed_10$/,
-                    dp: ``,
-                },
-                decimal: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                /*unit: {
-                    type: 'const',
-                    constVal: 'm/s',
-                },*/
+                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_gust_speed_10$/, dp: `` },
+                decimal: { type: 'const', constVal: 0 },
             },
             icon: {
                 true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-tornado',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSRed,
-                    },
+                    value: { type: 'const', constVal: 'weather-tornado' },
+                    color: { type: 'const', constVal: Color.warning },
                 },
                 false: {
-                    value: {
-                        type: 'const',
-                        constVal: 'weather-tornado',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSGreen,
-                    },
+                    value: { type: 'const', constVal: 'weather-tornado' },
+                    color: { type: 'const', constVal: Color.success },
                 },
-                scale: {
-                    type: 'const',
-                    constVal: { val_min: 0, val_max: 80 },
-                },
+                scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
                 maxBri: undefined,
                 minBri: undefined,
             },
             text: {
-                true: {
-                    type: 'const',
-                    constVal: 'Böen',
-                },
+                true: { type: 'const', constVal: 'Böen' },
                 false: undefined,
             },
         },
     },
+    // Brightsky solar radiation
     'text.brightsky.solar': {
         role: 'text',
         type: 'text',
         adapter: 'brightsky',
         data: {
             entity1: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: '',
-                    regexp: /\.solar_10$/,
-                    dp: ``,
-                },
+                value: { type: 'triggered', mode: 'auto', role: '', regexp: /\.solar_10$/, dp: `` },
                 decimal: undefined,
                 factor: undefined,
                 unit: undefined,
@@ -4152,48 +3866,28 @@ export const textTemplates: TemplateItems = {
                 },
                 decimal: { type: 'const', constVal: 0 },
                 factor: { type: 'const', constVal: 1000 },
-                unit: {
-                    type: 'const',
-                    constVal: ' W/m²',
-                },
+                unit: { type: 'const', constVal: ' W/m²' },
             },
             icon: {
                 true: {
-                    value: {
-                        type: 'const',
-                        constVal: 'solar-power',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSRed,
-                    },
+                    value: { type: 'const', constVal: 'solar-power' },
+                    color: { type: 'const', constVal: Color.warning },
                 },
                 false: {
-                    value: {
-                        type: 'const',
-                        constVal: 'solar-power',
-                    },
-                    color: {
-                        type: 'const',
-                        constVal: Color.MSGreen,
-                    },
+                    value: { type: 'const', constVal: 'solar-power' },
+                    color: { type: 'const', constVal: Color.success },
                 },
-                scale: {
-                    type: 'const',
-                    constVal: { val_min: 0, val_max: 9 },
-                },
+                scale: { type: 'const', constVal: { val_min: 0, val_max: 9 } },
                 maxBri: undefined,
                 minBri: undefined,
             },
             text: {
-                true: {
-                    type: 'const',
-                    constVal: 'Solar',
-                },
+                true: { type: 'const', constVal: 'Solar' },
                 false: undefined,
             },
         },
     },
+    //Brightsky favorit hourly weather
     'text.brightsky.hourlyweather': {
         role: '',
         type: 'text',
@@ -4322,34 +4016,34 @@ export const textTemplates: TemplateItems = {
                                 case 'cloudy':
                                 case 'mostly-cloudy-day':
                                 case 'mostly-cloudy-night':
-                                    return Color.swCloudy; // cloudy
+                                    return Color.cloudy; // cloudy
                                 case 'fog':
                                 case 'mist':
                                 case 'haze':
                                 case 'smoke':
-                                    return Color.swFog;
+                                    return Color.fog;
                                 case 'hail':
-                                    return Color.swHail;
+                                    return Color.hail;
                                 case 'thunderstorm': // T-Storms
-                                    return Color.swLightning;
+                                    return Color.lightning;
                                 case 'clear-night':
                                 case 'mostly-clear-night':
-                                    return Color.swClearNight;
+                                    return Color.clearNight;
                                 case 'partly-cloudy-day':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case 'partly-cloudy-night':
-                                    return Color.swPartlycloudy;
+                                    return Color.partlyCloudy;
                                 case 'rain':
                                 case 'heavy-rain':
                                 case 'precipitation':
-                                    return Color.swPouring;
+                                    return Color.pouring;
                                 case 'possible-rain-day':
                                 case 'possible-rain-night':
                                 case 'possible-precipitation-night':
                                 case 'possible-precipitation-day':
                                 case 'drizzle':
                                 case 'light-rain':
-                                    return Color.swRainy;
+                                    return Color.rainy;
                                 case 'light-snow':
                                 case 'snow':
                                 case 'heavy-sleet':
@@ -4359,18 +4053,18 @@ export const textTemplates: TemplateItems = {
                                 case 'possible-snow-night':
                                 case 'possible-sleet-day':
                                 case 'possible-sleet-night':
-                                    return Color.swSnowy
+                                    return Color.snowy
                                 case 'sleet':
                                 case 'light-sleet':
                                 case 'very-light-sleet':
-                                    return Color.swSnowyRainy;
+                                    return Color.snowyRainy;
                                 case 'clear-day':
                                 case 'mostly-clear-day':
-                                    return Color.swSunny;
+                                    return Color.sunny;
                                 case 'dangerous-wind':
                                 case 'breezy':
                                 case 'wind':
-                                    return Color.swWindy;
+                                    return Color.windy;
                                 default:
                                     return Color.White;
                             }`,

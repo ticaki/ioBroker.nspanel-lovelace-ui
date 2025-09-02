@@ -394,6 +394,7 @@ export type PageItemButton = Pick<
     | 'entity4'
     | 'popup'
     | 'enabled'
+    | 'additionalId'
 >;
 export type PageItemButtonDataItemsOptions = {
     type: 'button' | 'switch';
@@ -623,6 +624,7 @@ export type PageItemBase = {
     down2?: number;
     filter?: number; // filter for PageMenu
     enabled?: boolean;
+    additionalId?: string; // to differ between multiple same entities
 };
 
 export type PageTypeUnionTemplate = {

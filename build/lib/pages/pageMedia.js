@@ -35,8 +35,9 @@ module.exports = __toCommonJS(pageMedia_exports);
 var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
-var import_Page = require("../classes/Page");
 var tools = __toESM(require("../const/tools"));
+var import_pageMenu = require("./pageMenu");
+var import_Page = require("../classes/Page");
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
@@ -53,7 +54,7 @@ const PageMediaMessageDefault = {
   logo: "",
   options: ["", "", "", "", ""]
 };
-class PageMedia extends import_Page.Page {
+class PageMedia extends import_pageMenu.PageMenu {
   config;
   items = [];
   currentItems;
@@ -61,27 +62,9 @@ class PageMedia extends import_Page.Page {
   headlinePos = 0;
   titelPos = 0;
   artistPos = 0;
-  nextArrow = false;
   playerName = "";
-  tempItems;
   currentPlayer;
   constructor(config, options) {
-    if (options && options.pageItems) {
-      options.pageItems.unshift({
-        type: "button",
-        dpInit: "",
-        role: "button",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: "arrow-right-bold-circle-outline" },
-              color: { type: "const", constVal: { red: 205, green: 142, blue: 153 } }
-            }
-          },
-          entity1: { value: { type: "const", constVal: true } }
-        }
-      });
-    }
     super(config, options);
     if (typeof this.dpInit !== "string") {
       throw new Error("Media page must have a dpInit string");
@@ -115,11 +98,8 @@ class PageMedia extends import_Page.Page {
   async onVisibilityChange(val) {
     await super.onVisibilityChange(val);
     if (val) {
-      this.step = 0;
       this.headlinePos = 0;
       this.titelPos = 0;
-    } else {
-      this.tempItems = [];
     }
   }
   async updateCurrentPlayer(dp, name) {
@@ -317,41 +297,11 @@ class PageMedia extends import_Page.Page {
       }
     }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
-    if (!this.tempItems || this.tempItems.length === 0 || this.step <= 0) {
-      this.tempItems = await this.getEnabledPageItems();
-    }
-    if (this.tempItems) {
-      const showArrow = this.tempItems.length > 6;
-      const visibleSlots = showArrow ? 4 : 5;
-      const start = this.step * visibleSlots + 1;
-      if (start >= this.tempItems.length) {
-        this.step = 0;
-      }
-      for (let i = 0; i < visibleSlots; i++) {
-        const idx = this.step * visibleSlots + 1 + i;
-        const temp = this.tempItems[idx];
-        if (temp && !temp.unload) {
-          if (!this.visibility) {
-            return;
-          }
-          const msg2 = await temp.getPageItemPayload();
-          opts[i] = msg2 || "~~~~~";
-        } else {
-          opts[i] = "~~~~~";
-        }
-      }
-      if (showArrow) {
-        this.nextArrow = true;
-        const arrowItem = this.tempItems[0];
-        opts[visibleSlots] = arrowItem ? await arrowItem.getPageItemPayload() : "~~~~~";
-      } else {
-        this.nextArrow = false;
-      }
-    }
+    const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
     message.navigation = this.getNavigation();
     const msg = Object.assign(PageMediaMessageDefault, message, {
       id: "media",
-      options: opts
+      options: pageItems.concat(opts).slice(0, 5)
     });
     this.sendToPanel(this.getMessage(msg), false);
   }
@@ -416,6 +366,7 @@ class PageMedia extends import_Page.Page {
     if (!this.getVisibility() || this.sleep) {
       return;
     }
+    await super.onButtonEvent(event);
     if ((0, import_Page.isMediaButtonActionType)(event.action)) {
       this.log.debug(`Receive event: ${JSON.stringify(event)}`);
     } else {
@@ -494,10 +445,7 @@ class PageMedia extends import_Page.Page {
         break;
       }
       case "button": {
-        if (event.id === "0" && this.nextArrow) {
-          this.step++;
-          await this.update();
-        } else if (event.id === `${this.name}-logo`) {
+        if (event.id === `${this.name}-logo`) {
           const onoff = await this.isPlaying();
           if (items.data.mediaState) {
             if (items.data.mediaState.common.write === true) {
@@ -520,6 +468,7 @@ class PageMedia extends import_Page.Page {
     }
   }
   static async getPage(configManager, page, gridItem, messages) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
     const adapter = configManager.adapter;
     if (page.type !== "cardMedia" || !gridItem.config || gridItem.config.card !== "cardMedia") {
       const msg = `Error in page ${page.uniqueName}: Not a media page!`;
@@ -709,8 +658,8 @@ class PageMedia extends import_Page.Page {
       },
       items: void 0,
       pageItems: [
+        //reminder
         {
-          //reminder
           role: "text.list",
           type: "text",
           dpInit: "",
@@ -718,7 +667,10 @@ class PageMedia extends import_Page.Page {
             icon: {
               true: {
                 value: { type: "const", constVal: "reminder" },
-                color: { type: "const", constVal: import_Color.Color.attention }
+                color: {
+                  type: "const",
+                  constVal: (_b = (_a = page.media.itemsColorOff) == null ? void 0 : _a.reminder) != null ? _b : import_Color.Color.attention
+                }
               }
             },
             entity1: {
@@ -737,8 +689,8 @@ class PageMedia extends import_Page.Page {
             }
           }
         },
+        // online
         {
-          // online
           role: "",
           type: "text",
           dpInit: "",
@@ -746,11 +698,11 @@ class PageMedia extends import_Page.Page {
             icon: {
               true: {
                 value: { type: "const", constVal: "wifi" },
-                color: { type: "const", constVal: import_Color.Color.good }
+                color: { type: "const", constVal: (_d = (_c = page.media.itemsColorOn) == null ? void 0 : _c.online) != null ? _d : import_Color.Color.good }
               },
               false: {
                 value: { type: "const", constVal: "wifi-off" },
-                color: { type: "const", constVal: import_Color.Color.attention }
+                color: { type: "const", constVal: (_f = (_e = page.media.itemsColorOff) == null ? void 0 : _e.online) != null ? _f : import_Color.Color.attention }
               },
               scale: void 0,
               maxBri: void 0,
@@ -775,8 +727,8 @@ class PageMedia extends import_Page.Page {
             }
           }
         },
+        //speaker select
         {
-          //speaker select
           role: "alexa-speaker",
           type: "input_sel",
           data: {
@@ -790,11 +742,11 @@ class PageMedia extends import_Page.Page {
             icon: {
               true: {
                 value: { type: "const", constVal: "speaker-multiple" },
-                color: { type: "const", constVal: import_Color.Color.good }
+                color: { type: "const", constVal: (_h = (_g = page.media.itemsColorOn) == null ? void 0 : _g.speakerList) != null ? _h : import_Color.Color.good }
               },
               false: {
                 value: { type: "const", constVal: "speaker-multiple" },
-                color: { type: "const", constVal: import_Color.Color.bad }
+                color: { type: "const", constVal: (_j = (_i = page.media.itemsColorOff) == null ? void 0 : _i.speakerList) != null ? _j : import_Color.Color.bad }
               },
               scale: void 0,
               maxBri: void 0,
@@ -834,6 +786,7 @@ class PageMedia extends import_Page.Page {
             setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
           }
         },
+        //playlist select
         {
           role: "alexa-playlist",
           type: "input_sel",
@@ -842,7 +795,10 @@ class PageMedia extends import_Page.Page {
             icon: {
               true: {
                 value: { type: "const", constVal: "playlist-play" },
-                color: { type: "const", constVal: import_Color.Color.activated }
+                color: {
+                  type: "const",
+                  constVal: (_l = (_k = page.media.itemsColorOn) == null ? void 0 : _k.playList) != null ? _l : import_Color.Color.activated
+                }
               }
             },
             entityInSel: {
@@ -861,8 +817,8 @@ class PageMedia extends import_Page.Page {
             }
           }
         },
+        //equalizer
         {
-          //equalizer
           role: "",
           type: "number",
           dpInit: "",
@@ -870,7 +826,10 @@ class PageMedia extends import_Page.Page {
             icon: {
               true: {
                 value: { type: "const", constVal: "equalizer-outline" },
-                color: { type: "const", constVal: import_Color.Color.activated }
+                color: {
+                  type: "const",
+                  constVal: (_n = (_m = page.media.itemsColorOn) == null ? void 0 : _m.equalizer) != null ? _n : import_Color.Color.activated
+                }
               },
               scale: void 0,
               maxBri: void 0,
@@ -992,8 +951,8 @@ class PageMedia extends import_Page.Page {
             }
           }
         },
+        // repeat
         {
-          // repeat
           role: "",
           type: "text",
           dpInit: "",
@@ -1001,11 +960,14 @@ class PageMedia extends import_Page.Page {
             icon: {
               true: {
                 value: { type: "const", constVal: "repeat-variant" },
-                color: { type: "const", constVal: import_Color.Color.activated }
+                color: { type: "const", constVal: (_p = (_o = page.media.itemsColorOn) == null ? void 0 : _o.repeat) != null ? _p : import_Color.Color.activated }
               },
               false: {
                 value: { type: "const", constVal: "repeat" },
-                color: { type: "const", constVal: import_Color.Color.deactivated }
+                color: {
+                  type: "const",
+                  constVal: (_r = (_q = page.media.itemsColorOff) == null ? void 0 : _q.repeat) != null ? _r : import_Color.Color.deactivated
+                }
               },
               scale: void 0,
               maxBri: void 0,
@@ -1040,7 +1002,6 @@ class PageMedia extends import_Page.Page {
   }
   async delete() {
     await super.delete();
-    this.tempItems = void 0;
   }
 }
 async function getValueFromBoolean(item, type, value = true) {

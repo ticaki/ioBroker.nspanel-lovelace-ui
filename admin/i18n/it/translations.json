@@ -239,5 +239,6 @@
     "treble": "Acuti",
     "bass": "Basso",
     "midrange": "Midrange",
-    "headerColorTheme": "Impostazioni del tema colore"
+    "headerColorTheme": "Impostazioni del tema colore",
+    "equalizer": "Equalizzatore"
 }

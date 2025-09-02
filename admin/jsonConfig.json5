@@ -155,7 +155,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                }                
+                }
             }
         },
         "overview": {
@@ -475,7 +475,6 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-
                 },
                 "_resetTasmota": {
                     "type": "sendTo",
@@ -513,12 +512,12 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "_headerColorTheme":{
+                "_headerColorTheme": {
                     "type": "header",
                     "text": "headerColorTheme",
                     "size": 3
                 },
-                "colorTheme":{
+                "colorTheme": {
                     "xs": 12,
                     "sm": 6,
                     "md": 2,
@@ -627,7 +626,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },                
+                },
                 "doubleClickTime": {
                     "type": "number",
                     "label": "doubleClickTime",
@@ -640,7 +639,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },                
+                },
                 "pw1": {
                     "type": "password",
                     "label": "Service-Pin (numbers only)",
@@ -2672,7 +2671,7 @@
                             "size": 5
                         },
                         {
-                           "attr": "power8_selInternalCalculation",
+                            "attr": "power8_selInternalCalculation",
                             "xs": 2,
                             "sm": 2,
                             "md": 2,
@@ -2681,7 +2680,7 @@
                             "type": "checkbox",
                             "label": "internalCalculation",
                             "default": false,
-                            "newLine": true 
+                            "newLine": true
                         },
                         {
                             "newLine": true,
@@ -2928,7 +2927,6 @@
                                     "value": "cardLChart"
                                 }
                             ]
-
                         },
                         {
                             "attr": "selInstanceDataSource",
@@ -2998,7 +2996,11 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForDB",
-                            "customFilter": {"common": {"custom": "_dataSources"}},
+                            "customFilter": {
+                                "common": {
+                                    "custom": "_dataSources"
+                                }
+                            },
                             "hidden": "!data.selInstanceDataSource > 0"
                             //"custom": { "influxdb.0": {   "enabled": true,}}
                         },
@@ -3080,7 +3082,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "labelmaxXAxisLabels",
-                            "min" : 1,
+                            "min": 1,
                             "max": 8,
                             "default": 4,
                             "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
@@ -3088,7 +3090,7 @@
                     ]
                 }
             }
-        },        
+        },
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
@@ -3324,7 +3326,7 @@
                     "lg": 4,
                     "xl": 4
                 },
-                 "forceTFTVersion": {
+                "forceTFTVersion": {
                     "type": "text",
                     "label": "Pinned TFT firmware version. For testing only - no support or inquiries. Use at your own risk.",
                     "default": "",

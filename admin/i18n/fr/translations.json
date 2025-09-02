@@ -239,5 +239,6 @@
     "treble": "Tripler",
     "bass": "Basse",
     "midrange": "Milieu de gamme",
-    "headerColorTheme": "Paramètres de thème de couleur"
+    "headerColorTheme": "Paramètres de thème de couleur",
+    "equalizer": "Égaliseur"
 }

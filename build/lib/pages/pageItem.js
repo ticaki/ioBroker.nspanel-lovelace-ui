@@ -495,10 +495,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 )) != null ? _S : "";
               }
             }
+            const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
             message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             return tools.getPayload(
               entry.type,
-              message.intNameEntity,
+              message.intNameEntity + additionalId,
               message.icon,
               message.iconColor,
               message.displayName,

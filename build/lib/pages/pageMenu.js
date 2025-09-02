@@ -46,8 +46,14 @@ class PageMenu extends import_Page.Page {
   iconRightP = "";
   doubleClick;
   lastdirection = null;
+  /** Optional arrow item used when scrollPresentation === 'arrow'. */
+  arrowPageItem;
+  nextArrow = false;
   tempItems;
   constructor(config, options) {
+    if (!pages.isPageMenuConfig(config)) {
+      throw new Error(`PageMenu: invalid config (card=${config.card})`);
+    }
     super(config, options);
     if (options.config) {
       switch (options.config.card) {
@@ -67,10 +73,12 @@ class PageMenu extends import_Page.Page {
         case "cardThermo2":
           this.maxItems = 9;
           break;
+        case "cardMedia":
+          this.maxItems = 5;
+          break;
         case "cardChart":
         case "cardLChart":
         case "cardThermo":
-        case "cardMedia":
         case "cardQR":
         case "cardAlarm":
         case "cardPower":
@@ -87,47 +95,122 @@ class PageMenu extends import_Page.Page {
       }
     }
   }
-  async getOptions(result) {
-    if (this.pageItems) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardThermo2" || this.config.card === "cardGrid2")) {
-        this.tempItems = await this.getEnabledPageItems() || [];
-        if (this.config.filterType === "true" || this.config.filterType === "false") {
-          this.tempItems = [];
-          const testIt = this.config.filterType === "true";
-          for (const p of this.pageItems) {
-            if (p && p.dataItems && p.dataItems.data && "entity1" in p.dataItems.data && p.dataItems.data.entity1 && p.dataItems.data.entity1.value && testIt === await p.dataItems.data.entity1.value.getBoolean()) {
-              this.tempItems.push(p);
+  async init() {
+    await super.init();
+    const temp = await this.createPageItems([
+      {
+        type: "button",
+        dpInit: "",
+        role: "button",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "arrow-right-bold-circle-outline" },
+              color: { type: "const", constVal: { red: 205, green: 142, blue: 153 } }
             }
-          }
-        } else if (typeof this.config.filterType === "number") {
-          this.tempItems = [];
-          for (const p of this.pageItems) {
-            if (p && p.dataItems && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)) {
-              this.tempItems.push(p);
-            }
-          }
-        }
-        const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardThermo2";
-        let maxItems = this.maxItems;
-        let a = 0;
-        if (this.tempItems.length > maxItems) {
-          a = (isEntities ? maxItems : maxItems / 2) * this.step;
-          maxItems = a + maxItems;
-        }
-        let b = 0;
-        if (this.config.scrollType === "page") {
-          for (; a < maxItems; a++) {
-            const temp = this.tempItems[a];
-            result[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
-          }
-        } else {
-          let a2 = this.step;
-          for (; a2 < this.maxItems + this.step; a2++) {
-            const temp = this.tempItems[a2];
-            result[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
-          }
+          },
+          entity1: { value: { type: "const", constVal: true } },
+          additionalId: { type: "const", constVal: "-NextPageArrow" }
         }
       }
+    ]);
+    if (!temp || !temp[0]) {
+      throw new Error("PageMenu: unable to create arrowPageItem");
+    }
+    this.arrowPageItem = temp[0];
+  }
+  /**
+   * Build the list of payload strings for the current view.
+   *
+   * Modes:
+   * - "classic": windowed paging using `this.maxItems`.
+   *     - Respects `config.scrollType`: "page" (full page) or "half" (half page).
+   *     - "half" is only effective for grid/thermo cards; otherwise falls back to "page".
+   * - "arrow": always returns exactly `this.maxItems` slots; the last slot is optionally
+   *     replaced by `arrowPageItem`. Now also shows on the last page to wrap to the first.
+   *
+   * Order is preserved (sequential awaits). Resets `this.step` if it points beyond the list.
+   *
+   * @param result Pre-allocated result array to fill with payload strings.
+   * @returns Filled `result`.
+   */
+  async getOptions(result) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    if (!this.pageItems || !this.config) {
+      return result;
+    }
+    this.tempItems = await this.getEnabledPageItems() || [];
+    if (this.config.filterType === "true" || this.config.filterType === "false") {
+      const wantTrue = this.config.filterType === "true";
+      const filtered = [];
+      for (const p of this.pageItems) {
+        if (((_a = p == null ? void 0 : p.dataItems) == null ? void 0 : _a.data) && "entity1" in p.dataItems.data && ((_b = p.dataItems.data.entity1) == null ? void 0 : _b.value) && wantTrue === await p.dataItems.data.entity1.value.getBoolean()) {
+          filtered.push(p);
+        }
+      }
+      this.tempItems = filtered;
+    } else if (typeof this.config.filterType === "number") {
+      const filtered = [];
+      for (const p of this.pageItems) {
+        if ((p == null ? void 0 : p.dataItems) && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)) {
+          filtered.push(p);
+        }
+      }
+      this.tempItems = filtered;
+    }
+    const items = (_c = this.tempItems) != null ? _c : [];
+    const total = items.length;
+    const maxItems = Math.max(0, this.maxItems | 0);
+    for (let i = 0; i < maxItems; i++) {
+      result[i] = (_d = result[i]) != null ? _d : "~~~~~";
+    }
+    const style = (_e = this.config.scrollPresentation) != null ? _e : "classic";
+    if (style === "classic") {
+      const requestedScrollType = this.config.scrollType === "half" ? "half" : "page";
+      const cardAllowsHalf = pages.isCardMenuHalfPageScrollType(this.config.card);
+      const effectiveScrollType = requestedScrollType === "half" && cardAllowsHalf ? "half" : "page";
+      const stride = total > maxItems ? effectiveScrollType === "page" ? maxItems : Math.max(1, Math.floor(maxItems / 2)) : 0;
+      let start = stride > 0 ? this.step * stride : 0;
+      if (start >= total) {
+        this.step = 0;
+        start = 0;
+      }
+      const end = Math.min(start + maxItems, total);
+      let outIdx = 0;
+      for (let i = start; i < end; i++, outIdx++) {
+        const item = items[i];
+        result[outIdx] = item ? (_f = await item.getPageItemPayload()) != null ? _f : "~~~~~" : "~~~~~";
+      }
+      while (outIdx < maxItems) {
+        result[outIdx++] = "~~~~~";
+      }
+      return result;
+    }
+    if (style === "arrow") {
+      if (maxItems <= 0) {
+        return result;
+      }
+      let start = this.step * maxItems;
+      if (start >= total) {
+        this.step = 0;
+        start = 0;
+      }
+      for (let i = 0; i < maxItems; i++) {
+        const idx = start + i;
+        const item = items[idx];
+        result[i] = item ? (_g = await item.getPageItemPayload()) != null ? _g : "~~~~~" : "~~~~~";
+      }
+      const moreAfterWindow = start + maxItems < total;
+      const moreBeforeWindow = start > 0;
+      const multiplePages = total > maxItems;
+      const shouldShowArrow = multiplePages && (moreAfterWindow || moreBeforeWindow);
+      if (shouldShowArrow) {
+        this.nextArrow = true;
+        result[maxItems - 1] = this.arrowPageItem ? (_h = await this.arrowPageItem.getPageItemPayload()) != null ? _h : "~~~~~" : "~~~~~";
+      } else {
+        this.nextArrow = false;
+      }
+      return result;
     }
     return result;
   }
@@ -151,6 +234,9 @@ class PageMenu extends import_Page.Page {
           case "cardThermo2":
             this.maxItems = 9;
             break;
+          case "cardMedia":
+            this.maxItems = 5;
+            break;
           default:
             this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
             break;
@@ -160,12 +246,17 @@ class PageMenu extends import_Page.Page {
           this.pageItemConfig = temp;
         }
       }
+      this.step = 0;
     } else {
       this.tempItems = [];
     }
     await super.onVisibilityChange(val);
   }
   goLeft(single = false) {
+    if (this.config.scrollPresentation === "arrow") {
+      super.goLeft();
+      return;
+    }
     if (!this.config || !pages.isPageMenuConfig(this.config)) {
       return;
     }
@@ -197,6 +288,10 @@ class PageMenu extends import_Page.Page {
     }
   }
   goRight(single = false) {
+    if (this.config.scrollPresentation === "arrow") {
+      super.goRight();
+      return;
+    }
     if (!this.config || !pages.isPageMenuConfig(this.config)) {
       return;
     }
@@ -232,12 +327,8 @@ class PageMenu extends import_Page.Page {
     }
   }
   getNavigation() {
-    var _a;
-    if (!this.config || !pages.isPageMenuConfig(this.config)) {
-      this.log.error(
-        `PageMenu: ${(_a = this.config) == null ? void 0 : _a.card} is not supported in getNavigation! Please use the correct class for this card.`
-      );
-      return "";
+    if (this.config.scrollPresentation === "arrow") {
+      return super.getNavigation();
     }
     const pageScroll = this.config.scrollType === "page";
     const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
@@ -259,7 +350,7 @@ class PageMenu extends import_Page.Page {
         "button",
         "bSubPrev",
         pageScroll ? import_icon_mapping.Icons.GetIcon("arrow-up-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.navDown)),
         "",
         ""
       );
@@ -269,12 +360,18 @@ class PageMenu extends import_Page.Page {
         "button",
         "bSubNext",
         pageScroll ? import_icon_mapping.Icons.GetIcon("arrow-down-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.navDown)),
         "",
         ""
       );
     }
     return (0, import_tools.getPayload)(left, right);
+  }
+  async onButtonEvent(event) {
+    if (this.nextArrow && event.id.endsWith("-NextPageArrow")) {
+      this.step++;
+      await this.update();
+    }
   }
   async reset() {
     this.step = 0;

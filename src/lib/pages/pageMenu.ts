@@ -1,13 +1,15 @@
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
-import { Color } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload } from '../const/tools';
 import * as pages from '../types/pages';
+import type { IncomingEvent } from '../types/types';
 import { handleCardRole } from './data-collection-functions';
 import type { PageItem } from './pageItem';
 
 export class PageMenu extends Page {
+    declare config: pages.PageMenuConfig;
     protected maxItems: number = 4;
     protected step: number = 0;
     protected iconLeft: string = '';
@@ -16,9 +18,18 @@ export class PageMenu extends Page {
     protected iconRightP: string = '';
     protected doubleClick: ioBroker.Timeout | undefined;
     protected lastdirection: null | 'left' | 'right' = null;
+
+    /** Optional arrow item used when scrollPresentation === 'arrow'. */
+    protected arrowPageItem?: PageItem;
+
+    private nextArrow: boolean = false;
+
     private tempItems: (PageItem | undefined)[] | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
+        if (!pages.isPageMenuConfig(config)) {
+            throw new Error(`PageMenu: invalid config (card=${(config as any).card})`);
+        }
         super(config, options);
         if (options.config) {
             switch (options.config.card) {
@@ -38,10 +49,12 @@ export class PageMenu extends Page {
                 case 'cardThermo2':
                     this.maxItems = 9;
                     break;
+                case 'cardMedia':
+                    this.maxItems = 5;
+                    break;
                 case 'cardChart':
                 case 'cardLChart':
                 case 'cardThermo':
-                case 'cardMedia':
                 case 'cardQR':
                 case 'cardAlarm':
                 case 'cardPower':
@@ -59,86 +72,161 @@ export class PageMenu extends Page {
         }
     }
 
+    public async init(): Promise<void> {
+        await super.init();
+        const temp = await this.createPageItems([
+            {
+                type: 'button',
+                dpInit: '',
+                role: 'button',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'arrow-right-bold-circle-outline' },
+                            color: { type: 'const', constVal: { red: 205, green: 142, blue: 153 } },
+                        },
+                    },
+                    entity1: { value: { type: 'const', constVal: true } },
+                    additionalId: { type: 'const', constVal: '-NextPageArrow' },
+                },
+            },
+        ]);
+        if (!temp || !temp[0]) {
+            throw new Error('PageMenu: unable to create arrowPageItem');
+        }
+        this.arrowPageItem = temp[0];
+    }
+
+    /**
+     * Build the list of payload strings for the current view.
+     *
+     * Modes:
+     * - "classic": windowed paging using `this.maxItems`.
+     *     - Respects `config.scrollType`: "page" (full page) or "half" (half page).
+     *     - "half" is only effective for grid/thermo cards; otherwise falls back to "page".
+     * - "arrow": always returns exactly `this.maxItems` slots; the last slot is optionally
+     *     replaced by `arrowPageItem`. Now also shows on the last page to wrap to the first.
+     *
+     * Order is preserved (sequential awaits). Resets `this.step` if it points beyond the list.
+     *
+     * @param result Pre-allocated result array to fill with payload strings.
+     * @returns Filled `result`.
+     */
     public async getOptions(result: string[]): Promise<string[]> {
-        if (this.pageItems) {
-            if (
-                this.config &&
-                (this.config.card === 'cardEntities' ||
-                    this.config.card === 'cardSchedule' ||
-                    this.config.card === 'cardGrid' ||
-                    this.config.card === 'cardGrid3' ||
-                    this.config.card === 'cardThermo2' ||
-                    this.config.card === 'cardGrid2')
-            ) {
-                /**
-                 * Live update von gefilterten Adaptern.
-                 */
-                this.tempItems = (await this.getEnabledPageItems()) || [];
+        if (!this.pageItems || !this.config) {
+            return result;
+        }
 
-                if (this.config.filterType === 'true' || this.config.filterType === 'false') {
-                    this.tempItems = [];
-                    const testIt = this.config.filterType === 'true';
-                    for (const p of this.pageItems) {
-                        if (
-                            p &&
-                            p.dataItems &&
-                            p.dataItems.data &&
-                            'entity1' in p.dataItems.data &&
-                            p.dataItems.data.entity1 &&
-                            p.dataItems.data.entity1.value &&
-                            testIt === (await p.dataItems.data.entity1.value.getBoolean())
-                        ) {
-                            this.tempItems.push(p);
-                        }
-                    }
-                } else if (typeof this.config.filterType === 'number') {
-                    this.tempItems = [];
-                    for (const p of this.pageItems) {
-                        if (
-                            p &&
-                            p.dataItems &&
-                            (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)
-                        ) {
-                            this.tempItems.push(p);
-                        }
-                    }
-                }
+        // refresh enabled items
+        this.tempItems = (await this.getEnabledPageItems()) || [];
 
-                const isEntities =
-                    this.config.card === 'cardEntities' ||
-                    this.config.card === 'cardSchedule' ||
-                    this.config.card === 'cardThermo2';
-                let maxItems = this.maxItems;
-                let a = 0;
-                if (this.tempItems.length > maxItems) {
-                    a = (isEntities ? maxItems : maxItems / 2) * this.step;
-                    maxItems = a + maxItems;
-                }
-                let b = 0;
-                /*if (this.config.card === 'cardThermo2') {
-                    const temp = pageItems.filter(p => p?.config?.role === 'heatcycle');
-                    for (let i = 0; i < temp.length && b < this.maxItems; i++) {
-                        const temp2 = temp[i];
-                        result[b++] = temp2 ? await temp2.getPageItemPayload() : '~~~~~';
-                    }
-                    a -= b * this.step;
-                    maxItems -= b * this.step;
-                }*/
-                if (this.config.scrollType === 'page') {
-                    for (; a < maxItems; a++) {
-                        const temp = this.tempItems[a];
-                        result[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
-                    }
-                } else {
-                    // das hier scheint falsch zu sein übergeht das erste element
-                    let a = this.step;
-                    for (; a < this.maxItems + this.step; a++) {
-                        const temp = this.tempItems[a];
-                        result[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
-                    }
+        // filtering
+        if (this.config.filterType === 'true' || this.config.filterType === 'false') {
+            const wantTrue = this.config.filterType === 'true';
+            const filtered: typeof this.tempItems = [];
+            for (const p of this.pageItems) {
+                if (
+                    p?.dataItems?.data &&
+                    'entity1' in p.dataItems.data &&
+                    p.dataItems.data.entity1?.value &&
+                    wantTrue === (await p.dataItems.data.entity1.value.getBoolean())
+                ) {
+                    filtered.push(p);
                 }
             }
+            this.tempItems = filtered;
+        } else if (typeof this.config.filterType === 'number') {
+            const filtered: typeof this.tempItems = [];
+            for (const p of this.pageItems) {
+                if (p?.dataItems && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)) {
+                    filtered.push(p);
+                }
+            }
+            this.tempItems = filtered;
         }
+
+        const items = this.tempItems ?? [];
+        const total = items.length;
+        const maxItems = Math.max(0, this.maxItems | 0);
+
+        // prefill with placeholders
+        for (let i = 0; i < maxItems; i++) {
+            result[i] = result[i] ?? '~~~~~';
+        }
+
+        const style = this.config.scrollPresentation ?? 'classic';
+
+        // classic paging
+        if (style === 'classic') {
+            const requestedScrollType = this.config.scrollType === 'half' ? 'half' : 'page';
+            const cardAllowsHalf = pages.isCardMenuHalfPageScrollType(this.config.card);
+            const effectiveScrollType: 'page' | 'half' =
+                requestedScrollType === 'half' && cardAllowsHalf ? 'half' : 'page';
+
+            const stride =
+                total > maxItems
+                    ? effectiveScrollType === 'page'
+                        ? maxItems
+                        : Math.max(1, Math.floor(maxItems / 2))
+                    : 0;
+
+            let start = stride > 0 ? this.step * stride : 0;
+            if (start >= total) {
+                this.step = 0;
+                start = 0;
+            }
+
+            const end = Math.min(start + maxItems, total);
+
+            let outIdx = 0;
+            for (let i = start; i < end; i++, outIdx++) {
+                const item = items[i];
+                result[outIdx] = item ? ((await item.getPageItemPayload()) ?? '~~~~~') : '~~~~~';
+            }
+            while (outIdx < maxItems) {
+                result[outIdx++] = '~~~~~';
+            }
+
+            return result;
+        }
+
+        // arrow paging (with wrap-around arrow on the last page)
+        if (style === 'arrow') {
+            if (maxItems <= 0) {
+                return result;
+            }
+
+            let start = this.step * maxItems;
+            if (start >= total) {
+                this.step = 0;
+                start = 0;
+            }
+
+            for (let i = 0; i < maxItems; i++) {
+                const idx = start + i;
+                const item = items[idx];
+                result[i] = item ? ((await item.getPageItemPayload()) ?? '~~~~~') : '~~~~~';
+            }
+
+            const moreAfterWindow = start + maxItems < total;
+            const moreBeforeWindow = start > 0;
+            const multiplePages = total > maxItems;
+
+            // show arrow if there are multiple pages and either we can go forward OR we are on the last page (wrap)
+            const shouldShowArrow = multiplePages && (moreAfterWindow || moreBeforeWindow);
+
+            if (shouldShowArrow) {
+                this.nextArrow = true;
+                result[maxItems - 1] = this.arrowPageItem
+                    ? ((await this.arrowPageItem.getPageItemPayload()) ?? '~~~~~')
+                    : '~~~~~';
+            } else {
+                this.nextArrow = false;
+            }
+
+            return result;
+        }
+
         return result;
     }
 
@@ -162,6 +250,9 @@ export class PageMenu extends Page {
                     case 'cardThermo2':
                         this.maxItems = 9;
                         break;
+                    case 'cardMedia':
+                        this.maxItems = 5;
+                        break;
                     default:
                         //@ts-expect-error
                         this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
@@ -172,6 +263,7 @@ export class PageMenu extends Page {
                     this.pageItemConfig = temp;
                 }
             }
+            this.step = 0;
         } else {
             this.tempItems = [];
         }
@@ -179,6 +271,10 @@ export class PageMenu extends Page {
     }
 
     goLeft(single: boolean = false): void {
+        if (this.config.scrollPresentation === 'arrow') {
+            super.goLeft();
+            return;
+        }
         if (!this.config || !pages.isPageMenuConfig(this.config)) {
             return;
         }
@@ -211,6 +307,10 @@ export class PageMenu extends Page {
         }
     }
     goRight(single: boolean = false): void {
+        if (this.config.scrollPresentation === 'arrow') {
+            super.goRight();
+            return;
+        }
         if (!this.config || !pages.isPageMenuConfig(this.config)) {
             return;
         }
@@ -253,11 +353,8 @@ export class PageMenu extends Page {
         }
     }
     protected getNavigation(): string {
-        if (!this.config || !pages.isPageMenuConfig(this.config)) {
-            this.log.error(
-                `PageMenu: ${this.config?.card} is not supported in getNavigation! Please use the correct class for this card.`,
-            );
-            return '';
+        if (this.config.scrollPresentation === 'arrow') {
+            return super.getNavigation();
         }
         const pageScroll = this.config.scrollType === 'page';
         const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
@@ -287,7 +384,7 @@ export class PageMenu extends Page {
                 'button',
                 'bSubPrev',
                 pageScroll ? Icons.GetIcon('arrow-up-bold-outline') : Icons.GetIcon('arrow-up-bold'),
-                String(Color.rgb_dec565(Color.HMIOn)),
+                String(Color.rgb_dec565(Color.navDown as RGB)),
                 '',
                 '',
             );
@@ -298,13 +395,19 @@ export class PageMenu extends Page {
                 'button',
                 'bSubNext',
                 pageScroll ? Icons.GetIcon('arrow-down-bold-outline') : Icons.GetIcon('arrow-down-bold'),
-                String(Color.rgb_dec565(Color.HMIOn)),
+                String(Color.rgb_dec565(Color.navDown as RGB)),
                 '',
                 '',
             );
         }
 
         return getPayload(left, right);
+    }
+    async onButtonEvent(event: IncomingEvent): Promise<void> {
+        if (this.nextArrow && event.id.endsWith('-NextPageArrow')) {
+            this.step++;
+            await this.update();
+        }
     }
 
     async reset(): Promise<void> {

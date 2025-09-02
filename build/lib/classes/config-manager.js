@@ -352,7 +352,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart" && page.type !== "cardMedia") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart" && page.type !== "cardMedia" && page.type !== "cardSchedule") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -400,8 +400,9 @@ class ConfigManager extends import_library.BaseClass {
           },
           pageItems: []
         };
-        if (gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities" || gridItem.config.card === "cardSchedule" || gridItem.config.card === "cardThermo2") {
-          gridItem.config.scrollType = "page";
+        if ((gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities" || gridItem.config.card === "cardSchedule" || gridItem.config.card === "cardThermo2") && (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardSchedule" || page.type === "cardThermo2")) {
+          gridItem.config.scrollType = page.scrollType || "page";
+          gridItem.config.scrollPresentation = page.scrollPresentation || "classic";
         }
         try {
           if (page.type === "cardThermo") {

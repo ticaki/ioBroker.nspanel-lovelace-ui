@@ -685,7 +685,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.10.6';
+const version = '0.10.7';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -974,6 +974,7 @@ declare namespace ScriptConfig {
         | 'cardChart'
         | 'cardLChart'
         | 'cardEntities'
+        | 'cardSchedule'
         | 'cardGrid'
         | 'cardGrid2'
         | 'cardGrid3'
@@ -988,6 +989,7 @@ declare namespace ScriptConfig {
     export type PageType =
         | PageChart
         | PageEntities
+        | PageSchedule
         | PageGrid
         | PageGrid2
         | PageGrid3
@@ -1008,42 +1010,52 @@ declare namespace ScriptConfig {
 
     export type PageEntities = {
         type: 'cardEntities';
-        items: PageItem[];
-    } & PageBaseType;
+        items: PageItem[]; //4
+    } & PageBaseType &
+        PageMenuBaseConfig;
 
+    export type PageSchedule = {
+        type: 'cardSchedule';
+        items: PageItem[]; //5
+    } & PageBaseType &
+        PageMenuBaseConfig;
     export type PageGrid = {
         type: 'cardGrid';
-        items: PageItem[];
-    } & PageBaseType;
+        items: PageItem[]; // 6
+    } & PageBaseType &
+        PageMenuBaseConfig;
 
     export type PageGrid2 = {
         type: 'cardGrid2';
-        items: PageItem[];
-    } & PageBaseType;
+        items: PageItem[]; // 8
+    } & PageBaseType &
+        PageMenuBaseConfig;
 
     export type PageGrid3 = {
         type: 'cardGrid3';
-        items: PageItem[];
-    } & PageBaseType;
+        items: PageItem[]; //4
+    } & PageBaseType &
+        PageMenuBaseConfig;
 
     export type PageThermo = {
         type: 'cardThermo';
         items: [PageThermoItem];
-    } & PageBaseType;
+    } & Omit<PageBaseType, 'useColor'>;
 
     export type PageThermo2 = {
         type: 'cardThermo2';
         thermoItems: PageThermo2Item[];
         items: PageThermo2PageItems[];
         sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor'> &
+        PageMenuBaseConfig;
 
     export type PageMedia = {
         type: 'cardMedia';
-        media: PageMediaItem & PageBaseItem;
+        media: PageMediaItem;
         items: PageItem[];
-    } & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'>;
-
+    } & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'> &
+        PageMenuBaseConfig;
     export type PageAlarm = {
         type: 'cardAlarm';
         items: [PageItem];
@@ -1068,6 +1080,12 @@ declare namespace ScriptConfig {
 
     export type PageItem = PageBaseItem | PageThermoItem;
 
+    type PageMenuBaseConfig = {
+        scrollType?: 'page' | 'half';
+        filterType?: 'true' | 'false' | number;
+        scrollPresentation?: 'classic' | 'arrow';
+    };
+
     export type PageMediaItem = {
         /**
          * The media dp to use, most a folder, device or channel. Not a state.
@@ -1083,6 +1101,25 @@ declare namespace ScriptConfig {
         repeatList?: string[];
         globalTracklist?: string[];
         crossfade?: boolean;
+        /** detailed configuration */
+        itemsColorOn?: {
+            trackList?: RGB;
+            speakerList?: RGB;
+            repeat?: RGB;
+            equalizer?: RGB;
+            playList?: RGB;
+            online?: RGB;
+            reminder?: RGB;
+        };
+        itemsColorOff?: {
+            trackList?: RGB;
+            speakerList?: RGB;
+            repeat?: RGB;
+            equalizer?: RGB;
+            playList?: RGB;
+            online?: RGB;
+            reminder?: RGB;
+        };
     };
 
     export type PageThermoItem = {

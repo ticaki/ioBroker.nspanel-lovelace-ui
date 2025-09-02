@@ -73,5 +73,4 @@ export class PageSchedule extends PageMenu {
     protected async onStateTrigger(): Promise<void> {
         await this.update();
     }
-    async onButtonEvent(_event: IncomingEvent): Promise<void> {}
 }

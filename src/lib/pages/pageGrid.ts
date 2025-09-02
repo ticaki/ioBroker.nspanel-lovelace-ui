@@ -103,9 +103,5 @@ export class PageGrid extends PageMenu {
     protected async onStateTrigger(): Promise<void> {
         await this.update();
     }
-    async onButtonEvent(_event: IncomingEvent): Promise<void> {
-        //if (event.page && event.id && this.pageItems) {
-        //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
-        //}
-    }
+   
 }

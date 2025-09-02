@@ -84,6 +84,14 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Startup significantly improved and hangs removed
+- (ticaki) Colour themes added, but by no means used everywhere yet
+- (ticaki) Page items on the cardMedia can be given custom colours
+- (ticaki) Each card belonging to the Menu group can use classic or arrow scrolling - default is classic (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)
+- (ticaki) When scrolling classic there is half page or full page “page” or “half” - default is “page” - “half” is supported by cardGrid*, cardThermo2
+
+
 ### 0.3.0 (2025-09-01)
 - (ticaki) Refractor code
 - (ticaki) activate cardMedia (alexa2 only)

@@ -317,7 +317,10 @@ export class Page extends BaseClassPage {
         value: string | undefined,
         _event: IncomingEvent | null = null,
     ): Promise<void> {
-        if (!this.pageItems) {
+        if (!this.pageItems || id == '' || isNaN(id as number)) {
+            this.log.warn(
+                `onPopupRequest: No pageItems or id or nan this is only a warning if u not use 'arrow': ${id}`,
+            );
             return;
         }
         const i = typeof id === 'number' ? id : parseInt(id);
