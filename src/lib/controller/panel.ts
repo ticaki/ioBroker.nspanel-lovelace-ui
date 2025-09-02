@@ -198,6 +198,9 @@ export class Panel extends BaseClass {
 
     meetsVersion(version: string): boolean {
         if (this.info?.nspanel?.displayVersion) {
+            if (this.info.nspanel.displayVersion === '0.0.0') {
+                return true;
+            }
             return isVersionGreaterOrEqual(this.info.nspanel.displayVersion, version);
         }
         return false;

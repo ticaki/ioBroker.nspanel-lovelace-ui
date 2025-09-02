@@ -317,7 +317,7 @@ class Navigation extends import_library.BaseClass {
           "button",
           "bSubPrev",
           item.left.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-left-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-left-bold-outline"),
-          String(import_Color.Color.rgb_dec565(import_Color.Color.White)),
+          item.left.double === void 0 ? String(import_Color.Color.rgb_dec565(import_Color.Color.navLeft)) : String(import_Color.Color.rgb_dec565(import_Color.Color.navDownLeft)),
           "",
           ""
         );
@@ -326,7 +326,7 @@ class Navigation extends import_library.BaseClass {
           "button",
           "bUp",
           import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
-          String(import_Color.Color.rgb_dec565(import_Color.Color.White)),
+          String(import_Color.Color.rgb_dec565(import_Color.Color.navParent)),
           "",
           ""
         );
@@ -341,7 +341,7 @@ class Navigation extends import_library.BaseClass {
           "button",
           "bSubNext",
           item.right.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-right-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-right-bold-outline"),
-          String(import_Color.Color.rgb_dec565(import_Color.Color.White)),
+          item.left.double === void 0 ? String(import_Color.Color.rgb_dec565(import_Color.Color.navRight)) : String(import_Color.Color.rgb_dec565(import_Color.Color.navDownRight)),
           "",
           ""
         );
@@ -350,7 +350,7 @@ class Navigation extends import_library.BaseClass {
           "button",
           "bHome",
           import_icon_mapping.Icons.GetIcon("home"),
-          String(import_Color.Color.rgb_dec565(import_Color.Color.White)),
+          String(import_Color.Color.rgb_dec565(import_Color.Color.navHome)),
           "",
           ""
         );

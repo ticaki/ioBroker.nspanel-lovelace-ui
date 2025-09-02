@@ -69,6 +69,30 @@ class ColorBase {
   static background = "default.color.from.start.background";
   static highlight = "default.color.from.start.highlight";
   static disabled = "default.color.from.start.disabled";
+  // Navigation
+  static navLeft = "default.color.from.start.navLeft";
+  static navRight = "default.color.from.start.navRight";
+  static navDownLeft = "default.color.from.start.navDownLeft";
+  static navDownRight = "default.color.from.start.navDownRight";
+  static navDown = "default.color.from.start.navDown";
+  static navHome = "default.color.from.start.navHome";
+  static navParent = "default.color.from.start.navParent";
+  static sunny = "default.color.from.start.sunny";
+  static partlyCloudy = "default.color.from.start.partlyCloudy";
+  static cloudy = "default.color.from.start.cloudy";
+  static fog = "default.color.from.start.fog";
+  static hail = "default.color.from.start.hail";
+  static lightning = "default.color.from.start.lightning";
+  static lightningRainy = "default.color.from.start.lightningRainy";
+  static pouring = "default.color.from.start.pouring";
+  static rainy = "default.color.from.start.rainy";
+  static snowy = "default.color.from.start.snowy";
+  static snowyHeavy = "default.color.from.start.snowyHeavy";
+  static snowyRainy = "default.color.from.start.snowyRainy";
+  static windy = "default.color.from.start.windy";
+  static tornado = "default.color.from.start.tornado";
+  static clearNight = "default.color.from.start.clearNight";
+  static exceptional = "default.color.from.start.exceptional";
 }
 class Color extends ColorBase {
   static HMIOff = { r: 68, g: 115, b: 158 };
@@ -192,7 +216,7 @@ class Color extends ColorBase {
   static swSnowyRainy = { r: 150, g: 150, b: 255 };
   static swSunny = { r: 255, g: 255, b: 0 };
   static swWindy = { r: 150, g: 150, b: 150 };
-  static getColorFromDefault(s) {
+  static getColorFromDefaultOrReturn(s) {
     if (typeof s === "string" && s && s.startsWith("default.color.from.start.")) {
       switch (s) {
         case "default.color.from.start.good":
@@ -247,6 +271,52 @@ class Color extends ColorBase {
           return Color.highlight;
         case "default.color.from.start.disabled":
           return Color.disabled;
+        case "default.color.from.start.navLeft":
+          return Color.navLeft;
+        case "default.color.from.start.navRight":
+          return Color.navRight;
+        case "default.color.from.start.navDownLeft":
+          return Color.navDownLeft;
+        case "default.color.from.start.navDownRight":
+          return Color.navDownRight;
+        case "default.color.from.start.navDown":
+          return Color.navDown;
+        case "default.color.from.start.navHome":
+          return Color.navHome;
+        case "default.color.from.start.navParent":
+          return Color.navParent;
+        case "default.color.from.start.sunny":
+          return Color.sunny;
+        case "default.color.from.start.partlyCloudy":
+          return Color.partlyCloudy;
+        case "default.color.from.start.cloudy":
+          return Color.cloudy;
+        case "default.color.from.start.fog":
+          return Color.fog;
+        case "default.color.from.start.hail":
+          return Color.hail;
+        case "default.color.from.start.lightning":
+          return Color.lightning;
+        case "default.color.from.start.lightningRainy":
+          return Color.lightningRainy;
+        case "default.color.from.start.pouring":
+          return Color.pouring;
+        case "default.color.from.start.rainy":
+          return Color.rainy;
+        case "default.color.from.start.snowy":
+          return Color.snowy;
+        case "default.color.from.start.snowyHeavy":
+          return Color.snowyHeavy;
+        case "default.color.from.start.snowyRainy":
+          return Color.snowyRainy;
+        case "default.color.from.start.windy":
+          return Color.windy;
+        case "default.color.from.start.tornado":
+          return Color.tornado;
+        case "default.color.from.start.clearNight":
+          return Color.clearNight;
+        case "default.color.from.start.exceptional":
+          return Color.exceptional;
         default:
           console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
       }
@@ -280,7 +350,33 @@ class Color extends ColorBase {
     neutral: Color.Gray,
     background: Color.HMIDark,
     highlight: Color.HMIOn,
-    disabled: Color.HMIOff
+    disabled: Color.HMIOff,
+    // defaultTheme – Navigation
+    navLeft: Color.HMIOn,
+    navRight: Color.HMIOn,
+    navDownLeft: Color.On,
+    navDownRight: Color.On,
+    navDown: Color.Off,
+    // defaultTheme – Specials
+    navHome: Color.Yellow,
+    navParent: Color.Gray,
+    sunny: Color.swSunny,
+    partlyCloudy: Color.swPartlycloudy,
+    cloudy: Color.swCloudy,
+    fog: Color.swFog,
+    hail: Color.swHail,
+    lightning: Color.swLightning,
+    lightningRainy: Color.swLightningRainy,
+    pouring: Color.swPouring,
+    rainy: Color.swRainy,
+    snowy: Color.swSnowy,
+    snowyHeavy: Color.swSnowy,
+    // kein eigener "heavy" Ton vorhanden
+    snowyRainy: Color.swSnowyRainy,
+    windy: Color.swWindy,
+    tornado: Color.swExceptional,
+    clearNight: Color.swClearNight,
+    exceptional: Color.swExceptional
   };
   //tropical
   static topicalTheme = {
@@ -334,8 +430,33 @@ class Color extends ColorBase {
     // tiefes Ozeanblau
     highlight: Color.Sunset,
     // Sonnenuntergang als Highlight
-    disabled: Color.Gray
+    disabled: Color.Gray,
     // neutral deaktiviert
+    // topicalTheme – Navigation (tropisch)
+    navLeft: Color.Turquoise,
+    navRight: Color.Turquoise,
+    navDownLeft: Color.Mango,
+    navDownRight: Color.Mango,
+    navDown: Color.Sun,
+    // topicalTheme – Specials (tropisch)
+    navHome: Color.Sunset,
+    navParent: Color.Sand,
+    sunny: Color.Sun,
+    partlyCloudy: Color.BlueLight,
+    cloudy: Color.Sand,
+    fog: Color.LightGray,
+    hail: Color.LightGray,
+    lightning: Color.Mango,
+    lightningRainy: Color.Coral,
+    pouring: Color.Ocean,
+    rainy: Color.Blue,
+    snowy: Color.White,
+    snowyHeavy: Color.LightGray,
+    snowyRainy: Color.BlueLight,
+    windy: Color.Turquoise,
+    tornado: Color.Red,
+    clearNight: Color.Ocean,
+    exceptional: Color.Red
   };
   // technical
   static technicalTheme = {
@@ -378,8 +499,33 @@ class Color extends ColorBase {
     // dunkler technischer Hintergrund
     highlight: Color.Cyan,
     // Akzentfarbe
-    disabled: Color.HMIOff
+    disabled: Color.HMIOff,
     // bläulich-grau für deaktiviert
+    // technicalTheme – Navigation
+    navLeft: Color.Cyan,
+    navRight: Color.Cyan,
+    navDownLeft: Color.Blue,
+    navDownRight: Color.Blue,
+    navDown: Color.DarkBlue,
+    // technicalTheme – Specials
+    navHome: Color.Yellow,
+    navParent: Color.HMIOff,
+    sunny: Color.Yellow,
+    partlyCloudy: Color.BlueLight,
+    cloudy: Color.HMIOff,
+    fog: Color.LightGray,
+    hail: Color.LightGray,
+    lightning: Color.Yellow,
+    lightningRainy: Color.MSYellow,
+    pouring: Color.DarkBlue,
+    rainy: Color.Blue,
+    snowy: Color.White,
+    snowyHeavy: Color.LightGray,
+    snowyRainy: Color.BlueLight,
+    windy: Color.Cyan,
+    tornado: Color.MSRed,
+    clearNight: Color.HMIOff,
+    exceptional: Color.MSRed
   };
   //sunset
   static sunsetTheme = {
@@ -427,8 +573,33 @@ class Color extends ColorBase {
     // tiefes Violett für den Himmel
     highlight: Color.Magenta,
     // Sonnenuntergangs-Violett
-    disabled: Color.HMIOff
+    disabled: Color.HMIOff,
     // bläulich-grau für inaktiv
+    // sunsetTheme – Navigation
+    navLeft: Color.Off,
+    navRight: Color.Off,
+    navDownLeft: Color.Magenta,
+    navDownRight: Color.Magenta,
+    navDown: Color.Yellow,
+    // sunsetTheme – Specials
+    navHome: Color.colorSonos,
+    navParent: Color.Gray,
+    sunny: Color.On,
+    partlyCloudy: Color.colorSonos,
+    cloudy: Color.Off,
+    fog: Color.LightGray,
+    hail: Color.LightGray,
+    lightning: Color.Magenta,
+    lightningRainy: Color.Red,
+    pouring: Color.DarkBlue,
+    rainy: Color.Blue,
+    snowy: Color.White,
+    snowyHeavy: Color.LightGray,
+    snowyRainy: Color.Violet,
+    windy: Color.Orange,
+    tornado: Color.Red,
+    clearNight: Color.DarkBlue,
+    exceptional: Color.MSRed
   };
   /**
    * set color theme...

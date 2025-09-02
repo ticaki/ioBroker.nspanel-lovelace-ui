@@ -188,6 +188,9 @@ class Panel extends import_library.BaseClass {
   meetsVersion(version) {
     var _a, _b;
     if ((_b = (_a = this.info) == null ? void 0 : _a.nspanel) == null ? void 0 : _b.displayVersion) {
+      if (this.info.nspanel.displayVersion === "0.0.0") {
+        return true;
+      }
       return (0, import_tools.isVersionGreaterOrEqual)(this.info.nspanel.displayVersion, version);
     }
     return false;

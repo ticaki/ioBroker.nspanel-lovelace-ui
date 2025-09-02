@@ -1,7 +1,6 @@
 import type { PageInterface } from '../classes/PageInterface';
 import { getPayload, getPayloadArray } from '../const/tools';
 import type * as pages from '../types/pages';
-import type { IncomingEvent } from '../types/types';
 import { PageMenu } from './pageMenu';
 
 const PageGridMessageDefault: pages.PageGridMessage = {
@@ -102,10 +101,5 @@ export class PageGrid extends PageMenu {
     }
     protected async onStateTrigger(): Promise<void> {
         await this.update();
-    }
-    async onButtonEvent(_event: IncomingEvent): Promise<void> {
-        //if (event.page && event.id && this.pageItems) {
-        //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
-        //}
     }
 }

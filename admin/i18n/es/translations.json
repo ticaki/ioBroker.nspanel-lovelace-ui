@@ -239,5 +239,6 @@
     "treble": "Triplicar",
     "bass": "Bajo",
     "midrange": "Rango medio",
-    "headerColorTheme": "Configuración del tema del color"
+    "headerColorTheme": "Configuración del tema del color",
+    "equalizer": "Igualada"
 }

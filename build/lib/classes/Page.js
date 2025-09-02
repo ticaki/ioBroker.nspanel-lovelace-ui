@@ -285,7 +285,10 @@ class Page extends import_baseClassPage.BaseClassPage {
    * @returns A promise that resolves when the popup request is handled.
    */
   async onPopupRequest(id, popup, action, value, _event = null) {
-    if (!this.pageItems) {
+    if (!this.pageItems || id == "" || isNaN(id)) {
+      this.log.warn(
+        `onPopupRequest: No pageItems or id or nan this is only a warning if u not use 'arrow': ${id}`
+      );
       return;
     }
     const i = typeof id === "number" ? id : parseInt(id);

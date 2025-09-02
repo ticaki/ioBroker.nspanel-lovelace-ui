@@ -4,12 +4,12 @@ import { Icons } from '../const/icon_mapping';
 import type { ColorEntryType } from '../types/type-pageItem';
 import type * as pages from '../types/pages';
 import type { BooleanUnion, IncomingEvent } from '../types/types';
-import { Page, isMediaButtonActionType } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import * as tools from '../const/tools';
 
 import type { ConfigManager } from '../classes/config-manager';
-import type { PageItem } from './pageItem';
+import { PageMenu } from './pageMenu';
+import { isMediaButtonActionType } from '../classes/Page';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
@@ -31,42 +31,24 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
  * Represents a media page in the application.
  * Extends the base Page class to provide media-specific functionality.
  */
-export class PageMedia extends Page {
-    config: pages.PageBaseConfig['config'];
+export class PageMedia extends PageMenu {
+    config: pages.cardMediaDataItemOptions;
     items: pages.cardMediaDataItems[] = [];
     currentItems: pages.cardMediaDataItems | undefined;
-    private step: number = 0;
+    protected step: number = 0;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private artistPos: number = 0;
-    private nextArrow: boolean = false;
     private playerName: string = '';
-    private tempItems: (PageItem | undefined)[] | undefined;
     public currentPlayer: string;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (options && options.pageItems) {
-            options.pageItems.unshift({
-                type: 'button',
-                dpInit: '',
-                role: 'button',
-                data: {
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: 'arrow-right-bold-circle-outline' },
-                            color: { type: 'const', constVal: { red: 205, green: 142, blue: 153 } },
-                        },
-                    },
-                    entity1: { value: { type: 'const', constVal: true } },
-                },
-            });
-        }
         super(config, options);
         if (typeof this.dpInit !== 'string') {
             throw new Error('Media page must have a dpInit string');
         }
         this.currentPlayer = this.dpInit;
-        this.config = options.config;
+        this.config = options.config as pages.cardMediaDataItemOptions;
         this.minUpdateInterval = 2000;
     }
 
@@ -103,11 +85,8 @@ export class PageMedia extends Page {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         await super.onVisibilityChange(val);
         if (val) {
-            this.step = 0;
             this.headlinePos = 0;
             this.titelPos = 0;
-        } else {
-            this.tempItems = [];
         }
     }
 
@@ -323,45 +302,11 @@ export class PageMedia extends Page {
         }
 
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
-        if (!this.tempItems || this.tempItems.length === 0 || this.step <= 0) {
-            this.tempItems = await this.getEnabledPageItems();
-        }
-        if (this.tempItems) {
-            const showArrow = this.tempItems.length > 6;
-            const visibleSlots = showArrow ? 4 : 5;
-            const start = this.step * visibleSlots + 1;
-
-            if (start >= this.tempItems.length) {
-                this.step = 0;
-            }
-
-            // Inhalte befüllen
-            for (let i = 0; i < visibleSlots; i++) {
-                const idx = this.step * visibleSlots + 1 + i;
-                const temp = this.tempItems[idx];
-                if (temp && !temp.unload) {
-                    if (!this.visibility) {
-                        return;
-                    }
-                    const msg = await temp.getPageItemPayload();
-                    opts[i] = msg || '~~~~~';
-                } else {
-                    opts[i] = '~~~~~';
-                }
-            }
-
-            if (showArrow) {
-                this.nextArrow = true;
-                const arrowItem = this.tempItems[0];
-                opts[visibleSlots] = arrowItem ? await arrowItem.getPageItemPayload() : '~~~~~';
-            } else {
-                this.nextArrow = false;
-            }
-        }
+        const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
         message.navigation = this.getNavigation();
         const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
             id: 'media',
-            options: opts,
+            options: pageItems.concat(opts).slice(0, 5),
         });
 
         this.sendToPanel(this.getMessage(msg), false);
@@ -428,6 +373,7 @@ export class PageMedia extends Page {
         if (!this.getVisibility() || this.sleep) {
             return;
         }
+        await super.onButtonEvent(event);
         //if (event.mode !== 'media') return;
         if (isMediaButtonActionType(event.action)) {
             this.log.debug(`Receive event: ${JSON.stringify(event)}`);
@@ -510,10 +456,7 @@ export class PageMedia extends Page {
                 break;
             }
             case 'button': {
-                if (event.id === '0' && this.nextArrow) {
-                    this.step++;
-                    await this.update();
-                } else if (event.id === `${this.name}-logo`) {
+                if (event.id === `${this.name}-logo`) {
                     const onoff = await this.isPlaying();
                     if (items.data.mediaState) {
                         if (items.data.mediaState.common.write === true) {
@@ -608,7 +551,7 @@ export class PageMedia extends Page {
                     },
                     onOffColor: {
                         true: page.media.colorMediaIcon
-                            ? { color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaIcon) }
+                            ? { color: await configManager.getIconColor(page.media.colorMediaIcon) }
                             : undefined,
                     },
                     elapsed: {
@@ -646,7 +589,7 @@ export class PageMedia extends Page {
                         },
                         true: page.media.colorMediaArtist
                             ? {
-                                  color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist),
+                                  color: await configManager.getIconColor(page.media.colorMediaArtist),
                               }
                             : undefined,
                     },
@@ -741,8 +684,8 @@ export class PageMedia extends Page {
             },
             items: undefined,
             pageItems: [
+                //reminder
                 {
-                    //reminder
                     role: 'text.list',
                     type: 'text',
                     dpInit: '',
@@ -751,9 +694,13 @@ export class PageMedia extends Page {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'reminder' },
-                                color: { type: 'const', constVal: Color.attention },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.reminder,
+                                    Color.attention,
+                                ),
                             },
                         },
+
                         entity1: {
                             value: {
                                 type: 'const',
@@ -770,8 +717,8 @@ export class PageMedia extends Page {
                         },
                     },
                 },
+                // online
                 {
-                    // online
                     role: '',
                     type: 'text',
                     dpInit: '',
@@ -780,11 +727,14 @@ export class PageMedia extends Page {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'wifi' },
-                                color: { type: 'const', constVal: Color.good },
+                                color: await configManager.getIconColor(page.media.itemsColorOn?.online, Color.good),
                             },
                             false: {
                                 value: { type: 'const', constVal: 'wifi-off' },
-                                color: { type: 'const', constVal: Color.attention },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.online,
+                                    Color.attention,
+                                ),
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -810,8 +760,8 @@ export class PageMedia extends Page {
                         },
                     },
                 },
+                //speaker select
                 {
-                    //speaker select
                     role: 'alexa-speaker',
                     type: 'input_sel',
 
@@ -826,11 +776,17 @@ export class PageMedia extends Page {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'speaker-multiple' },
-                                color: { type: 'const', constVal: Color.good },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.speakerList,
+                                    Color.good,
+                                ),
                             },
                             false: {
                                 value: { type: 'const', constVal: 'speaker-multiple' },
-                                color: { type: 'const', constVal: Color.bad },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.speakerList,
+                                    Color.bad,
+                                ),
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -870,6 +826,7 @@ export class PageMedia extends Page {
                         setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
                     },
                 },
+                //playlist select
                 {
                     role: 'alexa-playlist',
                     type: 'input_sel',
@@ -879,7 +836,10 @@ export class PageMedia extends Page {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'playlist-play' },
-                                color: { type: 'const', constVal: Color.activated },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.playList,
+                                    Color.activated,
+                                ),
                             },
                         },
                         entityInSel: {
@@ -898,8 +858,8 @@ export class PageMedia extends Page {
                         },
                     },
                 },
+                //equalizer
                 {
-                    //equalizer
                     role: '',
                     type: 'number',
                     dpInit: '',
@@ -908,7 +868,10 @@ export class PageMedia extends Page {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'equalizer-outline' },
-                                color: { type: 'const', constVal: Color.activated },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.equalizer,
+                                    Color.activated,
+                                ),
                             },
 
                             scale: undefined,
@@ -1032,8 +995,8 @@ export class PageMedia extends Page {
                         },
                     },
                 },
+                // repeat
                 {
-                    // repeat
                     role: '',
                     type: 'text',
                     dpInit: '',
@@ -1042,11 +1005,17 @@ export class PageMedia extends Page {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'repeat-variant' },
-                                color: { type: 'const', constVal: Color.activated },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOn?.repeat,
+                                    Color.activated,
+                                ),
                             },
                             false: {
                                 value: { type: 'const', constVal: 'repeat' },
-                                color: { type: 'const', constVal: Color.deactivated },
+                                color: await configManager.getIconColor(
+                                    page.media.itemsColorOff?.repeat,
+                                    Color.deactivated,
+                                ),
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -1083,7 +1052,6 @@ export class PageMedia extends Page {
 
     async delete(): Promise<void> {
         await super.delete();
-        this.tempItems = undefined;
     }
 }
 

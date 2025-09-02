@@ -28,7 +28,7 @@ export class Dataitem extends BaseClass {
         this.parent = parent;
         switch (this.options.type) {
             case 'const':
-                this.options.constVal = Color.getColorFromDefault(this.options.constVal);
+                this.options.constVal = Color.getColorFromDefaultOrReturn(this.options.constVal);
                 this.setTypeFromValue(this.options.constVal);
                 break;
             case 'state':

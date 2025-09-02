@@ -212,7 +212,8 @@ export class PageThermo2 extends PageMenu {
                 message.power = (await data.power?.getBoolean()) || false;
                 const statesText = this.library.getTranslation((await data.mode?.getString()) || '');
 
-                //build pageitem strings for thermo2 - spezial case
+                // No pageitems here
+                // build pageitem strings for default thermo2 values- spezial case
                 for (let i = 0; i < 7; i++) {
                     message.options[i] = `text~${this.name}.${i}~${
                         [
@@ -302,6 +303,7 @@ export class PageThermo2 extends PageMenu {
                 return;
             }
         }
+        await super.onButtonEvent(event);
     }
 
     private getMessage(message: pages.PageThermo2Message): string {

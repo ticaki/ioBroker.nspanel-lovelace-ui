@@ -239,5 +239,6 @@
     "treble": "Höhen",
     "bass": "Bass",
     "midrange": "Mitten",
-    "headerColorTheme": "Farbthema -Einstellungen"
+    "headerColorTheme": "Farbthema -Einstellungen",
+    "equalizer": "Equalizer"
 }

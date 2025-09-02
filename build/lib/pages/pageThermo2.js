@@ -273,6 +273,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         return;
       }
     }
+    await super.onButtonEvent(event);
   }
   getMessage(message) {
     return (0, import_tools.getPayload)(

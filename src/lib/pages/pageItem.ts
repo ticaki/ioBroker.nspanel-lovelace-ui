@@ -598,11 +598,12 @@ export class PageItem extends BaseClassTriggerd {
                                     )) ?? '';
                             }
                         }
+                        const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : '';
 
                         message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
                         return tools.getPayload(
                             entry.type,
-                            message.intNameEntity,
+                            message.intNameEntity + additionalId,
                             message.icon,
                             message.iconColor,
                             message.displayName,

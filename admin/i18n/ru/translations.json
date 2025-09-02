@@ -239,5 +239,6 @@
     "treble": "Тройной",
     "bass": "Басс",
     "midrange": "Средний диапазон",
-    "headerColorTheme": "Цветовые настройки темы"
+    "headerColorTheme": "Цветовые настройки темы",
+    "equalizer": "Эквалайзер"
 }

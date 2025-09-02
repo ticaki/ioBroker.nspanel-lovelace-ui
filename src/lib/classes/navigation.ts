@@ -1,6 +1,6 @@
 import type { Panel } from '../controller/panel';
 import { BaseClass, type AdapterClassDefinition } from './library';
-import { Color } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import type { Page } from './Page';
 import { getPayload } from '../const/tools';
@@ -352,7 +352,9 @@ export class Navigation extends BaseClass {
                     item.left.double === undefined
                         ? Icons.GetIcon('arrow-left-bold')
                         : Icons.GetIcon('arrow-top-left-bold-outline'),
-                    String(Color.rgb_dec565(Color.White)),
+                    item.left.double === undefined
+                        ? String(Color.rgb_dec565(Color.navLeft as RGB))
+                        : String(Color.rgb_dec565(Color.navDownLeft as RGB)),
                     '',
                     '',
                 );
@@ -361,7 +363,7 @@ export class Navigation extends BaseClass {
                     'button',
                     'bUp',
                     Icons.GetIcon('arrow-up-bold'),
-                    String(Color.rgb_dec565(Color.White)),
+                    String(Color.rgb_dec565(Color.navParent as RGB)),
                     '',
                     '',
                 );
@@ -382,7 +384,9 @@ export class Navigation extends BaseClass {
                     item.right.double === undefined
                         ? Icons.GetIcon('arrow-right-bold')
                         : Icons.GetIcon('arrow-top-right-bold-outline'),
-                    String(Color.rgb_dec565(Color.White)),
+                    item.left.double === undefined
+                        ? String(Color.rgb_dec565(Color.navRight as RGB))
+                        : String(Color.rgb_dec565(Color.navDownRight as RGB)),
                     '',
                     '',
                 );
@@ -391,7 +395,7 @@ export class Navigation extends BaseClass {
                     'button',
                     'bHome',
                     Icons.GetIcon('home'),
-                    String(Color.rgb_dec565(Color.White)),
+                    String(Color.rgb_dec565(Color.navHome as RGB)),
                     '',
                     '',
                 );

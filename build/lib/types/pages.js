@@ -24,6 +24,7 @@ __export(pages_exports, {
   isButtonActionType: () => isButtonActionType,
   isCardEntitiesType: () => isCardEntitiesType,
   isCardGridType: () => isCardGridType,
+  isCardMenuHalfPageScrollType: () => isCardMenuHalfPageScrollType,
   isCardMenuRole: () => isCardMenuRole,
   isClosingBehavior: () => isClosingBehavior,
   isColorEntryType: () => isColorEntryType,
@@ -45,11 +46,14 @@ function isCardEntitiesType(F) {
 function isCardGridType(F) {
   return ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2", "cardMedia"].indexOf(F) !== -1;
 }
+function isCardMenuHalfPageScrollType(F) {
+  return ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"].indexOf(F) !== -1;
+}
 function isCardMenuRole(F) {
   return isCardEntitiesType(F) || isCardGridType(F);
 }
 function isPageMenuConfig(F) {
-  if (typeof F !== "object" || F === null || !("card" in F) || F.card === "cardMedia") {
+  if (typeof F !== "object" || F === null || !("card" in F)) {
     return false;
   }
   return isCardMenuRole(F.card);
@@ -362,6 +366,7 @@ function isPlaceholderType(F) {
   isButtonActionType,
   isCardEntitiesType,
   isCardGridType,
+  isCardMenuHalfPageScrollType,
   isCardMenuRole,
   isClosingBehavior,
   isColorEntryType,

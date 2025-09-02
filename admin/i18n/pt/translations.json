@@ -239,5 +239,6 @@
     "treble": "Agudo",
     "bass": "Baixo",
     "midrange": "Intervalo médio",
-    "headerColorTheme": "Configurações de temas de cores"
+    "headerColorTheme": "Configurações de temas de cores",
+    "equalizer": "Equalizador"
 }

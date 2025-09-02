@@ -79,8 +79,6 @@ class PageSchedule extends import_pageMenu.PageMenu {
   async onStateTrigger() {
     await this.update();
   }
-  async onButtonEvent(_event) {
-  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

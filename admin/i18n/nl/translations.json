@@ -239,5 +239,6 @@
     "treble": "Drievoudig",
     "bass": "Bas",
     "midrange": "Midrange",
-    "headerColorTheme": "Kleurthema -instellingen"
+    "headerColorTheme": "Kleurthema -instellingen",
+    "equalizer": "Gelijkmaker"
 }
