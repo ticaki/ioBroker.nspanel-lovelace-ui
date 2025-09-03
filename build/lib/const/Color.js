@@ -35,7 +35,7 @@ module.exports = __toCommonJS(Color_exports);
 var import_colord = require("colord");
 var import_names = __toESM(require("colord/plugins/names"));
 var import_mix = __toESM(require("colord/plugins/mix"));
-var _a;
+var _a, _b;
 (0, import_colord.extend)([import_names.default, import_mix.default]);
 function test(k) {
   return Color[k];
@@ -93,6 +93,20 @@ class ColorBase {
   static tornado = "default.color.from.start.tornado";
   static clearNight = "default.color.from.start.clearNight";
   static exceptional = "default.color.from.start.exceptional";
+  static foreground = "default.color.from.start.foreground";
+  static fgTime = "default.color.from.start.foreground";
+  static fgTimeAmPm = "default.color.from.start.foreground";
+  static fgDate = "default.color.from.start.foreground";
+  static fgMain = "default.color.from.start.foreground";
+  static fgMainAlt = "default.color.from.start.foreground";
+  static fgTimeAdd = "default.color.from.start.foreground";
+  static fgForecast = "default.color.from.start.foreground";
+  static fgBar = "default.color.from.start.foreground";
+  static solar = "default.color.from.start.solar";
+  static temperature = "default.color.from.start.temperature";
+  static gust = "default.color.from.start.gust";
+  static sunrise = "default.color.from.start.sunrise";
+  static sunset = "default.color.from.start.sunset";
 }
 class Color extends ColorBase {
   static HMIOff = { r: 68, g: 115, b: 158 };
@@ -163,6 +177,47 @@ class Color extends ColorBase {
   // Violett
   static LightGray = { r: 211, g: 211, b: 211 };
   // Hellgrau
+  static TechMint = { r: 200, g: 255, b: 255 };
+  // Sehr helles Blaugrün, technisch und klar
+  static DarkGray = { r: 64, g: 64, b: 64 };
+  // Dunkelgrau
+  static ForegroundStrong = { r: 245, g: 248, b: 252 };
+  // sehr klar für große Texte
+  static ForegroundSoft = { r: 210, g: 220, b: 230 };
+  // abgemildert
+  static TimePrimary = { r: 220, g: 240, b: 255 };
+  // leicht gesättigtes Hellblau
+  static TimeAccent = { r: 160, g: 200, b: 255 };
+  // Akzent (AM/PM, Zusatzzeit)
+  static DateSoft = { r: 180, g: 200, b: 220 };
+  // dezenter als Zeit
+  static Forecast = { r: 200, g: 210, b: 220 };
+  // klein, gut lesbar
+  static Divider = { r: 120, g: 130, b: 140 };
+  // Trennlinien/Bar
+  static DeepOcean = { r: 0, g: 60, b: 120 };
+  static DarkGrayBlue = { r: 20, g: 23, b: 40 };
+  // Volcano palette
+  static LavaDeep = { r: 92, g: 12, b: 12 };
+  // dunkles, glühendes Rot
+  static LavaGlow = { r: 156, g: 32, b: 26 };
+  // glühender Lavarand
+  static MagmaRed = { r: 200, g: 34, b: 28 };
+  // heißes Magma
+  static EmberOrange = { r: 255, g: 109, b: 36 };
+  // Glut-Orange
+  static FireYellow = { r: 255, g: 201, b: 71 };
+  // Feuer-Gelb
+  static AshGray = { r: 110, g: 110, b: 110 };
+  // Asche-Grau
+  static Charcoal = { r: 30, g: 30, b: 30 };
+  // Kohle-Schwarz
+  static LavaCore = { r: 180, g: 22, b: 0 };
+  // kräftiges glühendes Rot (Hintergrund)
+  static FireGlow = { r: 255, g: 80, b: 0 };
+  // leuchtendes Feuer-Orange
+  static FlameYellow = { r: 255, g: 220, b: 60 };
+  // strahlend helles Gelb
   //Dynamische Indikatoren (Abstufung grün nach gelb nach rot)
   static colorScale0 = { r: 99, g: 190, b: 123 };
   static colorScale1 = { r: 129, g: 199, b: 126 };
@@ -317,13 +372,37 @@ class Color extends ColorBase {
           return Color.clearNight;
         case "default.color.from.start.exceptional":
           return Color.exceptional;
+        case "default.color.from.start.foreground":
+          return Color.foreground;
+        case "default.color.from.start.fgTime":
+          return Color.fgTime;
+        case "default.color.from.start.fgTimeAmPm":
+          return Color.fgTimeAmPm;
+        case "default.color.from.start.fgDate":
+          return Color.fgDate;
+        case "default.color.from.start.fgMain":
+          return Color.fgMain;
+        case "default.color.from.start.fgMainAlt":
+          return Color.fgMainAlt;
+        case "default.color.from.start.fgTimeAdd":
+          return Color.fgTimeAdd;
+        case "default.color.from.start.fgForecast":
+          return Color.fgForecast;
+        case "default.color.from.start.fgBar":
+          return Color.fgBar;
+        case "default.color.from.start.solar":
+          return Color.solar;
+        case "default.color.from.start.temperature":
+          return Color.temperature;
+        case "default.color.from.start.gust":
+          return Color.gust;
         default:
           console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
       }
     }
     return s;
   }
-  //default
+  // default
   static defaultTheme = {
     good: Color.Green,
     bad: Color.Red,
@@ -351,13 +430,11 @@ class Color extends ColorBase {
     background: Color.HMIDark,
     highlight: Color.HMIOn,
     disabled: Color.HMIOff,
-    // defaultTheme – Navigation
     navLeft: Color.HMIOn,
     navRight: Color.HMIOn,
     navDownLeft: Color.On,
     navDownRight: Color.On,
     navDown: Color.Off,
-    // defaultTheme – Specials
     navHome: Color.Yellow,
     navParent: Color.Gray,
     sunny: Color.swSunny,
@@ -371,68 +448,55 @@ class Color extends ColorBase {
     rainy: Color.swRainy,
     snowy: Color.swSnowy,
     snowyHeavy: Color.swSnowy,
-    // kein eigener "heavy" Ton vorhanden
     snowyRainy: Color.swSnowyRainy,
     windy: Color.swWindy,
     tornado: Color.swExceptional,
     clearNight: Color.swClearNight,
-    exceptional: Color.swExceptional
+    exceptional: Color.swExceptional,
+    foreground: Color.White,
+    solar: Color.On,
+    temperature: Color.Red,
+    gust: Color.Blue,
+    sunrise: Color.Yellow,
+    sunset: Color.Orange,
+    // NEW theme keys
+    fgTime: Color.White,
+    fgTimeAmPm: Color.MSYellow,
+    fgDate: Color.LightGray,
+    fgMain: Color.White,
+    fgMainAlt: Color.MSYellow,
+    fgTimeAdd: Color.HMIOn,
+    fgForecast: Color.LightGray,
+    fgBar: Color.LightGray
   };
-  //tropical
+  // tropical
   static topicalTheme = {
     good: Color.Palm,
-    // kräftiges Palmengrün
     bad: Color.Coral,
-    // warmes Korallenrot
     true: Color.Lime,
-    // spritziges Limettengrün
     false: Color.Sunset,
-    // Sonnenuntergangsrot
     activated: Color.Turquoise,
-    // leuchtendes Türkis
     deactivated: Color.Sand,
-    // sandig-neutral
     attention: Color.Mango,
-    // fruchtiges Mango-Orange
     info: Color.Orchid,
-    // tropische Blüte (Orchideenrosa)
     option1: Color.Turquoise,
-    // türkis als Standardoption
     option2: Color.Mango,
-    // Mango-Orange
     option3: Color.Coral,
-    // Korallenrot
     option4: Color.Lime,
-    // Limettengrün
     open: Color.Ocean,
-    // offen = Ozeanblau
     close: Color.Palm,
-    // geschlossen = Palmengrün
     hot: Color.Sunset,
-    // heiß = Sonnenuntergang
     cold: Color.Turquoise,
-    // kalt = Türkis
     on: Color.Mango,
-    // an = Mango
     off: Color.Sand,
-    // aus = Sand
     light: Color.Sun,
-    // ☀️ evtl. als Yellow/Weiß
     dark: Color.Ocean,
-    // dunkel = tiefes Ozeanblau
     warning: Color.Coral,
-    // auffälliges Korallenrot
     success: Color.Palm,
-    // kräftiges Palmengrün
     neutral: Color.Sand,
-    // sandfarben neutral
-    background: Color.Ocean,
-    // tiefes Ozeanblau
+    background: Color.DeepOcean,
     highlight: Color.Sunset,
-    // Sonnenuntergang als Highlight
     disabled: Color.Gray,
-    // neutral deaktiviert
-    // topicalTheme – Navigation (tropisch)
     navLeft: Color.Turquoise,
     navRight: Color.Turquoise,
     navDownLeft: Color.Mango,
@@ -455,28 +519,34 @@ class Color extends ColorBase {
     windy: Color.Turquoise,
     tornado: Color.Red,
     clearNight: Color.Ocean,
-    exceptional: Color.Red
+    exceptional: Color.Red,
+    foreground: Color.Sun,
+    gust: Color.Turquoise,
+    sunrise: Color.Sun,
+    sunset: Color.Sunset,
+    // NEW theme keys
+    fgTime: Color.Sun,
+    fgTimeAmPm: Color.Mango,
+    fgDate: Color.Sand,
+    fgMain: Color.Orchid,
+    fgMainAlt: Color.Mango,
+    fgTimeAdd: Color.Turquoise,
+    fgForecast: Color.Sand,
+    fgBar: Color.Sand,
+    solar: Color.Sun,
+    temperature: Color.Sunset
   };
   // technical
   static technicalTheme = {
     good: Color.HMIOn,
-    // technisches Blau
     bad: Color.MSRed,
-    // klares MS-Rot
     true: Color.Green,
-    // Grün bleibt für "an"
     false: Color.Red,
-    // Rot bleibt für "aus"
     activated: Color.Cyan,
-    // Cyan für aktive Elemente
     deactivated: Color.Gray,
-    // grau für deaktivierte
     attention: Color.Yellow,
-    // gelb für Warnungen
     info: Color.White,
-    // Weiß für neutrale Infos
     option1: Color.Blue,
-    // verschiedene Blau-Töne
     option2: Color.DarkBlue,
     option3: Color.Cyan,
     option4: Color.HMIOff,
@@ -489,24 +559,16 @@ class Color extends ColorBase {
     light: Color.White,
     dark: Color.Black,
     warning: Color.Yellow,
-    // starke Warnfarbe
     success: Color.Green,
-    // klassisch grün für Erfolg
     neutral: Color.Gray,
-    // neutral in grau
-    background: Color.HMIDark,
-    // dunkler technischer Hintergrund
+    background: Color.DarkGrayBlue,
     highlight: Color.Cyan,
-    // Akzentfarbe
     disabled: Color.HMIOff,
-    // bläulich-grau für deaktiviert
-    // technicalTheme – Navigation
     navLeft: Color.Cyan,
     navRight: Color.Cyan,
     navDownLeft: Color.Blue,
     navDownRight: Color.Blue,
     navDown: Color.DarkBlue,
-    // technicalTheme – Specials
     navHome: Color.Yellow,
     navParent: Color.HMIOff,
     sunny: Color.Yellow,
@@ -522,65 +584,58 @@ class Color extends ColorBase {
     snowyHeavy: Color.LightGray,
     snowyRainy: Color.BlueLight,
     windy: Color.Cyan,
+    gust: Color.Cyan,
+    sunrise: Color.Cyan,
+    sunset: Color.Yellow,
     tornado: Color.MSRed,
     clearNight: Color.HMIOff,
-    exceptional: Color.MSRed
+    exceptional: Color.MSRed,
+    foreground: Color.TechMint,
+    solar: Color.MSYellow,
+    temperature: Color.TechMint,
+    // NEW theme keys
+    fgTime: Color.TechMint,
+    fgTimeAmPm: Color.Cyan,
+    fgDate: Color.LightGray,
+    fgMain: Color.White,
+    fgMainAlt: Color.Cyan,
+    fgTimeAdd: Color.Cyan,
+    fgForecast: Color.BlueLight,
+    fgBar: Color.DarkGray
   };
-  //sunset
+  // sunset
   static sunsetTheme = {
     good: Color.MSGreen,
-    // weiches Grün für "ok"
     bad: Color.MSRed,
-    // warmes Rot für "Fehler"
     true: Color.On,
-    // helles Gelb wie Abendsonne
     false: Color.Off,
-    // orange-rot für "aus"
     activated: Color.Yellow,
-    // leuchtendes Gelb
     deactivated: Color.Gray,
-    // gedämpftes Grau
     attention: Color.colorRadio,
-    // kräftiges Orange (Radio)
     info: Color.White,
-    // neutraler Weißton
     option1: Color.Red,
-    // rot wie die Sonne im Horizont
     option2: (_a = Color.Orange) != null ? _a : { r: 255, g: 140, b: 0 },
-    // neu definierter Orange-Ton
     option3: Color.Magenta,
-    // violett für Akzente
     option4: Color.colorSonos,
-    // warmes Gold
     open: Color.Red,
     close: Color.Green,
     hot: Color.Off,
-    // orange-rot für "heiß"
     cold: Color.DarkBlue,
-    // blauer Abendhimmel
     on: Color.Yellow,
     off: Color.Off,
     light: Color.White,
     dark: Color.HMIDark,
     warning: Color.Off,
-    // kräftiges Orange
     success: Color.Green,
-    // grünlich, aber warm
     neutral: Color.Gray,
-    // neutral gehalten
     background: { r: 48, g: 27, b: 63 },
-    // tiefes Violett für den Himmel
     highlight: Color.Magenta,
-    // Sonnenuntergangs-Violett
     disabled: Color.HMIOff,
-    // bläulich-grau für inaktiv
-    // sunsetTheme – Navigation
     navLeft: Color.Off,
     navRight: Color.Off,
     navDownLeft: Color.Magenta,
     navDownRight: Color.Magenta,
     navDown: Color.Yellow,
-    // sunsetTheme – Specials
     navHome: Color.colorSonos,
     navParent: Color.Gray,
     sunny: Color.On,
@@ -598,7 +653,94 @@ class Color extends ColorBase {
     windy: Color.Orange,
     tornado: Color.Red,
     clearNight: Color.DarkBlue,
-    exceptional: Color.MSRed
+    exceptional: Color.MSRed,
+    foreground: Color.Yellow,
+    solar: Color.On,
+    temperature: Color.Magenta,
+    gust: Color.Orange,
+    sunrise: Color.Orange,
+    sunset: Color.Magenta,
+    // NEW theme keys
+    fgTime: Color.Yellow,
+    fgTimeAmPm: (_b = Color.Orange) != null ? _b : { r: 255, g: 140, b: 0 },
+    fgDate: Color.Orange,
+    fgMain: Color.Magenta,
+    fgMainAlt: Color.Magenta,
+    fgTimeAdd: Color.Magenta,
+    fgForecast: Color.colorSonos,
+    fgBar: Color.Off
+  };
+  static volcanoTheme = {
+    good: Color.FlameYellow,
+    bad: Color.MagmaRed,
+    true: Color.FlameYellow,
+    false: Color.MagmaRed,
+    activated: Color.FireGlow,
+    deactivated: Color.AshGray,
+    attention: Color.FireGlow,
+    info: Color.White,
+    option1: Color.FireGlow,
+    option2: Color.FlameYellow,
+    option3: Color.MagmaRed,
+    option4: Color.LavaGlow,
+    open: Color.MagmaRed,
+    close: Color.MSGreen,
+    hot: Color.MagmaRed,
+    cold: Color.Blue,
+    on: Color.FireGlow,
+    off: Color.Charcoal,
+    light: Color.White,
+    dark: Color.Gray,
+    warning: Color.FireGlow,
+    success: Color.MSGreen,
+    neutral: Color.AshGray,
+    background: Color.LavaCore,
+    // jetzt feuriges Rot als Hintergrund
+    highlight: Color.FireGlow,
+    disabled: Color.AshGray,
+    navLeft: Color.FireGlow,
+    navRight: Color.FireGlow,
+    navDownLeft: Color.FlameYellow,
+    navDownRight: Color.FlameYellow,
+    navDown: Color.MagmaRed,
+    navHome: Color.FlameYellow,
+    navParent: Color.AshGray,
+    sunny: Color.FlameYellow,
+    partlyCloudy: Color.FireGlow,
+    cloudy: Color.AshGray,
+    fog: Color.LightGray,
+    hail: Color.LightGray,
+    lightning: Color.FlameYellow,
+    lightningRainy: Color.FireGlow,
+    pouring: Color.DarkBlue,
+    rainy: Color.Blue,
+    snowy: Color.White,
+    snowyHeavy: Color.LightGray,
+    snowyRainy: Color.BlueLight,
+    windy: Color.AshGray,
+    gust: Color.FireGlow,
+    sunrise: Color.FlameYellow,
+    sunset: Color.FireGlow,
+    tornado: Color.MagmaRed,
+    clearNight: Color.Charcoal,
+    exceptional: Color.MagmaRed,
+    foreground: Color.FlameYellow,
+    solar: Color.FlameYellow,
+    temperature: Color.MagmaRed,
+    fgTime: Color.FlameYellow,
+    // Uhrzeit sehr strahlend
+    fgTimeAmPm: Color.FireGlow,
+    // AM/PM orange
+    fgDate: Color.FireGlow,
+    // Datum klar sichtbar (kräftiges Orange)
+    fgMain: Color.White,
+    // Haupttext neutral
+    fgMainAlt: Color.FlameYellow,
+    // alternative Haupttexte in Gelb
+    fgTimeAdd: Color.FireGlow,
+    fgForecast: Color.FlameYellow,
+    // Forecast-Werte hellgelb für Kontrast
+    fgBar: Color.AshGray
   };
   /**
    * set color theme...

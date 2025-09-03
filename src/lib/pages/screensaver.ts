@@ -12,6 +12,7 @@ import { PageItem } from './pageItem';
 import type { PageInterface } from '../classes/PageInterface';
 import type { BaseClassTriggerd } from '../classes/baseClassPage';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
+import { Color, type RGB } from '../const/Color';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -307,7 +308,7 @@ export class Screensaver extends Page {
 
         const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
         this.sendToPanel(msg, false);
-
+        this.sendColors();
         await this.HandleScreensaverStatusIcons();
     }
     public async createPageItems(
@@ -316,6 +317,40 @@ export class Screensaver extends Page {
         return await super.createPageItems(pageItemsConfig);
     }
 
+    public sendColors(): void {
+        const colorPayload = `color~${Color.rgb_dec565(Color.background as RGB)}~${
+            Color.rgb_dec565(Color.fgTime as RGB) // tTime
+        }~${
+            Color.rgb_dec565(Color.fgTimeAmPm as RGB) // timeAMPM
+        }~${
+            Color.rgb_dec565(Color.fgDate as RGB) // tDate
+        }~${
+            Color.rgb_dec565(Color.fgMain as RGB) // tMainText
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast1
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast2
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast3
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast4
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast1Val
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast2Val
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast3Val
+        }~${
+            Color.rgb_dec565(Color.fgForecast as RGB) // tForecast4Val
+        }~${
+            Color.rgb_dec565(Color.fgBar as RGB) // bar
+        }~${
+            Color.rgb_dec565(Color.fgMainAlt as RGB) // tMainTextAlt2
+        }~${
+            Color.rgb_dec565(Color.fgTimeAdd as RGB) // tTimeAdd
+        }`;
+        this.sendToPanel(colorPayload, false);
+    }
     async onVisibilityChange(v: boolean): Promise<void> {
         //await super.onVisibilityChange(v);
         this.step = 0;

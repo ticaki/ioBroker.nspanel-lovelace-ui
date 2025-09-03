@@ -2996,11 +2996,7 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "weather-windy" },
-          color: { type: "const", constVal: import_Color.Color.warning }
-        },
-        false: {
-          value: { type: "const", constVal: "weather-windy" },
-          color: { type: "const", constVal: import_Color.Color.success }
+          color: { type: "const", constVal: import_Color.Color.windy }
         },
         scale: { type: "const", constVal: { val_min: 0, val_max: 80 } },
         maxBri: void 0,
@@ -3052,11 +3048,7 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "weather-tornado" },
-          color: { type: "const", constVal: import_Color.Color.warning }
-        },
-        false: {
-          value: { type: "const", constVal: "weather-tornado" },
-          color: { type: "const", constVal: import_Color.Color.success }
+          color: { type: "const", constVal: import_Color.Color.gust }
         },
         scale: { type: "const", constVal: { val_min: 0, val_max: 80 } },
         maxBri: void 0,
@@ -3085,11 +3077,7 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "solar-power" },
-          color: { type: "const", constVal: import_Color.Color.warning }
-        },
-        false: {
-          value: { type: "const", constVal: "solar-power" },
-          color: { type: "const", constVal: import_Color.Color.success }
+          color: { type: "const", constVal: import_Color.Color.solar }
         },
         scale: { type: "const", constVal: { val_min: 0, val_max: 9 } },
         maxBri: void 0,
@@ -3280,11 +3268,11 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "weather-sunset-up" },
-          color: { type: "const", constVal: import_Color.Color.sunny }
+          color: { type: "const", constVal: import_Color.Color.sunrise }
         },
         false: {
           value: { type: "const", constVal: "weather-sunset-down" },
-          color: { type: "const", constVal: import_Color.Color.warning }
+          color: { type: "const", constVal: import_Color.Color.sunset }
         }
       },
       entity1: {
@@ -3758,11 +3746,7 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "weather-windy" },
-          color: { type: "const", constVal: import_Color.Color.warning }
-        },
-        false: {
-          value: { type: "const", constVal: "weather-windy" },
-          color: { type: "const", constVal: import_Color.Color.success }
+          color: { type: "const", constVal: import_Color.Color.windy }
         },
         scale: { type: "const", constVal: { val_min: 0, val_max: 80 } },
         maxBri: void 0,
@@ -3822,11 +3806,7 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "weather-tornado" },
-          color: { type: "const", constVal: import_Color.Color.warning }
-        },
-        false: {
-          value: { type: "const", constVal: "weather-tornado" },
-          color: { type: "const", constVal: import_Color.Color.success }
+          color: { type: "const", constVal: import_Color.Color.gust }
         },
         scale: { type: "const", constVal: { val_min: 0, val_max: 80 } },
         maxBri: void 0,
@@ -3866,11 +3846,7 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "solar-power" },
-          color: { type: "const", constVal: import_Color.Color.warning }
-        },
-        false: {
-          value: { type: "const", constVal: "solar-power" },
-          color: { type: "const", constVal: import_Color.Color.success }
+          color: { type: "const", constVal: import_Color.Color.solar }
         },
         scale: { type: "const", constVal: { val_min: 0, val_max: 9 } },
         maxBri: void 0,

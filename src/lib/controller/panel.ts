@@ -23,7 +23,7 @@ import { systemNavigation, systemPages } from '../templates/system-templates';
 import { PageAlarm } from '../pages/pageAlarm';
 import { PageQR } from '../pages/pageQR';
 import { Dataitem } from '../classes/data-item';
-import { Color } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 import { PageSchedule } from '../pages/pageSchedule';
 import { cardTemplates } from '../templates/card';
 import { deepAssign, getRegExp, isVersionGreaterOrEqual } from '../const/tools';
@@ -1220,7 +1220,10 @@ export class Panel extends BaseClass {
                 }
             }
         }
-        let cmd = `${Color.rgb_dec565(Color.Black)}~${Color.rgb_dec565(Color.White)}`;
+        let cmd = `${Color.rgb_dec565(Color.Black)}~${Color.rgb_dec565(Color.foreground as RGB)}`;
+        this.log.debug(
+            `set color to RGB ${JSON.stringify(Color.foreground)} -> ${Color.rgb_dec565(Color.foreground as RGB)}`,
+        );
         if (this.dim.dayMode) {
             cmd = `dimmode~${this.dim.standby}~${this.dim.active}~${cmd}`;
         } else {

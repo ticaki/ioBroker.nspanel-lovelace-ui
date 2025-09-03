@@ -32,16 +32,16 @@ export class Controller extends Library.BaseClass {
         super(adapter, options.name);
         switch (this.adapter.config.colorTheme) {
             case 1:
-                Color.setTheme(Color.technicalTheme);
-                break;
-            case 2:
                 Color.setTheme(Color.topicalTheme);
                 break;
+            case 2:
+                Color.setTheme(Color.technicalTheme);
+                break;
             case 3:
-                Color.setTheme(Color.defaultTheme);
+                Color.setTheme(Color.sunsetTheme);
                 break;
             case 4:
-                Color.setTheme(Color.sunsetTheme);
+                Color.setTheme(Color.volcanoTheme);
                 break;
             case 0:
             default:

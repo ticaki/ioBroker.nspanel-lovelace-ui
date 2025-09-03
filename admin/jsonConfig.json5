@@ -533,15 +533,19 @@
                         },
                         {
                             "label": "technical",
-                            "value": 1
+                            "value": 2
                         },
                         {
                             "label": "tropical",
-                            "value": 2
+                            "value": 1
                         },
                         {
                             "label": "sunset",
                             "value": 3
+                        },
+                        {
+                            "label": "volcano",
+                            "value": 4
                         }
                     ]
                 },

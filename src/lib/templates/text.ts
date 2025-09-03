@@ -2993,12 +2993,9 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-windy' },
-                    color: { type: 'const', constVal: Color.warning },
+                    color: { type: 'const', constVal: Color.windy },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'weather-windy' },
-                    color: { type: 'const', constVal: Color.success },
-                },
+
                 scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
                 maxBri: undefined,
                 minBri: undefined,
@@ -3051,12 +3048,9 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-tornado' },
-                    color: { type: 'const', constVal: Color.warning },
+                    color: { type: 'const', constVal: Color.gust },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'weather-tornado' },
-                    color: { type: 'const', constVal: Color.success },
-                },
+
                 scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
                 maxBri: undefined,
                 minBri: undefined,
@@ -3085,12 +3079,9 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'solar-power' },
-                    color: { type: 'const', constVal: Color.warning },
+                    color: { type: 'const', constVal: Color.solar },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'solar-power' },
-                    color: { type: 'const', constVal: Color.success },
-                },
+
                 scale: { type: 'const', constVal: { val_min: 0, val_max: 9 } },
                 maxBri: undefined,
                 minBri: undefined,
@@ -3282,11 +3273,11 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-sunset-up' },
-                    color: { type: 'const', constVal: Color.sunny },
+                    color: { type: 'const', constVal: Color.sunrise },
                 },
                 false: {
                     value: { type: 'const', constVal: 'weather-sunset-down' },
-                    color: { type: 'const', constVal: Color.warning },
+                    color: { type: 'const', constVal: Color.sunset },
                 },
             },
             entity1: {
@@ -3763,12 +3754,9 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-windy' },
-                    color: { type: 'const', constVal: Color.warning },
+                    color: { type: 'const', constVal: Color.windy },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'weather-windy' },
-                    color: { type: 'const', constVal: Color.success },
-                },
+
                 scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
                 maxBri: undefined,
                 minBri: undefined,
@@ -3827,12 +3815,9 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-tornado' },
-                    color: { type: 'const', constVal: Color.warning },
+                    color: { type: 'const', constVal: Color.gust },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'weather-tornado' },
-                    color: { type: 'const', constVal: Color.success },
-                },
+
                 scale: { type: 'const', constVal: { val_min: 0, val_max: 80 } },
                 maxBri: undefined,
                 minBri: undefined,
@@ -3871,12 +3856,9 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'solar-power' },
-                    color: { type: 'const', constVal: Color.warning },
+                    color: { type: 'const', constVal: Color.solar },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'solar-power' },
-                    color: { type: 'const', constVal: Color.success },
-                },
+
                 scale: { type: 'const', constVal: { val_min: 0, val_max: 9 } },
                 maxBri: undefined,
                 minBri: undefined,

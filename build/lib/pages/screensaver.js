@@ -38,6 +38,7 @@ var import_Page = require("../classes/Page");
 var pages = __toESM(require("../types/pages"));
 var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
+var import_Color = require("../const/Color");
 class Screensaver extends import_Page.Page {
   items;
   step = 0;
@@ -269,10 +270,15 @@ class Screensaver extends import_Page.Page {
     ];
     const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
     this.sendToPanel(msg, false);
+    this.sendColors();
     await this.HandleScreensaverStatusIcons();
   }
   async createPageItems(pageItemsConfig) {
     return await super.createPageItems(pageItemsConfig);
+  }
+  sendColors() {
+    const colorPayload = `color~${import_Color.Color.rgb_dec565(import_Color.Color.background)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTime)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTimeAmPm)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgDate)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMain)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgBar)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMainAlt)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTimeAdd)}`;
+    this.sendToPanel(colorPayload, false);
   }
   async onVisibilityChange(v) {
     this.step = 0;

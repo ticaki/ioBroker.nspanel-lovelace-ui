@@ -1099,7 +1099,10 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
-    let cmd = `${import_Color.Color.rgb_dec565(import_Color.Color.Black)}~${import_Color.Color.rgb_dec565(import_Color.Color.White)}`;
+    let cmd = `${import_Color.Color.rgb_dec565(import_Color.Color.Black)}~${import_Color.Color.rgb_dec565(import_Color.Color.foreground)}`;
+    this.log.debug(
+      `set color to RGB ${JSON.stringify(import_Color.Color.foreground)} -> ${import_Color.Color.rgb_dec565(import_Color.Color.foreground)}`
+    );
     if (this.dim.dayMode) {
       cmd = `dimmode~${this.dim.standby}~${this.dim.active}~${cmd}`;
     } else {

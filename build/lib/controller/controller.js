@@ -53,16 +53,16 @@ class Controller extends Library.BaseClass {
     super(adapter, options.name);
     switch (this.adapter.config.colorTheme) {
       case 1:
-        import_Color.Color.setTheme(import_Color.Color.technicalTheme);
-        break;
-      case 2:
         import_Color.Color.setTheme(import_Color.Color.topicalTheme);
         break;
+      case 2:
+        import_Color.Color.setTheme(import_Color.Color.technicalTheme);
+        break;
       case 3:
-        import_Color.Color.setTheme(import_Color.Color.defaultTheme);
+        import_Color.Color.setTheme(import_Color.Color.sunsetTheme);
         break;
       case 4:
-        import_Color.Color.setTheme(import_Color.Color.sunsetTheme);
+        import_Color.Color.setTheme(import_Color.Color.volcanoTheme);
         break;
       case 0:
       default:
