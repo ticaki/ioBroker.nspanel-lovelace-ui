@@ -351,6 +351,7 @@ export type StateRole =
     | '';
 
 export type DeviceRole =
+    | 'spotify-speaker'
     | 'alexa-playlist'
     | 'alexa-speaker'
     | '2values'
@@ -754,6 +755,7 @@ export type cardThermoDataItems = {
 
 export type cardMediaDataItemOptions = {
     card: Extract<cardGridTypes, 'cardMedia'>;
+    ident?: string;
     data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
         logo?: toolboxItem | undefined;
     };
@@ -762,6 +764,8 @@ export type cardMediaDataItemOptions = {
 export type cardMediaDataItems = {
     card: Extract<cardGridTypes, 'cardMedia'>;
     dpInit?: string;
+    ident?: string;
+
     data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined> & {
         toolbox: (toolboxItemDataItem | undefined)[];
     } & { logo: toolboxItemDataItem | undefined };

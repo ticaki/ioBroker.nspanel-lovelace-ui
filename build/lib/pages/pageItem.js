@@ -2260,12 +2260,18 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       if (entry.role === "spotify-playlist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
         await item.setValue1.setState(parseInt(value) + 1);
         return true;
+      } else if (entry.role === "spotify-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
+        const v2 = parseInt(value);
+        const index = sList.states[v2] || -1;
+        if (index !== -1) {
+          await item.entityInSel.set.setState(sList.states[v2]);
+        }
       } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
         const index = ((_a = sList.states) == null ? void 0 : _a[v2]) || -1;
-        if (((_b = this.parent.currentItems) == null ? void 0 : _b.dpInit) && await this.parent.isPlaying()) {
+        if (((_b = this.parent.currentItems) == null ? void 0 : _b.ident) && await this.parent.isPlaying()) {
           await this.adapter.setForeignStateAsync(
-            `${this.parent.currentItems.dpInit}.Commands.textCommand`,
+            `${this.parent.currentItems.ident}.Commands.textCommand`,
             `Schiebe Musik auf ${sList.list[v2]}`
           );
         }
@@ -2474,6 +2480,26 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         }
         this.log.debug(`Alexa Playlist list: finish`);
+      } else if (role === "spotify-speaker") {
+        if (entityInSel.value.options.dp) {
+          const o = await entityInSel.value.getCommonStates();
+          const v = await entityInSel.value.getString();
+          const al = await (valueList == null ? void 0 : valueList.getObject());
+          if (o) {
+            list.list = [];
+            list.states = [];
+            for (const a in o) {
+              const str = String(o[a]).replace(/\r?\n/g, "").trim();
+              if (!al || al && Array.isArray(al) && al.includes(str)) {
+                list.list.push();
+                list.states.push(a);
+                if (a === v && !list.value) {
+                  list.value = String(list.states.length - 1);
+                }
+              }
+            }
+          }
+        }
       } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
         let states = void 0;
         const value = await tools.getValueEntryString(entityInSel);

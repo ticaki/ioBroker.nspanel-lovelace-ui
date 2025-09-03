@@ -2571,6 +2571,20 @@ export class PageItem extends BaseClassTriggerd {
 
                 return true;
             } else if (
+                entry.role === 'spotify-speaker' &&
+                sList.list !== undefined &&
+                sList.list[parseInt(value)] !== undefined &&
+                sList.states !== undefined &&
+                sList.states[parseInt(value)] !== undefined &&
+                item.entityInSel &&
+                item.entityInSel.set
+            ) {
+                const v = parseInt(value);
+                const index = sList.states[v] || -1;
+                if (index !== -1) {
+                    await item.entityInSel.set.setState(sList.states[v]);
+                }
+            } else if (
                 entry.role === 'alexa-speaker' &&
                 sList.list !== undefined &&
                 sList.list[parseInt(value)] !== undefined &&
@@ -2579,9 +2593,9 @@ export class PageItem extends BaseClassTriggerd {
             ) {
                 const v = parseInt(value);
                 const index = sList.states?.[v] || -1;
-                if ((this.parent as PageMedia).currentItems?.dpInit && (await (this.parent as PageMedia).isPlaying())) {
+                if ((this.parent as PageMedia).currentItems?.ident && (await (this.parent as PageMedia).isPlaying())) {
                     await this.adapter.setForeignStateAsync(
-                        `${(this.parent as PageMedia).currentItems!.dpInit}.Commands.textCommand`,
+                        `${(this.parent as PageMedia).currentItems!.ident}.Commands.textCommand`,
                         `Schiebe Musik auf ${sList.list[v]}`,
                     );
                 }
@@ -2827,6 +2841,28 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 }
                 this.log.debug(`Alexa Playlist list: finish`);
+            } else if (role === 'spotify-speaker') {
+                // Spotify Speaker
+                if (entityInSel.value.options.dp) {
+                    const o = await entityInSel.value.getCommonStates();
+                    const v = await entityInSel.value.getString();
+                    const al = await valueList?.getObject();
+
+                    if (o) {
+                        list.list = [];
+                        list.states = [];
+                        for (const a in o) {
+                            const str = String(o[a]).replace(/\r?\n/g, '').trim();
+                            if (!al || (al && Array.isArray(al) && al.includes(str))) {
+                                list.list.push();
+                                list.states.push(a);
+                                if (a === v && !list.value) {
+                                    list.value = String(list.states.length - 1);
+                                }
+                            }
+                        }
+                    }
+                }
             } else if (
                 ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
                 (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()) || valueList2 != null)

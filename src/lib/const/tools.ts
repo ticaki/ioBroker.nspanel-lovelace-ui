@@ -1009,8 +1009,8 @@ export function formatInSelText(text: string | string[] | null | undefined): str
 
     // Normalisieren → Array von Wörtern
     const words = Array.isArray(text)
-        ? text
-        : text.replaceAll('?', ' ').replaceAll('__', '_').replaceAll('_', ' ').split(/\s+/);
+        ? text.forEach(a => a.trim().replace(/\r?\n/g, ''))
+        : text.replace(/\r?\n/g, '').replaceAll('?', ' ').replaceAll('__', '_').replaceAll('_', ' ').split(/\s+/);
 
     const MAX_LINE = 12;
     const MAX_LINE2 = 12;
