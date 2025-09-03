@@ -88,6 +88,7 @@ export class PageMenu extends Page {
                     },
                     entity1: { value: { type: 'const', constVal: true } },
                     additionalId: { type: 'const', constVal: '-NextPageArrow' },
+                    text: { true: { type: 'const', constVal: 'more' } },
                 },
             },
         ]);
