@@ -560,22 +560,22 @@ class ConfigManager extends import_library.BaseClass {
       return { gridItem, messages };
     }
     const item = page.items[0];
-    if (!item || !item.id || item.id.endsWith(".")) {
-      const msg = `${page.uniqueName} id: ${page.items[0].id} is invalid!`;
+    if (!item || !("id" in item) || !item.id || item.id.endsWith(".")) {
+      const msg = `${page.uniqueName} id: ${"id" in item ? item.id : "invalid"} is invalid!`;
       messages.push(msg);
       this.log.error(msg);
       return { gridItem, messages };
     }
     const o = await this.adapter.getForeignObjectAsync(item.id);
     if (!o || !o.common || !o.common.role) {
-      const msg = `${page.uniqueName} id: ${page.items[0].id} has a invalid object!`;
+      const msg = `${page.uniqueName} id: ${item.id} has a invalid object!`;
       messages.push(msg);
       this.log.error(msg);
       return { gridItem, messages };
     }
     const role = o.common.role;
     if (role !== "thermostat" && role !== "airCondition") {
-      const msg = `${page.uniqueName} id: ${page.items[0].id} role '${role}' not supported for cardThermo!`;
+      const msg = `${page.uniqueName} id: ${item.id} role '${role}' not supported for cardThermo!`;
       messages.push(msg);
       this.log.error(msg);
       return { gridItem, messages };
@@ -1103,16 +1103,34 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { gridItem, messages };
   }
+  isNativePageItem(item) {
+    return "native" in item && item.native !== void 0 && item.native !== null;
+  }
+  isPageBaseItem(item) {
+    return !("native" in item);
+  }
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e;
-    if (!pages.isCardMenuRole(page.type) || !item.targetPage || !item.navigate) {
+    if (this.isNativePageItem(item)) {
+      if (item.navigate && !item.targetPage) {
+        throw new Error(`Navigate true but no targetPage defined in native item`);
+      }
+      return {
+        ...item.native,
+        data: {
+          ...item.native.data,
+          setNavi: { type: "const", constVal: item.targetPage }
+        }
+      };
+    }
+    if (!pages.isCardMenuRole(page.type) || !item.navigate || !item.targetPage) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
     }
     let itemConfig = void 0;
-    const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
+    const obj = "id" in item && item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     if (obj && (!obj.common || !obj.common.role)) {
-      throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
+      throw new Error(`Role missing in ${page.uniqueName}.${"id" in item ? item.id : ""}!`);
     }
     const role = obj ? obj.common.role : null;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
@@ -1941,13 +1959,23 @@ class ConfigManager extends import_library.BaseClass {
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
-        throw new Error(`TargetPage missing in ${item && item.id || "no id"}!`);
+        throw new Error(`TargetPage missing in ${item && "id" in item && item.id || "no id"}!`);
       }
       return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
     }
-    if (item.id && !item.id.endsWith(".")) {
+    if (this.isNativePageItem(item)) {
+      itemConfig = item.native;
+      return { itemConfig, messages };
+    }
+    if ("id" in item && item.id) {
       if (["delete", "empty"].includes(item.id)) {
         return { itemConfig: { type: "empty", data: void 0 }, messages };
+      }
+      if (item.id.endsWith(".")) {
+        item.id = item.id.split(".").filter((a) => a).join(".");
+        if (!item.id) {
+          throw new Error(`ID missing in item or only dots found!`);
+        }
       }
       const obj = await this.adapter.getForeignObjectAsync(item.id);
       if (obj) {
@@ -3887,8 +3915,11 @@ class ConfigManager extends import_library.BaseClass {
     this.adapter.log.warn(`Invalid color value: ${JSON.stringify(item)}`);
     return void 0;
   }
+  validStateId(id) {
+    return !!id && !id.endsWith(".");
+  }
   async existsState(id) {
-    if (!id || id.endsWith(".")) {
+    if (this.validStateId(id) === false) {
       return false;
     }
     return await this.adapter.getForeignStateAsync(id) != null;

@@ -2,6 +2,41 @@ import { Color } from '../const/Color';
 import type { TemplateItems } from '../types/types';
 
 export const textTemplates: TemplateItems = {
+    'text.clock': {
+        role: 'text',
+        dpInit: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            entity2: {
+                value: {
+                    type: 'internal',
+                    dp: '///time',
+                },
+                dateFormat: {
+                    type: 'const',
+                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                },
+            },
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'clock-outline' },
+                    color: { type: 'const', constVal: Color.foreground },
+                    text: {
+                        value: {
+                            type: 'internal',
+                            dp: '///time',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                        textSize: { type: 'const', constVal: 1 },
+                    },
+                },
+            },
+        },
+    },
     'text.window.isOpen': {
         role: 'text',
         adapter: '',

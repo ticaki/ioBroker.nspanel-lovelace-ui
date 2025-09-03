@@ -638,8 +638,8 @@ export class ConfigManager extends BaseClass {
             return { gridItem, messages };
         }
         const item = page.items[0];
-        if (!item || !item.id || item.id.endsWith('.')) {
-            const msg = `${page.uniqueName} id: ${page.items[0].id} is invalid!`;
+        if (!item || !('id' in item) || !item.id || item.id.endsWith('.')) {
+            const msg = `${page.uniqueName} id: ${'id' in item ? item.id : 'invalid'} is invalid!`;
             messages.push(msg);
             this.log.error(msg);
             return { gridItem, messages };
@@ -647,7 +647,7 @@ export class ConfigManager extends BaseClass {
 
         const o = await this.adapter.getForeignObjectAsync(item.id);
         if (!o || !o.common || !o.common.role) {
-            const msg = `${page.uniqueName} id: ${page.items[0].id} has a invalid object!`;
+            const msg = `${page.uniqueName} id: ${item.id} has a invalid object!`;
             messages.push(msg);
             this.log.error(msg);
             return { gridItem, messages };
@@ -655,7 +655,7 @@ export class ConfigManager extends BaseClass {
         const role = o.common.role as ScriptConfig.channelRoles;
 
         if (role !== 'thermostat' && role !== 'airCondition') {
-            const msg = `${page.uniqueName} id: ${page.items[0].id} role '${role}' not supported for cardThermo!`;
+            const msg = `${page.uniqueName} id: ${item.id} role '${role}' not supported for cardThermo!`;
             messages.push(msg);
             this.log.error(msg);
             return { gridItem, messages };
@@ -1251,19 +1251,42 @@ export class ConfigManager extends BaseClass {
         return { gridItem, messages };
     }
 
+    isNativePageItem(item: ScriptConfig.PageItem): item is ScriptConfig.PageItemNative {
+        return 'native' in item && item.native !== undefined && item.native !== null;
+    }
+    isPageBaseItem(item: ScriptConfig.PageItem): item is ScriptConfig.PageBaseItem {
+        return !('native' in item);
+    }
+
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
     ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
-        if (!pages.isCardMenuRole(page.type) || !item.targetPage || !item.navigate) {
+        if (this.isNativePageItem(item)) {
+            if (item.navigate && !item.targetPage) {
+                throw new Error(`Navigate true but no targetPage defined in native item`);
+            }
+            return {
+                ...item.native,
+                data: {
+                    ...item.native.data,
+                    setNavi: { type: 'const', constVal: item.targetPage },
+                },
+            };
+        }
+
+        if (!pages.isCardMenuRole(page.type) || !item.navigate || !item.targetPage) {
             this.log.warn(`Page type ${page.type} not supported for navigation item!`);
             return undefined;
         }
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
 
-        const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
+        const obj =
+            'id' in item && item.id && !item.id.endsWith('.')
+                ? await this.adapter.getForeignObjectAsync(item.id)
+                : undefined;
         if (obj && (!obj.common || !obj.common.role)) {
-            throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
+            throw new Error(`Role missing in ${page.uniqueName}.${'id' in item ? item.id : ''}!`);
         }
 
         const role = obj ? (obj.common.role as ScriptConfig.channelRoles) : null;
@@ -1280,7 +1303,7 @@ export class ConfigManager extends BaseClass {
         );
 
         const getButtonsTextTrue = async (
-            item: ScriptConfig.PageItem,
+            item: ScriptConfig.PageBaseItem,
             def1: string,
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonText
@@ -1290,7 +1313,7 @@ export class ConfigManager extends BaseClass {
                   : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
         };
         const getButtonsTextFalse = async (
-            item: ScriptConfig.PageItem,
+            item: ScriptConfig.PageBaseItem,
             def1: string,
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonTextOff
@@ -2200,13 +2223,26 @@ export class ConfigManager extends BaseClass {
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         if (item.navigate) {
             if (!item.targetPage || typeof item.targetPage !== 'string') {
-                throw new Error(`TargetPage missing in ${(item && item.id) || 'no id'}!`);
+                throw new Error(`TargetPage missing in ${(item && 'id' in item && item.id) || 'no id'}!`);
             }
             return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
         }
-        if (item.id && !item.id.endsWith('.')) {
+        if (this.isNativePageItem(item)) {
+            itemConfig = item.native as typePageItem.PageItemDataItemsOptions;
+            return { itemConfig, messages };
+        }
+        if ('id' in item && item.id) {
             if (['delete', 'empty'].includes(item.id)) {
                 return { itemConfig: { type: 'empty', data: undefined }, messages };
+            }
+            if (item.id.endsWith('.')) {
+                item.id = item.id
+                    .split('.')
+                    .filter(a => a)
+                    .join('.');
+                if (!item.id) {
+                    throw new Error(`ID missing in item or only dots found!`);
+                }
             }
             const obj = await this.adapter.getForeignObjectAsync(item.id);
             if (obj) {
@@ -2240,7 +2276,7 @@ export class ConfigManager extends BaseClass {
                         : obj.common.name[this.library.getLocalLanguage()];
 
                 const getButtonsTextTrue = async (
-                    item: ScriptConfig.PageItem,
+                    item: ScriptConfig.PageBaseItem,
                     def1: string,
                 ): Promise<Types.DataItemsOptions> => {
                     return item.buttonText
@@ -2250,7 +2286,7 @@ export class ConfigManager extends BaseClass {
                           : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
                 };
                 const getButtonsTextFalse = async (
-                    item: ScriptConfig.PageItem,
+                    item: ScriptConfig.PageBaseItem,
                     def1: string = '',
                 ): Promise<Types.DataItemsOptions> => {
                     return item.buttonTextOff
@@ -4192,12 +4228,12 @@ export class ConfigManager extends BaseClass {
      */
     async checkRequiredDatapoints(
         role: ScriptConfig.channelRoles,
-        item: ScriptConfig.PageItem,
+        item: ScriptConfig.PageBaseItem,
         mode: 'both' | 'script' | 'feature' = 'both',
     ): Promise<boolean> {
         const _checkScriptDataPoints = async (
             role: ScriptConfig.channelRoles,
-            item: ScriptConfig.PageItem,
+            item: ScriptConfig.PageBaseItem,
         ): Promise<boolean> => {
             let error = '';
             const subItem = configManagerConst.requiredScriptDataPoints[role];
@@ -4594,8 +4630,11 @@ export class ConfigManager extends BaseClass {
         this.adapter.log.warn(`Invalid color value: ${JSON.stringify(item)}`);
         return undefined;
     }
+    validStateId(id: string): boolean {
+        return !!id && !id.endsWith('.');
+    }
     async existsState(id: string): Promise<boolean> {
-        if (!id || id.endsWith('.')) {
+        if (this.validStateId(id) === false) {
             return false;
         }
         return (await this.adapter.getForeignStateAsync(id)) != null;
