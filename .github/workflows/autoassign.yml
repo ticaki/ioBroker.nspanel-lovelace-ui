@@ -17,4 +17,4 @@ jobs:
             Armilar
             ticaki
           skipKeywords: wip, draft
-          numberOfReviewers: 1
+          numberOfReviewers: 0
