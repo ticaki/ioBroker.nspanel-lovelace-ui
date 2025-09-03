@@ -396,6 +396,10 @@ class Color extends ColorBase {
           return Color.temperature;
         case "default.color.from.start.gust":
           return Color.gust;
+        case "default.color.from.start.sunrise":
+          return Color.sunrise;
+        case "default.color.from.start.sunset":
+          return Color.sunset;
         default:
           console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
       }

@@ -696,7 +696,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.10.8';
+const version = '0.10.9';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1196,98 +1196,107 @@ declare namespace ScriptConfig {
     // mean string start with getState(' and end with ').val
     type getStateID = string;
 
-    export type PageBaseItem =
-        ({
-            navigate: true;
-            targetPage: string;
-            /**
-             * The data point with the data to be used.
-             */
-            id?: string | null
-        } | {
-            /**
-             * The data point with the data to be used.
-             */
-            id: string;
-            navigate?: false | null | undefined;
-        })
-        & {
-            uniqueName?: string;
-            role?: string;
-            /**
-             * The icon that is used in the standard case or if ID is true
-             */
-            icon?: AllIcons;
-            /**
-             * The icon that is used when id is false
-             */
-            icon2?: AllIcons;
-            /**
-             * Used with blinds for partially open.
-             */
-            icon3?: AllIcons;
-            /**
-             * The color that is used in the standard case or if ID is true
-             */
-            onColor?: RGB;
-            /**
-             * The color that is used when id is false
-             */
-            offColor?: RGB;
-            useColor?: boolean;
-            /**
-             * Interpolate the icon colour by ID
-             */
-            interpolateColor?: boolean;
-            minValueBrightness?: number;
-            maxValueBrightness?: number;
-            minValueColorTemp?: number;
-            maxValueColorTemp?: number;
-            minValueLevel?: number;
-            maxValueLevel?: number;
-            minValueTilt?: number;
-            maxValueTilt?: number;
-            minValue?: number;
-            maxValue?: number;
-            stepValue?: number;
-            prefixName?: string;
-            suffixName?: string;
-            prefixValue?: string;
-            suffixValue?: string;
-            name?: string;
-            secondRow?: string;
-            buttonText?: string;
-            unit?: string;
-            colormode?: string;
-            colorScale?: IconScaleElement;
-            modeList?: string[];
-            hidePassword?: boolean;
-            autoCreateALias?: boolean;
-            yAxis?: string;
-            yAxisTicks?: number[] | string;
-            xAxisDecorationId?: string;
-            useValue?: boolean;
-            monobutton?: boolean;
-            inSel_ChoiceState?: boolean;
-            inSel_Alias?: string;
-            iconArray?: string[];
-            customIcons?: any[];
-            shutterIcons?: [shutterIcons?, shutterIcons?, shutterIcons?] | null;
-            fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
-            actionStringArray?: string[];
-            alwaysOnDisplay?: boolean;
-            /**
-             * Wird vom Skript verwendet um zu entscheiden welches Popup verwendet wird.
-             * Adapter verwendet immer die neuen Popups außer wenn beim popupShutter tilt vorhanden ist
-             * dann wird das alte verwendet!
-             * @deprecated unused in adapter
-             */
-            popupVersion?: number
-            shutterType?: string;
-            sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
-            filter?: number;
-            enabled?: boolean | string;
-        };
+export type PageBaseItem =
+        | ({
+              /**
+               * Native configuration no validation
+               */
+              native: any;
+          } & ({ navigate: boolean; targetPage: string } | { navigate?: undefined; targetPage?: undefined }))
+        | ((
+              | {
+                    navigate: true;
+                    targetPage: string;
+                    /**
+                     * The data point with the data to be used.
+                     */
+                    id?: string | null;
+                }
+              | {
+                    /**
+                     * The data point with the data to be used.
+                     */
+                    id: string;
+                    navigate?: false | null | undefined;
+                }
+          ) & {
+              uniqueName?: string;
+              role?: string;
+              /**
+               * The icon that is used in the standard case or if ID is true
+               */
+              icon?: AllIcons;
+              /**
+               * The icon that is used when id is false
+               */
+              icon2?: AllIcons;
+              /**
+               * Used with blinds for partially open.
+               */
+              icon3?: AllIcons;
+              /**
+               * The color that is used in the standard case or if ID is true
+               */
+              onColor?: RGB;
+              /**
+               * The color that is used when id is false
+               */
+              offColor?: RGB;
+              useColor?: boolean;
+              /**
+               * Interpolate the icon colour by ID
+               */
+              interpolateColor?: boolean;
+              minValueBrightness?: number;
+              maxValueBrightness?: number;
+              minValueColorTemp?: number;
+              maxValueColorTemp?: number;
+              minValueLevel?: number;
+              maxValueLevel?: number;
+              minValueTilt?: number;
+              maxValueTilt?: number;
+              minValue?: number;
+              maxValue?: number;
+              stepValue?: number;
+              prefixName?: string;
+              suffixName?: string;
+              prefixValue?: string;
+              suffixValue?: string;
+              name?: string;
+              secondRow?: string;
+              buttonText?: string;
+              unit?: string;
+              colormode?: string;
+              colorScale?: IconScaleElement;
+              modeList?: string[];
+              hidePassword?: boolean;
+              autoCreateALias?: boolean;
+              yAxis?: string;
+              yAxisTicks?: number[] | string;
+              xAxisDecorationId?: string;
+              useValue?: boolean;
+              monobutton?: boolean;
+              inSel_ChoiceState?: boolean;
+              inSel_Alias?: string;
+              iconArray?: string[];
+              customIcons?: any[];
+              shutterIcons?: [shutterIcons?, shutterIcons?, shutterIcons?] | null;
+              fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
+              actionStringArray?: string[];
+              alwaysOnDisplay?: boolean;
+              /**
+               * Wird vom Skript verwendet um zu entscheiden welches Popup verwendet wird.
+               * Adapter verwendet immer die neuen Popups außer wenn beim popupShutter tilt vorhanden ist
+               * dann wird das alte verwendet!
+               *
+               * @deprecated unused in adapter
+               */
+              popupVersion?: number;
+              shutterType?: string;
+              sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
+              filter?: number;
+              enabled?: boolean | string;
+          });
 
     type sliderItems = {
         heading: string;

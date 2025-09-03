@@ -188,10 +188,16 @@ export class PageItem extends BaseClassTriggerd {
         }
         // search for alexa devices
         if (this.config.role === 'alexa-speaker') {
-            const devices = await this.adapter.getObjectViewAsync('system', 'device', {
-                startkey: `alexa2.0.Echo-Devices.`,
-                endkey: `alexa2.0.Echo-Devices${String.fromCharCode(0xfffd)}`,
-            });
+            const id = (this.parent as PageMedia).items[0].dpInit ?? '';
+            const arr = id.split('.').slice(0, 3);
+            const str = arr.join('.');
+            const devices =
+                str && arr.length === 3
+                    ? await this.adapter.getObjectViewAsync('system', 'device', {
+                          startkey: `${str}.`,
+                          endkey: `${str}${String.fromCharCode(0xfffd)}`,
+                      })
+                    : { rows: [] };
             this.tempData = [];
             if (devices && devices.rows && devices.rows.length > 0) {
                 if (this.dataItems && this.dataItems.type === 'input_sel') {

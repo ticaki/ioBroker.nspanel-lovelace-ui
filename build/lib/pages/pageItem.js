@@ -74,7 +74,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     return p;
   }
   async init() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (!this.config) {
       return;
     }
@@ -177,15 +177,18 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
     }
     if (this.config.role === "alexa-speaker") {
-      const devices = await this.adapter.getObjectViewAsync("system", "device", {
-        startkey: `alexa2.0.Echo-Devices.`,
-        endkey: `alexa2.0.Echo-Devices${String.fromCharCode(65533)}`
-      });
+      const id = (_e = this.parent.items[0].dpInit) != null ? _e : "";
+      const arr = id.split(".").slice(0, 3);
+      const str = arr.join(".");
+      const devices = str && arr.length === 3 ? await this.adapter.getObjectViewAsync("system", "device", {
+        startkey: `${str}.`,
+        endkey: `${str}${String.fromCharCode(65533)}`
+      }) : { rows: [] };
       this.tempData = [];
       if (devices && devices.rows && devices.rows.length > 0) {
         if (this.dataItems && this.dataItems.type === "input_sel") {
           const data = this.dataItems.data;
-          let filter = await ((_e = data == null ? void 0 : data.valueList) == null ? void 0 : _e.getObject()) || null;
+          let filter = await ((_f = data == null ? void 0 : data.valueList) == null ? void 0 : _f.getObject()) || null;
           filter = Array.isArray(filter) && filter.length > 0 ? filter : null;
           for (const instance of devices.rows) {
             if (instance && instance.value && instance.id && instance.id.split(".").length === 4) {

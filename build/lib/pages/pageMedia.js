@@ -72,7 +72,6 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.currentPlayer = this.dpInit;
     this.config = options.config;
     this.minUpdateInterval = 2e3;
-    this.log.error(`Scrollpesntation is ${this.config.scrollPresentation}`);
   }
   async init() {
     var _a;
@@ -477,8 +476,8 @@ class PageMedia extends import_pageMenu.PageMenu {
       adapter.log.warn(msg);
       return { gridItem, messages };
     }
-    if (!page.media.id) {
-      const msg = `${page.uniqueName}: Media page has no device id!`;
+    if (!page.media.id || configManager.validStateId(page.media.id) === false) {
+      const msg = configManager.validStateId(page.media.id) ? `${page.uniqueName}: Media page has no device id!` : `${page.uniqueName}: Media page id ${page.media.id} is not valid!`;
       messages.push(msg);
       adapter.log.warn(msg);
       return { gridItem, messages };
@@ -490,10 +489,30 @@ class PageMedia extends import_pageMenu.PageMenu {
     } catch {
     }
     if (!o) {
-      const msg = `${page.uniqueName}: Media page id ${page.media.id} has no object!`;
+      const msg = `${page.uniqueName}: Media page id ${page.media.id} has no object - not exist - wrong id?!`;
       messages.push(msg);
       adapter.log.warn(msg);
       return { gridItem, messages };
+    }
+    if (page.media.id.startsWith("alexa2.")) {
+      const arr = page.media.id.split(".").slice(0, 3);
+      const str = arr.join(".");
+      const devices = str && arr.length === 3 ? await configManager.adapter.getObjectViewAsync("system", "device", {
+        startkey: `${str}.`,
+        endkey: `${str}${String.fromCharCode(65533)}`
+      }) : { rows: [] };
+      if (devices && devices.rows && devices.rows.length > 0) {
+        if (devices.rows.findIndex((row) => {
+          if (row && row.value && row.id && row.id.split(".").length === 4) {
+            return page.media.id === row.id;
+          }
+        }) === -1) {
+          const msg = `${page.uniqueName}: Media page id ${page.media.id} is not a valid alexa2 device!`;
+          messages.push(msg);
+          adapter.log.warn(msg);
+          return { gridItem, messages };
+        }
+      }
     }
     gridItem.dpInit = page.media.id;
     gridItem = {
