@@ -241,5 +241,9 @@
     "midrange": "Rango medio",
     "headerColorTheme": "Configuración del tema del color",
     "equalizer": "Igualada",
-    "more": "más"
+    "more": "más",
+    "default": "Por defecto",
+    "tropical": "Tropical",
+    "sunset": "Atardecer",
+    "technical": "Técnico"
 }

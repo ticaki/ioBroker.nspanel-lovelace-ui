@@ -241,5 +241,9 @@
     "midrange": "Milieu de gamme",
     "headerColorTheme": "Paramètres de thème de couleur",
     "equalizer": "Égaliseur",
-    "more": "plus"
+    "more": "plus",
+    "default": "Défaut",
+    "tropical": "Tropical",
+    "sunset": "Coucher de soleil",
+    "technical": "Technique"
 }

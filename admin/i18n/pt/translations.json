@@ -241,5 +241,9 @@
     "midrange": "Intervalo médio",
     "headerColorTheme": "Configurações de temas de cores",
     "equalizer": "Equalizador",
-    "more": "mais"
+    "more": "mais",
+    "default": "Padrão",
+    "tropical": "Tropical",
+    "sunset": "Pôr do sol",
+    "technical": "Técnico"
 }

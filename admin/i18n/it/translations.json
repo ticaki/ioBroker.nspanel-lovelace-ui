@@ -241,5 +241,9 @@
     "midrange": "Midrange",
     "headerColorTheme": "Impostazioni del tema colore",
     "equalizer": "Equalizzatore",
-    "more": "Di più"
+    "more": "Di più",
+    "default": "Predefinito",
+    "tropical": "Tropicale",
+    "sunset": "Tramonto",
+    "technical": "Tecnico"
 }

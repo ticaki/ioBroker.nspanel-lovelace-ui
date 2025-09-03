@@ -241,5 +241,9 @@
     "midrange": "中距",
     "headerColorTheme": "颜色主题设置",
     "equalizer": "均衡器",
-    "more": "更多的"
+    "more": "更多的",
+    "default": "默认",
+    "tropical": "热带",
+    "sunset": "日落",
+    "technical": "技术的"
 }

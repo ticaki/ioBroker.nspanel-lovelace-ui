@@ -241,5 +241,9 @@
     "bass": "Bass",
     "midrange": "Midrange",
     "equalizer": "Equalizer",
-    "more": "more"
+    "more": "more",
+    "default": "Default",
+    "tropical": "Tropical",
+    "sunset": "Sunset",
+    "technical": "Technical"
 }

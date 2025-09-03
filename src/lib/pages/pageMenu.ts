@@ -83,7 +83,7 @@ export class PageMenu extends Page {
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'arrow-right-bold-circle-outline' },
-                            color: { type: 'const', constVal: { red: 205, green: 142, blue: 153 } },
+                            color: { type: 'const', constVal: Color.navRight },
                         },
                     },
                     entity1: { value: { type: 'const', constVal: true } },

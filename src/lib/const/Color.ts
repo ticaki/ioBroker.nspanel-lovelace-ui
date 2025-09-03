@@ -437,7 +437,6 @@ export class Color extends ColorBase {
         navDownLeft: Color.Mango,
         navDownRight: Color.Mango,
         navDown: Color.Sun,
-        // topicalTheme – Specials (tropisch)
         navHome: Color.Sunset,
         navParent: Color.Sand,
 

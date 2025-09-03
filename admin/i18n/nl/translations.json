@@ -241,5 +241,9 @@
     "midrange": "Midrange",
     "headerColorTheme": "Kleurthema -instellingen",
     "equalizer": "Gelijkmaker",
-    "more": "meer"
+    "more": "meer",
+    "default": "Standaard",
+    "tropical": "Tropisch",
+    "sunset": "Zonsondergang",
+    "technical": "Technisch"
 }
