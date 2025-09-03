@@ -589,9 +589,12 @@ declare namespace ScriptConfig {
          */
         weatherEntity: string;
         /**
-         * Adds standard icons to the bottom field of the screensaver.
+         * Steuert, welche Standard-Wetter-Items automatisch hinzugefügt werden.
+         * - `true`  → alle Items hinzufügen
+         * - Objekt  → nur die explizit auf `true` gesetzten Items hinzufügen
+         * - `undefined` → keine Items hinzufügen
          */
-        weatherAddDefaultItems?: boolean;
+        weatherAddDefaultItems?: WeatherAddDefaultItemsJson | boolean;
         favoritScreensaverEntity: ScreenSaverElement[];
         alternateScreensaverEntity: ScreenSaverElement[];
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
@@ -678,6 +681,22 @@ declare namespace ScriptConfig {
               modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
           }
     );
+
+    export type WeatherAddDefaultItemsJson = {
+        sunriseSet?: boolean; // Sunrise/Sunset
+        forecastDay1?: boolean; // Forecast Day 1
+        forecastDay2?: boolean; // Forecast Day 2
+        forecastDay3?: boolean; // Forecast Day 3
+        forecastDay4?: boolean; // Forecast Day 4
+        forecastDay5?: boolean; // Forecast Day 5
+        forecastDay6?: boolean; // Forecast Day 6 (falls vom Adapter unterstützt)
+        windSpeed?: boolean; // Windgeschwindigkeit
+        windGust?: boolean; // Böen
+        windDirection?: boolean; // Windrichtung
+        uvIndex?: boolean; // UV-Index (falls vom Adapter unterstützt)
+        solar?: boolean; // Solarstrahlung (falls vom Adapter unterstützt)
+    };
+
     export type ScreenSaverMRElement = { type: ScreenSaverType } & (
         | {
               type: 'script';

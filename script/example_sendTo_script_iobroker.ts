@@ -7,7 +7,18 @@ async function configuration(): Promise<void> {
         weatherEntity: 'pirate-weather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
-        weatherAddDefaultItems: false,
+       
+        // weatherAddDefaultItems:
+        // - true  => alle Standard-Wetterelemente hinzufügen
+        // - false => keine hinzufügen
+        // - { ... } => selektiv per Schlüssel aktivieren:
+        //   sunriseSet, forecastDay1, forecastDay2, forecastDay3, forecastDay4, forecastDay5, forecastDay6,
+        //   windSpeed, windGust, windDirection, uvIndex, solar
+        // Hinweis: Die einzelnen Schlüssel funktionieren nur, wenn der gewählte Wetteranbieter
+        // die entsprechenden Daten liefert und diese im Adapter vorbereitet wurden.
+        "weatherAddDefaultItems": false
+
+}
     }
 
     /**************************************************************************************
@@ -685,7 +696,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.10.7';
+const version = '0.10.8';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1368,7 +1379,7 @@ declare namespace ScriptConfig {
         /**
          * Adds standard icons to the bottom field of the screensaver.
          */
-        weatherAddDefaultItems?: boolean;
+        weatherAddDefaultItems?: WeatherAddDefaultItemsJson | boolean;
         favoritScreensaverEntity: ScreenSaverElement[]
         alternateScreensaverEntity: ScreenSaverElement[]
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
@@ -1483,6 +1494,21 @@ declare namespace ScriptConfig {
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
         }
     );
+    export type WeatherAddDefaultItemsJson = {
+        sunriseSet?: boolean; // Sunrise/Sunset
+        forecastDay1?: boolean; // Forecast Day 1
+        forecastDay2?: boolean; // Forecast Day 2
+        forecastDay3?: boolean; // Forecast Day 3
+        forecastDay4?: boolean; // Forecast Day 4
+        forecastDay5?: boolean; // Forecast Day 5
+        forecastDay6?: boolean; // Forecast Day 6 (falls vom Adapter unterstützt)
+        windSpeed?: boolean; // Windgeschwindigkeit
+        windGust?: boolean; // Böen
+        windDirection?: boolean; // Windrichtung
+        uvIndex?: boolean; // UV-Index (falls vom Adapter unterstützt)
+        solar?: boolean; // Solarstrahlung (falls vom Adapter unterstützt)
+    };
+    
     export type ScreenSaverMRElement = {type: ScreenSaverType} & (
         | {
             type: 'script';

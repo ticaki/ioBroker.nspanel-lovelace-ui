@@ -3697,6 +3697,16 @@ export class ConfigManager extends BaseClass {
         // if weatherEntity is set, add alot weather data to screensaver :)
         // only works with accuweather atm
         if (config.weatherEntity) {
+            const toAdd: typeof pageItems = [];
+            const add = config.weatherAddDefaultItems;
+            const addAll = add === true;
+            const want = (k: keyof ScriptConfig.WeatherAddDefaultItemsJson): boolean =>
+                addAll ||
+                (add != null &&
+                    typeof add === 'object' &&
+                    (add as Record<string, boolean | undefined>)[k] !== undefined &&
+                    (add as Record<string, boolean | undefined>)[k] === true);
+
             if (config.weatherEntity.startsWith('accuweather.') && config.weatherEntity.endsWith('.')) {
                 const instance = config.weatherEntity.split('.')[1];
                 if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
@@ -3706,76 +3716,78 @@ export class ConfigManager extends BaseClass {
                         modeScr: 'favorit',
                     });
                 }
-                if (config.weatherAddDefaultItems) {
-                    pageItems = pageItems.concat([
-                        // Bottom 1 - accuWeather.0. Forecast Day 1
-                        {
+
+                {
+                    if (want('sunriseSet')) {
+                        toAdd.push({
                             template: 'text.accuweather.sunriseset',
                             dpInit: `/^accuweather\\.${instance}.Daily.+/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 2 - accuWeather.0. Forecast Day 1
-                        {
+                        });
+                    }
+                    if (want('forecastDay1')) {
+                        toAdd.push({
                             template: 'text.accuweather.bot2values',
                             dpInit: `/^accuweather\\.${instance}.+?d1$/g`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 3 - accuWeather.0. Forecast Day 2
-                        {
+                        });
+                    }
+                    if (want('forecastDay2')) {
+                        toAdd.push({
                             template: 'text.accuweather.bot2values',
                             dpInit: `/^accuweather\\.${instance}.+?d2$/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 4 - accuWeather.0. Forecast Day 3
-                        {
+                        });
+                    }
+                    if (want('forecastDay3')) {
+                        toAdd.push({
                             template: 'text.accuweather.bot2values',
                             dpInit: `/^accuweather\\.${instance}.+?d3$/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 5 - accuWeather.0. Forecast Day 4
-                        {
+                        });
+                    }
+                    if (want('forecastDay4')) {
+                        toAdd.push({
                             template: 'text.accuweather.bot2values',
                             dpInit: `/^accuweather\\.${instance}.+?d4$/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 6 - accuWeather.0. Forecast Day 5
-                        {
+                        });
+                    }
+                    if (want('forecastDay5')) {
+                        toAdd.push({
                             template: 'text.accuweather.bot2values',
                             dpInit: `/^accuweather\\.${instance}.+?d5$/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 7 - Windgeschwindigkeit
-                        {
+                        });
+                    }
+                    if (want('windSpeed')) {
+                        toAdd.push({
                             template: 'text.accuweather.windspeed',
                             dpInit: `/^accuweather\\.${instance}./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 8 - Böen
-                        {
+                        });
+                    }
+                    if (want('windGust')) {
+                        toAdd.push({
                             template: 'text.accuweather.windgust',
                             dpInit: `/^accuweather\\.${instance}./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 9 - Windrichtung
-                        {
+                        });
+                    }
+                    if (want('windDirection')) {
+                        toAdd.push({
                             template: 'text.accuweather.winddirection',
                             dpInit: `/^accuweather\\.${instance}./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 10 - UV-Index
-                        {
+                        });
+                    }
+                    if (want('uvIndex')) {
+                        toAdd.push({
                             template: 'text.accuweather.uvindex',
                             dpInit: `/^accuweather\\.${instance}./`,
                             modeScr: 'bottom',
-                        },
-                    ]);
+                        });
+                    }
                 }
             } else if (config.weatherEntity.startsWith('openweathermap.') && config.weatherEntity.endsWith('.')) {
                 const instance = config.weatherEntity.split('.')[1];
@@ -3786,74 +3798,78 @@ export class ConfigManager extends BaseClass {
                         modeScr: 'favorit',
                     });
                 }
-                if (config.weatherAddDefaultItems) {
-                    pageItems = pageItems.concat([
-                        // Bottom 1 - openweathermap.0. sunset
-                        {
+
+                {
+                    if (want('sunriseSet')) {
+                        toAdd.push({
                             template: 'text.openweathermap.sunriseset',
                             dpInit: `/^openweathermap\\.${instance}\\.forecast\\.current.+/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 2 - openweathermap.0. Forecast Day 1
-                        {
+                        });
+                    }
+                    if (want('forecastDay1')) {
+                        toAdd.push({
                             template: 'text.openweathermap.bot2values',
                             dpInit: `/^openweathermap\\.${instance}.+?\\.day0/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 3 - openweathermap.0. Forecast Day 2
-                        {
+                        });
+                    }
+                    if (want('forecastDay2')) {
+                        toAdd.push({
                             template: 'text.openweathermap.bot2values',
                             dpInit: `/^openweathermap\\.${instance}.+?\\.day1/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 4 - openweathermap.0. Forecast Day 3
-                        {
+                        });
+                    }
+                    if (want('forecastDay3')) {
+                        toAdd.push({
                             template: 'text.openweathermap.bot2values',
                             dpInit: `/^openweathermap\\.${instance}.+?\\.day2/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 5 - openweathermap.0. Forecast Day 4
-                        {
+                        });
+                    }
+                    if (want('forecastDay4')) {
+                        toAdd.push({
                             template: 'text.openweathermap.bot2values',
                             dpInit: `/^openweathermap\\.${instance}.+?\\.day3/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 6 - openweathermap.0. Forecast Day 5
-                        {
+                        });
+                    }
+                    if (want('forecastDay5')) {
+                        toAdd.push({
                             template: 'text.openweathermap.bot2values',
                             dpInit: `/^openweathermap\\.${instance}.+?\\.day4/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 7 - openweathermap.0. Forecast Day 5
-                        {
+                        });
+                    }
+                    if (want('forecastDay6')) {
+                        toAdd.push({
                             template: 'text.openweathermap.bot2values',
                             dpInit: `/^openweathermap\\.${instance}.+?\\.day5/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 8 - Windgeschwindigkeit
-                        {
+                        });
+                    }
+                    if (want('windSpeed')) {
+                        toAdd.push({
                             template: 'text.openweathermap.windspeed',
                             dpInit: `/^openweathermap\\.${instance}./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 9 - Böen
-                        {
+                        });
+                    }
+                    if (want('windGust')) {
+                        toAdd.push({
                             template: 'text.openweathermap.windgust',
                             dpInit: `/^openweathermap\\.${instance}./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 10 - Windrichtung
-                        {
+                        });
+                    }
+                    if (want('windDirection')) {
+                        toAdd.push({
                             template: 'text.openweathermap.winddirection',
                             dpInit: `/^openweathermap\\.${instance}./`,
                             modeScr: 'bottom',
-                        },
-                    ]);
+                        });
+                    }
                 }
             } else if (config.weatherEntity.startsWith('pirate-weather.') && config.weatherEntity.endsWith('.')) {
                 const instance = config.weatherEntity.split('.')[1];
@@ -3864,80 +3880,85 @@ export class ConfigManager extends BaseClass {
                         modeScr: 'favorit',
                     });
                 }
-                if (config.weatherAddDefaultItems) {
-                    pageItems = pageItems.concat([
-                        // Bottom 1 - pirate-weather.0. sunset
-                        {
+
+                {
+                    if (want('sunriseSet')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.sunriseset',
                             dpInit: `/^pirate-weather\\.${instance}\\.weather\\.daily\\.00.+/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 2 - pirate-weather.0. Forecast Day 1
-                        {
+                        });
+                    }
+                    if (want('forecastDay1')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.bot2values',
                             dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.01/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 3 - pirate-weather.0. Forecast Day 2
-                        {
+                        });
+                    }
+                    if (want('forecastDay2')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.bot2values',
                             dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.02/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 4 - pirate-weather.0. Forecast Day 3
-                        {
+                        });
+                    }
+                    if (want('forecastDay3')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.bot2values',
                             dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.03/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 5 - pirate-weather.0. Forecast Day 4
-                        {
+                        });
+                    }
+                    if (want('forecastDay4')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.bot2values',
                             dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.04/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 6 - pirate-weather.0. Forecast Day 5
-                        {
+                        });
+                    }
+                    if (want('forecastDay5')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.bot2values',
                             dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.05/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 7 - pirate-weather.0. Forecast Day 6
-                        {
+                        });
+                    }
+                    if (want('forecastDay6')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.bot2values',
                             dpInit: `/^pirate-weather\\.${instance}.+?\\.daily\\.06/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 8 - Windgeschwindigkeit
-                        {
+                        });
+                    }
+                    if (want('windSpeed')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.windspeed',
                             dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 9 - Böen
-                        {
+                        });
+                    }
+                    if (want('windGust')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.windgust',
                             dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 10 - Windrichtung
-                        {
+                        });
+                    }
+                    if (want('windDirection')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.winddirection',
                             dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 10 - UV-Index
-                        {
+                        });
+                    }
+                    if (want('uvIndex')) {
+                        toAdd.push({
                             template: 'text.pirate-weather.uvindex',
                             dpInit: `/^pirate-weather\\.${instance}\\.weather\\.currently./`,
                             modeScr: 'bottom',
-                        },
-                    ]);
+                        });
+                    }
                 }
             } else if (config.weatherEntity.startsWith('brightsky.') && config.weatherEntity.endsWith('.')) {
                 const instance = config.weatherEntity.split('.')[1];
@@ -3948,81 +3969,89 @@ export class ConfigManager extends BaseClass {
                         modeScr: 'favorit',
                     });
                 }
-                if (config.weatherAddDefaultItems) {
-                    pageItems = pageItems.concat([
-                        // Bottom 1 - brightsky.0. sunset
-                        {
+
+                {
+                    if (want('sunriseSet')) {
+                        toAdd.push({
                             template: 'text.brightsky.sunriseset',
                             dpInit: `/^brightsky\\.${instance}\\.daily\\.00.+/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 2 - brightsky.0. Forecast Day 1
-                        {
+                        });
+                    }
+                    if (want('forecastDay1')) {
+                        toAdd.push({
                             template: 'text.brightsky.bot2values',
                             dpInit: `/^brightsky\\.${instance}\\.daily\\.01/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 3 - brightsky.0. Forecast Day 2
-                        {
+                        });
+                    }
+                    if (want('forecastDay2')) {
+                        toAdd.push({
                             template: 'text.brightsky.bot2values',
                             dpInit: `/^brightsky\\.${instance}\\.daily\\.02/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 4 - brightsky.0. Forecast Day 3
-                        {
+                        });
+                    }
+                    if (want('forecastDay3')) {
+                        toAdd.push({
                             template: 'text.brightsky.bot2values',
                             dpInit: `/^brightsky\\.${instance}\\.daily\\.03/`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 5 - brightsky.0. Forecast Day 4
-                        {
+                        });
+                    }
+                    if (want('forecastDay4')) {
+                        toAdd.push({
                             template: 'text.brightsky.bot2values',
                             dpInit: `/^brightsky\\.${instance}\\.daily\\.04/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 6 - brightsky.0. Forecast Day 5
-                        {
+                        });
+                    }
+                    if (want('forecastDay5')) {
+                        toAdd.push({
                             template: 'text.brightsky.bot2values',
                             dpInit: `/^brightsky\\.${instance}\\.daily\\.05/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 7 - brightsky.0. Forecast Day 6
-                        {
+                        });
+                    }
+                    if (want('forecastDay6')) {
+                        toAdd.push({
                             template: 'text.brightsky.bot2values',
                             dpInit: `/^brightsky\\.${instance}\\.daily\\.06/`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 8 - Windgeschwindigkeit
-                        {
+                        });
+                    }
+                    if (want('windSpeed')) {
+                        toAdd.push({
                             template: 'text.brightsky.windspeed',
                             dpInit: `/^brightsky\\.${instance}\\.current./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 9 - Böen
-                        {
+                        });
+                    }
+                    if (want('windGust')) {
+                        toAdd.push({
                             template: 'text.brightsky.windgust',
                             dpInit: `/^brightsky\\.${instance}\\.current./`,
                             modeScr: 'bottom',
-                        },
-
-                        // Bottom 10 - Windrichtung
-                        {
+                        });
+                    }
+                    if (want('windDirection')) {
+                        toAdd.push({
                             template: 'text.brightsky.winddirection',
                             dpInit: `/^brightsky\\.${instance}\\.current./`,
                             modeScr: 'bottom',
-                        },
-                        // Bottom 10 - UV-Index
-                        {
+                        });
+                    }
+                    if (want('solar')) {
+                        toAdd.push({
                             template: 'text.brightsky.solar',
                             dpInit: `/^brightsky\\.${instance}\\.current./`,
                             modeScr: 'bottom',
-                        },
-                    ]);
+                        });
+                    }
                 }
+            }
+            if (toAdd.length) {
+                pageItems = pageItems.concat(toAdd);
             }
         }
         if (config.indicatorScreensaverEntity) {
