@@ -561,7 +561,7 @@ export class PageItem extends BaseClassTriggerd {
                         message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
                         switch (entry.role) {
                             case 'textNotIcon': {
-                                if (typeof value === 'number') {
+                                if (typeof value === 'number' || typeof value === 'string') {
                                     message.icon =
                                         (await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '';
                                 } else {

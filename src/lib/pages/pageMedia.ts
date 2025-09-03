@@ -50,6 +50,7 @@ export class PageMedia extends PageMenu {
         this.currentPlayer = this.dpInit;
         this.config = options.config as pages.cardMediaDataItemOptions;
         this.minUpdateInterval = 2000;
+        this.log.error(`Scrollpesntation is ${this.config.scrollPresentation}`);
     }
 
     async init(): Promise<void> {
@@ -514,6 +515,7 @@ export class PageMedia extends PageMenu {
         gridItem = {
             ...gridItem,
             config: {
+                ...gridItem.config,
                 card: 'cardMedia',
                 data: {
                     headline: page.media.name

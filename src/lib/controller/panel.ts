@@ -198,9 +198,6 @@ export class Panel extends BaseClass {
 
     meetsVersion(version: string): boolean {
         if (this.info?.nspanel?.displayVersion) {
-            if (this.info.nspanel.displayVersion === '0.0.0') {
-                return true;
-            }
             return isVersionGreaterOrEqual(this.info.nspanel.displayVersion, version);
         }
         return false;
@@ -573,7 +570,10 @@ export class Panel extends BaseClass {
             );
         }
 
+        await this.adapter.delay(100);
+
         const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
+
         const scs: Page[] = this.pages.filter(
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
@@ -1240,12 +1240,9 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
+        this.loopTimeout = this.adapter.setTimeout(() => this.loop, 100);
     }
-    /**
-     * Do panel work always at full
-     *
-     */
+
     loop = (): void => {
         this.pages = this.pages.filter(a => a && !a.unload);
         let t = Math.random() * 30000 + 10000;
@@ -1258,7 +1255,7 @@ export class Panel extends BaseClass {
         if (this.unload) {
             return;
         }
-        this.loopTimeout = this.adapter.setTimeout(this.loop, t);
+        this.loopTimeout = this.adapter.setTimeout(() => this.loop, t);
     };
 
     requestStatusTasmota(): void {

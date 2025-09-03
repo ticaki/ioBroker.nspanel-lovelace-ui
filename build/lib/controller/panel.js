@@ -188,9 +188,6 @@ class Panel extends import_library.BaseClass {
   meetsVersion(version) {
     var _a, _b;
     if ((_b = (_a = this.info) == null ? void 0 : _a.nspanel) == null ? void 0 : _b.displayVersion) {
-      if (this.info.nspanel.displayVersion === "0.0.0") {
-        return true;
-      }
       return (0, import_tools.isVersionGreaterOrEqual)(this.info.nspanel.displayVersion, version);
     }
     return false;
@@ -531,6 +528,7 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
       );
     }
+    await this.adapter.delay(100);
     const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
     const scs = this.pages.filter(
       (a) => a && (a.card === "screensaver" || a.card === "screensaver2" || a.card === "screensaver3")
@@ -1120,12 +1118,8 @@ class Panel extends import_library.BaseClass {
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
-    this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
+    this.loopTimeout = this.adapter.setTimeout(() => this.loop, 100);
   }
-  /**
-   * Do panel work always at full
-   *
-   */
   loop = () => {
     this.pages = this.pages.filter((a) => a && !a.unload);
     let t = Math.random() * 3e4 + 1e4;
@@ -1138,7 +1132,7 @@ class Panel extends import_library.BaseClass {
     if (this.unload) {
       return;
     }
-    this.loopTimeout = this.adapter.setTimeout(this.loop, t);
+    this.loopTimeout = this.adapter.setTimeout(() => this.loop, t);
   };
   requestStatusTasmota() {
     this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");

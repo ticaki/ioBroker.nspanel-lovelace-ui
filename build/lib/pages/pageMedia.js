@@ -72,6 +72,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.currentPlayer = this.dpInit;
     this.config = options.config;
     this.minUpdateInterval = 2e3;
+    this.log.error(`Scrollpesntation is ${this.config.scrollPresentation}`);
   }
   async init() {
     var _a;
@@ -498,6 +499,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     gridItem = {
       ...gridItem,
       config: {
+        ...gridItem.config,
         card: "cardMedia",
         data: {
           headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : void 0,

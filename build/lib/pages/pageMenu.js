@@ -135,7 +135,7 @@ class PageMenu extends import_Page.Page {
    * @returns Filled `result`.
    */
   async getOptions(result) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f;
     if (!this.pageItems || !this.config) {
       return result;
     }
@@ -177,9 +177,20 @@ class PageMenu extends import_Page.Page {
       }
       const end = Math.min(start + maxItems, total);
       let outIdx = 0;
+      const tasks = [];
       for (let i = start; i < end; i++, outIdx++) {
         const item = items[i];
-        result[outIdx] = item ? (_f = await item.getPageItemPayload()) != null ? _f : "~~~~~" : "~~~~~";
+        if (item) {
+          tasks.push(
+            item.getPageItemPayload().then((p) => p != null ? p : "~~~~~").catch(() => "~~~~~")
+          );
+        } else {
+          tasks.push(Promise.resolve("~~~~~"));
+        }
+      }
+      const results = await Promise.all(tasks);
+      for (let j = 0; j < results.length; j++) {
+        result[j] = results[j];
       }
       while (outIdx < maxItems) {
         result[outIdx++] = "~~~~~";
@@ -195,10 +206,21 @@ class PageMenu extends import_Page.Page {
         this.step = 0;
         start = 0;
       }
+      const tasks = [];
       for (let i = 0; i < maxItems; i++) {
         const idx = start + i;
         const item = items[idx];
-        result[i] = item ? (_g = await item.getPageItemPayload()) != null ? _g : "~~~~~" : "~~~~~";
+        if (item) {
+          tasks.push(
+            item.getPageItemPayload().then((p) => p != null ? p : "~~~~~").catch(() => "~~~~~")
+          );
+        } else {
+          tasks.push(Promise.resolve("~~~~~"));
+        }
+      }
+      const results = await Promise.all(tasks);
+      for (let i = 0; i < maxItems; i++) {
+        result[i] = results[i];
       }
       const moreAfterWindow = start + maxItems < total;
       const moreBeforeWindow = start > 0;
@@ -206,7 +228,7 @@ class PageMenu extends import_Page.Page {
       const shouldShowArrow = multiplePages && (moreAfterWindow || moreBeforeWindow);
       if (shouldShowArrow) {
         this.nextArrow = true;
-        result[maxItems - 1] = this.arrowPageItem ? (_h = await this.arrowPageItem.getPageItemPayload()) != null ? _h : "~~~~~" : "~~~~~";
+        result[maxItems - 1] = this.arrowPageItem ? (_f = await this.arrowPageItem.getPageItemPayload()) != null ? _f : "~~~~~" : "~~~~~";
       } else {
         this.nextArrow = false;
       }
@@ -264,7 +286,7 @@ class PageMenu extends import_Page.Page {
       if (this.doubleClick) {
         this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
-        if (this.lastdirection == "right") {
+        if (this.lastdirection === "left") {
           this.basePanel.navigation.goLeft();
           return;
         }
@@ -274,16 +296,26 @@ class PageMenu extends import_Page.Page {
           return;
         }
         this.doubleClick = this.adapter.setTimeout(() => {
-          this.goLeft(true);
           this.doubleClick = void 0;
+          this.goLeft(true);
         }, this.adapter.config.doubleClickTime);
         return;
       }
     }
-    if (--this.step < 0) {
-      this.step = 0;
+    const total = this.tempItems && this.tempItems.length || this.pageItems && this.pageItems.length || 0;
+    const maxItems = Math.max(0, this.maxItems | 0);
+    const requested = this.config.scrollType === "half" ? "half" : "page";
+    const effective = requested === "half" && pages.isCardMenuHalfPageScrollType(this.config.card) ? "half" : "page";
+    const stride = effective === "page" ? maxItems : Math.max(1, Math.floor(maxItems / 2));
+    if (stride === 0 || total <= maxItems) {
+      this.basePanel.navigation.goLeft();
+      return;
+    }
+    const prevStart = (this.step - 1) * stride;
+    if (prevStart < 0) {
       this.basePanel.navigation.goLeft();
     } else {
+      this.step -= 1;
       void this.update();
     }
   }
@@ -299,12 +331,12 @@ class PageMenu extends import_Page.Page {
       if (this.doubleClick) {
         this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
-        if (this.lastdirection == "right") {
+        if (this.lastdirection === "right") {
           this.basePanel.navigation.goRight();
           return;
         }
       } else {
-        this.lastdirection = "left";
+        this.lastdirection = "right";
         if (this.unload) {
           return;
         }
@@ -315,14 +347,16 @@ class PageMenu extends import_Page.Page {
         return;
       }
     }
-    const pageScroll = this.config.scrollType === "page";
-    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    const maxItemsPage = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? this.maxItems : this.maxItems / 2;
-    const maxItemsPagePlus = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? 0 : this.maxItems / 2;
-    if (!pageScroll ? ++this.step + this.maxItems > length : ++this.step * maxItemsPage + maxItemsPagePlus >= length) {
-      this.step--;
+    const total = this.tempItems && this.tempItems.length || this.pageItems && this.pageItems.length || 0;
+    const maxItems = Math.max(0, this.maxItems | 0);
+    const requested = this.config.scrollType === "half" ? "half" : "page";
+    const effective = requested === "half" && pages.isCardMenuHalfPageScrollType(this.config.card) ? "half" : "page";
+    const stride = effective === "page" ? maxItems : Math.max(1, Math.floor(maxItems / 2));
+    const nextStart = (this.step + 1) * stride;
+    if (nextStart >= total) {
       this.basePanel.navigation.goRight();
     } else {
+      this.step += 1;
       void this.update();
     }
   }
@@ -330,26 +364,25 @@ class PageMenu extends import_Page.Page {
     if (this.config.scrollPresentation === "arrow") {
       return super.getNavigation();
     }
-    const pageScroll = this.config.scrollType === "page";
-    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    if (this.maxItems >= length) {
+    const total = this.tempItems && this.tempItems.length || this.pageItems && this.pageItems.length || 0;
+    const maxItems = Math.max(0, this.maxItems | 0);
+    if (maxItems === 0 || total <= maxItems) {
       return super.getNavigation();
     }
-    let left = "";
-    let right = "";
-    if (this.step <= 0) {
-      left = this.basePanel.navigation.buildNavigationString("left");
-    }
-    const maxItemsPage = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? this.maxItems : this.maxItems / 2;
-    const maxItemsPagePlus = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? 0 : this.maxItems / 2;
-    if (!pageScroll ? this.step + this.maxItems >= length : (this.step + 1) * maxItemsPage + maxItemsPagePlus >= length) {
-      right = this.basePanel.navigation.buildNavigationString("right");
-    }
+    const requested = this.config.scrollType === "half" ? "half" : "page";
+    const cardAllowsHalf = pages.isCardMenuHalfPageScrollType(this.config.card);
+    const effective = requested === "half" && cardAllowsHalf ? "half" : "page";
+    const stride = effective === "page" ? maxItems : Math.max(1, Math.floor(maxItems / 2));
+    const start = this.step * stride;
+    const hasPrev = start > 0;
+    const hasNext = start + maxItems < total;
+    let left = hasPrev ? "" : this.basePanel.navigation.buildNavigationString("left");
+    let right = hasNext ? "" : this.basePanel.navigation.buildNavigationString("right");
     if (!left) {
       left = (0, import_tools.getPayload)(
         "button",
         "bSubPrev",
-        pageScroll ? import_icon_mapping.Icons.GetIcon("arrow-up-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
+        effective === "page" ? import_icon_mapping.Icons.GetIcon("arrow-up-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
         String(import_Color.Color.rgb_dec565(import_Color.Color.navDown)),
         "",
         ""
@@ -359,7 +392,7 @@ class PageMenu extends import_Page.Page {
       right = (0, import_tools.getPayload)(
         "button",
         "bSubNext",
-        pageScroll ? import_icon_mapping.Icons.GetIcon("arrow-down-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
+        effective === "page" ? import_icon_mapping.Icons.GetIcon("arrow-down-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
         String(import_Color.Color.rgb_dec565(import_Color.Color.navDown)),
         "",
         ""

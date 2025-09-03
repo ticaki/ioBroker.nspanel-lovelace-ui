@@ -400,7 +400,7 @@ class ConfigManager extends import_library.BaseClass {
           },
           pageItems: []
         };
-        if ((gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities" || gridItem.config.card === "cardSchedule" || gridItem.config.card === "cardThermo2") && (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardSchedule" || page.type === "cardThermo2")) {
+        if ((gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities" || gridItem.config.card === "cardSchedule" || gridItem.config.card === "cardThermo2" || gridItem.config.card === "cardMedia") && (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardSchedule" || page.type === "cardThermo2" || page.type === "cardMedia")) {
           gridItem.config.scrollType = page.scrollType || "page";
           gridItem.config.scrollPresentation = page.scrollPresentation || "classic";
         }
@@ -3070,38 +3070,55 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getScreensaverConfig(config) {
     let pageItems = [];
-    if (config.favoritScreensaverEntity) {
-      for (const item of config.favoritScreensaverEntity) {
-        if (item) {
-          try {
-            pageItems.push(await this.getEntityData(item, "favorit", config));
-          } catch (error) {
-            throw new Error(`favoritScreensaverEntity - ${error}`);
-          }
-        }
+    const loadElementSection = async (items, mode, errorLabel) => {
+      if (!items || items.length === 0) {
+        return [];
       }
-    }
-    if (config.alternateScreensaverEntity) {
-      for (const item of config.alternateScreensaverEntity) {
-        if (item) {
-          try {
-            pageItems.push(await this.getEntityData(item, "alternate", config));
-          } catch (error) {
-            throw new Error(`alternateScreensaverEntity - ${error}`);
-          }
-        }
+      const tasks = items.map(
+        (item) => this.getEntityData(item, mode, config).catch((err) => {
+          throw new Error(`${errorLabel} - ${String(err)}`);
+        })
+      );
+      const res = await Promise.all(tasks);
+      return res.filter((r) => !!r);
+    };
+    const loadElementSectionUndef = async (items, mode, errorLabel) => {
+      if (!items || items.length === 0) {
+        return [];
       }
-    }
-    if (config.bottomScreensaverEntity) {
-      for (const item of config.bottomScreensaverEntity) {
-        if (item) {
-          try {
-            pageItems.push(await this.getEntityData(item, "bottom", config));
-          } catch (error) {
-            throw new Error(`bottomScreensaverEntity - ${error}`);
-          }
+      const tasks = items.map((item) => {
+        if (!item) {
+          return Promise.resolve(null);
         }
+        return this.getEntityData(item, mode, config).catch((err) => {
+          throw new Error(`${errorLabel} - ${String(err)}`);
+        });
+      });
+      const res = await Promise.all(tasks);
+      return res.filter((r) => !!r);
+    };
+    const loadMrIcon = async (entity, errorLabel) => {
+      if (!entity) {
+        return [];
       }
+      try {
+        const r = await this.getMrEntityData(entity, "mricon");
+        return [r];
+      } catch (err) {
+        throw new Error(`${errorLabel} - ${String(err)}`);
+      }
+    };
+    const blocks = await Promise.all([
+      loadElementSection(config.favoritScreensaverEntity, "favorit", "favoritScreensaverEntity"),
+      loadElementSection(config.alternateScreensaverEntity, "alternate", "alternateScreensaverEntity"),
+      loadElementSectionUndef(config.leftScreensaverEntity, "left", "leftScreensaverEntity"),
+      loadElementSection(config.bottomScreensaverEntity, "bottom", "bottomScreensaverEntity"),
+      loadElementSectionUndef(config.indicatorScreensaverEntity, "indicator", "indicatorScreensaverEntity"),
+      loadMrIcon(config.mrIcon1ScreensaverEntity, "mrIcon1ScreensaverEntity"),
+      loadMrIcon(config.mrIcon2ScreensaverEntity, "mrIcon2ScreensaverEntity")
+    ]);
+    for (const arr of blocks) {
+      pageItems.push(...arr);
     }
     if (config.weatherEntity) {
       const toAdd = [];
@@ -3449,42 +3466,6 @@ class ConfigManager extends import_library.BaseClass {
       }
       if (toAdd.length) {
         pageItems = pageItems.concat(toAdd);
-      }
-    }
-    if (config.indicatorScreensaverEntity) {
-      for (const item of config.indicatorScreensaverEntity) {
-        if (item) {
-          try {
-            pageItems.push(await this.getEntityData(item, "indicator", config));
-          } catch (error) {
-            throw new Error(`indicatorScreensaverEntity - ${error}`);
-          }
-        }
-      }
-    }
-    if (config.leftScreensaverEntity) {
-      for (const item of config.leftScreensaverEntity) {
-        if (item) {
-          try {
-            pageItems.push(await this.getEntityData(item, "left", config));
-          } catch (error) {
-            throw new Error(`leftScreensaverEntity - ${error}`);
-          }
-        }
-      }
-    }
-    if (config.mrIcon1ScreensaverEntity) {
-      try {
-        pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, "mricon"));
-      } catch (error) {
-        throw new Error(`mrIcon1ScreensaverEntity - ${error}`);
-      }
-    }
-    if (config.mrIcon2ScreensaverEntity) {
-      try {
-        pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, "mricon"));
-      } catch (error) {
-        throw new Error(`mrIcon2ScreensaverEntity - ${error}`);
       }
     }
     this.log.debug(`Screensaver pageItems count: ${pageItems.length}`);

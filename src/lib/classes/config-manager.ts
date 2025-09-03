@@ -461,13 +461,15 @@ export class ConfigManager extends BaseClass {
                         gridItem.config.card === 'cardGrid3' ||
                         gridItem.config.card === 'cardEntities' ||
                         gridItem.config.card === 'cardSchedule' ||
-                        gridItem.config.card === 'cardThermo2') &&
+                        gridItem.config.card === 'cardThermo2' ||
+                        gridItem.config.card === 'cardMedia') &&
                     (page.type === 'cardGrid' ||
                         page.type === 'cardGrid2' ||
                         page.type === 'cardGrid3' ||
                         page.type === 'cardEntities' ||
                         page.type === 'cardSchedule' ||
-                        page.type === 'cardThermo2')
+                        page.type === 'cardThermo2' ||
+                        page.type === 'cardMedia')
                 ) {
                     gridItem.config.scrollType = page.scrollType || 'page';
                     gridItem.config.scrollPresentation = page.scrollPresentation || 'classic';
@@ -3661,38 +3663,73 @@ export class ConfigManager extends BaseClass {
 
     async getScreensaverConfig(config: ScriptConfig.Config): Promise<pages.PageBaseConfig> {
         let pageItems: typePageItem.PageItemDataItemsOptions[] = [];
-        if (config.favoritScreensaverEntity) {
-            for (const item of config.favoritScreensaverEntity) {
-                if (item) {
-                    try {
-                        pageItems.push(await this.getEntityData(item, 'favorit', config));
-                    } catch (error: any) {
-                        throw new Error(`favoritScreensaverEntity - ${error}`);
-                    }
-                }
+
+        const loadElementSection = async (
+            items: ScriptConfig.ScreenSaverElement[] | undefined,
+            mode: 'favorit' | 'alternate' | 'bottom',
+            errorLabel: string,
+        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+            if (!items || items.length === 0) {
+                return [];
             }
-        }
-        if (config.alternateScreensaverEntity) {
-            for (const item of config.alternateScreensaverEntity) {
-                if (item) {
-                    try {
-                        pageItems.push(await this.getEntityData(item, 'alternate', config));
-                    } catch (error: any) {
-                        throw new Error(`alternateScreensaverEntity - ${error}`);
-                    }
-                }
+            const tasks = items.map(item =>
+                this.getEntityData(item, mode, config).catch(err => {
+                    throw new Error(`${errorLabel} - ${String(err)}`);
+                }),
+            );
+            const res = await Promise.all(tasks);
+            return res.filter((r): r is typePageItem.PageItemDataItemsOptions => !!r);
+        };
+
+        const loadElementSectionUndef = async (
+            items: ScriptConfig.ScreenSaverElementWithUndefined[] | undefined,
+            mode: 'left' | 'indicator',
+            errorLabel: string,
+        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+            if (!items || items.length === 0) {
+                return [];
             }
-        }
-        if (config.bottomScreensaverEntity) {
-            for (const item of config.bottomScreensaverEntity) {
-                if (item) {
-                    try {
-                        pageItems.push(await this.getEntityData(item, 'bottom', config));
-                    } catch (error: any) {
-                        throw new Error(`bottomScreensaverEntity - ${error}`);
-                    }
+            const tasks = items.map(item => {
+                if (!item) {
+                    return Promise.resolve<typePageItem.PageItemDataItemsOptions | null>(null);
                 }
+                return this.getEntityData(item, mode, config).catch(err => {
+                    throw new Error(`${errorLabel} - ${String(err)}`);
+                });
+            });
+            const res = await Promise.all(tasks);
+            return res.filter((r): r is typePageItem.PageItemDataItemsOptions => !!r);
+        };
+
+        const loadMrIcon = async (
+            entity: ScriptConfig.ScreenSaverMRElement | undefined,
+            errorLabel: string,
+        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+            if (!entity) {
+                return [];
             }
+            try {
+                const r = await this.getMrEntityData(entity, 'mricon');
+                return [r];
+            } catch (err) {
+                throw new Error(`${errorLabel} - ${String(err)}`);
+            }
+        };
+
+        // Abschnitte parallel laden
+        const blocks = await Promise.all<typePageItem.PageItemDataItemsOptions[]>([
+            loadElementSection(config.favoritScreensaverEntity, 'favorit', 'favoritScreensaverEntity'),
+            loadElementSection(config.alternateScreensaverEntity, 'alternate', 'alternateScreensaverEntity'),
+            loadElementSectionUndef(config.leftScreensaverEntity, 'left', 'leftScreensaverEntity'),
+            loadElementSection(config.bottomScreensaverEntity, 'bottom', 'bottomScreensaverEntity'),
+            loadElementSectionUndef(config.indicatorScreensaverEntity, 'indicator', 'indicatorScreensaverEntity'),
+            loadMrIcon(config.mrIcon1ScreensaverEntity, 'mrIcon1ScreensaverEntity'),
+            loadMrIcon(config.mrIcon2ScreensaverEntity, 'mrIcon2ScreensaverEntity'),
+        ]);
+
+        // In fixer Block-Reihenfolge zusammenführen
+        for (const arr of blocks) {
+            pageItems.push(...arr);
         }
         // if weatherEntity is set, add alot weather data to screensaver :)
         // only works with accuweather atm
@@ -4054,42 +4091,7 @@ export class ConfigManager extends BaseClass {
                 pageItems = pageItems.concat(toAdd);
             }
         }
-        if (config.indicatorScreensaverEntity) {
-            for (const item of config.indicatorScreensaverEntity) {
-                if (item) {
-                    try {
-                        pageItems.push(await this.getEntityData(item, 'indicator', config));
-                    } catch (error: any) {
-                        throw new Error(`indicatorScreensaverEntity - ${error}`);
-                    }
-                }
-            }
-        }
-        if (config.leftScreensaverEntity) {
-            for (const item of config.leftScreensaverEntity) {
-                if (item) {
-                    try {
-                        pageItems.push(await this.getEntityData(item, 'left', config));
-                    } catch (error: any) {
-                        throw new Error(`leftScreensaverEntity - ${error}`);
-                    }
-                }
-            }
-        }
-        if (config.mrIcon1ScreensaverEntity) {
-            try {
-                pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, 'mricon'));
-            } catch (error: any) {
-                throw new Error(`mrIcon1ScreensaverEntity - ${error}`);
-            }
-        }
-        if (config.mrIcon2ScreensaverEntity) {
-            try {
-                pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, 'mricon'));
-            } catch (error: any) {
-                throw new Error(`mrIcon2ScreensaverEntity - ${error}`);
-            }
-        }
+
         this.log.debug(`Screensaver pageItems count: ${pageItems.length}`);
         // Formating the date
         const format = {

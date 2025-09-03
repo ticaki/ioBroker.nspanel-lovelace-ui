@@ -179,9 +179,27 @@ export class PageMenu extends Page {
             const end = Math.min(start + maxItems, total);
 
             let outIdx = 0;
+            const tasks: Promise<string>[] = [];
+
             for (let i = start; i < end; i++, outIdx++) {
                 const item = items[i];
-                result[outIdx] = item ? ((await item.getPageItemPayload()) ?? '~~~~~') : '~~~~~';
+                if (item) {
+                    tasks.push(
+                        item
+                            .getPageItemPayload()
+                            .then(p => p ?? '~~~~~')
+                            .catch(() => '~~~~~'),
+                    );
+                } else {
+                    tasks.push(Promise.resolve('~~~~~'));
+                }
+            }
+
+            const results = await Promise.all(tasks);
+
+            // Ergebnisse in die Slots einfügen
+            for (let j = 0; j < results.length; j++) {
+                result[j] = results[j];
             }
             while (outIdx < maxItems) {
                 result[outIdx++] = '~~~~~';
@@ -202,10 +220,27 @@ export class PageMenu extends Page {
                 start = 0;
             }
 
+            const tasks: Promise<string>[] = [];
+
             for (let i = 0; i < maxItems; i++) {
                 const idx = start + i;
                 const item = items[idx];
-                result[i] = item ? ((await item.getPageItemPayload()) ?? '~~~~~') : '~~~~~';
+                if (item) {
+                    tasks.push(
+                        item
+                            .getPageItemPayload()
+                            .then(p => p ?? '~~~~~')
+                            .catch(() => '~~~~~'),
+                    );
+                } else {
+                    tasks.push(Promise.resolve('~~~~~'));
+                }
+            }
+
+            const results = await Promise.all(tasks);
+
+            for (let i = 0; i < maxItems; i++) {
+                result[i] = results[i];
             }
 
             const moreAfterWindow = start + maxItems < total;
@@ -278,11 +313,12 @@ export class PageMenu extends Page {
         if (!this.config || !pages.isPageMenuConfig(this.config)) {
             return;
         }
+
         if (!single) {
             if (this.doubleClick) {
                 this.adapter.clearTimeout(this.doubleClick);
                 this.doubleClick = undefined;
-                if (this.lastdirection == 'right') {
+                if (this.lastdirection === 'left') {
                     this.basePanel.navigation.goLeft();
                     return;
                 }
@@ -292,20 +328,38 @@ export class PageMenu extends Page {
                     return;
                 }
                 this.doubleClick = this.adapter.setTimeout(() => {
-                    this.goLeft(true);
                     this.doubleClick = undefined;
+                    this.goLeft(true);
                 }, this.adapter.config.doubleClickTime);
                 return;
             }
         }
 
-        if (--this.step < 0) {
-            this.step = 0;
+        const total = (this.tempItems && this.tempItems.length) || (this.pageItems && this.pageItems.length) || 0;
+
+        const maxItems = Math.max(0, this.maxItems | 0);
+        const requested: 'page' | 'half' = this.config.scrollType === 'half' ? 'half' : 'page';
+        const effective: 'page' | 'half' =
+            requested === 'half' && pages.isCardMenuHalfPageScrollType(this.config.card) ? 'half' : 'page';
+        const stride = effective === 'page' ? maxItems : Math.max(1, Math.floor(maxItems / 2));
+
+        // wenn es gar keine weitere Seite gibt, delegiere nach links
+        if (stride === 0 || total <= maxItems) {
+            this.basePanel.navigation.goLeft();
+            return;
+        }
+
+        const prevStart = (this.step - 1) * stride;
+
+        if (prevStart < 0) {
+            // wir sind auf der ersten Seite -> nach außen navigieren
             this.basePanel.navigation.goLeft();
         } else {
+            this.step -= 1;
             void this.update();
         }
     }
+
     goRight(single: boolean = false): void {
         if (this.config.scrollPresentation === 'arrow') {
             super.goRight();
@@ -314,16 +368,17 @@ export class PageMenu extends Page {
         if (!this.config || !pages.isPageMenuConfig(this.config)) {
             return;
         }
+
         if (!single) {
             if (this.doubleClick) {
                 this.adapter.clearTimeout(this.doubleClick);
                 this.doubleClick = undefined;
-                if (this.lastdirection == 'right') {
+                if (this.lastdirection === 'right') {
                     this.basePanel.navigation.goRight();
                     return;
                 }
             } else {
-                this.lastdirection = 'left';
+                this.lastdirection = 'right';
                 if (this.unload) {
                     return;
                 }
@@ -334,56 +389,55 @@ export class PageMenu extends Page {
                 return;
             }
         }
-        const pageScroll = this.config.scrollType === 'page';
 
-        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-        const maxItemsPage =
-            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule'
-                ? this.maxItems
-                : this.maxItems / 2;
-        const maxItemsPagePlus =
-            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule' ? 0 : this.maxItems / 2;
-        if (
-            !pageScroll ? ++this.step + this.maxItems > length : ++this.step * maxItemsPage + maxItemsPagePlus >= length
-        ) {
-            this.step--;
+        const total = (this.tempItems && this.tempItems.length) || (this.pageItems && this.pageItems.length) || 0;
+
+        const maxItems = Math.max(0, this.maxItems | 0);
+        const requested: 'page' | 'half' = this.config.scrollType === 'half' ? 'half' : 'page';
+        const effective: 'page' | 'half' =
+            requested === 'half' && pages.isCardMenuHalfPageScrollType(this.config.card) ? 'half' : 'page';
+        const stride = effective === 'page' ? maxItems : Math.max(1, Math.floor(maxItems / 2));
+
+        const nextStart = (this.step + 1) * stride;
+        if (nextStart >= total) {
             this.basePanel.navigation.goRight();
         } else {
+            this.step += 1;
             void this.update();
         }
     }
     protected getNavigation(): string {
+        // Arrow-Präsentation nutzt eigene Navigation
         if (this.config.scrollPresentation === 'arrow') {
             return super.getNavigation();
         }
-        const pageScroll = this.config.scrollType === 'page';
-        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-        if (this.maxItems >= length) {
+
+        const total = (this.tempItems && this.tempItems.length) || (this.pageItems && this.pageItems.length) || 0;
+
+        const maxItems = Math.max(0, this.maxItems | 0);
+        if (maxItems === 0 || total <= maxItems) {
             return super.getNavigation();
         }
-        let left = '';
-        let right = '';
-        if (this.step <= 0) {
-            left = this.basePanel.navigation.buildNavigationString('left');
-        }
-        const maxItemsPage =
-            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule'
-                ? this.maxItems
-                : this.maxItems / 2;
-        const maxItemsPagePlus =
-            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule' ? 0 : this.maxItems / 2;
-        if (
-            !pageScroll
-                ? this.step + this.maxItems >= length
-                : (this.step + 1) * maxItemsPage + maxItemsPagePlus >= length
-        ) {
-            right = this.basePanel.navigation.buildNavigationString('right');
-        }
+
+        // Scrolltyp wie in getOptions() bestimmen
+        const requested: 'page' | 'half' = this.config.scrollType === 'half' ? 'half' : 'page';
+        const cardAllowsHalf = pages.isCardMenuHalfPageScrollType(this.config.card);
+        const effective: 'page' | 'half' = requested === 'half' && cardAllowsHalf ? 'half' : 'page';
+
+        const stride = effective === 'page' ? maxItems : Math.max(1, Math.floor(maxItems / 2));
+        const start = this.step * stride;
+
+        const hasPrev = start > 0;
+        const hasNext = start + maxItems < total;
+
+        let left = hasPrev ? '' : this.basePanel.navigation.buildNavigationString('left');
+        let right = hasNext ? '' : this.basePanel.navigation.buildNavigationString('right');
+
         if (!left) {
             left = getPayload(
                 'button',
                 'bSubPrev',
-                pageScroll ? Icons.GetIcon('arrow-up-bold-outline') : Icons.GetIcon('arrow-up-bold'),
+                effective === 'page' ? Icons.GetIcon('arrow-up-bold-outline') : Icons.GetIcon('arrow-up-bold'),
                 String(Color.rgb_dec565(Color.navDown as RGB)),
                 '',
                 '',
@@ -394,7 +448,7 @@ export class PageMenu extends Page {
             right = getPayload(
                 'button',
                 'bSubNext',
-                pageScroll ? Icons.GetIcon('arrow-down-bold-outline') : Icons.GetIcon('arrow-down-bold'),
+                effective === 'page' ? Icons.GetIcon('arrow-down-bold-outline') : Icons.GetIcon('arrow-down-bold'),
                 String(Color.rgb_dec565(Color.navDown as RGB)),
                 '',
                 '',
