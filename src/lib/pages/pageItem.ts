@@ -188,7 +188,7 @@ export class PageItem extends BaseClassTriggerd {
         }
         // search for alexa devices
         if (this.config.role === 'alexa-speaker') {
-            const id = (this.parent as PageMedia).items[0].dpInit ?? '';
+            const id = (this.parent as PageMedia).items[0].ident ?? '';
             const arr = id.split('.').slice(0, 3);
             const str = arr.join('.');
             const devices =
@@ -220,7 +220,7 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
                 }
-                this.log.debug(`Alexa devices found: ${this.tempData.length} from ${devices.rows.length}`);
+                this.log.debug(`Alexa devices found: ${this.tempData.length} frosm ${devices.rows.length}`);
             }
         } else if (
             this.config.role === 'alexa-playlist' &&
@@ -229,7 +229,7 @@ export class PageItem extends BaseClassTriggerd {
             this.parent.card === 'cardMedia'
         ) {
             const states = await this.adapter.getForeignStatesAsync(
-                `${(this.parent as PageMedia).currentItems ? (this.parent as PageMedia).currentItems!.dpInit : (this.parent as PageMedia).items[0].dpInit}.Music-Provider.*`,
+                `${(this.parent as PageMedia).currentItems ? (this.parent as PageMedia).currentItems!.ident : (this.parent as PageMedia).items[0].ident}.Music-Provider.*`,
             );
             if (states) {
                 this.tempData = Object.keys(states);
@@ -2796,7 +2796,7 @@ export class PageItem extends BaseClassTriggerd {
                         list.list.push(this.tempData[a].name);
                         list.states.push(a);
                     }
-                    const dp = (this.parent as PageMedia).currentItems?.dpInit || entityInSel?.value?.options.dp || '';
+                    const dp = (this.parent as PageMedia).currentItems?.ident || entityInSel?.value?.options.dp || '';
                     const index = this.tempData.findIndex((a: any) => dp.includes(a.id));
                     if (index !== -1 && !list.value) {
                         list.value = this.tempData[index].name;
@@ -2853,8 +2853,8 @@ export class PageItem extends BaseClassTriggerd {
                         list.states = [];
                         for (const a in o) {
                             const str = String(o[a]).replace(/\r?\n/g, '').trim();
-                            if (!al || (al && Array.isArray(al) && al.includes(str))) {
-                                list.list.push();
+                            if (!al || (al && Array.isArray(al) && (al.includes(str) || al.length === 0))) {
+                                list.list.push(str);
                                 list.states.push(a);
                                 if (a === v && !list.value) {
                                     list.value = String(list.states.length - 1);

@@ -177,7 +177,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
     }
     if (this.config.role === "alexa-speaker") {
-      const id = (_e = this.parent.items[0].dpInit) != null ? _e : "";
+      const id = (_e = this.parent.items[0].ident) != null ? _e : "";
       const arr = id.split(".").slice(0, 3);
       const str = arr.join(".");
       const devices = str && arr.length === 3 ? await this.adapter.getObjectViewAsync("system", "device", {
@@ -203,11 +203,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
           }
         }
-        this.log.debug(`Alexa devices found: ${this.tempData.length} from ${devices.rows.length}`);
+        this.log.debug(`Alexa devices found: ${this.tempData.length} frosm ${devices.rows.length}`);
       }
     } else if (this.config.role === "alexa-playlist" && this.dataItems && this.dataItems.type === "input_sel" && this.parent.card === "cardMedia") {
       const states = await this.adapter.getForeignStatesAsync(
-        `${this.parent.currentItems ? this.parent.currentItems.dpInit : this.parent.items[0].dpInit}.Music-Provider.*`
+        `${this.parent.currentItems ? this.parent.currentItems.ident : this.parent.items[0].ident}.Music-Provider.*`
       );
       if (states) {
         this.tempData = Object.keys(states);
@@ -2442,7 +2442,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             list.list.push(this.tempData[a].name);
             list.states.push(a);
           }
-          const dp = ((_a = this.parent.currentItems) == null ? void 0 : _a.dpInit) || ((_b = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _b.options.dp) || "";
+          const dp = ((_a = this.parent.currentItems) == null ? void 0 : _a.ident) || ((_b = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _b.options.dp) || "";
           const index = this.tempData.findIndex((a) => dp.includes(a.id));
           if (index !== -1 && !list.value) {
             list.value = this.tempData[index].name;
@@ -2490,8 +2490,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             list.states = [];
             for (const a in o) {
               const str = String(o[a]).replace(/\r?\n/g, "").trim();
-              if (!al || al && Array.isArray(al) && al.includes(str)) {
-                list.list.push();
+              if (!al || al && Array.isArray(al) && (al.includes(str) || al.length === 0)) {
+                list.list.push(str);
                 list.states.push(a);
                 if (a === v && !list.value) {
                   list.value = String(list.states.length - 1);

@@ -51,7 +51,9 @@ export class PageMedia extends PageMenu {
 
     async init(): Promise<void> {
         if (this.config?.card === 'cardMedia') {
-            this.items.push(await this.createMainItems(this.config, this.enums, this.dpInit));
+            const i = await this.createMainItems(this.config, this.enums, this.dpInit);
+            i.ident = this.config.ident ?? '';
+            this.items.push(i);
         }
         await super.init();
     }
@@ -553,11 +555,11 @@ export class PageMedia extends PageMenu {
             }
 
             gridItem.dpInit = tools.getRegExp(`/^${page.media.id.split('.').join('\\.')}/`) || page.media.id;
-            gridItem.config.ident = page.media.id;
             gridItem = {
                 ...gridItem,
                 config: {
                     ...gridItem.config,
+                    ident: page.media.id,
                     card: 'cardMedia',
                     data: {
                         headline: page.media.name
@@ -1103,6 +1105,7 @@ export class PageMedia extends PageMenu {
                     ...gridItem,
                     config: {
                         ...gridItem.config,
+                        ident: page.media.id,
                         card: 'cardMedia',
                         data: {
                             headline: page.media.name
@@ -1266,7 +1269,7 @@ export class PageMedia extends PageMenu {
                                     constVal: true,
                                 },
                                 text: { type: 'const', constVal: '1' },
-                                icon: { true: { type: 'const', constVal: Icons.GetIcon('spotify') } },
+                                icon: { true: { type: 'const', constVal: 'logo-spotify' } },
                                 color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
                                 list: undefined,
                                 action: 'cross',

@@ -72,9 +72,11 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    var _a;
+    var _a, _b;
     if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
-      this.items.push(await this.createMainItems(this.config, this.enums, this.dpInit));
+      const i = await this.createMainItems(this.config, this.enums, this.dpInit);
+      i.ident = (_b = this.config.ident) != null ? _b : "";
+      this.items.push(i);
     }
     await super.init();
   }
@@ -527,11 +529,11 @@ class PageMedia extends import_pageMenu.PageMenu {
         }
       }
       gridItem.dpInit = tools.getRegExp(`/^${page.media.id.split(".").join("\\.")}/`) || page.media.id;
-      gridItem.config.ident = page.media.id;
       gridItem = {
         ...gridItem,
         config: {
           ...gridItem.config,
+          ident: page.media.id,
           card: "cardMedia",
           data: {
             headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : void 0,
@@ -1052,6 +1054,7 @@ class PageMedia extends import_pageMenu.PageMenu {
           ...gridItem2,
           config: {
             ...gridItem2.config,
+            ident: page2.media.id,
             card: "cardMedia",
             data: {
               headline: page2.media.name ? await configManager2.getFieldAsDataItemConfig(page2.media.name) : void 0,
@@ -1205,7 +1208,7 @@ class PageMedia extends import_pageMenu.PageMenu {
                   constVal: true
                 },
                 text: { type: "const", constVal: "1" },
-                icon: { true: { type: "const", constVal: import_icon_mapping.Icons.GetIcon("spotify") } },
+                icon: { true: { type: "const", constVal: "logo-spotify" } },
                 color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
                 list: void 0,
                 action: "cross"
