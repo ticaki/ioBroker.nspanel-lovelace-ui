@@ -1857,9 +1857,8 @@ export class PageItem extends BaseClassTriggerd {
                         break;
                     }
                     if (entry.role === 'repeatValue') {
-
                         const v = await entry.data.entity1?.value?.getString();
-                        if (v!= null && entry.data.entity1?.value?.writeable) {
+                        if (v != null && entry.data.entity1?.value?.writeable) {
                             await entry.data.entity1.value.setState(v);
                         }
                         break;
