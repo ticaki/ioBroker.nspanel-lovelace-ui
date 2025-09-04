@@ -167,7 +167,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       if (item.data.duration && item.data.elapsed) {
         const d = await item.data.duration.getNumber();
         if (d) {
-          const t = (/* @__PURE__ */ new Date()).setHours(0, 0, d, 0);
+          const t = (/* @__PURE__ */ new Date()).setHours(0, 0, 0, d);
           duration = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
         }
         if (item.data.elapsed.type === "string") {

@@ -87,7 +87,8 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
           type: "state",
           role: "media.duration",
           regexp: /.?\.Player\..?/,
-          dp: ""
+          dp: "",
+          read: `return val ? val*1000 : val;`
         },
         onOffColor: {
           true: page.media.colorMediaIcon ? { color: await configManager.getIconColor(page.media.colorMediaIcon) } : void 0

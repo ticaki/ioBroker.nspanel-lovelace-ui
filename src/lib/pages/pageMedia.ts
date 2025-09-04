@@ -159,7 +159,7 @@ export class PageMedia extends PageMenu {
             if (item.data.duration && item.data.elapsed) {
                 const d = await item.data.duration.getNumber(); // medialength in seconds
                 if (d) {
-                    const t = new Date().setHours(0, 0, d, 0);
+                    const t = new Date().setHours(0, 0, 0, d);
                     duration = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
                 }
                 if (item.data.elapsed.type === 'string') {

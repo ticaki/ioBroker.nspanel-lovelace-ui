@@ -74,6 +74,7 @@ export async function getPageAlexa(
                     role: 'media.duration',
                     regexp: /.?\.Player\..?/,
                     dp: '',
+                    read: `return val ? val*1000 : val;`,
                 },
                 onOffColor: {
                     true: page.media.colorMediaIcon
