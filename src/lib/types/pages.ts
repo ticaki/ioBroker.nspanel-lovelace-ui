@@ -351,6 +351,7 @@ export type StateRole =
     | '';
 
 export type DeviceRole =
+    | 'repeatValue'
     | 'spotify-playlist'
     | 'spotify-tracklist'
     | 'spotify-speaker'

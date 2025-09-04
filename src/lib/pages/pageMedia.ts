@@ -157,10 +157,24 @@ export class PageMedia extends PageMenu {
                 }
             }
             if (item.data.duration && item.data.elapsed) {
-                const d = await item.data.duration.getNumber(); // medialength in seconds
+                const d = await item.data.duration.getNumber(); // medialength in milliseconds
                 if (d) {
                     const t = new Date().setHours(0, 0, 0, d);
-                    duration = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
+
+                    if (d >= 3_600_000) {
+                        duration = new Date(t).toLocaleTimeString('de-DE', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            second: '2-digit',
+                        });
+                        if (d >= 86_400_000) {
+                            const arr = duration.split(':');
+                            arr[0] = String(Math.floor(d / 86_400_000));
+                            duration = arr.join(':');
+                        }
+                    } else {
+                        duration = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
+                    }
                 }
                 if (item.data.elapsed.type === 'string') {
                     const e = await item.data.elapsed.getString();
@@ -249,6 +263,7 @@ export class PageMedia extends PageMenu {
                 message.shuffle_icon = value ? 'shuffle-variant' : 'shuffle-disabled';
             }
         }
+
         if (item.data.volume) {
             const v = await tools.getScaledNumber(item.data.volume);
             if (v !== null) {

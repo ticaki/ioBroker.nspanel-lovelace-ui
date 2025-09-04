@@ -23,7 +23,7 @@ __export(getSpotify_exports, {
 module.exports = __toCommonJS(getSpotify_exports);
 var import_Color = require("../../const/Color");
 async function getPageSpotify(configManager, page, gridItem, messages) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
   gridItem.dpInit = `/^${page.media.id.split(".").slice(0, 2).join("\\.")}\\./`;
   gridItem = {
     ...gridItem,
@@ -331,7 +331,7 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
           icon: {
             true: {
               value: { type: "const", constVal: "animation-play-outline" },
-              color: await configManager.getIconColor((_j = page.media.itemsColorOn) == null ? void 0 : _j.playList, import_Color.Color.on)
+              color: await configManager.getIconColor((_j = page.media.itemsColorOn) == null ? void 0 : _j.playList, import_Color.Color.activated)
             }
           },
           entityInSel: {
@@ -503,41 +503,77 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
                   },*/
       // repeat
       {
-        role: "",
-        type: "text",
+        role: "repeatValue",
+        type: "button",
         dpInit: "",
         data: {
           icon: {
             true: {
-              value: { type: "const", constVal: "repeat-variant" },
-              color: await configManager.getIconColor((_k = page.media.itemsColorOn) == null ? void 0 : _k.repeat, import_Color.Color.activated)
-            },
-            false: {
-              value: { type: "const", constVal: "repeat" },
-              color: await configManager.getIconColor(
-                (_l = page.media.itemsColorOff) == null ? void 0 : _l.repeat,
-                import_Color.Color.deactivated
-              )
-            },
-            scale: void 0,
-            maxBri: void 0,
-            minBri: void 0
+              value: {
+                mode: "auto",
+                type: "state",
+                role: "",
+                regexp: /\.player\.repeat$/,
+                dp: "",
+                read: `switch (val) {
+                                    case 'off':
+                                        return 'repeat';
+                                    case 'track':
+                                        return 'repeat-once';
+                                    case 'context':
+                                        return 'repeat-variant';
+                                    default:
+                                        return false;
+                                }`
+              },
+              color: {
+                mode: "auto",
+                type: "state",
+                role: "",
+                regexp: /\.player\.repeat$/,
+                dp: "",
+                read: `switch (val) {
+                                    case 'off':
+                                        return Color.deactivated;
+                                    case 'context':
+                                        return Color.activated;
+                                    case 'track':
+                                        return Color.option4;
+                                    default:
+                                        return false;
+                                }`
+              }
+            }
           },
           entity1: {
             value: {
               mode: "auto",
               type: "triggered",
-              role: "media.mode.repeat",
-              regexp: /\.Player\.controlRepeat$/,
-              dp: ""
+              role: "",
+              regexp: /\.player\.repeat$/,
+              dp: "",
+              read: `switch (val) {
+                                    case 'off':
+                                        return 'OFF';
+                                    case 'context':
+                                        return 'ALL';
+                                    case 'track':
+                                        return 'ONE';
+                                    default:
+                                        return 'OFF';
+                                }`,
+              write: `switch (val) {
+                                    case 'OFF':
+                                    case false:
+                                        return 'track';
+                                    case 'ONE':
+                                        return 'context';
+                                    case 'ALL':
+                                        return 'off';
+                                    default:
+                                        return 'off';
+                                }`
             }
-          },
-          enabled: {
-            mode: "auto",
-            type: "triggered",
-            role: "indicator",
-            regexp: /\.Player\.allowRepeat$/,
-            dp: ""
           }
         }
       }

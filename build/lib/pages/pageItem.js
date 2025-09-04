@@ -1569,7 +1569,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.controller.statesControler.deletePageLoop();
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1603,6 +1603,13 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             break;
           }
+          if (entry.role === "repeatValue") {
+            const v = await ((_b = (_a = entry.data.entity1) == null ? void 0 : _a.value) == null ? void 0 : _b.getString());
+            if (v != null && ((_d = (_c = entry.data.entity1) == null ? void 0 : _c.value) == null ? void 0 : _d.writeable)) {
+              await entry.data.entity1.value.setState(v);
+            }
+            break;
+          }
           this.log.debug(`Button ${this.id} was pressed!`);
           const item = entry.data;
           if (item.confirm) {
@@ -1617,10 +1624,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             await this.parent.update();
           }
           if (item.popup) {
-            const test = (_a = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _a : true;
+            const test = (_e = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _e : true;
             if (test && item.popup.getMessage && item.popup.setMessage) {
               const message = await item.popup.getMessage.getString();
-              const headline = (_b = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _b : "";
+              const headline = (_f = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _f : "";
               if (message) {
                 await item.popup.setMessage.setState(
                   JSON.stringify({ headline, message })
@@ -1629,18 +1636,18 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             break;
           }
-          let value2 = (_c = item.setNavi && await item.setNavi.getString()) != null ? _c : null;
+          let value2 = (_g = item.setNavi && await item.setNavi.getString()) != null ? _g : null;
           if (value2 !== null) {
             await this.parent.currentPanel.navigation.setTargetPageByName(value2);
             break;
           }
-          value2 = (_d = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _d : null;
+          value2 = (_h = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _h : null;
           if (value2 !== null && item.entity1 && item.entity1.set) {
             await item.entity1.set.setStateFlip();
-          } else if ((_f = (_e = item.entity1) == null ? void 0 : _e.value) == null ? void 0 : _f.writeable) {
+          } else if ((_j = (_i = item.entity1) == null ? void 0 : _i.value) == null ? void 0 : _j.writeable) {
             await item.entity1.value.setStateFlip();
           }
-          value2 = (_g = item.setValue1 && await item.setValue1.getBoolean()) != null ? _g : null;
+          value2 = (_k = item.setValue1 && await item.setValue1.getBoolean()) != null ? _k : null;
           if (value2 !== null && item.setValue1) {
             await item.setValue1.setStateFlip();
           }
@@ -1658,9 +1665,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         } else if (entry.type === "fan") {
           const item = entry.data;
-          if ((_h = item.entity1) == null ? void 0 : _h.set) {
+          if ((_l = item.entity1) == null ? void 0 : _l.set) {
             await item.entity1.set.setStateFlip();
-          } else if ((_j = (_i = item.entity1) == null ? void 0 : _i.value) == null ? void 0 : _j.writeable) {
+          } else if ((_n = (_m = item.entity1) == null ? void 0 : _m.value) == null ? void 0 : _n.writeable) {
             await item.entity1.value.setStateFlip();
           }
         }
@@ -1703,9 +1710,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             entity = item.entity3;
           }
           if (entity && entity.set && entity.set.writeable) {
-            if (!Array.isArray(entity.set.options.role) && ((_k = entity.set.options.role) == null ? void 0 : _k.startsWith("button"))) {
+            if (!Array.isArray(entity.set.options.role) && ((_o = entity.set.options.role) == null ? void 0 : _o.startsWith("button"))) {
               await entity.set.setStateTrue();
-            } else if (!Array.isArray(entity.set.options.role) && ((_l = entity.set.options.role) == null ? void 0 : _l.startsWith("switch"))) {
+            } else if (!Array.isArray(entity.set.options.role) && ((_p = entity.set.options.role) == null ? void 0 : _p.startsWith("switch"))) {
               await entity.set.setStateFlip();
             }
           }
@@ -1772,7 +1779,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb) && ((_m = item == null ? void 0 : item.color) == null ? void 0 : _m.true) && item.color.true.options.role !== "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_q = item == null ? void 0 : item.color) == null ? void 0 : _q.true) && item.color.true.options.role !== "level.color.rgb") {
                   await item.color.true.setState(JSON.stringify(rgb));
                   break;
                 }
@@ -2018,14 +2025,14 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 const minValue = item[`minValue${b}`];
                 let min = 0;
                 if (minValue) {
-                  min = (_n = await minValue.getNumber()) != null ? _n : 0;
+                  min = (_r = await minValue.getNumber()) != null ? _r : 0;
                 } else if (entity && entity.value && entity.value.common.min != void 0) {
                   min = entity.value.common.min;
                 }
                 const maxValue = item[`maxValue${b}`];
                 let max = 100;
                 if (maxValue) {
-                  max = (_o = await maxValue.getNumber()) != null ? _o : 100;
+                  max = (_s = await maxValue.getNumber()) != null ? _s : 100;
                 } else if (entity && entity.value && entity.value.common.max != void 0) {
                   max = entity.value.common.max;
                 }
@@ -2115,7 +2122,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_p = this.dataItems.data.entity1) == null ? void 0 : _p.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_t = this.dataItems.data.entity1) == null ? void 0 : _t.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2125,7 +2132,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_q = this.dataItems.data.entity1) == null ? void 0 : _q.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_u = this.dataItems.data.entity1) == null ? void 0 : _u.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2156,7 +2163,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_r = this.dataItems.data.entity1) == null ? void 0 : _r.set) && await this.dataItems.data.entity1.set.setState(r);
+                ((_v = this.dataItems.data.entity1) == null ? void 0 : _v.set) && await this.dataItems.data.entity1.set.setState(r);
               }
               break;
             }

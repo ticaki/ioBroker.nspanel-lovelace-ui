@@ -1856,6 +1856,14 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         break;
                     }
+                    if (entry.role === 'repeatValue') {
+
+                        const v = await entry.data.entity1?.value?.getString();
+                        if (v!= null && entry.data.entity1?.value?.writeable) {
+                            await entry.data.entity1.value.setState(v);
+                        }
+                        break;
+                    }
                     this.log.debug(`Button ${this.id} was pressed!`);
                     const item = entry.data;
                     if (item.confirm) {

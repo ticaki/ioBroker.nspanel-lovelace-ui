@@ -168,7 +168,20 @@ class PageMedia extends import_pageMenu.PageMenu {
         const d = await item.data.duration.getNumber();
         if (d) {
           const t = (/* @__PURE__ */ new Date()).setHours(0, 0, 0, d);
-          duration = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+          if (d >= 36e5) {
+            duration = new Date(t).toLocaleTimeString("de-DE", {
+              hour: "numeric",
+              minute: "2-digit",
+              second: "2-digit"
+            });
+            if (d >= 864e5) {
+              const arr = duration.split(":");
+              arr[0] = String(Math.floor(d / 864e5));
+              duration = arr.join(":");
+            }
+          } else {
+            duration = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+          }
         }
         if (item.data.elapsed.type === "string") {
           const e = await item.data.elapsed.getString();
