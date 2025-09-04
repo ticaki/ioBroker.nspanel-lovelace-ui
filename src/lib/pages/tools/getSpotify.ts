@@ -100,6 +100,7 @@ export async function getPageSpotify(
                         role: '',
                         regexp: /.?\.player\.shuffle$/,
                         dp: '',
+                        read: `return val == 'on' || val == 'ON';`,
                     },
                     set: {
                         mode: 'auto',
@@ -107,6 +108,7 @@ export async function getPageSpotify(
                         role: '',
                         regexp: /.?\.player\.shuffle$/,
                         dp: '',
+                        write: `return val === 'ON' || val === true  ? 'on' : 'off';`,
                     },
                     /*enabled: {
                                     mode: 'auto',

@@ -105,14 +105,16 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
             type: "state",
             role: "",
             regexp: /.?\.player\.shuffle$/,
-            dp: ""
+            dp: "",
+            read: `return val == 'on' || val == 'ON';`
           },
           set: {
             mode: "auto",
             type: "state",
             role: "",
             regexp: /.?\.player\.shuffle$/,
-            dp: ""
+            dp: "",
+            write: `return val === 'ON' || val === true  ? 'on' : 'off';`
           }
           /*enabled: {
                           mode: 'auto',
