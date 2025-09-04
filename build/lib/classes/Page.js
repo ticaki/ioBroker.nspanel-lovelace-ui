@@ -286,8 +286,8 @@ class Page extends import_baseClassPage.BaseClassPage {
    */
   async onPopupRequest(id, popup, action, value, _event = null) {
     if (!this.pageItems || id == "" || isNaN(id)) {
-      this.log.warn(
-        `onPopupRequest: No pageItems or id or nan this is only a warning if u not use 'arrow': ${id}`
+      this.log.debug(
+        `onPopupRequest: No pageItems or id or nan this is only a warning if u used a pageitem except: 'arrow': ${id}`
       );
       return;
     }

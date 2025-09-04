@@ -347,9 +347,9 @@ export class StatesControler extends BaseClass {
         }
         let j: string | string[] | Record<string, string> | undefined = undefined;
         if (force) {
-            const obj = await this.adapter.getObjectAsync(id);
+            const obj = await this.adapter.getForeignObjectAsync(id);
             if (obj && obj.common && obj.common.states) {
-                j = obj.common.state;
+                j = obj.common.states;
             }
         } else if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) {
             j = this.triggerDB[id].common.states;

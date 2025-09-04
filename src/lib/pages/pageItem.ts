@@ -2849,7 +2849,7 @@ export class PageItem extends BaseClassTriggerd {
                                 list.list.push(str);
                                 list.states.push(a);
                                 if (a === v && !list.value) {
-                                    list.value = String(list.states.length - 1);
+                                    list.value = str;
                                 }
                             }
                         }
