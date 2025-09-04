@@ -283,7 +283,7 @@ export class StatesControler extends BaseClass {
      * @param internal if the state is internal
      * @returns nsPanelState or null
      */
-    async getState(id: string, internal: boolean = false): Promise<nsPanelState | null | undefined> {
+    async getState(id: string, internal: boolean = false): Promise<nsPanelState | null> {
         let timespan = this.timespan;
         timespan = 10;
         if (
@@ -341,9 +341,9 @@ export class StatesControler extends BaseClass {
         return undefined;
     }
 
-    async getCommonStates(id: string | undefined, force: boolean = false): Promise<Record<string, string> | undefined> {
+    async getCommonStates(id: string | undefined, force: boolean = false): Promise<Record<string, string> | null> {
         if (!id) {
-            return undefined;
+            return null;
         }
         let j: string | string[] | Record<string, string> | undefined = undefined;
         if (force) {
@@ -358,7 +358,7 @@ export class StatesControler extends BaseClass {
         }
 
         if (!j || typeof j === 'string') {
-            return undefined;
+            return null;
         }
         if (Array.isArray(j)) {
             const a: Record<string, string> = {};

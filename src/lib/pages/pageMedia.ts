@@ -157,35 +157,10 @@ export class PageMedia extends PageMenu {
                 }
             }
             if (item.data.duration && item.data.elapsed) {
+                // --- duration ---
                 const d = await item.data.duration.getNumber(); // medialength in milliseconds
                 if (d) {
-                    // --- duration ---
-                    const t = new Date().setHours(0, 0, 0, d);
-
-                    if (d >= 86_400_000) {
-                        // ≥ 24h
-                        let duration = new Date(t).toLocaleTimeString('de-DE', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                        });
-                        const parts = duration.split(':');
-                        parts[0] = String(Math.floor(d / 3_600_000)); // total hours
-                        duration = parts.join(':');
-                    } else if (d >= 3_600_000) {
-                        // 1h–24h
-                        duration = new Date(t).toLocaleTimeString('de-DE', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            second: '2-digit',
-                        });
-                    } else {
-                        // < 1h
-                        duration = new Date(t).toLocaleTimeString('de-DE', {
-                            minute: 'numeric',
-                            second: '2-digit',
-                        });
-                    }
+                    duration = tools.formatHMS(d);
                 }
                 if (item.data.elapsed.type === 'string') {
                     const e = await item.data.elapsed.getString();
@@ -196,32 +171,7 @@ export class PageMedia extends PageMenu {
                     // --- elapsed ---
                     const e = await item.data.elapsed.getNumber();
                     if (e != null) {
-                        const t = new Date().setHours(0, 0, 0, e);
-
-                        if (e >= 86_400_000) {
-                            // ≥ 24h
-                            let elapsed = new Date(t).toLocaleTimeString('de-DE', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit',
-                            });
-                            const parts = elapsed.split(':');
-                            parts[0] = String(Math.floor(e / 3_600_000)); // total hours
-                            elapsed = parts.join(':');
-                        } else if (e >= 3_600_000) {
-                            // 1h–24h
-                            elapsed = new Date(t).toLocaleTimeString('de-DE', {
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                second: '2-digit',
-                            });
-                        } else {
-                            // < 1h
-                            elapsed = new Date(t).toLocaleTimeString('de-DE', {
-                                minute: 'numeric',
-                                second: '2-digit',
-                            });
-                        }
+                        elapsed = tools.formatHMS(e);
                     }
                 }
             }
@@ -251,7 +201,7 @@ export class PageMedia extends PageMenu {
 
             const maxSize = 38;
 
-            message.name = `|${elapsed}${duration ? `-${duration}` : ''}`;
+            message.name = `| ${elapsed}${duration ? `-${duration}` : ''}`;
 
             const { text, nextPos } = tools.buildScrollingText(title, {
                 maxSize, // wie bisher: 35

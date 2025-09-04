@@ -22,6 +22,8 @@ __export(tools_exports, {
   alignText: () => alignText,
   buildScrollingText: () => buildScrollingText,
   deepAssign: () => deepAssign,
+  default: () => tools_default,
+  formatHMS: () => formatHMS,
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
   getDecfromRGBThree: () => getDecfromRGBThree,
@@ -613,9 +615,9 @@ async function getEntryTextOnOff(i, on, useCommon = false) {
         value2 += v2 != null ? v2 : "";
         value2 += (_n = i.false && i.false.suffix && await i.false.suffix.getString()) != null ? _n : "";
       }
-      return v2 === null ? v === null ? null : value : value2;
+      return v2 == null ? v == null ? null : value : value2;
     }
-    return v === null ? null : value;
+    return v == null ? null : value;
   }
   return (_o = await i.getString()) != null ? _o : null;
 }
@@ -633,16 +635,19 @@ function isTextSizeEntryType(F) {
   return "textSize" in F;
 }
 async function getValueEntryString(i, v = null) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
   if (!i || !i.value) {
     return null;
   }
   const nval = v !== null ? v : await getValueEntryNumber(i);
   const format = (_a = i.dateFormat && await i.dateFormat.getObject()) != null ? _a : null;
+  const unit = (_d = (_c = await ((_b = i.unit) == null ? void 0 : _b.getString())) != null ? _c : i.value.common.unit) != null ? _d : "";
+  const prefix = (_f = await ((_e = i.prefix) == null ? void 0 : _e.getString())) != null ? _f : "";
+  const suffix = (_h = await ((_g = i.suffix) == null ? void 0 : _g.getString())) != null ? _h : "";
   if (nval !== null && nval !== void 0) {
     let res2 = "";
     if ((0, import_types.isValueDateFormat)(format)) {
-      if (nval <= 0) {
+      if (nval < 0) {
         return null;
       }
       const temp = new Date(nval);
@@ -650,24 +655,27 @@ async function getValueEntryString(i, v = null) {
         res2 = temp.toLocaleString(format.local, format.format);
       }
     } else {
-      const d = (_b = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _b : null;
+      const d = (_i = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _i : null;
       if (d !== null && d !== false) {
-        res2 = nval.toFixed(d);
+        res2 = nval.toLocaleString((_j = format && format.local) != null ? _j : "de-DE", {
+          minimumFractionDigits: d,
+          maximumFractionDigits: d,
+          useGrouping: false
+        });
       } else {
-        res2 = String(nval);
+        res2 = nval.toLocaleString((_k = format && format.local) != null ? _k : "de-DE", {
+          useGrouping: false
+        });
       }
     }
-    res2 += (_e = (_d = await ((_c = i.unit) == null ? void 0 : _c.getString())) != null ? _d : i.value.common.unit) != null ? _e : "";
-    res2 = ((_g = await ((_f = i.prefix) == null ? void 0 : _f.getString())) != null ? _g : "") + res2;
-    res2 += (_i = await ((_h = i.suffix) == null ? void 0 : _h.getString())) != null ? _i : "";
-    let opt2 = "";
+    res2 = prefix + res2 + unit + suffix;
+    let opt = "";
     if (isTextSizeEntryType(i)) {
-      opt2 = String((_j = i.textSize && await i.textSize.getNumber()) != null ? _j : "");
+      opt = String((_l = i.textSize && await i.textSize.getNumber()) != null ? _l : "");
     }
-    return res2 + (opt2 ? `\xAC${opt2}` : "");
+    return res2 + (opt ? `\xAC${opt}` : "");
   }
   let res = await i.value.getString();
-  let opt = "";
   if (res != null) {
     if ((0, import_types.isValueDateFormat)(format)) {
       const temp = new Date(res);
@@ -675,13 +683,11 @@ async function getValueEntryString(i, v = null) {
         res = temp.toLocaleString(format.local, format.format);
       }
     }
-    res += (_l = (_k = i.unit && await i.unit.getString()) != null ? _k : i.value.common.unit) != null ? _l : "";
+    res = prefix + res + unit + suffix;
+    let opt = "";
     if (isTextSizeEntryType(i)) {
       opt = String((_m = i.textSize && await i.textSize.getNumber()) != null ? _m : "");
     }
-    res += (_p = (_o = await ((_n = i.unit) == null ? void 0 : _n.getString())) != null ? _o : i.value.common.unit) != null ? _p : "";
-    res = ((_r = await ((_q = i.prefix) == null ? void 0 : _q.getString())) != null ? _r : "") + res;
-    res += (_t = await ((_s = i.suffix) == null ? void 0 : _s.getString())) != null ? _t : "";
     res += opt ? `\xAC${opt}` : "";
   }
   return res;
@@ -1084,12 +1090,29 @@ function buildScrollingText(title, options = {}) {
   const nextPos = (posNorm + 1) % cycleLen;
   return { text: full, nextPos };
 }
+function formatHMS(ms) {
+  if (!Number.isFinite(ms) || ms < 0) {
+    ms = 0;
+  }
+  const totalSeconds = Math.floor(ms / 1e3);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor(totalSeconds % 3600 / 60);
+  const seconds = totalSeconds % 60;
+  const minutesStr = String(minutes);
+  const secondsStr = String(seconds).padStart(2, "0");
+  if (hours > 0) {
+    return `${hours}:${minutesStr.padStart(2, "0")}:${secondsStr}`;
+  }
+  return `${minutesStr}:${secondsStr}`;
+}
+var tools_default = formatHMS;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
   alignText,
   buildScrollingText,
   deepAssign,
+  formatHMS,
   formatInSelText,
   getDecfromHue,
   getDecfromRGBThree,

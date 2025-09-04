@@ -1,5 +1,5 @@
 import type * as dataItem from '../classes/data-item';
-import type { RGB } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 import type * as typePageItem from './type-pageItem';
 import * as pages from './pages';
 
@@ -418,40 +418,94 @@ export type IconColorElement = {
     val_max: number;
     val_best?: number;
     /**
-     * The 3. color for color best. Only with val_best.
+     * Optional best-color (nur wirksam, wenn `val_best` gesetzt ist).
      */
     color_best?: RGB;
     /**
-     * The color mix mode. Default is 'mixed'.
-     * ‘mixed’: the target colour is achieved by scaling between the two RGB colours. 2 colours are required.
-     * 'cie': the target colour is achieved by mixing according to the CIE colour table. 2 colours are required.
-     * 'hue': the target colour is calculated by scaling via colour, saturation and brightness. 2 colours are required.
-     * 'triGrad': the target colour is interpolated in a three-color gradient from red to green. Colours are ignored
-     * 'triGradAnchor': the target colour is interpolated in a three-color gradient from red to green, Yellow is anchored to val_best. Colours are ignored
-     * 'quadriGrad': the target colour is interpolated in a four-color gradient from red to yellow, green and blue. Colours are ignored.
-     * 'quadriGradAnchor': the target colour is interpolated in a four-color gradient from red to yellow, green and blue. green is anchored to val_best. Colours are ignored.
+     * Color scale mode. Default is 'mixed'.
+     * - 'mixed': interpolate linearly between two RGB colors.
+     * - 'cie': interpolate using CIE color table.
+     * - 'hue': interpolate via hue/saturation/brightness.
+     * - 'triGrad': three-color gradient red→yellow→green, ignores custom colors.
+     * - 'triGradAnchor': like triGrad but anchors yellow to val_best.
+     * - 'quadriGrad': four-color gradient red→yellow→green→blue, ignores custom colors.
+     * - 'quadriGradAnchor': like quadriGrad but anchors green to val_best.
      */
     mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
     /**
-     * The logarithm scaling to max, min or leave undefined for linear scaling.
+     * Apply logarithmic scaling. Use 'max' or 'min'.
+     * Undefined = linear scaling.
      */
     log10?: 'max' | 'min';
 };
-export function isIconColorScaleElement(F: any): F is IconColorElement {
-    if (!F) {
+
+/**
+ * Lightweight type guard for IconColorElement.
+ * - Checks presence & finiteness of required numbers.
+ * - Optional fields, if present, must be of the right *shape*.
+ * - No normalization, no range constraints (val_min may be > val_max).
+ *
+ * @param x unknown
+ * @returns true if x is IconColorElement
+ */
+export function isIconColorScaleElement(x: unknown): x is IconColorElement {
+    if (typeof x !== 'object' || x === null) {
         return false;
     }
-    if ('color_best' in F && F.color_best) {
-        F.color_best = convertColorScaleBest(F.color_best);
+
+    const v = x as Partial<IconColorElement>;
+
+    // required
+    if (!Number.isFinite(v.val_min as number)) {
+        return false;
     }
-    return (
-        'val_min' in (F as IconColorElement) &&
-        'val_max' in (F as IconColorElement) &&
-        typeof F.val_min === 'number' &&
-        typeof F.val_max === 'number'
-    );
+    if (!Number.isFinite(v.val_max as number)) {
+        return false;
+    }
+
+    // optional numbers
+    if (v.val_best != null && !Number.isFinite(v.val_best)) {
+        return false;
+    }
+
+    // optional enums
+    if (v.log10 != null && v.log10 !== 'max' && v.log10 !== 'min') {
+        return false;
+    }
+    if (
+        v.mode != null &&
+        v.mode !== 'mixed' &&
+        v.mode !== 'hue' &&
+        v.mode !== 'cie' &&
+        v.mode !== 'triGrad' &&
+        v.mode !== 'triGradAnchor' &&
+        v.mode !== 'quadriGrad' &&
+        v.mode !== 'quadriGradAnchor'
+    ) {
+        return false;
+    }
+
+    // optional color object
+    if (v.color_best != null && !Color.isRGB(v.color_best)) {
+        return false;
+    }
+
+    return true;
 }
 
+/**
+ * Normalize a valid IconColorElement (e.g. fix color_best).
+ * Call this after `isIconColorElement()` returned true.
+ *
+ * @param el IconColorElement
+ */
+export function normalizeIconColorElement(el: IconColorElement): IconColorElement {
+    const copy: IconColorElement = { ...el };
+    if (copy.color_best) {
+        copy.color_best = convertColorScaleBest(copy.color_best);
+    }
+    return copy;
+}
 function convertColorScaleBest(F: any): IconColorElement['color_best'] {
     if (F) {
         return { r: F.red ?? F.r, g: F.green ?? F.g, b: F.blue ?? F.b };

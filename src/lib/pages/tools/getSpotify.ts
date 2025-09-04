@@ -59,7 +59,7 @@ export async function getPageSpotify(
                     mode: 'auto',
                     type: 'triggered',
                     role: '',
-                    regexp: /.?\.player\.progress$/,
+                    regexp: /.?\.player\.progressMs$/,
                     dp: '',
                 },
                 volume: {

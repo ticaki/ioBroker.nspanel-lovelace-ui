@@ -84,10 +84,11 @@ export async function getPageAlexa(
                 elapsed: {
                     mode: 'auto',
                     type: 'triggered',
-                    role: ['media.elapsed', 'media.elapsed.text'],
+                    commonType: 'number',
+                    role: ['media.elapsed'],
                     regexp: /.?\.Player\..?/,
                     dp: '',
-                    read: `return val != null && typeof val === 'number' ? val*1000 : val;`,
+                    read: `return val != null ? val*1000 : val;`,
                 },
                 volume: {
                     value: {

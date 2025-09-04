@@ -6,6 +6,14 @@ import type { BaseClassTriggerd } from './baseClassPage';
 import * as NSPanel from '../types/types';
 
 export class Dataitem extends BaseClass {
+    #compiledReadFn?: (
+        val: unknown,
+        Color: Color,
+        language: string,
+        lc: unknown,
+        options: unknown,
+    ) => NSPanel.StateValue;
+    #compiledWriteFn?: (val: unknown, Color: Color) => ioBroker.StateValue;
     options: NSPanel.DataItemsOptions;
     //private obj: ioBroker.Object | null | undefined;
     stateDB: StatesControler;
@@ -96,7 +104,7 @@ export class Dataitem extends BaseClass {
         }
         return false;
     }
-    private async getRawState(): Promise<NSPanel.State | null | undefined> {
+    private async getRawState(): Promise<NSPanel.State | null> {
         try {
             switch (this.options.type) {
                 case 'const':
@@ -122,21 +130,32 @@ export class Dataitem extends BaseClass {
         return 'dp' in this.options ? (this.stateDB.getType(this.options.dp) ?? this.type) : this.type;
     }
 
-    async getCommonStates(force: boolean = false): Promise<Record<string, string> | undefined> {
-        return 'dp' in this.options ? this.stateDB.getCommonStates(this.options.dp, force) : undefined;
+    async getCommonStates(force: boolean = false): Promise<Record<string, string> | null> {
+        return 'dp' in this.options ? this.stateDB.getCommonStates(this.options.dp, force) : null;
     }
 
-    async getState(): Promise<NSPanel.State | null | undefined> {
+    async getState(): Promise<NSPanel.State | null> {
         let state = await this.getRawState();
         if (state) {
             state = structuredClone(state);
             if (this.options.type !== 'const' && this.options.read) {
                 try {
                     if (typeof this.options.read === 'string') {
-                        state.val = new Function('val', 'Color', 'language', 'lc', 'options', `${this.options.read}`)(
+                        // compile once and cache
+                        if (!this.#compiledReadFn) {
+                            this.#compiledReadFn = new Function(
+                                'val',
+                                'Color',
+                                'language',
+                                'lc',
+                                'options',
+                                this.options.read,
+                            ) as any;
+                        }
+                        state.val = this.#compiledReadFn!(
                             state.val,
                             Color,
-                            this.adapter.language,
+                            this.adapter.language ? this.adapter.language : 'en',
                             state.lc,
                             this.options.constants,
                         );
@@ -156,7 +175,7 @@ export class Dataitem extends BaseClass {
 
     async getObject(): Promise<object | null> {
         const state = await this.getState();
-        if (state && state.val) {
+        if (state?.val != null) {
             if (typeof state.val === 'string') {
                 try {
                     const value = JSON.parse(state.val);
@@ -186,7 +205,13 @@ export class Dataitem extends BaseClass {
         }
         return null;
     }
-
+    async getRGBDec(): Promise<string | null> {
+        const value = await this.getRGBValue();
+        if (value) {
+            return String(Color.rgb_dec565(value));
+        }
+        return null;
+    }
     async getRGBValue(): Promise<RGB | null> {
         const value = await this.getObject();
         if (value) {
@@ -194,7 +219,7 @@ export class Dataitem extends BaseClass {
                 return value;
             }
             if (typeof value == 'object' && 'red' in value && 'blue' in value && 'green' in value) {
-                return { r: value.red as number, g: value.green as number, b: value.blue as number };
+                return { r: Number(value.red), g: Number(value.green), b: Number(value.blue) };
             }
         }
         return null;
@@ -208,13 +233,7 @@ export class Dataitem extends BaseClass {
         }
         return null;
     }
-    async getRGBDec(): Promise<string | null> {
-        const value = await this.getRGBValue();
-        if (value) {
-            return String(Color.rgb_dec565(value));
-        }
-        return null;
-    }
+
     async getTranslatedString(): Promise<string | null> {
         const val = await this.getString();
         if (val !== null) {
@@ -337,8 +356,25 @@ export class Dataitem extends BaseClass {
         if (this.options.type === 'const') {
             this.options.constVal = val;
         } else {
-            if (this.options.write) {
-                val = new Function('val', 'Color', `${String(this.options.write)}`)(val, Color);
+            // in der Klasse
+
+            // ... im passenden Codepfad:
+            try {
+                if (this.options.write) {
+                    if (typeof this.options.write === 'string') {
+                        // compile once and cache
+                        if (!this.#compiledWriteFn) {
+                            this.#compiledWriteFn = new Function('val', 'Color', this.options.write) as any;
+                        }
+                        val = this.#compiledWriteFn!(val, Color);
+                    } else {
+                        val = this.options.write(val);
+                    }
+                }
+            } catch (e) {
+                this.log.error(
+                    `Write for dp: ${this.options.dp} is invalid! write: ${String(this.options.write)} Error: ${String(e)}`,
+                );
             }
             await this.stateDB.setState(this, val, this._writeable);
         }

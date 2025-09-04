@@ -167,28 +167,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       if (item.data.duration && item.data.elapsed) {
         const d = await item.data.duration.getNumber();
         if (d) {
-          const t = (/* @__PURE__ */ new Date()).setHours(0, 0, 0, d);
-          if (d >= 864e5) {
-            let duration2 = new Date(t).toLocaleTimeString("de-DE", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit"
-            });
-            const parts = duration2.split(":");
-            parts[0] = String(Math.floor(d / 36e5));
-            duration2 = parts.join(":");
-          } else if (d >= 36e5) {
-            duration = new Date(t).toLocaleTimeString("de-DE", {
-              hour: "numeric",
-              minute: "2-digit",
-              second: "2-digit"
-            });
-          } else {
-            duration = new Date(t).toLocaleTimeString("de-DE", {
-              minute: "numeric",
-              second: "2-digit"
-            });
-          }
+          duration = tools.formatHMS(d);
         }
         if (item.data.elapsed.type === "string") {
           const e = await item.data.elapsed.getString();
@@ -198,28 +177,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         } else if (item.data.elapsed.type === "number") {
           const e = await item.data.elapsed.getNumber();
           if (e != null) {
-            const t = (/* @__PURE__ */ new Date()).setHours(0, 0, 0, e);
-            if (e >= 864e5) {
-              let elapsed2 = new Date(t).toLocaleTimeString("de-DE", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit"
-              });
-              const parts = elapsed2.split(":");
-              parts[0] = String(Math.floor(e / 36e5));
-              elapsed2 = parts.join(":");
-            } else if (e >= 36e5) {
-              elapsed = new Date(t).toLocaleTimeString("de-DE", {
-                hour: "numeric",
-                minute: "2-digit",
-                second: "2-digit"
-              });
-            } else {
-              elapsed = new Date(t).toLocaleTimeString("de-DE", {
-                minute: "numeric",
-                second: "2-digit"
-              });
-            }
+            elapsed = tools.formatHMS(e);
           }
         }
       }
@@ -241,7 +199,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         }
       }
       const maxSize = 38;
-      message.name = `|${elapsed}${duration ? `-${duration}` : ""}`;
+      message.name = `| ${elapsed}${duration ? `-${duration}` : ""}`;
       const { text, nextPos } = tools.buildScrollingText(title, {
         maxSize,
         // wie bisher: 35

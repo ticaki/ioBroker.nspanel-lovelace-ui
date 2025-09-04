@@ -38,10 +38,12 @@ __export(types_exports, {
   isPartialIconSelectScaleElement: () => isPartialIconSelectScaleElement,
   isPopupType: () => isPopupType,
   isValueDateFormat: () => isValueDateFormat,
+  normalizeIconColorElement: () => normalizeIconColorElement,
   screenSaverInfoIcons: () => screenSaverInfoIcons,
   screenSaverInfoIconsUseable: () => screenSaverInfoIconsUseable
 });
 module.exports = __toCommonJS(types_exports);
+var import_Color = require("../const/Color");
 var pages = __toESM(require("./pages"));
 function isEventMethod(F) {
   switch (F) {
@@ -117,14 +119,37 @@ function swapKeyValue(obj) {
   }
   return swapped;
 }
-function isIconColorScaleElement(F) {
-  if (!F) {
+function isIconColorScaleElement(x) {
+  if (typeof x !== "object" || x === null) {
     return false;
   }
-  if ("color_best" in F && F.color_best) {
-    F.color_best = convertColorScaleBest(F.color_best);
+  const v = x;
+  if (!Number.isFinite(v.val_min)) {
+    return false;
   }
-  return "val_min" in F && "val_max" in F && typeof F.val_min === "number" && typeof F.val_max === "number";
+  if (!Number.isFinite(v.val_max)) {
+    return false;
+  }
+  if (v.val_best != null && !Number.isFinite(v.val_best)) {
+    return false;
+  }
+  if (v.log10 != null && v.log10 !== "max" && v.log10 !== "min") {
+    return false;
+  }
+  if (v.mode != null && v.mode !== "mixed" && v.mode !== "hue" && v.mode !== "cie" && v.mode !== "triGrad" && v.mode !== "triGradAnchor" && v.mode !== "quadriGrad" && v.mode !== "quadriGradAnchor") {
+    return false;
+  }
+  if (v.color_best != null && !import_Color.Color.isRGB(v.color_best)) {
+    return false;
+  }
+  return true;
+}
+function normalizeIconColorElement(el) {
+  const copy = { ...el };
+  if (copy.color_best) {
+    copy.color_best = convertColorScaleBest(copy.color_best);
+  }
+  return copy;
 }
 function convertColorScaleBest(F) {
   var _a, _b, _c;
@@ -159,6 +184,7 @@ const arrayOfScreensaverModes = arrayOfModes(["standard", "alternate", "advanced
   isPartialIconSelectScaleElement,
   isPopupType,
   isValueDateFormat,
+  normalizeIconColorElement,
   screenSaverInfoIcons,
   screenSaverInfoIconsUseable
 });

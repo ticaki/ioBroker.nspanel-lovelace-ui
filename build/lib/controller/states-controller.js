@@ -300,7 +300,7 @@ class StatesControler extends import_library.BaseClass {
   }
   async getCommonStates(id, force = false) {
     if (!id) {
-      return void 0;
+      return null;
     }
     let j = void 0;
     if (force) {
@@ -314,7 +314,7 @@ class StatesControler extends import_library.BaseClass {
       j = this.stateDB[id].common.states;
     }
     if (!j || typeof j === "string") {
-      return void 0;
+      return null;
     }
     if (Array.isArray(j)) {
       const a = {};

@@ -67,7 +67,7 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
           mode: "auto",
           type: "triggered",
           role: "",
-          regexp: /.?\.player\.progress$/,
+          regexp: /.?\.player\.progressMs$/,
           dp: ""
         },
         volume: {

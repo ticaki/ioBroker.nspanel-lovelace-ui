@@ -2528,7 +2528,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         }
       } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates() || valueList2 != null)) {
-        let states = void 0;
+        let states = null;
         const value = await tools.getValueEntryString(entityInSel);
         if (valueList && valueList2) {
           role = "2values";

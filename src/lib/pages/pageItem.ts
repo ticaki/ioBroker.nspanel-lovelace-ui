@@ -2890,7 +2890,7 @@ export class PageItem extends BaseClassTriggerd {
                 ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
                 ((await entityInSel.value.getCommonStates()) || valueList2 != null)
             ) {
-                let states: Record<string | number, string> | undefined = undefined;
+                let states: Record<string | number, string> | null = null;
                 const value = await tools.getValueEntryString(entityInSel);
                 if (valueList && valueList2) {
                     role = '2values';

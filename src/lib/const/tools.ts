@@ -605,6 +605,20 @@ export async function getEntryColor(
     }
     return color ?? def;
 }
+
+/**
+ * Returns the display text for a boolean-like entry.
+ *
+ * - Supports both Dataitem and structured entries with `true` / `false` parts.
+ * - If `on` is a number, values > 0 are treated as `true`.
+ * - If the resolved value is `null` or `undefined`, `null` is returned to signal "no result".
+ * - When `useCommon` is true, `common.states` is used for mapping state labels.
+ *
+ * @param i Entry or Dataitem that defines the "true" and "false" variants.
+ * @param on Boolean or number to select side; `null`/`undefined` defaults to "true".
+ * @param useCommon Whether to resolve values through `common.states` mapping.
+ * @returns Resolved display text, or `null` if no meaningful result exists.
+ */
 export async function getEntryTextOnOff(
     i: ChangeTypeOfKeys<TextEntryType | TextEntryType2, Dataitem | undefined> | undefined | Dataitem,
     on: boolean | number | null,
@@ -620,7 +634,6 @@ export async function getEntryTextOnOff(
     let v: string | null = null;
     if (!isDataItem(i)) {
         if (isDataItem(i.true)) {
-            //i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
             v = (i.true && (await i.true.getString())) ?? null;
             if (useCommon) {
                 const states =
@@ -640,6 +653,7 @@ export async function getEntryTextOnOff(
             value += v ?? '';
             value += (i.true && i.true.suffix && (await i.true.suffix.getString())) ?? '';
         }
+
         if (!(on ?? true)) {
             let value2 = '';
             let v2: string | null = null;
@@ -665,9 +679,10 @@ export async function getEntryTextOnOff(
                 value2 += (i.false && i.false.suffix && (await i.false.suffix.getString())) ?? '';
             }
 
-            return v2 === null ? (v === null ? null : value) : value2;
+            return v2 == null ? (v == null ? null : value) : value2;
         }
-        return v === null ? null : value;
+
+        return v == null ? null : value;
     }
     return (await i.getString()) ?? null;
 }
@@ -696,10 +711,14 @@ export async function getValueEntryString(
     }
     const nval = v !== null ? v : await getValueEntryNumber(i);
     const format = ((i.dateFormat && (await i.dateFormat.getObject())) as any) ?? null;
+    const unit = (await i.unit?.getString()) ?? i.value.common.unit ?? '';
+    const prefix = (await i.prefix?.getString()) ?? '';
+    const suffix = (await i.suffix?.getString()) ?? '';
+
     if (nval !== null && nval !== undefined) {
         let res = '';
         if (isValueDateFormat(format)) {
-            if (nval <= 0) {
+            if (nval < 0) {
                 return null;
             }
             const temp = new Date(nval);
@@ -709,14 +728,19 @@ export async function getValueEntryString(
         } else {
             const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
             if (d !== null && d !== false) {
-                res = nval.toFixed(d);
+                res = nval.toLocaleString((format && format.local) ?? 'de-DE', {
+                    minimumFractionDigits: d,
+                    maximumFractionDigits: d,
+                    useGrouping: false,
+                });
             } else {
-                res = String(nval);
+                res = nval.toLocaleString((format && format.local) ?? 'de-DE', {
+                    useGrouping: false,
+                });
             }
         }
-        res += (await i.unit?.getString()) ?? i.value.common.unit ?? '';
-        res = ((await i.prefix?.getString()) ?? '') + res;
-        res += (await i.suffix?.getString()) ?? '';
+
+        res = prefix + res + unit + suffix;
         let opt = '';
         if (isTextSizeEntryType(i)) {
             opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
@@ -724,7 +748,7 @@ export async function getValueEntryString(
         return res + (opt ? `¬${opt}` : '');
     }
     let res = await i.value.getString();
-    let opt = '';
+
     if (res != null) {
         if (isValueDateFormat(format)) {
             const temp = new Date(res);
@@ -732,13 +756,12 @@ export async function getValueEntryString(
                 res = temp.toLocaleString(format.local, format.format);
             }
         }
-        res += (i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '';
+
+        res = prefix + res + unit + suffix;
+        let opt = '';
         if (isTextSizeEntryType(i)) {
             opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
         }
-        res += (await i.unit?.getString()) ?? i.value.common.unit ?? '';
-        res = ((await i.prefix?.getString()) ?? '') + res;
-        res += (await i.suffix?.getString()) ?? '';
         res += opt ? `¬${opt}` : '';
     }
     return res;
@@ -1443,3 +1466,49 @@ export function buildScrollingText(
 
     return { text: full, nextPos };
 }
+
+/**
+ * Convert a duration in milliseconds to a human-readable time string.
+ *
+ * Format rules:
+ * - Hours: unbounded (0 .. ∞), no leading zeros (e.g., "0", "1", "26")
+ * - Minutes: at least one digit; no leading zero if < 10 (e.g., "3", "12")
+ * - Seconds: always two digits (e.g., "05", "40")
+ * - If hours === 0, the output is "M:SS" (e.g., "1:05", "12:00")
+ * - If hours > 0, the output is "H:MM:SS" (e.g., "1:01:40", "26:00:00")
+ *
+ * Edge cases:
+ * - Negative inputs are treated as 0.
+ * - Non-finite inputs (NaN, Infinity) result in "0:00".
+ *
+ * @param ms Duration in milliseconds.
+ * @returns A time string formatted as "M:SS" or "H:MM:SS" per the rules above.
+ * @example
+ * formatHMS(65_000);           // "1:05"
+ * formatHMS(3_700_000);        // "1:01:40"
+ * formatHMS(26 * 3_600_000);   // "26:00:00"
+ * formatHMS(-500);             // "0:00"
+ * formatHMS(Number.NaN);       // "0:00"
+ */
+export function formatHMS(ms: number): string {
+    if (!Number.isFinite(ms) || ms < 0) {
+        ms = 0;
+    }
+
+    const totalSeconds: number = Math.floor(ms / 1000);
+    const hours: number = Math.floor(totalSeconds / 3600);
+    const minutes: number = Math.floor((totalSeconds % 3600) / 60);
+    const seconds: number = totalSeconds % 60;
+
+    const minutesStr = String(minutes); // minutes: no leading zero
+    const secondsStr: string = String(seconds).padStart(2, '0'); // seconds: always 2 digits
+
+    if (hours > 0) {
+        // hours: unbounded, no leading zeros; minutes padded to 2 when hours are present
+        return `${hours}:${minutesStr.padStart(2, '0')}:${secondsStr}`;
+    }
+    // hours === 0 -> "M:SS"
+    return `${minutesStr}:${secondsStr}`;
+}
+
+export default formatHMS;

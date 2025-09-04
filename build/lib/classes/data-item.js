@@ -5,6 +5,10 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -26,6 +30,11 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var data_item_exports = {};
 __export(data_item_exports, {
   Dataitem: () => Dataitem,
@@ -35,14 +44,8 @@ module.exports = __toCommonJS(data_item_exports);
 var import_Color = require("../const/Color");
 var import_library = require("./library");
 var NSPanel = __toESM(require("../types/types"));
+var _compiledReadFn, _compiledWriteFn;
 class Dataitem extends import_library.BaseClass {
-  options;
-  //private obj: ioBroker.Object | null | undefined;
-  stateDB;
-  type = void 0;
-  parent;
-  common = {};
-  _writeable = false;
   /**
    * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
    *
@@ -53,6 +56,15 @@ class Dataitem extends import_library.BaseClass {
    */
   constructor(adapter, options, parent, db) {
     super(adapter, options.name || "");
+    __privateAdd(this, _compiledReadFn);
+    __privateAdd(this, _compiledWriteFn);
+    __publicField(this, "options");
+    //private obj: ioBroker.Object | null | undefined;
+    __publicField(this, "stateDB");
+    __publicField(this, "type");
+    __publicField(this, "parent");
+    __publicField(this, "common", {});
+    __publicField(this, "_writeable", false);
     this.options = options;
     this.stateDB = db;
     this.parent = parent;
@@ -150,7 +162,7 @@ class Dataitem extends import_library.BaseClass {
     return "dp" in this.options ? (_a = this.stateDB.getType(this.options.dp)) != null ? _a : this.type : this.type;
   }
   async getCommonStates(force = false) {
-    return "dp" in this.options ? this.stateDB.getCommonStates(this.options.dp, force) : void 0;
+    return "dp" in this.options ? this.stateDB.getCommonStates(this.options.dp, force) : null;
   }
   async getState() {
     let state = await this.getRawState();
@@ -159,13 +171,17 @@ class Dataitem extends import_library.BaseClass {
       if (this.options.type !== "const" && this.options.read) {
         try {
           if (typeof this.options.read === "string") {
-            state.val = new Function("val", "Color", "language", "lc", "options", `${this.options.read}`)(
-              state.val,
-              import_Color.Color,
-              this.adapter.language,
-              state.lc,
-              this.options.constants
-            );
+            if (!__privateGet(this, _compiledReadFn)) {
+              __privateSet(this, _compiledReadFn, new Function(
+                "val",
+                "Color",
+                "language",
+                "lc",
+                "options",
+                this.options.read
+              ));
+            }
+            state.val = __privateGet(this, _compiledReadFn).call(this, state.val, import_Color.Color, this.adapter.language ? this.adapter.language : "en", state.lc, this.options.constants);
           } else {
             state.val = this.options.read(state.val);
           }
@@ -180,7 +196,7 @@ class Dataitem extends import_library.BaseClass {
   }
   async getObject() {
     const state = await this.getState();
-    if (state && state.val) {
+    if ((state == null ? void 0 : state.val) != null) {
       if (typeof state.val === "string") {
         try {
           const value = JSON.parse(state.val);
@@ -207,6 +223,13 @@ class Dataitem extends import_library.BaseClass {
     }
     return null;
   }
+  async getRGBDec() {
+    const value = await this.getRGBValue();
+    if (value) {
+      return String(import_Color.Color.rgb_dec565(value));
+    }
+    return null;
+  }
   async getRGBValue() {
     const value = await this.getObject();
     if (value) {
@@ -214,7 +237,7 @@ class Dataitem extends import_library.BaseClass {
         return value;
       }
       if (typeof value == "object" && "red" in value && "blue" in value && "green" in value) {
-        return { r: value.red, g: value.green, b: value.blue };
+        return { r: Number(value.red), g: Number(value.green), b: Number(value.blue) };
       }
     }
     return null;
@@ -225,13 +248,6 @@ class Dataitem extends import_library.BaseClass {
       if (NSPanel.isIconColorScaleElement(value)) {
         return value;
       }
-    }
-    return null;
-  }
-  async getRGBDec() {
-    const value = await this.getRGBValue();
-    if (value) {
-      return String(import_Color.Color.rgb_dec565(value));
     }
     return null;
   }
@@ -346,13 +362,28 @@ class Dataitem extends import_library.BaseClass {
     if (this.options.type === "const") {
       this.options.constVal = val;
     } else {
-      if (this.options.write) {
-        val = new Function("val", "Color", `${String(this.options.write)}`)(val, import_Color.Color);
+      try {
+        if (this.options.write) {
+          if (typeof this.options.write === "string") {
+            if (!__privateGet(this, _compiledWriteFn)) {
+              __privateSet(this, _compiledWriteFn, new Function("val", "Color", this.options.write));
+            }
+            val = __privateGet(this, _compiledWriteFn).call(this, val, import_Color.Color);
+          } else {
+            val = this.options.write(val);
+          }
+        }
+      } catch (e) {
+        this.log.error(
+          `Write for dp: ${this.options.dp} is invalid! write: ${String(this.options.write)} Error: ${String(e)}`
+        );
       }
       await this.stateDB.setState(this, val, this._writeable);
     }
   }
 }
+_compiledReadFn = new WeakMap();
+_compiledWriteFn = new WeakMap();
 function isDataItem(F) {
   if (F instanceof Dataitem) {
     return true;
