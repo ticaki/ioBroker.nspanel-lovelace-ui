@@ -206,16 +206,18 @@ export class PageItem extends BaseClassTriggerd {
                     filter = Array.isArray(filter) && filter.length > 0 ? filter : null;
                     for (const instance of devices.rows) {
                         if (instance && instance.value && instance.id && instance.id.split('.').length === 4) {
-                            const name =
-                                typeof instance.value.common.name === 'object'
-                                    ? instance.value.common.name.en
-                                    : instance.value.common.name;
-                            if (!filter || filter.includes(name)) {
-                                this.log.debug(`Alexa device: ${name} deviceId: ${instance.id}`);
-                                this.tempData.push({
-                                    id: instance.id,
-                                    name: name,
-                                });
+                            if (await this.adapter.getForeignObjectAsync(`${instance.id}.Player`)) {
+                                const name =
+                                    typeof instance.value.common.name === 'object'
+                                        ? instance.value.common.name.en
+                                        : instance.value.common.name;
+                                if (!filter || filter.includes(name)) {
+                                    this.log.debug(`Alexa device: ${name} deviceId: ${instance.id}`);
+                                    this.tempData.push({
+                                        id: instance.id,
+                                        name: name,
+                                    });
+                                }
                             }
                         }
                     }
