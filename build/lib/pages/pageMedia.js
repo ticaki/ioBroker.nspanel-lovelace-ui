@@ -499,10 +499,10 @@ class PageMedia extends import_pageMenu.PageMenu {
       startkey: `system.adapter.${page.media.id.split(".").slice(0, 1).join(".")}.`,
       endkey: `system.adapter.${page.media.id.split(".").slice(0, 1).join(".")}.\u9999`
     });
-    if (!view || !view.rows || view.rows.length === 0 || view.rows.findIndex((v) => v.id === `system.adapter.${page.media.id}`) === -1) {
-      const msg2 = `${page.uniqueName}: Media page id ${page.media.id} has no instance - not exist - wrong id?!`;
+    if (!view || !view.rows || view.rows.length === 0 || view.rows.findIndex((v) => v.id === `system.adapter.${page.media.id.split(".").slice(0, 1).join(".")}`) === -1) {
+      const msg2 = `${page.uniqueName}: Media page id - adapter: ${page.media.id.split(".").slice(0, 1).join(".")} has no instance - not exist - wrong id?!`;
       messages.push(msg2);
-      adapter.log.warn(msg2);
+      adapter.log.error(msg2);
       return { gridItem, messages };
     }
     gridItem.config.card = "cardMedia";
