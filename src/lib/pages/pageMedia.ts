@@ -525,9 +525,9 @@ export class PageMedia extends PageMenu {
             !view ||
             !view.rows ||
             view.rows.length === 0 ||
-            view.rows.findIndex(v => v.id === `system.adapter.${page.media.id.split('.').slice(0, 1).join('.')}`) === -1
+            view.rows.findIndex(v => v.id === `system.adapter.${page.media.id.split('.').slice(0, 2).join('.')}`) === -1
         ) {
-            const msg = `${page.uniqueName}: Media page id - adapter: ${page.media.id.split('.').slice(0, 1).join('.')} has no instance - not exist - wrong id?!`;
+            const msg = `${page.uniqueName}: Media page id - adapter: ${page.media.id.split('.').slice(0, 2).join('.')} has no instance - not exist - wrong id?!`;
             messages.push(msg);
             adapter.log.error(msg);
             return { gridItem, messages };
