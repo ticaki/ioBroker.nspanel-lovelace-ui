@@ -2862,7 +2862,11 @@ export class PageItem extends BaseClassTriggerd {
                     if (arr) {
                         list.list = [];
                         list.states = [];
+                        const v = await entityInSel.value.getString();
                         for (let a = 0; a < arr.length; a++) {
+                            if (arr[a].id === v && !list.value) {
+                                list.value = `${arr[a].title}`;
+                            }
                             list.list.push(`${arr[a].title}`);
                             list.states.push(String(a + 1));
                         }

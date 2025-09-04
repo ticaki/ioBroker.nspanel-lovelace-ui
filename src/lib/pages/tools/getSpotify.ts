@@ -338,7 +338,7 @@ export async function getPageSpotify(
                         value: {
                             mode: 'auto',
                             type: 'triggered',
-                            regexp: /.?\.player\.playlist\.trackNo$/,
+                            regexp: /.?\.player\.trackId$/,
                             dp: '',
                         },
                         set: {

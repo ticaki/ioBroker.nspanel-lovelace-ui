@@ -338,7 +338,7 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
             value: {
               mode: "auto",
               type: "triggered",
-              regexp: /.?\.player\.playlist\.trackNo$/,
+              regexp: /.?\.player\.trackId$/,
               dp: ""
             },
             set: {
