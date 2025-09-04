@@ -46,6 +46,7 @@ class MQTTClientClass extends import_library.BaseClass {
   ready = false;
   messageCallback;
   clientId;
+  // Flat registry of subscriptions (topic + callback)
   subscriptDB = [];
   _onConnect;
   _onDisconnect;
@@ -60,7 +61,7 @@ class MQTTClientClass extends import_library.BaseClass {
       rejectUnauthorized: false
     });
     this.client.on("connect", () => {
-      this.log.info(`Connection is active.`);
+      this.log.info("MQTT connected.");
       this.ready = true;
       if (this._onConnect) {
         this._onConnect.callback(this._onConnect.timeout);
@@ -68,9 +69,8 @@ class MQTTClientClass extends import_library.BaseClass {
       void this.adapter.setState("info.connection", true, true);
     });
     this.client.on("disconnect", () => {
-      this.log.info(`Disconnected.`);
       this.ready = false;
-      this.log.debug(`disconnected`);
+      this.log.info("MQTT disconnected (graceful).");
       if (this._onDisconnect) {
         void this._onDisconnect.callback(this._onDisconnect.timeout);
       }
@@ -78,11 +78,11 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("error", (err) => {
       this.ready = false;
-      this.log.error(`${String(err)}`);
+      this.log.error(`MQTT error: ${String(err)}`);
     });
     this.client.on("close", () => {
       this.ready = false;
-      this.log.info(`Connection is closed.`);
+      this.log.info("MQTT connection closed.");
       if (this._onDisconnect) {
         void this._onDisconnect.callback(this._onDisconnect.timeout);
       }
@@ -90,22 +90,37 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("message", (topic, message) => {
       const _helper = async (topic2, message2) => {
-        const callbacks = this.subscriptDB.filter((i) => {
-          return topic2.startsWith(i.topic.replace("/#", ""));
-        });
+        const callbacks = this.subscriptDB.filter((entry) => topic2.startsWith(entry.topic.replace("/#", "")));
         if (this.adapter.config.debugLogMqtt) {
           this.log.debug(
-            `Incoming message for ${callbacks.length} subproceses. topic: ${topic2} message: ${message2.toString()}`
+            `MQTT message: matched ${callbacks.length} handler(s) | topic="${topic2}" | payload="${message2.toString()}"`
           );
         }
-        const remove = [];
+        const toRemove = [];
         for (const c of callbacks) {
-          if (await c.callback(topic2, message2.toString())) {
-            remove.push(c);
+          try {
+            if (await c.callback(topic2, message2.toString())) {
+              toRemove.push({ topic: c.topic, callback: c.callback });
+            }
+          } catch (e) {
+            this.log.warn(
+              `MQTT handler threw for topic="${topic2}": ${String(e)} (handler kept, no unsubscribe)`
+            );
           }
         }
-        if (remove.length > 0) {
-          remove.forEach((a) => this.unsubscribe(a.topic));
+        if (toRemove.length > 0) {
+          for (const rem of toRemove) {
+            const before = this.countCallbacks(rem.topic);
+            this.removeSubscriptionEntry(rem.topic, rem.callback);
+            const after = this.countCallbacks(rem.topic);
+            if (after === 0) {
+              this.unsubscribe(rem.topic);
+            } else if (this.adapter.config.debugLogMqtt) {
+              this.log.debug(
+                `MQTT keep subscription: topic="${rem.topic}" still has ${after}/${before} handler(s)`
+              );
+            }
+          }
         }
       };
       void _helper(topic, message);
@@ -117,9 +132,9 @@ class MQTTClientClass extends import_library.BaseClass {
         timeout: this.adapter.setTimeout(() => {
           reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
         }, timeout),
-        callback: (timeout2) => {
-          if (timeout2) {
-            this.adapter.clearTimeout(timeout2);
+        callback: (timeoutRef) => {
+          if (timeoutRef) {
+            this.adapter.clearTimeout(timeoutRef);
           }
           this._onConnect = void 0;
           resolve();
@@ -130,18 +145,18 @@ class MQTTClientClass extends import_library.BaseClass {
   async waitPanelConnectAsync(_topic, timeout) {
     return new Promise((resolve, reject) => {
       const topic = `${_topic}/tele/INFO1`;
-      this.log.debug(`wait for panel connect: ${topic}`);
-      let ref = void 0;
+      this.log.debug(`Wait for panel connect on: ${topic}`);
+      let ref;
       if (timeout > 0) {
         ref = this.adapter.setTimeout(() => {
           reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
         }, timeout);
       }
-      void this.subscribe(topic, async (_topic2, _message) => {
+      void this.subscribe(topic, async () => {
         if (ref) {
           this.adapter.clearTimeout(ref);
         }
-        this.log.debug(`done connect: ${topic}`);
+        this.log.debug(`Panel connect detected: ${topic}`);
         resolve();
         return true;
       });
@@ -151,16 +166,16 @@ class MQTTClientClass extends import_library.BaseClass {
     try {
       if (!this.client.connected) {
         if (this.adapter.config.debugLogMqtt) {
-          this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+          this.log.debug(`Publish skipped (not connected): topic="${topic}" payload="${message}"`);
         }
         return;
       }
       if (this.adapter.config.debugLogMqtt) {
-        this.log.debug(`Publish topic: ${topic} with message: ${message}.`);
+        this.log.debug(`Publish: topic="${topic}" payload="${message}"`);
       }
       await this.client.publishAsync(topic, message, opt);
     } catch (e) {
-      this.log.error(`Error in publish: ${e}`);
+      this.log.error(`Error in publish (topic="${topic}"): ${e}`);
     }
   }
   unsubscribe(topic) {
@@ -173,25 +188,48 @@ class MQTTClientClass extends import_library.BaseClass {
   }
   async subscribe(topic, callback) {
     if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) {
+      if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`subscribe skipped (duplicate handler): ${topic}`);
+      }
       return;
     }
-    const aNewOne = this.subscriptDB.findIndex((m) => m.topic === topic) === -1;
+    const firstOnTopic = this.subscriptDB.findIndex((m) => m.topic === topic) === -1;
     this.subscriptDB.push({ topic, callback });
-    if (aNewOne) {
-      this.log.debug(`subscripe to: ${topic}`);
+    if (firstOnTopic) {
+      this.log.debug(`subscribe to: ${topic}`);
       await this.client.subscribeAsync(topic, { qos: 1 });
+    } else if (this.adapter.config.debugLogMqtt) {
+      const count = this.countCallbacks(topic);
+      this.log.debug(`added handler for topic="${topic}" (handlers on topic: ${count})`);
     }
   }
   async destroy() {
     await this.delete();
-    const endMqttClient = () => {
-      return new Promise((resolve) => {
-        this.client.end(false, () => {
-          resolve();
-        });
-      });
-    };
+    const endMqttClient = () => new Promise((resolve) => {
+      this.client.end(false, () => resolve());
+    });
     await endMqttClient();
+  }
+  // ========= Internal helpers (no change to external API/returns) =========
+  /**
+   * Count registered callbacks for a given topic.
+   *
+   * @param topic the topic to check
+   */
+  countCallbacks(topic) {
+    return this.subscriptDB.reduce((acc, m) => m.topic === topic ? acc + 1 : acc, 0);
+  }
+  /**
+   * Remove exactly one (topic, callback) pair from registry (no logging, no broker action).
+   *
+   * @param topic the topic
+   * @param callback the callback
+   */
+  removeSubscriptionEntry(topic, callback) {
+    const idx = this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback);
+    if (idx !== -1) {
+      this.subscriptDB.splice(idx, 1);
+    }
   }
 }
 class MQTTServerClass extends import_library.BaseClass {
@@ -248,14 +286,18 @@ class MQTTServerClass extends import_library.BaseClass {
     });
     this.server.listen(port, () => {
       this.ready = true;
-      this.log.info(`Started and listening on port ${port}`);
+      this.log.info(`MQTT server started and listening on port ${port}`);
+    });
+    this.server.on("error", (err) => {
+      this.ready = false;
+      this.log.error(`MQTT server error on port ${port}: ${String(err)}`);
     });
     this.aedes.authenticate = (client, un, pw, callback) => {
-      const confirm = username === un && password == (pw == null ? void 0 : pw.toString());
+      const confirm = username === un && password === (pw == null ? void 0 : pw.toString());
       if (!confirm) {
-        this.log.warn(`Login denied client: ${client.id}. User name or password wrong! ${pw == null ? void 0 : pw.toString()}`);
+        this.log.warn(`Login denied: client="${client.id}", username="${un != null ? un : "undefined"}"`);
       } else {
-        this.log.debug(`Client ${client.id} login successful.`);
+        this.log.debug(`Client "${client.id}" login successful (user="${un != null ? un : "undefined"}").`);
       }
       callback(null, confirm);
     };

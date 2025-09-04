@@ -102,10 +102,11 @@ class Navigation extends import_library.BaseClass {
     this.navigationConfig = config.navigationConfig.filter((a) => a !== null && a != null);
   }
   init() {
+    var _a, _b;
     this.database = [];
     let serviceLeft = "";
     let serviceRight = "";
-    let serviceID = -1;
+    let serviceID = null;
     this.navigationConfig.sort((a, b) => {
       if (a.name === "main") {
         return -1;
@@ -113,29 +114,31 @@ class Navigation extends import_library.BaseClass {
       if (b.name === "main") {
         return 1;
       }
-      if (a.name > b.name) {
-        return 1;
-      }
-      if (a.name < b.name) {
-        return -1;
-      }
-      return 0;
+      return a.name.localeCompare(b.name);
     });
     for (let a = 0; a < this.navigationConfig.length; a++) {
       const c = this.navigationConfig[a];
-      if (c.left && c.left.single === "///service") {
+      if (!c) {
+        continue;
+      }
+      if (((_a = c.left) == null ? void 0 : _a.single) === "///service") {
         serviceRight = c.name;
       }
-      if (c.right && c.right.single === "///service") {
+      if (((_b = c.right) == null ? void 0 : _b.single) === "///service") {
         serviceLeft = c.name;
       }
       if (c.name === "///service") {
+        if (serviceID !== null) {
+          this.log.warn(`Multiple "///service" nodes detected (at least at indices ${serviceID} and ${a}).`);
+        }
         serviceID = a;
       }
       const pageID = this.panel.getPagebyUniqueID(c.page);
-      this.database[a] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
+      if (pageID !== null) {
+        this.database[a] = { page: pageID, left: {}, right: {}, index: a };
+      }
     }
-    if (serviceID !== -1) {
+    if (serviceID !== null) {
       const c = this.navigationConfig[serviceID];
       if (c) {
         if (serviceLeft) {
@@ -152,23 +155,22 @@ class Navigation extends import_library.BaseClass {
       if (!c || !i) {
         continue;
       }
-      for (const k of ["left", "right"]) {
-        const nk = k;
+      for (const nk of ["left", "right"]) {
         const r = c[nk];
         if (!r) {
           continue;
         }
-        for (const k2 of ["single", "double"]) {
-          const nk2 = k2;
+        for (const nk2 of ["single", "double"]) {
           const r2 = r[nk2];
           if (!r2) {
             continue;
           }
-          const index = this.navigationConfig.findIndex((a2) => a2 && a2.name === r2);
-          if (index !== -1) {
-            i[nk][nk2] = index;
+          const found = this.navigationConfig.find((entry) => entry && entry.name === r2);
+          if (found) {
+            const idx = this.navigationConfig.indexOf(found);
+            i[nk][nk2] = idx;
           } else {
-            this.log.warn(`Dont find a navigation node with name ${r2}`);
+            this.log.warn(`Didn't find a navigation node with name "${r2}".`);
           }
         }
       }
@@ -341,7 +343,7 @@ class Navigation extends import_library.BaseClass {
           "button",
           "bSubNext",
           item.right.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-right-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-right-bold-outline"),
-          item.left.double === void 0 ? String(import_Color.Color.rgb_dec565(import_Color.Color.navRight)) : String(import_Color.Color.rgb_dec565(import_Color.Color.navDownRight)),
+          item.right.double === void 0 ? String(import_Color.Color.rgb_dec565(import_Color.Color.navRight)) : String(import_Color.Color.rgb_dec565(import_Color.Color.navDownRight)),
           "",
           ""
         );

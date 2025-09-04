@@ -119,115 +119,129 @@ export class PageMedia extends PageMenu {
         if (!this.visibility) {
             return;
         }
+
+        // Find current item by player ident, fallback to first item
         let index = this.items.findIndex(i => i.ident === this.currentPlayer);
         index = index === -1 ? 0 : index;
         if (index === 0) {
             this.playerName = '';
         }
+
         this.currentItems = this.items[index];
         const item = this.currentItems;
-        if (item === undefined) {
+        if (!item) {
             return;
         }
+
         const message: Partial<pages.PageMediaMessage> = {};
-        // title
+
+        // ---------------------
+        // Collect metadata
+        // ---------------------
+        let duration = '',
+            elapsed = '',
+            title = '',
+            album = '',
+            artist = '';
+
+        // Title string
         {
-            const test: Record<string, string> = {};
-            test.bla = 'dd';
-            let duration = '',
-                elapsed = '',
-                title = '',
-                album = '',
-                artist = '';
-
-            {
-                const v = await tools.getValueEntryString(item.data.title);
-                if (v !== null) {
-                    title = v;
-                }
-            }
-            {
-                const v = item.data.headline && (await item.data.headline.getString());
-                message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
-            }
-            {
-                const v = await tools.getValueEntryString(item.data.artist);
-                if (v !== null) {
-                    artist = v;
-                }
-            }
-            if (item.data.duration && item.data.elapsed) {
-                // --- duration ---
-                const d = await item.data.duration.getNumber(); // medialength in milliseconds
-                if (d) {
-                    duration = tools.formatHMS(d);
-                }
-                if (item.data.elapsed.type === 'string') {
-                    const e = await item.data.elapsed.getString();
-                    if (e !== null) {
-                        elapsed = e;
-                    }
-                } else if (item.data.elapsed.type === 'number') {
-                    // --- elapsed ---
-                    const e = await item.data.elapsed.getNumber();
-                    if (e != null) {
-                        elapsed = tools.formatHMS(e);
-                    }
-                }
-            }
-
-            if (item.data.album) {
-                const v = await item.data.album.getString();
-                if (v !== null) {
-                    album = v;
-                }
-            }
-            {
-                const maxSize = 18;
-
-                if (message.headline.length > maxSize) {
-                    const paddingLen = Math.max(1, Math.ceil(maxSize / 2)); // ensure there's never a full-blank frame
-                    const padding = ' '.repeat(paddingLen);
-                    const base = message.headline + padding + message.headline; // loop without blank window
-
-                    // normalize & slice fixed-size window
-                    this.headlinePos = this.headlinePos % (message.headline.length + paddingLen);
-                    message.headline = base.substring(this.headlinePos, this.headlinePos + maxSize);
-
-                    // advance by one char; deine Tick-Logik bestimmt die Geschwindigkeit (z.B. 1 Schritt/2s)
-                    this.headlinePos++;
-                }
-            }
-
-            const maxSize = 38;
-
-            message.name = `| ${elapsed}${duration ? `-${duration}` : ''}`;
-
-            const { text, nextPos } = tools.buildScrollingText(title, {
-                maxSize, // wie bisher: 35
-                suffix: message.name, // der feste rechte Block (elapsed|duration)
-                sep: ' ', // Trenner zwischen Titel und Suffix
-                pos: this.titelPos, // aktuelle Scrollposition übernehmen
-            });
-
-            message.name = text;
-            this.titelPos = nextPos;
-            if (album || artist) {
-                const div = album && artist ? ' | ' : '';
-                const scrollText = album + div + artist;
-
-                const { text, nextPos } = tools.buildScrollingText(scrollText, {
-                    maxSize, // Gesamtbreite wie gehabt
-                    pos: this.artistPos, // eigene Scrollposition für Artist/Album
-                });
-
-                message.artist = text;
-                this.artistPos = nextPos;
+            const v = await tools.getValueEntryString(item.data.title);
+            if (v !== null) {
+                title = v;
             }
         }
 
+        // Headline: fallback to playerName if needed
+        {
+            const v = item.data.headline && (await item.data.headline.getString());
+            message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
+        }
+
+        // Artist string
+        {
+            const v = await tools.getValueEntryString(item.data.artist);
+            if (v !== null) {
+                artist = v;
+            }
+        }
+
+        // Duration + elapsed
+        if (item.data.duration && item.data.elapsed) {
+            const d = await item.data.duration.getNumber(); // media length in ms
+            if (d) {
+                duration = tools.formatHMS(d);
+            }
+
+            if (item.data.elapsed.type === 'string') {
+                const e = await item.data.elapsed.getString();
+                if (e !== null) {
+                    elapsed = e;
+                }
+            } else if (item.data.elapsed.type === 'number') {
+                const e = await item.data.elapsed.getNumber();
+                if (e != null) {
+                    elapsed = tools.formatHMS(e);
+                }
+            }
+        }
+
+        // Album string
+        if (item.data.album) {
+            const v = await item.data.album.getString();
+            if (v !== null) {
+                album = v;
+            }
+        }
+
+        // ---------------------
+        // Headline scrolling
+        // ---------------------
+        if (message.headline) {
+            const { text, nextPos } = tools.buildScrollingText(message.headline, {
+                maxSize: 18,
+                pos: this.headlinePos,
+            });
+            message.headline = text;
+            this.headlinePos = nextPos;
+        }
+
+        // ---------------------
+        // Title scrolling with duration/elapsed suffix
+        // ---------------------
+        {
+            const suffix = `| ${elapsed}${duration ? `-${duration}` : ''}`;
+            const { text, nextPos } = tools.buildScrollingText(title, {
+                maxSize: 36,
+                suffix,
+                sep: ' ',
+                pos: this.titelPos,
+            });
+            message.name = text;
+            this.titelPos = nextPos;
+        }
+
+        // ---------------------
+        // Artist/Album scrolling
+        // ---------------------
+        if (album || artist) {
+            const div = album && artist ? ' | ' : '';
+            const scrollText = album + div + artist;
+
+            const { text, nextPos } = tools.buildScrollingText(scrollText, {
+                maxSize: 36,
+                pos: this.artistPos,
+            });
+
+            message.artist = text;
+            this.artistPos = nextPos;
+        }
+
+        // ---------------------
+        // Shuffle icon
+        // ---------------------
         message.shuffle_icon = '';
-        if (item.data.shuffle && item.data.shuffle.value && item.data.shuffle.value.type) {
+        if (item.data.shuffle?.value?.type) {
             let value: null | true | false = null;
             if (!item.data.shuffle.enabled || (await item.data.shuffle.enabled.getBoolean()) === true) {
                 switch (item.data.shuffle.value.type) {
@@ -243,11 +257,8 @@ export class PageMedia extends PageMenu {
                         value = await item.data.shuffle.value.getBoolean();
                         break;
                     }
-                    case 'object':
-                    case 'array':
-                    case 'mixed': {
+                    default: {
                         value = null;
-                        break;
                     }
                 }
             }
@@ -256,12 +267,19 @@ export class PageMedia extends PageMenu {
             }
         }
 
+        // ---------------------
+        // Volume
+        // ---------------------
         if (item.data.volume) {
             const v = await tools.getScaledNumber(item.data.volume);
             if (v !== null) {
                 message.volume = String(v);
             }
         }
+
+        // ---------------------
+        // Play/Pause state (mediaState preferred, fallback isPlaying)
+        // ---------------------
         if (item.data.mediaState) {
             const v = await item.data.mediaState.getString();
             if (v !== null) {
@@ -269,7 +287,6 @@ export class PageMedia extends PageMenu {
                 if (item.data.stop || item.data.pause) {
                     message.onoffbuttonColor = v.toUpperCase() !== 'STOP' ? '65535' : '1374';
                 } else {
-                    // no stop control so pause is stop
                     message.onoffbuttonColor = message.iconplaypause !== 'pause' ? '65535' : '1374';
                 }
             }
@@ -280,30 +297,37 @@ export class PageMedia extends PageMenu {
                 if (item.data.stop || item.data.pause) {
                     message.onoffbuttonColor = v ? '65535' : '1374';
                 } else {
-                    // no stop control so pause is stop
                     message.onoffbuttonColor = message.iconplaypause !== 'pause' ? '65535' : '1374';
                 }
             }
         }
 
+        // ---------------------
+        // Colors (title, artist, onOff)
+        // ---------------------
         if (item.data.title) {
             const v = await tools.getIconEntryColor(item.data.title, await this.isPlaying(), Color.Red, Color.Gray);
             if (v !== null) {
                 message.titelColor = v;
             }
         }
-
         if (item.data.artist) {
             const v = await tools.getIconEntryColor(item.data.artist, await this.isPlaying(), Color.White, Color.Gray);
             if (v !== null) {
                 message.artistColor = v;
             }
         }
+        if (item.data.onOffColor) {
+            const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), Color.White);
+            message.onoffbuttonColor = v !== null ? v : 'disable';
+        }
 
-        //Logo
+        // ---------------------
+        // Logo
+        // ---------------------
         if (item.data.logo) {
             message.logo = tools.getPayload(
-                `logo`,
+                'logo',
                 `${this.name}-logo`,
                 item.data.logo.icon && 'true' in item.data.logo.icon && item.data.logo.icon.true
                     ? ((await item.data.logo.icon.true.getString()) ?? '')
@@ -311,20 +335,16 @@ export class PageMedia extends PageMenu {
                 '4',
                 '5',
                 '6',
-            ); //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
-        }
-        if (item.data.onOffColor) {
-            const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), Color.White);
-            if (v !== null) {
-                message.onoffbuttonColor = v;
-            } else {
-                message.onoffbuttonColor = 'disable';
-            }
+            );
         }
 
+        // ---------------------
+        // Options / Navigation
+        // ---------------------
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
         const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
         message.navigation = this.getNavigation();
+
         const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
             id: 'media',
             options: pageItems.concat(opts).slice(0, 5),

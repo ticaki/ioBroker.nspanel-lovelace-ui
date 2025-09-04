@@ -128,7 +128,9 @@ export class Navigation extends BaseClass {
         this.database = [];
         let serviceLeft = '';
         let serviceRight = '';
-        let serviceID = -1;
+        let serviceID: number | null = null;
+
+        // Sortiere so, dass "main" zuerst kommt
         this.navigationConfig.sort((a, b) => {
             if (a.name === 'main') {
                 return -1;
@@ -136,29 +138,37 @@ export class Navigation extends BaseClass {
             if (b.name === 'main') {
                 return 1;
             }
-            if (a.name > b.name) {
-                return 1;
-            }
-            if (a.name < b.name) {
-                return -1;
-            }
-            return 0;
+            return a.name.localeCompare(b.name);
         });
+
+        // Erzeuge Datenbank-Einträge
         for (let a = 0; a < this.navigationConfig.length; a++) {
             const c = this.navigationConfig[a];
-            if (c.left && c.left.single === '///service') {
+            if (!c) {
+                continue;
+            }
+
+            if (c.left?.single === '///service') {
                 serviceRight = c.name;
             }
-            if (c.right && c.right.single === '///service') {
+            if (c.right?.single === '///service') {
                 serviceLeft = c.name;
             }
             if (c.name === '///service') {
+                if (serviceID !== null) {
+                    this.log.warn(`Multiple "///service" nodes detected (at least at indices ${serviceID} and ${a}).`);
+                }
                 serviceID = a;
             }
+
             const pageID = this.panel.getPagebyUniqueID(c.page);
-            this.database[a] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
+            if (pageID !== null) {
+                this.database[a] = { page: pageID, left: {}, right: {}, index: a };
+            }
         }
-        if (serviceID !== -1) {
+
+        // Service-Knoten patchen
+        if (serviceID !== null) {
             const c = this.navigationConfig[serviceID];
             if (c) {
                 if (serviceLeft) {
@@ -169,29 +179,33 @@ export class Navigation extends BaseClass {
                 }
             }
         }
+
+        // Verknüpfungen auflösen
         for (let a = 0; a < this.database.length; a++) {
             const c = this.navigationConfig[a];
             const i = this.database[a];
             if (!c || !i) {
                 continue;
             }
-            for (const k of ['left', 'right']) {
-                const nk = k as 'left' | 'right';
+
+            for (const nk of ['left', 'right'] as const) {
                 const r = c[nk];
                 if (!r) {
                     continue;
                 }
-                for (const k2 of ['single', 'double']) {
-                    const nk2 = k2 as 'single' | 'double';
+
+                for (const nk2 of ['single', 'double'] as const) {
                     const r2 = r[nk2];
                     if (!r2) {
                         continue;
                     }
-                    const index = this.navigationConfig.findIndex(a => a && a.name === r2);
-                    if (index !== -1) {
-                        i[nk][nk2] = index;
+
+                    const found = this.navigationConfig.find(entry => entry && entry.name === r2);
+                    if (found) {
+                        const idx = this.navigationConfig.indexOf(found);
+                        i[nk][nk2] = idx;
                     } else {
-                        this.log.warn(`Dont find a navigation node with name ${r2}`);
+                        this.log.warn(`Didn't find a navigation node with name "${r2}".`);
                     }
                 }
             }
@@ -384,7 +398,7 @@ export class Navigation extends BaseClass {
                     item.right.double === undefined
                         ? Icons.GetIcon('arrow-right-bold')
                         : Icons.GetIcon('arrow-top-right-bold-outline'),
-                    item.left.double === undefined
+                    item.right.double === undefined
                         ? String(Color.rgb_dec565(Color.navRight as RGB))
                         : String(Color.rgb_dec565(Color.navDownRight as RGB)),
                     '',

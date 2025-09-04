@@ -129,7 +129,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     await this.update();
   }
   async update() {
-    var _a;
+    var _a, _b, _c;
     if (!this.visibility) {
       return;
     }
@@ -140,93 +140,81 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     this.currentItems = this.items[index];
     const item = this.currentItems;
-    if (item === void 0) {
+    if (!item) {
       return;
     }
     const message = {};
+    let duration = "", elapsed = "", title = "", album = "", artist = "";
     {
-      const test = {};
-      test.bla = "dd";
-      let duration = "", elapsed = "", title = "", album = "", artist = "";
-      {
-        const v = await tools.getValueEntryString(item.data.title);
-        if (v !== null) {
-          title = v;
+      const v = await tools.getValueEntryString(item.data.title);
+      if (v !== null) {
+        title = v;
+      }
+    }
+    {
+      const v = item.data.headline && await item.data.headline.getString();
+      message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
+    }
+    {
+      const v = await tools.getValueEntryString(item.data.artist);
+      if (v !== null) {
+        artist = v;
+      }
+    }
+    if (item.data.duration && item.data.elapsed) {
+      const d = await item.data.duration.getNumber();
+      if (d) {
+        duration = tools.formatHMS(d);
+      }
+      if (item.data.elapsed.type === "string") {
+        const e = await item.data.elapsed.getString();
+        if (e !== null) {
+          elapsed = e;
+        }
+      } else if (item.data.elapsed.type === "number") {
+        const e = await item.data.elapsed.getNumber();
+        if (e != null) {
+          elapsed = tools.formatHMS(e);
         }
       }
-      {
-        const v = item.data.headline && await item.data.headline.getString();
-        message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
+    }
+    if (item.data.album) {
+      const v = await item.data.album.getString();
+      if (v !== null) {
+        album = v;
       }
-      {
-        const v = await tools.getValueEntryString(item.data.artist);
-        if (v !== null) {
-          artist = v;
-        }
-      }
-      if (item.data.duration && item.data.elapsed) {
-        const d = await item.data.duration.getNumber();
-        if (d) {
-          duration = tools.formatHMS(d);
-        }
-        if (item.data.elapsed.type === "string") {
-          const e = await item.data.elapsed.getString();
-          if (e !== null) {
-            elapsed = e;
-          }
-        } else if (item.data.elapsed.type === "number") {
-          const e = await item.data.elapsed.getNumber();
-          if (e != null) {
-            elapsed = tools.formatHMS(e);
-          }
-        }
-      }
-      if (item.data.album) {
-        const v = await item.data.album.getString();
-        if (v !== null) {
-          album = v;
-        }
-      }
-      {
-        const maxSize2 = 18;
-        if (message.headline.length > maxSize2) {
-          const paddingLen = Math.max(1, Math.ceil(maxSize2 / 2));
-          const padding = " ".repeat(paddingLen);
-          const base = message.headline + padding + message.headline;
-          this.headlinePos = this.headlinePos % (message.headline.length + paddingLen);
-          message.headline = base.substring(this.headlinePos, this.headlinePos + maxSize2);
-          this.headlinePos++;
-        }
-      }
-      const maxSize = 38;
-      message.name = `| ${elapsed}${duration ? `-${duration}` : ""}`;
+    }
+    if (message.headline) {
+      const { text, nextPos } = tools.buildScrollingText(message.headline, {
+        maxSize: 18,
+        pos: this.headlinePos
+      });
+      message.headline = text;
+      this.headlinePos = nextPos;
+    }
+    {
+      const suffix = `| ${elapsed}${duration ? `-${duration}` : ""}`;
       const { text, nextPos } = tools.buildScrollingText(title, {
-        maxSize,
-        // wie bisher: 35
-        suffix: message.name,
-        // der feste rechte Block (elapsed|duration)
+        maxSize: 36,
+        suffix,
         sep: " ",
-        // Trenner zwischen Titel und Suffix
         pos: this.titelPos
-        // aktuelle Scrollposition übernehmen
       });
       message.name = text;
       this.titelPos = nextPos;
-      if (album || artist) {
-        const div = album && artist ? " | " : "";
-        const scrollText = album + div + artist;
-        const { text: text2, nextPos: nextPos2 } = tools.buildScrollingText(scrollText, {
-          maxSize,
-          // Gesamtbreite wie gehabt
-          pos: this.artistPos
-          // eigene Scrollposition für Artist/Album
-        });
-        message.artist = text2;
-        this.artistPos = nextPos2;
-      }
+    }
+    if (album || artist) {
+      const div = album && artist ? " | " : "";
+      const scrollText = album + div + artist;
+      const { text, nextPos } = tools.buildScrollingText(scrollText, {
+        maxSize: 36,
+        pos: this.artistPos
+      });
+      message.artist = text;
+      this.artistPos = nextPos;
     }
     message.shuffle_icon = "";
-    if (item.data.shuffle && item.data.shuffle.value && item.data.shuffle.value.type) {
+    if ((_b = (_a = item.data.shuffle) == null ? void 0 : _a.value) == null ? void 0 : _b.type) {
       let value = null;
       if (!item.data.shuffle.enabled || await item.data.shuffle.enabled.getBoolean() === true) {
         switch (item.data.shuffle.value.type) {
@@ -242,11 +230,8 @@ class PageMedia extends import_pageMenu.PageMenu {
             value = await item.data.shuffle.value.getBoolean();
             break;
           }
-          case "object":
-          case "array":
-          case "mixed": {
+          default: {
             value = null;
-            break;
           }
         }
       }
@@ -293,23 +278,19 @@ class PageMedia extends import_pageMenu.PageMenu {
         message.artistColor = v;
       }
     }
+    if (item.data.onOffColor) {
+      const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), import_Color.Color.White);
+      message.onoffbuttonColor = v !== null ? v : "disable";
+    }
     if (item.data.logo) {
       message.logo = tools.getPayload(
-        `logo`,
+        "logo",
         `${this.name}-logo`,
-        item.data.logo.icon && "true" in item.data.logo.icon && item.data.logo.icon.true ? (_a = await item.data.logo.icon.true.getString()) != null ? _a : "" : "",
+        item.data.logo.icon && "true" in item.data.logo.icon && item.data.logo.icon.true ? (_c = await item.data.logo.icon.true.getString()) != null ? _c : "" : "",
         "4",
         "5",
         "6"
       );
-    }
-    if (item.data.onOffColor) {
-      const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), import_Color.Color.White);
-      if (v !== null) {
-        message.onoffbuttonColor = v;
-      } else {
-        message.onoffbuttonColor = "disable";
-      }
     }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     const pageItems = (await this.getOptions([])).slice(0, this.maxItems);

@@ -1072,21 +1072,22 @@ function buildScrollingText(title, options = {}) {
   var _a;
   const { maxSize = 35, prefix = "", suffix = "", sep = " ", rightFixed, gap = "   ", pos = 0 } = options;
   const right = (_a = rightFixed != null ? rightFixed : suffix) != null ? _a : "";
-  const leftAvailable = maxSize - prefix.length - sep.length - right.length;
+  const useSep = right.length > 0 ? sep : "";
+  const leftAvailable = maxSize - prefix.length - useSep.length - right.length;
   if (leftAvailable <= 0) {
-    const cut = right.slice(-maxSize);
-    return { text: cut, nextPos: pos };
+    const fixed = `${prefix}${useSep}${right}`;
+    return { text: fixed.slice(-maxSize), nextPos: pos };
   }
   if (title.length <= leftAvailable) {
     const left2 = title.padEnd(leftAvailable, " ");
-    return { text: `${prefix}${left2}${sep}${right}`, nextPos: pos };
+    return { text: `${prefix}${left2}${useSep}${right}`, nextPos: pos };
   }
   const cycle = title + gap;
   const cycleLen = cycle.length;
   const posNorm = pos % cycleLen;
   const doubled = cycle + cycle;
   const left = doubled.substr(posNorm, leftAvailable);
-  const full = `${prefix}${left}${sep}${right}`;
+  const full = `${prefix}${left}${useSep}${right}`;
   const nextPos = (posNorm + 1) % cycleLen;
   return { text: full, nextPos };
 }
