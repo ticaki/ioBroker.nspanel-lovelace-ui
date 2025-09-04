@@ -2487,6 +2487,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           if (o) {
             list.list = [];
             list.states = [];
+            list.value = "";
             for (const a in o) {
               const str = String(o[a]).replace(/\r?\n/g, "").trim();
               if (!al || al && Array.isArray(al) && (al.includes(str) || al.length === 0)) {
