@@ -98,7 +98,8 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
           type: "triggered",
           role: ["media.elapsed", "media.elapsed.text"],
           regexp: /.?\.Player\..?/,
-          dp: ""
+          dp: "",
+          read: `return val != null && typeof val === 'number' ? val*1000 : val;`
         },
         volume: {
           value: {
@@ -224,7 +225,7 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
-  if (!((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.reminder) !== true) {
+  if (!((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.reminder)) {
     gridItem.pageItems.push({
       role: "text.list",
       type: "text",
@@ -253,7 +254,7 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
       }
     });
   }
-  if (!((_g = page.media.deactivateDefaultItems) == null ? void 0 : _g.online) !== true) {
+  if (!((_g = page.media.deactivateDefaultItems) == null ? void 0 : _g.online)) {
     gridItem.pageItems.push({
       role: "",
       type: "text",
@@ -292,7 +293,7 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
       }
     });
   }
-  if (((_j = page.media.deactivateDefaultItems) == null ? void 0 : _j.speakerList) !== true) {
+  if (!((_j = page.media.deactivateDefaultItems) == null ? void 0 : _j.speakerList)) {
     gridItem.pageItems.push({
       role: "alexa-speaker",
       type: "input_sel",
@@ -352,7 +353,7 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
       }
     });
   }
-  if (!((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.playList) !== true) {
+  if (!((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.playList)) {
     gridItem.pageItems.push({
       role: "alexa-playlist",
       type: "input_sel",
@@ -381,7 +382,7 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
       }
     });
   }
-  if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.equalizer) !== true) {
+  if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.equalizer)) {
     gridItem.pageItems.push({
       role: "",
       type: "number",
@@ -513,13 +514,13 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
       }
     });
   }
-  if (((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.clock) !== true) {
+  if (!((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.clock)) {
     gridItem.pageItems.push({
       template: "text.clock",
       dpInit: ""
     });
   }
-  if (!((_r = page.media.deactivateDefaultItems) == null ? void 0 : _r.repeat) !== true) {
+  if (!((_r = page.media.deactivateDefaultItems) == null ? void 0 : _r.repeat)) {
     gridItem.pageItems.push({
       role: "",
       type: "text",

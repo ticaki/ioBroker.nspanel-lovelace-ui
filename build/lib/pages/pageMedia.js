@@ -168,22 +168,26 @@ class PageMedia extends import_pageMenu.PageMenu {
         const d = await item.data.duration.getNumber();
         if (d) {
           const t = (/* @__PURE__ */ new Date()).setHours(0, 0, 0, d);
-          if (d >= 36e5) {
+          if (d >= 864e5) {
+            let duration2 = new Date(t).toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit"
+            });
+            const parts = duration2.split(":");
+            parts[0] = String(Math.floor(d / 36e5));
+            duration2 = parts.join(":");
+          } else if (d >= 36e5) {
             duration = new Date(t).toLocaleTimeString("de-DE", {
               hour: "numeric",
               minute: "2-digit",
               second: "2-digit"
             });
-            if (d >= 864e5) {
-              const arr = duration.split(":");
-              if (arr.length < 3) {
-                arr.unshift("0");
-              }
-              arr[0] = String(Math.floor(d / 864e5));
-              duration = arr.join(":");
-            }
           } else {
-            duration = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+            duration = new Date(t).toLocaleTimeString("de-DE", {
+              minute: "numeric",
+              second: "2-digit"
+            });
           }
         }
         if (item.data.elapsed.type === "string") {
@@ -193,24 +197,28 @@ class PageMedia extends import_pageMenu.PageMenu {
           }
         } else if (item.data.elapsed.type === "number") {
           const e = await item.data.elapsed.getNumber();
-          if (e !== null) {
-            const t = (/* @__PURE__ */ new Date()).setHours(0, 0, e, 0);
-            if (e >= 36e5) {
+          if (e != null) {
+            const t = (/* @__PURE__ */ new Date()).setHours(0, 0, 0, e);
+            if (e >= 864e5) {
+              let elapsed2 = new Date(t).toLocaleTimeString("de-DE", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+              });
+              const parts = elapsed2.split(":");
+              parts[0] = String(Math.floor(e / 36e5));
+              elapsed2 = parts.join(":");
+            } else if (e >= 36e5) {
               elapsed = new Date(t).toLocaleTimeString("de-DE", {
                 hour: "numeric",
                 minute: "2-digit",
                 second: "2-digit"
               });
-              if (e >= 864e5) {
-                const arr = duration.split(":");
-                if (arr.length < 3) {
-                  arr.unshift("0");
-                }
-                arr[0] = String(Math.floor(e / 864e5));
-                elapsed = arr.join(":");
-              }
             } else {
-              elapsed = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+              elapsed = new Date(t).toLocaleTimeString("de-DE", {
+                minute: "numeric",
+                second: "2-digit"
+              });
             }
           }
         }
@@ -224,9 +232,12 @@ class PageMedia extends import_pageMenu.PageMenu {
       {
         const maxSize2 = 18;
         if (message.headline.length > maxSize2) {
-          const s = `${message.headline}        `;
-          this.headlinePos = this.headlinePos % s.length;
-          message.headline = (s + message.headline).substring(this.headlinePos++ % (message.headline + s).length).substring(0, 23);
+          const paddingLen = Math.max(1, Math.ceil(maxSize2 / 2));
+          const padding = " ".repeat(paddingLen);
+          const base = message.headline + padding + message.headline;
+          this.headlinePos = this.headlinePos % (message.headline.length + paddingLen);
+          message.headline = base.substring(this.headlinePos, this.headlinePos + maxSize2);
+          this.headlinePos++;
         }
       }
       const maxSize = 38;

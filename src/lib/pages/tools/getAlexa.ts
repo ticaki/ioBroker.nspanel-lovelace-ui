@@ -87,6 +87,7 @@ export async function getPageAlexa(
                     role: ['media.elapsed', 'media.elapsed.text'],
                     regexp: /.?\.Player\..?/,
                     dp: '',
+                    read: `return val != null && typeof val === 'number' ? val*1000 : val;`,
                 },
                 volume: {
                     value: {
@@ -216,7 +217,7 @@ export async function getPageAlexa(
     gridItem.pageItems = gridItem.pageItems || [];
 
     //reminder
-    if (!page.media.deactivateDefaultItems?.reminder !== true) {
+    if (!page.media.deactivateDefaultItems?.reminder) {
         gridItem.pageItems.push({
             role: 'text.list',
             type: 'text',
@@ -248,7 +249,7 @@ export async function getPageAlexa(
         });
     }
     // online
-    if (!page.media.deactivateDefaultItems?.online !== true) {
+    if (!page.media.deactivateDefaultItems?.online) {
         gridItem.pageItems.push({
             role: '',
             type: 'text',
@@ -290,7 +291,7 @@ export async function getPageAlexa(
         });
     }
     //speaker select
-    if (page.media.deactivateDefaultItems?.speakerList !== true) {
+    if (!page.media.deactivateDefaultItems?.speakerList) {
         gridItem.pageItems.push({
             role: 'alexa-speaker',
             type: 'input_sel',
@@ -352,7 +353,7 @@ export async function getPageAlexa(
         });
     }
     //playlist select
-    if (!page.media.deactivateDefaultItems?.playList !== true) {
+    if (!page.media.deactivateDefaultItems?.playList) {
         gridItem.pageItems.push({
             role: 'alexa-playlist',
             type: 'input_sel',
@@ -383,7 +384,7 @@ export async function getPageAlexa(
         });
     }
     //equalizer
-    if (!page.media.deactivateDefaultItems?.equalizer !== true) {
+    if (!page.media.deactivateDefaultItems?.equalizer) {
         gridItem.pageItems.push({
             role: '',
             type: 'number',
@@ -519,14 +520,14 @@ export async function getPageAlexa(
         });
     }
     // time
-    if (page.media.deactivateDefaultItems?.clock !== true) {
+    if (!page.media.deactivateDefaultItems?.clock) {
         gridItem.pageItems.push({
             template: 'text.clock',
             dpInit: '',
         });
     }
     // repeat
-    if (!page.media.deactivateDefaultItems?.repeat !== true) {
+    if (!page.media.deactivateDefaultItems?.repeat) {
         gridItem.pageItems.push({
             role: '',
             type: 'text',
