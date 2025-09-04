@@ -415,6 +415,16 @@ declare namespace ScriptConfig {
             online?: RGB;
             reminder?: RGB;
         };
+        deactivateDefaultItems?: {
+            trackList?: boolean;
+            speakerList?: boolean;
+            repeat?: boolean;
+            equalizer?: boolean;
+            playList?: boolean;
+            online?: boolean;
+            reminder?: boolean;
+            clock?: boolean;
+        };
     } & PageBaseItem;
 
     export type PageThermo2PageItems = {

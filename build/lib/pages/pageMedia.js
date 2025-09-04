@@ -176,6 +176,9 @@ class PageMedia extends import_pageMenu.PageMenu {
             });
             if (d >= 864e5) {
               const arr = duration.split(":");
+              if (arr.length < 3) {
+                arr.unshift("0");
+              }
               arr[0] = String(Math.floor(d / 864e5));
               duration = arr.join(":");
             }
@@ -192,7 +195,23 @@ class PageMedia extends import_pageMenu.PageMenu {
           const e = await item.data.elapsed.getNumber();
           if (e !== null) {
             const t = (/* @__PURE__ */ new Date()).setHours(0, 0, e, 0);
-            elapsed = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+            if (e >= 36e5) {
+              elapsed = new Date(t).toLocaleTimeString("de-DE", {
+                hour: "numeric",
+                minute: "2-digit",
+                second: "2-digit"
+              });
+              if (e >= 864e5) {
+                const arr = duration.split(":");
+                if (arr.length < 3) {
+                  arr.unshift("0");
+                }
+                arr[0] = String(Math.floor(e / 864e5));
+                elapsed = arr.join(":");
+              }
+            } else {
+              elapsed = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+            }
           }
         }
       }
@@ -307,7 +326,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     if (item.data.logo) {
       message.logo = tools.getPayload(
-        `media-OnOff`,
+        `logo`,
         `${this.name}-logo`,
         item.data.logo.icon && "true" in item.data.logo.icon && item.data.logo.icon.true ? (_a = await item.data.logo.icon.true.getString()) != null ? _a : "" : "",
         "4",

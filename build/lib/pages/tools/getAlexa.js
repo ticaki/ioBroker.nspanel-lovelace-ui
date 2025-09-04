@@ -34,7 +34,7 @@ module.exports = __toCommonJS(getAlexa_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
 async function getPageAlexa(configManager, page, gridItem, messages) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
   const str = arr.join(".");
@@ -220,340 +220,343 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
       }
     },
     items: void 0,
-    pageItems: [
-      //reminder
-      {
-        role: "text.list",
-        type: "text",
-        dpInit: "",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: "reminder" },
-              color: await configManager.getIconColor(
-                (_e = page.media.itemsColorOff) == null ? void 0 : _e.reminder,
-                import_Color.Color.attention
-              )
-            }
-          },
-          entity1: {
-            value: {
-              type: "const",
-              constVal: true
-            }
-          },
-          enabled: {
-            mode: "auto",
-            type: "triggered",
-            role: "value",
-            regexp: /.?\.Reminder\.triggered$/,
-            dp: "",
-            read: "return (val != null && lc <= Date.now() + 120000 ? true : false);"
+    uniqueID: page.uniqueName,
+    pageItems: []
+  };
+  gridItem.pageItems = gridItem.pageItems || [];
+  if (!((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.reminder) !== true) {
+    gridItem.pageItems.push({
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "reminder" },
+            color: await configManager.getIconColor((_f = page.media.itemsColorOff) == null ? void 0 : _f.reminder, import_Color.Color.attention)
           }
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        enabled: {
+          mode: "auto",
+          type: "triggered",
+          role: "value",
+          regexp: /.?\.Reminder\.triggered$/,
+          dp: "",
+          read: "return (val != null && lc <= Date.now() + 120000 ? true : false);"
         }
-      },
-      // online
-      {
-        role: "",
-        type: "text",
-        dpInit: "",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: "wifi" },
-              color: await configManager.getIconColor((_f = page.media.itemsColorOn) == null ? void 0 : _f.online, import_Color.Color.good)
-            },
-            false: {
-              value: { type: "const", constVal: "wifi-off" },
-              color: await configManager.getIconColor((_g = page.media.itemsColorOff) == null ? void 0 : _g.online, import_Color.Color.attention)
-            },
-            scale: void 0,
-            maxBri: void 0,
-            minBri: void 0
+      }
+    });
+  }
+  if (!((_g = page.media.deactivateDefaultItems) == null ? void 0 : _g.online) !== true) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "wifi" },
+            color: await configManager.getIconColor((_h = page.media.itemsColorOn) == null ? void 0 : _h.online, import_Color.Color.good)
           },
-          entity1: {
-            value: {
-              mode: "auto",
-              type: "triggered",
-              role: "indicator.reachable",
-              regexp: /.?\.online$/,
-              dp: ""
-            }
+          false: {
+            value: { type: "const", constVal: "wifi-off" },
+            color: await configManager.getIconColor((_i = page.media.itemsColorOff) == null ? void 0 : _i.online, import_Color.Color.attention)
           },
-          enabled: {
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
             mode: "auto",
             type: "triggered",
             role: "indicator.reachable",
             regexp: /.?\.online$/,
-            dp: "",
-            read: "return !val;"
+            dp: ""
           }
+        },
+        enabled: {
+          mode: "auto",
+          type: "triggered",
+          role: "indicator.reachable",
+          regexp: /.?\.online$/,
+          dp: "",
+          read: "return !val;"
         }
-      },
-      //speaker select
-      {
-        role: "alexa-speaker",
-        type: "input_sel",
-        data: {
-          color: {
-            true: {
-              type: "const",
-              constVal: import_Color.Color.HMIOn
-            },
-            false: void 0
-          },
-          icon: {
-            true: {
-              value: { type: "const", constVal: "speaker-multiple" },
-              color: await configManager.getIconColor((_h = page.media.itemsColorOn) == null ? void 0 : _h.speakerList, import_Color.Color.good)
-            },
-            false: {
-              value: { type: "const", constVal: "speaker-multiple" },
-              color: await configManager.getIconColor((_i = page.media.itemsColorOff) == null ? void 0 : _i.speakerList, import_Color.Color.bad)
-            },
-            scale: void 0,
-            maxBri: void 0,
-            minBri: void 0
-          },
-          entityInSel: {
-            value: {
-              mode: "auto",
-              type: "triggered",
-              regexp: /.?\.Info\.name$/,
-              dp: ""
-            },
-            set: {
-              mode: "auto",
-              type: "state",
-              regexp: /.?\.Commands\.textCommand$/,
-              dp: ""
-            },
-            decimal: void 0,
-            factor: void 0,
-            unit: void 0
-          },
-          headline: {
+      }
+    });
+  }
+  if (((_j = page.media.deactivateDefaultItems) == null ? void 0 : _j.speakerList) !== true) {
+    gridItem.pageItems.push({
+      role: "alexa-speaker",
+      type: "input_sel",
+      data: {
+        color: {
+          true: {
             type: "const",
-            constVal: "speakerList"
+            constVal: import_Color.Color.HMIOn
           },
-          /**
-           * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-           */
-          valueList: {
-            type: "const",
-            constVal: JSON.stringify(page.media.speakerList || [])
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "speaker-multiple" },
+            color: await configManager.getIconColor((_k = page.media.itemsColorOn) == null ? void 0 : _k.speakerList, import_Color.Color.good)
           },
-          /**
-           * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-           */
-          setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-        }
-      },
-      //playlist select
-      {
-        role: "alexa-playlist",
-        type: "input_sel",
-        dpInit: "",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: "playlist-play" },
-              color: await configManager.getIconColor((_j = page.media.itemsColorOn) == null ? void 0 : _j.playList, import_Color.Color.activated)
-            }
+          false: {
+            value: { type: "const", constVal: "speaker-multiple" },
+            color: await configManager.getIconColor((_l = page.media.itemsColorOff) == null ? void 0 : _l.speakerList, import_Color.Color.bad)
           },
-          entityInSel: {
-            value: {
-              type: "const",
-              constVal: "My Playlist"
-            }
-          },
-          valueList: {
-            type: "const",
-            constVal: JSON.stringify(page.media.playList || [])
-          },
-          headline: {
-            type: "const",
-            constVal: "playList"
-          }
-        }
-      },
-      //equalizer
-      {
-        role: "",
-        type: "number",
-        dpInit: "",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: "equalizer-outline" },
-              color: await configManager.getIconColor(
-                (_k = page.media.itemsColorOn) == null ? void 0 : _k.equalizer,
-                import_Color.Color.activated
-              )
-            },
-            scale: void 0,
-            maxBri: void 0,
-            minBri: void 0
-          },
-          heading1: {
-            type: "const",
-            constVal: "treble"
-          },
-          heading2: {
-            type: "const",
-            constVal: "midrange"
-          },
-          heading3: {
-            type: "const",
-            constVal: "bass"
-          },
-          zero1: {
-            type: "const",
-            constVal: 6
-          },
-          zero2: {
-            type: "const",
-            constVal: 6
-          },
-          zero3: {
-            type: "const",
-            constVal: 6
-          },
-          entity1: {
-            value: {
-              mode: "auto",
-              type: "state",
-              regexp: /.?\.Preferences\.equalizerTreble$/,
-              dp: ""
-            },
-            minScale: {
-              type: "const",
-              constVal: -6
-            },
-            maxScale: {
-              type: "const",
-              constVal: 6
-            },
-            decimal: {
-              type: "const",
-              constVal: 0
-            }
-          },
-          minValue1: {
-            type: "const",
-            constVal: 0
-          },
-          maxValue1: {
-            type: "const",
-            constVal: 12
-          },
-          entity2: {
-            value: {
-              mode: "auto",
-              type: "state",
-              regexp: /.?\.Preferences\.equalizerMidRange$/,
-              dp: ""
-            },
-            minScale: {
-              type: "const",
-              constVal: -6
-            },
-            maxScale: {
-              type: "const",
-              constVal: 6
-            },
-            decimal: {
-              type: "const",
-              constVal: 0
-            }
-          },
-          minValue2: {
-            type: "const",
-            constVal: 0
-          },
-          maxValue2: {
-            type: "const",
-            constVal: 12
-          },
-          entity3: {
-            value: {
-              mode: "auto",
-              type: "state",
-              regexp: /.?\.Preferences\.equalizerBass$/,
-              dp: ""
-            },
-            minScale: {
-              type: "const",
-              constVal: -6
-            },
-            maxScale: {
-              type: "const",
-              constVal: 6
-            },
-            decimal: {
-              type: "const",
-              constVal: 0
-            }
-          },
-          minValue3: {
-            type: "const",
-            constVal: 0
-          },
-          maxValue3: {
-            type: "const",
-            constVal: 12
-          },
-          text: {
-            true: {
-              type: "const",
-              constVal: "equalizer"
-            }
-          }
-        }
-      },
-      // repeat
-      {
-        role: "",
-        type: "text",
-        dpInit: "",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: "repeat-variant" },
-              color: await configManager.getIconColor((_l = page.media.itemsColorOn) == null ? void 0 : _l.repeat, import_Color.Color.activated)
-            },
-            false: {
-              value: { type: "const", constVal: "repeat" },
-              color: await configManager.getIconColor(
-                (_m = page.media.itemsColorOff) == null ? void 0 : _m.repeat,
-                import_Color.Color.deactivated
-              )
-            },
-            scale: void 0,
-            maxBri: void 0,
-            minBri: void 0
-          },
-          entity1: {
-            value: {
-              mode: "auto",
-              type: "triggered",
-              role: "media.mode.repeat",
-              regexp: /\.Player\.controlRepeat$/,
-              dp: ""
-            }
-          },
-          enabled: {
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
             mode: "auto",
             type: "triggered",
-            role: "indicator",
-            regexp: /\.Player\.allowRepeat$/,
+            regexp: /.?\.Info\.name$/,
             dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            regexp: /.?\.Commands\.textCommand$/,
+            dp: ""
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "speakerList"
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.speakerList || [])
+        },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    });
+  }
+  if (!((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.playList) !== true) {
+    gridItem.pageItems.push({
+      role: "alexa-playlist",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "playlist-play" },
+            color: await configManager.getIconColor((_n = page.media.itemsColorOn) == null ? void 0 : _n.playList, import_Color.Color.activated)
+          }
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: "My Playlist"
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.playList || [])
+        },
+        headline: {
+          type: "const",
+          constVal: "playList"
+        }
+      }
+    });
+  }
+  if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.equalizer) !== true) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "equalizer-outline" },
+            color: await configManager.getIconColor((_p = page.media.itemsColorOn) == null ? void 0 : _p.equalizer, import_Color.Color.activated)
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        heading1: {
+          type: "const",
+          constVal: "treble"
+        },
+        heading2: {
+          type: "const",
+          constVal: "midrange"
+        },
+        heading3: {
+          type: "const",
+          constVal: "bass"
+        },
+        zero1: {
+          type: "const",
+          constVal: 6
+        },
+        zero2: {
+          type: "const",
+          constVal: 6
+        },
+        zero3: {
+          type: "const",
+          constVal: 6
+        },
+        entity1: {
+          value: {
+            mode: "auto",
+            type: "state",
+            regexp: /.?\.Preferences\.equalizerTreble$/,
+            dp: ""
+          },
+          minScale: {
+            type: "const",
+            constVal: -6
+          },
+          maxScale: {
+            type: "const",
+            constVal: 6
+          },
+          decimal: {
+            type: "const",
+            constVal: 0
+          }
+        },
+        minValue1: {
+          type: "const",
+          constVal: 0
+        },
+        maxValue1: {
+          type: "const",
+          constVal: 12
+        },
+        entity2: {
+          value: {
+            mode: "auto",
+            type: "state",
+            regexp: /.?\.Preferences\.equalizerMidRange$/,
+            dp: ""
+          },
+          minScale: {
+            type: "const",
+            constVal: -6
+          },
+          maxScale: {
+            type: "const",
+            constVal: 6
+          },
+          decimal: {
+            type: "const",
+            constVal: 0
+          }
+        },
+        minValue2: {
+          type: "const",
+          constVal: 0
+        },
+        maxValue2: {
+          type: "const",
+          constVal: 12
+        },
+        entity3: {
+          value: {
+            mode: "auto",
+            type: "state",
+            regexp: /.?\.Preferences\.equalizerBass$/,
+            dp: ""
+          },
+          minScale: {
+            type: "const",
+            constVal: -6
+          },
+          maxScale: {
+            type: "const",
+            constVal: 6
+          },
+          decimal: {
+            type: "const",
+            constVal: 0
+          }
+        },
+        minValue3: {
+          type: "const",
+          constVal: 0
+        },
+        maxValue3: {
+          type: "const",
+          constVal: 12
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "equalizer"
           }
         }
       }
-    ],
-    uniqueID: page.uniqueName
-  };
+    });
+  }
+  if (((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.clock) !== true) {
+    gridItem.pageItems.push({
+      template: "text.clock",
+      dpInit: ""
+    });
+  }
+  if (!((_r = page.media.deactivateDefaultItems) == null ? void 0 : _r.repeat) !== true) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "repeat-variant" },
+            color: await configManager.getIconColor((_s = page.media.itemsColorOn) == null ? void 0 : _s.repeat, import_Color.Color.activated)
+          },
+          false: {
+            value: { type: "const", constVal: "repeat" },
+            color: await configManager.getIconColor((_t = page.media.itemsColorOff) == null ? void 0 : _t.repeat, import_Color.Color.deactivated)
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            mode: "auto",
+            type: "triggered",
+            role: "media.mode.repeat",
+            regexp: /\.Player\.controlRepeat$/,
+            dp: ""
+          }
+        },
+        enabled: {
+          mode: "auto",
+          type: "triggered",
+          role: "indicator",
+          regexp: /\.Player\.allowRepeat$/,
+          dp: ""
+        }
+      }
+    });
+  }
   return { gridItem, messages };
 }
 // Annotate the CommonJS export names for ESM import in node:

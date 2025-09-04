@@ -169,6 +169,9 @@ export class PageMedia extends PageMenu {
                         });
                         if (d >= 86_400_000) {
                             const arr = duration.split(':');
+                            if (arr.length < 3) {
+                                arr.unshift('0');
+                            }
                             arr[0] = String(Math.floor(d / 86_400_000));
                             duration = arr.join(':');
                         }
@@ -185,7 +188,23 @@ export class PageMedia extends PageMenu {
                     const e = await item.data.elapsed.getNumber();
                     if (e !== null) {
                         const t = new Date().setHours(0, 0, e, 0);
-                        elapsed = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
+                        if (e >= 3_600_000) {
+                            elapsed = new Date(t).toLocaleTimeString('de-DE', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                second: '2-digit',
+                            });
+                            if (e >= 86_400_000) {
+                                const arr = duration.split(':');
+                                if (arr.length < 3) {
+                                    arr.unshift('0');
+                                }
+                                arr[0] = String(Math.floor(e / 86_400_000));
+                                elapsed = arr.join(':');
+                            }
+                        } else {
+                            elapsed = new Date(t).toLocaleTimeString('de-DE', { minute: 'numeric', second: '2-digit' });
+                        }
                     }
                 }
             }
@@ -311,7 +330,7 @@ export class PageMedia extends PageMenu {
         //Logo
         if (item.data.logo) {
             message.logo = tools.getPayload(
-                `media-OnOff`,
+                `logo`,
                 `${this.name}-logo`,
                 item.data.logo.icon && 'true' in item.data.logo.icon && item.data.logo.icon.true
                     ? ((await item.data.logo.icon.true.getString()) ?? '')

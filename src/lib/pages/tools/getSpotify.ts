@@ -13,6 +13,7 @@ export async function getPageSpotify(
     gridItem.dpInit = `/^${page.media.id.split('.').slice(0, 2).join('\\.')}\\./`;
     gridItem = {
         ...gridItem,
+        uniqueID: page.uniqueName,
         config: {
             ...gridItem.config,
             ident: page.media.id,
@@ -187,7 +188,12 @@ export async function getPageSpotify(
             },
         },
         items: undefined,
-        pageItems: [
+        pageItems: [],
+    };
+    gridItem.pageItems = gridItem.pageItems || [];
+    //online
+    if (page.media.deactivateDefaultItems?.online !== true) {
+        gridItem.pageItems.push(
             // online
             {
                 role: '',
@@ -228,62 +234,70 @@ export async function getPageSpotify(
                     },
                 },
             },
-            //speaker select
-            {
-                role: 'spotify-speaker',
-                type: 'input_sel',
+        );
+    }
 
-                data: {
-                    color: {
-                        true: {
-                            type: 'const',
-                            constVal: Color.HMIOn,
-                        },
-                        false: undefined,
-                    },
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: 'speaker-multiple' },
-                            color: await configManager.getIconColor(page.media.itemsColorOn?.speakerList, Color.good),
-                        },
-                        false: {
-                            value: { type: 'const', constVal: 'speaker-multiple' },
-                            color: await configManager.getIconColor(page.media.itemsColorOff?.speakerList, Color.bad),
-                        },
-                        scale: undefined,
-                        maxBri: undefined,
-                        minBri: undefined,
-                    },
-                    entityInSel: {
-                        value: {
-                            mode: 'auto',
-                            type: 'triggered',
-                            regexp: /.?\.devices\.deviceList$/,
-                            dp: '',
-                        },
-                        set: {
-                            mode: 'auto',
-                            type: 'state',
-                            regexp: /.?\.devices\.deviceList$/,
-                            dp: '',
-                        },
-                        decimal: undefined,
-                        factor: undefined,
-                        unit: undefined,
-                    },
-                    headline: {
+    //speaker select
+    if (page.media.deactivateDefaultItems?.speakerList !== true) {
+        gridItem.pageItems.push({
+            role: 'spotify-speaker',
+            type: 'input_sel',
+
+            data: {
+                color: {
+                    true: {
                         type: 'const',
-                        constVal: 'speakerList',
+                        constVal: Color.HMIOn,
                     },
-                    /**
-                     * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-                     */
-                    valueList: {
-                        type: 'const',
-                        constVal: JSON.stringify(page.media.speakerList || []),
+                    false: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'speaker-multiple' },
+                        color: await configManager.getIconColor(page.media.itemsColorOn?.speakerList, Color.good),
                     },
+                    false: {
+                        value: { type: 'const', constVal: 'speaker-multiple' },
+                        color: await configManager.getIconColor(page.media.itemsColorOff?.speakerList, Color.bad),
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        regexp: /.?\.devices\.deviceList$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        regexp: /.?\.devices\.deviceList$/,
+                        dp: '',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                headline: {
+                    type: 'const',
+                    constVal: 'speakerList',
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: {
+                    type: 'const',
+                    constVal: JSON.stringify(page.media.speakerList || []),
                 },
             },
+        });
+    }
+    //playlist select
+    if (page.media.deactivateDefaultItems?.playList !== true) {
+        gridItem.pageItems.push(
             //playlist select
             {
                 role: 'spotify-playlist',
@@ -322,51 +336,64 @@ export async function getPageSpotify(
                     },
                 },
             },
-            {
-                role: 'spotify-tracklist',
-                type: 'input_sel',
-                dpInit: '',
+        );
+    }
+    //tracklist
+    if (page.media.deactivateDefaultItems?.trackList !== true) {
+        gridItem.pageItems.push({
+            role: 'spotify-tracklist',
+            type: 'input_sel',
+            dpInit: '',
 
-                data: {
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: 'animation-play-outline' },
-                            color: await configManager.getIconColor(page.media.itemsColorOn?.playList, Color.activated),
-                        },
-                    },
-                    entityInSel: {
-                        value: {
-                            mode: 'auto',
-                            type: 'triggered',
-                            regexp: /.?\.player\.trackId$/,
-                            dp: '',
-                        },
-                        set: {
-                            mode: 'auto',
-                            type: 'state',
-                            regexp: /.?\.player\.playlist\.trackNo$/,
-                            dp: '',
-                        },
-                    },
-                    valueList: {
-                        type: 'const',
-                        constVal: JSON.stringify([]),
-                    },
-                    valueList2: {
-                        type: 'triggered',
-                        mode: 'auto',
-                        regexp: /.?\.player\.playlist\.trackListArray$/,
-                        dp: '',
-                    },
-
-                    headline: {
-                        type: 'const',
-                        constVal: 'trackList',
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'animation-play-outline' },
+                        color: await configManager.getIconColor(page.media.itemsColorOn?.playList, Color.activated),
                     },
                 },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        regexp: /.?\.player\.trackId$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        regexp: /.?\.player\.playlist\.trackNo$/,
+                        dp: '',
+                    },
+                },
+                valueList: {
+                    type: 'const',
+                    constVal: JSON.stringify([]),
+                },
+                valueList2: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    regexp: /.?\.player\.playlist\.trackListArray$/,
+                    dp: '',
+                },
+
+                headline: {
+                    type: 'const',
+                    constVal: 'trackList',
+                },
             },
-            //equalizer
-            /*{
+        });
+    }
+    // time
+    if (page.media.deactivateDefaultItems?.clock !== true) {
+        gridItem.pageItems.push({
+            template: 'text.clock',
+            dpInit: '',
+        });
+    }
+    //equalizer
+    /*gridItem.pageItems.push(
+        {
                 role: '',
                 type: 'number',
                 dpInit: '',
@@ -501,23 +528,26 @@ export async function getPageSpotify(
                         },
                     },
                 },
-            },*/
-            // repeat
-            {
-                role: 'repeatValue',
-                type: 'button',
-                dpInit: '',
+    });
+    */
 
-                data: {
-                    icon: {
-                        true: {
-                            value: {
-                                mode: 'auto',
-                                type: 'state',
-                                role: '',
-                                regexp: /\.player\.repeat$/,
-                                dp: '',
-                                read: `switch (val) {
+    // repeat
+    if (page.media.deactivateDefaultItems?.repeat !== true) {
+        gridItem.pageItems.push({
+            role: 'repeatValue',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: '',
+                            regexp: /\.player\.repeat$/,
+                            dp: '',
+                            read: `switch (val) {
                                     case 'off':
                                         return 'repeat';
                                     case 'track':
@@ -527,14 +557,14 @@ export async function getPageSpotify(
                                     default:
                                         return false;
                                 }`,
-                            },
-                            color: {
-                                mode: 'auto',
-                                type: 'state',
-                                role: '',
-                                regexp: /\.player\.repeat$/,
-                                dp: '',
-                                read: `switch (val) {
+                        },
+                        color: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: '',
+                            regexp: /\.player\.repeat$/,
+                            dp: '',
+                            read: `switch (val) {
                                     case 'off':
                                         return Color.deactivated;
                                     case 'context':
@@ -544,17 +574,18 @@ export async function getPageSpotify(
                                     default:
                                         return false;
                                 }`,
-                            },
                         },
                     },
-                    entity1: {
-                        value: {
-                            mode: 'auto',
-                            type: 'triggered',
-                            role: '',
-                            regexp: /\.player\.repeat$/,
-                            dp: '',
-                            read: `switch (val) {
+                },
+
+                entity1: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        role: '',
+                        regexp: /\.player\.repeat$/,
+                        dp: '',
+                        read: `switch (val) {
                                     case 'off':
                                         return 'OFF';
                                     case 'context':
@@ -564,7 +595,7 @@ export async function getPageSpotify(
                                     default:
                                         return 'OFF';
                                 }`,
-                            write: `switch (val) {
+                        write: `switch (val) {
                                     case 'OFF':
                                     case false:
                                         return 'track';
@@ -575,14 +606,11 @@ export async function getPageSpotify(
                                     default:
                                         return 'off';
                                 }`,
-                        },
                     },
                 },
             },
-        ],
-
-        uniqueID: page.uniqueName,
-    };
+        });
+    }
 
     return { gridItem, messages };
 }
