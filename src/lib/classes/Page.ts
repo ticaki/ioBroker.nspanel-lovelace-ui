@@ -318,8 +318,8 @@ export class Page extends BaseClassPage {
         _event: IncomingEvent | null = null,
     ): Promise<void> {
         if (!this.pageItems || id == '' || isNaN(id as number)) {
-            this.log.warn(
-                `onPopupRequest: No pageItems or id or nan this is only a warning if u not use 'arrow': ${id}`,
+            this.log.debug(
+                `onPopupRequest: No pageItems or id or nan this is only a warning if u used a pageitem except: 'arrow': ${id}`,
             );
             return;
         }

@@ -50,7 +50,6 @@ export class BaseClassTriggerd extends BaseClass {
             return;
         }
         this.lastMessage = payload;
-
         this.sendToPanelClass(payload, ackForType, opt);
     };
     resetLastMessage(): void {

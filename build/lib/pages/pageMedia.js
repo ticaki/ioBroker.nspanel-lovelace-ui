@@ -38,6 +38,8 @@ var import_icon_mapping = require("../const/icon_mapping");
 var tools = __toESM(require("../const/tools"));
 var import_pageMenu = require("./pageMenu");
 var import_Page = require("../classes/Page");
+var import_getSpotify = require("./tools/getSpotify");
+var import_getAlexa = require("./tools/getAlexa");
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
@@ -65,18 +67,18 @@ class PageMedia extends import_pageMenu.PageMenu {
   playerName = "";
   currentPlayer;
   constructor(config, options) {
+    var _a;
     super(config, options);
-    if (typeof this.dpInit !== "string") {
-      throw new Error("Media page must have a dpInit string");
-    }
-    this.currentPlayer = this.dpInit;
     this.config = options.config;
+    this.currentPlayer = (_a = this.config.ident) != null ? _a : "";
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    var _a;
+    var _a, _b;
     if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
-      this.items.push(await this.createMainItems(this.config, this.enums, this.dpInit));
+      const i = await this.createMainItems(this.config, this.enums, this.dpInit);
+      i.ident = (_b = this.config.ident) != null ? _b : "";
+      this.items.push(i);
     }
     await super.init();
   }
@@ -107,11 +109,13 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (this.currentPlayer === dp) {
       return;
     }
-    let index = this.items.findIndex((i) => i.dpInit === dp);
+    let index = this.items.findIndex((i) => i.ident === dp);
     if (index === -1) {
       if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
-        this.items.push(await this.createMainItems(this.config, "", dp));
+        const reg = tools.getRegExp(`/^${dp.split(".").join("\\.")}/`) || dp;
+        this.items.push(await this.createMainItems(this.config, "", reg));
         index = this.items.length - 1;
+        this.items[index].ident = dp;
         await this.controller.statesControler.activateTrigger(this);
       }
     }
@@ -129,7 +133,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (!this.visibility) {
       return;
     }
-    let index = this.items.findIndex((i) => i.dpInit === this.currentPlayer);
+    let index = this.items.findIndex((i) => i.ident === this.currentPlayer);
     index = index === -1 ? 0 : index;
     if (index === 0) {
       this.playerName = "";
@@ -163,8 +167,21 @@ class PageMedia extends import_pageMenu.PageMenu {
       if (item.data.duration && item.data.elapsed) {
         const d = await item.data.duration.getNumber();
         if (d) {
-          const t = (/* @__PURE__ */ new Date()).setHours(0, 0, d, 0);
-          duration = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+          const t = (/* @__PURE__ */ new Date()).setHours(0, 0, 0, d);
+          if (d >= 36e5) {
+            duration = new Date(t).toLocaleTimeString("de-DE", {
+              hour: "numeric",
+              minute: "2-digit",
+              second: "2-digit"
+            });
+            if (d >= 864e5) {
+              const arr = duration.split(":");
+              arr[0] = String(Math.floor(d / 864e5));
+              duration = arr.join(":");
+            }
+          } else {
+            duration = new Date(t).toLocaleTimeString("de-DE", { minute: "numeric", second: "2-digit" });
+          }
         }
         if (item.data.elapsed.type === "string") {
           const e = await item.data.elapsed.getString();
@@ -259,8 +276,18 @@ class PageMedia extends import_pageMenu.PageMenu {
       const v = await item.data.mediaState.getString();
       if (v !== null) {
         message.iconplaypause = !await this.getMediaState() ? "play" : "pause";
-        if (item.data.stop) {
+        if (item.data.stop || item.data.pause) {
           message.onoffbuttonColor = v.toUpperCase() !== "STOP" ? "65535" : "1374";
+        } else {
+          message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
+        }
+      }
+    } else if (item.data.isPlaying) {
+      const v = await item.data.isPlaying.getBoolean();
+      if (v !== null) {
+        message.iconplaypause = v ? "pause" : "play";
+        if (item.data.stop || item.data.pause) {
+          message.onoffbuttonColor = v ? "65535" : "1374";
         } else {
           message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
         }
@@ -363,6 +390,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.titelPos = 0;
   }
   async onButtonEvent(event) {
+    var _a, _b, _c, _d;
     if (!this.getVisibility() || this.sleep) {
       return;
     }
@@ -397,7 +425,13 @@ class PageMedia extends import_pageMenu.PageMenu {
         break;
       }
       case "media-shuffle": {
-        items.data.shuffle && (items.data.shuffle.set && await items.data.shuffle.set.setStateFlip() || items.data.shuffle.value && await items.data.shuffle.value.setStateFlip());
+        if ((_b = (_a = items.data.shuffle) == null ? void 0 : _a.set) == null ? void 0 : _b.common.write) {
+          await items.data.shuffle.set.setStateFlip();
+        } else if ((_d = (_c = items.data.shuffle) == null ? void 0 : _c.value) == null ? void 0 : _d.common.write) {
+          await items.data.shuffle.value.setStateFlip();
+        } else {
+          this.log.error(`Missing shuffle controller. Report to dev`);
+        }
         break;
       }
       case "volumeSlider": {
@@ -468,565 +502,39 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
   }
   static async getPage(configManager, page, gridItem, messages) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     const adapter = configManager.adapter;
     if (page.type !== "cardMedia" || !gridItem.config || gridItem.config.card !== "cardMedia") {
-      const msg = `Error in page ${page.uniqueName}: Not a media page!`;
-      messages.push(msg);
-      adapter.log.warn(msg);
+      const msg2 = `Error in page ${page.uniqueName}: Not a media page!`;
+      messages.push(msg2);
+      adapter.log.warn(msg2);
       return { gridItem, messages };
     }
     if (!page.media.id || configManager.validStateId(page.media.id) === false) {
-      const msg = configManager.validStateId(page.media.id) ? `${page.uniqueName}: Media page has no device id!` : `${page.uniqueName}: Media page id ${page.media.id} is not valid!`;
-      messages.push(msg);
-      adapter.log.warn(msg);
+      const msg2 = configManager.validStateId(page.media.id) ? `${page.uniqueName}: Media page has no device id!` : `${page.uniqueName}: Media page id ${page.media.id} is not valid!`;
+      messages.push(msg2);
+      adapter.log.warn(msg2);
+      return { gridItem, messages };
+    }
+    const view = await adapter.getObjectViewAsync("system", "instance", {
+      startkey: `system.adapter.${page.media.id.split(".").slice(0, 1).join(".")}.`,
+      endkey: `system.adapter.${page.media.id.split(".").slice(0, 1).join(".")}.\u9999`
+    });
+    if (!view || !view.rows || view.rows.length === 0 || view.rows.findIndex((v) => v.id === `system.adapter.${page.media.id.split(".").slice(0, 2).join(".")}`) === -1) {
+      const msg2 = `${page.uniqueName}: Media page id - adapter: ${page.media.id.split(".").slice(0, 2).join(".")} has no instance - not exist - wrong id?!`;
+      messages.push(msg2);
+      adapter.log.error(msg2);
       return { gridItem, messages };
     }
     gridItem.config.card = "cardMedia";
-    let o;
-    try {
-      o = await adapter.getForeignObjectAsync(page.media.id);
-    } catch {
-    }
-    if (!o) {
-      const msg = `${page.uniqueName}: Media page id ${page.media.id} has no object - not exist - wrong id?!`;
-      messages.push(msg);
-      adapter.log.warn(msg);
-      return { gridItem, messages };
+    if (page.media.id.startsWith("spotify-premium.")) {
+      return await (0, import_getSpotify.getPageSpotify)(configManager, page, gridItem, messages);
     }
     if (page.media.id.startsWith("alexa2.")) {
-      const arr = page.media.id.split(".").slice(0, 3);
-      const str = arr.join(".");
-      const devices = str && arr.length === 3 ? await configManager.adapter.getObjectViewAsync("system", "device", {
-        startkey: `${str}.`,
-        endkey: `${str}${String.fromCharCode(65533)}`
-      }) : { rows: [] };
-      if (devices && devices.rows && devices.rows.length > 0) {
-        if (devices.rows.findIndex((row) => {
-          if (row && row.value && row.id && row.id.split(".").length === 4) {
-            return page.media.id === row.id;
-          }
-        }) === -1) {
-          const msg = `${page.uniqueName}: Media page id ${page.media.id} is not a valid alexa2 device!`;
-          messages.push(msg);
-          adapter.log.warn(msg);
-          return { gridItem, messages };
-        }
-      }
+      return await (0, import_getAlexa.getPageAlexa)(configManager, page, gridItem, messages);
     }
-    gridItem.dpInit = page.media.id;
-    gridItem = {
-      ...gridItem,
-      config: {
-        ...gridItem.config,
-        card: "cardMedia",
-        data: {
-          headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : void 0,
-          album: {
-            mode: "auto",
-            type: "state",
-            role: "media.album",
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          title: {
-            value: {
-              mode: "auto",
-              type: "triggered",
-              role: "media.title",
-              regexp: /.?\.Player\..?/,
-              dp: ""
-            },
-            true: page.media.colorMediaArtist ? {
-              color: await configManager.getFieldAsDataItemConfig(page.media.colorMediaArtist)
-            } : void 0
-          },
-          duration: {
-            mode: "auto",
-            type: "state",
-            role: "media.duration",
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          onOffColor: {
-            true: page.media.colorMediaIcon ? { color: await configManager.getIconColor(page.media.colorMediaIcon) } : void 0
-          },
-          elapsed: {
-            mode: "auto",
-            type: "triggered",
-            role: ["media.elapsed", "media.elapsed.text"],
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          volume: {
-            value: {
-              mode: "auto",
-              type: "state",
-              role: ["level.volume"],
-              scale: { min: 0, max: 100 },
-              regexp: /.?\.Player\..?/,
-              dp: ""
-            },
-            set: {
-              mode: "auto",
-              type: "state",
-              role: ["level.volume"],
-              scale: { min: 0, max: 100 },
-              regexp: /.?\.Player\..?/,
-              dp: ""
-            }
-          },
-          artist: {
-            value: {
-              mode: "auto",
-              type: "state",
-              role: "media.artist",
-              regexp: /.?\.Player\..?/,
-              dp: ""
-            },
-            true: page.media.colorMediaArtist ? {
-              color: await configManager.getIconColor(page.media.colorMediaArtist)
-            } : void 0
-          },
-          shuffle: {
-            value: {
-              mode: "auto",
-              type: "state",
-              role: "media.mode.shuffle",
-              regexp: /.?\.Player\..?/,
-              dp: ""
-            },
-            set: {
-              mode: "auto",
-              type: "state",
-              role: "media.mode.shuffle",
-              regexp: /.?\.Player\..?/,
-              dp: ""
-            },
-            enabled: {
-              mode: "auto",
-              type: "triggered",
-              role: "indicator",
-              regexp: /.?\.Player\.allowShuffle$/,
-              dp: ""
-            }
-          },
-          icon: {
-            type: "const",
-            constVal: "dialpad"
-          },
-          play: {
-            mode: "auto",
-            type: "state",
-            role: ["button.play"],
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          isPlaying: {
-            mode: "auto",
-            type: "triggered",
-            role: ["media.state"],
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          mediaState: {
-            mode: "auto",
-            type: "triggered",
-            role: ["media.state"],
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          stop: {
-            mode: "auto",
-            type: "state",
-            role: ["button.stop"],
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          pause: {
-            mode: "auto",
-            type: "state",
-            role: "button.pause",
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          forward: {
-            mode: "auto",
-            type: "state",
-            role: "button.next",
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          backward: {
-            mode: "auto",
-            type: "state",
-            role: "button.prev",
-            regexp: /.?\.Player\..?/,
-            dp: ""
-          },
-          logo: {
-            on: {
-              type: "const",
-              constVal: true
-            },
-            text: { type: "const", constVal: "1" },
-            icon: { true: { type: "const", constVal: "logo-alexa" } },
-            color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
-            list: void 0,
-            action: "cross"
-          }
-        }
-      },
-      items: void 0,
-      pageItems: [
-        //reminder
-        {
-          role: "text.list",
-          type: "text",
-          dpInit: "",
-          data: {
-            icon: {
-              true: {
-                value: { type: "const", constVal: "reminder" },
-                color: await configManager.getIconColor(
-                  (_a = page.media.itemsColorOff) == null ? void 0 : _a.reminder,
-                  import_Color.Color.attention
-                )
-              }
-            },
-            entity1: {
-              value: {
-                type: "const",
-                constVal: true
-              }
-            },
-            enabled: {
-              mode: "auto",
-              type: "triggered",
-              role: "value",
-              regexp: /.?\.Reminder\.triggered$/,
-              dp: "",
-              read: "return (val != null && lc <= Date.now() + 120000 ? true : false);"
-            }
-          }
-        },
-        // online
-        {
-          role: "",
-          type: "text",
-          dpInit: "",
-          data: {
-            icon: {
-              true: {
-                value: { type: "const", constVal: "wifi" },
-                color: await configManager.getIconColor((_b = page.media.itemsColorOn) == null ? void 0 : _b.online, import_Color.Color.good)
-              },
-              false: {
-                value: { type: "const", constVal: "wifi-off" },
-                color: await configManager.getIconColor(
-                  (_c = page.media.itemsColorOff) == null ? void 0 : _c.online,
-                  import_Color.Color.attention
-                )
-              },
-              scale: void 0,
-              maxBri: void 0,
-              minBri: void 0
-            },
-            entity1: {
-              value: {
-                mode: "auto",
-                type: "triggered",
-                role: "indicator.reachable",
-                regexp: /.?\.online$/,
-                dp: ""
-              }
-            },
-            enabled: {
-              mode: "auto",
-              type: "triggered",
-              role: "indicator.reachable",
-              regexp: /.?\.online$/,
-              dp: "",
-              read: "return !val;"
-            }
-          }
-        },
-        //speaker select
-        {
-          role: "alexa-speaker",
-          type: "input_sel",
-          data: {
-            color: {
-              true: {
-                type: "const",
-                constVal: import_Color.Color.HMIOn
-              },
-              false: void 0
-            },
-            icon: {
-              true: {
-                value: { type: "const", constVal: "speaker-multiple" },
-                color: await configManager.getIconColor(
-                  (_d = page.media.itemsColorOn) == null ? void 0 : _d.speakerList,
-                  import_Color.Color.good
-                )
-              },
-              false: {
-                value: { type: "const", constVal: "speaker-multiple" },
-                color: await configManager.getIconColor(
-                  (_e = page.media.itemsColorOff) == null ? void 0 : _e.speakerList,
-                  import_Color.Color.bad
-                )
-              },
-              scale: void 0,
-              maxBri: void 0,
-              minBri: void 0
-            },
-            entityInSel: {
-              value: {
-                mode: "auto",
-                type: "triggered",
-                regexp: /.?\.Info\.name$/,
-                dp: ""
-              },
-              set: {
-                mode: "auto",
-                type: "state",
-                regexp: /.?\.Commands\.textCommand$/,
-                dp: ""
-              },
-              decimal: void 0,
-              factor: void 0,
-              unit: void 0
-            },
-            headline: {
-              type: "const",
-              constVal: "speakerList"
-            },
-            /**
-             * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-             */
-            valueList: {
-              type: "const",
-              constVal: JSON.stringify(page.media.speakerList || [])
-            },
-            /**
-             * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-             */
-            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-          }
-        },
-        //playlist select
-        {
-          role: "alexa-playlist",
-          type: "input_sel",
-          dpInit: "",
-          data: {
-            icon: {
-              true: {
-                value: { type: "const", constVal: "playlist-play" },
-                color: await configManager.getIconColor(
-                  (_f = page.media.itemsColorOn) == null ? void 0 : _f.playList,
-                  import_Color.Color.activated
-                )
-              }
-            },
-            entityInSel: {
-              value: {
-                type: "const",
-                constVal: "My Playlist"
-              }
-            },
-            valueList: {
-              type: "const",
-              constVal: JSON.stringify(page.media.playList || [])
-            },
-            headline: {
-              type: "const",
-              constVal: "playList"
-            }
-          }
-        },
-        //equalizer
-        {
-          role: "",
-          type: "number",
-          dpInit: "",
-          data: {
-            icon: {
-              true: {
-                value: { type: "const", constVal: "equalizer-outline" },
-                color: await configManager.getIconColor(
-                  (_g = page.media.itemsColorOn) == null ? void 0 : _g.equalizer,
-                  import_Color.Color.activated
-                )
-              },
-              scale: void 0,
-              maxBri: void 0,
-              minBri: void 0
-            },
-            heading1: {
-              type: "const",
-              constVal: "treble"
-            },
-            heading2: {
-              type: "const",
-              constVal: "midrange"
-            },
-            heading3: {
-              type: "const",
-              constVal: "bass"
-            },
-            zero1: {
-              type: "const",
-              constVal: 6
-            },
-            zero2: {
-              type: "const",
-              constVal: 6
-            },
-            zero3: {
-              type: "const",
-              constVal: 6
-            },
-            entity1: {
-              value: {
-                mode: "auto",
-                type: "state",
-                regexp: /.?\.Preferences\.equalizerTreble$/,
-                dp: ""
-              },
-              minScale: {
-                type: "const",
-                constVal: -6
-              },
-              maxScale: {
-                type: "const",
-                constVal: 6
-              },
-              decimal: {
-                type: "const",
-                constVal: 0
-              }
-            },
-            minValue1: {
-              type: "const",
-              constVal: 0
-            },
-            maxValue1: {
-              type: "const",
-              constVal: 12
-            },
-            entity2: {
-              value: {
-                mode: "auto",
-                type: "state",
-                regexp: /.?\.Preferences\.equalizerMidRange$/,
-                dp: ""
-              },
-              minScale: {
-                type: "const",
-                constVal: -6
-              },
-              maxScale: {
-                type: "const",
-                constVal: 6
-              },
-              decimal: {
-                type: "const",
-                constVal: 0
-              }
-            },
-            minValue2: {
-              type: "const",
-              constVal: 0
-            },
-            maxValue2: {
-              type: "const",
-              constVal: 12
-            },
-            entity3: {
-              value: {
-                mode: "auto",
-                type: "state",
-                regexp: /.?\.Preferences\.equalizerBass$/,
-                dp: ""
-              },
-              minScale: {
-                type: "const",
-                constVal: -6
-              },
-              maxScale: {
-                type: "const",
-                constVal: 6
-              },
-              decimal: {
-                type: "const",
-                constVal: 0
-              }
-            },
-            minValue3: {
-              type: "const",
-              constVal: 0
-            },
-            maxValue3: {
-              type: "const",
-              constVal: 12
-            },
-            text: {
-              true: {
-                type: "const",
-                constVal: "equalizer"
-              }
-            }
-          }
-        },
-        // repeat
-        {
-          role: "",
-          type: "text",
-          dpInit: "",
-          data: {
-            icon: {
-              true: {
-                value: { type: "const", constVal: "repeat-variant" },
-                color: await configManager.getIconColor(
-                  (_h = page.media.itemsColorOn) == null ? void 0 : _h.repeat,
-                  import_Color.Color.activated
-                )
-              },
-              false: {
-                value: { type: "const", constVal: "repeat" },
-                color: await configManager.getIconColor(
-                  (_i = page.media.itemsColorOff) == null ? void 0 : _i.repeat,
-                  import_Color.Color.deactivated
-                )
-              },
-              scale: void 0,
-              maxBri: void 0,
-              minBri: void 0
-            },
-            entity1: {
-              value: {
-                mode: "auto",
-                type: "triggered",
-                role: "media.mode.repeat",
-                regexp: /\.Player\.controlRepeat$/,
-                dp: ""
-              }
-            },
-            enabled: {
-              mode: "auto",
-              type: "triggered",
-              role: "indicator",
-              regexp: /\.Player\.allowRepeat$/,
-              dp: ""
-            }
-          }
-        }
-      ],
-      uniqueID: page.uniqueName
-    };
+    const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2 and spotify-premium!`;
+    messages.push(msg);
+    adapter.log.warn(msg);
     return { gridItem, messages };
   }
   async isPlaying() {

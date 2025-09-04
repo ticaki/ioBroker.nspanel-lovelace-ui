@@ -188,7 +188,7 @@ export class PageItem extends BaseClassTriggerd {
         }
         // search for alexa devices
         if (this.config.role === 'alexa-speaker') {
-            const id = (this.parent as PageMedia).items[0].dpInit ?? '';
+            const id = (this.parent as PageMedia).items[0].ident ?? '';
             const arr = id.split('.').slice(0, 3);
             const str = arr.join('.');
             const devices =
@@ -206,21 +206,23 @@ export class PageItem extends BaseClassTriggerd {
                     filter = Array.isArray(filter) && filter.length > 0 ? filter : null;
                     for (const instance of devices.rows) {
                         if (instance && instance.value && instance.id && instance.id.split('.').length === 4) {
-                            const name =
-                                typeof instance.value.common.name === 'object'
-                                    ? instance.value.common.name.en
-                                    : instance.value.common.name;
-                            if (!filter || filter.includes(name)) {
-                                this.log.debug(`Alexa device: ${name} deviceId: ${instance.id}`);
-                                this.tempData.push({
-                                    id: instance.id,
-                                    name: name,
-                                });
+                            if (await this.adapter.getForeignObjectAsync(`${instance.id}.Player`)) {
+                                const name =
+                                    typeof instance.value.common.name === 'object'
+                                        ? instance.value.common.name.en
+                                        : instance.value.common.name;
+                                if (!filter || filter.includes(name)) {
+                                    this.log.debug(`Alexa device: ${name} deviceId: ${instance.id}`);
+                                    this.tempData.push({
+                                        id: instance.id,
+                                        name: name,
+                                    });
+                                }
                             }
                         }
                     }
                 }
-                this.log.debug(`Alexa devices found: ${this.tempData.length} from ${devices.rows.length}`);
+                this.log.debug(`Alexa devices found: ${this.tempData.length} frosm ${devices.rows.length}`);
             }
         } else if (
             this.config.role === 'alexa-playlist' &&
@@ -229,7 +231,7 @@ export class PageItem extends BaseClassTriggerd {
             this.parent.card === 'cardMedia'
         ) {
             const states = await this.adapter.getForeignStatesAsync(
-                `${(this.parent as PageMedia).currentItems ? (this.parent as PageMedia).currentItems!.dpInit : (this.parent as PageMedia).items[0].dpInit}.Music-Provider.*`,
+                `${(this.parent as PageMedia).currentItems ? (this.parent as PageMedia).currentItems!.ident : (this.parent as PageMedia).items[0].ident}.Music-Provider.*`,
             );
             if (states) {
                 this.tempData = Object.keys(states);
@@ -1271,7 +1273,7 @@ export class PageItem extends BaseClassTriggerd {
                         sList.states !== undefined
                     ) {
                         if (sList.list.length > 0) {
-                            sList.list.splice(48);
+                            sList.list = sList.list.slice(0, 48);
                             message.modeList = Array.isArray(sList.list)
                                 ? sList.list.map((a: string) => tools.formatInSelText(a)).join('?')
                                 : '';
@@ -1288,7 +1290,7 @@ export class PageItem extends BaseClassTriggerd {
                                 list = list.split('?');
                             }
                             if (Array.isArray(list)) {
-                                list.splice(48);
+                                list = list.slice(0, 48);
                             }
                         } else {
                             list = [];
@@ -1300,9 +1302,9 @@ export class PageItem extends BaseClassTriggerd {
 
                         message.modeList = (list as string[]).join('?');
 
-                        if (message.modeList && message.modeList.length > 940) {
-                            message.modeList = message.modeList.slice(0, 940);
-                            this.log.warn('Value list has more as 940 chars!');
+                        if (message.modeList && message.modeList.length > 900) {
+                            message.modeList = message.modeList.slice(0, 900);
+                            this.log.warn('Value list has more as 900 chars!');
                         }
                         const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
                         if (Array.isArray(list) && n != null && n < list.length) {
@@ -1851,6 +1853,13 @@ export class PageItem extends BaseClassTriggerd {
                         if (this.parent.card === 'cardThermo') {
                             this.log.debug(`Button indicator ${this.id} was pressed!`);
                             await this.parent.update();
+                        }
+                        break;
+                    }
+                    if (entry.role === 'repeatValue') {
+                        const v = await entry.data.entity1?.value?.getString();
+                        if (v != null && entry.data.entity1?.value?.writeable) {
+                            await entry.data.entity1.value.setState(v);
                         }
                         break;
                     }
@@ -2561,15 +2570,21 @@ export class PageItem extends BaseClassTriggerd {
 
         if (sList) {
             if (
-                entry.role === 'spotify-playlist' &&
+                (entry.role === 'spotify-speaker' ||
+                    entry.role === 'spotify-playlist' ||
+                    entry.role === 'spotify-tracklist') &&
                 sList.list !== undefined &&
-                'setValue1' in item &&
                 sList.list[parseInt(value)] !== undefined &&
-                item.setValue1
+                sList.states !== undefined &&
+                sList.states[parseInt(value)] !== undefined &&
+                item.entityInSel &&
+                item.entityInSel.set
             ) {
-                await item.setValue1.setState(parseInt(value) + 1);
-
-                return true;
+                const v = parseInt(value);
+                const index = sList.states[v] || -1;
+                if (index !== -1) {
+                    await item.entityInSel.set.setState(sList.states[v]);
+                }
             } else if (
                 entry.role === 'alexa-speaker' &&
                 sList.list !== undefined &&
@@ -2579,9 +2594,9 @@ export class PageItem extends BaseClassTriggerd {
             ) {
                 const v = parseInt(value);
                 const index = sList.states?.[v] || -1;
-                if ((this.parent as PageMedia).currentItems?.dpInit && (await (this.parent as PageMedia).isPlaying())) {
+                if ((this.parent as PageMedia).currentItems?.ident && (await (this.parent as PageMedia).isPlaying())) {
                     await this.adapter.setForeignStateAsync(
-                        `${(this.parent as PageMedia).currentItems!.dpInit}.Commands.textCommand`,
+                        `${(this.parent as PageMedia).currentItems!.ident}.Commands.textCommand`,
                         `Schiebe Musik auf ${sList.list[v]}`,
                     );
                 }
@@ -2782,7 +2797,7 @@ export class PageItem extends BaseClassTriggerd {
                         list.list.push(this.tempData[a].name);
                         list.states.push(a);
                     }
-                    const dp = (this.parent as PageMedia).currentItems?.dpInit || entityInSel?.value?.options.dp || '';
+                    const dp = (this.parent as PageMedia).currentItems?.ident || entityInSel?.value?.options.dp || '';
                     const index = this.tempData.findIndex((a: any) => dp.includes(a.id));
                     if (index !== -1 && !list.value) {
                         list.value = this.tempData[index].name;
@@ -2827,9 +2842,53 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 }
                 this.log.debug(`Alexa Playlist list: finish`);
+            } else if (role === 'spotify-speaker' || role === 'spotify-playlist') {
+                // Spotify Speaker
+                if (entityInSel.value.options.dp) {
+                    const o = await entityInSel.value.getCommonStates(true);
+                    const v = await entityInSel.value.getString();
+                    const al = await valueList?.getObject();
+
+                    if (o) {
+                        list.list = [];
+                        list.states = [];
+                        list.value = '';
+                        for (const a in o) {
+                            const str = String(o[a]).replace(/\r?\n/g, '').trim();
+                            if (!al || (al && Array.isArray(al) && (al.includes(str) || al.length === 0))) {
+                                list.list.push(str);
+                                list.states.push(a);
+                                if (a === v && !list.value) {
+                                    list.value = str;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (role === 'spotify-tracklist') {
+                // Spotify Tracklist
+                if (valueList2) {
+                    const arr = (await valueList2.getObject()) as typePageItem.spotifyPlaylist | null;
+                    if (arr) {
+                        list.list = [];
+                        list.states = [];
+                        const v = await entityInSel.value.getString();
+                        for (let a = 0; a < arr.length; a++) {
+                            if (arr[a].id === v && !list.value) {
+                                list.value = `${arr[a].title}`;
+                            }
+                            list.list.push(`${arr[a].title}`);
+                            list.states.push(String(a + 1));
+                        }
+                        const value = await entityInSel.value.getNumber();
+                        if (value && !list.value) {
+                            list.value = list.list[value - 1];
+                        }
+                    }
+                }
             } else if (
                 ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
-                (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()) || valueList2 != null)
+                ((await entityInSel.value.getCommonStates()) || valueList2 != null)
             ) {
                 let states: Record<string | number, string> | undefined = undefined;
                 const value = await tools.getValueEntryString(entityInSel);
@@ -2837,7 +2896,7 @@ export class PageItem extends BaseClassTriggerd {
                     role = '2values';
                 }
                 switch (role) {
-                    case 'spotify-playlist': {
+                    /*case 'spotify-tracklist': {
                         if (valueList) {
                             const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
                             if (val) {
@@ -2849,7 +2908,7 @@ export class PageItem extends BaseClassTriggerd {
                             }
                         }
                         break;
-                    }
+                    }*/
                     case '2values': {
                         if (!valueList || !valueList2) {
                             this.log.error('2values requires both valueList and valueList2!');

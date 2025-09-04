@@ -267,7 +267,7 @@ const cardTemplates = {
     items: void 0,
     pageItems: [
       {
-        role: "spotify-playlist",
+        role: "spotify-tracklist",
         type: "input_sel",
         dpInit: "",
         data: {
@@ -713,7 +713,7 @@ const cardTemplates = {
     items: void 0,
     pageItems: [
       {
-        role: "spotify-playlist",
+        role: "spotify-tracklist",
         type: "input_sel",
         dpInit: "",
         data: {

@@ -790,7 +790,7 @@ export const pageMediaTest: pages.PageBaseConfig = {
     items: undefined,
     pageItems: [
         {
-            role: 'spotify-playlist',
+            role: 'spotify-tracklist',
             type: 'input_sel',
             dpInit: '',
 
@@ -1249,7 +1249,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
     items: undefined,
     pageItems: [
         {
-            role: 'spotify-playlist',
+            role: 'spotify-tracklist',
             type: 'input_sel',
             dpInit: '',
 
