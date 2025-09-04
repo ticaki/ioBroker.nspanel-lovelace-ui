@@ -254,7 +254,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         items: undefined,
         pageItems: [
             {
-                role: 'spotify-playlist',
+                role: 'spotify-tracklist',
                 type: 'input_sel',
                 dpInit: '',
 
@@ -710,7 +710,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         items: undefined,
         pageItems: [
             {
-                role: 'spotify-playlist',
+                role: 'spotify-tracklist',
                 type: 'input_sel',
                 dpInit: '',
 

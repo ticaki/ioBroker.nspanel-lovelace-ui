@@ -351,6 +351,8 @@ export type StateRole =
     | '';
 
 export type DeviceRole =
+    | 'spotify-playlist'
+    | 'spotify-tracklist'
     | 'spotify-speaker'
     | 'alexa-playlist'
     | 'alexa-speaker'
@@ -377,7 +379,6 @@ export type DeviceRole =
     | 'rgbSingle'
     | 'rgbThree'
     | 'socket'
-    | 'spotify-playlist'
     | 'test'
     | 'text'
     | 'text.list'

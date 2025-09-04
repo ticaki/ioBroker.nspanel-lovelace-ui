@@ -795,7 +795,7 @@ const pageMediaTest = {
   items: void 0,
   pageItems: [
     {
-      role: "spotify-playlist",
+      role: "spotify-tracklist",
       type: "input_sel",
       dpInit: "",
       data: {
@@ -1242,7 +1242,7 @@ const pageMediaTest2 = {
   items: void 0,
   pageItems: [
     {
-      role: "spotify-playlist",
+      role: "spotify-tracklist",
       type: "input_sel",
       dpInit: "",
       data: {

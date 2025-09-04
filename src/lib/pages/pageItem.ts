@@ -2561,7 +2561,7 @@ export class PageItem extends BaseClassTriggerd {
 
         if (sList) {
             if (
-                entry.role === 'spotify-playlist' &&
+                entry.role === 'spotify-tracklist' &&
                 sList.list !== undefined &&
                 'setValue1' in item &&
                 sList.list[parseInt(value)] !== undefined &&
@@ -2571,7 +2571,9 @@ export class PageItem extends BaseClassTriggerd {
 
                 return true;
             } else if (
-                entry.role === 'spotify-speaker' &&
+                (entry.role === 'spotify-speaker' ||
+                    entry.role === 'spotify-playlist' ||
+                    entry.role === 'spotify-tracklist') &&
                 sList.list !== undefined &&
                 sList.list[parseInt(value)] !== undefined &&
                 sList.states !== undefined &&
@@ -2841,7 +2843,7 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 }
                 this.log.debug(`Alexa Playlist list: finish`);
-            } else if (role === 'spotify-speaker') {
+            } else if (role === 'spotify-speaker' || role === 'spotify-playlist' || role === 'spotify-tracklist') {
                 // Spotify Speaker
                 if (entityInSel.value.options.dp) {
                     const o = await entityInSel.value.getCommonStates();
@@ -2865,7 +2867,7 @@ export class PageItem extends BaseClassTriggerd {
                 }
             } else if (
                 ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
-                (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()) || valueList2 != null)
+                ((await entityInSel.value.getCommonStates()) || valueList2 != null)
             ) {
                 let states: Record<string | number, string> | undefined = undefined;
                 const value = await tools.getValueEntryString(entityInSel);
@@ -2873,7 +2875,7 @@ export class PageItem extends BaseClassTriggerd {
                     role = '2values';
                 }
                 switch (role) {
-                    case 'spotify-playlist': {
+                    /*case 'spotify-tracklist': {
                         if (valueList) {
                             const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
                             if (val) {
@@ -2885,7 +2887,7 @@ export class PageItem extends BaseClassTriggerd {
                             }
                         }
                         break;
-                    }
+                    }*/
                     case '2values': {
                         if (!valueList || !valueList2) {
                             this.log.error('2values requires both valueList and valueList2!');

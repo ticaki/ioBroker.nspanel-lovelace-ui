@@ -2257,10 +2257,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       "valueList2" in item ? item.valueList2 : void 0
     );
     if (sList) {
-      if (entry.role === "spotify-playlist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
+      if (entry.role === "spotify-tracklist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
         await item.setValue1.setState(parseInt(value) + 1);
         return true;
-      } else if (entry.role === "spotify-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
+      } else if ((entry.role === "spotify-speaker" || entry.role === "spotify-playlist" || entry.role === "spotify-tracklist") && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
         const index = sList.states[v2] || -1;
         if (index !== -1) {
@@ -2480,7 +2480,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         }
         this.log.debug(`Alexa Playlist list: finish`);
-      } else if (role === "spotify-speaker") {
+      } else if (role === "spotify-speaker" || role === "spotify-playlist" || role === "spotify-tracklist") {
         if (entityInSel.value.options.dp) {
           const o = await entityInSel.value.getCommonStates();
           const v = await entityInSel.value.getString();
@@ -2500,26 +2500,26 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates() || valueList2 != null)) {
+      } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates() || valueList2 != null)) {
         let states = void 0;
         const value = await tools.getValueEntryString(entityInSel);
         if (valueList && valueList2) {
           role = "2values";
         }
         switch (role) {
-          case "spotify-playlist": {
-            if (valueList) {
-              const val = await valueList.getObject();
-              if (val) {
-                states = {};
-                for (let a = 0; a < val.length; a++) {
-                  states[a + 1] = val[a].title;
-                }
-                list.value = value != null ? value : void 0;
+          /*case 'spotify-tracklist': {
+              if (valueList) {
+                  const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
+                  if (val) {
+                      states = {};
+                      for (let a = 0; a < val.length; a++) {
+                          states[a + 1] = val[a].title;
+                      }
+                      list.value = value ?? undefined;
+                  }
               }
-            }
-            break;
-          }
+              break;
+          }*/
           case "2values": {
             if (!valueList || !valueList2) {
               this.log.error("2values requires both valueList and valueList2!");
