@@ -1411,34 +1411,54 @@ export function buildScrollingText(
         rightFixed?: string;
         gap?: string;
         pos?: number;
+        anchorRatio?: number; // 0..1, wo im linken Fenster der Titelanfang initial steht (Default 0.25)
     } = {},
 ): { text: string; nextPos: number } {
-    const { maxSize = 35, prefix = '', suffix = '', sep = ' ', rightFixed, gap = '   ', pos = 0 } = options;
+    const {
+        maxSize = 35,
+        prefix = '',
+        suffix = '',
+        sep = ' ',
+        rightFixed,
+        gap = '      ',
+        pos = 0,
+        anchorRatio = 0.38,
+    } = options;
 
     const right = rightFixed ?? suffix ?? '';
     const useSep = right.length > 0 ? sep : '';
     const leftAvailable = maxSize - prefix.length - useSep.length - right.length;
 
     if (leftAvailable <= 0) {
-        // show the rightmost maxSize chars of the fixed part (prefix + sep + right)
         const fixed = `${prefix}${useSep}${right}`;
         return { text: fixed.slice(-maxSize), nextPos: pos };
     }
 
+    // Kurz: mittig ausrichten
     if (title.length <= leftAvailable) {
-        const left = title.padEnd(leftAvailable, ' ');
+        const extra = leftAvailable - title.length;
+        const leftPad = Math.floor(extra / 2);
+        const rightPad = extra - leftPad;
+        const left = ' '.repeat(leftPad) + title + ' '.repeat(rightPad);
         return { text: `${prefix}${left}${useSep}${right}`, nextPos: pos };
     }
 
-    const cycle = title + gap;
+    // Lang: Anfang des Titels bei ~anchorRatio der Fensterbreite platzieren
+    // Zyklus: Lücke links + Titel + Lücke rechts
+    const cycle = gap + title + gap;
     const cycleLen = cycle.length;
-    const posNorm = pos % cycleLen;
-
     const doubled = cycle + cycle;
+
+    const titleStart = gap.length; // Index des ersten Titelzeichens im cycle
+    const anchor = Math.max(0, Math.min(1, anchorRatio));
+    const viewAnchor = Math.floor(leftAvailable * anchor); // Position im Fenster für den Titelanfang
+    const baseOff = (titleStart - viewAnchor + cycleLen) % cycleLen;
+
+    const posNorm = (pos + baseOff) % cycleLen;
     const left = doubled.substr(posNorm, leftAvailable);
 
     const full = `${prefix}${left}${useSep}${right}`;
-    const nextPos = (posNorm + 1) % cycleLen;
+    const nextPos = (pos + 1) % cycleLen;
 
     return { text: full, nextPos };
 }

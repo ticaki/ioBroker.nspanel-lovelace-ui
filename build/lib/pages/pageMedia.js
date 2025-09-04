@@ -186,7 +186,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     if (message.headline) {
       const { text, nextPos } = tools.buildScrollingText(message.headline, {
-        maxSize: 18,
+        maxSize: 27,
         pos: this.headlinePos
       });
       message.headline = text;
@@ -195,7 +195,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     {
       const suffix = `| ${elapsed}${duration ? `-${duration}` : ""}`;
       const { text, nextPos } = tools.buildScrollingText(title, {
-        maxSize: 36,
+        maxSize: 37,
         suffix,
         sep: " ",
         pos: this.titelPos
@@ -207,7 +207,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       const div = album && artist ? " | " : "";
       const scrollText = album + div + artist;
       const { text, nextPos } = tools.buildScrollingText(scrollText, {
-        maxSize: 36,
+        maxSize: 37,
         pos: this.artistPos
       });
       message.artist = text;

@@ -1070,7 +1070,16 @@ function isVersionGreaterOrEqual(a, b) {
 }
 function buildScrollingText(title, options = {}) {
   var _a;
-  const { maxSize = 35, prefix = "", suffix = "", sep = " ", rightFixed, gap = "   ", pos = 0 } = options;
+  const {
+    maxSize = 35,
+    prefix = "",
+    suffix = "",
+    sep = " ",
+    rightFixed,
+    gap = "      ",
+    pos = 0,
+    anchorRatio = 0.38
+  } = options;
   const right = (_a = rightFixed != null ? rightFixed : suffix) != null ? _a : "";
   const useSep = right.length > 0 ? sep : "";
   const leftAvailable = maxSize - prefix.length - useSep.length - right.length;
@@ -1079,16 +1088,23 @@ function buildScrollingText(title, options = {}) {
     return { text: fixed.slice(-maxSize), nextPos: pos };
   }
   if (title.length <= leftAvailable) {
-    const left2 = title.padEnd(leftAvailable, " ");
+    const extra = leftAvailable - title.length;
+    const leftPad = Math.floor(extra / 2);
+    const rightPad = extra - leftPad;
+    const left2 = " ".repeat(leftPad) + title + " ".repeat(rightPad);
     return { text: `${prefix}${left2}${useSep}${right}`, nextPos: pos };
   }
-  const cycle = title + gap;
+  const cycle = gap + title + gap;
   const cycleLen = cycle.length;
-  const posNorm = pos % cycleLen;
   const doubled = cycle + cycle;
+  const titleStart = gap.length;
+  const anchor = Math.max(0, Math.min(1, anchorRatio));
+  const viewAnchor = Math.floor(leftAvailable * anchor);
+  const baseOff = (titleStart - viewAnchor + cycleLen) % cycleLen;
+  const posNorm = (pos + baseOff) % cycleLen;
   const left = doubled.substr(posNorm, leftAvailable);
   const full = `${prefix}${left}${useSep}${right}`;
-  const nextPos = (posNorm + 1) % cycleLen;
+  const nextPos = (pos + 1) % cycleLen;
   return { text: full, nextPos };
 }
 function formatHMS(ms) {
