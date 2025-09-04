@@ -1271,7 +1271,7 @@ export class PageItem extends BaseClassTriggerd {
                         sList.states !== undefined
                     ) {
                         if (sList.list.length > 0) {
-                            sList.list.splice(48);
+                            sList.list = sList.list.slice(0, 48);
                             message.modeList = Array.isArray(sList.list)
                                 ? sList.list.map((a: string) => tools.formatInSelText(a)).join('?')
                                 : '';
@@ -1288,7 +1288,7 @@ export class PageItem extends BaseClassTriggerd {
                                 list = list.split('?');
                             }
                             if (Array.isArray(list)) {
-                                list.splice(48);
+                                list = list.slice(0, 48);
                             }
                         } else {
                             list = [];
@@ -1300,9 +1300,9 @@ export class PageItem extends BaseClassTriggerd {
 
                         message.modeList = (list as string[]).join('?');
 
-                        if (message.modeList && message.modeList.length > 940) {
-                            message.modeList = message.modeList.slice(0, 940);
-                            this.log.warn('Value list has more as 940 chars!');
+                        if (message.modeList && message.modeList.length > 900) {
+                            message.modeList = message.modeList.slice(0, 900);
+                            this.log.warn('Value list has more as 900 chars!');
                         }
                         const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
                         if (Array.isArray(list) && n != null && n < list.length) {
@@ -2561,16 +2561,6 @@ export class PageItem extends BaseClassTriggerd {
 
         if (sList) {
             if (
-                entry.role === 'spotify-tracklist' &&
-                sList.list !== undefined &&
-                'setValue1' in item &&
-                sList.list[parseInt(value)] !== undefined &&
-                item.setValue1
-            ) {
-                await item.setValue1.setState(parseInt(value) + 1);
-
-                return true;
-            } else if (
                 (entry.role === 'spotify-speaker' ||
                     entry.role === 'spotify-playlist' ||
                     entry.role === 'spotify-tracklist') &&
@@ -2843,10 +2833,10 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 }
                 this.log.debug(`Alexa Playlist list: finish`);
-            } else if (role === 'spotify-speaker' || role === 'spotify-playlist' || role === 'spotify-tracklist') {
+            } else if (role === 'spotify-speaker' || role === 'spotify-playlist') {
                 // Spotify Speaker
                 if (entityInSel.value.options.dp) {
-                    const o = await entityInSel.value.getCommonStates();
+                    const o = await entityInSel.value.getCommonStates(true);
                     const v = await entityInSel.value.getString();
                     const al = await valueList?.getObject();
 
@@ -2862,6 +2852,23 @@ export class PageItem extends BaseClassTriggerd {
                                     list.value = String(list.states.length - 1);
                                 }
                             }
+                        }
+                    }
+                }
+            } else if (role === 'spotify-tracklist') {
+                // Spotify Tracklist
+                if (valueList2) {
+                    const arr = (await valueList2.getObject()) as typePageItem.spotifyPlaylist | null;
+                    if (arr) {
+                        list.list = [];
+                        list.states = [];
+                        for (let a = 0; a < arr.length; a++) {
+                            list.list.push(`${arr[a].title}`);
+                            list.states.push(String(a + 1));
+                        }
+                        const value = await entityInSel.value.getNumber();
+                        if (value && !list.value) {
+                            list.value = list.list[value - 1];
                         }
                     }
                 }

@@ -1107,7 +1107,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           );
           if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0 && sList.states !== void 0) {
             if (sList.list.length > 0) {
-              sList.list.splice(48);
+              sList.list = sList.list.slice(0, 48);
               message.modeList = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
               message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
             }
@@ -1118,7 +1118,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 list = list.split("?");
               }
               if (Array.isArray(list)) {
-                list.splice(48);
+                list = list.slice(0, 48);
               }
             } else {
               list = [];
@@ -1127,9 +1127,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               (a) => tools.formatInSelText(this.library.getTranslation(a))
             );
             message.modeList = list.join("?");
-            if (message.modeList && message.modeList.length > 940) {
-              message.modeList = message.modeList.slice(0, 940);
-              this.log.warn("Value list has more as 940 chars!");
+            if (message.modeList && message.modeList.length > 900) {
+              message.modeList = message.modeList.slice(0, 900);
+              this.log.warn("Value list has more as 900 chars!");
             }
             const n = (_E = await tools.getValueEntryNumber(item.entityInSel)) != null ? _E : 0;
             if (Array.isArray(list) && n != null && n < list.length) {
@@ -2257,10 +2257,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       "valueList2" in item ? item.valueList2 : void 0
     );
     if (sList) {
-      if (entry.role === "spotify-tracklist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
-        await item.setValue1.setState(parseInt(value) + 1);
-        return true;
-      } else if ((entry.role === "spotify-speaker" || entry.role === "spotify-playlist" || entry.role === "spotify-tracklist") && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
+      if ((entry.role === "spotify-speaker" || entry.role === "spotify-playlist" || entry.role === "spotify-tracklist") && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
         const index = sList.states[v2] || -1;
         if (index !== -1) {
@@ -2480,9 +2477,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         }
         this.log.debug(`Alexa Playlist list: finish`);
-      } else if (role === "spotify-speaker" || role === "spotify-playlist" || role === "spotify-tracklist") {
+      } else if (role === "spotify-speaker" || role === "spotify-playlist") {
         if (entityInSel.value.options.dp) {
-          const o = await entityInSel.value.getCommonStates();
+          const o = await entityInSel.value.getCommonStates(true);
           const v = await entityInSel.value.getString();
           const al = await (valueList == null ? void 0 : valueList.getObject());
           if (o) {
@@ -2497,6 +2494,22 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                   list.value = String(list.states.length - 1);
                 }
               }
+            }
+          }
+        }
+      } else if (role === "spotify-tracklist") {
+        if (valueList2) {
+          const arr = await valueList2.getObject();
+          if (arr) {
+            list.list = [];
+            list.states = [];
+            for (let a = 0; a < arr.length; a++) {
+              list.list.push(`${arr[a].title}`);
+              list.states.push(String(a + 1));
+            }
+            const value = await entityInSel.value.getNumber();
+            if (value && !list.value) {
+              list.value = list.list[value - 1];
             }
           }
         }

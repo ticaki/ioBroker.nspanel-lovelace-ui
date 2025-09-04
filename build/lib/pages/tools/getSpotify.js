@@ -284,11 +284,7 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
           valueList: {
             type: "const",
             constVal: JSON.stringify(page.media.speakerList || [])
-          },
-          /**
-           * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-           */
-          setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+          }
         }
       },
       //playlist select
@@ -342,13 +338,13 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
             value: {
               mode: "auto",
               type: "triggered",
-              regexp: /.?\.player\.playlist\.trackList$/,
+              regexp: /.?\.player\.playlist\.trackNo$/,
               dp: ""
             },
             set: {
               mode: "auto",
               type: "state",
-              regexp: /.?\.player\.playlist\.trackList$/,
+              regexp: /.?\.player\.playlist\.trackNo$/,
               dp: ""
             }
           },
@@ -356,9 +352,15 @@ async function getPageSpotify(configManager, page, gridItem, messages) {
             type: "const",
             constVal: JSON.stringify([])
           },
+          valueList2: {
+            type: "triggered",
+            mode: "auto",
+            regexp: /.?\.player\.playlist\.trackListArray$/,
+            dp: ""
+          },
           headline: {
             type: "const",
-            constVal: "playList"
+            constVal: "trackList"
           }
         }
       },
