@@ -199,7 +199,7 @@ export class PageMedia extends PageMenu {
         // ---------------------
         if (message.headline) {
             const { text, nextPos } = tools.buildScrollingText(message.headline, {
-                maxSize: 27,
+                maxSize: 28,
                 pos: this.headlinePos,
             });
             message.headline = text;
