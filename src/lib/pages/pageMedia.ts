@@ -420,9 +420,13 @@ export class PageMedia extends PageMenu {
                 break;
             }
             case 'media-shuffle': {
-                items.data.shuffle &&
-                    ((items.data.shuffle.set && (await items.data.shuffle.set.setStateFlip())) ||
-                        (items.data.shuffle.value && (await items.data.shuffle.value.setStateFlip())));
+                if (items.data.shuffle?.set?.common.write) {
+                    await items.data.shuffle.set.setStateFlip();
+                } else if (items.data.shuffle?.value?.common.write) {
+                    await items.data.shuffle.value.setStateFlip();
+                } else {
+                    this.log.error(`Missing shuffle controller. Report to dev`);
+                }
                 break;
             }
             case 'volumeSlider': {

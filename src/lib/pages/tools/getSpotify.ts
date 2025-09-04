@@ -96,11 +96,12 @@ export async function getPageSpotify(
                 shuffle: {
                     value: {
                         mode: 'auto',
-                        type: 'state',
+                        type: 'triggered',
                         role: '',
                         regexp: /.?\.player\.shuffle$/,
                         dp: '',
-                        read: `return val == 'on' || val == 'ON';`,
+                        read: `return val == 'on';`,
+                        write: `return val === 'ON' || val === true  ? 'on' : 'off';`,
                     },
                     set: {
                         mode: 'auto',
@@ -108,6 +109,7 @@ export async function getPageSpotify(
                         role: '',
                         regexp: /.?\.player\.shuffle$/,
                         dp: '',
+                        read: `return val == 'on';`,
                         write: `return val === 'ON' || val === true  ? 'on' : 'off';`,
                     },
                     /*enabled: {

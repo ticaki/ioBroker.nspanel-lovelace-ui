@@ -377,6 +377,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.titelPos = 0;
   }
   async onButtonEvent(event) {
+    var _a, _b, _c, _d;
     if (!this.getVisibility() || this.sleep) {
       return;
     }
@@ -411,7 +412,13 @@ class PageMedia extends import_pageMenu.PageMenu {
         break;
       }
       case "media-shuffle": {
-        items.data.shuffle && (items.data.shuffle.set && await items.data.shuffle.set.setStateFlip() || items.data.shuffle.value && await items.data.shuffle.value.setStateFlip());
+        if ((_b = (_a = items.data.shuffle) == null ? void 0 : _a.set) == null ? void 0 : _b.common.write) {
+          await items.data.shuffle.set.setStateFlip();
+        } else if ((_d = (_c = items.data.shuffle) == null ? void 0 : _c.value) == null ? void 0 : _d.common.write) {
+          await items.data.shuffle.value.setStateFlip();
+        } else {
+          this.log.error(`Missing shuffle controller. Report to dev`);
+        }
         break;
       }
       case "volumeSlider": {
