@@ -512,12 +512,37 @@ class PageMedia extends import_pageMenu.PageMenu {
       adapter.log.warn(msg2);
       return { gridItem, messages };
     }
+    const parts = page.media.id.split(".");
+    const adapterName = parts[0];
     const view = await adapter.getObjectViewAsync("system", "instance", {
-      startkey: `system.adapter.${page.media.id.split(".").slice(0, 1).join(".")}.`,
-      endkey: `system.adapter.${page.media.id.split(".").slice(0, 1).join(".")}.\u9999`
+      startkey: `system.adapter.${adapterName}.`,
+      endkey: `system.adapter.${adapterName}.\u9999`
     });
-    if (!view || !view.rows || view.rows.length === 0 || view.rows.findIndex((v) => v.id === `system.adapter.${page.media.id.split(".").slice(0, 2).join(".")}`) === -1) {
-      const msg2 = `${page.uniqueName}: Media page id - adapter: ${page.media.id.split(".").slice(0, 2).join(".")} has no instance - not exist - wrong id?!`;
+    if (!view || !view.rows || view.rows.length === 0) {
+      const msg2 = `${page.uniqueName}: Media page id - adapter: ${adapterName} has no instance - not exist - wrong id?!`;
+      messages.push(msg2);
+      adapter.log.error(msg2);
+      return { gridItem, messages };
+    }
+    if (parts.length === 1) {
+      const instanceNums = view.rows.map((r) => r.id.split(".").pop()).filter((n) => n && /^\d+$/.test(n)).map((n) => parseInt(n, 10)).sort((a, b) => a - b);
+      if (instanceNums.length > 0) {
+        const chosen = String(instanceNums[0]);
+        page.media.id = `${adapterName}.${chosen}`;
+        adapter.log.debug(
+          `${page.uniqueName}: No instance in media id provided, using lowest available: ${page.media.id}`
+        );
+        parts.push(chosen);
+      } else {
+        const msg2 = `${page.uniqueName}: No numeric instance found for adapter ${adapterName}.`;
+        messages.push(msg2);
+        adapter.log.error(msg2);
+        return { gridItem, messages };
+      }
+    }
+    const instanceId = `system.adapter.${parts.slice(0, 2).join(".")}`;
+    if (view.rows.findIndex((v) => v.id === instanceId) === -1) {
+      const msg2 = `${page.uniqueName}: Media page id - adapter: ${parts.slice(0, 2).join(".")} has no instance - not exist - wrong id?!`;
       messages.push(msg2);
       adapter.log.error(msg2);
       return { gridItem, messages };
