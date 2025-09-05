@@ -1230,7 +1230,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               "utf8"
             );
           }
-          const vTemp = (file == null ? void 0 : file.match(/const.version.+'(\d+\.\d+\.\d)+';/)) || [];
+          const vTemp = (file == null ? void 0 : file.match(/const version = '(\d+\.\d+\.\d+)';/)) || [];
           const version = vTemp[1] ? vTemp[1] : "";
           for (let a = 0; a < this.config.panels.length; a++) {
             const panel = this.config.panels[a];
@@ -1264,13 +1264,13 @@ class NspanelLovelaceUi extends utils.Adapter {
               }
               if (a.info) {
                 if ((_o = a.info.tasmota) == null ? void 0 : _o.firmwareversion) {
-                  const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     tv = `${temp2[1]}`;
                   }
                 }
                 if (((_p = a.info.tasmota) == null ? void 0 : _p.onlineVersion) && tv) {
-                  const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1] && temp2[1] !== tv) {
                     tv += ` (${updateText})`;
                     check = true;
@@ -1278,13 +1278,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 tv = tv ? `v${tv}` : "";
                 if ((_q = a.info.nspanel) == null ? void 0 : _q.displayVersion) {
-                  const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     nv = `${temp2[1]}`;
                   }
                 }
                 if (((_r = a.info.nspanel) == null ? void 0 : _r.onlineVersion) && nv) {
-                  const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1] && temp2[1] !== nv) {
                     if (nv === "0.0.0") {
                       nv += ` (Developer version!)`;
@@ -1326,7 +1326,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp3 = (_B = (_A = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)) == null ? void 0 : _A[1]) != null ? _B : "";
+                const temp3 = (_B = (_A = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _A[1]) != null ? _B : "";
                 if (temp3 !== version) {
                   sv = temp3 ? temp3 : version;
                 }
