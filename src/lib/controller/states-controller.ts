@@ -671,7 +671,7 @@ export class StatesControler extends BaseClass {
             }
             tempObjectDB.keys = Object.keys(tempObjectDB.data);
             const temp = await this.adapter.getEnumsAsync(['rooms', 'functions']);
-            tempObjectDB.enums = Object.assign(temp['enum.rooms'], temp['enum.functions']);
+            tempObjectDB.enums = { ...temp['enum.rooms'], ...temp['enum.functions'] };
         }
         const result: { data: Record<string, ioBroker.Object> | undefined; keys: string[] } = {
             data: tempObjectDB.data,

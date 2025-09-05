@@ -70,7 +70,7 @@ class PageSchedule extends import_pageMenu.PageMenu {
       (_b = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _b : ""
     );
     message.navigation = this.getNavigation();
-    const msg = Object.assign(structuredClone(PageScheduleMessageDefault), message);
+    const msg = { ...structuredClone(PageScheduleMessageDefault), ...message };
     this.sendToPanel(this.getMessage(msg), false);
   }
   getMessage(message) {

@@ -216,7 +216,7 @@ class PageThermo extends import_Page.Page {
       message.status = this.library.getTranslation((_k = await (0, import_tools.getValueEntryString)(item.data.mixed4)) != null ? _k : "");
       message.btDetail = this.pageItems && this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel") ? "0" : "1";
     }
-    const msg = Object.assign(PageThermoMessageDefault, message);
+    const msg = { ...PageThermoMessageDefault, ...message };
     this.sendToPanel(this.getMessage(msg), false);
   }
   async onButtonEvent(event) {

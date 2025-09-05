@@ -81,11 +81,14 @@ class ConfigManager extends import_library.BaseClass {
    * If any errors occur during the process, they are logged and included in the returned messages..
    */
   async setScriptConfig(configuration) {
-    configuration.advancedOptions = Object.assign(
-      configManagerConst.defaultConfig.advancedOptions || {},
-      configuration.advancedOptions || {}
-    );
-    const config = Object.assign(configManagerConst.defaultConfig, configuration);
+    configuration.advancedOptions = {
+      ...configManagerConst.defaultConfig.advancedOptions || {},
+      ...configuration.advancedOptions || {}
+    };
+    const config = {
+      ...configManagerConst.defaultConfig,
+      ...configuration
+    };
     if (!config || !configManagerConst.isConfig(config, this.adapter)) {
       this.log.error(
         `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : "undefined"}`
@@ -2889,20 +2892,18 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 up: foundedStates[role].OPEN,
                 stop: foundedStates[role].SET ? JSON.parse(
-                  JSON.stringify(
-                    Object.assign(foundedStates[role].SET, {
-                      type: "state",
-                      write: "return true"
-                    })
-                  )
+                  JSON.stringify({
+                    ...foundedStates[role].SET,
+                    type: "state",
+                    write: "return true"
+                  })
                 ) : void 0,
                 down: foundedStates[role].SET ? JSON.parse(
-                  JSON.stringify(
-                    Object.assign(foundedStates[role].SET, {
-                      type: "state",
-                      write: "return false"
-                    })
-                  )
+                  JSON.stringify({
+                    ...foundedStates[role].SET,
+                    type: "state",
+                    write: "return false"
+                  })
                 ) : void 0,
                 up2: void 0,
                 down2: void 0,

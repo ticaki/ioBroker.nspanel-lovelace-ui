@@ -1227,47 +1227,6 @@ function cloneJson<T extends Jsonish>(v: any): any {
     return v;
 }
 
-/**
- * Deep assign of jsons, dont use this for Json with objects/classes
- *
- * @param def Json with json, number, boolean, strings, null, undefined
- * @param source Json with json, number, boolean, strings, null, undefined
- * @param level ignore
- * @returns Json with json, number, boolean, strings, null, undefined
- */
-/*export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): any {
-    if (level++ > 20) {
-        throw new Error('Max level reached! Circulating object is suspected!');
-    }
-    for (const k in def) {
-        if (typeof def[k] === 'object') {
-            if (source[k] === null || def[k] === null) {
-                source[k] = undefined;
-                def[k] = undefined;
-            } else if (source[k] !== undefined) {
-                def[k] = deepAssign(def[k], source[k]);
-            } else if (def[k] !== undefined) {
-                source[k] = def[k];
-            }
-        } else if (source[k] === undefined) {
-            source[k] = def[k];
-        } else if (def[k] === undefined) {
-            def[k] = source[k];
-        }
-    }
-    for (const k in source) {
-        if (typeof source[k] === 'object' && k in source) {
-            if (source[k] === null) {
-                source[k] = undefined;
-                def[k] = undefined;
-            } else if (def[k] === undefined) {
-                def[k] = source[k];
-            }
-        }
-    }
-    return Object.assign(def, source);
-}*/
-
 export function getInternalDefaults(
     type: ioBroker.StateCommon['type'],
     role: ioBroker.StateCommon['role'],

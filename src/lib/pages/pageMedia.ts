@@ -345,10 +345,15 @@ export class PageMedia extends PageMenu {
         const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
         message.navigation = this.getNavigation();
 
-        const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
+        const msg: pages.PageMediaMessage = {
+            ...PageMediaMessageDefault,
+            ...message,
             id: 'media',
-            options: pageItems.concat(opts).slice(0, 5),
-        });
+            options: pageItems
+                .concat(opts)
+                .slice(0, 5)
+                .map(o => (o ? o : '~~~~~')) as [string, string, string, string, string],
+        };
 
         this.sendToPanel(this.getMessage(msg), false);
     }

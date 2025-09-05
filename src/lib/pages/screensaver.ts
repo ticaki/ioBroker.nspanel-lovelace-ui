@@ -218,7 +218,7 @@ export class Screensaver extends Page {
             message.options[place].push(...ordered);
 
             // Apply overwrites (sparse assignment is fine)
-            Object.assign(message.options[place], overwrite[place]);
+            message.options[place] = { ...message.options[place], ...overwrite[place] };
 
             // Windowing/paging
             const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
@@ -299,11 +299,11 @@ export class Screensaver extends Page {
         }
 
         const arr: string[] = [
-            ...message.options.favorit,
-            ...message.options.left,
-            ...message.options.bottom,
-            ...message.options.alternate,
-            ...message.options.indicator,
+            ...(message.options.favorit || []),
+            ...(message.options.left || []),
+            ...(message.options.bottom || []),
+            ...(message.options.alternate || []),
+            ...(message.options.indicator || []),
         ];
 
         const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));

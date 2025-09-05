@@ -62,7 +62,7 @@ export class PageEntities extends PageMenu {
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
         );
         message.navigation = this.getNavigation();
-        const msg: pages.PageEntitiesMessage = Object.assign(structuredClone(PageEntitiesMessageDefault), message);
+        const msg: pages.PageEntitiesMessage = { ...structuredClone(PageEntitiesMessageDefault), ...message };
 
         this.sendToPanel(this.getMessage(msg), false);
     }

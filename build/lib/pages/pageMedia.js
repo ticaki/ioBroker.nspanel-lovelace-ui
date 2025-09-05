@@ -295,10 +295,12 @@ class PageMedia extends import_pageMenu.PageMenu {
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
     message.navigation = this.getNavigation();
-    const msg = Object.assign(PageMediaMessageDefault, message, {
+    const msg = {
+      ...PageMediaMessageDefault,
+      ...message,
       id: "media",
-      options: pageItems.concat(opts).slice(0, 5)
-    });
+      options: pageItems.concat(opts).slice(0, 5).map((o) => o ? o : "~~~~~")
+    };
     this.sendToPanel(this.getMessage(msg), false);
   }
   async getMediaState() {

@@ -649,7 +649,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           slider1Translation: "",
           popup: false
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(
           "entityUpdateDetail",
           result.entityName,
@@ -675,7 +675,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           currentState: "",
           list: ""
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(
           "entityUpdateDetail2",
           result.entityName,
@@ -695,7 +695,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           currentState: "",
           list: ""
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(result.headline, result.entityName, result.currentState, result.list);
         break;
       }
@@ -712,7 +712,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           mode: "",
           modeList: ""
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(
           "entityUpdateDetail",
           result.entityName,
@@ -742,7 +742,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           text2: "",
           text3: ""
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(
           "entityUpdateDetail",
           result.entityName,
@@ -784,7 +784,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           statusR2: "disable",
           pos2: "disable"
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(
           "entityUpdateDetail",
           result.entityName,
@@ -834,7 +834,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           shutterTyp: "shutter",
           shutterClosedIsZero: this.adapter.config.shutterClosedIsZero ? "1" : "0"
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(
           "entityUpdateDetail",
           result.entityName,
@@ -893,7 +893,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           hSlider3Step: "",
           hSlider3Visibility: "disable"
         };
-        result = Object.assign(result, message);
+        result = { ...result, ...message };
         return tools.getPayload(
           "entityUpdateDetail",
           result.entityName,

@@ -271,7 +271,7 @@ export class PageThermo2 extends PageMenu {
             }
             message.options = message.options.concat(arr) as typeof message.options;
 
-            const msg: pages.PageThermo2Message = Object.assign(PageThermo2MessageDefault, message);
+            const msg: pages.PageThermo2Message = { ...PageThermo2MessageDefault, ...message };
             const msg2 = this.getMessage(msg);
             this.sendToPanel(msg2, false);
         }

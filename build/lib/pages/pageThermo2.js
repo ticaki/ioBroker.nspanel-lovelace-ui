@@ -249,7 +249,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         arr = temp;
       }
       message.options = message.options.concat(arr);
-      const msg = Object.assign(PageThermo2MessageDefault, message);
+      const msg = { ...PageThermo2MessageDefault, ...message };
       const msg2 = this.getMessage(msg);
       this.sendToPanel(msg2, false);
     }

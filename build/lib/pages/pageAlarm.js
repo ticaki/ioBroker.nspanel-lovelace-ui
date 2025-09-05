@@ -240,7 +240,7 @@ class PageAlarm extends import_Page.Page {
   }
   getMessage(message) {
     let result = PageAlarmMessageDefault;
-    result = Object.assign(result, message);
+    result = { ...result, ...message };
     return (0, import_tools.getPayload)(
       "entityUpd",
       result.headline,

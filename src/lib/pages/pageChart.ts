@@ -183,7 +183,7 @@ export class PageChart extends Page {
 
     private getMessage(_message: Partial<pages.PageChartMessage>): string {
         let result: pages.PageChartMessage = PageChartMessageDefault;
-        result = Object.assign(result, _message) as pages.PageChartMessage;
+        result = { ...result, ..._message } as pages.PageChartMessage;
         return getPayload(
             'entityUpd',
             result.headline,

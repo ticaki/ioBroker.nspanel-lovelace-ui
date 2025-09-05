@@ -84,10 +84,10 @@ class PageGrid extends import_pageMenu.PageMenu {
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
     );
     message.navigation = this.getNavigation();
-    const msg = Object.assign(
-      this.card === "cardGrid" ? PageGridMessageDefault : PageGrid2MessageDefault,
-      message
-    );
+    const msg = {
+      ...this.card === "cardGrid" ? PageGridMessageDefault : PageGrid2MessageDefault,
+      ...message
+    };
     this.sendToPanel(this.getMessage(msg), false);
   }
   getMessage(message) {

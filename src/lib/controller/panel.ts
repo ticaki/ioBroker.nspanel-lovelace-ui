@@ -217,7 +217,7 @@ export class Panel extends BaseClass {
         this.buttons = options.buttons;
         this.CustomFormat = options.CustomFormat ?? '';
         this.config = options.config;
-        this.format = Object.assign(DefaultOptions.format, options.format);
+        this.format = { ...DefaultOptions.format, ...(options.format as any) };
         this.controller = options.controller;
         this.topic = options.topic;
         if (typeof this.panelSend.addMessage === 'function') {
@@ -334,7 +334,6 @@ export class Panel extends BaseClass {
                 case 'screensaver3': {
                     scsFound++;
 
-                    //const opt = Object.assign(DefaultOptions, pageConfig);
                     const ssconfig: PageInterface = {
                         card: pageConfig.config.card,
                         panel: this,

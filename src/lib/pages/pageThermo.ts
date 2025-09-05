@@ -244,7 +244,7 @@ export class PageThermo extends Page {
                     : '1';
             //this.pageItems && this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel') ? '' : 1;
         }
-        const msg: pages.PageThermoMessage = Object.assign(PageThermoMessageDefault, message);
+        const msg: pages.PageThermoMessage = { ...PageThermoMessageDefault, ...message };
 
         this.sendToPanel(this.getMessage(msg), false);
     }

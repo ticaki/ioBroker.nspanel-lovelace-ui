@@ -89,10 +89,10 @@ export class PageGrid extends PageMenu {
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
         );
         message.navigation = this.getNavigation();
-        const msg: pages.PageGridMessage = Object.assign(
-            this.card === 'cardGrid' ? PageGridMessageDefault : PageGrid2MessageDefault,
-            message,
-        );
+        const msg: pages.PageGridMessage = {
+            ...(this.card === 'cardGrid' ? PageGridMessageDefault : PageGrid2MessageDefault),
+            ...message,
+        };
 
         this.sendToPanel(this.getMessage(msg), false);
     }

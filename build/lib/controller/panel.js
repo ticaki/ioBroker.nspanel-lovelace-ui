@@ -207,7 +207,7 @@ class Panel extends import_library.BaseClass {
     this.buttons = options.buttons;
     this.CustomFormat = (_b = options.CustomFormat) != null ? _b : "";
     this.config = options.config;
-    this.format = Object.assign(DefaultOptions.format, options.format);
+    this.format = { ...DefaultOptions.format, ...options.format };
     this.controller = options.controller;
     this.topic = options.topic;
     if (typeof this.panelSend.addMessage === "function") {

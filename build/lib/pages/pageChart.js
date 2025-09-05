@@ -182,7 +182,7 @@ class PageChart extends import_Page.Page {
   }
   getMessage(_message) {
     let result = PageChartMessageDefault;
-    result = Object.assign(result, _message);
+    result = { ...result, ..._message };
     return (0, import_tools.getPayload)(
       "entityUpd",
       result.headline,
