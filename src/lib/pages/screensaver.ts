@@ -94,7 +94,7 @@ export class Screensaver extends Page {
      * - Keeps configured order by collecting (place, index, payload) and sorting by index per place.
      * - Numeric `enabled` → overwrite by index; boolean `enabled=false` → skip.
      *
-     * @param places
+     * @param places Places to include in the message.
      */
     async getData(places: Types.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
         const config = this.config;
@@ -448,11 +448,13 @@ export class Screensaver extends Page {
             this.log.debug('HandleTime: no message, no time or panel is offline');
             return;
         }
+        let icon = `${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`;
+        if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
+            // only for newer firmwares
+            icon = `~${Icons.GetIcon('wrench-clock')}`;
+        }
 
-        this.sendToPanel(
-            `time~${message.options.time[0].split('~')[5]}${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`,
-            false,
-        );
+        this.sendToPanel(`time~${message.options.time[0].split('~')[5]}${icon}`, false);
     }
     async HandleDate(): Promise<void> {
         if (this.basePanel.isOnline === false) {

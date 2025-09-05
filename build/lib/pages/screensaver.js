@@ -103,7 +103,7 @@ class Screensaver extends import_Page.Page {
    * - Keeps configured order by collecting (place, index, payload) and sorting by index per place.
    * - Numeric `enabled` → overwrite by index; boolean `enabled=false` → skip.
    *
-   * @param places
+   * @param places Places to include in the message.
    */
   async getData(places) {
     const config = this.config;
@@ -368,10 +368,11 @@ class Screensaver extends import_Page.Page {
       this.log.debug("HandleTime: no message, no time or panel is offline");
       return;
     }
-    this.sendToPanel(
-      `time~${message.options.time[0].split("~")[5]}${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`,
-      false
-    );
+    let icon = `${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`;
+    if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
+      icon = `~${import_icon_mapping.Icons.GetIcon("wrench-clock")}`;
+    }
+    this.sendToPanel(`time~${message.options.time[0].split("~")[5]}${icon}`, false);
   }
   async HandleDate() {
     if (this.basePanel.isOnline === false) {
