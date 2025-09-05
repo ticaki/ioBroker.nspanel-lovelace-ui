@@ -3971,18 +3971,26 @@ class ConfigManager extends import_library.BaseClass {
     return !!id && !id.endsWith(".");
   }
   async existsState(id) {
+    var _a;
     if (this.validStateId(id) === false) {
       return false;
     }
-    return await this.adapter.getForeignStateAsync(id) != null;
-  }
-  async existsAndWriteableState(id) {
-    var _a;
-    if (!await this.existsState(id)) {
+    const o = await ((_a = this.statesController) == null ? void 0 : _a.getObjectAsync(id));
+    if (!o || o.type !== "state") {
       return false;
     }
-    const state = await this.adapter.getForeignObjectAsync(id);
-    return state != null && ((_a = state.common) == null ? void 0 : _a.write) === true;
+    return false;
+  }
+  async existsAndWriteableState(id) {
+    var _a, _b;
+    if (this.validStateId(id) === false) {
+      return false;
+    }
+    const o = await ((_a = this.statesController) == null ? void 0 : _a.getObjectAsync(id));
+    if (!o || o.type !== "state") {
+      return false;
+    }
+    return ((_b = o.common) == null ? void 0 : _b.write) === true;
   }
   async delete() {
     var _a;

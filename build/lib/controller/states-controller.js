@@ -711,7 +711,7 @@ class StatesControler extends import_library.BaseClass {
     return data;
   }
   async getObjectAsync(id) {
-    if (this.objectDatabase[id] != void 0) {
+    if (this.objectDatabase[id] !== void 0) {
       return this.objectDatabase[id];
     } else if (this.triggerDB[id] != void 0 && this.triggerDB[id].internal) {
       return { _id: "", type: "state", common: this.triggerDB[id].common, native: {} };

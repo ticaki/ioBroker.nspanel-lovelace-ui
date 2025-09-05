@@ -4702,15 +4702,22 @@ export class ConfigManager extends BaseClass {
         if (this.validStateId(id) === false) {
             return false;
         }
-        return (await this.adapter.getForeignStateAsync(id)) != null;
+        const o = await this.statesController?.getObjectAsync(id);
+        if (!o || o.type !== 'state') {
+            return false;
+        }
+        return false;
     }
 
     async existsAndWriteableState(id: string): Promise<boolean> {
-        if (!(await this.existsState(id))) {
+        if (this.validStateId(id) === false) {
             return false;
         }
-        const state = await this.adapter.getForeignObjectAsync(id);
-        return state != null && state.common?.write === true;
+        const o = await this.statesController?.getObjectAsync(id);
+        if (!o || o.type !== 'state') {
+            return false;
+        }
+        return o.common?.write === true;
     }
 
     async delete(): Promise<void> {
