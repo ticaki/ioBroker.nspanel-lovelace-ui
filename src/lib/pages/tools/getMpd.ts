@@ -8,7 +8,7 @@ export async function getPageMpd(
     gridItem: pages.PageBaseConfig,
     messages: string[],
 ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
-    const adapter = configManager.adapter;
+    //const adapter = configManager.adapter;
 
     gridItem.dpInit = `/^${page.media.id.split('.').slice(0, 2).join('\\.')}\\./`;
     gridItem = {
@@ -256,8 +256,6 @@ export async function getPageMpd(
             },
         });
     }
-
-
 
     // Clock
     if (page.media.deactivateDefaultItems?.clock !== true) {

@@ -231,6 +231,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "value.mode.airconditioner",
   "value.mode.thermostat",
   "indicator",
+  "indicator.connected",
   ""
 ]);
 function isStateRole(F) {
