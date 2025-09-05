@@ -257,64 +257,7 @@ export async function getPageMpd(
         });
     }
 
-    // Volume control
-    if (page.media.deactivateDefaultItems?.volume !== true) {
-        gridItem.pageItems.push({
-            role: '',
-            type: 'number',
-            dpInit: '',
-            data: {
-                icon: {
-                    true: {
-                        value: { type: 'const', constVal: 'volume-high' },
-                        color: await configManager.getIconColor(page.media.itemsColorOn?.volume, Color.activated),
-                    },
-                },
-                entity1: {
-                    value: {
-                        mode: 'auto',
-                        type: 'state',
-                        role: 'level.volume',
-                        regexp: /\.volume$/,
-                        dp: '',
-                    },
-                    set: {
-                        mode: 'auto',
-                        type: 'state',
-                        role: 'level.volume',
-                        regexp: /\.setvol$/,
-                        dp: '',
-                    },
-                    minScale: {
-                        type: 'const',
-                        constVal: page.media.minValue ?? 0,
-                    },
-                    maxScale: {
-                        type: 'const',
-                        constVal: page.media.maxValue ?? 100,
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 0,
-                    },
-                },
-                minValue1: {
-                    type: 'const',
-                    constVal: 0,
-                },
-                maxValue1: {
-                    type: 'const',
-                    constVal: 100,
-                },
-                text: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Volume',
-                    },
-                },
-            },
-        });
-    }
+
 
     // Clock
     if (page.media.deactivateDefaultItems?.clock !== true) {
