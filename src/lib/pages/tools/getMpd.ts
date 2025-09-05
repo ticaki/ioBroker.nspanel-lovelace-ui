@@ -75,7 +75,7 @@ export async function getPageMpd(
                     set: {
                         mode: 'auto',
                         type: 'state',
-                        role: 'level.volume',
+                        role: '',
                         scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
                         regexp: /\.setvol$/,
                         dp: '',
@@ -228,7 +228,7 @@ export async function getPageMpd(
     if (page.media.deactivateDefaultItems?.repeat !== true) {
         gridItem.pageItems.push({
             role: '',
-            type: 'text',
+            type: 'button',
             dpInit: '',
             data: {
                 icon: {

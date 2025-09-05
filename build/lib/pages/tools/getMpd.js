@@ -84,7 +84,7 @@ async function getPageMpd(configManager, page, gridItem, messages) {
           set: {
             mode: "auto",
             type: "state",
-            role: "level.volume",
+            role: "",
             scale: { min: (_c = page.media.minValue) != null ? _c : 0, max: (_d = page.media.maxValue) != null ? _d : 100 },
             regexp: /\.setvol$/,
             dp: ""
@@ -231,7 +231,7 @@ async function getPageMpd(configManager, page, gridItem, messages) {
   if (((_h = page.media.deactivateDefaultItems) == null ? void 0 : _h.repeat) !== true) {
     gridItem.pageItems.push({
       role: "",
-      type: "text",
+      type: "button",
       dpInit: "",
       data: {
         icon: {

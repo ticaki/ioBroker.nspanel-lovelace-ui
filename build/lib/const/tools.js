@@ -260,20 +260,17 @@ async function setSliderCTFromValue(i, value) {
   }
 }
 async function setScaledNumber(i, value) {
-  var _a;
-  if (!i || !i.value) {
+  var _a, _b, _c, _d;
+  if (!i || !i.set && !i.value) {
     return;
   }
-  const nval = (_a = await i.value.getNumber()) != null ? _a : null;
-  if (nval !== null) {
-    if (i.minScale !== void 0 && i.maxScale !== void 0) {
-      value = getScaledNumberRaw(value, await i.minScale.getNumber(), await i.maxScale.getNumber(), value);
-    }
-    if (i.set && i.set.writeable) {
-      await i.set.setState(value);
-    } else if (i.value.writeable && nval !== value) {
-      await i.value.setState(value);
-    }
+  if (i.minScale !== void 0 && i.maxScale !== void 0) {
+    value = import_Color.Color.scale(value, 0, 100, (_a = await i.minScale.getNumber()) != null ? _a : 0, (_b = await i.maxScale.getNumber()) != null ? _b : 100);
+  }
+  if ((_c = i.set) == null ? void 0 : _c.writeable) {
+    await i.set.setState(value);
+  } else if ((_d = i.value) == null ? void 0 : _d.writeable) {
+    await i.value.setState(value);
   }
 }
 async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
