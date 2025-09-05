@@ -85,6 +85,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (copilot) Added support for ioBroker MPD-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (ticaki) Startup significantly improved and hangs removed
 - (ticaki) Colour themes added, but by no means used everywhere yet
 - (ticaki) Page items on the cardMedia can be given custom colours

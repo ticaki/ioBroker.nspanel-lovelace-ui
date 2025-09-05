@@ -6899,6 +6899,9 @@ export class Icons {
         ['zodiac-scorpio', ''],
         ['zodiac-taurus', ''],
         ['zodiac-virgo', ''],
+        ['logo-alexa', ''],
+        ['logo-mpd', ''],
+        ['logo-spotify', ''],
     ]);
 
     static GetIcon(ma_name: string): string {

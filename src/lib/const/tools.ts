@@ -263,19 +263,17 @@ export async function setScaledNumber(
     i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
     value: number,
 ): Promise<void> {
-    if (!i || !i.value) {
+    if (!i || (!i.set && !i.value)) {
         return;
     }
-    const nval = (await i.value.getNumber()) ?? null;
-    if (nval !== null) {
-        if (i.minScale !== undefined && i.maxScale !== undefined) {
-            value = getScaledNumberRaw(value, await i.minScale.getNumber(), await i.maxScale.getNumber(), value);
-        }
-        if (i.set && i.set.writeable) {
-            await i.set.setState(value);
-        } else if (i.value.writeable && nval !== value) {
-            await i.value.setState(value);
-        }
+
+    if (i.minScale !== undefined && i.maxScale !== undefined) {
+        value = Color.scale(value, 0, 100, (await i.minScale.getNumber()) ?? 0, (await i.maxScale.getNumber()) ?? 100);
+    }
+    if (i.set?.writeable) {
+        await i.set.setState(value);
+    } else if (i.value?.writeable) {
+        await i.value.setState(value);
     }
 }
 

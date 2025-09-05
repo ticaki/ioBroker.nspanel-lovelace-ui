@@ -6919,7 +6919,10 @@ class Icons {
     ["zodiac-sagittarius", "\uEA84"],
     ["zodiac-scorpio", "\uEA85"],
     ["zodiac-taurus", "\uEA86"],
-    ["zodiac-virgo", "\uEA87"]
+    ["zodiac-virgo", "\uEA87"],
+    ["logo-alexa", ""],
+    ["logo-mpd", ""],
+    ["logo-spotify", ""]
   ]);
   static GetIcon(ma_name) {
     return Icons.GetIconWithType(ma_name);
