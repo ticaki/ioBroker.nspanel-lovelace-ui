@@ -449,7 +449,10 @@ export class Screensaver extends Page {
             return;
         }
         let icon = `${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`;
-        if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
+        if (this.basePanel.info.nspanel.displayVersion === '0.0.0') {
+            // only for development firmware
+            icon = `~${Icons.GetIcon('cog-refresh-outline')}`;
+        } else if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
             // only for newer firmwares
             icon = `~${Icons.GetIcon('wrench-clock')}`;
         }

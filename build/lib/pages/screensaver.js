@@ -369,7 +369,9 @@ class Screensaver extends import_Page.Page {
       return;
     }
     let icon = `${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`;
-    if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
+    if (this.basePanel.info.nspanel.displayVersion === "0.0.0") {
+      icon = `~${import_icon_mapping.Icons.GetIcon("cog-refresh-outline")}`;
+    } else if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
       icon = `~${import_icon_mapping.Icons.GetIcon("wrench-clock")}`;
     }
     this.sendToPanel(`time~${message.options.time[0].split("~")[5]}${icon}`, false);

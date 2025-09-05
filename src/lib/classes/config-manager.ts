@@ -2304,10 +2304,22 @@ export class ConfigManager extends BaseClass {
                 /*if (!(await this.checkRequiredDatapoints(role, item))) {
                     return { itemConfig: undefined, messages };
                 }*/
-                const specialRole: pages.DeviceRole =
-                    pages.isCardGridType(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
+                let valueDisplayRole: pages.DeviceRole = 'iconNotText';
+                if (pages.isCardGridType(page.type) && item.useValue) {
+                    const actual = foundedStates?.[role]?.ACTUAL;
+                    let t: string | undefined;
+
+                    if (actual?.dp) {
+                        const o = await this.adapter.getForeignObjectAsync(actual.dp);
+                        t = o?.common?.type as string | undefined;
+                    } else {
+                        t = actual?.type; // falls du den Typ schon trägst
+                    }
+
+                    valueDisplayRole = t === 'string' || t === 'number' ? 'textNotIcon' : 'iconNotText';
+                }
                 this.log.debug(
-                    `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`,
+                    `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`,
                 );
 
                 const commonName =
@@ -2320,24 +2332,21 @@ export class ConfigManager extends BaseClass {
                     def1: string,
                 ): Promise<Types.DataItemsOptions> => {
                     return item.buttonText
-                        ? await this.getFieldAsDataItemConfig(item.buttonText)
-                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                        ? await this.getFieldAsDataItemConfig(item.buttonText, true)
+                        : item.id && (await this.existsState(`${item.id}.BUTTONTEXT`))
                           ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                          : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
+                          : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
                 };
+
                 const getButtonsTextFalse = async (
                     item: ScriptConfig.PageBaseItem,
-                    def1: string = '',
+                    def1: string,
                 ): Promise<Types.DataItemsOptions> => {
                     return item.buttonTextOff
-                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
-                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff, true)
+                        : item.id && (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
                           ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
-                          : item.buttonText
-                            ? await this.getFieldAsDataItemConfig(item.buttonText)
-                            : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                              ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                              : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
+                          : await getButtonsTextTrue(item, def1);
                 };
                 const text = {
                     true: {
@@ -2720,10 +2729,12 @@ export class ConfigManager extends BaseClass {
                                         },
                                         scale: {
                                             type: 'const',
-                                            constVal: Types.isIconColorScaleElement(item.colorScale) ?? {
-                                                val_min: 0,
-                                                val_max: 100,
-                                            },
+                                            constVal: Types.isIconColorScaleElement(item.colorScale)
+                                                ? item.colorScale
+                                                : {
+                                                      val_min: 0,
+                                                      val_max: 100,
+                                                  },
                                         },
                                         maxBri: undefined,
                                         minBri: undefined,
@@ -2951,8 +2962,24 @@ export class ConfigManager extends BaseClass {
                                         value: foundedStates[role].ACTUAL,
                                     },
                                     entity2: undefined,
-                                    up: { type: 'state', dp: `${item.id}.SET`, write: 'return true;' },
-                                    down: { type: 'state', dp: `${item.id}.SET`, write: 'return false;' },
+                                    up:
+                                        foundedStates[role].SET?.type === 'state'
+                                            ? {
+                                                  ...foundedStates[role].SET,
+                                                  type: 'state',
+                                                  dp: `${item.id}.SET`,
+                                                  write: 'return true;',
+                                              }
+                                            : undefined,
+                                    down:
+                                        foundedStates[role].SET?.type === 'state'
+                                            ? {
+                                                  ...foundedStates[role].SET,
+                                                  type: 'state',
+                                                  dp: `${item.id}.SET`,
+                                                  write: 'return false;',
+                                              }
+                                            : undefined,
                                     stop: foundedStates[role].STOP,
                                 },
                             };
@@ -3025,7 +3052,7 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'thermometer';
                                 iconOff = 'snowflake-thermometer';
                                 iconUnstable = 'sun-thermometer';
-                                adapterRole = specialRole;
+                                adapterRole = valueDisplayRole;
                                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                                     const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                                     if (o && o.common && o.common.unit) {
@@ -3040,7 +3067,7 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'water-percent';
                                 iconOff = 'water-off';
                                 iconUnstable = 'water-percent-alert';
-                                adapterRole = specialRole;
+                                adapterRole = valueDisplayRole;
                                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                                     const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                                     if (o && o.common && o.common.unit) {
@@ -3141,7 +3168,7 @@ export class ConfigManager extends BaseClass {
                                 if (o.common.type === 'boolean') {
                                     adapterRole = 'iconNotText';
                                 } else {
-                                    adapterRole = specialRole;
+                                    adapterRole = valueDisplayRole;
                                 }
                             }
                         }
@@ -3225,7 +3252,7 @@ export class ConfigManager extends BaseClass {
                             template: 'number.volume',
                             dpInit: item.id,
                             type: 'number',
-                            role: specialRole,
+                            role: valueDisplayRole,
                             color: {
                                 true: await this.getIconColor(item.onColor, Color.on),
                                 false: await this.getIconColor(item.offColor, Color.off),
@@ -3401,7 +3428,7 @@ export class ConfigManager extends BaseClass {
                         itemConfig = {
                             dpInit: item.id,
                             type: 'number',
-                            role: specialRole,
+                            role: valueDisplayRole,
                             template: '',
 
                             data: {

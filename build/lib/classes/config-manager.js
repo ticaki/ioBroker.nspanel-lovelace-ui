@@ -1988,7 +1988,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2026,16 +2026,27 @@ class ConfigManager extends import_library.BaseClass {
           item.id,
           messages
         );
-        const specialRole = pages.isCardGridType(page.type) && item.useValue ? "textNotIcon" : "iconNotText";
+        let valueDisplayRole = "iconNotText";
+        if (pages.isCardGridType(page.type) && item.useValue) {
+          const actual = (_a = foundedStates == null ? void 0 : foundedStates[role]) == null ? void 0 : _a.ACTUAL;
+          let t;
+          if (actual == null ? void 0 : actual.dp) {
+            const o = await this.adapter.getForeignObjectAsync(actual.dp);
+            t = (_b = o == null ? void 0 : o.common) == null ? void 0 : _b.type;
+          } else {
+            t = actual == null ? void 0 : actual.type;
+          }
+          valueDisplayRole = t === "string" || t === "number" ? "textNotIcon" : "iconNotText";
+        }
         this.log.debug(
-          `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`
+          `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`
         );
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         const getButtonsTextTrue = async (item2, def1) => {
-          return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
+          return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1, true);
         };
-        const getButtonsTextFalse = async (item2, def1 = "") => {
-          return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
+        const getButtonsTextFalse = async (item2, def1) => {
+          return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : await getButtonsTextTrue(item2, def1);
         };
         const text = {
           true: {
@@ -2194,7 +2205,7 @@ class ConfigManager extends import_library.BaseClass {
           case "rgb":
           case "hue": {
             let isKelvin = true;
-            if ((_a = foundedStates[role].TEMPERATURE) == null ? void 0 : _a.dp) {
+            if ((_c = foundedStates[role].TEMPERATURE) == null ? void 0 : _c.dp) {
               const state = await this.adapter.getForeignStateAsync(foundedStates[role].TEMPERATURE.dp);
               if (state && typeof state.val === "number" && state.val <= 1e3) {
                 isKelvin = false;
@@ -2348,7 +2359,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     scale: {
                       type: "const",
-                      constVal: (_b = Types.isIconColorScaleElement(item.colorScale)) != null ? _b : {
+                      constVal: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : {
                         val_min: 0,
                         val_max: 100
                       }
@@ -2356,18 +2367,18 @@ class ConfigManager extends import_library.BaseClass {
                     maxBri: void 0,
                     minBri: void 0
                   },
-                  text: { true: { type: "const", constVal: (_c = item.secondRow) != null ? _c : "" } },
+                  text: { true: { type: "const", constVal: (_d = item.secondRow) != null ? _d : "" } },
                   headline,
                   entity1: {
                     value: foundedStates[role].ACTUAL,
-                    minScale: { type: "const", constVal: (_d = item.minValueLevel) != null ? _d : 0 },
-                    maxScale: { type: "const", constVal: (_e = item.maxValueLevel) != null ? _e : 100 },
+                    minScale: { type: "const", constVal: (_e = item.minValueLevel) != null ? _e : 0 },
+                    maxScale: { type: "const", constVal: (_f = item.maxValueLevel) != null ? _f : 100 },
                     set: foundedStates[role].SET
                   },
                   entity2: {
                     value: foundedStates[role].TILT_ACTUAL,
-                    minScale: { type: "const", constVal: (_f = item.minValueTilt) != null ? _f : 0 },
-                    maxScale: { type: "const", constVal: (_g = item.maxValueTilt) != null ? _g : 100 },
+                    minScale: { type: "const", constVal: (_g = item.minValueTilt) != null ? _g : 0 },
+                    maxScale: { type: "const", constVal: (_h = item.maxValueTilt) != null ? _h : 100 },
                     set: foundedStates[role].TILT_SET
                   },
                   up: foundedStates[role].OPEN,
@@ -2380,13 +2391,13 @@ class ConfigManager extends import_library.BaseClass {
               };
               itemConfig = tempItem;
             } else {
-              const I2 = (_h = item.shutterIcons && item.shutterIcons[0]) != null ? _h : void 0;
+              const I2 = (_i = item.shutterIcons && item.shutterIcons[0]) != null ? _i : void 0;
               const R2 = item.shutterIcons && item.shutterIcons[0] && item.shutterIcons[0].id && await this.existsState(item.shutterIcons[0].id) ? item.shutterIcons[0].id : void 0;
               const S2 = R2 && await this.existsAndWriteableState(R2) ? R2 : void 0;
-              const I3 = (_i = item.shutterIcons && item.shutterIcons[1]) != null ? _i : void 0;
+              const I3 = (_j = item.shutterIcons && item.shutterIcons[1]) != null ? _j : void 0;
               const R3 = item.shutterIcons && item.shutterIcons[1] && item.shutterIcons[1].id && await this.existsState(item.shutterIcons[1].id) ? item.shutterIcons[1].id : void 0;
               const S3 = R3 && await this.existsAndWriteableState(R3) ? R3 : void 0;
-              const I4 = (_j = item.shutterIcons && item.shutterIcons[2]) != null ? _j : void 0;
+              const I4 = (_k = item.shutterIcons && item.shutterIcons[2]) != null ? _k : void 0;
               const R4 = item.shutterIcons && item.shutterIcons[2] && item.shutterIcons[2].id && await this.existsState(item.shutterIcons[2].id) ? item.shutterIcons[2].id : void 0;
               const S4 = R4 && await this.existsAndWriteableState(R4) ? R4 : void 0;
               const tempItem = {
@@ -2416,7 +2427,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     scale: {
                       type: "const",
-                      constVal: (_k = Types.isIconColorScaleElement(item.colorScale)) != null ? _k : {
+                      constVal: (_l = Types.isIconColorScaleElement(item.colorScale)) != null ? _l : {
                         val_min: 0,
                         val_max: 100
                       }
@@ -2424,12 +2435,12 @@ class ConfigManager extends import_library.BaseClass {
                     maxBri: void 0,
                     minBri: void 0
                   },
-                  text: { true: { type: "const", constVal: (_l = item.secondRow) != null ? _l : "" } },
+                  text: { true: { type: "const", constVal: (_m = item.secondRow) != null ? _m : "" } },
                   headline,
                   entity1: {
                     value: foundedStates[role].ACTUAL,
-                    minScale: { type: "const", constVal: (_m = item.minValueLevel) != null ? _m : 0 },
-                    maxScale: { type: "const", constVal: (_n = item.maxValueLevel) != null ? _n : 100 },
+                    minScale: { type: "const", constVal: (_n = item.minValueLevel) != null ? _n : 0 },
+                    maxScale: { type: "const", constVal: (_o = item.maxValueLevel) != null ? _o : 100 },
                     set: foundedStates[role].SET
                   },
                   entity2: R2 ? {
@@ -2538,8 +2549,18 @@ class ConfigManager extends import_library.BaseClass {
                     value: foundedStates[role].ACTUAL
                   },
                   entity2: void 0,
-                  up: { type: "state", dp: `${item.id}.SET`, write: "return true;" },
-                  down: { type: "state", dp: `${item.id}.SET`, write: "return false;" },
+                  up: ((_p = foundedStates[role].SET) == null ? void 0 : _p.type) === "state" ? {
+                    ...foundedStates[role].SET,
+                    type: "state",
+                    dp: `${item.id}.SET`,
+                    write: "return true;"
+                  } : void 0,
+                  down: ((_q = foundedStates[role].SET) == null ? void 0 : _q.type) === "state" ? {
+                    ...foundedStates[role].SET,
+                    type: "state",
+                    dp: `${item.id}.SET`,
+                    write: "return false;"
+                  } : void 0,
                   stop: foundedStates[role].STOP
                 }
               };
@@ -2612,7 +2633,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "thermometer";
                 iconOff = "snowflake-thermometer";
                 iconUnstable = "sun-thermometer";
-                adapterRole = specialRole;
+                adapterRole = valueDisplayRole;
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2627,7 +2648,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "water-percent";
                 iconOff = "water-off";
                 iconUnstable = "water-percent-alert";
-                adapterRole = specialRole;
+                adapterRole = valueDisplayRole;
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
                   if (o && o.common && o.common.unit) {
@@ -2704,7 +2725,7 @@ class ConfigManager extends import_library.BaseClass {
                 if (o.common.type === "boolean") {
                   adapterRole = "iconNotText";
                 } else {
-                  adapterRole = specialRole;
+                  adapterRole = valueDisplayRole;
                 }
               }
             }
@@ -2759,7 +2780,7 @@ class ConfigManager extends import_library.BaseClass {
               template: "number.volume",
               dpInit: item.id,
               type: "number",
-              role: specialRole,
+              role: valueDisplayRole,
               color: {
                 true: await this.getIconColor(item.onColor, import_Color.Color.on),
                 false: await this.getIconColor(item.offColor, import_Color.Color.off),
@@ -2916,7 +2937,7 @@ class ConfigManager extends import_library.BaseClass {
             itemConfig = {
               dpInit: item.id,
               type: "number",
-              role: specialRole,
+              role: valueDisplayRole,
               template: "",
               data: {
                 icon: {
@@ -3052,9 +3073,9 @@ class ConfigManager extends import_library.BaseClass {
           case "level.mode.fan": {
             let states;
             let keys;
-            if ((_o = foundedStates[role].MODE) == null ? void 0 : _o.dp) {
+            if ((_r = foundedStates[role].MODE) == null ? void 0 : _r.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_p = o == null ? void 0 : o.common) == null ? void 0 : _p.states) {
+              if ((_s = o == null ? void 0 : o.common) == null ? void 0 : _s.states) {
                 states = Object.values(o.common.states).map(String);
                 keys = Object.keys(o.common.states).map(String);
               }
