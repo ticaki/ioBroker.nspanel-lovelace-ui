@@ -2191,15 +2191,15 @@ export class ConfigManager extends BaseClass {
                     const dp2 = dp as configManagerConst.mydps;
                     const expectedId = `${dpInit}.${dp}`;
                     if (!entry.useKey || (await this.existsState(expectedId))) {
-                        result[role][dp2] = await this.statesController.getIdbyAuto(
-                            entry.useKey ? expectedId : dpInit,
-                            entry.role,
-                            '',
-                            undefined,
-                            entry.trigger,
-                            entry.writeable,
-                            entry.type,
-                        );
+                        result[role][dp2] = await this.statesController.getIdbyAuto({
+                            dpInit: entry.useKey ? expectedId : dpInit,
+                            role: entry.role,
+                            enums: '',
+                            regexp: undefined,
+                            triggered: entry.trigger,
+                            writeable: entry.writeable,
+                            commonType: entry.type,
+                        });
                     } else {
                         result[role][dp2] = undefined;
                     }
@@ -2210,15 +2210,15 @@ export class ConfigManager extends BaseClass {
                         const expectedAltId = `${dpInit}.${alternate}`;
                         const entry2 = data[alternate];
                         if (!entry2.useKey || (await this.existsState(expectedAltId))) {
-                            result[role][dp2] = await this.statesController.getIdbyAuto(
-                                entry2.useKey ? expectedAltId : dpInit,
-                                entry2.role,
-                                '',
-                                undefined,
-                                entry.trigger, // bleibt gleich wie primär
-                                entry2.writeable,
-                                entry.type, // bleibt gleich wie primär
-                            );
+                            result[role][dp2] = await this.statesController.getIdbyAuto({
+                                dpInit: entry2.useKey ? expectedAltId : dpInit,
+                                role: entry2.role,
+                                enums: '',
+                                regexp: undefined,
+                                triggered: entry.trigger,
+                                writeable: entry2.writeable,
+                                commonType: entry.type,
+                            });
                         }
                     }
 

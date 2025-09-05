@@ -717,6 +717,7 @@ export class StatesControler extends BaseClass {
     /**
      * Retrieves the ID of a state automatically based on the provided parameters.
      *
+     * @param options
      * @param dpInit - The initial data point, which can be a string or a regular expression.
      * @param role - The role of the state, which can be a single StateRole or an array of StateRoles.
      * @param enums - The enums associated with the state, which can be a single string or an array of strings.
@@ -724,17 +725,26 @@ export class StatesControler extends BaseClass {
      * @param triggered - Whether the state is triggered.
      * @param writeable - Whether the state is writeable.
      * @param commonType - The common type of the state.
+     * @param options.dpInit
+     * @param options.role
+     * @param options.enums
+     * @param options.regexp
+     * @param options.triggered
+     * @param options.writeable
+     * @param options.commonType
      * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
      */
-    async getIdbyAuto(
-        dpInit: string | RegExp = '',
-        role: StateRole | StateRole[] = '',
-        enums: string | string[] = '',
-        regexp?: RegExp,
-        triggered?: boolean,
-        writeable?: boolean,
-        commonType?: ioBroker.CommonType | ioBroker.CommonType[] | '',
-    ): Promise<DataItemsOptions | undefined> {
+    async getIdbyAuto(options: {
+        dpInit: string | RegExp;
+        role?: StateRole | StateRole[];
+        enums?: string | string[];
+        regexp?: RegExp;
+        triggered?: boolean;
+        writeable?: boolean;
+        commonType?: ioBroker.CommonType | ioBroker.CommonType[] | '';
+    }): Promise<DataItemsOptions | undefined> {
+        const { dpInit, role = '', enums = '', regexp, triggered, writeable, commonType = '' } = options;
+
         const status = { ok: true };
         let item: DataItemsOptions | undefined;
         if (triggered) {

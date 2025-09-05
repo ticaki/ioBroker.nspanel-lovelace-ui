@@ -1930,15 +1930,15 @@ class ConfigManager extends import_library.BaseClass {
           const dp2 = dp;
           const expectedId = `${dpInit}.${dp}`;
           if (!entry.useKey || await this.existsState(expectedId)) {
-            result[role][dp2] = await this.statesController.getIdbyAuto(
-              entry.useKey ? expectedId : dpInit,
-              entry.role,
-              "",
-              void 0,
-              entry.trigger,
-              entry.writeable,
-              entry.type
-            );
+            result[role][dp2] = await this.statesController.getIdbyAuto({
+              dpInit: entry.useKey ? expectedId : dpInit,
+              role: entry.role,
+              enums: "",
+              regexp: void 0,
+              triggered: entry.trigger,
+              writeable: entry.writeable,
+              commonType: entry.type
+            });
           } else {
             result[role][dp2] = void 0;
           }
@@ -1947,17 +1947,15 @@ class ConfigManager extends import_library.BaseClass {
             const expectedAltId = `${dpInit}.${alternate}`;
             const entry2 = data[alternate];
             if (!entry2.useKey || await this.existsState(expectedAltId)) {
-              result[role][dp2] = await this.statesController.getIdbyAuto(
-                entry2.useKey ? expectedAltId : dpInit,
-                entry2.role,
-                "",
-                void 0,
-                entry.trigger,
-                // bleibt gleich wie primär
-                entry2.writeable,
-                entry.type
-                // bleibt gleich wie primär
-              );
+              result[role][dp2] = await this.statesController.getIdbyAuto({
+                dpInit: entry2.useKey ? expectedAltId : dpInit,
+                role: entry2.role,
+                enums: "",
+                regexp: void 0,
+                triggered: entry.trigger,
+                writeable: entry2.writeable,
+                commonType: entry.type
+              });
             }
           }
           if (!result[role][dp2]) {
