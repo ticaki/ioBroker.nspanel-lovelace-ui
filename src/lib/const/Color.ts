@@ -106,7 +106,7 @@ class ColorBase {
     static option1: RGB | string = 'default.color.from.start.option1';
     static option2: RGB | string = 'default.color.from.start.option2';
     static option3: RGB | string = 'default.color.from.start.option3';
-    static option4: RGB | string = 'default.color.from.start.option3';
+    static option4: RGB | string = 'default.color.from.start.option4';
     static open: RGB | string = 'default.color.from.start.open';
     static close: RGB | string = 'default.color.from.start.close';
     static hot: RGB | string = 'default.color.from.start.hot';
@@ -590,7 +590,7 @@ export class Color extends ColorBase {
         attention: Color.Yellow,
         info: Color.White,
         option1: Color.Blue,
-        option2: Color.DarkBlue,
+        option2: Color.LightGray,
         option3: Color.Cyan,
         option4: Color.HMIOff,
         open: Color.Cyan,

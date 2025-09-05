@@ -54,7 +54,7 @@ class ColorBase {
   static option1 = "default.color.from.start.option1";
   static option2 = "default.color.from.start.option2";
   static option3 = "default.color.from.start.option3";
-  static option4 = "default.color.from.start.option3";
+  static option4 = "default.color.from.start.option4";
   static open = "default.color.from.start.open";
   static close = "default.color.from.start.close";
   static hot = "default.color.from.start.hot";
@@ -587,7 +587,7 @@ class Color extends ColorBase {
     attention: Color.Yellow,
     info: Color.White,
     option1: Color.Blue,
-    option2: Color.DarkBlue,
+    option2: Color.LightGray,
     option3: Color.Cyan,
     option4: Color.HMIOff,
     open: Color.Cyan,

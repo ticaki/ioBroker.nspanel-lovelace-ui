@@ -319,7 +319,7 @@ const ServiceOverview = {
         icon: {
           true: {
             value: { type: "const", constVal: "power" },
-            color: { type: "const", constVal: import_Color.Color.Green }
+            color: { type: "const", constVal: import_Color.Color.option1 }
           },
           false: void 0
         },
@@ -344,7 +344,7 @@ const ServiceOverview = {
         icon: {
           true: {
             value: { type: "const", constVal: "information-variant" },
-            color: { type: "const", constVal: import_Color.Color.Green }
+            color: { type: "const", constVal: import_Color.Color.option2 }
           },
           false: void 0
         },
@@ -369,7 +369,7 @@ const ServiceOverview = {
         icon: {
           true: {
             value: { type: "const", constVal: "wifi" },
-            color: { type: "const", constVal: import_Color.Color.Green }
+            color: { type: "const", constVal: import_Color.Color.option3 }
           },
           false: void 0
         },
@@ -393,8 +393,8 @@ const ServiceOverview = {
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "wifi" },
-            color: { type: "const", constVal: import_Color.Color.Green }
+            value: { type: "const", constVal: "cog-outline" },
+            color: { type: "const", constVal: import_Color.Color.option4 }
           },
           false: void 0
         },
@@ -905,11 +905,11 @@ const DeviceOption = {
         icon: {
           true: {
             value: { type: "const", constVal: "information-outline" },
-            color: { type: "const", constVal: import_Color.Color.Green }
+            color: { type: "const", constVal: import_Color.Color.option4 }
           },
           false: {
             value: { type: "const", constVal: "information-variant" },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.off }
           }
         },
         entity1: {

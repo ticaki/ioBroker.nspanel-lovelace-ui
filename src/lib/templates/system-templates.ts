@@ -305,7 +305,7 @@ const ServiceOverview: PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'power' },
-                        color: { type: 'const', constVal: Color.Green },
+                        color: { type: 'const', constVal: Color.option1 },
                     },
                     false: undefined,
                 },
@@ -331,7 +331,7 @@ const ServiceOverview: PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'information-variant' },
-                        color: { type: 'const', constVal: Color.Green },
+                        color: { type: 'const', constVal: Color.option2 },
                     },
                     false: undefined,
                 },
@@ -357,7 +357,7 @@ const ServiceOverview: PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'wifi' },
-                        color: { type: 'const', constVal: Color.Green },
+                        color: { type: 'const', constVal: Color.option3 },
                     },
                     false: undefined,
                 },
@@ -382,8 +382,8 @@ const ServiceOverview: PageBaseConfig = {
             data: {
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'wifi' },
-                        color: { type: 'const', constVal: Color.Green },
+                        value: { type: 'const', constVal: 'cog-outline' },
+                        color: { type: 'const', constVal: Color.option4 },
                     },
                     false: undefined,
                 },
@@ -908,11 +908,11 @@ const DeviceOption: PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'information-outline' },
-                        color: { type: 'const', constVal: Color.Green },
+                        color: { type: 'const', constVal: Color.option4 },
                     },
                     false: {
                         value: { type: 'const', constVal: 'information-variant' },
-                        color: { type: 'const', constVal: Color.Gray },
+                        color: { type: 'const', constVal: Color.off },
                     },
                 },
                 entity1: {
