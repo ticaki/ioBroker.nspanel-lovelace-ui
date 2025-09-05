@@ -41,6 +41,7 @@ export class PageMedia extends PageMenu {
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private artistPos: number = 0;
+    private originalName: string = '';
     private playerName: string = '';
     public currentPlayer: string | RegExp;
 
@@ -56,6 +57,16 @@ export class PageMedia extends PageMenu {
             const i = await this.createMainItems(this.config, this.enums, this.dpInit);
             i.ident = this.config.ident ?? '';
             this.items.push(i);
+
+            const id = this.config.ident ?? '';
+
+            const o = id ? await this.controller.adapter.getForeignObjectAsync(id) : null;
+
+            this.originalName =
+                (o?.common &&
+                    o.common?.name &&
+                    (typeof o.common.name === 'object' ? o.common.name.de || o.common.name.en : o?.common?.name)) ||
+                '';
         }
         await super.init();
     }
@@ -155,7 +166,24 @@ export class PageMedia extends PageMenu {
         // Headline: fallback to playerName if needed
         {
             const v = item.data.headline && (await item.data.headline.getString());
-            message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
+            let headline = v !== null ? v : '';
+            let suffix = title;
+            if (!suffix && this.currentItems.ident) {
+                switch (this.currentItems.ident.split('.').slice(0, 1).join('.')) {
+                    case 'alexa2':
+                        suffix = 'Alexa';
+                        break;
+                    case 'spotify-premium':
+                        suffix = 'Spotify';
+                        break;
+                    default:
+                        suffix = this.currentItems.ident.split('.').slice(0, 1).join('.');
+                }
+                suffix += this.originalName ? `: ${this.originalName}` : '';
+            }
+            headline = headline || this.playerName ? `${this.playerName}: ${suffix}` : suffix;
+
+            message.headline = headline;
         }
 
         // Artist string

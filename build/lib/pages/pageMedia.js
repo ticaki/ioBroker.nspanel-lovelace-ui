@@ -64,6 +64,7 @@ class PageMedia extends import_pageMenu.PageMenu {
   headlinePos = 0;
   titelPos = 0;
   artistPos = 0;
+  originalName = "";
   playerName = "";
   currentPlayer;
   constructor(config, options) {
@@ -74,11 +75,14 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
       const i = await this.createMainItems(this.config, this.enums, this.dpInit);
       i.ident = (_b = this.config.ident) != null ? _b : "";
       this.items.push(i);
+      const id = (_c = this.config.ident) != null ? _c : "";
+      const o = id ? await this.controller.adapter.getForeignObjectAsync(id) : null;
+      this.originalName = (o == null ? void 0 : o.common) && ((_d = o.common) == null ? void 0 : _d.name) && (typeof o.common.name === "object" ? o.common.name.de || o.common.name.en : (_e = o == null ? void 0 : o.common) == null ? void 0 : _e.name) || "";
     }
     await super.init();
   }
@@ -153,7 +157,23 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     {
       const v = item.data.headline && await item.data.headline.getString();
-      message.headline = v != null ? v : this.playerName ? `${this.playerName}: ${title}` : title;
+      let headline = v !== null ? v : "";
+      let suffix = title;
+      if (!suffix && this.currentItems.ident) {
+        switch (this.currentItems.ident.split(".").slice(0, 1).join(".")) {
+          case "alexa2":
+            suffix = "Alexa";
+            break;
+          case "spotify-premium":
+            suffix = "Spotify";
+            break;
+          default:
+            suffix = this.currentItems.ident.split(".").slice(0, 1).join(".");
+        }
+        suffix += this.originalName ? `: ${this.originalName}` : "";
+      }
+      headline = headline || this.playerName ? `${this.playerName}: ${suffix}` : suffix;
+      message.headline = headline;
     }
     {
       const v = await tools.getValueEntryString(item.data.artist);
