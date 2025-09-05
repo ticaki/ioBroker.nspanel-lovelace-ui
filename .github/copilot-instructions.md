@@ -78,5 +78,12 @@
 
 ## Common Snippets (guide Copilot)
 - Set connection:
-  ```js
+  ```ts
   await this.setStateAsync('info.connection', true, true);
+
+## ioBroker TypeScript rules
+- TypeScript-only (no JS).
+- Follow ioBroker adapter structure & lifecycle.
+- Keep changes small and typed; avoid unnecessary abstractions.
+- For every fix/feature, add a **short bullet point** to the `README.md` under the `## Changelog` section.
+  - Use the existing format with `### **WORK IN PROGRESS**` and `- (author) ...`.
