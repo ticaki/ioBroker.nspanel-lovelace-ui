@@ -327,7 +327,7 @@ export class PageMedia extends PageMenu {
         // ---------------------
         if (item.data.logo) {
             message.logo = tools.getPayload(
-                'logo',
+                'number',
                 `${this.name}-logo`,
                 item.data.logo.icon && 'true' in item.data.logo.icon && item.data.logo.icon.true
                     ? ((await item.data.logo.icon.true.getString()) ?? '')

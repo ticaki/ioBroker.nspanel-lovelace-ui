@@ -284,7 +284,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     if (item.data.logo) {
       message.logo = tools.getPayload(
-        "logo",
+        "number",
         `${this.name}-logo`,
         item.data.logo.icon && "true" in item.data.logo.icon && item.data.logo.icon.true ? (_c = await item.data.logo.icon.true.getString()) != null ? _c : "" : "",
         "4",

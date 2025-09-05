@@ -666,9 +666,18 @@ class Panel extends import_library.BaseClass {
     }
     if (targetSleep !== this._activePage.sleep) {
       if (!targetSleep) {
+        this._activePage.sendType(true);
         await this._activePage.setVisibility(true);
       }
       this._activePage.sleep = targetSleep;
+      return;
+    }
+    if (!targetSleep) {
+      this.log.warn(
+        `setActivePage called but nothing changed! Resending active page to panel. Page: ${this._activePage.name} - Sleep: ${this._activePage.sleep}`
+      );
+      this._activePage.sendType(true);
+      await this._activePage.update();
     }
   }
   getActivePage() {
