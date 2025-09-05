@@ -157,22 +157,28 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     {
       const v = item.data.headline && await item.data.headline.getString();
-      let headline = v !== null ? v : "";
-      let suffix = title;
-      if (!suffix && this.currentItems.ident) {
-        switch (this.currentItems.ident.split(".").slice(0, 1).join(".")) {
-          case "alexa2":
-            suffix = "Alexa";
-            break;
-          case "spotify-premium":
-            suffix = "Spotify";
-            break;
-          default:
-            suffix = this.currentItems.ident.split(".").slice(0, 1).join(".");
+      let headline = v != null ? v : "";
+      if (!headline) {
+        let suffix = title;
+        if (!suffix && this.currentItems.ident) {
+          const first = this.currentItems.ident.split(".")[0];
+          switch (first) {
+            case "alexa2":
+              suffix = "Alexa";
+              break;
+            case "spotify-premium":
+              suffix = "Spotify";
+              break;
+            default:
+              suffix = first;
+              break;
+          }
+          if (!this.playerName && this.originalName) {
+            suffix += `: ${this.originalName}`;
+          }
         }
-        suffix += this.originalName ? `: ${this.originalName}` : "";
+        headline = this.playerName ? `${this.playerName}: ${suffix}` : suffix;
       }
-      headline = headline || this.playerName ? `${this.playerName}: ${suffix}` : suffix;
       message.headline = headline;
     }
     {
