@@ -3977,7 +3977,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!o || o.type !== "state") {
       return false;
     }
-    return false;
+    return true;
   }
   async existsAndWriteableState(id) {
     var _a, _b;

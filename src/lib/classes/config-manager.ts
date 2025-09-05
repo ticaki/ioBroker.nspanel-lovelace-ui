@@ -4706,7 +4706,7 @@ export class ConfigManager extends BaseClass {
         if (!o || o.type !== 'state') {
             return false;
         }
-        return false;
+        return true;
     }
 
     async existsAndWriteableState(id: string): Promise<boolean> {
