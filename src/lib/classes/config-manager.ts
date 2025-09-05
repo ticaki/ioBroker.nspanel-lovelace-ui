@@ -1296,11 +1296,6 @@ export class ConfigManager extends BaseClass {
                     ? obj.common.name
                     : obj.common.name[this.library.getLocalLanguage()]
                 : undefined;
-        const specialRole: pages.DeviceRole =
-            pages.isCardGridType(page.type) && item.useValue ? 'textNotIcon' : 'iconNotText';
-        this.log.debug(
-            `page: '${page.type}' Item: '${item.id}', role: '${role}', specialRole: '${specialRole}', useValue: ${item.useValue}`,
-        );
 
         const getButtonsTextTrue = async (
             item: ScriptConfig.PageBaseItem,
@@ -1308,23 +1303,20 @@ export class ConfigManager extends BaseClass {
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonText
                 ? await this.getFieldAsDataItemConfig(item.buttonText, true)
-                : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                : item.id && (await this.existsState(`${item.id}.BUTTONTEXT`))
                   ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
                   : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
         };
+
         const getButtonsTextFalse = async (
             item: ScriptConfig.PageBaseItem,
             def1: string,
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonTextOff
                 ? await this.getFieldAsDataItemConfig(item.buttonTextOff, true)
-                : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                : item.id && (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
                   ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
-                  : item.buttonText
-                    ? await this.getFieldAsDataItemConfig(item.buttonText, true)
-                    : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                      ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                      : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
+                  : await getButtonsTextTrue(item, def1);
         };
         const text = {
             true: {
@@ -1385,7 +1377,7 @@ export class ConfigManager extends BaseClass {
             };
         }
 
-        if ((obj && (!obj.common || !obj.common.role)) || role == null) {
+        if (role == null) {
             throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
         if (!configManagerConst.requiredScriptDataPoints[role]) {
@@ -1397,6 +1389,24 @@ export class ConfigManager extends BaseClass {
             role,
             item.id,
             [],
+        );
+
+        let valueDisplayRole: pages.DeviceRole = 'iconNotText';
+        if (pages.isCardGridType(page.type) && item.useValue) {
+            const actual = foundedStates?.[role]?.ACTUAL;
+            let t: string | undefined;
+
+            if (actual?.dp) {
+                const o = await this.adapter.getForeignObjectAsync(actual.dp);
+                t = o?.common?.type as string | undefined;
+            } else {
+                t = actual?.type; // falls du den Typ schon trägst
+            }
+
+            valueDisplayRole = t === 'string' || t === 'number' ? 'textNotIcon' : 'iconNotText';
+        }
+        this.log.debug(
+            `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`,
         );
 
         item.icon2 = item.icon2 || item.icon;
@@ -1501,7 +1511,7 @@ export class ConfigManager extends BaseClass {
             case 'button': {
                 const tempItem: typePageItem.PageItemDataItemsOptions = {
                     type: 'button',
-                    role: 'button',
+                    role: '',
                     data: {
                         icon: {
                             true: {
@@ -1551,7 +1561,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = {
                     type: 'button',
                     dpInit: item.id,
-                    role: specialRole,
+                    role: valueDisplayRole,
                     template: 'button.humidity',
                     data: {
                         entity1: {
@@ -1606,7 +1616,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = {
                     type: 'button',
                     dpInit: item.id,
-                    role: specialRole,
+                    role: valueDisplayRole,
                     template: 'button.temperature',
                     data: {
                         entity1: {
@@ -1799,7 +1809,7 @@ export class ConfigManager extends BaseClass {
                     template: 'button.volume',
                     dpInit: item.id,
                     type: 'button',
-                    role: specialRole,
+                    role: valueDisplayRole,
                     color: {
                         true: await this.getIconColor(item.onColor, Color.activated),
                         false: await this.getIconColor(item.offColor, Color.deactivated),
@@ -1885,7 +1895,7 @@ export class ConfigManager extends BaseClass {
                     if (o?.common?.type === 'boolean') {
                         adapterRole = 'iconNotText';
                     } else {
-                        adapterRole = specialRole;
+                        adapterRole = valueDisplayRole;
                     }
                 }
                 itemConfig = {
@@ -1936,6 +1946,7 @@ export class ConfigManager extends BaseClass {
                     template: 'text.shutter.navigation',
                     dpInit: item.id,
                     type: 'button',
+                    role: valueDisplayRole,
                     color: {
                         true: await this.getIconColor(item.onColor, Color.open),
                         false: await this.getIconColor(item.offColor, Color.close),
@@ -1961,8 +1972,7 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
-            case 'timeTable':
-                break;
+
             case 'select': {
                 itemConfig = {
                     type: 'button',
@@ -2027,7 +2037,7 @@ export class ConfigManager extends BaseClass {
                     template: 'button.slider',
                     dpInit: item.id,
                     type: 'button',
-                    role: specialRole,
+                    role: valueDisplayRole,
                     color: {
                         true: await this.getIconColor(item.onColor, Color.good),
                         false: await this.getIconColor(item.offColor, Color.bad),
@@ -2117,21 +2127,32 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
+            case 'timeTable': {
+                throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
+                break;
+            }
             default:
                 exhaustiveCheck(role);
 
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
         }
-        if (item.filter != null && itemConfig) {
+        if (!itemConfig) {
+            this.log.warn(
+                `No configuration generated for item "${item.id}" on page "${page.uniqueName}" (role: ${role}).`,
+            );
+            return undefined;
+        }
+
+        if (item.filter != null) {
             itemConfig.filter = item.filter;
         }
-        if (item.enabled === false && itemConfig) {
+        if (item.enabled === false) {
             if (!itemConfig.data) {
                 itemConfig.data = {};
             }
             itemConfig.data.enabled = { type: 'const', constVal: false };
-        } else if (itemConfig && (await this.existsState(`${item.id}.ENABLED`))) {
+        } else if (await this.existsState(`${item.id}.ENABLED`)) {
             if (!itemConfig.data) {
                 itemConfig.data = {};
             }
@@ -2149,46 +2170,59 @@ export class ConfigManager extends BaseClass {
         const result: configManagerConst.checkedDatapointsUnion = JSON.parse(
             JSON.stringify(configManagerConst.checkedDatapoints),
         );
+
         let ups = false;
+
         if (db[role] && db[role].data && result[role]) {
             const data = db[role].data;
-            for (const d in data) {
-                const dp = d as keyof typeof data;
+
+            for (const d of Object.keys(data) as Array<keyof typeof data>) {
+                const dp = d;
                 if (!data[dp] || !this.statesController) {
                     continue;
                 }
+
                 const entry = data[dp];
                 if (dp in result[role]) {
                     const dp2 = dp as configManagerConst.mydps;
-                    result[role][dp2] = await this.statesController.getIdbyAuto(
-                        `${dpInit}.`,
-                        entry.role,
-                        '',
-                        entry.useKey ? new RegExp(`.${dp}$`.replaceAll('.', '\\.')) : undefined,
-                        entry.trigger,
-                        entry.writeable,
-                        entry.type,
-                    );
-                    // If the entry is not found, check for an alternate entry
-                    const alternate = entry.alternate as keyof typeof data;
-                    if (!result[role][dp2] && alternate && data[alternate]) {
-                        const entry2 = data[alternate];
+                    const expectedId = `${dpInit}.${dp}`;
+                    if (!entry.useKey || (await this.existsState(expectedId))) {
                         result[role][dp2] = await this.statesController.getIdbyAuto(
-                            `${dpInit}.`,
-                            entry2.role,
+                            entry.useKey ? expectedId : dpInit,
+                            entry.role,
                             '',
-                            entry2.useKey ? new RegExp(`.${alternate}$`.replaceAll('.', '\\.')) : undefined,
+                            undefined,
                             entry.trigger,
-                            entry2.writeable,
+                            entry.writeable,
                             entry.type,
                         );
+                    } else {
+                        result[role][dp2] = undefined;
+                    }
+
+                    // Fallback auf alternate
+                    const alternate = entry.alternate as keyof typeof data;
+                    if (!result[role][dp2] && alternate && data[alternate]) {
+                        const expectedAltId = `${dpInit}.${alternate}`;
+                        const entry2 = data[alternate];
+                        if (!entry2.useKey || (await this.existsState(expectedAltId))) {
+                            result[role][dp2] = await this.statesController.getIdbyAuto(
+                                entry2.useKey ? expectedAltId : dpInit,
+                                entry2.role,
+                                '',
+                                undefined,
+                                entry.trigger, // bleibt gleich wie primär
+                                entry2.writeable,
+                                entry.type, // bleibt gleich wie primär
+                            );
+                        }
                     }
 
                     if (!result[role][dp2]) {
                         if (entry.required || this.extraConfigLogging) {
                             messages.push(
-                                `${entry.required ? 'Required:' : 'Optional:'} ${dp}: ${dpInit}, channel role: ${role}` +
-                                    ` - missing - searching for ${entry.useKey ? `dp end: ${dp}` + ', ' : ''}` +
+                                `${entry.required ? 'Required:' : 'Optional:'} ${String(dp)}: ${dpInit}, channel role: ${role}` +
+                                    ` - missing - searching for ${entry.useKey ? `dp: ${expectedId}, ` : ''}` +
                                     `type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)}` +
                                     `${entry.writeable ? ', common.write: true' : ''}`,
                             );
@@ -2202,16 +2236,18 @@ export class ConfigManager extends BaseClass {
                     }
                 } else {
                     this.log.error(
-                        `Channel role ${role} - key: ${dp} not found in checkedDatapoints! Please check code!`,
+                        `Channel role ${role} - key: ${String(dp)} not found in checkedDatapoints! Please check code!`,
                     );
                 }
             }
+
             if (ups) {
                 throw new Error('Missing datapoints! check log for details');
             }
         } else {
             throw new Error(`Role ${role} not supported!`);
         }
+
         return result;
     }
 

@@ -109,116 +109,152 @@ class ColorBase {
   static sunset = "default.color.from.start.sunset";
 }
 class Color extends ColorBase {
-  static HMIOff = { r: 68, g: 115, b: 158 };
-  // Blue-Off - Original Entity Off
-  static HMIOn = { r: 3, g: 169, b: 244 };
-  // Blue-On
-  static HMIDark = { r: 29, g: 29, b: 29 };
-  // Original Background Color
-  static Off = { r: 253, g: 128, b: 0 };
-  // Orange-Off - nicer color transitions
-  static On = { r: 253, g: 216, b: 53 };
-  static MSRed = { r: 251, g: 105, b: 98 };
-  static MSYellow = { r: 255, g: 235, b: 156 };
-  static MSGreen = { r: 121, g: 222, b: 121 };
-  static Red = { r: 255, g: 0, b: 0 };
-  static White = { r: 255, g: 255, b: 255 };
-  static Yellow = { r: 255, g: 255, b: 0 };
-  static Green = { r: 0, g: 255, b: 0 };
-  static Blue = { r: 0, g: 0, b: 255 };
-  static DarkBlue = { r: 0, g: 0, b: 136 };
-  static Gray = { r: 136, g: 136, b: 136 };
+  // ——— Extra dark additions (neu) ———
+  static ExtraDarkRed = { r: 40, g: 0, b: 0 };
+  // very dark backdrop with warm tint
+  static ExtraDarkGreen = { r: 0, g: 40, b: 0 };
+  // very dark backdrop with status/ok tint
+  static ExtraDarkBlue = { r: 0, g: 0, b: 40 };
+  // very dark backdrop with cool tint
+  // ——— Very dark / Black-ish ———
   static Black = { r: 0, g: 0, b: 0 };
-  static Cyan = { r: 0, g: 255, b: 255 };
-  static Magenta = { r: 255, g: 0, b: 255 };
-  static colorSpotify = { r: 30, g: 215, b: 96 };
-  static colorAlexa = { r: 49, g: 196, b: 243 };
-  static colorSonos = { r: 216, g: 161, b: 88 };
-  static colorRadio = { r: 255, g: 127, b: 0 };
-  static BatteryFull = { r: 96, g: 176, b: 62 };
-  static BatteryEmpty = { r: 179, g: 45, b: 25 };
-  //Menu Icon Colors
-  static Menu = { r: 150, g: 150, b: 100 };
-  static MenuLowInd = { r: 255, g: 235, b: 156 };
-  static MenuHighInd = { r: 251, g: 105, b: 98 };
-  static Coral = { r: 255, g: 127, b: 80 };
-  // Korallenrot
-  static Turquoise = { r: 64, g: 224, b: 208 };
-  // Türkis
-  static Lime = { r: 173, g: 255, b: 47 };
-  // Limettengrün
-  static Sunset = { r: 255, g: 94, b: 77 };
-  // Sonnenuntergangsrot
-  static Ocean = { r: 0, g: 119, b: 190 };
-  // Ozeanblau
-  static Palm = { r: 0, g: 153, b: 76 };
-  // Palmengrün
-  static Sand = { r: 237, g: 201, b: 175 };
-  // Sandbeige
-  static Orchid = { r: 218, g: 112, b: 214 };
-  // Tropische Blüte
-  static Mango = { r: 255, g: 166, b: 77 };
-  // Mango-Orange
-  static Orange = { r: 255, g: 165, b: 0 };
-  // Orange
-  static Sun = { r: 255, g: 223, b: 0 };
-  // Sonnengelb
-  static BlueLight = { r: 135, g: 206, b: 250 };
-  // Hellblau
-  static Purple = { r: 128, g: 0, b: 128 };
-  // Lila
-  static Pink = { r: 255, g: 192, b: 203 };
-  // Rosa
-  static Brown = { r: 165, g: 42, b: 42 };
-  // Braun
-  static Mint = { r: 189, g: 252, b: 201 };
-  // Mintgrün
-  static Violet = { r: 238, g: 130, b: 238 };
-  // Violett
-  static LightGray = { r: 211, g: 211, b: 211 };
-  // Hellgrau
-  static TechMint = { r: 200, g: 255, b: 255 };
-  // Sehr helles Blaugrün, technisch und klar
-  static DarkGray = { r: 64, g: 64, b: 64 };
-  // Dunkelgrau
-  static ForegroundStrong = { r: 245, g: 248, b: 252 };
-  // sehr klar für große Texte
-  static ForegroundSoft = { r: 210, g: 220, b: 230 };
-  // abgemildert
-  static TimePrimary = { r: 220, g: 240, b: 255 };
-  // leicht gesättigtes Hellblau
-  static TimeAccent = { r: 160, g: 200, b: 255 };
-  // Akzent (AM/PM, Zusatzzeit)
-  static DateSoft = { r: 180, g: 200, b: 220 };
-  // dezenter als Zeit
-  static Forecast = { r: 200, g: 210, b: 220 };
-  // klein, gut lesbar
-  static Divider = { r: 120, g: 130, b: 140 };
-  // Trennlinien/Bar
-  static DeepOcean = { r: 0, g: 60, b: 120 };
-  static DarkGrayBlue = { r: 20, g: 23, b: 40 };
-  // Volcano palette
-  static LavaDeep = { r: 92, g: 12, b: 12 };
-  // dunkles, glühendes Rot
-  static LavaGlow = { r: 156, g: 32, b: 26 };
-  // glühender Lavarand
-  static MagmaRed = { r: 200, g: 34, b: 28 };
-  // heißes Magma
-  static EmberOrange = { r: 255, g: 109, b: 36 };
-  // Glut-Orange
-  static FireYellow = { r: 255, g: 201, b: 71 };
-  // Feuer-Gelb
-  static AshGray = { r: 110, g: 110, b: 110 };
-  // Asche-Grau
+  // absolute black, OLED backgrounds
+  static HMIDark = { r: 29, g: 29, b: 29 };
+  // original background color
   static Charcoal = { r: 30, g: 30, b: 30 };
-  // Kohle-Schwarz
+  // deep dark panels/cards
+  static DarkGrayBlue = { r: 20, g: 23, b: 40 };
+  // dark bluish UI bars
+  static DeepOcean = { r: 0, g: 60, b: 120 };
+  // very dark cool header strip
+  static DarkBlue = { r: 0, g: 0, b: 136 };
+  // dark blue accents
+  // ——— Grays / Neutrals ———
+  static DarkGray = { r: 64, g: 64, b: 64 };
+  // disabled controls, muted icons
+  static AshGray = { r: 110, g: 110, b: 110 };
+  // secondary labels
+  static Divider = { r: 120, g: 130, b: 140 };
+  // separators, chart gridlines
+  static Gray = { r: 136, g: 136, b: 136 };
+  // neutral text on light bg
+  static LightGray = { r: 211, g: 211, b: 211 };
+  // cards/kacheln light
+  static ForegroundSoft = { r: 210, g: 220, b: 230 };
+  // soft UI foregrounds
+  static ForegroundStrong = { r: 245, g: 248, b: 252 };
+  // headlines on dark
+  static White = { r: 255, g: 255, b: 255 };
+  // primary text on dark
+  // ——— Reds ———
+  static LavaDeep = { r: 92, g: 12, b: 12 };
+  // critical banners (dark)
+  static LavaGlow = { r: 156, g: 32, b: 26 };
+  // alarm background
+  static MagmaRed = { r: 200, g: 34, b: 28 };
+  // danger buttons
   static LavaCore = { r: 180, g: 22, b: 0 };
-  // kräftiges glühendes Rot (Hintergrund)
+  // strong warning fill
+  static Brown = { r: 165, g: 42, b: 42 };
+  // brownish alerts
+  static BatteryEmpty = { r: 179, g: 45, b: 25 };
+  // battery critical
+  static Sunset = { r: 255, g: 94, b: 77 };
+  // live/record indicator
+  static MSRed = { r: 251, g: 105, b: 98 };
+  // soft error/warn
+  static Coral = { r: 255, g: 127, b: 80 };
+  // notification accent
+  static Red = { r: 255, g: 0, b: 0 };
+  // hard error
+  // ——— Oranges / Warme Töne ———
   static FireGlow = { r: 255, g: 80, b: 0 };
-  // leuchtendes Feuer-Orange
+  // strong warning CTA
+  static EmberOrange = { r: 255, g: 109, b: 36 };
+  // active highlight
+  static colorRadio = { r: 255, g: 127, b: 0 };
+  // radio/stream accent
+  static Off = { r: 253, g: 128, b: 0 };
+  // off/inactive warm
+  static Orange = { r: 255, g: 165, b: 0 };
+  // classic orange
+  static Mango = { r: 255, g: 166, b: 77 };
+  // decorative warm
+  static Sand = { r: 237, g: 201, b: 175 };
+  // sand beige, backgrounds
+  static colorSonos = { r: 216, g: 161, b: 88 };
+  // brand warm
+  // ——— Yellows ———
+  static FireYellow = { r: 255, g: 201, b: 71 };
+  // warm emphasis
   static FlameYellow = { r: 255, g: 220, b: 60 };
-  // strahlend helles Gelb
-  //Dynamische Indikatoren (Abstufung grün nach gelb nach rot)
+  // bright highlight
+  static Sun = { r: 255, g: 223, b: 0 };
+  // sunny yellow
+  static On = { r: 253, g: 216, b: 53 };
+  // activated state (warm)
+  static MSYellow = { r: 255, g: 235, b: 156 };
+  // soft warn/info
+  static MenuLowInd = { r: 255, g: 235, b: 156 };
+  // menu low indicator
+  static Yellow = { r: 255, g: 255, b: 0 };
+  // peak indicator
+  // ——— Greens ———
+  static Palm = { r: 0, g: 153, b: 76 };
+  // confirm/apply
+  static BatteryFull = { r: 96, g: 176, b: 62 };
+  // battery ok
+  static MSGreen = { r: 121, g: 222, b: 121 };
+  // soft success
+  static colorSpotify = { r: 30, g: 215, b: 96 };
+  // media active
+  static Mint = { r: 189, g: 252, b: 201 };
+  // subtle success bg
+  static Lime = { r: 173, g: 255, b: 47 };
+  // fresh success
+  static Green = { r: 0, g: 255, b: 0 };
+  // max OK / full
+  // ——— Cyans / Blue-greens ———
+  static Turquoise = { r: 64, g: 224, b: 208 };
+  // decorative info
+  static colorAlexa = { r: 49, g: 196, b: 243 };
+  // voice assistant
+  static HMIOn = { r: 3, g: 169, b: 244 };
+  // CTA/primary active
+  static HMIOff = { r: 68, g: 115, b: 158 };
+  // inactive (cool)
+  static TechMint = { r: 200, g: 255, b: 255 };
+  // clean info bg
+  static Cyan = { r: 0, g: 255, b: 255 };
+  // info/neutral progress
+  // ——— Blues ———
+  static Ocean = { r: 0, g: 119, b: 190 };
+  // primary (cool)
+  static BlueLight = { r: 135, g: 206, b: 250 };
+  // light info
+  static TimeAccent = { r: 160, g: 200, b: 255 };
+  // time accent
+  static TimePrimary = { r: 220, g: 240, b: 255 };
+  // clock main
+  static Blue = { r: 0, g: 0, b: 255 };
+  // strong link/series
+  // ——— Violets / Pinks ———
+  static Purple = { r: 128, g: 0, b: 128 };
+  // category/secondary
+  static Orchid = { r: 218, g: 112, b: 214 };
+  // decorative
+  static Violet = { r: 238, g: 130, b: 238 };
+  // secondary highlight
+  static Magenta = { r: 255, g: 0, b: 255 };
+  // attention/beta
+  static Pink = { r: 255, g: 192, b: 203 };
+  // soft badges
+  // ——— Menu Icon Colors (unverändert, referenziert oben nach Farbwertnähe) ———
+  static Menu = { r: 150, g: 150, b: 100 };
+  // neutral menu icon
+  static MenuHighInd = { r: 251, g: 105, b: 98 };
+  // high indicator
+  // ——— Dynamische Indikatoren (unverändert) ———
   static colorScale0 = { r: 99, g: 190, b: 123 };
   static colorScale1 = { r: 129, g: 199, b: 126 };
   static colorScale2 = { r: 161, g: 208, b: 127 };
@@ -230,7 +266,7 @@ class Color extends ColorBase {
   static colorScale8 = { r: 251, g: 158, b: 117 };
   static colorScale9 = { r: 248, g: 131, b: 111 };
   static colorScale10 = { r: 248, g: 105, b: 107 };
-  //Screensaver Default Theme Colors
+  // ——— Screensaver Default Theme Colors (unverändert) ———
   static scbackground = { r: 0, g: 0, b: 0 };
   static scbackgroundInd1 = { r: 255, g: 0, b: 0 };
   static scbackgroundInd2 = { r: 121, g: 222, b: 121 };
@@ -256,7 +292,7 @@ class Color extends ColorBase {
   static sctMainIconAlt = { r: 255, g: 255, b: 255 };
   static sctMainTextAlt = { r: 255, g: 255, b: 255 };
   static sctTimeAdd = { r: 255, g: 255, b: 255 };
-  //Auto-Weather-Colors
+  // ——— Auto-Weather-Colors (unverändert) ———
   static swClearNight = { r: 150, g: 150, b: 100 };
   static swCloudy = { r: 75, g: 75, b: 75 };
   static swExceptional = { r: 255, g: 50, b: 50 };
@@ -561,7 +597,7 @@ class Color extends ColorBase {
     on: Color.HMIOn,
     off: Color.HMIOff,
     light: Color.White,
-    dark: Color.Black,
+    dark: Color.DarkGray,
     warning: Color.Yellow,
     success: Color.Green,
     neutral: Color.Gray,

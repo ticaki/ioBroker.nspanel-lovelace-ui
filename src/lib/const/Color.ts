@@ -162,78 +162,96 @@ class ColorBase {
 }
 
 export class Color extends ColorBase {
-    static readonly HMIOff: RGB = { r: 68, g: 115, b: 158 }; // Blue-Off - Original Entity Off
-    static readonly HMIOn: RGB = { r: 3, g: 169, b: 244 }; // Blue-On
-    static readonly HMIDark: RGB = { r: 29, g: 29, b: 29 }; // Original Background Color
-    static readonly Off: RGB = { r: 253, g: 128, b: 0 }; // Orange-Off - nicer color transitions
-    static readonly On: RGB = { r: 253, g: 216, b: 53 };
-    static readonly MSRed: RGB = { r: 251, g: 105, b: 98 };
-    static readonly MSYellow: RGB = { r: 255, g: 235, b: 156 };
-    static readonly MSGreen: RGB = { r: 121, g: 222, b: 121 };
-    static readonly Red: RGB = { r: 255, g: 0, b: 0 };
-    static readonly White: RGB = { r: 255, g: 255, b: 255 };
-    static readonly Yellow: RGB = { r: 255, g: 255, b: 0 };
-    static readonly Green: RGB = { r: 0, g: 255, b: 0 };
-    static readonly Blue: RGB = { r: 0, g: 0, b: 255 };
-    static readonly DarkBlue: RGB = { r: 0, g: 0, b: 136 };
-    static readonly Gray: RGB = { r: 136, g: 136, b: 136 };
-    static readonly Black: RGB = { r: 0, g: 0, b: 0 };
-    static readonly Cyan: RGB = { r: 0, g: 255, b: 255 };
-    static readonly Magenta: RGB = { r: 255, g: 0, b: 255 };
-    static readonly colorSpotify: RGB = { r: 30, g: 215, b: 96 };
-    static readonly colorAlexa: RGB = { r: 49, g: 196, b: 243 };
-    static readonly colorSonos: RGB = { r: 216, g: 161, b: 88 };
-    static readonly colorRadio: RGB = { r: 255, g: 127, b: 0 };
-    static readonly BatteryFull: RGB = { r: 96, g: 176, b: 62 };
-    static readonly BatteryEmpty: RGB = { r: 179, g: 45, b: 25 };
+    // ——— Extra dark additions (neu) ———
+    static readonly ExtraDarkRed: RGB = { r: 40, g: 0, b: 0 }; // very dark backdrop with warm tint
+    static readonly ExtraDarkGreen: RGB = { r: 0, g: 40, b: 0 }; // very dark backdrop with status/ok tint
+    static readonly ExtraDarkBlue: RGB = { r: 0, g: 0, b: 40 }; // very dark backdrop with cool tint
 
-    //Menu Icon Colors
-    static readonly Menu: RGB = { r: 150, g: 150, b: 100 };
-    static readonly MenuLowInd: RGB = { r: 255, g: 235, b: 156 };
-    static readonly MenuHighInd: RGB = { r: 251, g: 105, b: 98 };
+    // ——— Very dark / Black-ish ———
+    static readonly Black: RGB = { r: 0, g: 0, b: 0 }; // absolute black, OLED backgrounds
+    static readonly HMIDark: RGB = { r: 29, g: 29, b: 29 }; // original background color
+    static readonly Charcoal: RGB = { r: 30, g: 30, b: 30 }; // deep dark panels/cards
+    static readonly DarkGrayBlue: RGB = { r: 20, g: 23, b: 40 }; // dark bluish UI bars
+    static readonly DeepOcean: RGB = { r: 0, g: 60, b: 120 }; // very dark cool header strip
+    static readonly DarkBlue: RGB = { r: 0, g: 0, b: 136 }; // dark blue accents
 
-    static readonly Coral: RGB = { r: 255, g: 127, b: 80 }; // Korallenrot
-    static readonly Turquoise: RGB = { r: 64, g: 224, b: 208 }; // Türkis
-    static readonly Lime: RGB = { r: 173, g: 255, b: 47 }; // Limettengrün
-    static readonly Sunset: RGB = { r: 255, g: 94, b: 77 }; // Sonnenuntergangsrot
-    static readonly Ocean: RGB = { r: 0, g: 119, b: 190 }; // Ozeanblau
-    static readonly Palm: RGB = { r: 0, g: 153, b: 76 }; // Palmengrün
-    static readonly Sand: RGB = { r: 237, g: 201, b: 175 }; // Sandbeige
-    static readonly Orchid: RGB = { r: 218, g: 112, b: 214 }; // Tropische Blüte
-    static readonly Mango: RGB = { r: 255, g: 166, b: 77 }; // Mango-Orange
-    static readonly Orange: RGB = { r: 255, g: 165, b: 0 }; // Orange
-    static readonly Sun: RGB = { r: 255, g: 223, b: 0 }; // Sonnengelb
-    static readonly BlueLight: RGB = { r: 135, g: 206, b: 250 }; // Hellblau
-    static readonly Purple: RGB = { r: 128, g: 0, b: 128 }; // Lila
-    static readonly Pink: RGB = { r: 255, g: 192, b: 203 }; // Rosa
-    static readonly Brown: RGB = { r: 165, g: 42, b: 42 }; // Braun
-    static readonly Mint: RGB = { r: 189, g: 252, b: 201 }; // Mintgrün
-    static readonly Violet: RGB = { r: 238, g: 130, b: 238 }; // Violett
-    static readonly LightGray: RGB = { r: 211, g: 211, b: 211 }; // Hellgrau
-    static readonly TechMint: RGB = { r: 200, g: 255, b: 255 }; // Sehr helles Blaugrün, technisch und klar
-    static readonly DarkGray: RGB = { r: 64, g: 64, b: 64 }; // Dunkelgrau
-    static readonly ForegroundStrong: RGB = { r: 245, g: 248, b: 252 }; // sehr klar für große Texte
-    static readonly ForegroundSoft: RGB = { r: 210, g: 220, b: 230 }; // abgemildert
-    static readonly TimePrimary: RGB = { r: 220, g: 240, b: 255 }; // leicht gesättigtes Hellblau
-    static readonly TimeAccent: RGB = { r: 160, g: 200, b: 255 }; // Akzent (AM/PM, Zusatzzeit)
-    static readonly DateSoft: RGB = { r: 180, g: 200, b: 220 }; // dezenter als Zeit
-    static readonly Forecast: RGB = { r: 200, g: 210, b: 220 }; // klein, gut lesbar
-    static readonly Divider: RGB = { r: 120, g: 130, b: 140 }; // Trennlinien/Bar
-    static readonly DeepOcean: RGB = { r: 0, g: 60, b: 120 };
-    static readonly DarkGrayBlue: RGB = { r: 20, g: 23, b: 40 };
-    // Volcano palette
-    static readonly LavaDeep: RGB = { r: 92, g: 12, b: 12 }; // dunkles, glühendes Rot
-    static readonly LavaGlow: RGB = { r: 156, g: 32, b: 26 }; // glühender Lavarand
-    static readonly MagmaRed: RGB = { r: 200, g: 34, b: 28 }; // heißes Magma
-    static readonly EmberOrange: RGB = { r: 255, g: 109, b: 36 }; // Glut-Orange
-    static readonly FireYellow: RGB = { r: 255, g: 201, b: 71 }; // Feuer-Gelb
-    static readonly AshGray: RGB = { r: 110, g: 110, b: 110 }; // Asche-Grau
-    static readonly Charcoal: RGB = { r: 30, g: 30, b: 30 }; // Kohle-Schwarz
-    static readonly LavaCore: RGB = { r: 180, g: 22, b: 0 }; // kräftiges glühendes Rot (Hintergrund)
-    static readonly FireGlow: RGB = { r: 255, g: 80, b: 0 }; // leuchtendes Feuer-Orange
-    static readonly FlameYellow: RGB = { r: 255, g: 220, b: 60 }; // strahlend helles Gelb
+    // ——— Grays / Neutrals ———
+    static readonly DarkGray: RGB = { r: 64, g: 64, b: 64 }; // disabled controls, muted icons
+    static readonly AshGray: RGB = { r: 110, g: 110, b: 110 }; // secondary labels
+    static readonly Divider: RGB = { r: 120, g: 130, b: 140 }; // separators, chart gridlines
+    static readonly Gray: RGB = { r: 136, g: 136, b: 136 }; // neutral text on light bg
+    static readonly LightGray: RGB = { r: 211, g: 211, b: 211 }; // cards/kacheln light
+    static readonly ForegroundSoft: RGB = { r: 210, g: 220, b: 230 }; // soft UI foregrounds
+    static readonly ForegroundStrong: RGB = { r: 245, g: 248, b: 252 }; // headlines on dark
+    static readonly White: RGB = { r: 255, g: 255, b: 255 }; // primary text on dark
 
-    //Dynamische Indikatoren (Abstufung grün nach gelb nach rot)
+    // ——— Reds ———
+    static readonly LavaDeep: RGB = { r: 92, g: 12, b: 12 }; // critical banners (dark)
+    static readonly LavaGlow: RGB = { r: 156, g: 32, b: 26 }; // alarm background
+    static readonly MagmaRed: RGB = { r: 200, g: 34, b: 28 }; // danger buttons
+    static readonly LavaCore: RGB = { r: 180, g: 22, b: 0 }; // strong warning fill
+    static readonly Brown: RGB = { r: 165, g: 42, b: 42 }; // brownish alerts
+    static readonly BatteryEmpty: RGB = { r: 179, g: 45, b: 25 }; // battery critical
+    static readonly Sunset: RGB = { r: 255, g: 94, b: 77 }; // live/record indicator
+    static readonly MSRed: RGB = { r: 251, g: 105, b: 98 }; // soft error/warn
+    static readonly Coral: RGB = { r: 255, g: 127, b: 80 }; // notification accent
+    static readonly Red: RGB = { r: 255, g: 0, b: 0 }; // hard error
+
+    // ——— Oranges / Warme Töne ———
+    static readonly FireGlow: RGB = { r: 255, g: 80, b: 0 }; // strong warning CTA
+    static readonly EmberOrange: RGB = { r: 255, g: 109, b: 36 }; // active highlight
+    static readonly colorRadio: RGB = { r: 255, g: 127, b: 0 }; // radio/stream accent
+    static readonly Off: RGB = { r: 253, g: 128, b: 0 }; // off/inactive warm
+    static readonly Orange: RGB = { r: 255, g: 165, b: 0 }; // classic orange
+    static readonly Mango: RGB = { r: 255, g: 166, b: 77 }; // decorative warm
+    static readonly Sand: RGB = { r: 237, g: 201, b: 175 }; // sand beige, backgrounds
+    static readonly colorSonos: RGB = { r: 216, g: 161, b: 88 }; // brand warm
+
+    // ——— Yellows ———
+    static readonly FireYellow: RGB = { r: 255, g: 201, b: 71 }; // warm emphasis
+    static readonly FlameYellow: RGB = { r: 255, g: 220, b: 60 }; // bright highlight
+    static readonly Sun: RGB = { r: 255, g: 223, b: 0 }; // sunny yellow
+    static readonly On: RGB = { r: 253, g: 216, b: 53 }; // activated state (warm)
+    static readonly MSYellow: RGB = { r: 255, g: 235, b: 156 }; // soft warn/info
+    static readonly MenuLowInd: RGB = { r: 255, g: 235, b: 156 }; // menu low indicator
+    static readonly Yellow: RGB = { r: 255, g: 255, b: 0 }; // peak indicator
+
+    // ——— Greens ———
+    static readonly Palm: RGB = { r: 0, g: 153, b: 76 }; // confirm/apply
+    static readonly BatteryFull: RGB = { r: 96, g: 176, b: 62 }; // battery ok
+    static readonly MSGreen: RGB = { r: 121, g: 222, b: 121 }; // soft success
+    static readonly colorSpotify: RGB = { r: 30, g: 215, b: 96 }; // media active
+    static readonly Mint: RGB = { r: 189, g: 252, b: 201 }; // subtle success bg
+    static readonly Lime: RGB = { r: 173, g: 255, b: 47 }; // fresh success
+    static readonly Green: RGB = { r: 0, g: 255, b: 0 }; // max OK / full
+
+    // ——— Cyans / Blue-greens ———
+    static readonly Turquoise: RGB = { r: 64, g: 224, b: 208 }; // decorative info
+    static readonly colorAlexa: RGB = { r: 49, g: 196, b: 243 }; // voice assistant
+    static readonly HMIOn: RGB = { r: 3, g: 169, b: 244 }; // CTA/primary active
+    static readonly HMIOff: RGB = { r: 68, g: 115, b: 158 }; // inactive (cool)
+    static readonly TechMint: RGB = { r: 200, g: 255, b: 255 }; // clean info bg
+    static readonly Cyan: RGB = { r: 0, g: 255, b: 255 }; // info/neutral progress
+
+    // ——— Blues ———
+    static readonly Ocean: RGB = { r: 0, g: 119, b: 190 }; // primary (cool)
+    static readonly BlueLight: RGB = { r: 135, g: 206, b: 250 }; // light info
+    static readonly TimeAccent: RGB = { r: 160, g: 200, b: 255 }; // time accent
+    static readonly TimePrimary: RGB = { r: 220, g: 240, b: 255 }; // clock main
+    static readonly Blue: RGB = { r: 0, g: 0, b: 255 }; // strong link/series
+
+    // ——— Violets / Pinks ———
+    static readonly Purple: RGB = { r: 128, g: 0, b: 128 }; // category/secondary
+    static readonly Orchid: RGB = { r: 218, g: 112, b: 214 }; // decorative
+    static readonly Violet: RGB = { r: 238, g: 130, b: 238 }; // secondary highlight
+    static readonly Magenta: RGB = { r: 255, g: 0, b: 255 }; // attention/beta
+    static readonly Pink: RGB = { r: 255, g: 192, b: 203 }; // soft badges
+
+    // ——— Menu Icon Colors (unverändert, referenziert oben nach Farbwertnähe) ———
+    static readonly Menu: RGB = { r: 150, g: 150, b: 100 }; // neutral menu icon
+    static readonly MenuHighInd: RGB = { r: 251, g: 105, b: 98 }; // high indicator
+
+    // ——— Dynamische Indikatoren (unverändert) ———
     static readonly colorScale0: RGB = { r: 99, g: 190, b: 123 };
     static readonly colorScale1: RGB = { r: 129, g: 199, b: 126 };
     static readonly colorScale2: RGB = { r: 161, g: 208, b: 127 };
@@ -246,7 +264,7 @@ export class Color extends ColorBase {
     static readonly colorScale9: RGB = { r: 248, g: 131, b: 111 };
     static readonly colorScale10: RGB = { r: 248, g: 105, b: 107 };
 
-    //Screensaver Default Theme Colors
+    // ——— Screensaver Default Theme Colors (unverändert) ———
     static readonly scbackground: RGB = { r: 0, g: 0, b: 0 };
     static readonly scbackgroundInd1: RGB = { r: 255, g: 0, b: 0 };
     static readonly scbackgroundInd2: RGB = { r: 121, g: 222, b: 121 };
@@ -273,7 +291,7 @@ export class Color extends ColorBase {
     static readonly sctMainTextAlt: RGB = { r: 255, g: 255, b: 255 };
     static readonly sctTimeAdd: RGB = { r: 255, g: 255, b: 255 };
 
-    //Auto-Weather-Colors
+    // ——— Auto-Weather-Colors (unverändert) ———
     static readonly swClearNight: RGB = { r: 150, g: 150, b: 100 };
     static readonly swCloudy: RGB = { r: 75, g: 75, b: 75 };
     static readonly swExceptional: RGB = { r: 255, g: 50, b: 50 };
@@ -288,7 +306,6 @@ export class Color extends ColorBase {
     static readonly swSnowyRainy: RGB = { r: 150, g: 150, b: 255 };
     static readonly swSunny: RGB = { r: 255, g: 255, b: 0 };
     static readonly swWindy: RGB = { r: 150, g: 150, b: 150 };
-
     static getColorFromDefaultOrReturn(s: any): RGB | string {
         if (typeof s === 'string' && s && s.startsWith('default.color.from.start.')) {
             switch (s) {
@@ -583,7 +600,7 @@ export class Color extends ColorBase {
         on: Color.HMIOn,
         off: Color.HMIOff,
         light: Color.White,
-        dark: Color.Black,
+        dark: Color.DarkGray,
         warning: Color.Yellow,
         success: Color.Green,
         neutral: Color.Gray,

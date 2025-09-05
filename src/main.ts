@@ -78,29 +78,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
         }
 
-        if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
-            this.config.mqttPassword = this.config.mqttPassword || '';
-
-            const port = await this.getPortAsync(this.config.mqttPort);
-            if (port != this.config.mqttPort) {
-                this.log.error(`Port ${this.config.mqttPort} is already in use!`);
-                this.log.error(`Please change the port in the admin settings to ${port}!`);
-                this.log.error('Stopping adapter!');
-                if (this.stop) {
-                    await this.stop();
-                }
-                return;
-            }
-            this.mqttServer = await MQTT.MQTTServerClass.createMQTTServer(
-                this,
-                this.config.mqttPort,
-                this.config.mqttUsername,
-                this.config.mqttPassword,
-                './mqtt',
-            );
-            this.config.mqttIp = '127.0.0.1';
-        }
-
         if (this.config.fixBrokenCommonTypes) {
             //fix broken common.type in alias.0 from iobroker.device
             const states = await this.getForeignObjectsAsync('alias.0.*');
@@ -142,52 +119,89 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const panelsText = (this.config.panels || []).map(a => `[${a.name}#${a.topic}]`).join(', ');
                 const configsText = (obj.native.scriptConfigRaw as any[]).map(a => `${a.panelTopic}`).join(', ');
 
+                // Überblicks-Logs
                 this.log.info(`Configured panels: name#topic -> ${panelsText}`);
                 this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
+                this.log.info(
+                    `Detailed configuration checks are suppressed here. Full validation output is only shown when the configuration script is sent to the adapter.`,
+                );
+
                 const manager = new ConfigManager(this, true);
                 manager.log.warn = function (_msg: string) {
-                    //nothing
+                    // silence ConfigManager warnings
                 };
+
                 for (const a of this.config.panels) {
-                    if (a && a.topic) {
-                        const page = (obj.native.scriptConfigRaw as any[]).find(
-                            (b: { panelTopic: string }) => b.panelTopic === a.topic,
-                        );
-                        if (page) {
-                            const c = await manager.setScriptConfig(page);
-                            if (c && c.messages && c.messages.length > 0) {
-                                if (!c.messages[0].startsWith('Panel')) {
-                                    this.log.warn(c.messages[0]);
-                                }
-                            }
-                            if (c && c.panelConfig) {
-                                this.log.info(`Raw script config found for ${a.topic}`);
-                                config.push(c.panelConfig);
-                                continue;
+                    if (!a || !a.topic) {
+                        continue;
+                    }
+
+                    let usedConfig: 'raw' | 'converted' | null = null;
+                    let rawFound = false;
+                    let rawConversionFailed = false;
+
+                    // 1) RAW versuchen
+                    const raw = (obj.native.scriptConfigRaw as any[]).find(
+                        (b: { panelTopic: string }) => b.panelTopic === a.topic,
+                    );
+                    if (raw) {
+                        rawFound = true;
+                        const c = await manager.setScriptConfig(raw);
+                        if (c && c.messages && c.messages.length > 0) {
+                            if (!c.messages[0].startsWith('Panel')) {
+                                this.log.warn(c.messages[0]);
                             }
                         }
-                        {
-                            const c = (obj.native.scriptConfig as any[]).find(
-                                (b: { topic: string }) => b.topic === a.topic,
-                            );
-                            if (c) {
-                                this.log.info(`Converted script config found for ${a.topic}`);
-                                config.push(c);
-                                continue;
-                            }
+                        if (c && c.panelConfig) {
+                            config.push(c.panelConfig);
+                            usedConfig = 'raw';
+                        } else {
+                            rawConversionFailed = true; // RAW existiert, aber Umwandlung fehlgeschlagen
                         }
                     }
-                    this.log.warn(`No script config found for ${a.topic}`);
-                    await manager.delete();
+
+                    // 2) Fallback: converted
+                    if (!usedConfig) {
+                        const conv = (obj.native.scriptConfig as any[]).find(
+                            (b: { topic: string }) => b.topic === a.topic,
+                        );
+                        if (conv) {
+                            config.push(conv);
+                            usedConfig = 'converted';
+                        }
+                    }
+
+                    // 3) Ergebnis-Log pro Panel
+                    if (!usedConfig) {
+                        this.log.warn(`No script config found for ${a.topic}`);
+                        await manager.delete();
+                    } else if (usedConfig === 'raw') {
+                        this.log.info(`Config for ${a.topic}: raw`);
+                    } else {
+                        // usedConfig === 'converted'
+                        if (rawFound && rawConversionFailed) {
+                            this.log.warn(
+                                `Config for ${a.topic}: converted (RAW conversion failed). ` +
+                                    `Please update the configuration script and send it to the adapter again.`,
+                            );
+                        } else {
+                            this.log.warn(`Config for ${a.topic}: converted`);
+                        }
+                    }
                 }
             }
 
             const scriptConfig: Partial<panelConfigPartial>[] = config;
             if (scriptConfig.length === 0) {
+                const topics = (this.config.panels || [])
+                    .map(p => p?.topic)
+                    .filter(Boolean)
+                    .join(', ');
                 if (!this.config.testCase) {
-                    this.log.error('No compatible config found, paused!');
+                    this.log.error(`No compatible config found for topics: ${topics}. Adapter paused!`);
                     return;
                 }
+                this.log.warn(`No compatible config found for topics: ${topics}. Continuing due to testCase=true.`);
             }
             if (scriptConfig) {
                 // merge all pages into every pages array
@@ -261,7 +275,28 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.warn(`Invalid configuration stopped! ${e}`);
             return;
         }*/
+        if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
+            this.config.mqttPassword = this.config.mqttPassword || '';
 
+            const port = await this.getPortAsync(this.config.mqttPort);
+            if (port != this.config.mqttPort) {
+                this.log.error(`Port ${this.config.mqttPort} is already in use!`);
+                this.log.error(`Please change the port in the admin settings to ${port}!`);
+                this.log.error('Stopping adapter!');
+                if (this.stop) {
+                    await this.stop();
+                }
+                return;
+            }
+            this.mqttServer = await MQTT.MQTTServerClass.createMQTTServer(
+                this,
+                this.config.mqttPort,
+                this.config.mqttUsername,
+                this.config.mqttPassword,
+                './mqtt',
+            );
+            this.config.mqttIp = '127.0.0.1';
+        }
         if (
             this.config.doubleClickTime === undefined ||
             typeof this.config.doubleClickTime !== 'number' ||
@@ -269,27 +304,6 @@ class NspanelLovelaceUi extends utils.Adapter {
         ) {
             this.config.doubleClickTime = 350;
         }
-        /*await this.extendForeignObjectAsync('hmip.0.devices.3014F711A000185F2999676C.channels.1.windSpeed', {
-            type: 'state',
-            common: {
-                name: 'windSpeed',
-                type: 'number',
-                role: 'value.speed',
-                read: true,
-                write: false,
-            },
-            native: {},
-            _id: 'hmip.0.devices.3014F711A000185F2999676C.channels.1.windSpeed',
-            acl: {
-                object: 1636,
-                state: 1636,
-                owner: 'system.user.admin',
-                ownerGroup: 'system.group.administrator',
-            },
-            from: 'system.adapter.hmip.0',
-            user: 'system.user.admin',
-            ts: 1743869733951,
-        });*/
 
         //check config
         try {
@@ -472,7 +486,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             try {
                 const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
                 if (state && typeof state.val === 'number' && state.val >= 100) {
-                    this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
+                    this.log.debug(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
                     await axios.get(
                         `http://${tasmota.ip}/cm?` +
                             `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +

@@ -81,27 +81,6 @@ class NspanelLovelaceUi extends utils.Adapter {
         );
       }
     }
-    if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
-      this.config.mqttPassword = this.config.mqttPassword || "";
-      const port = await this.getPortAsync(this.config.mqttPort);
-      if (port != this.config.mqttPort) {
-        this.log.error(`Port ${this.config.mqttPort} is already in use!`);
-        this.log.error(`Please change the port in the admin settings to ${port}!`);
-        this.log.error("Stopping adapter!");
-        if (this.stop) {
-          await this.stop();
-        }
-        return;
-      }
-      this.mqttServer = await MQTT.MQTTServerClass.createMQTTServer(
-        this,
-        this.config.mqttPort,
-        this.config.mqttUsername,
-        this.config.mqttPassword,
-        "./mqtt"
-      );
-      this.config.mqttIp = "127.0.0.1";
-    }
     if (this.config.fixBrokenCommonTypes) {
       const states = await this.getForeignObjectsAsync("alias.0.*");
       this.log.info("Fix broken common.type in alias.0");
@@ -135,48 +114,70 @@ class NspanelLovelaceUi extends utils.Adapter {
         const configsText = obj.native.scriptConfigRaw.map((a) => `${a.panelTopic}`).join(", ");
         this.log.info(`Configured panels: name#topic -> ${panelsText}`);
         this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
+        this.log.info(
+          `Detailed configuration checks are suppressed here. Full validation output is only shown when the configuration script is sent to the adapter.`
+        );
         const manager = new import_config_manager.ConfigManager(this, true);
         manager.log.warn = function(_msg) {
         };
         for (const a of this.config.panels) {
-          if (a && a.topic) {
-            const page = obj.native.scriptConfigRaw.find(
-              (b) => b.panelTopic === a.topic
-            );
-            if (page) {
-              const c = await manager.setScriptConfig(page);
-              if (c && c.messages && c.messages.length > 0) {
-                if (!c.messages[0].startsWith("Panel")) {
-                  this.log.warn(c.messages[0]);
-                }
-              }
-              if (c && c.panelConfig) {
-                this.log.info(`Raw script config found for ${a.topic}`);
-                config.push(c.panelConfig);
-                continue;
+          if (!a || !a.topic) {
+            continue;
+          }
+          let usedConfig = null;
+          let rawFound = false;
+          let rawConversionFailed = false;
+          const raw = obj.native.scriptConfigRaw.find(
+            (b) => b.panelTopic === a.topic
+          );
+          if (raw) {
+            rawFound = true;
+            const c = await manager.setScriptConfig(raw);
+            if (c && c.messages && c.messages.length > 0) {
+              if (!c.messages[0].startsWith("Panel")) {
+                this.log.warn(c.messages[0]);
               }
             }
-            {
-              const c = obj.native.scriptConfig.find(
-                (b) => b.topic === a.topic
-              );
-              if (c) {
-                this.log.info(`Converted script config found for ${a.topic}`);
-                config.push(c);
-                continue;
-              }
+            if (c && c.panelConfig) {
+              config.push(c.panelConfig);
+              usedConfig = "raw";
+            } else {
+              rawConversionFailed = true;
             }
           }
-          this.log.warn(`No script config found for ${a.topic}`);
-          await manager.delete();
+          if (!usedConfig) {
+            const conv = obj.native.scriptConfig.find(
+              (b) => b.topic === a.topic
+            );
+            if (conv) {
+              config.push(conv);
+              usedConfig = "converted";
+            }
+          }
+          if (!usedConfig) {
+            this.log.warn(`No script config found for ${a.topic}`);
+            await manager.delete();
+          } else if (usedConfig === "raw") {
+            this.log.info(`Config for ${a.topic}: raw`);
+          } else {
+            if (rawFound && rawConversionFailed) {
+              this.log.warn(
+                `Config for ${a.topic}: converted (RAW conversion failed). Please update the configuration script and send it to the adapter again.`
+              );
+            } else {
+              this.log.warn(`Config for ${a.topic}: converted`);
+            }
+          }
         }
       }
       const scriptConfig = config;
       if (scriptConfig.length === 0) {
+        const topics = (this.config.panels || []).map((p) => p == null ? void 0 : p.topic).filter(Boolean).join(", ");
         if (!this.config.testCase) {
-          this.log.error("No compatible config found, paused!");
+          this.log.error(`No compatible config found for topics: ${topics}. Adapter paused!`);
           return;
         }
+        this.log.warn(`No compatible config found for topics: ${topics}. Continuing due to testCase=true.`);
       }
       if (scriptConfig) {
         for (let b = 0; b < scriptConfig.length; b++) {
@@ -234,6 +235,27 @@ class NspanelLovelaceUi extends utils.Adapter {
           };
         }
       }
+    }
+    if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
+      this.config.mqttPassword = this.config.mqttPassword || "";
+      const port = await this.getPortAsync(this.config.mqttPort);
+      if (port != this.config.mqttPort) {
+        this.log.error(`Port ${this.config.mqttPort} is already in use!`);
+        this.log.error(`Please change the port in the admin settings to ${port}!`);
+        this.log.error("Stopping adapter!");
+        if (this.stop) {
+          await this.stop();
+        }
+        return;
+      }
+      this.mqttServer = await MQTT.MQTTServerClass.createMQTTServer(
+        this,
+        this.config.mqttPort,
+        this.config.mqttUsername,
+        this.config.mqttPassword,
+        "./mqtt"
+      );
+      this.config.mqttIp = "127.0.0.1";
     }
     if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0)) {
       this.config.doubleClickTime = 350;
@@ -372,7 +394,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       try {
         const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
         if (state && typeof state.val === "number" && state.val >= 100) {
-          this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
+          this.log.debug(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
           await import_axios.default.get(
             `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog Restart 1`
           );
