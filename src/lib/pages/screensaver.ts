@@ -218,7 +218,7 @@ export class Screensaver extends Page {
             message.options[place].push(...ordered);
 
             // Apply overwrites (sparse assignment is fine)
-            message.options[place] = { ...message.options[place], ...overwrite[place] };
+            Object.assign(message.options[place], overwrite[place]);
 
             // Windowing/paging
             const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
