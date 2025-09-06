@@ -7,9 +7,12 @@ export async function getPageMpd(
     page: ScriptConfig.PageMedia,
     gridItem: pages.PageBaseConfig,
     messages: string[],
+    justCheck = false,
 ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
     //const adapter = configManager.adapter;
-
+    if (justCheck) {
+        return { gridItem, messages: ['done'] };
+    }
     gridItem.dpInit = `/^${page.media.id.split('.').slice(0, 2).join('\\.')}\\./`;
     gridItem = {
         ...gridItem,

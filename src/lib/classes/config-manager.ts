@@ -18,6 +18,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
+
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
     //colorOn: RGB = Color.On;
@@ -347,7 +348,8 @@ export class ConfigManager extends BaseClass {
             panelConfig.pages = [];
         }
         if (config.pages) {
-            for (const page of config.pages.concat(config.subPages || [])) {
+            const scriptPages = config.pages.concat(config.subPages || []);
+            for (const page of scriptPages) {
                 if (!page) {
                     continue;
                 }
@@ -615,6 +617,11 @@ export class ConfigManager extends BaseClass {
                             messages = temp.messages;
                             if (itemConfig && gridItem.pageItems) {
                                 gridItem.pageItems.push(itemConfig);
+                            }
+                            if (temp.pageConfig) {
+                                temp.pageConfig.parent = page.uniqueName;
+                                scriptPages.push(temp.pageConfig);
+                                config.subPages.push(temp.pageConfig);
                             }
                         } catch (error: any) {
                             messages.push(
@@ -1777,6 +1784,41 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
+            case 'media': {
+                itemConfig = {
+                    template: undefined,
+                    type: 'button',
+                    role: 'iconNotText',
+                    dpInit: item.id,
+                    data: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: item.icon || 'play-circle-outline',
+                                },
+                                color: await this.getIconColor(item.onColor, Color.on),
+                            },
+                            false: {
+                                value: {
+                                    type: 'const',
+                                    constVal: item.icon2 || 'pause-circle-outline',
+                                },
+                                color: await this.getIconColor(item.offColor, Color.off),
+                            },
+                            scale: Types.isIconColorScaleElement(item.colorScale)
+                                ? { type: 'const', constVal: item.colorScale }
+                                : undefined,
+                        },
+                        text: text,
+                        entity1: {
+                            value: foundedStates[role].STATE,
+                        },
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
             case 'motion': {
                 itemConfig = {
                     template: 'text.motion',
@@ -2280,7 +2322,11 @@ export class ConfigManager extends BaseClass {
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
         messages: string[] = [],
-    ): Promise<{ itemConfig: typePageItem.PageItemDataItemsOptions | undefined; messages: string[] }> {
+    ): Promise<{
+        itemConfig: typePageItem.PageItemDataItemsOptions | undefined;
+        messages: string[];
+        pageConfig?: ScriptConfig.PageType;
+    }> {
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         if (item.navigate) {
             if (!item.targetPage || typeof item.targetPage !== 'string') {
@@ -2403,6 +2449,8 @@ export class ConfigManager extends BaseClass {
                             ? await this.getFieldAsDataItemConfig(item.suffixValue)
                             : undefined,
                 };
+
+                let pageConfig: ScriptConfig.PageType | undefined = undefined;
                 switch (role) {
                     case 'timeTable': {
                         itemConfig = {
@@ -3756,11 +3804,93 @@ export class ConfigManager extends BaseClass {
                         };
                         break;
                     }
-                    default:
-                        exhaustiveCheck(role);
+                    case 'media': {
+                        item.icon2 = item.icon2 || item.icon;
+                        let id = foundedStates[role].STATE?.dp || item.id;
+                        if (!(await this.existsState(id))) {
+                            throw new Error(`DP: ${item.id} - media STATE ${id} not found!`);
+                        }
 
-                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                        throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+                        const o = await this.adapter.getForeignObjectAsync(id);
+                        if (!o || !o.common.alias?.id) {
+                            throw new Error(`DP: ${item.id} - media STATE ${id} has no alias!`);
+                        }
+
+                        id = o.common.alias.id;
+                        if (!(await this.existsState(id))) {
+                            throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not found!`);
+                        }
+                        const { messages } = await PageMedia.getPage(
+                            this,
+                            {
+                                media: { id },
+                                uniqueName: `media-${item.id}`,
+                                type: 'cardMedia',
+                                items: [],
+                                heading: '',
+                            },
+                            {
+                                template: undefined,
+                                dpInit: id,
+                                uniqueID: `media-${item.id}`,
+                                pageItems: [],
+                                config: { card: 'cardMedia', data: {} },
+                                alwaysOn: 'none',
+                            } as pages.PageBaseConfig,
+                            [],
+                            true,
+                        );
+                        if (messages[0] !== 'done') {
+                            throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not supported!`);
+                        }
+                        pageConfig = {
+                            type: 'cardMedia',
+                            uniqueName: `media-${item.id}`,
+                            media: { id },
+                            heading: '',
+                            items: [],
+                        };
+
+                        itemConfig = {
+                            role: '',
+                            type: 'button',
+                            dpInit: item.id,
+                            template: undefined,
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: item.icon
+                                            ? { type: 'const', constVal: item.icon }
+                                            : { type: 'const', constVal: 'play-circle-outline' },
+                                        color: await this.getIconColor(item.onColor, Color.on),
+                                    },
+                                    false: {
+                                        value: item.icon2
+                                            ? { type: 'const', constVal: item.icon2 }
+                                            : { type: 'const', constVal: 'pause-circle-outline' },
+                                        color: await this.getIconColor(item.offColor, Color.off),
+                                    },
+                                    scale: Types.isIconColorScaleElement(item.colorScale)
+                                        ? { type: 'const', constVal: item.colorScale }
+                                        : undefined,
+                                },
+                                text: text,
+                                text1: {
+                                    true: headline,
+                                },
+                                entity1: {
+                                    value: foundedStates[role].STATE,
+                                },
+                                setNavi: { type: 'const', constVal: `media-${item.id}` },
+                            },
+                        };
+                        break;
+                    }
+                    default: {
+                        exhaustiveCheck(role);
+                        const roleStr = typeof role === 'string' ? role : String(role);
+                        throw new Error(`DP: ${item.id} - Channel role ${roleStr} is not supported!!!`);
+                    }
                 }
                 if (item.filter != null && itemConfig) {
                     itemConfig.filter = item.filter;
@@ -3776,7 +3906,7 @@ export class ConfigManager extends BaseClass {
                     }
                     itemConfig.data.enabled = { type: 'triggered', dp: `${item.id}.ENABLED` };
                 }
-                return { itemConfig, messages };
+                return { itemConfig, messages, pageConfig };
             }
             throw new Error(`Object ${item.id} not found!`);
         }

@@ -12,6 +12,7 @@
 * [info](#info)
 * [light](#light)
 * [lock](#lock)
+* [media](#media)
 * [motion](#motion)
 * [rgb](#rgb)
 * [rgbSingle](#rgbsingle)
@@ -122,6 +123,10 @@
 | **lock** | ~~ACTUAL~~ | boolean| state  |  |  |  | 
 | **"** | ~~OPEN~~ | boolean| button  |  | X |  | 
 | **"** | ~~SET~~ | boolean| switch.lock  | X | X |  | 
+### media
+| Channel role | State ID | common.type | common.role | required | common.write | description |  
+| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
+| **media** | ~~STATE~~ | boolean| media.state  | X |  | True if playing, false if paused/stopped. If the media device supports more states, use read funtion to convert it to true/false. | 
 ### motion
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

@@ -574,6 +574,7 @@ export class PageMedia extends PageMenu {
         page: ScriptConfig.PageMedia,
         gridItem: pages.PageBaseConfig,
         messages: string[],
+        justCheck: boolean = false,
     ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
         const adapter = configManager.adapter;
         if (page.type !== 'cardMedia' || !gridItem.config || gridItem.config.card !== 'cardMedia') {
@@ -605,7 +606,9 @@ export class PageMedia extends PageMenu {
         if (!view || !view.rows || view.rows.length === 0) {
             const msg = `${page.uniqueName}: Media page id - adapter: ${adapterName} has no instance - not exist - wrong id?!`;
             messages.push(msg);
-            adapter.log.error(msg);
+            if (!justCheck) {
+                adapter.log.error(msg);
+            }
             return { gridItem, messages };
         }
 
@@ -628,7 +631,9 @@ export class PageMedia extends PageMenu {
             } else {
                 const msg = `${page.uniqueName}: No numeric instance found for adapter ${adapterName}.`;
                 messages.push(msg);
-                adapter.log.error(msg);
+                if (!justCheck) {
+                    adapter.log.error(msg);
+                }
                 return { gridItem, messages };
             }
         }
@@ -638,20 +643,22 @@ export class PageMedia extends PageMenu {
         if (view.rows.findIndex(v => v.id === instanceId) === -1) {
             const msg = `${page.uniqueName}: Media page id - adapter: ${parts.slice(0, 2).join('.')} has no instance - not exist - wrong id?!`;
             messages.push(msg);
-            adapter.log.error(msg);
+            if (!justCheck) {
+                adapter.log.error(msg);
+            }
             return { gridItem, messages };
         }
 
         gridItem.config.card = 'cardMedia';
 
         if (page.media.id.startsWith('spotify-premium.')) {
-            return await getPageSpotify(configManager, page, gridItem, messages);
+            return await getPageSpotify(configManager, page, gridItem, messages, justCheck);
         }
         if (page.media.id.startsWith('alexa2.')) {
-            return await getPageAlexa(configManager, page, gridItem, messages);
+            return await getPageAlexa(configManager, page, gridItem, messages, justCheck);
         }
         if (page.media.id.startsWith('mpd.')) {
-            return await getPageMpd(configManager, page, gridItem, messages);
+            return await getPageMpd(configManager, page, gridItem, messages, justCheck);
         }
 
         const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2, spotify-premium, and mpd!`;

@@ -230,6 +230,9 @@ const checkedDatapoints = {
     OPEN: null,
     SET: null
   },
+  media: {
+    STATE: null
+  },
   motion: {
     ACTUAL: null
   },
@@ -601,6 +604,21 @@ const requiredScriptDataPoints = {
       },
       OPEN: { role: "button", type: "boolean", required: false, writeable: true },
       SET: { role: "switch.lock", type: "boolean", required: true, writeable: true }
+    }
+  },
+  media: {
+    updatedVersion: true,
+    name: "media",
+    description: "Medienwiedergabe (Play, Pause, Stop, Next, Previous)",
+    data: {
+      STATE: {
+        role: "media.state",
+        type: "boolean",
+        required: true,
+        writeable: false,
+        trigger: true,
+        description: "True if playing, false if paused/stopped. If the media device supports more states, use read funtion to convert it to true/false."
+      }
     }
   },
   motion: {

@@ -22,8 +22,11 @@ __export(getSpotify_exports, {
 });
 module.exports = __toCommonJS(getSpotify_exports);
 var import_Color = require("../../const/Color");
-async function getPageSpotify(configManager, page, gridItem, messages) {
+async function getPageSpotify(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+  if (justCheck) {
+    return { gridItem, messages: ["done"] };
+  }
   gridItem.dpInit = `/^${page.media.id.split(".").slice(0, 2).join("\\.")}\\./`;
   gridItem = {
     ...gridItem,

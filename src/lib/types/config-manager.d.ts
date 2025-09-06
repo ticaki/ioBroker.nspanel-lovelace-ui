@@ -143,7 +143,7 @@ declare namespace ScriptConfig {
         | 'level.timer'
         | 'light'
         | 'lock'
-        //| 'media'
+        | 'media'
         //| 'fan'
         | 'motion'
         | 'rgb'

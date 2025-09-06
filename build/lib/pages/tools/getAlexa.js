@@ -33,19 +33,20 @@ __export(getAlexa_exports, {
 module.exports = __toCommonJS(getAlexa_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
-async function getPageAlexa(configManager, page, gridItem, messages) {
+async function getPageAlexa(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
-  const str = arr.join(".");
-  const devices = str && arr.length === 3 ? await configManager.adapter.getObjectViewAsync("system", "device", {
-    startkey: `${str}.`,
-    endkey: `${str}${String.fromCharCode(65533)}`
+  const viewStr = arr.join(".");
+  const str = page.media.id.split(".").slice(0, 4).join(".");
+  const devices = viewStr && arr.length === 3 ? await configManager.adapter.getObjectViewAsync("system", "device", {
+    startkey: `${viewStr}.`,
+    endkey: `${viewStr}${String.fromCharCode(65533)}`
   }) : { rows: [] };
   if (devices && devices.rows && devices.rows.length > 0) {
     if (devices.rows.findIndex((row) => {
       if (row && row.value && row.id && row.id.split(".").length === 4) {
-        return page.media.id === row.id;
+        return str === row.id;
       }
     }) === -1) {
       const msg = `${page.uniqueName}: Media page id ${page.media.id} is not a valid alexa2 device!`;
@@ -54,12 +55,15 @@ async function getPageAlexa(configManager, page, gridItem, messages) {
       return { gridItem, messages };
     }
   }
-  gridItem.dpInit = tools.getRegExp(`/^${page.media.id.split(".").join("\\.")}/`) || page.media.id;
+  if (justCheck) {
+    return { gridItem, messages: ["done"] };
+  }
+  gridItem.dpInit = tools.getRegExp(`/^${str.split(".").join("\\.")}/`) || str;
   gridItem = {
     ...gridItem,
     config: {
       ...gridItem.config,
-      ident: page.media.id,
+      ident: str,
       card: "cardMedia",
       data: {
         headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : void 0,

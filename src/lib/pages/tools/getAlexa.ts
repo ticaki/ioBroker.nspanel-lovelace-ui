@@ -8,16 +8,18 @@ export async function getPageAlexa(
     page: ScriptConfig.PageMedia,
     gridItem: pages.PageBaseConfig,
     messages: string[],
+    justCheck = false,
 ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
     const adapter = configManager.adapter;
 
     const arr = page.media.id.split('.').slice(0, 3);
-    const str = arr.join('.');
+    const viewStr = arr.join('.');
+    const str = page.media.id.split('.').slice(0, 4).join('.');
     const devices =
-        str && arr.length === 3
+        viewStr && arr.length === 3
             ? await configManager.adapter.getObjectViewAsync('system', 'device', {
-                  startkey: `${str}.`,
-                  endkey: `${str}${String.fromCharCode(0xfffd)}`,
+                  startkey: `${viewStr}.`,
+                  endkey: `${viewStr}${String.fromCharCode(0xfffd)}`,
               })
             : { rows: [] };
 
@@ -25,7 +27,7 @@ export async function getPageAlexa(
         if (
             devices.rows.findIndex(row => {
                 if (row && row.value && row.id && row.id.split('.').length === 4) {
-                    return page.media.id === row.id;
+                    return str === row.id;
                 }
             }) === -1
         ) {
@@ -35,13 +37,15 @@ export async function getPageAlexa(
             return { gridItem, messages };
         }
     }
-
-    gridItem.dpInit = tools.getRegExp(`/^${page.media.id.split('.').join('\\.')}/`) || page.media.id;
+    if (justCheck) {
+        return { gridItem, messages: ['done'] };
+    }
+    gridItem.dpInit = tools.getRegExp(`/^${str.split('.').join('\\.')}/`) || str;
     gridItem = {
         ...gridItem,
         config: {
             ...gridItem.config,
-            ident: page.media.id,
+            ident: str,
             card: 'cardMedia',
             data: {
                 headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : undefined,

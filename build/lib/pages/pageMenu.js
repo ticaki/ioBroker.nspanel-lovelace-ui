@@ -129,14 +129,17 @@ class PageMenu extends import_Page.Page {
     if (this.autoLoopTimeout) {
       this.adapter.clearTimeout(this.autoLoopTimeout);
     }
+    if (this.unload) {
+      return;
+    }
     if (!this.config || this.config.scrollPresentation !== "auto") {
       return;
     }
-    if (this.visibility && !this.sleep && !this.unload) {
-      this.nextTick();
-    }
     this.autoLoopTimeout = this.adapter.setTimeout(
       () => {
+        if (this.visibility && !this.sleep && !this.unload) {
+          this.nextTick();
+        }
         this.autoLoop();
       },
       (this.config.scrollAutoTiming < 2 ? 3e3 : this.config.scrollAutoTiming * 1e3) || 15e3

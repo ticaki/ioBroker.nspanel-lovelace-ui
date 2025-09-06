@@ -312,7 +312,8 @@ class ConfigManager extends import_library.BaseClass {
       panelConfig.pages = [];
     }
     if (config.pages) {
-      for (const page of config.pages.concat(config.subPages || [])) {
+      const scriptPages = config.pages.concat(config.subPages || []);
+      for (const page of scriptPages) {
         if (!page) {
           continue;
         }
@@ -541,6 +542,11 @@ class ConfigManager extends import_library.BaseClass {
               messages = temp.messages;
               if (itemConfig && gridItem.pageItems) {
                 gridItem.pageItems.push(itemConfig);
+              }
+              if (temp.pageConfig) {
+                temp.pageConfig.parent = page.uniqueName;
+                scriptPages.push(temp.pageConfig);
+                config.subPages.push(temp.pageConfig);
               }
             } catch (error) {
               messages.push(
@@ -1558,6 +1564,39 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
+      case "media": {
+        itemConfig = {
+          template: void 0,
+          type: "button",
+          role: "iconNotText",
+          dpInit: item.id,
+          data: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: item.icon || "play-circle-outline"
+                },
+                color: await this.getIconColor(item.onColor, import_Color.Color.on)
+              },
+              false: {
+                value: {
+                  type: "const",
+                  constVal: item.icon2 || "pause-circle-outline"
+                },
+                color: await this.getIconColor(item.offColor, import_Color.Color.off)
+              },
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
+            },
+            text,
+            entity1: {
+              value: foundedStates[role].STATE
+            },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "motion": {
         itemConfig = {
           template: "text.motion",
@@ -2005,7 +2044,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2086,6 +2125,7 @@ class ConfigManager extends import_library.BaseClass {
           prefix: pages.isCardEntitiesType(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
           suffix: pages.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
         };
+        let pageConfig = void 0;
         switch (role) {
           case "timeTable": {
             itemConfig = {
@@ -3141,9 +3181,84 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
-          default:
+          case "media": {
+            item.icon2 = item.icon2 || item.icon;
+            let id = ((_t = foundedStates[role].STATE) == null ? void 0 : _t.dp) || item.id;
+            if (!await this.existsState(id)) {
+              throw new Error(`DP: ${item.id} - media STATE ${id} not found!`);
+            }
+            const o = await this.adapter.getForeignObjectAsync(id);
+            if (!o || !((_u = o.common.alias) == null ? void 0 : _u.id)) {
+              throw new Error(`DP: ${item.id} - media STATE ${id} has no alias!`);
+            }
+            id = o.common.alias.id;
+            if (!await this.existsState(id)) {
+              throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not found!`);
+            }
+            const { messages: messages2 } = await import_pageMedia.PageMedia.getPage(
+              this,
+              {
+                media: { id },
+                uniqueName: `media-${item.id}`,
+                type: "cardMedia",
+                items: [],
+                heading: ""
+              },
+              {
+                template: void 0,
+                dpInit: id,
+                uniqueID: `media-${item.id}`,
+                pageItems: [],
+                config: { card: "cardMedia", data: {} },
+                alwaysOn: "none"
+              },
+              [],
+              true
+            );
+            if (messages2[0] !== "done") {
+              throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not supported!`);
+            }
+            pageConfig = {
+              type: "cardMedia",
+              uniqueName: `media-${item.id}`,
+              media: { id },
+              heading: "",
+              items: []
+            };
+            itemConfig = {
+              role: "",
+              type: "button",
+              dpInit: item.id,
+              template: void 0,
+              data: {
+                icon: {
+                  true: {
+                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "play-circle-outline" },
+                    color: await this.getIconColor(item.onColor, import_Color.Color.on)
+                  },
+                  false: {
+                    value: item.icon2 ? { type: "const", constVal: item.icon2 } : { type: "const", constVal: "pause-circle-outline" },
+                    color: await this.getIconColor(item.offColor, import_Color.Color.off)
+                  },
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
+                },
+                text,
+                text1: {
+                  true: headline
+                },
+                entity1: {
+                  value: foundedStates[role].STATE
+                },
+                setNavi: { type: "const", constVal: `media-${item.id}` }
+              }
+            };
+            break;
+          }
+          default: {
             (0, import_pages.exhaustiveCheck)(role);
-            throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+            const roleStr = typeof role === "string" ? role : String(role);
+            throw new Error(`DP: ${item.id} - Channel role ${roleStr} is not supported!!!`);
+          }
         }
         if (item.filter != null && itemConfig) {
           itemConfig.filter = item.filter;
@@ -3159,7 +3274,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           itemConfig.data.enabled = { type: "triggered", dp: `${item.id}.ENABLED` };
         }
-        return { itemConfig, messages };
+        return { itemConfig, messages, pageConfig };
       }
       throw new Error(`Object ${item.id} not found!`);
     }
