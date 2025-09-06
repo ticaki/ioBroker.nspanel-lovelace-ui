@@ -214,7 +214,7 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemFanDataItems
         | PageItemTimerDataItems
         | PageItemSeparator
-    ) & { filter?: true | false | number };
+    );
 
 export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data' | 'type'> &
     (
@@ -670,6 +670,7 @@ export type PageItemUnion = {
     modeScr?: Types.ScreenSaverPlaces | undefined;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
+    filter?: true | false | number;
 };
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };

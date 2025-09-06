@@ -1680,24 +1680,39 @@ class ConfigManager extends import_library.BaseClass {
           }
         }
         itemConfig = {
-          template: "text.info",
-          dpInit: item.id,
           type: "button",
           role: adapterRole,
-          color: {
-            true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, import_Color.Color.activated),
-            false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, import_Color.Color.deactivated),
-            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
-          },
-          icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : item.icon ? { type: "const", constVal: item.icon } : void 0
-          },
+          template: void 0,
           data: {
+            icon: {
+              true: {
+                value: item.icon ? { type: "const", constVal: item.icon } : {
+                  type: "const",
+                  constVal: "information-outline"
+                },
+                color: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, import_Color.Color.activated),
+                text: {
+                  value: foundedStates[role].ACTUAL
+                }
+              },
+              false: {
+                value: item.icon2 ? { type: "const", constVal: item.icon2 } : item.icon ? { type: "const", constVal: item.icon } : {
+                  type: "const",
+                  constVal: "information-off-outline"
+                },
+                color: await this.getIconColor(
+                  item.offColor || `${item.id}.COLORDEC`,
+                  import_Color.Color.deactivated
+                ),
+                text: {
+                  value: foundedStates[role].ACTUAL
+                }
+              },
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
+            },
             text,
             text1: {
-              true: foundedStates[role].ACTUAL,
-              false: null
+              true: foundedStates[role].ACTUAL
             },
             entity1: {
               value: foundedStates[role].ACTUAL

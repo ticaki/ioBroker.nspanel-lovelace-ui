@@ -1906,29 +1906,47 @@ export class ConfigManager extends BaseClass {
                     }
                 }
                 itemConfig = {
-                    template: 'text.info',
-                    dpInit: item.id,
                     type: 'button',
                     role: adapterRole,
-                    color: {
-                        true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, Color.activated),
-                        false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, Color.deactivated),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2
-                            ? { type: 'const', constVal: item.icon2 }
-                            : item.icon
-                              ? { type: 'const', constVal: item.icon }
-                              : undefined,
-                    },
+                    template: undefined,
                     data: {
+                        icon: {
+                            true: {
+                                value: item.icon
+                                    ? { type: 'const', constVal: item.icon }
+                                    : {
+                                          type: 'const',
+                                          constVal: 'information-outline',
+                                      },
+                                color: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, Color.activated),
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                },
+                            },
+                            false: {
+                                value: item.icon2
+                                    ? { type: 'const', constVal: item.icon2 }
+                                    : item.icon
+                                      ? { type: 'const', constVal: item.icon }
+                                      : {
+                                            type: 'const',
+                                            constVal: 'information-off-outline',
+                                        },
+                                color: await this.getIconColor(
+                                    item.offColor || `${item.id}.COLORDEC`,
+                                    Color.deactivated,
+                                ),
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                },
+                            },
+                            scale: Types.isIconColorScaleElement(item.colorScale)
+                                ? { type: 'const', constVal: item.colorScale }
+                                : undefined,
+                        },
                         text: text,
                         text1: {
                             true: foundedStates[role].ACTUAL,
-
-                            false: null,
                         },
                         entity1: {
                             value: foundedStates[role].ACTUAL,
