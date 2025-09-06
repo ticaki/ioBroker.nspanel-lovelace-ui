@@ -39,7 +39,7 @@ var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
 var import_axios = __toESM(require("axios"));
 var import_Color = require("../const/Color");
-import_axios.default.defaults.timeout = 1e4;
+import_axios.default.defaults.timeout = 15e3;
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -100,6 +100,8 @@ class Controller extends Library.BaseClass {
       }
       const currentTime = await this.getCurrentTime();
       await this.statesControler.setInternalState("///time", currentTime, true);
+      const currentTimeString = await this.getCurrentTimeString();
+      await this.statesControler.setInternalState("///timeString", currentTimeString, true);
     } catch {
     }
     if (this.unload) {
@@ -116,26 +118,36 @@ class Controller extends Library.BaseClass {
    *
    * @returns void
    */
-  dateUpdateLoop = async () => {
+  hourLoop = async () => {
     const now = /* @__PURE__ */ new Date();
     const next = new Date(now);
-    next.setDate(now.getDate() + 1);
-    next.setHours(0, 0, 1, 0);
+    const hourNow = now.getHours();
+    next.setHours(now.getHours() + 1, 0, 4);
     const diff = next.getTime() - now.getTime();
     if (this.unload) {
       return;
     }
     try {
-      const currentTime = await this.getCurrentTime();
-      this.log.debug(`Set current Date with time: ${new Date(currentTime).toString()}`);
-      await this.statesControler.setInternalState("///date", currentTime, true);
+      if (hourNow === 0) {
+        const currentTime = await this.getCurrentTime();
+        this.log.debug(`Set current Date with time: ${new Date(currentTime).toString()}`);
+        await this.statesControler.setInternalState("///date", currentTime, true);
+      }
     } catch (err) {
       this.log.error(`dateUpdateLoop failed: ${err}`);
     }
-    this.dateUpdateTimeout = this.adapter.setTimeout(() => this.dateUpdateLoop(), diff);
+    if (hourNow % 8 === 0) {
+      await this.checkOnlineVersion();
+    }
+    this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
   };
   getCurrentTime = async () => {
     return new Promise((resolve) => resolve(Date.now()));
+  };
+  getCurrentTimeString = async () => {
+    return new Promise(
+      (resolve) => resolve((/* @__PURE__ */ new Date()).toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" }))
+    );
   };
   /**
    * Handles internal commands based on the provided id and state.
@@ -238,6 +250,19 @@ class Controller extends Library.BaseClass {
       this.getCurrentTime
     );
     await this.statesControler.setInternalState(
+      "///timeString",
+      await this.getCurrentTimeString(),
+      true,
+      {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      },
+      this.getCurrentTimeString
+    );
+    await this.statesControler.setInternalState(
       "///date",
       await this.getCurrentTime(),
       true,
@@ -281,10 +306,10 @@ class Controller extends Library.BaseClass {
     await this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
     void this.systemNotification.init();
     void this.minuteLoop();
-    void this.dateUpdateLoop();
+    void this.hourLoop();
+    await this.checkOnlineVersion();
     await this.getTasmotaVersion();
     await this.getTFTVersion();
-    this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1e3);
   }
   addPanel = async (panel) => {
     let index = this.panels.findIndex((p) => p.topic === panel.topic);
@@ -372,7 +397,7 @@ class Controller extends Library.BaseClass {
     }
     await this.statesControler.setInternalState("///Notifications", true, true);
   }
-  dailyInterval = async () => {
+  checkOnlineVersion = async () => {
     await this.getTFTVersion();
     await this.getTasmotaVersion();
   };

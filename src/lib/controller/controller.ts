@@ -9,7 +9,7 @@ import axios from 'axios';
 import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 import { Color } from '../const/Color';
 
-axios.defaults.timeout = 10000;
+axios.defaults.timeout = 15000;
 
 /**
  * Controller Class
@@ -97,6 +97,8 @@ export class Controller extends Library.BaseClass {
 
             const currentTime = await this.getCurrentTime();
             await this.statesControler.setInternalState('///time', currentTime, true);
+            const currentTimeString = await this.getCurrentTimeString();
+            await this.statesControler.setInternalState('///timeString', currentTimeString, true);
         } catch {
             // Fehler werden geschluckt, damit die Loop nicht stoppt
         }
@@ -119,12 +121,12 @@ export class Controller extends Library.BaseClass {
      *
      * @returns void
      */
-    dateUpdateLoop = async (): Promise<void> => {
+    hourLoop = async (): Promise<void> => {
         // Zeitpunkt: nächster Tag 00:00:01
         const now = new Date();
         const next = new Date(now);
-        next.setDate(now.getDate() + 1);
-        next.setHours(0, 0, 1, 0);
+        const hourNow = now.getHours();
+        next.setHours(now.getHours() + 1, 0, 4);
 
         const diff = next.getTime() - now.getTime();
 
@@ -133,17 +135,27 @@ export class Controller extends Library.BaseClass {
         }
 
         try {
-            const currentTime = await this.getCurrentTime();
-            this.log.debug(`Set current Date with time: ${new Date(currentTime).toString()}`);
-            await this.statesControler.setInternalState('///date', currentTime, true);
+            if (hourNow === 0) {
+                const currentTime = await this.getCurrentTime();
+                this.log.debug(`Set current Date with time: ${new Date(currentTime).toString()}`);
+                await this.statesControler.setInternalState('///date', currentTime, true);
+            }
         } catch (err: any) {
             this.log.error(`dateUpdateLoop failed: ${err}`);
         }
 
-        this.dateUpdateTimeout = this.adapter.setTimeout(() => this.dateUpdateLoop(), diff);
+        if (hourNow % 8 === 0) {
+            await this.checkOnlineVersion();
+        }
+        this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
     };
     getCurrentTime = async (): Promise<number> => {
         return new Promise(resolve => resolve(Date.now()));
+    };
+    getCurrentTimeString = async (): Promise<string> => {
+        return new Promise(resolve =>
+            resolve(new Date().toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit' })),
+        );
     };
 
     /**
@@ -249,6 +261,19 @@ export class Controller extends Library.BaseClass {
             this.getCurrentTime,
         );
         await this.statesControler.setInternalState(
+            '///timeString',
+            await this.getCurrentTimeString(),
+            true,
+            {
+                name: '',
+                type: 'string',
+                role: 'text',
+                read: true,
+                write: false,
+            },
+            this.getCurrentTimeString,
+        );
+        await this.statesControler.setInternalState(
             '///date',
             await this.getCurrentTime(),
             true,
@@ -308,10 +333,10 @@ export class Controller extends Library.BaseClass {
         }
         this.panels = newPanels;*/
         void this.minuteLoop();
-        void this.dateUpdateLoop();
+        void this.hourLoop();
+        await this.checkOnlineVersion();
         await this.getTasmotaVersion();
         await this.getTFTVersion();
-        this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1000);
     }
 
     addPanel = async (panel: Partial<Panel.panelConfigPartial>): Promise<void> => {
@@ -407,7 +432,7 @@ export class Controller extends Library.BaseClass {
         await this.statesControler.setInternalState('///Notifications', true, true);
     }
 
-    dailyInterval = async (): Promise<void> => {
+    checkOnlineVersion = async (): Promise<void> => {
         await this.getTFTVersion();
         await this.getTasmotaVersion();
     };

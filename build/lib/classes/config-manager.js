@@ -307,6 +307,7 @@ class ConfigManager extends import_library.BaseClass {
     return { messages: messages.map((a) => a.replaceAll("Error: ", "")), panelConfig };
   }
   async getPageConfig(config, panelConfig, messages) {
+    var _a, _b, _c, _d, _e, _f, _g;
     if (panelConfig.pages === void 0) {
       panelConfig.pages = [];
     }
@@ -403,9 +404,12 @@ class ConfigManager extends import_library.BaseClass {
           },
           pageItems: []
         };
-        if ((gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities" || gridItem.config.card === "cardSchedule" || gridItem.config.card === "cardThermo2" || gridItem.config.card === "cardMedia") && (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardSchedule" || page.type === "cardThermo2" || page.type === "cardMedia")) {
+        if ((((_a = gridItem.config) == null ? void 0 : _a.card) === "cardGrid" || ((_b = gridItem.config) == null ? void 0 : _b.card) === "cardGrid2" || ((_c = gridItem.config) == null ? void 0 : _c.card) === "cardGrid3" || ((_d = gridItem.config) == null ? void 0 : _d.card) === "cardEntities" || ((_e = gridItem.config) == null ? void 0 : _e.card) === "cardSchedule" || ((_f = gridItem.config) == null ? void 0 : _f.card) === "cardThermo2" || ((_g = gridItem.config) == null ? void 0 : _g.card) === "cardMedia") && (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities" || page.type === "cardSchedule" || page.type === "cardThermo2" || page.type === "cardMedia")) {
           gridItem.config.scrollType = page.scrollType || "page";
           gridItem.config.scrollPresentation = page.scrollPresentation || "classic";
+          if (pages.isPageMenuConfig(gridItem.config) && gridItem.config.scrollPresentation === "auto") {
+            gridItem.config.scrollAutoTiming = "scrollAutoTiming" in page && page.scrollAutoTiming || 15;
+          }
         }
         try {
           if (page.type === "cardThermo") {

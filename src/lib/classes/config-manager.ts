@@ -458,15 +458,15 @@ export class ConfigManager extends BaseClass {
                         index: 0,
                     },
                     pageItems: [],
-                };
+                } as pages.PageBaseConfig;
                 if (
-                    (gridItem.config.card === 'cardGrid' ||
-                        gridItem.config.card === 'cardGrid2' ||
-                        gridItem.config.card === 'cardGrid3' ||
-                        gridItem.config.card === 'cardEntities' ||
-                        gridItem.config.card === 'cardSchedule' ||
-                        gridItem.config.card === 'cardThermo2' ||
-                        gridItem.config.card === 'cardMedia') &&
+                    (gridItem.config?.card === 'cardGrid' ||
+                        gridItem.config?.card === 'cardGrid2' ||
+                        gridItem.config?.card === 'cardGrid3' ||
+                        gridItem.config?.card === 'cardEntities' ||
+                        gridItem.config?.card === 'cardSchedule' ||
+                        gridItem.config?.card === 'cardThermo2' ||
+                        gridItem.config?.card === 'cardMedia') &&
                     (page.type === 'cardGrid' ||
                         page.type === 'cardGrid2' ||
                         page.type === 'cardGrid3' ||
@@ -477,6 +477,9 @@ export class ConfigManager extends BaseClass {
                 ) {
                     gridItem.config.scrollType = page.scrollType || 'page';
                     gridItem.config.scrollPresentation = page.scrollPresentation || 'classic';
+                    if (pages.isPageMenuConfig(gridItem.config) && gridItem.config.scrollPresentation === 'auto') {
+                        gridItem.config.scrollAutoTiming = ('scrollAutoTiming' in page && page.scrollAutoTiming) || 15;
+                    }
                 }
                 try {
                     if (page.type === 'cardThermo') {

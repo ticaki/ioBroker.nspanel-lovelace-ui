@@ -38,6 +38,7 @@ var import_tools = require("../const/tools");
 var pages = __toESM(require("../types/pages"));
 var import_data_collection_functions = require("./data-collection-functions");
 class PageMenu extends import_Page.Page {
+  autoLoopTimeout;
   maxItems = 4;
   step = 0;
   iconLeft = "";
@@ -120,6 +121,27 @@ class PageMenu extends import_Page.Page {
     }
     this.arrowPageItem = temp[0];
   }
+  nextTick() {
+    this.step++;
+    void this.update();
+  }
+  autoLoop() {
+    if (this.autoLoopTimeout) {
+      this.adapter.clearTimeout(this.autoLoopTimeout);
+    }
+    if (!this.config || this.config.scrollPresentation !== "auto") {
+      return;
+    }
+    if (this.visibility && !this.sleep && !this.unload) {
+      this.nextTick();
+    }
+    this.autoLoopTimeout = this.adapter.setTimeout(
+      () => {
+        this.autoLoop();
+      },
+      (this.config.scrollAutoTiming < 2 ? 3e3 : this.config.scrollAutoTiming * 1e3) || 15e3
+    );
+  }
   /**
    * Build the list of payload strings for the current view.
    *
@@ -165,7 +187,8 @@ class PageMenu extends import_Page.Page {
     for (let i = 0; i < maxItems; i++) {
       result[i] = (_d = result[i]) != null ? _d : "~~~~~";
     }
-    const style = (_e = this.config.scrollPresentation) != null ? _e : "classic";
+    const rawStyle = (_e = this.config.scrollPresentation) != null ? _e : "classic";
+    const style = rawStyle === "auto" ? "classic" : rawStyle;
     if (style === "classic") {
       const requestedScrollType = this.config.scrollType === "half" ? "half" : "page";
       const cardAllowsHalf = pages.isCardMenuHalfPageScrollType(this.config.card);
@@ -270,13 +293,17 @@ class PageMenu extends import_Page.Page {
         }
       }
       this.step = 0;
+      this.autoLoop();
     } else {
+      if (this.autoLoopTimeout) {
+        this.adapter.clearTimeout(this.autoLoopTimeout);
+      }
       this.tempItems = [];
     }
     await super.onVisibilityChange(val);
   }
   goLeft(single = false) {
-    if (this.config.scrollPresentation === "arrow") {
+    if (this.config.scrollPresentation && ["arrow", "auto"].indexOf(this.config.scrollPresentation) !== -1) {
       super.goLeft();
       return;
     }
@@ -321,7 +348,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   goRight(single = false) {
-    if (this.config.scrollPresentation === "arrow") {
+    if (this.config.scrollPresentation && ["arrow", "auto"].indexOf(this.config.scrollPresentation) !== -1) {
       super.goRight();
       return;
     }
@@ -362,7 +389,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   getNavigation() {
-    if (this.config.scrollPresentation === "arrow") {
+    if (this.config.scrollPresentation && ["arrow", "auto"].indexOf(this.config.scrollPresentation) !== -1) {
       return super.getNavigation();
     }
     const total = this.tempItems && this.tempItems.length || this.pageItems && this.pageItems.length || 0;
@@ -414,6 +441,10 @@ class PageMenu extends import_Page.Page {
     if (this.doubleClick) {
       this.adapter.clearTimeout(this.doubleClick);
       this.doubleClick = void 0;
+    }
+    if (this.autoLoopTimeout) {
+      this.adapter.clearTimeout(this.autoLoopTimeout);
+      this.autoLoopTimeout = void 0;
     }
     this.tempItems = [];
     await super.delete();

@@ -35,6 +35,17 @@ export class Dataitem extends BaseClass {
         this.stateDB = db;
         this.parent = parent;
         switch (this.options.type) {
+            case 'const': {
+                if (this.options.constVal === '///timeString') {
+                    this.options = {
+                        type: 'internal',
+                        dp: '///timeString',
+                    };
+                }
+                break;
+            }
+        }
+        switch (this.options.type) {
             case 'const':
                 this.options.constVal = Color.getColorFromDefaultOrReturn(this.options.constVal);
                 this.setTypeFromValue(this.options.constVal);

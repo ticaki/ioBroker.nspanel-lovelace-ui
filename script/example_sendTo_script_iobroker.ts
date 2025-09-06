@@ -696,7 +696,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.10.10';
+const version = '0.10.11';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1091,11 +1091,50 @@ declare namespace ScriptConfig {
 
     export type PageItem = PageBaseItem | PageThermoItem;
 
+    /**
+     * Base configuration for page menus.  
+     * Controls scroll behavior, filtering and presentation mode.
+     */
     type PageMenuBaseConfig = {
+        /**
+         * Defines how many items are scrolled at once.
+         * - `"page"`: Scroll by a full page (all visible items).
+         * - `"half"`: Scroll by half a page (only supported by certain card types).
+         */
         scrollType?: 'page' | 'half';
+
+        /**
+         * Filters which items are shown.
+         * - `"true"`: Show only items whose primary entity resolves to `true`.
+         * - `"false"`: Show only items whose primary entity resolves to `false`.
+         * - `number`: Show only items matching the given numeric filter value.
+         */
         filterType?: 'true' | 'false' | number;
-        scrollPresentation?: 'classic' | 'arrow';
-    };
+    } & (
+        /**
+         * Standard scroll presentations.
+         * - `"classic"`: Windowed paging with optional `"half"`/`"page"` stride.
+         * - `"arrow"`: Fixed number of slots, last slot can show a paging arrow.
+         * Defaults to `"classic"`.
+         */
+        { scrollPresentation?: 'classic' | 'arrow' }
+
+        | {
+            /**
+             * Special mode that behaves like `"classic"`,
+             * including `"half"`/`"page"` support.  
+             * Pages automatically advance after a fixed interval.
+             */
+            scrollPresentation: 'auto';
+
+            /**
+             * Interval (in seconds) to automatically advance to the next page.  
+             * Always required in `"auto"` mode.  
+             * Defaults to `15` seconds if not specified.
+             */
+            scrollAutoTiming: number;
+        }
+    );
 
     export type PageMediaItem = {
         /**

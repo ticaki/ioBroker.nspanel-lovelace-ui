@@ -10,6 +10,7 @@ import type { PageItem } from './pageItem';
 
 export class PageMenu extends Page {
     declare config: pages.PageMenuConfig;
+    protected autoLoopTimeout: ioBroker.Timeout | undefined;
     protected maxItems: number = 4;
     protected step: number = 0;
     protected iconLeft: string = '';
@@ -98,6 +99,28 @@ export class PageMenu extends Page {
         this.arrowPageItem = temp[0];
     }
 
+    protected nextTick(): void {
+        this.step++;
+        void this.update();
+    }
+    protected autoLoop(): void {
+        if (this.autoLoopTimeout) {
+            this.adapter.clearTimeout(this.autoLoopTimeout);
+        }
+        if (!this.config || this.config.scrollPresentation !== 'auto') {
+            return;
+        }
+        if (this.visibility && !this.sleep && !this.unload) {
+            this.nextTick();
+        }
+        this.autoLoopTimeout = this.adapter.setTimeout(
+            () => {
+                this.autoLoop();
+            },
+            (this.config.scrollAutoTiming < 2 ? 3000 : this.config.scrollAutoTiming * 1000) || 15000,
+        );
+    }
+
     /**
      * Build the list of payload strings for the current view.
      *
@@ -155,7 +178,10 @@ export class PageMenu extends Page {
             result[i] = result[i] ?? '~~~~~';
         }
 
-        const style = this.config.scrollPresentation ?? 'classic';
+        // classic paging
+        // normalize presentation: "auto" behaves exactly like "classic"
+        const rawStyle = this.config.scrollPresentation ?? 'classic';
+        const style: 'classic' | 'arrow' = rawStyle === 'auto' ? 'classic' : rawStyle;
 
         // classic paging
         if (style === 'classic') {
@@ -300,14 +326,18 @@ export class PageMenu extends Page {
                 }
             }
             this.step = 0;
+            this.autoLoop();
         } else {
+            if (this.autoLoopTimeout) {
+                this.adapter.clearTimeout(this.autoLoopTimeout);
+            }
             this.tempItems = [];
         }
         await super.onVisibilityChange(val);
     }
 
     goLeft(single: boolean = false): void {
-        if (this.config.scrollPresentation === 'arrow') {
+        if (this.config.scrollPresentation && ['arrow', 'auto'].indexOf(this.config.scrollPresentation) !== -1) {
             super.goLeft();
             return;
         }
@@ -362,7 +392,7 @@ export class PageMenu extends Page {
     }
 
     goRight(single: boolean = false): void {
-        if (this.config.scrollPresentation === 'arrow') {
+        if (this.config.scrollPresentation && ['arrow', 'auto'].indexOf(this.config.scrollPresentation) !== -1) {
             super.goRight();
             return;
         }
@@ -409,7 +439,7 @@ export class PageMenu extends Page {
     }
     protected getNavigation(): string {
         // Arrow-Präsentation nutzt eigene Navigation
-        if (this.config.scrollPresentation === 'arrow') {
+        if (this.config.scrollPresentation && ['arrow', 'auto'].indexOf(this.config.scrollPresentation) !== -1) {
             return super.getNavigation();
         }
 
@@ -473,6 +503,10 @@ export class PageMenu extends Page {
         if (this.doubleClick) {
             this.adapter.clearTimeout(this.doubleClick);
             this.doubleClick = undefined;
+        }
+        if (this.autoLoopTimeout) {
+            this.adapter.clearTimeout(this.autoLoopTimeout);
+            this.autoLoopTimeout = undefined;
         }
         this.tempItems = [];
         await super.delete();
