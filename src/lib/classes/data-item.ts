@@ -56,7 +56,7 @@ export class Dataitem extends BaseClass {
     public get writeable(): boolean {
         return this._writeable;
     }
-    public set writeable(b: boolean) {
+    public set writeable(b: false) {
         this._writeable = b;
     }
     /**

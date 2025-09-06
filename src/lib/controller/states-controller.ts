@@ -509,6 +509,10 @@ export class StatesControler extends BaseClass {
                     try {
                         await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
                     } catch (e: any) {
+                        this.log.error(
+                            `Cannot write state ${item.options.dp} with value ${val}: ${typeof e === 'string' ? e : e.message}`,
+                        );
+                        // prevent further write attempts
                         item.writeable = false;
                         item.common.write = false;
                         throw e;
