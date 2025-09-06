@@ -85,6 +85,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Added new channel role "media" with status display and pageMedia fallback
 - (ticaki) Fixed state evaluation: `getState() === null` no longer interpreted as missing state; boolean states now return `false` instead of `null` if the state exists but has no value.
 - (copilot) Added support for ioBroker MPD-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (ticaki) Startup significantly improved and hangs removed
