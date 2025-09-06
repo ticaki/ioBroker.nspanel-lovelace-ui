@@ -56,6 +56,9 @@ export class Dataitem extends BaseClass {
     public get writeable(): boolean {
         return this._writeable;
     }
+    public set writeable(b: boolean) {
+        this._writeable = b;
+    }
     /**
      * Init and check dp is valid
      *
@@ -94,8 +97,8 @@ export class Dataitem extends BaseClass {
                     await this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
                 }
                 try {
-                    const value = await this.stateDB.getState(this.options.dp);
-                    return value !== null && value !== undefined;
+                    await this.stateDB.getState(this.options.dp);
+                    return true;
                 } catch (e: any) {
                     this.log.error(`Error 1001: ${typeof e === 'string' ? e.replaceAll('Error: ', '') : e}`);
                     return false;
@@ -242,6 +245,19 @@ export class Dataitem extends BaseClass {
         return null;
     }
 
+    /**
+     * Returns the state's value as a string, or `null` if no meaningful value exists.
+     *
+     * Null semantics:
+     * - Returns `null` when the underlying state is missing, or `state.val === null`.
+     * - For `state` / `triggered` with `substring` set, returns `null` if `state` is missing
+     *   or `state.val === null`. (No slicing is attempted in that case.)
+     *
+     * Notes:
+     * - Any non-null value is coerced with `String(...)`.
+     * - This method does NOT distinguish "state exists but empty string" — an empty string
+     *   is a valid (non-null) return value.
+     */
     async getString(): Promise<string | null> {
         const state = await this.getState();
         switch (this.options.type) {
@@ -265,6 +281,18 @@ export class Dataitem extends BaseClass {
         return null;
     }
 
+    /**
+     * Returns the state's value as a number (scaled when configured), or `null` if not numeric.
+     *
+     * Null semantics:
+     * - Returns `null` when the state is missing, or when `state.val` cannot be interpreted
+     *   as a finite number (e.g., undefined, '', non-numeric text).
+     *
+     * Notes:
+     * - Accepts numeric strings ("42", "3.14") and numbers.
+     * - When `options.scale` is present, maps the raw value to 0..100 via Color.scale and truncates.
+     * - Returns 0 as a valid number when the parsed value is zero; only non-parsable values yield `null`.
+     */
     async getNumber(): Promise<number | null> {
         const result = await this.getState();
         if (
@@ -280,9 +308,29 @@ export class Dataitem extends BaseClass {
         }
         return null;
     }
+
+    /**
+     * Returns the state's value as a boolean, or `null` if the datapoint does not exist.
+     *
+     * Boolean mapping:
+     * - String values "ok", "on", "yes", "true", "online" (case-insensitive) => true
+     * - Any other present value uses JS truthiness via `!!state.val`
+     *
+     * Null vs false semantics:
+     * - If `getState()` returns an object, a boolean is always produced (true/false).
+     * - If `getState()` returns null:
+     *   - If the referenced object exists and is of type "state" (via getObjectAsync), returns **false**
+     *     (i.e., "state exists but currently has no value" -> treat as off/false).
+     *   - If the object does not exist or is not a "state", returns **null**
+     *     (i.e., "no such datapoint" -> unknown / not applicable).
+     *
+     * Use cases:
+     * - `false` means the datapoint exists and evaluates to a falsy state.
+     * - `null` means "cannot decide": the datapoint is missing or not a state.
+     */
     async getBoolean(): Promise<boolean | null> {
         const result = await this.getState();
-        if (result && result.val !== null) {
+        if (result) {
             if (typeof result.val === 'string') {
                 switch (result.val.toLowerCase()) {
                     case 'ok':
@@ -294,6 +342,10 @@ export class Dataitem extends BaseClass {
                 }
             }
             return !!result.val;
+        }
+        const o = this.options.dp && (await this.parent.basePanel.statesControler.getObjectAsync(this.options.dp));
+        if (o && o.type === 'state') {
+            return false;
         }
         return null;
     }
@@ -376,6 +428,7 @@ export class Dataitem extends BaseClass {
                     `Write for dp: ${this.options.dp} is invalid! write: ${String(this.options.write)} Error: ${String(e)}`,
                 );
             }
+
             await this.stateDB.setState(this, val, this._writeable);
         }
     }

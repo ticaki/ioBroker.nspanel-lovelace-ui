@@ -1936,10 +1936,7 @@ export class PageItem extends BaseClassTriggerd {
                     this.timeouts.brightnessSlider = this.adapter.setTimeout(
                         async (item, value) => {
                             if (item?.dimmer?.value?.writeable || item?.dimmer?.set?.writeable) {
-                                const dimmer = await tools.getScaledNumber(item.dimmer);
-                                if (dimmer !== null && String(dimmer) != value) {
-                                    await tools.setScaledNumber(item.dimmer, parseInt(value));
-                                }
+                                await tools.setScaledNumber(item.dimmer, parseInt(value));
                             } else {
                                 this.log.warn('Dimmer is not writeable!');
                             }

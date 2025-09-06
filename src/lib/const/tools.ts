@@ -1021,7 +1021,7 @@ export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB
  * - Zeile 2 ggf. auf 12 Zeichen gekürzt, mit "..."
  * - ersetzt ?, _ usw. für bessere Lesbarkeit
  *
- * @param text
+ * @param text {string | string[] | null | undefined} Eingabetext
  */
 export function formatInSelText(text: string | string[] | null | undefined): string {
     if (!text) {
@@ -1110,7 +1110,7 @@ const isPlainObject = (v: unknown): v is Record<string, unknown> =>
 /**
  * Normalize `null` to `undefined` (your merging rules treat them equally).
  *
- * @param v
+ * @param v     Value to normalize
  */
 const nn = <T extends Jsonish>(v: T): Exclude<T, null> | undefined => (v === null ? undefined : v) as any;
 
@@ -1124,7 +1124,7 @@ const nn = <T extends Jsonish>(v: T): Exclude<T, null> | undefined => (v === nul
  * - atomic if `type === 'const'` AND has `constVal`
  * - atomic if `type === 'state' | 'triggered'` AND has `dp` (string)
  *
- * @param o
+ * @param o Value to check
  */
 function isAtomicDataItem(o: unknown): boolean {
     if (!isPlainObject(o)) {
@@ -1156,9 +1156,9 @@ function isAtomicDataItem(o: unknown): boolean {
  * - Arrays: source replaces def
  * - Non-mutating; recursion depth guard
  *
- * @param def
- * @param source
- * @param level
+ * @param def Default/base object
+ * @param source Source object to merge on top
+ * @param level Recursion level (for internal use)
  */
 export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): any {
     if (level > 20) {
@@ -1204,7 +1204,7 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
 /**
  * Safe deep clone for Jsonish (supports RegExp).
  *
- * @param v
+ * @param v Value to clone
  */
 function cloneJson<T extends Jsonish>(v: any): any {
     v = nn(v) as T;

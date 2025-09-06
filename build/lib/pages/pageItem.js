@@ -1683,10 +1683,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             async (item2, value2) => {
               var _a2, _b2, _c2, _d2;
               if (((_b2 = (_a2 = item2 == null ? void 0 : item2.dimmer) == null ? void 0 : _a2.value) == null ? void 0 : _b2.writeable) || ((_d2 = (_c2 = item2 == null ? void 0 : item2.dimmer) == null ? void 0 : _c2.set) == null ? void 0 : _d2.writeable)) {
-                const dimmer = await tools.getScaledNumber(item2.dimmer);
-                if (dimmer !== null && String(dimmer) != value2) {
-                  await tools.setScaledNumber(item2.dimmer, parseInt(value2));
-                }
+                await tools.setScaledNumber(item2.dimmer, parseInt(value2));
               } else {
                 this.log.warn("Dimmer is not writeable!");
               }

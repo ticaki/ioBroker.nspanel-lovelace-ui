@@ -123,7 +123,7 @@ class StatesControler extends import_library.BaseClass {
       return;
     }
     this.triggerDB[id] = {
-      state: { val: null, ack: false, ts: Date.now(), from: "", lc: Date.now() },
+      state: { val: null, ack: false, ts: 0, from: "", lc: 0 },
       to: [from],
       ts: Date.now(),
       subscribed: [false],
@@ -133,27 +133,25 @@ class StatesControler extends import_library.BaseClass {
       internal: false
     };
     try {
-      const state = await this.adapter.getForeignStateAsync(id);
-      if (!state) {
-        delete this.triggerDB[id];
-        return;
-      }
       const obj = await this.getObjectAsync(id);
       if (!obj || obj.type !== "state" || !obj.common) {
         delete this.triggerDB[id];
         throw new Error(`Got invalid object for ${id}`);
       }
+      this.triggerDB[id].common = obj.common;
       if (this.unload) {
         return;
       }
-      this.triggerDB[id].state = state;
-      this.triggerDB[id].common = obj.common;
       await this.adapter.subscribeForeignStatesAsync(id);
-      if (this.stateDB[id] !== void 0) {
-        delete this.stateDB[id];
-      }
       if (this.adapter.config.debugLogStates) {
         this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
+      }
+      const state = await this.adapter.getForeignStateAsync(id);
+      if (state) {
+        this.triggerDB[id].state = state;
+      }
+      if (this.stateDB[id] !== void 0) {
+        delete this.stateDB[id];
       }
     } catch (err) {
       delete this.triggerDB[id];
@@ -270,7 +268,7 @@ class StatesControler extends import_library.BaseClass {
     }
     if (!internal) {
       const state = await this.adapter.getForeignStateAsync(id);
-      if (state) {
+      if (state != null) {
         if (!this.stateDB[id]) {
           const obj = await this.getObjectAsync(id);
           if (!obj || !obj.common || obj.type !== "state") {
@@ -282,6 +280,9 @@ class StatesControler extends import_library.BaseClass {
           this.stateDB[id].ts = Date.now();
         }
         return state;
+      }
+      if (state === null) {
+        return null;
       }
     }
     throw new Error(`State id invalid ${id} no data!`);
@@ -435,7 +436,13 @@ class StatesControler extends import_library.BaseClass {
           val = String(val);
         }
         if (writeable) {
-          await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+          try {
+            await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+          } catch (e) {
+            item.writeable = false;
+            item.common.write = false;
+            throw e;
+          }
         } else {
           this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
         }
@@ -607,24 +614,18 @@ class StatesControler extends import_library.BaseClass {
     return result;
   }
   /**
-   * Retrieves the ID of a state automatically based on the provided parameters.
+   * Retrieves the ID of a state automatically based on the provided options.
    *
-   * @param options
-   * @param dpInit - The initial data point, which can be a string or a regular expression.
-   * @param role - The role of the state, which can be a single StateRole or an array of StateRoles.
-   * @param enums - The enums associated with the state, which can be a single string or an array of strings.
-   * @param regexp - The regular expression to match the state ID.
-   * @param triggered - Whether the state is triggered.
-   * @param writeable - Whether the state is writeable.
-   * @param commonType - The common type of the state.
-   * @param options.dpInit
-   * @param options.role
-   * @param options.enums
-   * @param options.regexp
-   * @param options.triggered
-   * @param options.writeable
-   * @param options.commonType
-   * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
+   * @param options - Configuration for the automatic state lookup.
+   * @param options.dpInit - The initial data point, either a string or a regular expression.
+   * @param options.role - The expected role of the state, either a single StateRole or an array of roles.
+   * @param options.enums - One or more enum IDs that the state should belong to.
+   * @param options.regexp - A regular expression to match the state ID.
+   * @param options.triggered - If true, the returned object will be of type "triggered" instead of "state".
+   * @param options.writeable - If true, only writeable states will be considered.
+   * @param options.commonType - The expected common type of the state, either a single type or an array of types.
+   * @returns A promise that resolves to a `DataItemsOptions` object if a matching state is found,
+   * otherwise `undefined`.
    */
   async getIdbyAuto(options) {
     const { dpInit, role = "", enums = "", regexp, triggered, writeable, commonType = "" } = options;

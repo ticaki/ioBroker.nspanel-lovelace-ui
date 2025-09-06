@@ -148,7 +148,7 @@ export class StatesControler extends BaseClass {
 
         // 4) Platz reservieren (default-Werte), bevor wir I/O machen
         this.triggerDB[id] = {
-            state: { val: null, ack: false, ts: Date.now(), from: '', lc: Date.now() },
+            state: { val: null, ack: false, ts: 0, from: '', lc: 0 },
             to: [from],
             ts: Date.now(),
             subscribed: [false],
@@ -159,35 +159,29 @@ export class StatesControler extends BaseClass {
         };
 
         try {
-            // 5) Fremd-State & -Objekt holen
-            const state = await this.adapter.getForeignStateAsync(id);
-            if (!state) {
-                delete this.triggerDB[id];
-                return;
-            }
-
             const obj = await this.getObjectAsync(id);
             if (!obj || obj.type !== 'state' || !obj.common) {
                 delete this.triggerDB[id];
                 throw new Error(`Got invalid object for ${id}`);
             }
-
+            this.triggerDB[id].common = obj.common;
             if (this.unload) {
                 return;
             }
+            await this.adapter.subscribeForeignStatesAsync(id);
+            if (this.adapter.config.debugLogStates) {
+                this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
+            }
+            // 5) Fremd-State & -Objekt holen
+            const state = await this.adapter.getForeignStateAsync(id);
+            if (state) {
+                this.triggerDB[id].state = state;
+            }
 
             // 6) DB befüllen, abonnieren, evtl. alten stateDB-Eintrag entfernen
-            this.triggerDB[id].state = state;
-            this.triggerDB[id].common = obj.common;
-
-            await this.adapter.subscribeForeignStatesAsync(id);
 
             if (this.stateDB[id] !== undefined) {
                 delete this.stateDB[id];
-            }
-
-            if (this.adapter.config.debugLogStates) {
-                this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
             }
         } catch (err) {
             // Rollback bei Fehlern
@@ -311,7 +305,7 @@ export class StatesControler extends BaseClass {
         }
         if (!internal) {
             const state = await this.adapter.getForeignStateAsync(id);
-            if (state) {
+            if (state != null) {
                 if (!this.stateDB[id]) {
                     const obj = await this.getObjectAsync(id);
                     if (!obj || !obj.common || obj.type !== 'state') {
@@ -323,6 +317,9 @@ export class StatesControler extends BaseClass {
                     this.stateDB[id].ts = Date.now();
                 }
                 return state;
+            }
+            if (state === null) {
+                return null;
             }
         }
         throw new Error(`State id invalid ${id} no data!`);
@@ -509,7 +506,13 @@ export class StatesControler extends BaseClass {
                     val = String(val);
                 }
                 if (writeable) {
-                    await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+                    try {
+                        await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+                    } catch (e: any) {
+                        item.writeable = false;
+                        item.common.write = false;
+                        throw e;
+                    }
                 } else {
                     this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
                 }
@@ -617,7 +620,7 @@ export class StatesControler extends BaseClass {
                               this,
                           )
                         : undefined;
-                if (target[i] !== undefined && !(await target[i].isValidAndInit())) {
+                if (target[i] !== undefined && !(await (target[i] as Dataitem).isValidAndInit())) {
                     target[i] = undefined;
                 }
             }
@@ -715,24 +718,18 @@ export class StatesControler extends BaseClass {
     }
 
     /**
-     * Retrieves the ID of a state automatically based on the provided parameters.
+     * Retrieves the ID of a state automatically based on the provided options.
      *
-     * @param options
-     * @param dpInit - The initial data point, which can be a string or a regular expression.
-     * @param role - The role of the state, which can be a single StateRole or an array of StateRoles.
-     * @param enums - The enums associated with the state, which can be a single string or an array of strings.
-     * @param regexp - The regular expression to match the state ID.
-     * @param triggered - Whether the state is triggered.
-     * @param writeable - Whether the state is writeable.
-     * @param commonType - The common type of the state.
-     * @param options.dpInit
-     * @param options.role
-     * @param options.enums
-     * @param options.regexp
-     * @param options.triggered
-     * @param options.writeable
-     * @param options.commonType
-     * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
+     * @param options - Configuration for the automatic state lookup.
+     * @param options.dpInit - The initial data point, either a string or a regular expression.
+     * @param options.role - The expected role of the state, either a single StateRole or an array of roles.
+     * @param options.enums - One or more enum IDs that the state should belong to.
+     * @param options.regexp - A regular expression to match the state ID.
+     * @param options.triggered - If true, the returned object will be of type "triggered" instead of "state".
+     * @param options.writeable - If true, only writeable states will be considered.
+     * @param options.commonType - The expected common type of the state, either a single type or an array of types.
+     * @returns A promise that resolves to a `DataItemsOptions` object if a matching state is found,
+     * otherwise `undefined`.
      */
     async getIdbyAuto(options: {
         dpInit: string | RegExp;
