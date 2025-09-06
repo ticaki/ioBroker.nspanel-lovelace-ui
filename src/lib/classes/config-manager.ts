@@ -241,8 +241,8 @@ export class ConfigManager extends BaseClass {
             if (page && page.type !== undefined) {
                 if (names.includes(page.uniqueName)) {
                     double = true;
-                    this.log.error(messages[messages.length - 1]);
                     messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
+                    this.log.error(messages[messages.length - 1]);
                 } else {
                     names.push(page.uniqueName);
                 }

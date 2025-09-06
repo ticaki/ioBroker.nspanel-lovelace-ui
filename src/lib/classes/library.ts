@@ -64,7 +64,7 @@ class CustomLog {
     error(log: string, log2: string = ''): void {
         this.#adapter.log.error(log2 ? `[${log}] ${log2}` : `[${this.#prefix}] ${log}`);
         if (this.#adapter.config.testCase) {
-            throw new Error(log2 ? `[${log}] ${log2}` : `[${this.#prefix}] ${log}`);
+            throw new Error(log2 ? `[${log}] ${log2}` : `[${this.#prefix}] No Erros while testing - ${log}`);
         }
     }
     setLogPrefix(text: string): void {

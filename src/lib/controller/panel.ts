@@ -352,7 +352,7 @@ export class Panel extends BaseClass {
             }
         }
         if (scsFound === 0) {
-            this.log.error('no screensaver found! Stop!');
+            this.log.error('No screensaver found! Stop!');
             void this.adapter.controller!.delete();
             throw new Error('no screensaver found! Stop!');
         }
@@ -1254,7 +1254,7 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        this.loopTimeout = this.adapter.setTimeout(() => this.loop, 100);
+        this.loopTimeout = this.adapter.setTimeout(() => this.loop(), 200);
     }
 
     loop = (): void => {

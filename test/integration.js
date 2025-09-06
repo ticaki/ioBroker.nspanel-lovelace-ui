@@ -39,9 +39,8 @@ tests.integration(path.join(__dirname, '..'), {
                     obj.native.mqttUsername = 'test';
                     obj.native.mqttIp = '';
                     obj.native.mqttPort = 1883;
-                    obj.native.mqttTopic = 'test';
                     obj.native.panels = [
-                        { id: 'A0_B7_A5_54_C0_71', name: 'test', topic: 'test/123456', ip:'1.1.1.1' },
+                        { id: 'A0_B7_A5_54_C0_71', name: 'test', topic: 'test/123456', ip:'1.1.1.1', model: 'eu' },
                     ];
 
                     harness.objects.setObject(obj._id, obj)
@@ -83,8 +82,8 @@ tests.integration(path.join(__dirname, '..'), {
                 await harness.states.setState('0_userdata.0.number', 1);
                 await harness.states.setState('0_userdata.0.string', 'test');
                 await harness.startAdapterAndWait();
-                resolve('ok');
-                return;
+                //resolve('ok');
+                
                 await wait(20000);
                 
                 setTimeout(() => {

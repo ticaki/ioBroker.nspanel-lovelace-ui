@@ -10,7 +10,6 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
-import { testCaseConfig } from './lib/config';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
@@ -24,6 +23,7 @@ import type * as pages from './lib/types/pages';
 import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
+import { testScriptConfig } from './lib/const/test';
 //import fs from 'fs';
 axios.defaults.timeout = 15000;
 
@@ -42,6 +42,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     intervalAdminArray: (ioBroker.Interval | undefined)[] = [];
 
     mainConfiguration: panelConfigPartial[] | undefined;
+
+    testCaseConfig: any; // just for testing
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -67,6 +69,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             common: { name: { en: 'Nspanel Instance', de: 'Nspanel Instanze' }, type: 'meta.folder' },
             native: {},
         });
+
         if (this.config.forceTFTVersion) {
             this.log.warn(
                 `⚠️  TFT firmware is pinned to version ${this.config.forceTFTVersion}. Remember: you will always stay on this version until you change it.`,
@@ -294,6 +297,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.mqttUsername,
                 this.config.mqttPassword,
                 './mqtt',
+                this.config.testCase,
             );
             this.config.mqttIp = '127.0.0.1';
         }
@@ -368,7 +372,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     common: { name: 'string', type: 'string' },
                     native: {},
                 });
-                this.config.Testconfig2 = testCaseConfig;
+                await this.onMessage({
+                    _id: Date.now(),
+                    message: testScriptConfig,
+                    command: 'ScriptConfig',
+                    from: 'system.adapter.admin.0',
+                    callback: () => {},
+                } as unknown as ioBroker.Message);
+                await this.delay(3000);
+                this.config.Testconfig2 = this.testCaseConfig;
                 const test = new MQTT.MQTTClientClass(
                     this,
                     this.config.mqttIp,
@@ -627,6 +639,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'ScriptConfig': {
+                    //this.log.debug(`ScriptConfig ${JSON.stringify(obj.message)}`);
                     let result = ['something went wrong'];
                     if (obj.message) {
                         const manager = new ConfigManager(this);
@@ -646,6 +659,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                             }
                         } else {
                             r = await manager.setScriptConfig(obj.message);
+                        }
+                        //this.log.debug(`ScriptConfig result ${JSON.stringify(r.panelConfig)}`);
+                        if (this.config.testCase) {
+                            this.testCaseConfig = [r.panelConfig];
                         }
                         await manager.delete();
                         result = r.messages;

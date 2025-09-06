@@ -240,7 +240,7 @@ class MQTTServerClass extends import_library.BaseClass {
   callbacks = {};
   ready = false;
   test = void 0;
-  static async createMQTTServer(adapter, port, username, password, path) {
+  static async createMQTTServer(adapter, port, username, password, path, testCase = false) {
     let keys = {};
     if (!await adapter.fileExistsAsync(adapter.namespace, "keys/private-key.pem") || !await adapter.fileExistsAsync(adapter.namespace, "keys/public-key.pem") || !await adapter.fileExistsAsync(adapter.namespace, "keys/certificate.pem")) {
       adapter.log.info(`Create new keys for MQTT server.`);
@@ -272,12 +272,14 @@ class MQTTServerClass extends import_library.BaseClass {
         certPem: (await adapter.readFileAsync(adapter.namespace, "keys/certificate.pem")).file.toString()
       };
     }
-    return new MQTTServerClass(adapter, port, username, password, path, keys);
+    return new MQTTServerClass(adapter, port, username, password, path, keys, testCase);
   }
-  constructor(adapter, port, username, password, path, keyPair) {
+  constructor(adapter, port, username, password, path, keyPair, testCase = false) {
     super(adapter, "mqttServer");
     const persistence = (0, import_aedes_persistence_level.default)(new import_level.Level(path));
     this.aedes = new import_aedes.default({ persistence });
+    if (testCase) {
+    }
     this.server = factory.createServer(this.aedes, {
       tls: {
         key: Buffer.from(keyPair.privateKey),

@@ -234,8 +234,8 @@ class ConfigManager extends import_library.BaseClass {
       if (page && page.type !== void 0) {
         if (names.includes(page.uniqueName)) {
           double = true;
-          this.log.error(messages[messages.length - 1]);
           messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
+          this.log.error(messages[messages.length - 1]);
         } else {
           names.push(page.uniqueName);
         }

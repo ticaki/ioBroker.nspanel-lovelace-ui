@@ -331,7 +331,7 @@ class Panel extends import_library.BaseClass {
       }
     }
     if (scsFound === 0) {
-      this.log.error("no screensaver found! Stop!");
+      this.log.error("No screensaver found! Stop!");
       void this.adapter.controller.delete();
       throw new Error("no screensaver found! Stop!");
     }
@@ -1130,7 +1130,7 @@ class Panel extends import_library.BaseClass {
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
-    this.loopTimeout = this.adapter.setTimeout(() => this.loop, 100);
+    this.loopTimeout = this.adapter.setTimeout(() => this.loop(), 200);
   }
   loop = () => {
     this.pages = this.pages.filter((a) => a && !a.unload);

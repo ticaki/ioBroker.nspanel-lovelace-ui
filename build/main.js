@@ -25,7 +25,6 @@ var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/classes/library");
 var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
-var import_config = require("./lib/config");
 var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
@@ -35,6 +34,7 @@ var import_axios = __toESM(require("axios"));
 var import_url = require("url");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
+var import_test = require("./lib/const/test");
 import_axios.default.defaults.timeout = 15e3;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
@@ -49,6 +49,8 @@ class NspanelLovelaceUi extends utils.Adapter {
   timeoutAdminArray = [];
   intervalAdminArray = [];
   mainConfiguration;
+  testCaseConfig;
+  // just for testing
   constructor(options = {}) {
     super({
       ...options,
@@ -253,7 +255,8 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.config.mqttPort,
         this.config.mqttUsername,
         this.config.mqttPassword,
-        "./mqtt"
+        "./mqtt",
+        this.config.testCase
       );
       this.config.mqttIp = "127.0.0.1";
     }
@@ -312,7 +315,16 @@ class NspanelLovelaceUi extends utils.Adapter {
           common: { name: "string", type: "string" },
           native: {}
         });
-        this.config.Testconfig2 = import_config.testCaseConfig;
+        await this.onMessage({
+          _id: Date.now(),
+          message: import_test.testScriptConfig,
+          command: "ScriptConfig",
+          from: "system.adapter.admin.0",
+          callback: () => {
+          }
+        });
+        await this.delay(3e3);
+        this.config.Testconfig2 = this.testCaseConfig;
         const test = new MQTT.MQTTClientClass(
           this,
           this.config.mqttIp,
@@ -537,6 +549,9 @@ class NspanelLovelaceUi extends utils.Adapter {
               }
             } else {
               r = await manager.setScriptConfig(obj.message);
+            }
+            if (this.config.testCase) {
+              this.testCaseConfig = [r.panelConfig];
             }
             await manager.delete();
             result = r.messages;

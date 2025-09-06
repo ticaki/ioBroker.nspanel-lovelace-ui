@@ -492,9 +492,9 @@ export class PageMedia extends PageMenu {
                 break;
             }
             case 'media-shuffle': {
-                if (items.data.shuffle?.set?.common.write) {
+                if (items.data.shuffle?.set?.writeable) {
                     await items.data.shuffle.set.setStateFlip();
-                } else if (items.data.shuffle?.value?.common.write) {
+                } else if (items.data.shuffle?.value?.writeable) {
                     await items.data.shuffle.value.setStateFlip();
                 } else {
                     this.log.error(`Missing shuffle controller. Report to dev`);
@@ -549,7 +549,7 @@ export class PageMedia extends PageMenu {
                 if (event.id === `${this.name}-logo`) {
                     const onoff = await this.isPlaying();
                     if (items.data.mediaState) {
-                        if (items.data.mediaState.common.write === true) {
+                        if (items.data.mediaState.writeable) {
                             await items.data.mediaState.setState(!onoff);
                             break;
                         }

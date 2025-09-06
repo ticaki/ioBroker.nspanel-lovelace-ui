@@ -267,6 +267,7 @@ export class MQTTServerClass extends BaseClass {
         username: string,
         password: string,
         path: string,
+        testCase: boolean = false,
     ): Promise<MQTTServerClass> {
         let keys: Record<string, string> = {};
 
@@ -316,7 +317,7 @@ export class MQTTServerClass extends BaseClass {
                 certPem: (await adapter.readFileAsync(adapter.namespace, 'keys/certificate.pem')).file.toString(),
             };
         }
-        return new MQTTServerClass(adapter, port, username, password, path, keys);
+        return new MQTTServerClass(adapter, port, username, password, path, keys, testCase);
     }
 
     constructor(
@@ -326,11 +327,15 @@ export class MQTTServerClass extends BaseClass {
         password: string,
         path: string,
         keyPair: Record<string, string>,
+        testCase: boolean = false,
     ) {
         super(adapter, 'mqttServer');
         const persistence = aedesPersistencelevel(new Level(path));
 
         this.aedes = new Aedes({ persistence: persistence });
+        if (testCase) {
+            //nothing
+        }
         this.server = factory.createServer(this.aedes, {
             tls: {
                 key: Buffer.from(keyPair.privateKey),

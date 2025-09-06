@@ -83,7 +83,7 @@ class CustomLog {
   error(log, log2 = "") {
     __privateGet(this, _adapter).log.error(log2 ? `[${log}] ${log2}` : `[${__privateGet(this, _prefix)}] ${log}`);
     if (__privateGet(this, _adapter).config.testCase) {
-      throw new Error(log2 ? `[${log}] ${log2}` : `[${__privateGet(this, _prefix)}] ${log}`);
+      throw new Error(log2 ? `[${log}] ${log2}` : `[${__privateGet(this, _prefix)}] No Erros while testing - ${log}`);
     }
   }
   setLogPrefix(text) {
