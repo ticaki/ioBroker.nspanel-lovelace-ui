@@ -1219,7 +1219,7 @@ class ConfigManager extends import_library.BaseClass {
       } else {
         t = actual == null ? void 0 : actual.type;
       }
-      valueDisplayRole = t === "string" || t === "number" ? "textNotIcon" : "iconNotText";
+      valueDisplayRole = t === "string" || t === "number" || t === "mixed" ? "textNotIcon" : "iconNotText";
     }
     this.log.debug(
       `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`
@@ -2092,7 +2092,7 @@ class ConfigManager extends import_library.BaseClass {
           } else {
             t = actual == null ? void 0 : actual.type;
           }
-          valueDisplayRole = t === "string" || t === "number" ? "textNotIcon" : "iconNotText";
+          valueDisplayRole = t === "string" || t === "number" || t === "mixed" ? "textNotIcon" : "iconNotText";
         }
         this.log.debug(
           `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`

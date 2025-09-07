@@ -315,7 +315,10 @@ class Page extends import_baseClassPage.BaseClassPage {
       return;
     }
     let item;
-    if (isNaN(Number(id))) {
+    if (isNaN(Number(id)) && typeof id === "string") {
+      if (id === "media" && this.card === "cardMedia") {
+        return;
+      }
       if (!(id in this)) {
         this.log.error(`onPopupRequest: id ${id} not found in Page!`);
         return;

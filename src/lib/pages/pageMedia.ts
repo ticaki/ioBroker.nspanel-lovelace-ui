@@ -565,14 +565,7 @@ export class PageMedia extends PageMenu {
             case 'mode-insel': {
                 break;
             }
-            case 'media-OnOff': {
-                if (items.data.stop) {
-                    if (await this.getOnOffState()) {
-                        await items.data.stop.setStateTrue();
-                    }
-                }
-                break;
-            }
+            case 'media-OnOff':
             case 'button': {
                 if (event.id === `${this.name}-logo`) {
                     const onoff = await this.isPlaying();

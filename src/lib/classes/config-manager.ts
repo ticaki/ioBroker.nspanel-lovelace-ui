@@ -1417,7 +1417,7 @@ export class ConfigManager extends BaseClass {
                 t = actual?.type; // falls du den Typ schon trägst
             }
 
-            valueDisplayRole = t === 'string' || t === 'number' ? 'textNotIcon' : 'iconNotText';
+            valueDisplayRole = t === 'string' || t === 'number' || t === 'mixed' ? 'textNotIcon' : 'iconNotText';
         }
         this.log.debug(
             `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`,
@@ -2383,7 +2383,8 @@ export class ConfigManager extends BaseClass {
                         t = actual?.type; // falls du den Typ schon trägst
                     }
 
-                    valueDisplayRole = t === 'string' || t === 'number' ? 'textNotIcon' : 'iconNotText';
+                    valueDisplayRole =
+                        t === 'string' || t === 'number' || t === 'mixed' ? 'textNotIcon' : 'iconNotText';
                 }
                 this.log.debug(
                     `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`,
