@@ -209,7 +209,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
     } else if (this.config.role === "alexa-playlist" && this.dataItems && this.dataItems.type === "input_sel" && this.parent.card === "cardMedia") {
       const states = await this.adapter.getForeignStatesAsync(
-        `${this.parent.currentItems ? this.parent.currentItems.ident : this.parent.items[0].ident}.Music-Provider.*`
+        `${this.parent.currentItem ? this.parent.currentItem.ident : this.parent.items[0].ident}.Music-Provider.*`
       );
       if (states) {
         this.tempData = Object.keys(states);
@@ -514,7 +514,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           message.type = "input_sel";
           let value = (_S = await tools.getValueEntryNumber(item.entityInSel)) != null ? _S : await tools.getValueEntryBoolean(item.entityInSel);
           if (entry.role === "alexa-speaker") {
-            value = this.parent.currentItems === this.parent.items[0];
+            value = this.parent.currentItem === this.parent.items[0];
           }
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
           message.iconColor = (_T = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _T : import_Color.Color.HMIOn;
@@ -1153,7 +1153,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         }
         let value = (_F = await tools.getValueEntryNumber(item.entityInSel)) != null ? _F : await tools.getValueEntryBoolean(item.entityInSel);
         if (entry.role === "alexa-speaker") {
-          value = this.parent.currentItems === this.parent.items[0];
+          value = this.parent.currentItem === this.parent.items[0];
         }
         message.textColor = (_G = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _G : import_Color.Color.HMIOn;
         message.currentState = mode === "popupThermo" ? this.library.getTranslation((_H = item.headline && await item.headline.getString()) != null ? _H : "") : "entity2" in item ? (_I = await tools.getValueEntryString(item.entity2)) != null ? _I : "" : "";
@@ -1641,18 +1641,30 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             await this.parent.currentPanel.navigation.setTargetPageByName(value2);
             break;
           }
-          value2 = (_h = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _h : null;
-          if (value2 !== null && item.entity1 && item.entity1.set) {
+          if (item.entity1 && item.entity1.set && item.entity1.set.writeable) {
             await item.entity1.set.setStateFlip();
-          } else if ((_j = (_i = item.entity1) == null ? void 0 : _i.value) == null ? void 0 : _j.writeable) {
-            await item.entity1.value.setStateFlip();
+            break;
           }
-          value2 = (_k = item.setValue1 && await item.setValue1.getBoolean()) != null ? _k : null;
-          if (value2 !== null && item.setValue1) {
+          if (item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
+            value2 = (_i = item.entity1 && await ((_h = item.entity1.value) == null ? void 0 : _h.getBoolean())) != null ? _i : false;
+            if (value2) {
+              await item.setFalse.setStateTrue();
+            } else {
+              await item.setTrue.setStateTrue();
+            }
+            break;
+          }
+          if (item.setValue1 && item.setValue1.writeable) {
             await item.setValue1.setStateFlip();
+            break;
           }
-          if (item.setValue2) {
+          if (item.setValue2 && item.setValue2.writeable) {
             await item.setValue2.setStateTrue();
+            break;
+          }
+          if ((_k = (_j = item.entity1) == null ? void 0 : _j.value) == null ? void 0 : _k.writeable) {
+            await item.entity1.value.setStateFlip();
+            break;
           }
         } else if (entry.type === "light" || entry.type === "light2") {
           const item = entry.data;
@@ -2272,9 +2284,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
         const index = ((_a = sList.states) == null ? void 0 : _a[v2]) || -1;
-        if (((_b = this.parent.currentItems) == null ? void 0 : _b.ident) && await this.parent.isPlaying()) {
+        if (((_b = this.parent.currentItem) == null ? void 0 : _b.ident) && await this.parent.isPlaying()) {
           await this.adapter.setForeignStateAsync(
-            `${this.parent.currentItems.ident}.Commands.textCommand`,
+            `${this.parent.currentItem.ident}.Commands.textCommand`,
             `Schiebe Musik auf ${sList.list[v2]}`
           );
         }
@@ -2445,7 +2457,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             list.list.push(this.tempData[a].name);
             list.states.push(a);
           }
-          const dp = ((_a = this.parent.currentItems) == null ? void 0 : _a.ident) || ((_b = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _b.options.dp) || "";
+          const dp = ((_a = this.parent.currentItem) == null ? void 0 : _a.ident) || ((_b = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _b.options.dp) || "";
           const index = this.tempData.findIndex((a) => dp.includes(a.id));
           if (index !== -1 && !list.value) {
             list.value = this.tempData[index].name;

@@ -82,7 +82,7 @@ export class Page extends BaseClassPage {
                         : options.dpInit;
 
                 if (options.dpInit && typeof options.dpInit === 'string') {
-                    const reg = getRegExp(options.dpInit);
+                    const reg = getRegExp(options.dpInit, { startsWith: true });
                     if (reg) {
                         options.dpInit = reg;
                     }
@@ -104,9 +104,33 @@ export class Page extends BaseClassPage {
                 if (options) {
                     options.dpInit = dpInit;
                 }
-                this.pageItemConfig[a] = options;
+                this.pageItemConfig[a] = await this.initPageItems(options);
             }
         }
+    }
+
+    async initPageItems(item: PageItemDataItemsOptions | undefined): Promise<PageItemDataItemsOptions | undefined> {
+        let options = item;
+        if (options === undefined) {
+            return undefined;
+        }
+        const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
+        const enums = this.enums ? this.enums : options.enums;
+
+        options.data =
+            dpInit || enums
+                ? await this.basePanel.statesControler.getDataItemsFromAuto(
+                      dpInit,
+                      options.data,
+                      'appendix' in options ? options.appendix : undefined,
+                      this.enums ? this.enums : options.enums,
+                  )
+                : options.data;
+        options = JSON.parse(JSON.stringify(options));
+        if (options) {
+            options.dpInit = dpInit;
+        }
+        return options;
     }
 
     async getItemFromTemplate(
@@ -242,17 +266,21 @@ export class Page extends BaseClassPage {
     }
 
     async createPageItems(
-        pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined,
+        pageItemsConfig: PageItemDataItemsOptions | (PageItemDataItemsOptions | undefined)[] | undefined,
+        ident: string = '',
     ): Promise<(PageItem | undefined)[] | undefined> {
         const result = [];
         if (pageItemsConfig) {
+            if (!Array.isArray(pageItemsConfig)) {
+                pageItemsConfig = [pageItemsConfig];
+            }
             for (let a = 0; a < pageItemsConfig.length; a++) {
                 const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
-                    name: 'PI',
+                    name: ident ? ident : 'PI',
                     adapter: this.adapter,
                     panel: this.basePanel,
                     card: 'cardItemSpecial',
-                    id: `${this.id}?${a}`,
+                    id: `${this.id}?${ident ? ident : a}`,
                     parent: this,
                 };
                 result[a] = await PageItem.getPageItem(config, pageItemsConfig[a]);
@@ -317,14 +345,28 @@ export class Page extends BaseClassPage {
         value: string | undefined,
         _event: IncomingEvent | null = null,
     ): Promise<void> {
-        if (!this.pageItems || id == '' || isNaN(id as number)) {
+        if (!this.pageItems || id == '') {
             this.log.debug(
-                `onPopupRequest: No pageItems or id or nan this is only a warning if u used a pageitem except: 'arrow': ${id}`,
+                `onPopupRequest: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`,
             );
             return;
         }
-        const i = typeof id === 'number' ? id : parseInt(id);
-        const item = this.pageItems[i];
+        let item: PageItem | undefined;
+        if (isNaN(Number(id))) {
+            if (!(id in this)) {
+                this.log.error(`onPopupRequest: id ${id} not found in Page!`);
+                return;
+            }
+            const temp = (this as any)[id];
+            if (!(temp instanceof PageItem)) {
+                this.log.error(`onPopupRequest: id ${id} is not a PageItem!`);
+                return;
+            }
+            item = temp;
+        } else {
+            const i = typeof id === 'number' ? id : parseInt(id);
+            item = this.pageItems[i];
+        }
         if (!item) {
             return;
         }

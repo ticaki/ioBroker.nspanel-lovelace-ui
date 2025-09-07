@@ -246,5 +246,6 @@
     "tropical": "Tropical",
     "sunset": "Sunset",
     "technical": "Technical",
-    "trackList": "Track list"
+    "trackList": "Track list",
+    "media.seek": "Playback position"
 }

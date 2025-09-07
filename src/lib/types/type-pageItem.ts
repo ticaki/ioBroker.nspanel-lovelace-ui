@@ -377,6 +377,13 @@ export type PageItemNumberDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemNumber, dataItem.Dataitem | undefined>;
 };
 
+export function isPageItemDataItem(f: any): f is PageItemDataItems {
+    if (f && typeof f === 'object' && 'type' in f && 'data' in f) {
+        return true;
+    }
+    return false;
+}
+
 export type PageItemButton = Pick<
     PageItemBase,
     | 'filter'
@@ -395,6 +402,8 @@ export type PageItemButton = Pick<
     | 'popup'
     | 'enabled'
     | 'additionalId'
+    | 'setTrue'
+    | 'setFalse'
 >;
 export type PageItemButtonDataItemsOptions = {
     type: 'button' | 'switch';
@@ -625,6 +634,8 @@ export type PageItemBase = {
     filter?: number; // filter for PageMenu
     enabled?: boolean;
     additionalId?: string; // to differ between multiple same entities
+    setTrue: boolean; // if use with entity1 if entity1 is false set setTrue to true
+    setFalse: boolean; // if use with entity1 if entity1 is true set setFalse to true
 };
 
 export type PageTypeUnionTemplate = {

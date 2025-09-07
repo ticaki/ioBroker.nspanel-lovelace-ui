@@ -1008,17 +1008,35 @@ function setTriggeredToState(theObject, exclude) {
     }
   }
 }
-function getRegExp(s) {
-  if (!s.startsWith("/")) {
+function getRegExp(input, options) {
+  if (!input) {
     return null;
   }
-  const i = s.lastIndexOf("/");
-  const reg = s.slice(1, i);
-  const arg = s.slice(i + 1);
-  if (!reg) {
-    return null;
+  if (input.startsWith("/") && input.lastIndexOf("/") > 0 && input.endsWith("/")) {
+    const last = input.lastIndexOf("/");
+    const pattern2 = input.slice(1, last);
+    const flags = input.slice(last + 1);
+    return new RegExp(pattern2, flags || void 0);
   }
-  return new RegExp(reg, arg ? arg : void 0);
+  if (input.startsWith("/")) {
+    console.warn(`getRegExp: string starts with '/' but not closed -> treating as literal string.`);
+    input = input.slice(1);
+  }
+  let pattern = escapeRegex(input);
+  if (!(options == null ? void 0 : options.startsWith)) {
+    pattern = `.+?${pattern}`;
+  } else {
+    pattern = `^${pattern}`;
+  }
+  if (!(options == null ? void 0 : options.endsWith)) {
+    pattern = `${pattern}.+?`;
+  } else {
+    pattern = `${pattern}$`;
+  }
+  return new RegExp(pattern);
+}
+function escapeRegex(s) {
+  return s.replace(/[\\^$.*+?()[\]{}|/]/g, "\\$&");
 }
 function insertLinebreak(text, lineLength) {
   if (lineLength <= 0 || !text) {

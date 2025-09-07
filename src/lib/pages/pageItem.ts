@@ -231,7 +231,7 @@ export class PageItem extends BaseClassTriggerd {
             this.parent.card === 'cardMedia'
         ) {
             const states = await this.adapter.getForeignStatesAsync(
-                `${(this.parent as PageMedia).currentItems ? (this.parent as PageMedia).currentItems!.ident : (this.parent as PageMedia).items[0].ident}.Music-Provider.*`,
+                `${(this.parent as PageMedia).currentItem ? (this.parent as PageMedia).currentItem!.ident : (this.parent as PageMedia).items[0].ident}.Music-Provider.*`,
             );
             if (states) {
                 this.tempData = Object.keys(states);
@@ -624,7 +624,7 @@ export class PageItem extends BaseClassTriggerd {
                         (await tools.getValueEntryNumber(item.entityInSel)) ??
                         (await tools.getValueEntryBoolean(item.entityInSel));
                     if (entry.role === 'alexa-speaker') {
-                        value = (this.parent as PageMedia).currentItems === (this.parent as PageMedia).items[0];
+                        value = (this.parent as PageMedia).currentItem === (this.parent as PageMedia).items[0];
                     }
                     message.icon = await tools.getIconEntryValue(item.icon, !!(value ?? true), 'gesture-tap-button');
 
@@ -1329,7 +1329,7 @@ export class PageItem extends BaseClassTriggerd {
                     (await tools.getValueEntryNumber(item.entityInSel)) ??
                     (await tools.getValueEntryBoolean(item.entityInSel));
                 if (entry.role === 'alexa-speaker') {
-                    value = (this.parent as PageMedia).currentItems === (this.parent as PageMedia).items[0];
+                    value = (this.parent as PageMedia).currentItem === (this.parent as PageMedia).items[0];
                 }
                 message.textColor =
                     (await tools.getIconEntryColor(item.icon, !!(value ?? true), Color.HMIOff)) ?? Color.HMIOn;
@@ -1895,18 +1895,32 @@ export class PageItem extends BaseClassTriggerd {
                         await this.parent.currentPanel.navigation.setTargetPageByName(value);
                         break;
                     }
-                    value = (item.entity1 && item.entity1.set && (await item.entity1.set.getBoolean())) ?? null;
-                    if (value !== null && item.entity1 && item.entity1.set) {
+
+                    if (item.entity1 && item.entity1.set && item.entity1.set.writeable) {
                         await item.entity1.set.setStateFlip();
-                    } else if (item.entity1?.value?.writeable) {
-                        await item.entity1.value.setStateFlip();
+                        break;
                     }
-                    value = (item.setValue1 && (await item.setValue1.getBoolean())) ?? null;
-                    if (value !== null && item.setValue1) {
+                    if (item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
+                        value = (item.entity1 && (await item.entity1.value?.getBoolean())) ?? false;
+                        if (value) {
+                            await item.setFalse.setStateTrue();
+                        } else {
+                            await item.setTrue.setStateTrue();
+                        }
+                        break;
+                    }
+
+                    if (item.setValue1 && item.setValue1.writeable) {
                         await item.setValue1.setStateFlip();
+                        break;
                     }
-                    if (item.setValue2) {
+                    if (item.setValue2 && item.setValue2.writeable) {
                         await item.setValue2.setStateTrue();
+                        break;
+                    }
+                    if (item.entity1?.value?.writeable) {
+                        await item.entity1.value.setStateFlip();
+                        break;
                     }
                 } else if (entry.type === 'light' || entry.type === 'light2') {
                     const item = entry.data;
@@ -2591,9 +2605,9 @@ export class PageItem extends BaseClassTriggerd {
             ) {
                 const v = parseInt(value);
                 const index = sList.states?.[v] || -1;
-                if ((this.parent as PageMedia).currentItems?.ident && (await (this.parent as PageMedia).isPlaying())) {
+                if ((this.parent as PageMedia).currentItem?.ident && (await (this.parent as PageMedia).isPlaying())) {
                     await this.adapter.setForeignStateAsync(
-                        `${(this.parent as PageMedia).currentItems!.ident}.Commands.textCommand`,
+                        `${(this.parent as PageMedia).currentItem!.ident}.Commands.textCommand`,
                         `Schiebe Musik auf ${sList.list[v]}`,
                     );
                 }
@@ -2794,7 +2808,7 @@ export class PageItem extends BaseClassTriggerd {
                         list.list.push(this.tempData[a].name);
                         list.states.push(a);
                     }
-                    const dp = (this.parent as PageMedia).currentItems?.ident || entityInSel?.value?.options.dp || '';
+                    const dp = (this.parent as PageMedia).currentItem?.ident || entityInSel?.value?.options.dp || '';
                     const index = this.tempData.findIndex((a: any) => dp.includes(a.id));
                     if (index !== -1 && !list.value) {
                         list.value = this.tempData[index].name;

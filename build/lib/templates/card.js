@@ -250,17 +250,6 @@ const cardTemplates = {
           type: "state",
           role: "button.prev",
           dp: ""
-        },
-        logo: {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
-          list: void 0,
-          action: "cross"
         }
       }
     },
@@ -696,17 +685,6 @@ const cardTemplates = {
           type: "state",
           role: "button",
           dp: ".player.skipMinus"
-        },
-        logo: {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
-          list: void 0,
-          action: "cross"
         }
       }
     },

@@ -6899,9 +6899,9 @@ export class Icons {
         ['zodiac-scorpio', ''],
         ['zodiac-taurus', ''],
         ['zodiac-virgo', ''],
-        ['logo-alexa', ''],
-        ['logo-mpd', ''],
-        ['logo-spotify', ''],
+        ['logo-alexa', 'logo-alexa'],
+        ['logo-mpd', 'logo-mpd'],
+        ['logo-spotify', 'logo-spotify'],
     ]);
 
     static GetIcon(ma_name: string): string {
@@ -6915,6 +6915,7 @@ export class Icons {
         if (Icons.iconMap.has(val)) {
             return Icons.iconMap.get(val)!;
         }
+
         if (Icons.adapter) {
             Icons.adapter.log.warn(`${val} is not a icon!`);
         }

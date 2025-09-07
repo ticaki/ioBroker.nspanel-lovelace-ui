@@ -54,13 +54,13 @@ const PageMediaMessageDefault = {
   iconplaypause: "",
   onoffbuttonColor: "",
   shuffle_icon: "",
-  logo: "",
+  logo: "~~~~~",
   options: ["", "", "", "", ""]
 };
 class PageMedia extends import_pageMenu.PageMenu {
   config;
   items = [];
-  currentItems;
+  currentItem;
   step = 0;
   headlinePos = 0;
   titelPos = 0;
@@ -68,6 +68,10 @@ class PageMedia extends import_pageMenu.PageMenu {
   originalName = "";
   playerName = "";
   currentPlayer;
+  get logo() {
+    var _a;
+    return (_a = this.currentItem) == null ? void 0 : _a.logoItem;
+  }
   constructor(config, options) {
     var _a;
     super(config, options);
@@ -88,26 +92,48 @@ class PageMedia extends import_pageMenu.PageMenu {
     await super.init();
   }
   async createMainItems(c, enums, dpInit) {
+    var _a;
     const config = structuredClone(c);
     const tempConfig = enums || dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(dpInit, config, void 0, enums) : config;
-    const tempItem = await this.basePanel.statesControler.createDataItems(
-      tempConfig,
+    const tempItems = await this.basePanel.statesControler.createDataItems(
+      tempConfig == null ? void 0 : tempConfig.data,
       this
     );
-    if (tempItem) {
-      tempItem.card = "cardMedia";
-    }
+    const logo = await this.initPageItems(config.logo);
     return {
-      ...tempItem,
-      dpInit: typeof dpInit === "string" ? dpInit : dpInit.toString()
+      card: "cardMedia",
+      ident: (_a = config.ident) != null ? _a : "",
+      logo,
+      logoItem: void 0,
+      dpInit,
+      data: tempItems
     };
   }
   async onVisibilityChange(val) {
-    await super.onVisibilityChange(val);
     if (val) {
+      let index = this.items.findIndex((i) => i.ident === this.currentPlayer);
+      index = index === -1 ? 0 : index;
+      if (index === 0) {
+        this.playerName = "";
+      }
+      this.currentItem = this.items[index];
+      if (this.currentItem && this.currentItem.logo) {
+        if (!this.currentItem.logoItem) {
+          const logoItems = await this.createPageItems(this.currentItem.logo, "logo");
+          this.currentItem.logoItem = logoItems && logoItems.length > 0 ? logoItems[0] : void 0;
+        }
+      }
       this.headlinePos = 0;
       this.titelPos = 0;
+    } else {
+      for (const item of this.items) {
+        if (item.logoItem) {
+          await item.logoItem.delete();
+          item.logoItem = void 0;
+        }
+      }
     }
+    await super.onVisibilityChange(val);
   }
   async updateCurrentPlayer(dp, name) {
     var _a;
@@ -115,6 +141,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       return;
     }
     let index = this.items.findIndex((i) => i.ident === dp);
+    let newOne = false;
     if (index === -1) {
       if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
         const reg = tools.getRegExp(`/^${dp.split(".").join("\\.")}/`) || dp;
@@ -122,6 +149,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         index = this.items.length - 1;
         this.items[index].ident = dp;
         await this.controller.statesControler.activateTrigger(this);
+        newOne = true;
       }
     }
     if (index === 0) {
@@ -129,12 +157,20 @@ class PageMedia extends import_pageMenu.PageMenu {
     } else {
       this.playerName = name;
     }
-    this.currentItems = this.items[index];
+    this.currentItem = this.items[index];
+    if (newOne) {
+      if (this.currentItem && this.currentItem.logo) {
+        if (!this.currentItem.logoItem) {
+          const logoItems = await this.createPageItems(this.currentItem.logo, "logo");
+          this.currentItem.logoItem = logoItems && logoItems.length > 0 ? logoItems[0] : void 0;
+        }
+      }
+    }
     this.currentPlayer = dp;
     await this.update();
   }
   async update() {
-    var _a, _b, _c;
+    var _a, _b;
     if (!this.visibility) {
       return;
     }
@@ -143,8 +179,8 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (index === 0) {
       this.playerName = "";
     }
-    this.currentItems = this.items[index];
-    const item = this.currentItems;
+    this.currentItem = this.items[index];
+    const item = this.currentItem;
     if (!item) {
       return;
     }
@@ -161,8 +197,8 @@ class PageMedia extends import_pageMenu.PageMenu {
       let headline = v != null ? v : "";
       if (!headline) {
         let suffix = title;
-        if (!suffix && this.currentItems.ident) {
-          const first = this.currentItems.ident.split(".")[0];
+        if (!suffix && this.currentItem.ident) {
+          const first = this.currentItem.ident.split(".")[0];
           switch (first) {
             case "alexa2":
               suffix = "Alexa";
@@ -312,15 +348,8 @@ class PageMedia extends import_pageMenu.PageMenu {
       const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), import_Color.Color.White);
       message.onoffbuttonColor = v !== null ? v : "disable";
     }
-    if (item.data.logo) {
-      message.logo = tools.getPayload(
-        "number",
-        `${this.name}-logo`,
-        item.data.logo.icon && "true" in item.data.logo.icon && item.data.logo.icon.true ? (_c = await item.data.logo.icon.true.getString()) != null ? _c : "" : "",
-        "4",
-        "5",
-        "6"
-      );
+    if (item.logoItem) {
+      message.logo = tools.getPayload(await item.logoItem.getPageItemPayload());
     }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
@@ -334,10 +363,10 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.sendToPanel(this.getMessage(msg), false);
   }
   async getMediaState() {
-    if (!this.currentItems) {
+    if (!this.currentItem) {
       return null;
     }
-    const item = this.currentItems.data.mediaState;
+    const item = this.currentItem.data.mediaState;
     if (item) {
       const v = await item.getString();
       if (v !== null) {
@@ -351,10 +380,10 @@ class PageMedia extends import_pageMenu.PageMenu {
     return null;
   }
   async getOnOffState() {
-    if (!this.currentItems) {
+    if (!this.currentItem) {
       return null;
     }
-    const item = this.currentItems.data.mediaState;
+    const item = this.currentItem.data.mediaState;
     if (item) {
       const v = await item.getString();
       if (v !== null) {
@@ -401,7 +430,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     } else {
       return;
     }
-    const items = this.currentItems;
+    const items = this.currentItem;
     if (!items) {
       return;
     }
@@ -574,7 +603,7 @@ class PageMedia extends import_pageMenu.PageMenu {
   }
   async isPlaying() {
     var _a, _b, _c;
-    return (_c = await ((_b = (_a = this.currentItems) == null ? void 0 : _a.data.isPlaying) == null ? void 0 : _b.getBoolean())) != null ? _c : false;
+    return (_c = await ((_b = (_a = this.currentItem) == null ? void 0 : _a.data.isPlaying) == null ? void 0 : _b.getBoolean())) != null ? _c : false;
   }
   async delete() {
     await super.delete();

@@ -35,6 +35,25 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
       ...gridItem.config,
       ident: page.media.id,
       card: "cardMedia",
+      logo: {
+        type: "button",
+        data: {
+          text1: { true: { type: "const", constVal: "2" } },
+          text: { true: { type: "const", constVal: "1" } },
+          icon: {
+            true: {
+              value: { type: "const", constVal: "logo-mpd" },
+              color: { type: "const", constVal: { r: 250, b: 250, g: 0 } }
+            }
+          },
+          entity1: {
+            value: {
+              type: "const",
+              constVal: 3
+            }
+          }
+        }
+      },
       data: {
         headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : void 0,
         album: {
@@ -174,17 +193,6 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
           role: "button.prev",
           regexp: /\.previous$/,
           dp: ""
-        },
-        logo: {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { true: { type: "const", constVal: "logo-mpd" } },
-          color: { type: "const", constVal: { r: 250, b: 100, g: 200 } },
-          list: void 0,
-          action: "cross"
         }
       }
     },

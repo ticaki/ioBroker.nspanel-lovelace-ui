@@ -1261,17 +1261,44 @@ export function setTriggeredToState(theObject: any, exclude: string[]): void {
     }
 }
 
-export function getRegExp(s: string): RegExp | null {
-    if (!s.startsWith('/')) {
+export function getRegExp(input: string, options?: { startsWith?: boolean; endsWith?: boolean }): RegExp | null {
+    if (!input) {
         return null;
     }
-    const i = s.lastIndexOf('/');
-    const reg = s.slice(1, i);
-    const arg = s.slice(i + 1);
-    if (!reg) {
-        return null;
+    if (input.startsWith('/') && input.lastIndexOf('/') > 0 && input.endsWith('/')) {
+        const last = input.lastIndexOf('/');
+        const pattern = input.slice(1, last);
+        const flags = input.slice(last + 1);
+        return new RegExp(pattern, flags || undefined);
     }
-    return new RegExp(reg, arg ? arg : undefined);
+
+    // 2) beginnt mit '/', endet aber nicht mit '/' → als String behandeln + Warnung
+    if (input.startsWith('/')) {
+        console.warn(`getRegExp: string starts with '/' but not closed -> treating as literal string.`);
+        input = input.slice(1); // führenden / wegnehmen, sonst doppelt escaped
+    }
+
+    // 3) normaler String → escapen + optionale Anchors
+    let pattern = escapeRegex(input);
+
+    // Falls kein expliziter Start/End-Anker verlangt → .+? einsetzen
+    if (!options?.startsWith) {
+        pattern = `.+?${pattern}`;
+    } else {
+        pattern = `^${pattern}`;
+    }
+
+    if (!options?.endsWith) {
+        pattern = `${pattern}.+?`;
+    } else {
+        pattern = `${pattern}$`;
+    }
+
+    return new RegExp(pattern);
+}
+
+function escapeRegex(s: string): string {
+    return s.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&');
 }
 
 /*export function insertLinebreak(text: string, lineLength: number): string {

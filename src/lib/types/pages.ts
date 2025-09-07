@@ -1,5 +1,6 @@
 import type * as dataItem from '../classes/data-item';
 import type { RGB } from '../const/Color';
+import { type PageItem } from '../pages/pageItem';
 import type * as typePageItem from './type-pageItem';
 import type * as Types from './types';
 
@@ -794,19 +795,18 @@ export type cardThermoDataItems = {
 export type cardMediaDataItemOptions = {
     card: Extract<cardGridTypes, 'cardMedia'>;
     ident?: string;
-    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
-        logo?: toolboxItem | undefined;
-    };
+    logo?: typePageItem.PageItemDataItemsOptions | undefined;
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 
 export type cardMediaDataItems = {
     card: Extract<cardGridTypes, 'cardMedia'>;
-    dpInit?: string;
+    dpInit?: string | RegExp; // ''
     ident?: string;
+    logo?: typePageItem.PageItemDataItemsOptions | undefined;
+    logoItem?: PageItem | undefined;
 
-    data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined> & {
-        toolbox: (toolboxItemDataItem | undefined)[];
-    } & { logo: toolboxItemDataItem | undefined };
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined>;
 };
 export type screenSaverCardType = 'screensaver' | 'screensaver2' | 'screensaver3';
 export type screensaverDataItemOptions = {

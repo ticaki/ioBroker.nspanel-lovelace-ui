@@ -35,6 +35,35 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
       ...gridItem.config,
       ident: page.media.id,
       card: "cardMedia",
+      logo: {
+        type: "number",
+        data: {
+          text: { true: { type: "const", constVal: "media.seek" } },
+          icon: {
+            true: {
+              value: { type: "const", constVal: "logo-spotify" },
+              color: { type: "const", constVal: { r: 250, b: 250, g: 0 } }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              type: "triggered",
+              role: "",
+              regexp: /.?\.player\.progressPercentage$/,
+              dp: ""
+            },
+            set: {
+              mode: "auto",
+              type: "state",
+              writeable: true,
+              role: "",
+              regexp: /.?\.player\.progressPercentage$/,
+              dp: ""
+            }
+          }
+        }
+      },
       data: {
         headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : void 0,
         album: {
@@ -182,17 +211,6 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
           role: "",
           regexp: /.?\.player\.skipMinus$/,
           dp: ""
-        },
-        logo: {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { true: { type: "const", constVal: "logo-spotify" } },
-          color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
-          list: void 0,
-          action: "cross"
         }
       }
     },

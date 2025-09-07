@@ -1795,16 +1795,16 @@ export class ConfigManager extends BaseClass {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: item.icon || 'play-circle-outline',
+                                    constVal: item.icon || 'play-box-multiple',
                                 },
-                                color: await this.getIconColor(item.onColor, Color.on),
+                                color: await this.getIconColor(item.onColor, Color.activated),
                             },
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: item.icon2 || 'pause-circle-outline',
+                                    constVal: item.icon2 || 'play-box-multiple-outline',
                                 },
-                                color: await this.getIconColor(item.offColor, Color.off),
+                                color: await this.getIconColor(item.offColor, Color.deactivated),
                             },
                             scale: Types.isIconColorScaleElement(item.colorScale)
                                 ? { type: 'const', constVal: item.colorScale }
@@ -3805,52 +3805,62 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'media': {
-                        item.icon2 = item.icon2 || item.icon;
+                        const offIcon = item.icon2 || item.icon;
                         let id = foundedStates[role].STATE?.dp || item.id;
+                        let defaultColorOn = Color.on;
+                        let defaultColorOff = Color.off;
+                        let defaultIconOn = 'pause';
+                        let defaultIconOff = 'play';
+                        let nav: Types.DataItemsOptions | undefined = undefined;
                         if (!(await this.existsState(id))) {
                             throw new Error(`DP: ${item.id} - media STATE ${id} not found!`);
                         }
+                        if (!item.asControl) {
+                            const o = await this.adapter.getForeignObjectAsync(id);
+                            if (!o || !o.common.alias?.id) {
+                                throw new Error(`DP: ${item.id} - media STATE ${id} has no alias!`);
+                            }
 
-                        const o = await this.adapter.getForeignObjectAsync(id);
-                        if (!o || !o.common.alias?.id) {
-                            throw new Error(`DP: ${item.id} - media STATE ${id} has no alias!`);
-                        }
-
-                        id = o.common.alias.id;
-                        if (!(await this.existsState(id))) {
-                            throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not found!`);
-                        }
-                        const { messages } = await PageMedia.getPage(
-                            this,
-                            {
-                                media: { id },
-                                uniqueName: `media-${item.id}`,
+                            id = o.common.alias.id;
+                            if (!(await this.existsState(id))) {
+                                throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not found!`);
+                            }
+                            const { messages } = await PageMedia.getPage(
+                                this,
+                                {
+                                    media: { id },
+                                    uniqueName: `media-${item.id}`,
+                                    type: 'cardMedia',
+                                    items: [],
+                                    heading: '',
+                                },
+                                {
+                                    template: undefined,
+                                    dpInit: id,
+                                    uniqueID: `media-${item.id}`,
+                                    pageItems: [],
+                                    config: { card: 'cardMedia', data: {} },
+                                    alwaysOn: 'none',
+                                } as pages.PageBaseConfig,
+                                [],
+                                true,
+                            );
+                            if (messages[0] !== 'done') {
+                                throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not supported!`);
+                            }
+                            pageConfig = {
                                 type: 'cardMedia',
-                                items: [],
+                                uniqueName: `media-${item.id}`,
+                                media: { id },
                                 heading: '',
-                            },
-                            {
-                                template: undefined,
-                                dpInit: id,
-                                uniqueID: `media-${item.id}`,
-                                pageItems: [],
-                                config: { card: 'cardMedia', data: {} },
-                                alwaysOn: 'none',
-                            } as pages.PageBaseConfig,
-                            [],
-                            true,
-                        );
-                        if (messages[0] !== 'done') {
-                            throw new Error(`DP: ${item.id} - media ALIAS STATE ${id} not supported!`);
+                                items: [],
+                            };
+                            nav = { type: 'const', constVal: `media-${item.id}` };
+                            defaultColorOn = Color.activated;
+                            defaultColorOff = Color.deactivated;
+                            defaultIconOn = 'play-box-multiple';
+                            defaultIconOff = 'play-box-multiple-outline';
                         }
-                        pageConfig = {
-                            type: 'cardMedia',
-                            uniqueName: `media-${item.id}`,
-                            media: { id },
-                            heading: '',
-                            items: [],
-                        };
-
                         itemConfig = {
                             role: '',
                             type: 'button',
@@ -3861,14 +3871,14 @@ export class ConfigManager extends BaseClass {
                                     true: {
                                         value: item.icon
                                             ? { type: 'const', constVal: item.icon }
-                                            : { type: 'const', constVal: 'play-circle-outline' },
-                                        color: await this.getIconColor(item.onColor, Color.on),
+                                            : { type: 'const', constVal: defaultIconOn },
+                                        color: await this.getIconColor(item.onColor, defaultColorOn),
                                     },
                                     false: {
-                                        value: item.icon2
-                                            ? { type: 'const', constVal: item.icon2 }
-                                            : { type: 'const', constVal: 'pause-circle-outline' },
-                                        color: await this.getIconColor(item.offColor, Color.off),
+                                        value: offIcon
+                                            ? { type: 'const', constVal: offIcon }
+                                            : { type: 'const', constVal: defaultIconOff },
+                                        color: await this.getIconColor(item.offColor, defaultColorOff),
                                     },
                                     scale: Types.isIconColorScaleElement(item.colorScale)
                                         ? { type: 'const', constVal: item.colorScale }
@@ -3881,7 +3891,7 @@ export class ConfigManager extends BaseClass {
                                 entity1: {
                                     value: foundedStates[role].STATE,
                                 },
-                                setNavi: { type: 'const', constVal: `media-${item.id}` },
+                                setNavi: nav,
                             },
                         };
                         break;

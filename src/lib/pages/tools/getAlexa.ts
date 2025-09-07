@@ -40,13 +40,50 @@ export async function getPageAlexa(
     if (justCheck) {
         return { gridItem, messages: ['done'] };
     }
-    gridItem.dpInit = tools.getRegExp(`/^${str.split('.').join('\\.')}/`) || str;
+    const reg = tools.getRegExp(str, { startsWith: true });
+    gridItem.dpInit = reg ? reg : str;
     gridItem = {
         ...gridItem,
         config: {
             ...gridItem.config,
             ident: str,
             card: 'cardMedia',
+            logo: {
+                type: 'button',
+                data: {
+                    text1: { true: { type: 'const', constVal: '2' } },
+                    text: { true: { type: 'const', constVal: '1' } },
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'logo-alexa' },
+                            color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            type: 'triggered',
+                            role: ['media.state'],
+                            regexp: /.?\.Player\..?/,
+                            dp: '',
+                        },
+                    },
+                    setTrue: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['button.play'],
+                        regexp: /.?\.Player\..?/,
+                        dp: '',
+                    },
+                    setFalse: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'button.pause',
+                        regexp: /.?\.Player\..?/,
+                        dp: '',
+                    },
+                },
+            },
             data: {
                 headline: page.media.name ? await configManager.getFieldAsDataItemConfig(page.media.name) : undefined,
 
@@ -202,19 +239,9 @@ export async function getPageAlexa(
                     regexp: /.?\.Player\..?/,
                     dp: '',
                 },
-                logo: {
-                    on: {
-                        type: 'const',
-                        constVal: true,
-                    },
-                    text: { type: 'const', constVal: '1' },
-                    icon: { true: { type: 'const', constVal: 'logo-alexa' } },
-                    color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
-                    list: undefined,
-                    action: 'cross',
-                },
             },
         },
+
         items: undefined,
         uniqueID: page.uniqueName,
         pageItems: [],

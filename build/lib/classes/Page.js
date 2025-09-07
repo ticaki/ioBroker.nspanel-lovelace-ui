@@ -90,7 +90,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         }
         options.dpInit = typeof options.dpInit === "string" && options.device ? options.dpInit.replace("#\xB0^\xB0#", options.device) : options.dpInit;
         if (options.dpInit && typeof options.dpInit === "string") {
-          const reg = (0, import_tools.getRegExp)(options.dpInit);
+          const reg = (0, import_tools.getRegExp)(options.dpInit, { startsWith: true });
           if (reg) {
             options.dpInit = reg;
           }
@@ -107,9 +107,29 @@ class Page extends import_baseClassPage.BaseClassPage {
         if (options) {
           options.dpInit = dpInit;
         }
-        this.pageItemConfig[a] = options;
+        this.pageItemConfig[a] = await this.initPageItems(options);
       }
     }
+  }
+  async initPageItems(item) {
+    var _a;
+    let options = item;
+    if (options === void 0) {
+      return void 0;
+    }
+    const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
+    const enums = this.enums ? this.enums : options.enums;
+    options.data = dpInit || enums ? await this.basePanel.statesControler.getDataItemsFromAuto(
+      dpInit,
+      options.data,
+      "appendix" in options ? options.appendix : void 0,
+      this.enums ? this.enums : options.enums
+    ) : options.data;
+    options = JSON.parse(JSON.stringify(options));
+    if (options) {
+      options.dpInit = dpInit;
+    }
+    return options;
   }
   async getItemFromTemplate(options, subtemplate = "", loop = 0) {
     var _a, _b, _c, _d, _e;
@@ -223,16 +243,19 @@ class Page extends import_baseClassPage.BaseClassPage {
     }
     this.basePanel.lastCard = this.card;
   }
-  async createPageItems(pageItemsConfig) {
+  async createPageItems(pageItemsConfig, ident = "") {
     const result = [];
     if (pageItemsConfig) {
+      if (!Array.isArray(pageItemsConfig)) {
+        pageItemsConfig = [pageItemsConfig];
+      }
       for (let a = 0; a < pageItemsConfig.length; a++) {
         const config = {
-          name: "PI",
+          name: ident ? ident : "PI",
           adapter: this.adapter,
           panel: this.basePanel,
           card: "cardItemSpecial",
-          id: `${this.id}?${a}`,
+          id: `${this.id}?${ident ? ident : a}`,
           parent: this
         };
         result[a] = await import_pageItem.PageItem.getPageItem(config, pageItemsConfig[a]);
@@ -285,14 +308,28 @@ class Page extends import_baseClassPage.BaseClassPage {
    * @returns A promise that resolves when the popup request is handled.
    */
   async onPopupRequest(id, popup, action, value, _event = null) {
-    if (!this.pageItems || id == "" || isNaN(id)) {
+    if (!this.pageItems || id == "") {
       this.log.debug(
-        `onPopupRequest: No pageItems or id or nan this is only a warning if u used a pageitem except: 'arrow': ${id}`
+        `onPopupRequest: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`
       );
       return;
     }
-    const i = typeof id === "number" ? id : parseInt(id);
-    const item = this.pageItems[i];
+    let item;
+    if (isNaN(Number(id))) {
+      if (!(id in this)) {
+        this.log.error(`onPopupRequest: id ${id} not found in Page!`);
+        return;
+      }
+      const temp = this[id];
+      if (!(temp instanceof import_pageItem.PageItem)) {
+        this.log.error(`onPopupRequest: id ${id} is not a PageItem!`);
+        return;
+      }
+      item = temp;
+    } else {
+      const i = typeof id === "number" ? id : parseInt(id);
+      item = this.pageItems[i];
+    }
     if (!item) {
       return;
     }
