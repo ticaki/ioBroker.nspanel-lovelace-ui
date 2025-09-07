@@ -12,11 +12,11 @@ export async function getPageSonos(
 ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
     const adapter = configManager.adapter;
 
-    const arr = page.media.id.split('.').slice(0, 3);
+    const arr = page.media.id.split('.').slice(0, 4);
     const viewStr = arr.join('.');
-    const str = page.media.id.split('.').slice(0, 3).join('.');
+    const str = page.media.id.split('.').slice(0, 4).join('.');
     const devices =
-        viewStr && arr.length === 3
+        viewStr && arr.length === 4
             ? await configManager.adapter.getObjectViewAsync('system', 'device', {
                   startkey: `${viewStr}.`,
                   endkey: `${viewStr}${String.fromCharCode(0xfffd)}`,
@@ -26,7 +26,7 @@ export async function getPageSonos(
     if (devices && devices.rows && devices.rows.length > 0) {
         if (
             devices.rows.findIndex(row => {
-                if (row && row.value && row.id && row.id.split('.').length === 3) {
+                if (row && row.value && row.id && row.id.split('.').length === 4) {
                     return str === row.id;
                 }
             }) === -1
