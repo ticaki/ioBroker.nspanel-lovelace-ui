@@ -193,8 +193,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                 }
             }
-
-            this.mainConfiguration = await ConfigManager.getConfig(this, config);
+            try {
+                this.mainConfiguration = await ConfigManager.getConfig(this, config);
+            } catch (e: any) {
+                this.log.error(`Error in configuration: ${e.message}`);
+                this.mainConfiguration = [];
+                return;
+            }
         }
 
         /*} catch (e: any) {
@@ -588,33 +593,37 @@ class NspanelLovelaceUi extends utils.Adapter {
                             this.testCaseConfig = [r.panelConfig];
                         } else {
                             let reloaded = false;
-                            if (r.panelConfig) {
-                                const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
-                                if (arr && arr.length > 0) {
-                                    const config = arr[0];
-                                    if (this.controller && config) {
-                                        const topic = config.topic;
+                            try {
+                                if (r.panelConfig) {
+                                    const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
+                                    if (arr && arr.length > 0) {
+                                        const config = arr[0];
+                                        if (this.controller && config) {
+                                            const topic = config.topic;
 
-                                        if (topic) {
-                                            const index = this.controller.panels.findIndex(a => a.topic === topic);
-                                            if (index !== -1) {
-                                                const name =
-                                                    this.controller.panels[index].friendlyName ||
-                                                    config.name ||
-                                                    config.topic;
-                                                await this.controller.removePanel(this.controller.panels[index]);
-                                                await this.delay(500);
-                                                await this.controller.addPanel(config);
-                                                const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
-                                                this.log.info(msg);
-                                                r.messages.push(msg);
-                                                reloaded = true;
-                                            } else {
-                                                r.messages.push(`Panel ${topic} not found in controller`);
+                                            if (topic) {
+                                                const index = this.controller.panels.findIndex(a => a.topic === topic);
+                                                if (index !== -1) {
+                                                    const name =
+                                                        this.controller.panels[index].friendlyName ||
+                                                        config.name ||
+                                                        config.topic;
+                                                    await this.controller.removePanel(this.controller.panels[index]);
+                                                    await this.delay(500);
+                                                    await this.controller.addPanel(config);
+                                                    const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
+                                                    this.log.info(msg);
+                                                    r.messages.push(msg);
+                                                    reloaded = true;
+                                                } else {
+                                                    r.messages.push(`Panel ${topic} not found in controller`);
+                                                }
                                             }
                                         }
                                     }
                                 }
+                            } catch (e: any) {
+                                this.log.error(`Error in configuration: ${e.message}`);
                             }
                             if (!reloaded) {
                                 const msg = `❌ Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;

@@ -172,7 +172,13 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         }
       }
-      this.mainConfiguration = await import_config_manager.ConfigManager.getConfig(this, config);
+      try {
+        this.mainConfiguration = await import_config_manager.ConfigManager.getConfig(this, config);
+      } catch (e) {
+        this.log.error(`Error in configuration: ${e.message}`);
+        this.mainConfiguration = [];
+        return;
+      }
     }
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
       this.config.mqttPassword = this.config.mqttPassword || "";
@@ -490,29 +496,33 @@ class NspanelLovelaceUi extends utils.Adapter {
               this.testCaseConfig = [r.panelConfig];
             } else {
               let reloaded = false;
-              if (r.panelConfig) {
-                const arr = await import_config_manager.ConfigManager.getConfig(this, [r.panelConfig]);
-                if (arr && arr.length > 0) {
-                  const config = arr[0];
-                  if (this.controller && config) {
-                    const topic = config.topic;
-                    if (topic) {
-                      const index = this.controller.panels.findIndex((a) => a.topic === topic);
-                      if (index !== -1) {
-                        const name = this.controller.panels[index].friendlyName || config.name || config.topic;
-                        await this.controller.removePanel(this.controller.panels[index]);
-                        await this.delay(500);
-                        await this.controller.addPanel(config);
-                        const msg = `\u2705 Panel "${name}" reloaded with updated configuration.`;
-                        this.log.info(msg);
-                        r.messages.push(msg);
-                        reloaded = true;
-                      } else {
-                        r.messages.push(`Panel ${topic} not found in controller`);
+              try {
+                if (r.panelConfig) {
+                  const arr = await import_config_manager.ConfigManager.getConfig(this, [r.panelConfig]);
+                  if (arr && arr.length > 0) {
+                    const config = arr[0];
+                    if (this.controller && config) {
+                      const topic = config.topic;
+                      if (topic) {
+                        const index = this.controller.panels.findIndex((a) => a.topic === topic);
+                        if (index !== -1) {
+                          const name = this.controller.panels[index].friendlyName || config.name || config.topic;
+                          await this.controller.removePanel(this.controller.panels[index]);
+                          await this.delay(500);
+                          await this.controller.addPanel(config);
+                          const msg = `\u2705 Panel "${name}" reloaded with updated configuration.`;
+                          this.log.info(msg);
+                          r.messages.push(msg);
+                          reloaded = true;
+                        } else {
+                          r.messages.push(`Panel ${topic} not found in controller`);
+                        }
                       }
                     }
                   }
                 }
+              } catch (e) {
+                this.log.error(`Error in configuration: ${e.message}`);
               }
               if (!reloaded) {
                 const msg = `\u274C Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
