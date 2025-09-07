@@ -13,6 +13,7 @@ import { isMediaButtonActionType } from '../classes/Page';
 import { getPageSpotify } from './tools/getSpotify';
 import { getPageAlexa } from './tools/getAlexa';
 import { getPageMpd } from './tools/getMpd';
+import { getPageSonos } from './tools/getSonos';
 import type { PageItem } from './pageItem';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
@@ -220,6 +221,9 @@ export class PageMedia extends PageMenu {
                             break;
                         case 'mpd':
                             suffix = 'MPD';
+                            break;
+                        case 'sonos':
+                            suffix = 'Sonos';
                             break;
                         default:
                             suffix = first;
@@ -688,8 +692,11 @@ export class PageMedia extends PageMenu {
         if (page.media.id.startsWith('mpd.')) {
             return await getPageMpd(configManager, page, gridItem, messages, justCheck);
         }
+        if (page.media.id.startsWith('sonos.')) {
+            return await getPageSonos(configManager, page, gridItem, messages, justCheck);
+        }
 
-        const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2, spotify-premium, and mpd!`;
+        const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2, spotify-premium, mpd, and sonos!`;
         messages.push(msg);
         adapter.log.warn(msg);
 

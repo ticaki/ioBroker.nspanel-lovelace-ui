@@ -41,6 +41,7 @@ var import_Page = require("../classes/Page");
 var import_getSpotify = require("./tools/getSpotify");
 var import_getAlexa = require("./tools/getAlexa");
 var import_getMpd = require("./tools/getMpd");
+var import_getSonos = require("./tools/getSonos");
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
@@ -208,6 +209,9 @@ class PageMedia extends import_pageMenu.PageMenu {
               break;
             case "mpd":
               suffix = "MPD";
+              break;
+            case "sonos":
+              suffix = "Sonos";
               break;
             default:
               suffix = first;
@@ -596,7 +600,10 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (page.media.id.startsWith("mpd.")) {
       return await (0, import_getMpd.getPageMpd)(configManager, page, gridItem, messages, justCheck);
     }
-    const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2, spotify-premium, and mpd!`;
+    if (page.media.id.startsWith("sonos.")) {
+      return await (0, import_getSonos.getPageSonos)(configManager, page, gridItem, messages, justCheck);
+    }
+    const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2, spotify-premium, mpd, and sonos!`;
     messages.push(msg);
     adapter.log.warn(msg);
     return { gridItem, messages };

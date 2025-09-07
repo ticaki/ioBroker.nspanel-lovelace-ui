@@ -88,6 +88,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - (ticaki) Media logo field now supports Alexa play/pause toggle and Spotify seek position popup
 - (ticaki) Added new channel role "media" with status display and pageMedia fallback; for this role only, added `asControl` as PageItem property
 - (ticaki) Fixed state evaluation: `getState() === null` no longer interpreted as missing state; boolean states now return `false` instead of `null` if the state exists but has no value.
+- (copilot) Added support for ioBroker Sonos-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (copilot) Added support for ioBroker MPD-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (ticaki) Added support for ioBroker spotify-premium in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (ticaki) Startup significantly improved and hangs removed

@@ -6,6 +6,7 @@
  */
 
 import { expect } from 'chai';
+import { getPageSonos } from './lib/pages/tools/getSonos';
 // import { functionToTest } from "./moduleToTest";
 
 describe('module to test => function to test', () => {
@@ -20,6 +21,12 @@ describe('module to test => function to test', () => {
         result.should.equal(expected);
     });
     // ... more tests => it
+});
+
+describe('Sonos media player integration', () => {
+    it('should export getPageSonos function', () => {
+        expect(getPageSonos).to.be.a('function');
+    });
 });
 
 // ... more test suites => describe
