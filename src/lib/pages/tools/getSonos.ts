@@ -49,10 +49,9 @@ export async function getPageSonos(
             ident: str,
             card: 'cardMedia',
             logo: {
-                type: 'button',
+                type: 'number',
                 data: {
-                    text1: { true: { type: 'const', constVal: '2' } },
-                    text: { true: { type: 'const', constVal: '1' } },
+                    text: { true: { type: 'const', constVal: 'media.seek' } },
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'speaker' },
@@ -63,24 +62,20 @@ export async function getPageSonos(
                         value: {
                             mode: 'auto',
                             type: 'triggered',
-                            role: 'media.state',
-                            regexp: /\.state_simple$/,
+                            role: 'media.elapsed',
+                            regexp: /\.current_elapsed$/,
                             dp: '',
+                            read: `return val != null ? val*1000 : val;`,
                         },
-                    },
-                    setTrue: {
-                        mode: 'auto',
-                        type: 'state',
-                        role: 'button.play',
-                        regexp: /\.play$/,
-                        dp: '',
-                    },
-                    setFalse: {
-                        mode: 'auto',
-                        type: 'state',
-                        role: 'button.pause',
-                        regexp: /\.pause$/,
-                        dp: '',
+                        set: {
+                            mode: 'auto',
+                            type: 'state',
+                            writeable: true,
+                            role: 'media.seek',
+                            regexp: /\.seek$/,
+                            dp: '',
+                            write: `return val != null ? Math.round(val/1000) : val;`,
+                        },
                     },
                 },
             },
