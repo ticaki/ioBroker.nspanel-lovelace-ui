@@ -607,6 +607,14 @@ class PageMedia extends import_pageMenu.PageMenu {
   }
   async delete() {
     await super.delete();
+    for (const item of this.items) {
+      if (item.logoItem) {
+        await item.logoItem.delete();
+        item.logoItem = void 0;
+      }
+    }
+    this.items = [];
+    this.currentItem = void 0;
   }
 }
 async function getValueFromBoolean(item, type, value = true) {

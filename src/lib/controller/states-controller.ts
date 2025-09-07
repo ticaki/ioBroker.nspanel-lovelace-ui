@@ -51,35 +51,41 @@ export class StatesControler extends BaseClass {
         }, 180000);
     }
     deletePageLoop = (): void => {
-        const removeId = [];
-        for (const id in this.triggerDB) {
+        const removeIds: string[] = [];
+
+        for (const id of Object.keys(this.triggerDB)) {
             const entry = this.triggerDB[id];
-            const removeIndex = [];
+            const removeIdx: number[] = [];
+
+            // Sammle zu löschende Indizes aus entry.to
             for (let i = 0; i < entry.to.length; i++) {
-                const item = entry.to[i];
-                if (item.unload) {
-                    //this.log.debug('Unload element:  ' + entry.to[i].name);
-                    removeIndex.push(Number(i));
-                } else if (item.parent?.basePanel?.unload) {
-                    //this.log.debug('Unload element:  ' + entry.to[i].name);
-                    removeIndex.push(Number(i));
+                const it = entry.to[i];
+                if (it?.unload || it?.parent?.unload || it?.parent?.basePanel?.unload) {
+                    removeIdx.push(i);
                 }
             }
-            for (const i of removeIndex) {
-                for (const key in entry) {
-                    const k = key as keyof typeof entry;
-                    const item = entry[k];
-                    if (Array.isArray(item)) {
-                        item.splice(i, 1);
+
+            if (removeIdx.length) {
+                // Absteigend sortieren, damit Splices Indizes nicht verschieben
+                removeIdx.sort((a, b) => b - a);
+
+                // Für alle Array-Properties in entry den gleichen Index entfernen
+                for (const idx of removeIdx) {
+                    for (const key of Object.keys(entry)) {
+                        const val = (entry as any)[key];
+                        if (Array.isArray(val) && idx >= 0 && idx < val.length) {
+                            val.splice(idx, 1);
+                        }
                     }
                 }
             }
+
             if (entry.to.length === 0 && !entry.internal) {
-                removeId.push(id);
+                removeIds.push(id);
             }
         }
 
-        for (const id of removeId) {
+        for (const id of removeIds) {
             delete this.triggerDB[id];
         }
     };

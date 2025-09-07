@@ -255,6 +255,10 @@ class Navigation extends import_library.BaseClass {
   }
   go(d, single = false) {
     const i = this.database[this.currentItem];
+    if (!i) {
+      this.log.warn(`No navigation item found for current index ${this.currentItem}`);
+      return;
+    }
     if (this.doubleClickTimeout && !single) {
       this.adapter.clearTimeout(this.doubleClickTimeout);
       this.doubleClickTimeout = void 0;
@@ -382,16 +386,19 @@ class Navigation extends import_library.BaseClass {
     return item ? item.name : "main";
   }
   getCurrentMainPage() {
-    var _a, _b;
+    var _a, _b, _c;
     const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
-    if (index === -1 || this.database[index] === null || this.database[index] === void 0) {
-      return (_a = this.database[0]) == null ? void 0 : _a.page;
+    if (index === -1 || this.database[index] == null) {
+      if (((_a = this.database[0]) == null ? void 0 : _a.page) == null) {
+        return void 0;
+      }
+      return (_b = this.database[0]) == null ? void 0 : _b.page;
     }
-    return (_b = this.database[index]) == null ? void 0 : _b.page;
+    return (_c = this.database[index]) == null ? void 0 : _c.page;
   }
   getCurrentPage() {
     const page = this.database[this.currentItem];
-    if (page === null || page === void 0) {
+    if (page == null) {
       const index = this.database.findIndex((a) => a && a.page !== null);
       return this.database[index].page;
     }
@@ -399,8 +406,12 @@ class Navigation extends import_library.BaseClass {
   }
   async setCurrentPage() {
     let page = this.database[this.currentItem];
-    if (page === null || page === void 0) {
+    if (page == null) {
       const index = this.database.findIndex((a) => a && a.page !== null);
+      if (index === -1) {
+        this.log.error("No valid page found in navigation database.");
+        return;
+      }
       page = this.database[index];
     }
     if (page) {
@@ -410,6 +421,7 @@ class Navigation extends import_library.BaseClass {
   async delete() {
     await super.delete();
     this.navigationConfig = [];
+    this.database = [];
     this.panel = {};
     if (this.doubleClickTimeout) {
       this.adapter.clearTimeout(this.doubleClickTimeout);

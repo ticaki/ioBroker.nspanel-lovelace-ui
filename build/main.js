@@ -67,7 +67,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     await this.extendForeignObjectAsync(this.namespace, {
       type: "meta",
       common: { name: { en: "Nspanel Instance", de: "Nspanel Instanze" }, type: "meta.folder" },
@@ -107,13 +107,13 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.config.testCase) {
       this.log.warn("Testcase mode!");
     }
-    this.config.Testconfig2 = [];
+    this.mainConfiguration = [];
     const obj = await this.getForeignObjectAsync(this.namespace);
     if (obj && obj.native) {
       const config = [];
-      if (obj.native.scriptConfigRaw) {
+      if (obj.native.scriptConfigRaw || obj.native.scriptConfig) {
         const panelsText = (this.config.panels || []).map((a) => `[${a.name}#${a.topic}]`).join(", ");
-        const configsText = obj.native.scriptConfigRaw.map((a) => `${a.panelTopic}`).join(", ");
+        const configsText = (_a = obj.native.scriptConfigRaw) == null ? void 0 : _a.map((a) => `${a.panelTopic}`).join(", ");
         this.log.info(`Configured panels: name#topic -> ${panelsText}`);
         this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
         this.log.info(
@@ -129,7 +129,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           let usedConfig = null;
           let rawFound = false;
           let rawConversionFailed = false;
-          const raw = obj.native.scriptConfigRaw.find(
+          const raw = (_b = obj.native.scriptConfigRaw) == null ? void 0 : _b.find(
             (b) => b.panelTopic === a.topic
           );
           if (raw) {
@@ -172,71 +172,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         }
       }
-      const scriptConfig = config;
-      if (scriptConfig.length === 0) {
-        const topics = (this.config.panels || []).map((p) => p == null ? void 0 : p.topic).filter(Boolean).join(", ");
-        if (!this.config.testCase) {
-          this.log.error(`No compatible config found for topics: ${topics}. Adapter paused!`);
-          return;
-        }
-        this.log.warn(`No compatible config found for topics: ${topics}. Continuing due to testCase=true.`);
-      }
-      if (scriptConfig) {
-        for (let b = 0; b < scriptConfig.length; b++) {
-          for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
-            if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
-              continue;
-            }
-            let pages = structuredClone(scriptConfig[c].pages);
-            if (pages) {
-              pages = pages.filter((a) => {
-                var _a2, _b2, _c2;
-                if (((_a2 = a.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = a.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c2 = a.config) == null ? void 0 : _c2.card) === "screensaver3") {
-                  return false;
-                }
-                if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a.uniqueID)) {
-                  return false;
-                }
-                return true;
-              });
-              scriptConfig[b].pages = scriptConfig[b].pages.concat(pages);
-            }
-          }
-        }
-        for (let b = 0; b < scriptConfig.length; b++) {
-          const s = scriptConfig[b];
-          if (!s || !s.pages) {
-            continue;
-          }
-          this.config.Testconfig2[b] = {};
-          if (!this.config.Testconfig2[b].pages) {
-            this.config.Testconfig2[b].pages = [];
-          }
-          if (!this.config.Testconfig2[b].navigation) {
-            this.config.Testconfig2[b].navigation = [];
-          }
-          this.config.Testconfig2[b].pages = this.config.Testconfig2[b].pages.filter(
-            (a) => {
-              if (s.pages.find((b2) => b2.uniqueID === a.uniqueID)) {
-                return false;
-              }
-              return true;
-            }
-          );
-          this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a) => {
-            if (s.navigation && s.navigation.find((b2) => a == null || b2 == null || b2.name === a.name)) {
-              return false;
-            }
-            return true;
-          });
-          s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
-          s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
-          this.config.Testconfig2[b] = {
-            ...this.config.Testconfig2[b] || {},
-            ...s
-          };
-        }
-      }
+      this.mainConfiguration = await import_config_manager.ConfigManager.getConfig(this, config);
     }
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
       this.config.mqttPassword = this.config.mqttPassword || "";
@@ -324,7 +260,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         });
         await this.delay(3e3);
-        this.config.Testconfig2 = this.testCaseConfig;
+        this.mainConfiguration = this.testCaseConfig;
         const test = new MQTT.MQTTClientClass(
           this,
           this.config.mqttIp,
@@ -350,14 +286,14 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         });
       }
-      if (!this.config.Testconfig2 || !Array.isArray(this.config.Testconfig2) || this.config.Testconfig2.length === 0) {
+      if (!this.mainConfiguration || !Array.isArray(this.mainConfiguration) || this.mainConfiguration.length === 0) {
         await this.delay(100);
         await this.mqttClient.destroy();
         await this.delay(100);
         this.log.error("No configuration - adapter on hold!");
         return;
       }
-      this.mainConfiguration = structuredClone(this.config.Testconfig2);
+      this.mainConfiguration = structuredClone(this.mainConfiguration);
       let counter = 0;
       for (const a of this.mainConfiguration) {
         try {
@@ -368,7 +304,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               if (!("uniqueID" in p)) {
                 continue;
               }
-              if (((_a = p.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = p.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = p.config) == null ? void 0 : _c.card) === "screensaver3") {
+              if (((_c = p.config) == null ? void 0 : _c.card) === "screensaver" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver2" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver3") {
                 p.uniqueID = `#${p.uniqueID}`;
               }
               if (names.indexOf(p.uniqueID) !== -1) {
@@ -552,6 +488,37 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             if (this.config.testCase) {
               this.testCaseConfig = [r.panelConfig];
+            } else {
+              let reloaded = false;
+              if (r.panelConfig) {
+                const arr = await import_config_manager.ConfigManager.getConfig(this, [r.panelConfig]);
+                if (arr && arr.length > 0) {
+                  const config = arr[0];
+                  if (this.controller && config) {
+                    const topic = config.topic;
+                    if (topic) {
+                      const index = this.controller.panels.findIndex((a) => a.topic === topic);
+                      if (index !== -1) {
+                        const name = this.controller.panels[index].friendlyName || config.name || config.topic;
+                        await this.controller.removePanel(this.controller.panels[index]);
+                        await this.delay(500);
+                        await this.controller.addPanel(config);
+                        const msg = `\u2705 Panel "${name}" reloaded with updated configuration.`;
+                        this.log.info(msg);
+                        r.messages.push(msg);
+                        reloaded = true;
+                      } else {
+                        r.messages.push(`Panel ${topic} not found in controller`);
+                      }
+                    }
+                  }
+                }
+              }
+              if (!reloaded) {
+                const msg = `\u274C Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
+                this.log.info(msg);
+                r.messages.push(msg);
+              }
             }
             await manager.delete();
             result = r.messages;
@@ -1348,9 +1315,9 @@ class NspanelLovelaceUi extends utils.Adapter {
               }
               temp.push({
                 _check: true,
-                _Headline: `${a.name} (${ft ? ft : `${this.config.Testconfig2 ? this.config.Testconfig2.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline"}`})`,
+                _Headline: `${a.name} (${ft ? ft : `${this.mainConfiguration ? this.mainConfiguration.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline"}`})`,
                 _name: a.name,
-                _ip: this.config.Testconfig2 ? this.config.Testconfig2.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline",
+                _ip: this.mainConfiguration ? this.mainConfiguration.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline",
                 _online: "no",
                 _topic: a.topic,
                 _id: "",

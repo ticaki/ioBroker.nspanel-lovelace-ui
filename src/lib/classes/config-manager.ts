@@ -4885,6 +4885,88 @@ export class ConfigManager extends BaseClass {
         await this.statesController?.delete();
         this.statesController = undefined;
     }
+
+    static async getConfig(
+        adapter: NspanelLovelaceUi,
+        scriptConfig: Partial<panelConfigPartial>[],
+    ): Promise<panelConfigPartial[]> {
+        const result: panelConfigPartial[] = [];
+        if (scriptConfig.length === 0) {
+            const topics = (adapter.config.panels || [])
+                .map(p => p?.topic)
+                .filter(Boolean)
+                .join(', ');
+            if (!adapter.config.testCase) {
+                adapter.log.error(`No compatible config found for topics: ${topics}. Adapter paused!`);
+                throw new Error(`No compatible config found for topics: ${topics}. Adapter paused!`);
+            }
+            adapter.log.warn(`No compatible config found for topics: ${topics}. Continuing due to testCase=true.`);
+        }
+        if (scriptConfig) {
+            // merge all pages into every pages array
+            for (let b = 0; b < scriptConfig.length; b++) {
+                for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
+                    if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
+                        continue;
+                    }
+                    let pages = structuredClone(scriptConfig[c].pages);
+                    if (pages) {
+                        pages = pages.filter(a => {
+                            if (
+                                a.config?.card === 'screensaver' ||
+                                a.config?.card === 'screensaver2' ||
+                                a.config?.card === 'screensaver3'
+                            ) {
+                                return false;
+                            }
+                            if (scriptConfig[b].pages!.find(b => b.uniqueID === a.uniqueID)) {
+                                return false;
+                            }
+                            return true;
+                        });
+
+                        scriptConfig[b].pages = scriptConfig[b].pages!.concat(pages);
+                    }
+                }
+            }
+            for (let b = 0; b < scriptConfig.length; b++) {
+                const s = scriptConfig[b];
+                if (!s || !s.pages) {
+                    continue;
+                }
+                const panel = {} as Partial<panelConfigPartial>;
+
+                if (!panel.pages) {
+                    panel.pages = [];
+                }
+                if (!panel.navigation) {
+                    panel.navigation = [];
+                }
+                panel.pages = panel.pages.filter(a => {
+                    if (s.pages!.find(b => b.uniqueID === a.uniqueID)) {
+                        return false;
+                    }
+                    return true;
+                });
+                panel.navigation = panel.navigation.filter(a => {
+                    if (s.navigation && s.navigation.find(b => a == null || b == null || b.name === a.name)) {
+                        return false;
+                    }
+                    return true;
+                });
+                s.navigation = (panel.navigation || []).concat(s.navigation || []);
+                s.pages = (panel.pages || []).concat(s.pages || []);
+                result[b] = {
+                    ...{},
+                    ...result[b],
+                    ...panel,
+                    ...s,
+                };
+            }
+            //adapter.mainConfiguration[0].timeout = adapter.config.timeout;
+        }
+        return result;
+    }
 }
 
 function isIconScaleElement(obj: any): obj is ScriptConfig.IconScaleElement {

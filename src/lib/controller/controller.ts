@@ -22,6 +22,7 @@ export class Controller extends Library.BaseClass {
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
     private dailyIntervalTimeout: ioBroker.Interval | undefined;
     private dataCache: Record<string, { time: number; data: any }> = {};
+    private options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] };
 
     systemNotification: SystemNotifications;
 
@@ -52,6 +53,7 @@ export class Controller extends Library.BaseClass {
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
         this.systemNotification = new SystemNotifications(this.adapter);
+        this.options = options;
         if (this.adapter.mqttServer) {
             this.adapter.mqttServer.controller = this;
         }
@@ -59,19 +61,7 @@ export class Controller extends Library.BaseClass {
             if (panelConfig === undefined) {
                 continue;
             }
-            void this.addPanel(panelConfig);
-            /*const index = this.adapter.config.panels.findIndex(panel => panel.topic === panelConfig.topic);
-            if (index === -1) {
-                this.adapter.testSuccessful = false;
-                this.adapter.log.error(`Panel ${panelConfig.name} with topic ${panelConfig.topic} not found in config`);
-                continue;
-            }
-            panelConfig.name = this.adapter.config.panels[index].id;
-            panelConfig.friendlyName = this.adapter.config.panels[index].name;
-            panelConfig.controller = this;
-            this.adapter.log.info(`Create panel ${panelConfig.name} with topic ${panelConfig.topic}`);
-            const panel = new Panel.Panel(adapter, panelConfig as Panel.panelConfigPartial);
-            this.panels.push(panel);*/
+            void this.addPanel(structuredClone(panelConfig));
         }
         this.log.debug(`${this.name} created`);
     }
@@ -99,6 +89,24 @@ export class Controller extends Library.BaseClass {
             await this.statesControler.setInternalState('///time', currentTime, true);
             const currentTimeString = await this.getCurrentTimeString();
             await this.statesControler.setInternalState('///timeString', currentTimeString, true);
+            await this.adapter.delay(10);
+            /*if (minute % 4 === 0) {
+                if (this.panels.length === 0) {
+                    return;
+                }
+                for (const panel of this.panels) {
+                    setTimeout(() => {
+                        void this.removePanel(panel);
+                    }, 5);
+                }
+            } else if (minute % 4 === 2) {
+                for (const panelConfig of this.options.panels) {
+                    if (panelConfig === undefined) {
+                        continue;
+                    }
+                    void this.addPanel(structuredClone(panelConfig));
+                }
+            }*/
         } catch {
             // Fehler werden geschluckt, damit die Loop nicht stoppt
         }
@@ -418,11 +426,15 @@ export class Controller extends Library.BaseClass {
         if (this.statesControler) {
             await this.statesControler.delete();
         }
+        const tasks: Promise<void>[] = [];
         for (const a of this.panels) {
             if (a) {
-                await a.delete();
+                tasks.push(a.delete());
             }
         }
+        await Promise.all(tasks);
+        this.panels = [];
+        this.dataCache = {};
     }
 
     async notificationToPanel(): Promise<void> {
