@@ -3,17 +3,17 @@ import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import type { ColorEntryType } from '../types/type-pageItem';
 import type * as pages from '../types/pages';
-import type { BooleanUnion, IncomingEvent } from '../types/types';
+import * as types from '../types/types';
 import { type PageInterface } from '../classes/PageInterface';
 import * as tools from '../const/tools';
-
 import type { ConfigManager } from '../classes/config-manager';
 import { PageMenu } from './pageMenu';
 import { isMediaButtonActionType } from '../classes/Page';
 import { getPageSpotify } from './tools/getSpotify';
 import { getPageAlexa } from './tools/getAlexa';
 import { getPageMpd } from './tools/getMpd';
-import type { PageItem } from './pageItem';
+import { PageItem } from './pageItem';
+
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
@@ -483,7 +483,7 @@ export class PageMedia extends PageMenu {
         this.headlinePos = 0;
         this.titelPos = 0;
     }
-    async onButtonEvent(event: IncomingEvent): Promise<void> {
+    async onButtonEvent(event: types.IncomingEvent): Promise<void> {
         if (!this.getVisibility() || this.sleep) {
             return;
         }
@@ -691,6 +691,65 @@ export class PageMedia extends PageMenu {
     public async isPlaying(): Promise<boolean> {
         return (await this.currentItem?.data.isPlaying?.getBoolean()) ?? false;
     }
+    /**
+     * Handles a popup request.
+     *
+     * @param id - The ID of the item.
+     * @param popup - The popup type.
+     * @param action - The action to be performed.
+     * @param value - The value associated with the action.
+     * @param _event - The incoming event.
+     * @returns A promise that resolves when the popup request is handled.
+     */
+    public async onPopupRequest(
+        id: number | string,
+        popup: types.PopupType | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        action: types.ButtonActionType | undefined | string,
+        value: string | undefined,
+        _event: types.IncomingEvent | null = null,
+    ): Promise<void> {
+        if (!this.pageItems || id == '') {
+            this.log.debug(
+                `onPopupRequest: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`,
+            );
+            return;
+        }
+        let item: PageItem | undefined;
+        if (isNaN(Number(id)) && typeof id === 'string') {
+            if (id === 'media') {
+                return;
+            }
+
+            if (!(id in this)) {
+                return;
+            }
+            const temp = (this as any)[id];
+            if (!(temp instanceof PageItem)) {
+                this.log.error(`onPopupRequest: id ${id} is not a PageItem!`);
+                return;
+            }
+            item = temp;
+        } else {
+            await super.onPopupRequest(id, popup, action, value, _event);
+            return;
+        }
+        if (!item) {
+            this.log.error(`onPopupRequest: Cannot find PageItem for id ${id}`);
+            return;
+        }
+        let msg: string | null = null;
+        if (action && value !== undefined && (await item.onCommand(action, value))) {
+            return;
+        } else if (types.isPopupType(popup) && action !== 'bExit') {
+            this.basePanel.lastCard = '';
+            msg = await item.GeneratePopup(popup);
+        }
+        if (msg !== null) {
+            this.sleep = true;
+            this.sendToPanel(msg, false);
+        }
+    }
 
     async delete(): Promise<void> {
         await super.delete();
@@ -717,7 +776,7 @@ type _SelectValueFromBoolean = 'color' | 'string';
  */
 export async function getValueFromBoolean(
     item:
-        | Record<BooleanUnion, Dataitem | undefined>
+        | Record<types.BooleanUnion, Dataitem | undefined>
         | pages.ChangeTypeOfKeys<ColorEntryType, Dataitem | undefined>
         | Dataitem
         | undefined,
