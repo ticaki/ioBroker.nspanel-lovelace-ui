@@ -1283,13 +1283,13 @@ export function getRegExp(input: string, options?: { startsWith?: boolean; endsW
 
     // Falls kein expliziter Start/End-Anker verlangt → .+? einsetzen
     if (!options?.startsWith) {
-        pattern = `.+?${pattern}`;
+        pattern = `.*?${pattern}`;
     } else {
         pattern = `^${pattern}`;
     }
 
     if (!options?.endsWith) {
-        pattern = `${pattern}.+?`;
+        pattern = `${pattern}.*?`;
     } else {
         pattern = `${pattern}$`;
     }

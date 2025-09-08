@@ -1024,12 +1024,12 @@ function getRegExp(input, options) {
   }
   let pattern = escapeRegex(input);
   if (!(options == null ? void 0 : options.startsWith)) {
-    pattern = `.+?${pattern}`;
+    pattern = `.*?${pattern}`;
   } else {
     pattern = `^${pattern}`;
   }
   if (!(options == null ? void 0 : options.endsWith)) {
-    pattern = `${pattern}.+?`;
+    pattern = `${pattern}.*?`;
   } else {
     pattern = `${pattern}$`;
   }
