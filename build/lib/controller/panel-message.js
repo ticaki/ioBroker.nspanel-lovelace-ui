@@ -49,6 +49,8 @@ class PanelSend extends import_library.BaseClass {
     this.panel = config.panel;
   }
   onMessage = async (topic, message) => {
+    if (this.unload) {
+    }
     if (!topic.endsWith("/stat/RESULT")) {
       return;
     }
@@ -162,6 +164,7 @@ class PanelSend extends import_library.BaseClass {
     if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
       this.adapter.clearTimeout(this.messageTimeoutTasmota);
     }
+    this.panel = void 0;
     this.messageDb = [];
     this.messageDbTasmota = [];
   }

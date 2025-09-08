@@ -411,9 +411,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             });
             await this.controller.init();
             /*setInterval(() => {
-                    this.log.debug(
-                        `${Math.trunc(mem)}k/${String(Math.trunc(process.memoryUsage().heapUsed / 1024))}k Start/Jetzt: `,
-                    );
+                this.log.debug(
+                    `${Math.trunc(mem)}k/${String(Math.trunc(process.memoryUsage().heapUsed / 1024))}k Start/Jetzt: `,
+                );
                 }, 60000);*/
         } catch (e: any) {
             this.testSuccessful = false;

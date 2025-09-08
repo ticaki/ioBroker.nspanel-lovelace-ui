@@ -182,8 +182,26 @@ class MQTTClientClass extends import_library.BaseClass {
     const index = this.subscriptDB.findIndex((m) => m.topic === topic);
     if (index !== -1) {
       this.subscriptDB.splice(index, 1);
-      this.log.debug(`unsubscribe from: ${topic}`);
-      this.client.unsubscribe(topic);
+      const count = this.countCallbacks(topic);
+      if (count === 0) {
+        this.log.debug(`unsubscribe from: ${topic}`);
+        this.client.unsubscribe(topic);
+      } else if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`keep subscription: topic="${topic}" still has ${count} handler(s)`);
+      }
+    }
+  }
+  removeByFunction(callback) {
+    const toRemove = this.subscriptDB.filter((m) => m.callback === callback);
+    for (const rem of toRemove) {
+      this.removeSubscriptionEntry(rem.topic, rem.callback);
+      const count = this.countCallbacks(rem.topic);
+      if (count === 0) {
+        this.log.debug(`unsubscribe from: ${rem.topic}`);
+        this.client.unsubscribe(rem.topic);
+      } else if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`keep subscription: topic="${rem.topic}" still has ${count} handler(s)`);
+      }
     }
   }
   async subscribe(topic, callback) {

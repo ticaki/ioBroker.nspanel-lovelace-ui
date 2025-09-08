@@ -41,6 +41,10 @@ export class PanelSend extends BaseClass {
     }
 
     onMessage: callbackMessageType = async (topic: string, message: string) => {
+        if (this.unload) {
+            //this.mqttClient.unsubscribe(`${this.configTopic}/stat/RESULT`);
+            //return;
+        }
         if (!topic.endsWith('/stat/RESULT')) {
             return;
         }
@@ -171,6 +175,7 @@ export class PanelSend extends BaseClass {
         if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
             this.adapter.clearTimeout(this.messageTimeoutTasmota);
         }
+        this.panel = undefined;
         this.messageDb = [];
         this.messageDbTasmota = [];
     }

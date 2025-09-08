@@ -1301,6 +1301,7 @@ export class Panel extends BaseClass {
                 await a.delete();
             }
         }
+        this.controller.mqttClient.removeByFunction(this.onMessage);
         this.persistentPageItems = {};
         this.pages = [];
         this._activePage = undefined;
