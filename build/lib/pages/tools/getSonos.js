@@ -36,16 +36,16 @@ var tools = __toESM(require("../../const/tools"));
 async function getPageSonos(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
   const adapter = configManager.adapter;
-  const arr = page.media.id.split(".").slice(0, 3);
+  const arr = page.media.id.split(".").slice(0, 4);
   const viewStr = arr.join(".");
-  const str = page.media.id.split(".").slice(0, 3).join(".");
-  const devices = viewStr && arr.length === 3 ? await configManager.adapter.getObjectViewAsync("system", "device", {
+  const str = page.media.id.split(".").slice(0, 4).join(".");
+  const devices = viewStr && arr.length === 4 ? await configManager.adapter.getObjectViewAsync("system", "device", {
     startkey: `${viewStr}.`,
     endkey: `${viewStr}${String.fromCharCode(65533)}`
   }) : { rows: [] };
   if (devices && devices.rows && devices.rows.length > 0) {
     if (devices.rows.findIndex((row) => {
-      if (row && row.value && row.id && row.id.split(".").length === 3) {
+      if (row && row.value && row.id && row.id.split(".").length === 4) {
         return str === row.id;
       }
     }) === -1) {

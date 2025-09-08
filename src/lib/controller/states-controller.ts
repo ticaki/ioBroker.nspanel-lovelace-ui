@@ -809,7 +809,7 @@ export class StatesControler extends BaseClass {
                         continue;
                     }
                     if (tempObjectDB.keys.length === 0) {
-                        this.log.warn(`Dont finds states for ${dpInit}!`);
+                        this.log.warn(`Dont finds states for ${dpInit} dpinit is ${typeof dpInit}`);
                     }
                     for (const role of Array.isArray(d.role) ? d.role : [d.role || '']) {
                         //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
