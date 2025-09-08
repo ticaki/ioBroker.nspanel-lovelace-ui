@@ -90,23 +90,6 @@ export class Controller extends Library.BaseClass {
             const currentTimeString = await this.getCurrentTimeString();
             await this.statesControler.setInternalState('///timeString', currentTimeString, true);
             await this.adapter.delay(10);
-            /*if (minute % 4 === 0) {
-                if (this.panels.length === 0) {
-                    return;
-                }
-                for (const panel of this.panels) {
-                    setTimeout(() => {
-                        void this.removePanel(panel);
-                    }, 5);
-                }
-            } else if (minute % 4 === 2) {
-                for (const panelConfig of this.options.panels) {
-                    if (panelConfig === undefined) {
-                        continue;
-                    }
-                    void this.addPanel(structuredClone(panelConfig));
-                }
-            }*/
         } catch {
             // Fehler werden geschluckt, damit die Loop nicht stoppt
         }
