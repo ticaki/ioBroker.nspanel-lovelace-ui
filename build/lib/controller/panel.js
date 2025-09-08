@@ -690,7 +690,7 @@ class Panel extends import_library.BaseClass {
     return this._isOnline;
   }
   set isOnline(s) {
-    if (this.unload) {
+    if (this.unload && s) {
       return;
     }
     this.info.isOnline = s;
@@ -1152,6 +1152,8 @@ class Panel extends import_library.BaseClass {
   async delete() {
     var _a;
     await super.delete();
+    this.sendToPanel("pageType~pageStartup", false, { retain: true });
+    await this.adapter.delay(10);
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
     }
@@ -1172,6 +1174,7 @@ class Panel extends import_library.BaseClass {
         await a.delete();
       }
     }
+    this.controller.mqttClient.removeByFunction(this.onMessage);
     this.persistentPageItems = {};
     this.pages = [];
     this._activePage = void 0;

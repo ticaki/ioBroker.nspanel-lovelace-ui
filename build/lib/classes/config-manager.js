@@ -1219,7 +1219,7 @@ class ConfigManager extends import_library.BaseClass {
       } else {
         t = actual == null ? void 0 : actual.type;
       }
-      valueDisplayRole = t === "string" || t === "number" ? "textNotIcon" : "iconNotText";
+      valueDisplayRole = t === "string" || t === "number" || t === "mixed" ? "textNotIcon" : "iconNotText";
     }
     this.log.debug(
       `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`
@@ -2092,7 +2092,7 @@ class ConfigManager extends import_library.BaseClass {
           } else {
             t = actual == null ? void 0 : actual.type;
           }
-          valueDisplayRole = t === "string" || t === "number" ? "textNotIcon" : "iconNotText";
+          valueDisplayRole = t === "string" || t === "number" || t === "mixed" ? "textNotIcon" : "iconNotText";
         }
         this.log.debug(
           `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`
@@ -4140,6 +4140,74 @@ class ConfigManager extends import_library.BaseClass {
     var _a;
     await ((_a = this.statesController) == null ? void 0 : _a.delete());
     this.statesController = void 0;
+  }
+  static async getConfig(adapter, scriptConfig) {
+    const result = [];
+    if (scriptConfig.length === 0) {
+      const topics = (adapter.config.panels || []).map((p) => p == null ? void 0 : p.topic).filter(Boolean).join(", ");
+      if (!adapter.config.testCase) {
+        adapter.log.error(`No compatible config found for topics: ${topics}. Adapter paused!`);
+        throw new Error(`No compatible config found for topics: ${topics}. Adapter paused!`);
+      }
+      adapter.log.warn(`No compatible config found for topics: ${topics}. Continuing due to testCase=true.`);
+    }
+    if (scriptConfig) {
+      for (let b = 0; b < scriptConfig.length; b++) {
+        for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
+          if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
+            continue;
+          }
+          let pages2 = structuredClone(scriptConfig[c].pages);
+          if (pages2) {
+            pages2 = pages2.filter((a) => {
+              var _a, _b, _c;
+              if (((_a = a.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = a.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = a.config) == null ? void 0 : _c.card) === "screensaver3") {
+                return false;
+              }
+              if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a.uniqueID)) {
+                return false;
+              }
+              return true;
+            });
+            scriptConfig[b].pages = scriptConfig[b].pages.concat(pages2);
+          }
+        }
+      }
+      for (let b = 0; b < scriptConfig.length; b++) {
+        const s = scriptConfig[b];
+        if (!s || !s.pages) {
+          continue;
+        }
+        const panel = {};
+        if (!panel.pages) {
+          panel.pages = [];
+        }
+        if (!panel.navigation) {
+          panel.navigation = [];
+        }
+        panel.pages = panel.pages.filter((a) => {
+          if (s.pages.find((b2) => b2.uniqueID === a.uniqueID)) {
+            return false;
+          }
+          return true;
+        });
+        panel.navigation = panel.navigation.filter((a) => {
+          if (s.navigation && s.navigation.find((b2) => a == null || b2 == null || b2.name === a.name)) {
+            return false;
+          }
+          return true;
+        });
+        s.navigation = (panel.navigation || []).concat(s.navigation || []);
+        s.pages = (panel.pages || []).concat(s.pages || []);
+        result[b] = {
+          ...{},
+          ...result[b],
+          ...panel,
+          ...s
+        };
+      }
+    }
+    return result;
   }
 }
 function isIconScaleElement(obj) {

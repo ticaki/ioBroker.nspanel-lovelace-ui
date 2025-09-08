@@ -757,7 +757,7 @@ export class Panel extends BaseClass {
         return this._isOnline;
     }
     set isOnline(s: boolean) {
-        if (this.unload) {
+        if (this.unload && s) {
             return;
         }
         this.info.isOnline = s;
@@ -1278,6 +1278,9 @@ export class Panel extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
+        this.sendToPanel('pageType~pageStartup', false, { retain: true });
+        await this.adapter.delay(10);
+
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
         }
@@ -1298,6 +1301,7 @@ export class Panel extends BaseClass {
                 await a.delete();
             }
         }
+        this.controller.mqttClient.removeByFunction(this.onMessage);
         this.persistentPageItems = {};
         this.pages = [];
         this._activePage = undefined;

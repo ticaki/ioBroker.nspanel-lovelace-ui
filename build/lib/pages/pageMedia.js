@@ -35,6 +35,7 @@ module.exports = __toCommonJS(pageMedia_exports);
 var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
+var types = __toESM(require("../types/types"));
 var tools = __toESM(require("../const/tools"));
 var import_pageMenu = require("./pageMenu");
 var import_Page = require("../classes/Page");
@@ -42,6 +43,7 @@ var import_getSpotify = require("./tools/getSpotify");
 var import_getAlexa = require("./tools/getAlexa");
 var import_getMpd = require("./tools/getMpd");
 var import_getSonos = require("./tools/getSonos");
+var import_pageItem = require("./pageItem");
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
@@ -504,14 +506,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       case "mode-insel": {
         break;
       }
-      case "media-OnOff": {
-        if (items.data.stop) {
-          if (await this.getOnOffState()) {
-            await items.data.stop.setStateTrue();
-          }
-        }
-        break;
-      }
+      case "media-OnOff":
       case "button": {
         if (event.id === `${this.name}-logo`) {
           const onoff = await this.isPlaying();
@@ -612,8 +607,67 @@ class PageMedia extends import_pageMenu.PageMenu {
     var _a, _b, _c;
     return (_c = await ((_b = (_a = this.currentItem) == null ? void 0 : _a.data.isPlaying) == null ? void 0 : _b.getBoolean())) != null ? _c : false;
   }
+  /**
+   * Handles a popup request.
+   *
+   * @param id - The ID of the item.
+   * @param popup - The popup type.
+   * @param action - The action to be performed.
+   * @param value - The value associated with the action.
+   * @param _event - The incoming event.
+   * @returns A promise that resolves when the popup request is handled.
+   */
+  async onPopupRequest(id, popup, action, value, _event = null) {
+    if (!this.pageItems || id == "") {
+      this.log.debug(
+        `onPopupRequest: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`
+      );
+      return;
+    }
+    let item;
+    if (isNaN(Number(id)) && typeof id === "string") {
+      if (id === "media") {
+        return;
+      }
+      if (!(id in this)) {
+        return;
+      }
+      const temp = this[id];
+      if (!(temp instanceof import_pageItem.PageItem)) {
+        this.log.error(`onPopupRequest: id ${id} is not a PageItem!`);
+        return;
+      }
+      item = temp;
+    } else {
+      await super.onPopupRequest(id, popup, action, value, _event);
+      return;
+    }
+    if (!item) {
+      this.log.error(`onPopupRequest: Cannot find PageItem for id ${id}`);
+      return;
+    }
+    let msg = null;
+    if (action && value !== void 0 && await item.onCommand(action, value)) {
+      return;
+    } else if (types.isPopupType(popup) && action !== "bExit") {
+      this.basePanel.lastCard = "";
+      msg = await item.GeneratePopup(popup);
+    }
+    if (msg !== null) {
+      this.sleep = true;
+      this.sendToPanel(msg, false);
+    }
+  }
   async delete() {
     await super.delete();
+    for (const item of this.items) {
+      if (item.logoItem) {
+        await item.logoItem.delete();
+        item.logoItem = void 0;
+      }
+    }
+    this.items = [];
+    this.currentItem = void 0;
   }
 }
 async function getValueFromBoolean(item, type, value = true) {

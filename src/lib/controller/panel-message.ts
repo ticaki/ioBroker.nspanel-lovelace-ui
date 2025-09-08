@@ -41,6 +41,10 @@ export class PanelSend extends BaseClass {
     }
 
     onMessage: callbackMessageType = async (topic: string, message: string) => {
+        if (this.unload) {
+            //this.mqttClient.unsubscribe(`${this.configTopic}/stat/RESULT`);
+            //return;
+        }
         if (!topic.endsWith('/stat/RESULT')) {
             return;
         }
@@ -97,6 +101,9 @@ export class PanelSend extends BaseClass {
     private readonly sendMessageLoop = async (): Promise<void> => {
         const msg = this.messageDb[0];
         if (msg === undefined || this.unload) {
+            if (this.messageTimeout) {
+                this.adapter.clearTimeout(this.messageTimeout);
+            }
             this.messageTimeout = undefined;
             return;
         }
@@ -111,10 +118,6 @@ export class PanelSend extends BaseClass {
                 this.panel.isOnline = false;
             }
         }
-
-        if (this.unload) {
-            return;
-        }
         this.losingDelay = this.losingDelay + 1000;
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
@@ -127,6 +130,9 @@ export class PanelSend extends BaseClass {
         ) {
             return;
         }
+        if (this.unload) {
+            this.messageDbTasmota = [];
+        }
         this.messageDbTasmota.push({ topic: topic, payload: payload, opt: opt });
 
         if (this.messageTimeoutTasmota === undefined) {
@@ -135,7 +141,10 @@ export class PanelSend extends BaseClass {
     };
     private readonly sendMessageLoopTasmota = async (): Promise<void> => {
         const msg = this.messageDbTasmota.shift();
-        if (msg === undefined || this.unload) {
+        if (msg === undefined) {
+            if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
+                this.adapter.clearTimeout(this.messageTimeoutTasmota);
+            }
             this.messageTimeoutTasmota = undefined;
             return;
         }
@@ -154,7 +163,7 @@ export class PanelSend extends BaseClass {
         if (this.unload) {
             return;
         }
-        this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 20);
+        this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 10);
     };
 
     async delete(): Promise<void> {
@@ -166,6 +175,7 @@ export class PanelSend extends BaseClass {
         if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
             this.adapter.clearTimeout(this.messageTimeoutTasmota);
         }
+        this.panel = undefined;
         this.messageDb = [];
         this.messageDbTasmota = [];
     }

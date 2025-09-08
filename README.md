@@ -85,6 +85,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Panels can now be restarted individually while the adapter is running; faulty or missing configurations prevent restart with clear error messages
 - (ticaki) Media logo field now supports Alexa play/pause toggle and Spotify seek position popup
 - (ticaki) Added new channel role "media" with status display and pageMedia fallback; for this role only, added `asControl` as PageItem property
 - (ticaki) Fixed state evaluation: `getState() === null` no longer interpreted as missing state; boolean states now return `false` instead of `null` if the state exists but has no value.

@@ -315,17 +315,10 @@ class Page extends import_baseClassPage.BaseClassPage {
       return;
     }
     let item;
-    if (isNaN(Number(id))) {
-      if (!(id in this)) {
-        this.log.error(`onPopupRequest: id ${id} not found in Page!`);
-        return;
-      }
-      const temp = this[id];
-      if (!(temp instanceof import_pageItem.PageItem)) {
-        this.log.error(`onPopupRequest: id ${id} is not a PageItem!`);
-        return;
-      }
-      item = temp;
+    if (isNaN(Number(id)) && typeof id === "string") {
+      this.log.error(
+        `onPopupRequest: id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`
+      );
     } else {
       const i = typeof id === "number" ? id : parseInt(id);
       item = this.pageItems[i];

@@ -97,7 +97,7 @@ export async function getPageSpotify(
                 volume: {
                     value: {
                         mode: 'auto',
-                        type: 'state',
+                        type: 'triggered',
                         role: '',
                         scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
                         regexp: /.?\.player\.volume$/,
