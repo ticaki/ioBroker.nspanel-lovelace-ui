@@ -43,33 +43,33 @@ class StatesControler extends import_library.BaseClass {
     }, 18e4);
   }
   deletePageLoop = () => {
-    var _a, _b;
-    const removeId = [];
-    for (const id in this.triggerDB) {
+    var _a, _b, _c;
+    const removeIds = [];
+    for (const id of Object.keys(this.triggerDB)) {
       const entry = this.triggerDB[id];
-      const removeIndex = [];
+      const removeIdx = [];
       for (let i = 0; i < entry.to.length; i++) {
-        const item = entry.to[i];
-        if (item.unload) {
-          removeIndex.push(Number(i));
-        } else if ((_b = (_a = item.parent) == null ? void 0 : _a.basePanel) == null ? void 0 : _b.unload) {
-          removeIndex.push(Number(i));
+        const it = entry.to[i];
+        if ((it == null ? void 0 : it.unload) || ((_a = it == null ? void 0 : it.parent) == null ? void 0 : _a.unload) || ((_c = (_b = it == null ? void 0 : it.parent) == null ? void 0 : _b.basePanel) == null ? void 0 : _c.unload)) {
+          removeIdx.push(i);
         }
       }
-      for (const i of removeIndex) {
-        for (const key in entry) {
-          const k = key;
-          const item = entry[k];
-          if (Array.isArray(item)) {
-            item.splice(i, 1);
+      if (removeIdx.length) {
+        removeIdx.sort((a, b) => b - a);
+        for (const idx of removeIdx) {
+          for (const key of Object.keys(entry)) {
+            const val = entry[key];
+            if (Array.isArray(val) && idx >= 0 && idx < val.length) {
+              val.splice(idx, 1);
+            }
           }
         }
       }
       if (entry.to.length === 0 && !entry.internal) {
-        removeId.push(id);
+        removeIds.push(id);
       }
     }
-    for (const id of removeId) {
+    for (const id of removeIds) {
       delete this.triggerDB[id];
     }
   };

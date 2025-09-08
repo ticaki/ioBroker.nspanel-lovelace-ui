@@ -694,6 +694,14 @@ export class PageMedia extends PageMenu {
 
     async delete(): Promise<void> {
         await super.delete();
+        for (const item of this.items) {
+            if (item.logoItem) {
+                await item.logoItem.delete();
+                item.logoItem = undefined;
+            }
+        }
+        this.items = [];
+        this.currentItem = undefined;
     }
 }
 

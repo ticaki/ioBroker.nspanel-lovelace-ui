@@ -105,7 +105,7 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
         volume: {
           value: {
             mode: "auto",
-            type: "state",
+            type: "triggered",
             role: "",
             scale: { min: (_a = page.media.minValue) != null ? _a : 0, max: (_b = page.media.maxValue) != null ? _b : 100 },
             regexp: /.?\.player\.volume$/,

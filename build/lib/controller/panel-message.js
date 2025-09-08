@@ -96,6 +96,9 @@ class PanelSend extends import_library.BaseClass {
   sendMessageLoop = async () => {
     const msg = this.messageDb[0];
     if (msg === void 0 || this.unload) {
+      if (this.messageTimeout) {
+        this.adapter.clearTimeout(this.messageTimeout);
+      }
       this.messageTimeout = void 0;
       return;
     }
@@ -110,9 +113,6 @@ class PanelSend extends import_library.BaseClass {
         this.panel.isOnline = false;
       }
     }
-    if (this.unload) {
-      return;
-    }
     this.losingDelay = this.losingDelay + 1e3;
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
@@ -120,6 +120,9 @@ class PanelSend extends import_library.BaseClass {
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {
       return;
+    }
+    if (this.unload) {
+      this.messageDbTasmota = [];
     }
     this.messageDbTasmota.push({ topic, payload, opt });
     if (this.messageTimeoutTasmota === void 0) {
@@ -129,7 +132,10 @@ class PanelSend extends import_library.BaseClass {
   sendMessageLoopTasmota = async () => {
     var _a;
     const msg = this.messageDbTasmota.shift();
-    if (msg === void 0 || this.unload) {
+    if (msg === void 0) {
+      if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
+        this.adapter.clearTimeout(this.messageTimeoutTasmota);
+      }
       this.messageTimeoutTasmota = void 0;
       return;
     }
@@ -145,7 +151,7 @@ class PanelSend extends import_library.BaseClass {
     if (this.unload) {
       return;
     }
-    this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 20);
+    this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 10);
   };
   async delete() {
     await super.delete();

@@ -48,6 +48,7 @@ class Controller extends Library.BaseClass {
   dateUpdateTimeout;
   dailyIntervalTimeout;
   dataCache = {};
+  options;
   systemNotification;
   constructor(adapter, options) {
     super(adapter, options.name);
@@ -73,6 +74,7 @@ class Controller extends Library.BaseClass {
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
     this.systemNotification = new import_system_notifications.SystemNotifications(this.adapter);
+    this.options = options;
     if (this.adapter.mqttServer) {
       this.adapter.mqttServer.controller = this;
     }
@@ -80,7 +82,7 @@ class Controller extends Library.BaseClass {
       if (panelConfig === void 0) {
         continue;
       }
-      void this.addPanel(panelConfig);
+      void this.addPanel(structuredClone(panelConfig));
     }
     this.log.debug(`${this.name} created`);
   }
@@ -102,6 +104,7 @@ class Controller extends Library.BaseClass {
       await this.statesControler.setInternalState("///time", currentTime, true);
       const currentTimeString = await this.getCurrentTimeString();
       await this.statesControler.setInternalState("///timeString", currentTimeString, true);
+      await this.adapter.delay(10);
     } catch {
     }
     if (this.unload) {
@@ -385,11 +388,15 @@ class Controller extends Library.BaseClass {
     if (this.statesControler) {
       await this.statesControler.delete();
     }
+    const tasks = [];
     for (const a of this.panels) {
       if (a) {
-        await a.delete();
+        tasks.push(a.delete());
       }
     }
+    await Promise.all(tasks);
+    this.panels = [];
+    this.dataCache = {};
   }
   async notificationToPanel() {
     if (!this.panels) {

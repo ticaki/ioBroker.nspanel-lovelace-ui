@@ -292,6 +292,10 @@ export class Navigation extends BaseClass {
     }
     private go(d: 'left' | 'right', single: boolean = false): void {
         const i = this.database[this.currentItem];
+        if (!i) {
+            this.log.warn(`No navigation item found for current index ${this.currentItem}`);
+            return;
+        }
         // zweiter Klick
         if (this.doubleClickTimeout && !single) {
             this.adapter.clearTimeout(this.doubleClickTimeout);
@@ -441,14 +445,17 @@ export class Navigation extends BaseClass {
     }
     getCurrentMainPage(): Page | undefined {
         const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
-        if (index === -1 || this.database[index] === null || this.database[index] === undefined) {
+        if (index === -1 || this.database[index] == null) {
+            if (this.database[0]?.page == null) {
+                return undefined;
+            }
             return this.database[0]?.page;
         }
         return this.database[index]?.page;
     }
     getCurrentPage(): Page {
         const page = this.database[this.currentItem];
-        if (page === null || page === undefined) {
+        if (page == null) {
             const index = this.database.findIndex(a => a && a.page !== null);
             return this.database[index]!.page;
         }
@@ -457,8 +464,12 @@ export class Navigation extends BaseClass {
 
     async setCurrentPage(): Promise<void> {
         let page = this.database[this.currentItem];
-        if (page === null || page === undefined) {
+        if (page == null) {
             const index = this.database.findIndex(a => a && a.page !== null);
+            if (index === -1) {
+                this.log.error('No valid page found in navigation database.');
+                return;
+            }
             page = this.database[index];
         }
         if (page) {
@@ -468,7 +479,7 @@ export class Navigation extends BaseClass {
     async delete(): Promise<void> {
         await super.delete();
         this.navigationConfig = [];
-        //this.database = [];
+        this.database = [];
         this.panel = {} as Panel;
         if (this.doubleClickTimeout) {
             this.adapter.clearTimeout(this.doubleClickTimeout);
