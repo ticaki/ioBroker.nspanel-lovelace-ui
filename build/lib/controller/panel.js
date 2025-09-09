@@ -439,6 +439,11 @@ class Panel extends import_library.BaseClass {
       this.hideCards,
       definition.genericStateObjects.panel.panels.cmd.hideCards
     );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.buzzer`,
+      "",
+      definition.genericStateObjects.panel.panels.cmd.buzzer
+    );
     state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
     if (state && state.val != null) {
       this.detach.right = !!state.val;
@@ -1078,6 +1083,13 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "buzzer": {
+          if (state && state.val != null && typeof state.val === "string" && state.val.trim()) {
+            this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
+            await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, "", false);
+          }
+          break;
+        }
       }
     }
   }
@@ -1623,6 +1635,13 @@ class Panel extends import_library.BaseClass {
           if (this.screenSaver && typeof state.val === "boolean") {
             this.hideCards = !!state.val;
             await this.library.writedp(`panels.${this.name}.cmd.hideCards`, state.val);
+          }
+          break;
+        }
+        case "cmd/buzzer": {
+          if (typeof state.val === "string" && state.val.trim()) {
+            this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
+            await this.statesControler.setInternalState(id, "", true);
           }
           break;
         }

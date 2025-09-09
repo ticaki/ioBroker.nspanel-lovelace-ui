@@ -220,6 +220,7 @@
     "openLinkWikiPageChart": "Open Wiki page for PageChart",
     "shutterClosedIsZero": "The position of 0 is displayed as fully closed (maximally extended).",
     "hideCards": "Hide pages",
+    "StateObjects.buzzer": "Buzzer control",
     "hiddenByTrigger": "Hide page",
     "headerShutter": "Shutter control",
     "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange.",

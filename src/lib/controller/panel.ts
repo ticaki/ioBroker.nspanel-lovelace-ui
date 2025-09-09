@@ -472,6 +472,13 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.hideCards,
         );
 
+        // Initialize buzzer state
+        await this.library.writedp(
+            `panels.${this.name}.cmd.buzzer`,
+            '',
+            definition.genericStateObjects.panel.panels.cmd.buzzer,
+        );
+
         state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
         if (state && state.val != null) {
             this.detach.right = !!state.val;
@@ -1199,6 +1206,14 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'buzzer': {
+                    if (state && state.val != null && typeof state.val === 'string' && state.val.trim()) {
+                        this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
+                        // Clear the state after sending command
+                        await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, '', false);
+                    }
+                    break;
+                }
             }
         }
     }
@@ -1782,6 +1797,14 @@ export class Panel extends BaseClass {
                     if (this.screenSaver && typeof state.val === 'boolean') {
                         this.hideCards = !!state.val;
                         await this.library.writedp(`panels.${this.name}.cmd.hideCards`, state.val);
+                    }
+                    break;
+                }
+                case 'cmd/buzzer': {
+                    if (typeof state.val === 'string' && state.val.trim()) {
+                        this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
+                        // Clear the state after sending command
+                        await this.statesControler.setInternalState(id, '', true);
                     }
                     break;
                 }
