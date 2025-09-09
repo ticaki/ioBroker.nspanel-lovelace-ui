@@ -767,7 +767,6 @@ export class Panel extends BaseClass {
         if (this.unload && s) {
             return;
         }
-        this.info.isOnline = s;
         if (s !== this._isOnline) {
             void this.library.writedp(
                 `panels.${this.name}.info.isOnline`,
@@ -779,7 +778,8 @@ export class Panel extends BaseClass {
             } else {
                 //void this.controller.removePanel(this);
                 //void this.controller.addPanel(this.options);
-                this._activePage = undefined;
+                this._activePage && void this._activePage.setVisibility(false);
+                this.restartLoops();
                 this.log.warn('is offline!');
             }
         }
@@ -868,7 +868,7 @@ export class Panel extends BaseClass {
         } else if (topic.endsWith('/tele/LWT')) {
             if (message === 'Offline') {
                 // deaktiviert, weils zu falschen offline meldungen bei 1 nutzer kommt
-                //this.isOnline = false;
+                this.isOnline = false;
             }
         } else if (topic.endsWith('/tele/INFO1')) {
             this.restartLoops();
@@ -1269,7 +1269,9 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        this.loopTimeout = this.adapter.setTimeout(() => this.loop(), 200);
+        this.loopTimeout = this.adapter.setTimeout(() => {
+            this.loop();
+        }, 200);
     }
 
     loop = (): void => {
@@ -1805,6 +1807,7 @@ export class Panel extends BaseClass {
                         this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
                         // Clear the state after sending command
                         await this.statesControler.setInternalState(id, '', true);
+                        await this.library.writedp(`panels.${this.name}.cmd.buzzer`, '');
                     }
                     break;
                 }

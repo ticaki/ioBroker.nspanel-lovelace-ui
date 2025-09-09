@@ -698,7 +698,6 @@ class Panel extends import_library.BaseClass {
     if (this.unload && s) {
       return;
     }
-    this.info.isOnline = s;
     if (s !== this._isOnline) {
       void this.library.writedp(
         `panels.${this.name}.info.isOnline`,
@@ -708,7 +707,8 @@ class Panel extends import_library.BaseClass {
       if (s) {
         this.log.info("is online!");
       } else {
-        this._activePage = void 0;
+        this._activePage && void this._activePage.setVisibility(false);
+        this.restartLoops();
         this.log.warn("is offline!");
       }
     }
@@ -784,6 +784,7 @@ class Panel extends import_library.BaseClass {
       }
     } else if (topic.endsWith("/tele/LWT")) {
       if (message === "Offline") {
+        this.isOnline = false;
       }
     } else if (topic.endsWith("/tele/INFO1")) {
       this.restartLoops();
@@ -1142,7 +1143,9 @@ class Panel extends import_library.BaseClass {
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
-    this.loopTimeout = this.adapter.setTimeout(() => this.loop(), 200);
+    this.loopTimeout = this.adapter.setTimeout(() => {
+      this.loop();
+    }, 200);
   }
   loop = () => {
     this.pages = this.pages.filter((a) => a && !a.unload);
@@ -1642,6 +1645,7 @@ class Panel extends import_library.BaseClass {
           if (typeof state.val === "string" && state.val.trim()) {
             this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
             await this.statesControler.setInternalState(id, "", true);
+            await this.library.writedp(`panels.${this.name}.cmd.buzzer`, "");
           }
           break;
         }
