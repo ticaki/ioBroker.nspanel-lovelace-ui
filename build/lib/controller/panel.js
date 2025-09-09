@@ -1646,7 +1646,6 @@ class Panel extends import_library.BaseClass {
           break;
         }
       }
-      await this.statesControler.setInternalState(id, state.val, true);
     }
     switch (token) {
       case "cmd/bigIconLeft": {

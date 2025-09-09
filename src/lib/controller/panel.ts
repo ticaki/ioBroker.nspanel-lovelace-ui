@@ -1809,7 +1809,6 @@ export class Panel extends BaseClass {
                     break;
                 }
             }
-            await this.statesControler.setInternalState(id, state.val, true);
         }
         switch (token) {
             case 'cmd/bigIconLeft': {
