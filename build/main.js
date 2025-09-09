@@ -446,7 +446,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F;
     if (typeof obj === "object" && obj.message) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -1461,6 +1461,28 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
+        case "buzzer": {
+          if (((_E = obj.message) == null ? void 0 : _E.panel) && ((_F = this.controller) == null ? void 0 : _F.panels)) {
+            const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
+            if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
+              await panel.statesControler.setInternalState(
+                `${panel.name}/cmd/buzzer`,
+                obj.message.command.trim(),
+                false
+              );
+            } else {
+              this.log.warn(`Panel ${obj.message.panel} not found or invalid buzzer command!`);
+            }
+          } else {
+            this.log.warn(
+              `Missing panel or command in buzzer: ${JSON.stringify(obj.message)} or controller not ready!`
+            );
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, [], obj.callback);
           }
           break;
         }

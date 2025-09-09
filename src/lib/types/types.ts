@@ -168,7 +168,8 @@ export type PanelInternalCommand =
     | 'cmd/dimNightHourEnd'
     | 'cmd/screenSaverDoubleClick'
     | 'cmd/screenSaverLayout'
-    | 'cmd/hideCards';
+    | 'cmd/hideCards'
+    | 'cmd/buzzer';
 
 export function isPopupType(F: any): F is PopupType {
     switch (F as PopupType) {

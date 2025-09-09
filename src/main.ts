@@ -1674,6 +1674,30 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'buzzer': {
+                    // sendTo('nspanel-lovelace-ui.0', 'buzzer', { panel: 'panelTopic', command: '1,2,3,0xF54' });
+                    if (obj.message?.panel && this.controller?.panels) {
+                        const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
+                        if (panel && typeof obj.message.command === 'string' && obj.message.command.trim()) {
+                            await panel.statesControler.setInternalState(
+                                `${panel.name}/cmd/buzzer`,
+                                obj.message.command.trim(),
+                                false,
+                            );
+                        } else {
+                            this.log.warn(`Panel ${obj.message.panel} not found or invalid buzzer command!`);
+                        }
+                    } else {
+                        this.log.warn(
+                            `Missing panel or command in buzzer: ${JSON.stringify(obj.message)} or controller not ready!`,
+                        );
+                    }
+                    // Send response in callback if required
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {
