@@ -34,7 +34,7 @@ module.exports = __toCommonJS(getSonos_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
 async function getPageSonos(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 4);
   const viewStr = arr.join(".");
@@ -72,7 +72,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
           text: { true: { type: "const", constVal: "media.seek" } },
           icon: {
             true: {
-              value: { type: "const", constVal: "speaker" },
+              value: { type: "const", constVal: "logo-sonos" },
               color: { type: "const", constVal: { r: 250, b: 250, g: 0 } }
             }
           },
@@ -80,10 +80,10 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
             value: {
               mode: "auto",
               type: "triggered",
-              role: "media.elapsed",
-              regexp: /\.current_elapsed$/,
+              role: "media.seek",
+              regexp: /\.seek$/,
               dp: "",
-              read: `return val != null ? val*1000 : val;`
+              read: `return val != null ? Math.round(val) : val;`
             },
             set: {
               mode: "auto",
@@ -92,7 +92,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
               role: "media.seek",
               regexp: /\.seek$/,
               dp: "",
-              write: `return val != null ? Math.round(val/1000) : val;`
+              write: `return val != null ? Math.round(val) : val;`
             }
           }
         }
@@ -127,7 +127,8 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
           read: `return val ? val*1000 : val;`
         },
         onOffColor: {
-          true: page.media.colorMediaIcon ? { color: await configManager.getIconColor(page.media.colorMediaIcon) } : void 0
+          true: page.media.colorMediaIcon ? { color: await configManager.getIconColor(page.media.colorMediaIcon) } : { color: { type: "const", constVal: import_Color.Color.on } },
+          false: page.media.colorMediaIcon ? void 0 : { color: { type: "const", constVal: import_Color.Color.off } }
         },
         elapsed: {
           mode: "auto",
@@ -328,11 +329,92 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         /**
          * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
          */
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
+        enabled: {
+          mode: "auto",
+          type: "triggered",
+          regexp: /.?\.members$/,
+          dp: "",
+          read: `
+                    let data = val;
+                    if (typeof val === 'string') {
+                        try {
+                            data = JSON.parse(val);
+                        } catch {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(data)) {
+                        return data.length >= 2 || ${(_k = page.media.speakerList && page.media.speakerList.length > 0) != null ? _k : false} > 1;
+                    }
+                    return false;`
+        }
       }
     });
   }
-  if (!((_k = page.media.deactivateDefaultItems) == null ? void 0 : _k.playList)) {
+  if (!((_l = page.media.deactivateDefaultItems) == null ? void 0 : _l.favoriteList)) {
+    gridItem.pageItems.push({
+      role: "2valuesIsValue",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "playlist-star" },
+            color: await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.playList, import_Color.Color.activated)
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "triggered",
+            regexp: /.?\.favorites_set$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            regexp: /.?\.favorites_set$/,
+            dp: ""
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.playList || [])
+        },
+        valueList2: {
+          mode: "auto",
+          type: "state",
+          regexp: /.?\.favorites_list_array$/,
+          dp: ""
+        },
+        headline: {
+          type: "const",
+          constVal: "playList"
+        },
+        enabled: {
+          mode: "auto",
+          type: "triggered",
+          regexp: /.?\.favorites_list_array$/,
+          dp: "",
+          read: `
+                    let data = val;
+                    if (typeof val === 'string') {
+                        try {
+                            data = JSON.parse(val);
+                        } catch {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(data)) {
+                        return data.length !== 0;
+                    }
+                    return false;`
+        }
+      }
+    });
+  }
+  if (!((_n = page.media.deactivateDefaultItems) == null ? void 0 : _n.playList)) {
     gridItem.pageItems.push({
       role: "",
       type: "input_sel",
@@ -341,50 +423,133 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "playlist-play" },
-            color: await configManager.getIconColor((_l = page.media.itemsColorOn) == null ? void 0 : _l.playList, import_Color.Color.activated)
+            color: await configManager.getIconColor((_o = page.media.itemsColorOn) == null ? void 0 : _o.playList, import_Color.Color.activated)
           }
         },
-        entityInSel: {
-          value: {
-            type: "const",
-            constVal: "My Playlist"
+        entityInSel: Array.isArray(page.media.playList) ? {
+          set: {
+            mode: "auto",
+            type: "state",
+            regexp: /.?\.playlist_set$/,
+            dp: "",
+            write: Array.isArray(page.media.playList) ? `return ${JSON.stringify(page.media.playList)}.length > val ? ${JSON.stringify(page.media.playList)}[val]: ''` : void 0
           }
-        },
-        valueList: {
+        } : void 0,
+        valueList: Array.isArray(page.media.playList) ? {
           type: "const",
-          constVal: JSON.stringify(page.media.playList || [])
-        },
+          constVal: JSON.stringify(page.media.playList)
+        } : void 0,
         headline: {
           type: "const",
           constVal: "playList"
+        },
+        enabled: {
+          type: "const",
+          constVal: Array.isArray(page.media.playList) ? page.media.playList.length > 0 : false
         }
       }
     });
   }
-  if (!((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.clock)) {
+  if (!((_p = page.media.deactivateDefaultItems) == null ? void 0 : _p.clock)) {
     gridItem.pageItems.push({
       template: "text.clock",
       dpInit: ""
     });
   }
-  if (!((_n = page.media.deactivateDefaultItems) == null ? void 0 : _n.repeat)) {
+  if (((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.trackList) !== true) {
     gridItem.pageItems.push({
-      role: "",
-      type: "text",
+      role: "spotify-tracklist",
+      type: "input_sel",
       dpInit: "",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "repeat-variant" },
-            color: await configManager.getIconColor((_o = page.media.itemsColorOn) == null ? void 0 : _o.repeat, import_Color.Color.activated)
+            value: { type: "const", constVal: "animation-play-outline" },
+            color: await configManager.getIconColor((_r = page.media.itemsColorOn) == null ? void 0 : _r.playList, import_Color.Color.activated)
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "triggered",
+            regexp: /.?\.current_track_number$/,
+            dp: "",
+            read: `return val != null && parseInt(val) > 0? (parseInt(val)-1) : val;`
           },
-          false: {
-            value: { type: "const", constVal: "repeat" },
-            color: await configManager.getIconColor((_p = page.media.itemsColorOff) == null ? void 0 : _p.repeat, import_Color.Color.deactivated)
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          set: {
+            mode: "auto",
+            type: "state",
+            regexp: /.?\.current_track_number$/,
+            dp: "",
+            write: `return parseInt(val)+1;`
+          }
+        },
+        valueList: {
+          mode: "auto",
+          type: "state",
+          regexp: /.?\.queue$/,
+          dp: "",
+          read: `
+                        let data = val;
+                        if (typeof val === 'string') {
+                            data = data.split(',');
+                            return data.map(item => {
+                                item = item.trim();
+                                let result = item.split(' - ')[1];
+                                if (!result) {
+                                    result = item;
+                                }
+                                return result;
+                            });
+                        }
+                        return [];`
+        },
+        headline: {
+          type: "const",
+          constVal: "trackList"
+        }
+      }
+    });
+  }
+  if (!((_s = page.media.deactivateDefaultItems) == null ? void 0 : _s.repeat)) {
+    gridItem.pageItems.push({
+      role: "repeatValue",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: {
+              mode: "auto",
+              type: "state",
+              role: "media.mode.repeat",
+              regexp: /\.repeat$/,
+              dp: "",
+              read: `switch (val) {
+                                    case 0:
+                                        return 'repeat';
+                                    case 2:
+                                        return 'repeat-once';
+                                    case 1:
+                                        return 'repeat-variant';
+                                }`
+            },
+            color: {
+              mode: "auto",
+              type: "state",
+              role: "media.mode.repeat",
+              regexp: /\.repeat$/,
+              dp: "",
+              read: `switch (val) {
+                                    case 0:
+                                        return Color.deactivated;
+                                    case 1:
+                                        return Color.activated;
+                                    case 2:
+                                        return Color.option4;
+                                }`
+            }
+          }
         },
         entity1: {
           value: {
@@ -392,7 +557,36 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
             type: "triggered",
             role: "media.mode.repeat",
             regexp: /\.repeat$/,
-            dp: ""
+            dp: "",
+            read: `
+                            switch (val) {
+                                case 0:
+                                    return 'OFF';
+                                case 1:
+                                    return 'ALL';
+                                case 2:
+                                    return 'ONE';
+                            }
+                            return 'OFF';
+                        `
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: "media.mode.repeat",
+            regexp: /\.repeat$/,
+            dp: "",
+            write: `{
+                            switch (val) {
+                                case 'OFF':
+                                    return 1;
+                                case 'ALL':
+                                    return 2;
+                                case 'ONE':
+                                    return 0;
+                            }
+                            return 0
+                        }`
           }
         }
       }

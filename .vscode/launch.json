@@ -10,6 +10,42 @@
             "restart": true,
             "type": "node"
         },
+    
+ 
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch ioBroker Adapter (dev-server)",
+      "program": "${workspaceFolder}/.dev-server/default/node_modules/iobroker.nspanel-lovelace-ui/build/main.js",
+      "cwd": "${workspaceFolder}/.dev-server/default",
+      "args": ["--debug", "0"],
+      "runtimeArgs": ["--nolazy", "--enable-source-maps"],
+      "sourceMaps": true,
+      "smartStep": true,
+
+      "outFiles": [
+        "${workspaceFolder}/.dev-server/default/node_modules/iobroker.nspanel-lovelace-ui/build/**/*.js"
+      ],
+
+      // <— Standard schließt node_modules aus; hier explizit erlauben
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/.dev-server/default/node_modules/iobroker.nspanel-lovelace-ui/build/**/*.js.map",
+        "${workspaceFolder}/build/**/*.js.map"
+      ],
+
+      // Mappe Pfade aus den .map-Dateien (meist ../src/...) auf dein Repo
+      "sourceMapPathOverrides": {
+        "../src/*": "${workspaceFolder}/src/*",
+        "../../src/*": "${workspaceFolder}/src/*",
+        "../../../src/*": "${workspaceFolder}/src/*"
+      },
+
+      "skipFiles": ["<node_internals>/**"],
+      "stopOnEntry": false,
+      "trace": true
+    }
+  
+
     ],
     "version": "0.2.0"
 }

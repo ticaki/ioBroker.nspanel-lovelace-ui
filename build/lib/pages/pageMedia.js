@@ -124,6 +124,9 @@ class PageMedia extends import_pageMenu.PageMenu {
         if (!this.currentItem.logoItem) {
           const logoItems = await this.createPageItems(this.currentItem.logo, "logo");
           this.currentItem.logoItem = logoItems && logoItems.length > 0 ? logoItems[0] : void 0;
+          if (this.currentItem.logoItem) {
+            this.currentItem.logoItem.canBeHidden = true;
+          }
         }
       }
       this.headlinePos = 0;
@@ -166,6 +169,9 @@ class PageMedia extends import_pageMenu.PageMenu {
         if (!this.currentItem.logoItem) {
           const logoItems = await this.createPageItems(this.currentItem.logo, "logo");
           this.currentItem.logoItem = logoItems && logoItems.length > 0 ? logoItems[0] : void 0;
+          if (this.currentItem.logoItem) {
+            this.currentItem.logoItem.canBeHidden = true;
+          }
         }
       }
     }
@@ -174,7 +180,7 @@ class PageMedia extends import_pageMenu.PageMenu {
   }
   async update() {
     var _a, _b;
-    if (!this.visibility) {
+    if (!this.visibility || this.sleep) {
       return;
     }
     let index = this.items.findIndex((i) => i.ident === this.currentPlayer);
@@ -508,23 +514,21 @@ class PageMedia extends import_pageMenu.PageMenu {
       }
       case "media-OnOff":
       case "button": {
-        if (event.id === `${this.name}-logo`) {
-          const onoff = await this.isPlaying();
-          if (items.data.mediaState) {
-            if (items.data.mediaState.writeable) {
-              await items.data.mediaState.setState(!onoff);
-              break;
-            }
+        const onoff = await this.isPlaying();
+        if (items.data.mediaState) {
+          if (items.data.mediaState.writeable) {
+            await items.data.mediaState.setState(!onoff);
+            break;
           }
-          if (onoff) {
-            if (items.data.stop) {
-              await items.data.stop.setStateTrue();
-            } else if (items.data.pause) {
-              await items.data.pause.setStateTrue();
-            }
-          } else if (items.data.play) {
-            await items.data.play.setStateTrue();
+        }
+        if (onoff) {
+          if (items.data.stop) {
+            await items.data.stop.setStateTrue();
+          } else if (items.data.pause) {
+            await items.data.pause.setStateTrue();
           }
+        } else if (items.data.play) {
+          await items.data.play.setStateTrue();
         }
         break;
       }
@@ -651,7 +655,9 @@ class PageMedia extends import_pageMenu.PageMenu {
       return;
     } else if (types.isPopupType(popup) && action !== "bExit") {
       this.basePanel.lastCard = "";
+      this.sleep = true;
       msg = await item.GeneratePopup(popup);
+      this.sleep = false;
     }
     if (msg !== null) {
       this.sleep = true;

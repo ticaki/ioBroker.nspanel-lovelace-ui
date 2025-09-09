@@ -6902,6 +6902,7 @@ export class Icons {
         ['logo-alexa', 'logo-alexa'],
         ['logo-mpd', 'logo-mpd'],
         ['logo-spotify', 'logo-spotify'],
+        ['logo-sonos', 'logo-sonos'],
     ]);
 
     static GetIcon(ma_name: string): string {

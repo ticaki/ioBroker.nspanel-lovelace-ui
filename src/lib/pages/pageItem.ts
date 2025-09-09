@@ -1858,7 +1858,9 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     if (entry.role === 'repeatValue') {
                         const v = await entry.data.entity1?.value?.getString();
-                        if (v != null && entry.data.entity1?.value?.writeable) {
+                        if (v != null && entry.data.entity1?.set?.writeable) {
+                            await entry.data.entity1.set.setState(v);
+                        } else if (v != null && entry.data.entity1?.value?.writeable) {
                             await entry.data.entity1.value.setState(v);
                         }
                         break;
@@ -2654,7 +2656,7 @@ export class PageItem extends BaseClassTriggerd {
             }
         }
         if (!item.setList) {
-            if (item.entityInSel && item.entityInSel.value) {
+            if (item.entityInSel) {
                 let list: string[] | string | object = (item.valueList && (await item.valueList.getObject())) ||
                     (item.valueList && (await item.valueList.getString())) || [
                         '1',
@@ -2686,9 +2688,9 @@ export class PageItem extends BaseClassTriggerd {
                     list = [];
                 }
                 if (Array.isArray(list) && list.length > parseInt(value)) {
-                    if (item.entityInSel.set) {
+                    if (item.entityInSel.set && item.entityInSel.set.writeable) {
                         await item.entityInSel.set.setState(value);
-                    } else {
+                    } else if (item.entityInSel.value && item.entityInSel.value.writeable) {
                         await item.entityInSel.value.setState(value);
                     }
                     return true;
@@ -2868,6 +2870,7 @@ export class PageItem extends BaseClassTriggerd {
                             const str = String(o[a]).replace(/\r?\n/g, '').trim();
                             if (!al || (al && Array.isArray(al) && (al.includes(str) || al.length === 0))) {
                                 list.list.push(str);
+
                                 list.states.push(a);
                                 if (a === v && !list.value) {
                                     list.value = str;
@@ -2901,11 +2904,9 @@ export class PageItem extends BaseClassTriggerd {
                 ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
                 ((await entityInSel.value.getCommonStates()) || valueList2 != null)
             ) {
-                let states: Record<string | number, string> | null = null;
+                let states: Record<string | number, string> | string[] | null = null;
                 const value = await tools.getValueEntryString(entityInSel);
-                if (valueList && valueList2) {
-                    role = '2values';
-                }
+
                 switch (role) {
                     /*case 'spotify-tracklist': {
                         if (valueList) {
@@ -2920,51 +2921,30 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         break;
                     }*/
-                    case '2values': {
+                    case '2valuesIsValue': {
                         if (!valueList || !valueList2) {
                             this.log.error('2values requires both valueList and valueList2!');
-                            states = {};
+                            states = [];
                             break;
                         }
 
-                        const raw1 = await valueList.getObject();
-                        const raw2 = await valueList2.getObject();
+                        const filter = (await valueList.getObject()) || [];
+                        const fulllist = (await valueList2.getObject()) || [];
 
                         const isStringArray = (x: unknown): x is string[] =>
                             Array.isArray(x) && x.every(v => typeof v === 'string');
 
-                        if (!isStringArray(raw1) || !isStringArray(raw2)) {
+                        if (!isStringArray(filter) || !isStringArray(fulllist)) {
                             this.log.error('2values: valueList/valueList2 must be string[]!');
-                            states = {};
+                            states = [];
                             break;
                         }
-
-                        const keys = raw1;
-                        const vals = raw2;
-
-                        const len = Math.min(keys.length, vals.length);
-                        if (keys.length !== vals.length) {
-                            this.log.warn(
-                                `2values: length mismatch (keys=${keys.length}, values=${vals.length}); truncating to ${len}.`,
-                            );
+                        list.value = value ?? '';
+                        if (filter.length > 0) {
+                            fulllist.filter(v => filter.includes(v));
                         }
 
-                        const map: Record<string, string> = {};
-                        for (let i = 0; i < len; i++) {
-                            const k = keys[i];
-                            const v = vals[i] ?? '';
-                            if (!k) {
-                                continue;
-                            }
-                            if (map[k] !== undefined) {
-                                this.log.warn(
-                                    `2values: duplicate key "${k}" at index ${i} – overwriting previous value.`,
-                                );
-                            }
-                            map[k] = v;
-                        }
-
-                        states = map;
+                        states = fulllist;
                         break;
                     }
                     default: {
@@ -2974,14 +2954,39 @@ export class PageItem extends BaseClassTriggerd {
                 if (value !== null && states) {
                     list.list = [];
                     list.states = [];
-                    for (const a in states) {
-                        list.list.push(this.library.getTranslation(String(states[a])));
-                        list.states.push(a);
-                    }
-                    if (!list.value) {
-                        list.value = states[value];
+                    if (Array.isArray(states)) {
+                        for (let a = 0; a < states.length; a++) {
+                            list.list.push(this.library.getTranslation(String(states[a])));
+                            if (role === '2valuesIsValue') {
+                                list.states.push(String(states[a]));
+                            } else {
+                                list.states.push(String(a));
+                            }
+                        }
+                        if (!list.value && role !== '2valuesIsValue') {
+                            list.value = states[parseInt(value)] || undefined;
+                        }
+                    } else {
+                        for (const a in states) {
+                            list.list.push(this.library.getTranslation(String(states[a])));
+                            list.states.push(String(a));
+                            if (!list.value) {
+                                list.value = states[value];
+                            }
+                        }
                     }
                 }
+            }
+        } else {
+            list.list = [];
+            list.states = [];
+            const v = await valueList?.getObject();
+            if (v && Array.isArray(v) && v.every(ve => typeof ve === 'string')) {
+                for (let a = 0; a < v.length; a++) {
+                    list.list.push(this.library.getTranslation(v[a]));
+                    list.states.push(String(a));
+                }
+                list.value = '';
             }
         }
         return list;

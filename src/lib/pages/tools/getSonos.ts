@@ -54,7 +54,7 @@ export async function getPageSonos(
                     text: { true: { type: 'const', constVal: 'media.seek' } },
                     icon: {
                         true: {
-                            value: { type: 'const', constVal: 'speaker' },
+                            value: { type: 'const', constVal: 'logo-sonos' },
                             color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
                         },
                     },
@@ -62,10 +62,10 @@ export async function getPageSonos(
                         value: {
                             mode: 'auto',
                             type: 'triggered',
-                            role: 'media.elapsed',
-                            regexp: /\.current_elapsed$/,
+                            role: 'media.seek',
+                            regexp: /\.seek$/,
                             dp: '',
-                            read: `return val != null ? val*1000 : val;`,
+                            read: `return val != null ? Math.round(val) : val;`,
                         },
                         set: {
                             mode: 'auto',
@@ -74,7 +74,7 @@ export async function getPageSonos(
                             role: 'media.seek',
                             regexp: /\.seek$/,
                             dp: '',
-                            write: `return val != null ? Math.round(val/1000) : val;`,
+                            write: `return val != null ? Math.round(val) : val;`,
                         },
                     },
                 },
@@ -115,7 +115,8 @@ export async function getPageSonos(
                 onOffColor: {
                     true: page.media.colorMediaIcon
                         ? { color: await configManager.getIconColor(page.media.colorMediaIcon) }
-                        : undefined,
+                        : { color: { type: 'const', constVal: Color.on } },
+                    false: page.media.colorMediaIcon ? undefined : { color: { type: 'const', constVal: Color.off } },
                 },
                 elapsed: {
                     mode: 'auto',
@@ -327,6 +328,90 @@ export async function getPageSonos(
                  * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                  */
                 setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                enabled: {
+                    mode: 'auto',
+                    type: 'triggered',
+                    regexp: /.?\.members$/,
+                    dp: '',
+                    read: `
+                    let data = val;
+                    if (typeof val === 'string') {
+                        try {
+                            data = JSON.parse(val);
+                        } catch {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(data)) {
+                        return data.length >= 2 || ${(page.media.speakerList && page.media.speakerList.length > 0) ?? false} > 1;
+                    }
+                    return false;`,
+                },
+            },
+        });
+    }
+    //favorite select
+    if (!page.media.deactivateDefaultItems?.favoriteList) {
+        gridItem.pageItems.push({
+            role: '2valuesIsValue',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'playlist-star' },
+                        color: await configManager.getIconColor(page.media.itemsColorOn?.playList, Color.activated),
+                    },
+                },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        regexp: /.?\.favorites_set$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        regexp: /.?\.favorites_set$/,
+                        dp: '',
+                    },
+                },
+                valueList: {
+                    type: 'const',
+                    constVal: JSON.stringify(page.media.playList || []),
+                },
+                valueList2: {
+                    mode: 'auto',
+                    type: 'state',
+                    regexp: /.?\.favorites_list_array$/,
+                    dp: '',
+                },
+
+                headline: {
+                    type: 'const',
+                    constVal: 'playList',
+                },
+                enabled: {
+                    mode: 'auto',
+                    type: 'triggered',
+                    regexp: /.?\.favorites_list_array$/,
+                    dp: '',
+                    read: `
+                    let data = val;
+                    if (typeof val === 'string') {
+                        try {
+                            data = JSON.parse(val);
+                        } catch {
+                            return false;
+                        }
+                    }
+                    if (Array.isArray(data)) {
+                        return data.length !== 0;
+                    }
+                    return false;`,
+                },
             },
         });
     }
@@ -344,19 +429,32 @@ export async function getPageSonos(
                         color: await configManager.getIconColor(page.media.itemsColorOn?.playList, Color.activated),
                     },
                 },
-                entityInSel: {
-                    value: {
-                        type: 'const',
-                        constVal: 'My Playlist',
-                    },
-                },
-                valueList: {
-                    type: 'const',
-                    constVal: JSON.stringify(page.media.playList || []),
-                },
+                entityInSel: Array.isArray(page.media.playList)
+                    ? {
+                          set: {
+                              mode: 'auto',
+                              type: 'state',
+                              regexp: /.?\.playlist_set$/,
+                              dp: '',
+                              write: Array.isArray(page.media.playList)
+                                  ? `return ${JSON.stringify(page.media.playList)}.length > val ? ${JSON.stringify(page.media.playList)}[val]: ''`
+                                  : undefined,
+                          },
+                      }
+                    : undefined,
+                valueList: Array.isArray(page.media.playList)
+                    ? {
+                          type: 'const',
+                          constVal: JSON.stringify(page.media.playList),
+                      }
+                    : undefined,
                 headline: {
                     type: 'const',
                     constVal: 'playList',
+                },
+                enabled: {
+                    type: 'const',
+                    constVal: Array.isArray(page.media.playList) ? page.media.playList.length > 0 : false,
                 },
             },
         });
@@ -368,26 +466,105 @@ export async function getPageSonos(
             dpInit: '',
         });
     }
-    // repeat
-    if (!page.media.deactivateDefaultItems?.repeat) {
+    //tracklist
+    if (page.media.deactivateDefaultItems?.trackList !== true) {
         gridItem.pageItems.push({
-            role: '',
-            type: 'text',
+            role: 'spotify-tracklist',
+            type: 'input_sel',
             dpInit: '',
 
             data: {
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'repeat-variant' },
-                        color: await configManager.getIconColor(page.media.itemsColorOn?.repeat, Color.activated),
+                        value: { type: 'const', constVal: 'animation-play-outline' },
+                        color: await configManager.getIconColor(page.media.itemsColorOn?.playList, Color.activated),
                     },
-                    false: {
-                        value: { type: 'const', constVal: 'repeat' },
-                        color: await configManager.getIconColor(page.media.itemsColorOff?.repeat, Color.deactivated),
+                },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        regexp: /.?\.current_track_number$/,
+                        dp: '',
+                        read: `return val != null && parseInt(val) > 0? (parseInt(val)-1) : val;`,
                     },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        regexp: /.?\.current_track_number$/,
+                        dp: '',
+                        write: `return parseInt(val)+1;`,
+                    },
+                },
+                valueList: {
+                    mode: 'auto',
+                    type: 'state',
+                    regexp: /.?\.queue$/,
+                    dp: '',
+                    read: `
+                        let data = val;
+                        if (typeof val === 'string') {
+                            data = data.split(',');
+                            return data.map(item => {
+                                item = item.trim();
+                                let result = item.split(' - ')[1];
+                                if (!result) {
+                                    result = item;
+                                }
+                                return result;
+                            });
+                        }
+                        return [];`,
+                },
+
+                headline: {
+                    type: 'const',
+                    constVal: 'trackList',
+                },
+            },
+        });
+    }
+    // repeat
+    if (!page.media.deactivateDefaultItems?.repeat) {
+        gridItem.pageItems.push({
+            role: 'repeatValue',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: 'media.mode.repeat',
+                            regexp: /\.repeat$/,
+                            dp: '',
+                            read: `switch (val) {
+                                    case 0:
+                                        return 'repeat';
+                                    case 2:
+                                        return 'repeat-once';
+                                    case 1:
+                                        return 'repeat-variant';
+                                }`,
+                        },
+                        color: {
+                            mode: 'auto',
+                            type: 'state',
+                            role: 'media.mode.repeat',
+                            regexp: /\.repeat$/,
+                            dp: '',
+                            read: `switch (val) {
+                                    case 0:
+                                        return Color.deactivated;
+                                    case 1:
+                                        return Color.activated;
+                                    case 2:
+                                        return Color.option4;
+                                }`,
+                        },
+                    },
                 },
                 entity1: {
                     value: {
@@ -396,6 +573,35 @@ export async function getPageSonos(
                         role: 'media.mode.repeat',
                         regexp: /\.repeat$/,
                         dp: '',
+                        read: `
+                            switch (val) {
+                                case 0:
+                                    return 'OFF';
+                                case 1:
+                                    return 'ALL';
+                                case 2:
+                                    return 'ONE';
+                            }
+                            return 'OFF';
+                        `,
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'media.mode.repeat',
+                        regexp: /\.repeat$/,
+                        dp: '',
+                        write: `{
+                            switch (val) {
+                                case 'OFF':
+                                    return 1;
+                                case 'ALL':
+                                    return 2;
+                                case 'ONE':
+                                    return 0;
+                            }
+                            return 0
+                        }`,
                     },
                 },
             },

@@ -1569,7 +1569,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.controller.statesControler.deletePageLoop();
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1605,7 +1605,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
           if (entry.role === "repeatValue") {
             const v = await ((_b = (_a = entry.data.entity1) == null ? void 0 : _a.value) == null ? void 0 : _b.getString());
-            if (v != null && ((_d = (_c = entry.data.entity1) == null ? void 0 : _c.value) == null ? void 0 : _d.writeable)) {
+            if (v != null && ((_d = (_c = entry.data.entity1) == null ? void 0 : _c.set) == null ? void 0 : _d.writeable)) {
+              await entry.data.entity1.set.setState(v);
+            } else if (v != null && ((_f = (_e = entry.data.entity1) == null ? void 0 : _e.value) == null ? void 0 : _f.writeable)) {
               await entry.data.entity1.value.setState(v);
             }
             break;
@@ -1624,10 +1626,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             await this.parent.update();
           }
           if (item.popup) {
-            const test = (_e = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _e : true;
+            const test = (_g = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _g : true;
             if (test && item.popup.getMessage && item.popup.setMessage) {
               const message = await item.popup.getMessage.getString();
-              const headline = (_f = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _f : "";
+              const headline = (_h = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _h : "";
               if (message) {
                 await item.popup.setMessage.setState(
                   JSON.stringify({ headline, message })
@@ -1636,7 +1638,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             break;
           }
-          let value2 = (_g = item.setNavi && await item.setNavi.getString()) != null ? _g : null;
+          let value2 = (_i = item.setNavi && await item.setNavi.getString()) != null ? _i : null;
           if (value2 !== null) {
             await this.parent.currentPanel.navigation.setTargetPageByName(value2);
             break;
@@ -1646,7 +1648,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             break;
           }
           if (item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
-            value2 = (_i = item.entity1 && await ((_h = item.entity1.value) == null ? void 0 : _h.getBoolean())) != null ? _i : false;
+            value2 = (_k = item.entity1 && await ((_j = item.entity1.value) == null ? void 0 : _j.getBoolean())) != null ? _k : false;
             if (value2) {
               await item.setFalse.setStateTrue();
             } else {
@@ -1662,7 +1664,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             await item.setValue2.setStateTrue();
             break;
           }
-          if ((_k = (_j = item.entity1) == null ? void 0 : _j.value) == null ? void 0 : _k.writeable) {
+          if ((_m = (_l = item.entity1) == null ? void 0 : _l.value) == null ? void 0 : _m.writeable) {
             await item.entity1.value.setStateFlip();
             break;
           }
@@ -1677,9 +1679,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         } else if (entry.type === "fan") {
           const item = entry.data;
-          if ((_l = item.entity1) == null ? void 0 : _l.set) {
+          if ((_n = item.entity1) == null ? void 0 : _n.set) {
             await item.entity1.set.setStateFlip();
-          } else if ((_n = (_m = item.entity1) == null ? void 0 : _m.value) == null ? void 0 : _n.writeable) {
+          } else if ((_p = (_o = item.entity1) == null ? void 0 : _o.value) == null ? void 0 : _p.writeable) {
             await item.entity1.value.setStateFlip();
           }
         }
@@ -1719,9 +1721,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             entity = item.entity3;
           }
           if (entity && entity.set && entity.set.writeable) {
-            if (!Array.isArray(entity.set.options.role) && ((_o = entity.set.options.role) == null ? void 0 : _o.startsWith("button"))) {
+            if (!Array.isArray(entity.set.options.role) && ((_q = entity.set.options.role) == null ? void 0 : _q.startsWith("button"))) {
               await entity.set.setStateTrue();
-            } else if (!Array.isArray(entity.set.options.role) && ((_p = entity.set.options.role) == null ? void 0 : _p.startsWith("switch"))) {
+            } else if (!Array.isArray(entity.set.options.role) && ((_r = entity.set.options.role) == null ? void 0 : _r.startsWith("switch"))) {
               await entity.set.setStateFlip();
             }
           }
@@ -1788,7 +1790,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb) && ((_q = item == null ? void 0 : item.color) == null ? void 0 : _q.true) && item.color.true.options.role !== "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_s = item == null ? void 0 : item.color) == null ? void 0 : _s.true) && item.color.true.options.role !== "level.color.rgb") {
                   await item.color.true.setState(JSON.stringify(rgb));
                   break;
                 }
@@ -2034,14 +2036,14 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 const minValue = item[`minValue${b}`];
                 let min = 0;
                 if (minValue) {
-                  min = (_r = await minValue.getNumber()) != null ? _r : 0;
+                  min = (_t = await minValue.getNumber()) != null ? _t : 0;
                 } else if (entity && entity.value && entity.value.common.min != void 0) {
                   min = entity.value.common.min;
                 }
                 const maxValue = item[`maxValue${b}`];
                 let max = 100;
                 if (maxValue) {
-                  max = (_s = await maxValue.getNumber()) != null ? _s : 100;
+                  max = (_u = await maxValue.getNumber()) != null ? _u : 100;
                 } else if (entity && entity.value && entity.value.common.max != void 0) {
                   max = entity.value.common.max;
                 }
@@ -2131,7 +2133,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_t = this.dataItems.data.entity1) == null ? void 0 : _t.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_v = this.dataItems.data.entity1) == null ? void 0 : _v.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2141,7 +2143,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_u = this.dataItems.data.entity1) == null ? void 0 : _u.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_w = this.dataItems.data.entity1) == null ? void 0 : _w.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2172,7 +2174,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_v = this.dataItems.data.entity1) == null ? void 0 : _v.set) && await this.dataItems.data.entity1.set.setState(r);
+                ((_x = this.dataItems.data.entity1) == null ? void 0 : _x.set) && await this.dataItems.data.entity1.set.setState(r);
               }
               break;
             }
@@ -2319,7 +2321,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
     }
     if (!item.setList) {
-      if (item.entityInSel && item.entityInSel.value) {
+      if (item.entityInSel) {
         let list2 = item.valueList && await item.valueList.getObject() || item.valueList && await item.valueList.getString() || [
           "1",
           "2",
@@ -2346,9 +2348,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           list2 = [];
         }
         if (Array.isArray(list2) && list2.length > parseInt(value)) {
-          if (item.entityInSel.set) {
+          if (item.entityInSel.set && item.entityInSel.set.writeable) {
             await item.entityInSel.set.setState(value);
-          } else {
+          } else if (item.entityInSel.value && item.entityInSel.value.writeable) {
             await item.entityInSel.value.setState(value);
           }
           return true;
@@ -2446,7 +2448,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     return false;
   }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e;
     const list = {};
     if (entityInSel && entityInSel.value) {
       if (role === "alexa-speaker") {
@@ -2539,9 +2541,6 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates() || valueList2 != null)) {
         let states = null;
         const value = await tools.getValueEntryString(entityInSel);
-        if (valueList && valueList2) {
-          role = "2values";
-        }
         switch (role) {
           /*case 'spotify-tracklist': {
               if (valueList) {
@@ -2556,43 +2555,25 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               break;
           }*/
-          case "2values": {
+          case "2valuesIsValue": {
             if (!valueList || !valueList2) {
               this.log.error("2values requires both valueList and valueList2!");
-              states = {};
+              states = [];
               break;
             }
-            const raw1 = await valueList.getObject();
-            const raw2 = await valueList2.getObject();
+            const filter = await valueList.getObject() || [];
+            const fulllist = await valueList2.getObject() || [];
             const isStringArray = (x) => Array.isArray(x) && x.every((v) => typeof v === "string");
-            if (!isStringArray(raw1) || !isStringArray(raw2)) {
+            if (!isStringArray(filter) || !isStringArray(fulllist)) {
               this.log.error("2values: valueList/valueList2 must be string[]!");
-              states = {};
+              states = [];
               break;
             }
-            const keys = raw1;
-            const vals = raw2;
-            const len = Math.min(keys.length, vals.length);
-            if (keys.length !== vals.length) {
-              this.log.warn(
-                `2values: length mismatch (keys=${keys.length}, values=${vals.length}); truncating to ${len}.`
-              );
+            list.value = value != null ? value : "";
+            if (filter.length > 0) {
+              fulllist.filter((v) => filter.includes(v));
             }
-            const map = {};
-            for (let i = 0; i < len; i++) {
-              const k = keys[i];
-              const v = (_f = vals[i]) != null ? _f : "";
-              if (!k) {
-                continue;
-              }
-              if (map[k] !== void 0) {
-                this.log.warn(
-                  `2values: duplicate key "${k}" at index ${i} \u2013 overwriting previous value.`
-                );
-              }
-              map[k] = v;
-            }
-            states = map;
+            states = fulllist;
             break;
           }
           default: {
@@ -2602,14 +2583,39 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         if (value !== null && states) {
           list.list = [];
           list.states = [];
-          for (const a in states) {
-            list.list.push(this.library.getTranslation(String(states[a])));
-            list.states.push(a);
-          }
-          if (!list.value) {
-            list.value = states[value];
+          if (Array.isArray(states)) {
+            for (let a = 0; a < states.length; a++) {
+              list.list.push(this.library.getTranslation(String(states[a])));
+              if (role === "2valuesIsValue") {
+                list.states.push(String(states[a]));
+              } else {
+                list.states.push(String(a));
+              }
+            }
+            if (!list.value && role !== "2valuesIsValue") {
+              list.value = states[parseInt(value)] || void 0;
+            }
+          } else {
+            for (const a in states) {
+              list.list.push(this.library.getTranslation(String(states[a])));
+              list.states.push(String(a));
+              if (!list.value) {
+                list.value = states[value];
+              }
+            }
           }
         }
+      }
+    } else {
+      list.list = [];
+      list.states = [];
+      const v = await (valueList == null ? void 0 : valueList.getObject());
+      if (v && Array.isArray(v) && v.every((ve) => typeof ve === "string")) {
+        for (let a = 0; a < v.length; a++) {
+          list.list.push(this.library.getTranslation(v[a]));
+          list.states.push(String(a));
+        }
+        list.value = "";
       }
     }
     return list;

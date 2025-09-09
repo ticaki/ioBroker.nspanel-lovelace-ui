@@ -361,6 +361,7 @@ export type DeviceRole =
     | 'alexa-playlist'
     | 'alexa-speaker'
     | '2values'
+    | '2valuesIsValue'
     | '4values'
     | 'arrow'
     | 'battery'

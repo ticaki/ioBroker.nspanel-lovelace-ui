@@ -459,6 +459,7 @@ declare namespace ScriptConfig {
             repeat?: boolean;
             equalizer?: boolean;
             playList?: boolean;
+            favoriteList?: boolean;
             online?: boolean;
             reminder?: boolean;
             clock?: boolean;
