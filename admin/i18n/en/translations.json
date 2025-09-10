@@ -248,5 +248,7 @@
     "sunset": "Sunset",
     "technical": "Technical",
     "trackList": "Track list",
-    "media.seek": "Playback position"
+    "media.seek": "Playback position",
+    "favoriteList": "Favorites list",
+    "crossfade": "Crossfade"
 }

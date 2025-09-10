@@ -695,7 +695,7 @@ async function configuration (): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.10.12';
+const version = '0.11.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1140,7 +1140,7 @@ declare namespace ScriptConfig {
          * The media dp to use, most a folder, device or channel. Not a state.
          */
         id: string;
-        mediaDevice?: string;
+        mediaDevice?: string; //???
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;
         colorMediaTitle?: RGB;
@@ -1149,7 +1149,6 @@ declare namespace ScriptConfig {
         equalizerList?: string[];
         repeatList?: string[];
         globalTracklist?: string[];
-        crossfade?: boolean;
         /** detailed configuration */
         itemsColorOn?: {
             trackList?: RGB;
@@ -1159,6 +1158,8 @@ declare namespace ScriptConfig {
             playList?: RGB;
             online?: RGB;
             reminder?: RGB;
+            crossfade?: RGB;
+            favoriteList?: RGB;
         };
         itemsColorOff?: {
             trackList?: RGB;
@@ -1168,6 +1169,8 @@ declare namespace ScriptConfig {
             playList?: RGB;
             online?: RGB;
             reminder?: RGB;
+            crossfade?: RGB;
+            favoriteList?: RGB;
         };
         deactivateDefaultItems?: {
             trackList?: boolean;
@@ -1178,7 +1181,10 @@ declare namespace ScriptConfig {
             online?: boolean;
             reminder?: boolean;
             clock?: boolean;
+            favoriteList?: boolean;
+            crossfade?: boolean;
         };
+        favoriteList?: string[];
     };
 
     export type PageThermoItem = {

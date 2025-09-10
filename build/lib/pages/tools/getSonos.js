@@ -361,7 +361,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "playlist-star" },
-            color: await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.playList, import_Color.Color.activated)
+            color: await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.favoriteList, import_Color.Color.activated)
           }
         },
         entityInSel: {
@@ -380,7 +380,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         },
         valueList: {
           type: "const",
-          constVal: JSON.stringify(page.media.playList || [])
+          constVal: JSON.stringify(page.media.favoriteList || [])
         },
         valueList2: {
           mode: "auto",
@@ -390,7 +390,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         },
         headline: {
           type: "const",
-          constVal: "playList"
+          constVal: "favoriteList"
         },
         enabled: {
           mode: "auto",
