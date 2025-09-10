@@ -190,6 +190,17 @@ export function isPopupType(F: any): F is PopupType {
     }
 }
 
+/**
+ * Defines how the panel handles "always on" behavior.
+ *
+ * - `"always"` → Screen is forced to stay on permanently.
+ *   A timeout of `0` means "never turn off".
+ * - `"none"` → No special handling; normal timeout rules apply.
+ * - `"ignore"` → Skip "always on" logic completely for this page/item.
+ * - `"action"` → Extend screen-on time only when a state/action event occurs.
+ */
+export type AlwaysOnMode = 'always' | 'none' | 'ignore' | 'action';
+
 export type nsPanelState = ioBroker.State | (Omit<ioBroker.State, 'val'> & { val: nsPanelStateVal });
 export type nsPanelStateVal = ioBroker.State['val'] | Record<string | number, any>;
 export type EventMethod =

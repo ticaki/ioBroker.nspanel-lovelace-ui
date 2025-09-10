@@ -1223,7 +1223,7 @@ export class Panel extends BaseClass {
      *
      * @param sec seconds for timeout
      */
-    sendScreeensaverTimeout(sec: number): void {
+    sendScreensaverTimeout(sec: number): void {
         this.log.debug(`Set screeensaver timeout to ${sec}s.`);
         this.sendToPanel(`timeout~${sec}`, false);
     }
@@ -1413,7 +1413,7 @@ export class Panel extends BaseClass {
                 }
 
                 if (start.alwaysOn === 'none') {
-                    this.sendScreeensaverTimeout(2);
+                    this.sendScreensaverTimeout(2);
                 }
 
                 this.log.info('Panel startup finished!');
@@ -1626,7 +1626,7 @@ export class Panel extends BaseClass {
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         const val = parseInt(String(state.val));
                         this.timeout = val;
-                        this.sendScreeensaverTimeout(this.timeout);
+                        this.sendScreensaverTimeout(this.timeout);
                         await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
                         await this.library.writedp(`panels.${this.name}.cmd.screenSaver.timeout`, this.timeout);
                     }

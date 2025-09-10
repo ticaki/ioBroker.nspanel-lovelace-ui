@@ -613,6 +613,23 @@ type PageNotifyConfig = {
     setValue2?: string;
     closingBehaviour?: string;
 };
+
+export type PopupNotificationVal =
+    | {
+          headline?: string;
+          colorHeadline?: { r: number; g: number; b: number };
+          buttonLeft?: string;
+          colorButtonLeft?: { r: number; g: number; b: number };
+          buttonRight?: string;
+          colorButtonRight?: { r: number; g: number; b: number };
+          text?: string;
+          colorText?: { r: number; g: number; b: number };
+          timeout?: number;
+      }
+    | string
+    | null
+    | undefined;
+
 export type cardNotifyDataItemOptions = {
     card: 'popupNotify';
     data: ChangeTypeOfKeys<PageNotifyConfig, Types.DataItemsOptions | undefined>;

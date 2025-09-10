@@ -2806,7 +2806,7 @@ export class PageItem extends BaseClassTriggerd {
                     list.states = [];
                     for (const a in this.tempData) {
                         list.list.push(this.tempData[a].name);
-                        list.states.push(a);
+                        list.states.push(this.tempData[a].name);
                     }
                     const dp = (this.parent as PageMedia).currentItem?.ident || entityInSel?.value?.options.dp || '';
                     const index = this.tempData.findIndex((a: any) => dp.includes(a.id));
@@ -2866,7 +2866,8 @@ export class PageItem extends BaseClassTriggerd {
                         list.value = '';
                         for (const a in o) {
                             const str = String(o[a]).replace(/\r?\n/g, '').trim();
-                            if (!al || (al && Array.isArray(al) && (al.includes(str) || al.length === 0))) {
+                            const allow = !Array.isArray(al) || al.length === 0 || al.includes(str);
+                            if (allow) {
                                 list.list.push(str);
                                 list.states.push(a);
                                 if (a === v && !list.value) {
@@ -2892,7 +2893,7 @@ export class PageItem extends BaseClassTriggerd {
                             list.states.push(String(a + 1));
                         }
                         const value = await entityInSel.value.getNumber();
-                        if (value && !list.value) {
+                        if (value && !Number.isNaN(value) && !list.value) {
                             list.value = list.list[value - 1];
                         }
                     }

@@ -7,6 +7,7 @@ import { BaseClass } from './library';
 import { genericStateObjects } from '../const/definition';
 import type { Controller } from '../controller/controller';
 import type { IClientPublishOptions } from 'mqtt';
+import type { AlwaysOnMode } from '../types/types';
 
 export interface BaseClassTriggerdInterface {
     name: string;
@@ -27,7 +28,7 @@ export class BaseClassTriggerd extends BaseClass {
     private doUpdate: boolean = true;
     protected minUpdateInterval: number;
     protected visibility: boolean = false;
-    public alwaysOn: 'none' | 'always' | 'action' | 'ignore';
+    public alwaysOn: AlwaysOnMode;
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     readonly basePanel: Panel;
@@ -84,13 +85,12 @@ export class BaseClassTriggerd extends BaseClass {
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
         if (
-            (!this.visibility &&
-                !(
-                    this.neverDeactivateTrigger ||
-                    (this.canBeHidden && this.parent?.visibility) ||
-                    from.neverDeactivateTrigger
-                )) ||
-            this.unload
+            !this.visibility &&
+            !(
+                this.neverDeactivateTrigger ||
+                (this.canBeHidden && this.parent?.visibility) ||
+                from.neverDeactivateTrigger
+            )
         ) {
             this.log.debug(`[${this.basePanel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
             return false;
@@ -121,7 +121,7 @@ export class BaseClassTriggerd extends BaseClass {
                 }
                 this.alwaysOnState = this.adapter.setTimeout(
                     () => {
-                        this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
+                        this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
                     },
                     this.basePanel.timeout * 1000 || 5000,
                 );
@@ -207,15 +207,15 @@ export class BaseClassTriggerd extends BaseClass {
                             }
                             this.alwaysOnState = this.adapter.setTimeout(
                                 async () => {
-                                    this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
+                                    this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
                                 },
                                 this.basePanel.timeout * 2 * 1000 || 5000,
                             );
                         } else {
-                            this.basePanel.sendScreeensaverTimeout(0);
+                            this.basePanel.sendScreensaverTimeout(0);
                         }
                     } else {
-                        this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
+                        this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
                     }
                 }
             }
