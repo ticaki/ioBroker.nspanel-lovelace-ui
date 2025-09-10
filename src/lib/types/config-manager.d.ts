@@ -429,8 +429,21 @@ declare namespace ScriptConfig {
         colorMediaArtist?: RGB;
         colorMediaTitle?: RGB;
         speakerList?: string[];
+        /**
+         * List of favorite playlists (whitelist).
+         * - If present and non-empty, only the playlists in this list are shown.
+         * - If empty or undefined, all available playlists are shown.
+         */
+        favoriteList?: string[];
+
+        /**
+         * List of available playlists.
+         * - Alexa & Spotify: contains the playlists provided by the adapter.
+         * - Sonos: contains user-defined playlists, since Sonos playlists cannot be read by the adapter.
+         */
         playList?: string[];
         equalizerList?: string[];
+
         repeatList?: string[];
         globalTracklist?: string[];
         /** detailed configuration */
@@ -468,7 +481,6 @@ declare namespace ScriptConfig {
             favoriteList?: boolean;
             crossfade?: boolean;
         };
-        favoriteList?: string[];
     } & PageBaseItem;
 
     export type PageThermo2PageItems = {
