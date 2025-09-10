@@ -52,16 +52,16 @@ describe('Buzzer functionality', () => {
 });
 
 describe('PopupNotification functionality', () => {
-    it('should include popupNotification in PanelInternalCommand type', () => {
-        const popupCommand: types.PanelInternalCommand = 'popupNotification';
-        expect(popupCommand).to.equal('popupNotification');
+    it('should include cmd/popupNotification in PanelInternalCommand type', () => {
+        const popupCommand: types.PanelInternalCommand = 'cmd/popupNotification';
+        expect(popupCommand).to.equal('cmd/popupNotification');
     });
 
-    it('should have popupNotification in internal states', () => {
-        expect(InternalStates.panel.popupNotification).to.be.an('object');
-        expect(InternalStates.panel.popupNotification.common.type).to.equal('string');
-        expect(InternalStates.panel.popupNotification.common.role).to.equal('json');
-        expect(InternalStates.panel.popupNotification.common.name).to.equal('Popup Notification');
+    it('should have cmd/popupNotification in internal states', () => {
+        expect(InternalStates.panel['cmd/popupNotification']).to.be.an('object');
+        expect(InternalStates.panel['cmd/popupNotification'].common.type).to.equal('string');
+        expect(InternalStates.panel['cmd/popupNotification'].common.role).to.equal('json');
+        expect(InternalStates.panel['cmd/popupNotification'].common.name).to.equal('Popup Notification');
     });
 
     it('should validate PopupNotificationVal type accepts valid object', () => {

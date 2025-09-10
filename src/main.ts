@@ -515,51 +515,6 @@ class NspanelLovelaceUi extends utils.Adapter {
      */
     private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (state) {
-            // Handle popupNotification state changes - trigger popup on all panels
-            if (id.endsWith('.popupNotification') && id.startsWith(this.namespace) && !state.ack) {
-                try {
-                    let notificationData: pages.PopupNotificationVal;
-
-                    // Handle undefined by ignoring it
-                    if (state.val === undefined || state.val === null || state.val === '') {
-                        this.log.debug('PopupNotification: Ignoring undefined/null/empty value');
-                        return;
-                    }
-
-                    // Parse JSON data
-                    if (typeof state.val === 'string') {
-                        try {
-                            notificationData = JSON.parse(state.val);
-                        } catch {
-                            this.log.warn(`PopupNotification: Invalid JSON format: ${state.val}`);
-                            return;
-                        }
-                    } else if (typeof state.val === 'object') {
-                        notificationData = state.val as pages.PopupNotificationVal;
-                    } else {
-                        this.log.warn(`PopupNotification: Invalid value type: ${typeof state.val}`);
-                        return;
-                    }
-
-                    // Trigger popup notification on all panels
-                    if (this.controller && notificationData) {
-                        for (const panel of this.controller.panels) {
-                            await this.setStateAsync(
-                                `${panel.topic}.cmd.popupNotification`,
-                                JSON.stringify(notificationData),
-                                true,
-                            );
-                        }
-                        this.log.debug(`PopupNotification triggered on ${this.controller.panels.length} panels`);
-                    }
-
-                    // Acknowledge the state
-                    await this.setStateAsync(id, state.val, true);
-                } catch (error: any) {
-                    this.log.error(`Error handling popupNotification state change: ${error.message}`);
-                }
-            }
-
             if (this.controller) {
                 await this.controller.statesControler.onStateChange(id, state);
             }
