@@ -13,6 +13,7 @@ import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import type { PageItem } from './pageItem';
 
+// siehe typ PopupNotificationValue in src/lib/types/types.ts
 export class PageNotify extends Page {
     config: pages.PageBaseConfig['config'];
     private lastpage: Page[] = [];
@@ -20,12 +21,12 @@ export class PageNotify extends Page {
     private headlinePos: number = 0;
     private rotationTimeout: ioBroker.Timeout | undefined;
     tempItem: PageItem | undefined;
-    items: pages.PageBaseConfig['items'];
+    items: pages.cardNotifyDataItems | pages.cardNotify2DataItems | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         this.config = options.config;
-        if (options.items && (options.items.card == 'popupNotify' || options.items.card == 'popupNotify2')) {
+        if (options.items && (isCardNotifyDataItems(options.items) || isCardNotify2DataItems(options.items))) {
             this.items = options.items;
         }
         this.minUpdateInterval = 1000;
@@ -39,7 +40,7 @@ export class PageNotify extends Page {
             this.enums || this.dpInit
                 ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
-        setTriggeredToState(tempConfig, ['entity1', 'optinalValue']);
+        setTriggeredToState(tempConfig, ['entity1', 'optionalValue']);
         // create Dataitems
 
         const tempItem: Partial<pages.cardNotifyDataItems> = await this.basePanel.statesControler.createDataItems(
@@ -79,7 +80,7 @@ export class PageNotify extends Page {
         }
         this.log.debug('update notification page!');
         let value: number | boolean | null = null;
-        if (items.card === 'popupNotify' || items.card === 'popupNotify2') {
+        if (isCardNotifyDataItems(items)) {
             const data = items.data;
             value = await getValueEntryNumber(data.entity1);
             if (value === null) {
@@ -202,7 +203,7 @@ export class PageNotify extends Page {
     /**
      * Rotate text in view
      *
-     * @returns
+     * @returns void
      */
     private rotation = async (): Promise<void> => {
         if (!this.visibility) {
@@ -232,6 +233,28 @@ export class PageNotify extends Page {
         this.log.debug(`state triggerd ${_dp}`);
         /*if (_dp.includes('popupNotification'))*/ await this.basePanel.setActivePage(this);
     }
+
+    /**
+     * Handle button events for the notify popup.
+     *
+     * Behavior:
+     * - Only processes events when this page is a `popupNotify`.
+     * - Reacts to `action === "notifyAction"`.
+     *   - If `setValue2` exists: writes `true` to `setValue1` on "yes", otherwise to `setValue2`.
+     *   - Else: writes boolean to `setValue1` based on `opt === "yes"`.
+     * - Evaluates optional `closingBehaviour`:
+     *   - "none"  → keep popup open
+     *   - "both"  → close always
+     *   - "yes" / "no" → close only if it matches `opt`
+     * - When closing, returns to the last page (stack) or the current navigation page.
+     *
+     * Side effects:
+     * - May write states via Dataitem setters.
+     * - May change the active page on the panel.
+     *
+     * @param _event Incoming event from the panel (must contain `action`, may contain `opt`).
+     * @returns Promise that resolves when the event has been handled.
+     */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const data = this.items && this.items.card === 'popupNotify' && this.items.data;
         let close = true;
@@ -289,4 +312,11 @@ export class PageNotify extends Page {
             await this.update();
         }
     }
+}
+
+export function isCardNotifyDataItems(obj: any): obj is pages.cardNotifyDataItems {
+    return obj && obj.card === 'popupNotify';
+}
+export function isCardNotify2DataItems(obj: any): obj is pages.cardNotify2DataItems {
+    return obj && obj.card === 'popupNotify2';
 }

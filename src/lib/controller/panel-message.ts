@@ -107,9 +107,7 @@ export class PanelSend extends BaseClass {
             this.messageTimeout = undefined;
             return;
         }
-        if (this.panel && !this.panel.isOnline) {
-            this.messageDb = [];
-        }
+
         if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
             this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
         }

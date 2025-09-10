@@ -472,6 +472,13 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.hideCards,
         );
 
+        // Initialize buzzer state
+        await this.library.writedp(
+            `panels.${this.name}.cmd.buzzer`,
+            '',
+            definition.genericStateObjects.panel.panels.cmd.buzzer,
+        );
+
         state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
         if (state && state.val != null) {
             this.detach.right = !!state.val;
@@ -729,11 +736,12 @@ export class Panel extends BaseClass {
         }
 
         if (targetSleep !== this._activePage.sleep) {
+            this._activePage.sleep = targetSleep;
             if (!targetSleep) {
                 this._activePage.sendType(true);
                 await this._activePage.setVisibility(true);
             }
-            this._activePage.sleep = targetSleep;
+
             return;
         }
         if (!targetSleep) {
@@ -760,7 +768,6 @@ export class Panel extends BaseClass {
         if (this.unload && s) {
             return;
         }
-        this.info.isOnline = s;
         if (s !== this._isOnline) {
             void this.library.writedp(
                 `panels.${this.name}.info.isOnline`,
@@ -772,7 +779,8 @@ export class Panel extends BaseClass {
             } else {
                 //void this.controller.removePanel(this);
                 //void this.controller.addPanel(this.options);
-                this._activePage = undefined;
+                this._activePage && void this._activePage.setVisibility(false);
+                this.restartLoops();
                 this.log.warn('is offline!');
             }
         }
@@ -861,7 +869,7 @@ export class Panel extends BaseClass {
         } else if (topic.endsWith('/tele/LWT')) {
             if (message === 'Offline') {
                 // deaktiviert, weils zu falschen offline meldungen bei 1 nutzer kommt
-                //this.isOnline = false;
+                this.isOnline = false;
             }
         } else if (topic.endsWith('/tele/INFO1')) {
             this.restartLoops();
@@ -1199,6 +1207,14 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'buzzer': {
+                    if (state && state.val != null && typeof state.val === 'string' && state.val.trim()) {
+                        this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
+                        // Clear the state after sending command
+                        await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, '', false);
+                    }
+                    break;
+                }
             }
         }
     }
@@ -1208,7 +1224,7 @@ export class Panel extends BaseClass {
      *
      * @param sec seconds for timeout
      */
-    sendScreeensaverTimeout(sec: number): void {
+    sendScreensaverTimeout(sec: number): void {
         this.log.debug(`Set screeensaver timeout to ${sec}s.`);
         this.sendToPanel(`timeout~${sec}`, false);
     }
@@ -1254,7 +1270,9 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        this.loopTimeout = this.adapter.setTimeout(() => this.loop(), 200);
+        this.loopTimeout = this.adapter.setTimeout(() => {
+            this.loop();
+        }, 200);
     }
 
     loop = (): void => {
@@ -1396,7 +1414,7 @@ export class Panel extends BaseClass {
                 }
 
                 if (start.alwaysOn === 'none') {
-                    this.sendScreeensaverTimeout(2);
+                    this.sendScreensaverTimeout(2);
                 }
 
                 this.log.info('Panel startup finished!');
@@ -1609,7 +1627,7 @@ export class Panel extends BaseClass {
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         const val = parseInt(String(state.val));
                         this.timeout = val;
-                        this.sendScreeensaverTimeout(this.timeout);
+                        this.sendScreensaverTimeout(this.timeout);
                         await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
                         await this.library.writedp(`panels.${this.name}.cmd.screenSaver.timeout`, this.timeout);
                     }
@@ -1785,8 +1803,16 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/buzzer': {
+                    if (typeof state.val === 'string' && state.val.trim()) {
+                        this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
+                        // Clear the state after sending command
+                        await this.statesControler.setInternalState(id, '', true);
+                        await this.library.writedp(`panels.${this.name}.cmd.buzzer`, '');
+                    }
+                    break;
+                }
             }
-            await this.statesControler.setInternalState(id, state.val, true);
         }
         switch (token) {
             case 'cmd/bigIconLeft': {

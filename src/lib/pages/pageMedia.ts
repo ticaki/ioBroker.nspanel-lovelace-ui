@@ -123,6 +123,7 @@ export class PageMedia extends PageMenu {
             }
             this.headlinePos = 0;
             this.titelPos = 0;
+            this.artistPos = 0;
         } else {
             for (const item of this.items) {
                 if (item.logoItem) {
@@ -200,6 +201,7 @@ export class PageMedia extends PageMenu {
             album = '',
             artist = '';
 
+        const isPlaying = await this.isPlaying();
         // Title string
         {
             const v = await tools.getValueEntryString(item.data.title);
@@ -377,15 +379,12 @@ export class PageMedia extends PageMenu {
                     message.onoffbuttonColor = message.iconplaypause !== 'pause' ? '65535' : '1374';
                 }
             }
-        } else if (item.data.isPlaying) {
-            const v = await item.data.isPlaying.getBoolean();
-            if (v !== null) {
-                message.iconplaypause = v ? 'pause' : 'play';
-                if (item.data.stop || item.data.pause) {
-                    message.onoffbuttonColor = v ? '65535' : '1374';
-                } else {
-                    message.onoffbuttonColor = message.iconplaypause !== 'pause' ? '65535' : '1374';
-                }
+        } else {
+            message.iconplaypause = isPlaying ? 'pause' : 'play';
+            if (item.data.stop || item.data.pause) {
+                message.onoffbuttonColor = isPlaying ? '65535' : '1374';
+            } else {
+                message.onoffbuttonColor = message.iconplaypause !== 'pause' ? '65535' : '1374';
             }
         }
 
@@ -393,19 +392,19 @@ export class PageMedia extends PageMenu {
         // Colors (title, artist, onOff)
         // ---------------------
         if (item.data.title) {
-            const v = await tools.getIconEntryColor(item.data.title, await this.isPlaying(), Color.Red, Color.Gray);
+            const v = await tools.getIconEntryColor(item.data.title, isPlaying, Color.Red, Color.Gray);
             if (v !== null) {
                 message.titelColor = v;
             }
         }
         if (item.data.artist) {
-            const v = await tools.getIconEntryColor(item.data.artist, await this.isPlaying(), Color.White, Color.Gray);
+            const v = await tools.getIconEntryColor(item.data.artist, isPlaying, Color.White, Color.Gray);
             if (v !== null) {
                 message.artistColor = v;
             }
         }
         if (item.data.onOffColor) {
-            const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), Color.White);
+            const v = await tools.getIconEntryColor(item.data.onOffColor, isPlaying, Color.White);
             message.onoffbuttonColor = v !== null ? v : 'disable';
         }
 
@@ -435,6 +434,7 @@ export class PageMedia extends PageMenu {
 
         this.sendToPanel(this.getMessage(msg), false);
     }
+
     private async getMediaState(): Promise<boolean | null> {
         if (!this.currentItem) {
             return null;
@@ -755,7 +755,7 @@ export class PageMedia extends PageMenu {
             return;
         } else if (types.isPopupType(popup) && action !== 'bExit') {
             this.basePanel.lastCard = '';
-            this.sleep = true;
+            await this.basePanel.setActivePage(false);
             msg = await item.GeneratePopup(popup);
             this.sleep = false;
         }

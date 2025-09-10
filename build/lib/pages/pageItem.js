@@ -2457,7 +2457,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           list.states = [];
           for (const a in this.tempData) {
             list.list.push(this.tempData[a].name);
-            list.states.push(a);
+            list.states.push(this.tempData[a].name);
           }
           const dp = ((_a = this.parent.currentItem) == null ? void 0 : _a.ident) || ((_b = entityInSel == null ? void 0 : entityInSel.value) == null ? void 0 : _b.options.dp) || "";
           const index = this.tempData.findIndex((a) => dp.includes(a.id));
@@ -2508,7 +2508,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             list.value = "";
             for (const a in o) {
               const str = String(o[a]).replace(/\r?\n/g, "").trim();
-              if (!al || al && Array.isArray(al) && (al.includes(str) || al.length === 0)) {
+              const allow = !Array.isArray(al) || al.length === 0 || al.includes(str);
+              if (allow) {
                 list.list.push(str);
                 list.states.push(a);
                 if (a === v && !list.value) {
@@ -2533,7 +2534,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               list.states.push(String(a + 1));
             }
             const value = await entityInSel.value.getNumber();
-            if (value && !list.value) {
+            if (value && !Number.isNaN(value) && !list.value) {
               list.value = list.list[value - 1];
             }
           }
@@ -2562,7 +2563,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               break;
             }
             const filter = await valueList.getObject() || [];
-            const fulllist = await valueList2.getObject() || [];
+            let fulllist = await valueList2.getObject() || [];
             const isStringArray = (x) => Array.isArray(x) && x.every((v) => typeof v === "string");
             if (!isStringArray(filter) || !isStringArray(fulllist)) {
               this.log.error("2values: valueList/valueList2 must be string[]!");
@@ -2571,7 +2572,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             list.value = value != null ? value : "";
             if (filter.length > 0) {
-              fulllist.filter((v) => filter.includes(v));
+              fulllist = fulllist.filter((v) => filter.includes(v));
             }
             states = fulllist;
             break;

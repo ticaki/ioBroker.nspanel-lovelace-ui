@@ -83,6 +83,130 @@ const popupNotification2: PageBaseConfig = {
     items: undefined,
 };
 
+const popupNotificationCustom: PageBaseConfig = {
+    dpInit: '',
+    alwaysOn: 'ignore',
+    uniqueID: '///popupNotificationCustom',
+    config: {
+        card: 'popupNotify',
+        data: {
+            entity1: { value: { type: 'internal', dp: 'cmd/popupNotification', read: 'return true' } },
+
+            headline: {
+                type: 'internal',
+                dp: 'cmd/popupNotification',
+                read: `
+                    try {
+                        const o = typeof val === 'string' ? JSON.parse(val) : val;
+                        return o?.headline ?? '';
+                    } catch { return ''; }
+                    `,
+            },
+
+            colorHeadline: {
+                true: {
+                    color: {
+                        type: 'internal',
+                        dp: 'cmd/popupNotification',
+                        read: `
+                            try {
+                                const o = typeof val === 'string' ? JSON.parse(val) : val;
+                                return o?.colorHeadline ? JSON.stringify(o.colorHeadline) : JSON.stringify(Color.Green);
+                            } catch { return JSON.stringify(Color.Green); }
+                            `,
+                    },
+                },
+            },
+
+            buttonLeft: {
+                type: 'internal',
+                dp: 'cmd/popupNotification',
+                read: `
+                        try {
+                            const o = typeof val === 'string' ? JSON.parse(val) : val;
+                            return o?.buttonLeft ?? 'nextF';
+                        } catch { return 'nextF'; }
+                        `,
+            },
+
+            colorButtonLeft: {
+                true: {
+                    color: {
+                        type: 'internal',
+                        dp: 'cmd/popupNotification',
+                        read: `
+                            try {
+                                const o = typeof val === 'string' ? JSON.parse(val) : val;
+                                return o?.colorButtonLeft ? JSON.stringify(o.colorButtonLeft) : JSON.stringify(Color.White);
+                            } catch { return JSON.stringify(Color.White); }
+                            `,
+                    },
+                },
+            },
+
+            buttonRight: {
+                type: 'internal',
+                dp: 'cmd/popupNotification',
+                read: `
+      try {
+        const o = typeof val === 'string' ? JSON.parse(val) : val;
+        return o?.buttonRight ?? 'ok';
+      } catch { return 'ok'; }
+    `,
+            },
+
+            colorButtonRight: {
+                true: {
+                    color: {
+                        type: 'internal',
+                        dp: 'cmd/popupNotification',
+                        read: `
+                    try {
+                        const o = typeof val === 'string' ? JSON.parse(val) : val;
+                        return o?.colorButtonRight ? JSON.stringify(o.colorButtonRight) : JSON.stringify(Color.White);
+                    } catch { return JSON.stringify(Color.White); }
+                    `,
+                    },
+                },
+            },
+
+            text: {
+                type: 'internal',
+                dp: 'cmd/popupNotification',
+                read: `
+                    try {
+                        const o = typeof val === 'string' ? JSON.parse(val) : val;
+                        return o?.text ?? '';
+                    } catch { return ''; }
+                    `,
+            },
+
+            colorText: {
+                true: {
+                    color: {
+                        type: 'internal',
+                        dp: 'cmd/popupNotification',
+                        read: `
+          try {
+            const o = typeof val === 'string' ? JSON.parse(val) : val;
+            return o?.colorText ? JSON.stringify(o.colorText) : JSON.stringify(Color.White);
+          } catch { return JSON.stringify(Color.White); }
+        `,
+                    },
+                },
+            },
+
+            timeout: { type: 'const', constVal: 0 },
+
+            setValue1: { type: 'internalState', dp: 'cmd/NotificationCleared' },
+            setValue2: { type: 'internalState', dp: 'cmd/NotificationNext' },
+            closingBehaviour: { type: 'const', constVal: 'none' },
+        },
+    },
+    pageItems: [],
+    items: undefined,
+};
+
 const popupInfo: PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'ignore',
@@ -1483,6 +1607,7 @@ export const systemPages: PageBaseConfig[] = [
     NetworkOption,
     SystemOption,
     popupInfo,
+    popupNotificationCustom,
 ];
 export const systemNavigation: NavigationItemConfig[] = [
     {

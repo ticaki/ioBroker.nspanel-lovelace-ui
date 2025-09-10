@@ -345,7 +345,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
                         }
                     }
                     if (Array.isArray(data)) {
-                        return data.length >= 2 || ${(_k = page.media.speakerList && page.media.speakerList.length > 0) != null ? _k : false} > 1;
+                        return data.length >= 2 || ${(_k = page.media.speakerList && page.media.speakerList.length > 0) != null ? _k : false};
                     }
                     return false;`
         }
@@ -576,7 +576,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
             role: "media.mode.repeat",
             regexp: /\.repeat$/,
             dp: "",
-            write: `{
+            write: `
                             switch (val) {
                                 case 'OFF':
                                     return 1;
@@ -585,8 +585,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
                                 case 'ONE':
                                     return 0;
                             }
-                            return 0
-                        }`
+                            return 0;`
           }
         }
       }

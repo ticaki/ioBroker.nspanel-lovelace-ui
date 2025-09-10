@@ -168,7 +168,8 @@ export type PanelInternalCommand =
     | 'cmd/dimNightHourEnd'
     | 'cmd/screenSaverDoubleClick'
     | 'cmd/screenSaverLayout'
-    | 'cmd/hideCards';
+    | 'cmd/hideCards'
+    | 'cmd/buzzer';
 
 export function isPopupType(F: any): F is PopupType {
     switch (F as PopupType) {
@@ -188,6 +189,17 @@ export function isPopupType(F: any): F is PopupType {
             return false;
     }
 }
+
+/**
+ * Defines how the panel handles "always on" behavior.
+ *
+ * - `"always"` → Screen is forced to stay on permanently.
+ *   A timeout of `0` means "never turn off".
+ * - `"none"` → No special handling; normal timeout rules apply.
+ * - `"ignore"` → Skip "always on" logic completely for this page/item.
+ * - `"action"` → Extend screen-on time only when a state/action event occurs.
+ */
+export type AlwaysOnMode = 'always' | 'none' | 'ignore' | 'action';
 
 export type nsPanelState = ioBroker.State | (Omit<ioBroker.State, 'val'> & { val: nsPanelStateVal });
 export type nsPanelStateVal = ioBroker.State['val'] | Record<string | number, any>;

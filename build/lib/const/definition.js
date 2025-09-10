@@ -167,6 +167,20 @@ const genericStateObjects = {
           },
           native: {}
         },
+        buzzer: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buzzer",
+            type: "string",
+            role: "text",
+            read: true,
+            write: true,
+            desc: 'Send buzzer command to panel (e.g., "1,2,3,0xF54" for tone, duration, count, frequency)',
+            def: ""
+          },
+          native: {}
+        },
         mainNavigationPoint: {
           _id: "",
           type: "state",
@@ -1716,6 +1730,17 @@ const InternalStates = {
         name: "",
         type: "boolean",
         role: "switch",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/buzzer": {
+      val: "",
+      ack: true,
+      common: {
+        name: "StateObjects.buzzer",
+        type: "string",
+        role: "text",
         read: true,
         write: true
       }

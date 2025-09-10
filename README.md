@@ -79,6 +79,69 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 
 ---
 
+## Buzzer Control
+
+The adapter supports buzzer control for NSPanel devices using the Tasmota `Buzzer` command. This enables button sounds, urgent message notifications, and general buzzer control.
+
+### Prerequisites
+
+To use the buzzer functionality, ensure your NSPanel Tasmota firmware has `SetOption111 1` enabled. This uses BuzzerPwm for piezo buzzer frequency output instead of on/off signal.
+
+### Usage Methods
+
+#### 1. State-based Control
+
+Each panel has a buzzer control state: `panels.{panelName}.cmd.buzzer`
+
+```javascript
+// Set buzzer command (tone, duration, count, frequency)
+setState('nspanel-lovelace-ui.0.panels.Panel1.cmd.buzzer', '1,2,3,0xF54');
+
+// Examples:
+setState('nspanel-lovelace-ui.0.panels.Panel1.cmd.buzzer', '1');        // Single beep
+setState('nspanel-lovelace-ui.0.panels.Panel1.cmd.buzzer', '1,5');      // Longer beep
+setState('nspanel-lovelace-ui.0.panels.Panel1.cmd.buzzer', '2,3,5');    // 5 beeps
+```
+
+#### 2. SendTo Interface
+
+```javascript
+// Basic buzzer command
+sendTo('nspanel-lovelace-ui.0', 'buzzer', {
+    panel: 'panelTopic',
+    command: '1,2,3,0xF54'
+});
+
+// Button feedback sound
+sendTo('nspanel-lovelace-ui.0', 'buzzer', {
+    panel: 'kitchen_panel',
+    command: '1'
+});
+
+// Urgent notification
+sendTo('nspanel-lovelace-ui.0', 'buzzer', {
+    panel: 'living_room',
+    command: '3,5,10,0x800'  // High-pitched, multiple beeps
+});
+```
+
+### Buzzer Command Format
+
+The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
+
+- **tone**: 1-4 (tone type)
+- **duration**: 1-10 (duration units, ~100ms each)  
+- **count**: 1-255 (number of beeps)
+- **frequency**: 0x100-0xFFFF (piezo frequency in hex)
+
+**Examples:**
+- `1` - Single short beep
+- `1,5` - Single longer beep  
+- `2,3,5` - 5 medium beeps with tone 2
+- `1,2,3,0xF54` - 3 short beeps with custom frequency
+
+---
+
 ## Changelog
 <!--
     Placeholder for the next version (at the beginning of the line):
@@ -90,6 +153,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - (ticaki) Added new channel role "media" with status display and pageMedia fallback; for this role only, added `asControl` as PageItem property
 - (ticaki) Fixed state evaluation: `getState() === null` no longer interpreted as missing state; boolean states now return `false` instead of `null` if the state exists but has no value.
 - (copilot) Added support for ioBroker Sonos-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
+- (copilot) Added buzzer functionality for NSPanel devices - enables button sounds, urgent message notifications, and general buzzer control via state and sendTo interface
 - (copilot) Added support for ioBroker MPD-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (ticaki) Added support for ioBroker spotify-premium in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (ticaki) Startup significantly improved and hangs removed

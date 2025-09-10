@@ -803,7 +803,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=Backlog${encodeURIComponent(
-                                            ` WebLog 2; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1};` +
+                                            ` WebLog 2;SetOption111 1; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1};` +
                                                 ` Module 0;${this.config.timezone ? definition.getTasmotaTimeZone(this.config.timezone) : ''}: restart 1`,
                                         )}`,
                                 );
@@ -1671,6 +1671,30 @@ class NspanelLovelaceUi extends utils.Adapter {
                     // Send response in callback if required
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case 'buzzer': {
+                    // sendTo('nspanel-lovelace-ui.0', 'buzzer', { panel: 'panelTopic', command: '1,2,3,0xF54' });
+                    if (obj.message?.panel && this.controller?.panels) {
+                        const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
+                        if (panel && typeof obj.message.command === 'string' && obj.message.command.trim()) {
+                            await panel.statesControler.setInternalState(
+                                `${panel.name}/cmd/buzzer`,
+                                obj.message.command.trim(),
+                                false,
+                            );
+                        } else {
+                            this.log.warn(`Panel ${obj.message.panel} not found or invalid buzzer command!`);
+                        }
+                    } else {
+                        this.log.warn(
+                            `Missing panel or command in buzzer: ${JSON.stringify(obj.message)} or controller not ready!`,
+                        );
+                    }
+                    // Send response in callback if required
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
                     }
                     break;
                 }

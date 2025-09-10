@@ -7,6 +7,8 @@
 
 import { expect } from 'chai';
 import { getPageSonos } from './lib/pages/tools/getSonos';
+import { genericStateObjects, InternalStates } from './lib/const/definition';
+import type * as types from './lib/types/types';
 // import { functionToTest } from "./moduleToTest";
 
 describe('module to test => function to test', () => {
@@ -26,6 +28,26 @@ describe('module to test => function to test', () => {
 describe('Sonos media player integration', () => {
     it('should export getPageSonos function', () => {
         expect(getPageSonos).to.be.a('function');
+    });
+});
+
+describe('Buzzer functionality', () => {
+    it('should have buzzer state object definition', () => {
+        expect(genericStateObjects.panel.panels.cmd.buzzer).to.be.an('object');
+        expect(genericStateObjects.panel.panels.cmd.buzzer.common.name).to.equal('StateObjects.buzzer');
+        expect(genericStateObjects.panel.panels.cmd.buzzer.common.type).to.equal('string');
+        expect(genericStateObjects.panel.panels.cmd.buzzer.common.role).to.equal('text');
+    });
+
+    it('should have buzzer in internal states', () => {
+        expect(InternalStates.panel['cmd/buzzer']).to.be.an('object');
+        expect(InternalStates.panel['cmd/buzzer'].common.type).to.equal('string');
+        expect(InternalStates.panel['cmd/buzzer'].val).to.equal('');
+    });
+
+    it('should include buzzer in PanelInternalCommand type', () => {
+        const buzzerCommand: types.PanelInternalCommand = 'cmd/buzzer';
+        expect(buzzerCommand).to.equal('cmd/buzzer');
     });
 });
 

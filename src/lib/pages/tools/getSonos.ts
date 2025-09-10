@@ -343,7 +343,7 @@ export async function getPageSonos(
                         }
                     }
                     if (Array.isArray(data)) {
-                        return data.length >= 2 || ${(page.media.speakerList && page.media.speakerList.length > 0) ?? false} > 1;
+                        return data.length >= 2 || ${(page.media.speakerList && page.media.speakerList.length > 0) ?? false};
                     }
                     return false;`,
                 },
@@ -591,7 +591,7 @@ export async function getPageSonos(
                         role: 'media.mode.repeat',
                         regexp: /\.repeat$/,
                         dp: '',
-                        write: `{
+                        write: `
                             switch (val) {
                                 case 'OFF':
                                     return 1;
@@ -600,8 +600,7 @@ export async function getPageSonos(
                                 case 'ONE':
                                     return 0;
                             }
-                            return 0
-                        }`,
+                            return 0;`,
                     },
                 },
             },

@@ -131,6 +131,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       }
       this.headlinePos = 0;
       this.titelPos = 0;
+      this.artistPos = 0;
     } else {
       for (const item of this.items) {
         if (item.logoItem) {
@@ -195,6 +196,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     const message = {};
     let duration = "", elapsed = "", title = "", album = "", artist = "";
+    const isPlaying = await this.isPlaying();
     {
       const v = await tools.getValueEntryString(item.data.title);
       if (v !== null) {
@@ -333,31 +335,28 @@ class PageMedia extends import_pageMenu.PageMenu {
           message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
         }
       }
-    } else if (item.data.isPlaying) {
-      const v = await item.data.isPlaying.getBoolean();
-      if (v !== null) {
-        message.iconplaypause = v ? "pause" : "play";
-        if (item.data.stop || item.data.pause) {
-          message.onoffbuttonColor = v ? "65535" : "1374";
-        } else {
-          message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
-        }
+    } else {
+      message.iconplaypause = isPlaying ? "pause" : "play";
+      if (item.data.stop || item.data.pause) {
+        message.onoffbuttonColor = isPlaying ? "65535" : "1374";
+      } else {
+        message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
       }
     }
     if (item.data.title) {
-      const v = await tools.getIconEntryColor(item.data.title, await this.isPlaying(), import_Color.Color.Red, import_Color.Color.Gray);
+      const v = await tools.getIconEntryColor(item.data.title, isPlaying, import_Color.Color.Red, import_Color.Color.Gray);
       if (v !== null) {
         message.titelColor = v;
       }
     }
     if (item.data.artist) {
-      const v = await tools.getIconEntryColor(item.data.artist, await this.isPlaying(), import_Color.Color.White, import_Color.Color.Gray);
+      const v = await tools.getIconEntryColor(item.data.artist, isPlaying, import_Color.Color.White, import_Color.Color.Gray);
       if (v !== null) {
         message.artistColor = v;
       }
     }
     if (item.data.onOffColor) {
-      const v = await tools.getIconEntryColor(item.data.onOffColor, await this.isPlaying(), import_Color.Color.White);
+      const v = await tools.getIconEntryColor(item.data.onOffColor, isPlaying, import_Color.Color.White);
       message.onoffbuttonColor = v !== null ? v : "disable";
     }
     if (item.logoItem) {
@@ -655,7 +654,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       return;
     } else if (types.isPopupType(popup) && action !== "bExit") {
       this.basePanel.lastCard = "";
-      this.sleep = true;
+      await this.basePanel.setActivePage(false);
       msg = await item.GeneratePopup(popup);
       this.sleep = false;
     }
