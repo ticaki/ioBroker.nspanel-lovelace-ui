@@ -511,8 +511,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       case "mode-insel": {
         break;
       }
-      case "media-OnOff":
-      case "button": {
+      case "media-OnOff": {
         const onoff = await this.isPlaying();
         if (items.data.mediaState) {
           if (items.data.mediaState.writeable) {

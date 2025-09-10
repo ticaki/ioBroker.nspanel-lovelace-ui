@@ -433,7 +433,6 @@ declare namespace ScriptConfig {
         equalizerList?: string[];
         repeatList?: string[];
         globalTracklist?: string[];
-        crossfade?: boolean;
         /** detailed configuration */
         itemsColorOn?: {
             trackList?: RGB;
@@ -443,6 +442,8 @@ declare namespace ScriptConfig {
             playList?: RGB;
             online?: RGB;
             reminder?: RGB;
+            crossfade?: RGB;
+            favoriteList?: RGB;
         };
         itemsColorOff?: {
             trackList?: RGB;
@@ -452,6 +453,8 @@ declare namespace ScriptConfig {
             playList?: RGB;
             online?: RGB;
             reminder?: RGB;
+            crossfade?: RGB;
+            favoriteList?: RGB;
         };
         deactivateDefaultItems?: {
             trackList?: boolean;
@@ -459,11 +462,13 @@ declare namespace ScriptConfig {
             repeat?: boolean;
             equalizer?: boolean;
             playList?: boolean;
-            favoriteList?: boolean;
             online?: boolean;
             reminder?: boolean;
             clock?: boolean;
+            favoriteList?: boolean;
+            crossfade?: boolean;
         };
+        favoriteList?: string[];
     } & PageBaseItem;
 
     export type PageThermo2PageItems = {

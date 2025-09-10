@@ -361,7 +361,7 @@ export async function getPageSonos(
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'playlist-star' },
-                        color: await configManager.getIconColor(page.media.itemsColorOn?.playList, Color.activated),
+                        color: await configManager.getIconColor(page.media.itemsColorOn?.favoriteList, Color.activated),
                     },
                 },
                 entityInSel: {
@@ -380,7 +380,7 @@ export async function getPageSonos(
                 },
                 valueList: {
                     type: 'const',
-                    constVal: JSON.stringify(page.media.playList || []),
+                    constVal: JSON.stringify(page.media.favoriteList || []),
                 },
                 valueList2: {
                     mode: 'auto',
@@ -391,7 +391,7 @@ export async function getPageSonos(
 
                 headline: {
                     type: 'const',
-                    constVal: 'playList',
+                    constVal: 'favoriteList',
                 },
                 enabled: {
                     mode: 'auto',
