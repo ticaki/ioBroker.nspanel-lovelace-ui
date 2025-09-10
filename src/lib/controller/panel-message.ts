@@ -131,6 +131,9 @@ export class PanelSend extends BaseClass {
         if (this.unload) {
             this.messageDbTasmota = [];
         }
+        if (this.adapter.unload) {
+            return;
+        }
         this.messageDbTasmota.push({ topic: topic, payload: payload, opt: opt });
 
         if (this.messageTimeoutTasmota === undefined) {

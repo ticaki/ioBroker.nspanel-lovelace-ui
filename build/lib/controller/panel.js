@@ -670,11 +670,11 @@ class Panel extends import_library.BaseClass {
       return;
     }
     if (targetSleep !== this._activePage.sleep) {
+      this._activePage.sleep = targetSleep;
       if (!targetSleep) {
         this._activePage.sendType(true);
         await this._activePage.setVisibility(true);
       }
-      this._activePage.sleep = targetSleep;
       return;
     }
     if (!targetSleep) {
@@ -1099,7 +1099,7 @@ class Panel extends import_library.BaseClass {
    *
    * @param sec seconds for timeout
    */
-  sendScreeensaverTimeout(sec) {
+  sendScreensaverTimeout(sec) {
     this.log.debug(`Set screeensaver timeout to ${sec}s.`);
     this.sendToPanel(`timeout~${sec}`, false);
   }
@@ -1168,7 +1168,7 @@ class Panel extends import_library.BaseClass {
     var _a;
     await super.delete();
     this.sendToPanel("pageType~pageStartup", false, { retain: true });
-    await this.adapter.delay(10);
+    !this.adapter.unload && await this.adapter.delay(10);
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
     }
@@ -1272,7 +1272,7 @@ class Panel extends import_library.BaseClass {
           await this.screenSaver.HandleTime();
         }
         if (start.alwaysOn === "none") {
-          this.sendScreeensaverTimeout(2);
+          this.sendScreensaverTimeout(2);
         }
         this.log.info("Panel startup finished!");
         break;
@@ -1473,7 +1473,7 @@ class Panel extends import_library.BaseClass {
           if (typeof state.val !== "boolean") {
             const val = parseInt(String(state.val));
             this.timeout = val;
-            this.sendScreeensaverTimeout(this.timeout);
+            this.sendScreensaverTimeout(this.timeout);
             await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
             await this.library.writedp(`panels.${this.name}.cmd.screenSaver.timeout`, this.timeout);
           }

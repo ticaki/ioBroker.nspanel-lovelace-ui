@@ -123,6 +123,9 @@ class PanelSend extends import_library.BaseClass {
     if (this.unload) {
       this.messageDbTasmota = [];
     }
+    if (this.adapter.unload) {
+      return;
+    }
     this.messageDbTasmota.push({ topic, payload, opt });
     if (this.messageTimeoutTasmota === void 0) {
       void this.sendMessageLoopTasmota();

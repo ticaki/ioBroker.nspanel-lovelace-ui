@@ -736,11 +736,12 @@ export class Panel extends BaseClass {
         }
 
         if (targetSleep !== this._activePage.sleep) {
+            this._activePage.sleep = targetSleep;
             if (!targetSleep) {
                 this._activePage.sendType(true);
                 await this._activePage.setVisibility(true);
             }
-            this._activePage.sleep = targetSleep;
+
             return;
         }
         if (!targetSleep) {
@@ -1296,7 +1297,7 @@ export class Panel extends BaseClass {
     async delete(): Promise<void> {
         await super.delete();
         this.sendToPanel('pageType~pageStartup', false, { retain: true });
-        await this.adapter.delay(10);
+        !this.adapter.unload && (await this.adapter.delay(10));
 
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);

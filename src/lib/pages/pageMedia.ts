@@ -114,7 +114,11 @@ export class PageMedia extends PageMenu {
             if (this.currentItem && this.currentItem.logo) {
                 if (!this.currentItem.logoItem) {
                     const logoItems = await this.createPageItems(this.currentItem.logo, 'logo');
+
                     this.currentItem.logoItem = logoItems && logoItems.length > 0 ? logoItems[0] : undefined;
+                    if (this.currentItem.logoItem) {
+                        this.currentItem.logoItem.canBeHidden = true;
+                    }
                 }
             }
             this.headlinePos = 0;
@@ -158,6 +162,9 @@ export class PageMedia extends PageMenu {
                 if (!this.currentItem.logoItem) {
                     const logoItems = await this.createPageItems(this.currentItem.logo, 'logo');
                     this.currentItem.logoItem = logoItems && logoItems.length > 0 ? logoItems[0] : undefined;
+                    if (this.currentItem.logoItem) {
+                        this.currentItem.logoItem.canBeHidden = true;
+                    }
                 }
             }
         }
@@ -166,7 +173,7 @@ export class PageMedia extends PageMenu {
     }
 
     async update(): Promise<void> {
-        if (!this.visibility) {
+        if (!this.visibility || this.sleep) {
             return;
         }
 
@@ -570,24 +577,23 @@ export class PageMedia extends PageMenu {
             }
             case 'media-OnOff':
             case 'button': {
-                if (event.id === `${this.name}-logo`) {
-                    const onoff = await this.isPlaying();
-                    if (items.data.mediaState) {
-                        if (items.data.mediaState.writeable) {
-                            await items.data.mediaState.setState(!onoff);
-                            break;
-                        }
-                    }
-                    if (onoff) {
-                        if (items.data.stop) {
-                            await items.data.stop.setStateTrue();
-                        } else if (items.data.pause) {
-                            await items.data.pause.setStateTrue();
-                        }
-                    } else if (items.data.play) {
-                        await items.data.play.setStateTrue();
+                const onoff = await this.isPlaying();
+                if (items.data.mediaState) {
+                    if (items.data.mediaState.writeable) {
+                        await items.data.mediaState.setState(!onoff);
+                        break;
                     }
                 }
+                if (onoff) {
+                    if (items.data.stop) {
+                        await items.data.stop.setStateTrue();
+                    } else if (items.data.pause) {
+                        await items.data.pause.setStateTrue();
+                    }
+                } else if (items.data.play) {
+                    await items.data.play.setStateTrue();
+                }
+
                 break;
             }
         }
@@ -749,7 +755,9 @@ export class PageMedia extends PageMenu {
             return;
         } else if (types.isPopupType(popup) && action !== 'bExit') {
             this.basePanel.lastCard = '';
+            await this.basePanel.setActivePage(false);
             msg = await item.GeneratePopup(popup);
+            this.sleep = false;
         }
         if (msg !== null) {
             this.sleep = true;
