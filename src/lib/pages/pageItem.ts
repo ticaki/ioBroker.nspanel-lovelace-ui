@@ -1432,8 +1432,6 @@ export class PageItem extends BaseClassTriggerd {
             case 'popupNotify':
                 break;
             case 'popupShutter': {
-                //entityUpdateDetail~entityName~*sliderPos*~2ndrow~textPosition~icon1~iconUp~iconStop~iconDown~iconUpStatus~iconStopStatus~iconDownStatus
-                //~textTilt~iconTiltLeft~iconTiltStop~iconTiltRight~iconTiltLeftStatus~iconTiltStopStatus~iconTiltLeftStatus~tiltPos
                 if (entry.type !== 'shutter') {
                     break;
                 }
