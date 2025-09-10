@@ -17,7 +17,6 @@ export default [
             'admin/build',
             'admin/words.js',
             'admin/admin.d.ts',
-            'admin/blockly.js',
             '**/adapter-config.d.ts',
             'img',
             'json',

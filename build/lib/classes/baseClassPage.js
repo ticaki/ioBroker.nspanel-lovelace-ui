@@ -82,7 +82,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
     var _a;
-    if (!this.visibility && !(this.neverDeactivateTrigger || this.canBeHidden && ((_a = this.parent) == null ? void 0 : _a.visibility) || from.neverDeactivateTrigger)) {
+    if (!this.visibility && !(this.neverDeactivateTrigger || this.canBeHidden && ((_a = this.parent) == null ? void 0 : _a.visibility) || from.neverDeactivateTrigger) || this.unload) {
       this.log.debug(`[${this.basePanel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
       return false;
     }
@@ -111,7 +111,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         }
         this.alwaysOnState = this.adapter.setTimeout(
           () => {
-            this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+            this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
           },
           this.basePanel.timeout * 1e3 || 5e3
         );
@@ -194,15 +194,15 @@ class BaseClassTriggerd extends import_library.BaseClass {
               }
               this.alwaysOnState = this.adapter.setTimeout(
                 async () => {
-                  this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+                  this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
                 },
                 this.basePanel.timeout * 2 * 1e3 || 5e3
               );
             } else {
-              this.basePanel.sendScreensaverTimeout(0);
+              this.basePanel.sendScreeensaverTimeout(0);
             }
           } else {
-            this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+            this.basePanel.sendScreeensaverTimeout(this.basePanel.timeout);
           }
         }
       }

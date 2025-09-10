@@ -28,9 +28,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageNotification_exports = {};
 __export(pageNotification_exports, {
-  PageNotify: () => PageNotify,
-  isCardNotify2DataItems: () => isCardNotify2DataItems,
-  isCardNotifyDataItems: () => isCardNotifyDataItems
+  PageNotify: () => PageNotify
 });
 module.exports = __toCommonJS(pageNotification_exports);
 var import_Page = require("../classes/Page");
@@ -48,7 +46,7 @@ class PageNotify extends import_Page.Page {
   constructor(config, options) {
     super(config, options);
     this.config = options.config;
-    if (options.items && (isCardNotifyDataItems(options.items) || isCardNotify2DataItems(options.items))) {
+    if (options.items && (options.items.card == "popupNotify" || options.items.card == "popupNotify2")) {
       this.items = options.items;
     }
     this.minUpdateInterval = 1e3;
@@ -57,7 +55,7 @@ class PageNotify extends import_Page.Page {
   async init() {
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
-    (0, import_tools.setTriggeredToState)(tempConfig, ["entity1", "optionalValue"]);
+    (0, import_tools.setTriggeredToState)(tempConfig, ["entity1", "optinalValue"]);
     const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
       this
@@ -93,7 +91,7 @@ class PageNotify extends import_Page.Page {
     }
     this.log.debug("update notification page!");
     let value = null;
-    if (isCardNotifyDataItems(items)) {
+    if (items.card === "popupNotify" || items.card === "popupNotify2") {
       const data = items.data;
       value = await (0, import_tools.getValueEntryNumber)(data.entity1);
       if (value === null) {
@@ -211,7 +209,7 @@ ${message.text}`;
   /**
    * Rotate text in view
    *
-   * @returns void
+   * @returns
    */
   rotation = async () => {
     if (!this.visibility) {
@@ -241,27 +239,6 @@ ${message.text}`;
     this.log.debug(`state triggerd ${_dp}`);
     await this.basePanel.setActivePage(this);
   }
-  /**
-   * Handle button events for the notify popup.
-   *
-   * Behavior:
-   * - Only processes events when this page is a `popupNotify`.
-   * - Reacts to `action === "notifyAction"`.
-   *   - If `setValue2` exists: writes `true` to `setValue1` on "yes", otherwise to `setValue2`.
-   *   - Else: writes boolean to `setValue1` based on `opt === "yes"`.
-   * - Evaluates optional `closingBehaviour`:
-   *   - "none"  → keep popup open
-   *   - "both"  → close always
-   *   - "yes" / "no" → close only if it matches `opt`
-   * - When closing, returns to the last page (stack) or the current navigation page.
-   *
-   * Side effects:
-   * - May write states via Dataitem setters.
-   * - May change the active page on the panel.
-   *
-   * @param _event Incoming event from the panel (must contain `action`, may contain `opt`).
-   * @returns Promise that resolves when the event has been handled.
-   */
   async onButtonEvent(_event) {
     var _a;
     const data = this.items && this.items.card === "popupNotify" && this.items.data;
@@ -320,16 +297,8 @@ ${message.text}`;
     }
   }
 }
-function isCardNotifyDataItems(obj) {
-  return obj && obj.card === "popupNotify";
-}
-function isCardNotify2DataItems(obj) {
-  return obj && obj.card === "popupNotify2";
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageNotify,
-  isCardNotify2DataItems,
-  isCardNotifyDataItems
+  PageNotify
 });
 //# sourceMappingURL=pageNotification.js.map

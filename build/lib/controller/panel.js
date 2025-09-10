@@ -1099,7 +1099,7 @@ class Panel extends import_library.BaseClass {
    *
    * @param sec seconds for timeout
    */
-  sendScreensaverTimeout(sec) {
+  sendScreeensaverTimeout(sec) {
     this.log.debug(`Set screeensaver timeout to ${sec}s.`);
     this.sendToPanel(`timeout~${sec}`, false);
   }
@@ -1272,7 +1272,7 @@ class Panel extends import_library.BaseClass {
           await this.screenSaver.HandleTime();
         }
         if (start.alwaysOn === "none") {
-          this.sendScreensaverTimeout(2);
+          this.sendScreeensaverTimeout(2);
         }
         this.log.info("Panel startup finished!");
         break;
@@ -1473,7 +1473,7 @@ class Panel extends import_library.BaseClass {
           if (typeof state.val !== "boolean") {
             const val = parseInt(String(state.val));
             this.timeout = val;
-            this.sendScreensaverTimeout(this.timeout);
+            this.sendScreeensaverTimeout(this.timeout);
             await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
             await this.library.writedp(`panels.${this.name}.cmd.screenSaver.timeout`, this.timeout);
           }

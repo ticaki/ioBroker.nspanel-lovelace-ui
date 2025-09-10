@@ -1698,68 +1698,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
-                case 'popupNotification': {
-                    try {
-                        const message = obj.message;
-                        let result = { success: false, error: 'Invalid message format' };
-
-                        // Handle undefined by ignoring it
-                        if (message === undefined || message === null) {
-                            result = { success: true, error: '' };
-                        } else if (typeof message === 'object' && message !== null) {
-                            // Validate the message format
-                            const notificationData: pages.PopupNotificationVal = {
-                                headline: message.headline,
-                                colorHeadline: message.colorHeadline,
-                                buttonLeft: message.buttonLeft,
-                                colorButtonLeft: message.colorButtonLeft,
-                                buttonRight: message.buttonRight,
-                                colorButtonRight: message.colorButtonRight,
-                                text: message.text,
-                                colorText: message.colorText,
-                                timeout: message.timeout,
-                            };
-
-                            // Find the target panel
-                            const panelTopic = message.panelTopic || message.panel;
-                            if (this.controller && panelTopic) {
-                                const panel = this.controller.panels.find(p => p.topic === panelTopic);
-                                if (panel) {
-                                    // Write to the panel's popupNotification state
-                                    await this.setStateAsync(
-                                        `${panel.topic}.cmd.popupNotification`,
-                                        JSON.stringify(notificationData),
-                                        true,
-                                    );
-                                    result = { success: true, error: '' };
-                                } else {
-                                    result = { success: false, error: `Panel with topic '${panelTopic}' not found` };
-                                }
-                            } else if (this.controller && this.controller.panels.length > 0) {
-                                // If no specific panel is specified, use the first panel
-                                const panel = this.controller.panels[0];
-                                await this.setStateAsync(
-                                    `${panel.topic}.cmd.popupNotification`,
-                                    JSON.stringify(notificationData),
-                                    true,
-                                );
-                                result = { success: true, error: '' };
-                            } else {
-                                result = { success: false, error: 'No panels available' };
-                            }
-                        }
-
-                        if (obj.callback) {
-                            this.sendTo(obj.from, obj.command, result, obj.callback);
-                        }
-                    } catch (error: any) {
-                        this.log.error(`Error in popupNotification: ${error.message}`);
-                        if (obj.callback) {
-                            this.sendTo(obj.from, obj.command, { success: false, error: error.message }, obj.callback);
-                        }
-                    }
-                    break;
-                }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {
