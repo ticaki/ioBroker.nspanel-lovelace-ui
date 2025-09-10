@@ -515,6 +515,51 @@ class NspanelLovelaceUi extends utils.Adapter {
      */
     private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (state) {
+            // Handle popupNotification state changes - trigger popup on all panels
+            if (id.endsWith('.popupNotification') && id.startsWith(this.namespace) && !state.ack) {
+                try {
+                    let notificationData: pages.PopupNotificationVal;
+
+                    // Handle undefined by ignoring it
+                    if (state.val === undefined || state.val === null || state.val === '') {
+                        this.log.debug('PopupNotification: Ignoring undefined/null/empty value');
+                        return;
+                    }
+
+                    // Parse JSON data
+                    if (typeof state.val === 'string') {
+                        try {
+                            notificationData = JSON.parse(state.val);
+                        } catch {
+                            this.log.warn(`PopupNotification: Invalid JSON format: ${state.val}`);
+                            return;
+                        }
+                    } else if (typeof state.val === 'object') {
+                        notificationData = state.val as pages.PopupNotificationVal;
+                    } else {
+                        this.log.warn(`PopupNotification: Invalid value type: ${typeof state.val}`);
+                        return;
+                    }
+
+                    // Trigger popup notification on all panels
+                    if (this.controller && notificationData) {
+                        for (const panel of this.controller.panels) {
+                            await this.setStateAsync(
+                                `${panel.topic}.cmd.popupNotification`,
+                                JSON.stringify(notificationData),
+                                true,
+                            );
+                        }
+                        this.log.debug(`PopupNotification triggered on ${this.controller.panels.length} panels`);
+                    }
+
+                    // Acknowledge the state
+                    await this.setStateAsync(id, state.val, true);
+                } catch (error: any) {
+                    this.log.error(`Error handling popupNotification state change: ${error.message}`);
+                }
+            }
+
             if (this.controller) {
                 await this.controller.statesControler.onStateChange(id, state);
             }
@@ -1695,6 +1740,68 @@ class NspanelLovelaceUi extends utils.Adapter {
                     // Send response in callback if required
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
+                case 'popupNotification': {
+                    try {
+                        const message = obj.message;
+                        let result = { success: false, error: 'Invalid message format' };
+
+                        // Handle undefined by ignoring it
+                        if (message === undefined || message === null) {
+                            result = { success: true, error: '' };
+                        } else if (typeof message === 'object' && message !== null) {
+                            // Validate the message format
+                            const notificationData: pages.PopupNotificationVal = {
+                                headline: message.headline,
+                                colorHeadline: message.colorHeadline,
+                                buttonLeft: message.buttonLeft,
+                                colorButtonLeft: message.colorButtonLeft,
+                                buttonRight: message.buttonRight,
+                                colorButtonRight: message.colorButtonRight,
+                                text: message.text,
+                                colorText: message.colorText,
+                                timeout: message.timeout,
+                            };
+
+                            // Find the target panel
+                            const panelTopic = message.panelTopic || message.panel;
+                            if (this.controller && panelTopic) {
+                                const panel = this.controller.panels.find(p => p.topic === panelTopic);
+                                if (panel) {
+                                    // Write to the panel's popupNotification state
+                                    await this.setStateAsync(
+                                        `${panel.topic}.cmd.popupNotification`,
+                                        JSON.stringify(notificationData),
+                                        true,
+                                    );
+                                    result = { success: true, error: '' };
+                                } else {
+                                    result = { success: false, error: `Panel with topic '${panelTopic}' not found` };
+                                }
+                            } else if (this.controller && this.controller.panels.length > 0) {
+                                // If no specific panel is specified, use the first panel
+                                const panel = this.controller.panels[0];
+                                await this.setStateAsync(
+                                    `${panel.topic}.cmd.popupNotification`,
+                                    JSON.stringify(notificationData),
+                                    true,
+                                );
+                                result = { success: true, error: '' };
+                            } else {
+                                result = { success: false, error: 'No panels available' };
+                            }
+                        }
+
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, result, obj.callback);
+                        }
+                    } catch (error: any) {
+                        this.log.error(`Error in popupNotification: ${error.message}`);
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { success: false, error: error.message }, obj.callback);
+                        }
                     }
                     break;
                 }

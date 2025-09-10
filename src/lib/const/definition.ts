@@ -1637,6 +1637,18 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 write: true,
             },
         },
+        popupNotification: {
+            val: JSON.stringify({}),
+            ack: true,
+            common: {
+                name: 'Popup Notification',
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: true,
+                desc: 'Trigger popup notification by writing JSON data',
+            },
+        },
         'cmd/screensaverHeadingNotification': {
             val: '',
             ack: true,

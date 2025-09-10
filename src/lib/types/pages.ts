@@ -626,8 +626,6 @@ export type PopupNotificationVal =
           colorText?: { r: number; g: number; b: number };
           timeout?: number;
       }
-    | string
-    | null
     | undefined;
 
 export type cardNotifyDataItemOptions = {

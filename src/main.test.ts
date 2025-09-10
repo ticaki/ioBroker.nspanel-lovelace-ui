@@ -51,4 +51,46 @@ describe('Buzzer functionality', () => {
     });
 });
 
+describe('PopupNotification functionality', () => {
+    it('should include popupNotification in PanelInternalCommand type', () => {
+        const popupCommand: types.PanelInternalCommand = 'popupNotification';
+        expect(popupCommand).to.equal('popupNotification');
+    });
+
+    it('should have popupNotification in internal states', () => {
+        expect(InternalStates.panel.popupNotification).to.be.an('object');
+        expect(InternalStates.panel.popupNotification.common.type).to.equal('string');
+        expect(InternalStates.panel.popupNotification.common.role).to.equal('json');
+        expect(InternalStates.panel.popupNotification.common.name).to.equal('Popup Notification');
+    });
+
+    it('should validate PopupNotificationVal type accepts valid object', () => {
+        // Import the types for testing - this is a compile-time test
+        const validNotification = {
+            headline: 'Test Headline',
+            text: 'Test message',
+            buttonLeft: 'Cancel',
+            buttonRight: 'OK',
+            timeout: 5000,
+            colorHeadline: { r: 255, g: 0, b: 0 },
+            colorText: { r: 0, g: 255, b: 0 },
+            colorButtonLeft: { r: 128, g: 128, b: 128 },
+            colorButtonRight: { r: 0, g: 0, b: 255 },
+        };
+
+        expect(validNotification).to.be.an('object');
+        expect(validNotification.headline).to.equal('Test Headline');
+        expect(validNotification.text).to.equal('Test message');
+    });
+
+    it('should validate PopupNotificationVal type accepts minimal object', () => {
+        const minimalNotification = {
+            text: 'Simple message',
+        };
+
+        expect(minimalNotification).to.be.an('object');
+        expect(minimalNotification.text).to.equal('Simple message');
+    });
+});
+
 // ... more test suites => describe

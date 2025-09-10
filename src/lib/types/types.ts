@@ -156,6 +156,7 @@ export type PanelInternalCommand =
     | 'cmd/NotificationNext'
     | 'info/NotificationCounter'
     | 'cmd/popupNotification'
+    | 'popupNotification'
     | 'info/modelVersion'
     | 'info/displayVersion'
     | 'info/tasmotaVersion'

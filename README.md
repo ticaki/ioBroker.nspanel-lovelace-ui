@@ -153,6 +153,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Added new channel role "media" with status display and pageMedia fallback; for this role only, added `asControl` as PageItem property
 - (ticaki) Fixed state evaluation: `getState() === null` no longer interpreted as missing state; boolean states now return `false` instead of `null` if the state exists but has no value.
 - (copilot) Added support for ioBroker Sonos-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
+- (copilot) Added external PopupNotification support via sendTo(), Blockly blocks, and state changes
 - (copilot) Added buzzer functionality for NSPanel devices - enables button sounds, urgent message notifications, and general buzzer control via state and sendTo interface
 - (copilot) Added support for ioBroker MPD-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
 - (ticaki) Added support for ioBroker spotify-premium in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls
