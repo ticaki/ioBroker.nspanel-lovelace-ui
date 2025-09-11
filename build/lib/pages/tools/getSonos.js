@@ -36,24 +36,22 @@ var tools = __toESM(require("../../const/tools"));
 async function getPageSonos(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
   const adapter = configManager.adapter;
-  const arr = page.media.id.split(".").slice(0, 4);
+  const arr = page.media.id.split(".").slice(0, 3);
   const viewStr = arr.join(".");
   const str = page.media.id.split(".").slice(0, 4).join(".");
-  const devices = viewStr && arr.length === 4 ? await configManager.adapter.getObjectViewAsync("system", "device", {
+  const devices = viewStr && arr.length === 3 ? await configManager.adapter.getObjectViewAsync("system", "channel", {
     startkey: `${viewStr}.`,
     endkey: `${viewStr}${String.fromCharCode(65533)}`
   }) : { rows: [] };
-  if (devices && devices.rows && devices.rows.length > 0) {
-    if (devices.rows.findIndex((row) => {
-      if (row && row.value && row.id && row.id.split(".").length === 4) {
-        return str === row.id;
-      }
-    }) === -1) {
-      const msg = `${page.uniqueName}: Media page id ${page.media.id} is not a valid sonos device!`;
-      messages.push(msg);
-      adapter.log.warn(msg);
-      return { gridItem, messages };
+  if (!devices || !devices.rows || devices.rows.length == 0 || devices.rows.findIndex((row) => {
+    if (row && row.value && row.id && row.id.split(".").length === 4) {
+      return str === row.id;
     }
+  }) === -1) {
+    const msg = `${page.uniqueName}: Media page id ${page.media.id} is not a valid sonos device!`;
+    messages.push(msg);
+    adapter.log.warn(msg);
+    return { gridItem, messages };
   }
   if (justCheck) {
     return { gridItem, messages: ["done"] };
