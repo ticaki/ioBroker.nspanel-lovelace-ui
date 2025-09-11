@@ -1125,6 +1125,9 @@ class ConfigManager extends import_library.BaseClass {
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e, _f, _g;
     if (this.isNativePageItem(item)) {
+      if (!isPageItemDataItemsOptions(item.native)) {
+        throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
+      }
       if (item.navigate && !item.targetPage) {
         throw new Error(`Navigate true but no targetPage defined in native item`);
       }
@@ -2053,6 +2056,9 @@ class ConfigManager extends import_library.BaseClass {
       return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
     }
     if (this.isNativePageItem(item)) {
+      if (!isPageItemDataItemsOptions(item.native)) {
+        throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
+      }
       itemConfig = item.native;
       return { itemConfig, messages };
     }

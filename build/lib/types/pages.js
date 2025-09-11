@@ -232,6 +232,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "value.mode.thermostat",
   "indicator",
   "indicator.connected",
+  "level.volume.group",
   ""
 ]);
 function isStateRole(F) {

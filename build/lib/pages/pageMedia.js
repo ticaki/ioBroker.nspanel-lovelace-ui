@@ -180,7 +180,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     await this.update();
   }
   async update() {
-    var _a, _b;
+    var _a, _b, _c;
     if (!this.visibility || this.sleep) {
       return;
     }
@@ -319,7 +319,12 @@ class PageMedia extends import_pageMenu.PageMenu {
         message.shuffle_icon = value ? "shuffle-variant" : "shuffle-disabled";
       }
     }
-    if (item.data.volume) {
+    if (await ((_c = item.data.useGroupVolume) == null ? void 0 : _c.getBoolean()) && item.data.volumeGroup) {
+      const v = await tools.getScaledNumber(item.data.volumeGroup);
+      if (v !== null) {
+        message.volume = String(v);
+      }
+    } else if (item.data.volume) {
       const v = await tools.getScaledNumber(item.data.volume);
       if (v !== null) {
         message.volume = String(v);
@@ -431,7 +436,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.titelPos = 0;
   }
   async onButtonEvent(event) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (!this.getVisibility() || this.sleep) {
       return;
     }
@@ -476,7 +481,10 @@ class PageMedia extends import_pageMenu.PageMenu {
         break;
       }
       case "volumeSlider": {
-        if (items.data.volume) {
+        if (await ((_e = items.data.useGroupVolume) == null ? void 0 : _e.getBoolean()) && items.data.volumeGroup) {
+          const v = parseInt(event.opt);
+          await tools.setScaledNumber(items.data.volumeGroup, v);
+        } else if (items.data.volume) {
           const v = parseInt(event.opt);
           await tools.setScaledNumber(items.data.volume, v);
         } else {

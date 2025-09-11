@@ -19,9 +19,22 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var type_pageItem_exports = {};
 __export(type_pageItem_exports, {
   isPageItemDataItem: () => isPageItemDataItem,
+  isPageItemDataItemsOptions: () => isPageItemDataItemsOptions,
   islistCommandUnion: () => islistCommandUnion
 });
 module.exports = __toCommonJS(type_pageItem_exports);
+function isPageItemDataItemsOptions(obj) {
+  if (!obj || typeof obj !== "object") {
+    return false;
+  }
+  if ("template" in obj && typeof obj.template === "string") {
+    return true;
+  }
+  if ("type" in obj && typeof obj.type === "string" && "data" in obj) {
+    return true;
+  }
+  return false;
+}
 function isPageItemDataItem(f) {
   if (f && typeof f === "object" && "type" in f && "data" in f) {
     return true;
@@ -39,6 +52,7 @@ function islistCommandUnion(F) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   isPageItemDataItem,
+  isPageItemDataItemsOptions,
   islistCommandUnion
 });
 //# sourceMappingURL=type-pageItem.js.map

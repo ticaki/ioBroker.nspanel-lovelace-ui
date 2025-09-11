@@ -1277,16 +1277,20 @@ export class ConfigManager extends BaseClass {
         page: ScriptConfig.PageType,
     ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
         if (this.isNativePageItem(item)) {
+            if (!isPageItemDataItemsOptions(item.native)) {
+                throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
+            }
             if (item.navigate && !item.targetPage) {
                 throw new Error(`Navigate true but no targetPage defined in native item`);
             }
+
             return {
                 ...item.native,
                 data: {
                     ...item.native.data,
                     setNavi: { type: 'const', constVal: item.targetPage },
                 },
-            };
+            } as typePageItem.PageItemDataItemsOptions;
         }
 
         if (!pages.isCardMenuRole(page.type) || !item.navigate || !item.targetPage) {
@@ -2335,7 +2339,10 @@ export class ConfigManager extends BaseClass {
             return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
         }
         if (this.isNativePageItem(item)) {
-            itemConfig = item.native as typePageItem.PageItemDataItemsOptions;
+            if (!isPageItemDataItemsOptions(item.native)) {
+                throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
+            }
+            itemConfig = item.native;
             return { itemConfig, messages };
         }
         if ('id' in item && item.id) {

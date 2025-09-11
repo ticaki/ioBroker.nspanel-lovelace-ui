@@ -359,7 +359,12 @@ export class PageMedia extends PageMenu {
         // ---------------------
         // Volume
         // ---------------------
-        if (item.data.volume) {
+        if ((await item.data.useGroupVolume?.getBoolean()) && item.data.volumeGroup) {
+            const v = await tools.getScaledNumber(item.data.volumeGroup);
+            if (v !== null) {
+                message.volume = String(v);
+            }
+        } else if (item.data.volume) {
             const v = await tools.getScaledNumber(item.data.volume);
             if (v !== null) {
                 message.volume = String(v);
@@ -540,7 +545,10 @@ export class PageMedia extends PageMenu {
                 break;
             }
             case 'volumeSlider': {
-                if (items.data.volume) {
+                if ((await items.data.useGroupVolume?.getBoolean()) && items.data.volumeGroup) {
+                    const v = parseInt(event.opt);
+                    await tools.setScaledNumber(items.data.volumeGroup, v);
+                } else if (items.data.volume) {
                     const v = parseInt(event.opt);
                     await tools.setScaledNumber(items.data.volume, v);
                 } else {

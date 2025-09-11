@@ -13,7 +13,6 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         adapter: '0_userdata.0',
         card: 'cardEntities',
         alwaysOn: 'none',
-        useColor: false,
         items: undefined,
         config: {
             card: 'cardEntities',

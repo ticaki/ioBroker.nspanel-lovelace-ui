@@ -1,12 +1,18 @@
 import { Color, type RGB } from '../const/Color';
 import type { Page } from '../classes/Page';
-import type { PageItemInterface } from '../classes/PageInterface';
+import type { PageInterface, PageItemInterface } from '../classes/PageInterface';
 import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import type { PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
-import { isCardEntitiesType, isCardGridType, type ChangeTypeOfKeys, type DeviceRole } from '../types/pages';
+import {
+    isCardEntitiesType,
+    isCardGridType,
+    type ChangeTypeOfKeys,
+    type DeviceRole,
+    type PageBaseConfig,
+} from '../types/pages';
 import type { Screensaver } from './screensaver';
 import { BaseClassTriggerd } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
@@ -54,6 +60,7 @@ export class PageItem extends BaseClassTriggerd {
         await p.init();
         return p;
     }
+
     async init(): Promise<void> {
         if (!this.config) {
             return;
@@ -1840,6 +1847,7 @@ export class PageItem extends BaseClassTriggerd {
 
             case 'button': {
                 if (entry.type === 'button' || entry.type === 'switch') {
+                    this.log.debug(`Button ${this.id} was pressed!`);
                     if (this.parent.isScreensaver) {
                         if (!(this.parent as Screensaver).screensaverIndicatorButtons) {
                             this.parent.currentPanel.navigation.resetPosition();
@@ -1863,7 +1871,116 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         break;
                     }
-                    this.log.debug(`Button ${this.id} was pressed!`);
+                    if (entry.role === 'selectGrid') {
+                        if (this.parent.directChildPage) {
+                            this.log.debug(
+                                `Button with role:selectGrid id:${this.id} show Page:${this.parent.directChildPage.id}`,
+                            );
+                            await this.parent.basePanel.setActivePage(this.parent.directChildPage);
+                        } else if (this.parent.config) {
+                            this.log.debug(`Create temp page for Button with role:selectGrid id:${this.id}`);
+                            const tempConfig: PageInterface = {
+                                id: `temp253451_${this.parent.id}`,
+                                name: `sub_${this.parent.name}`,
+                                adapter: this.adapter,
+                                panel: this.parent.currentPanel,
+                                card: 'cardGrid2',
+                            };
+                            const pageConfig: PageBaseConfig = {
+                                uniqueID: `temp253451_${this.parent.id}`,
+                                alwaysOn: 'none',
+                                items: undefined,
+                                dpInit: this.parent.dpInit,
+                                config: {
+                                    card: 'cardGrid2',
+                                    data: {
+                                        headline: {
+                                            type: 'const',
+                                            constVal: 'speakerList',
+                                        },
+                                    },
+                                },
+                                pageItems: [],
+                            };
+                            const list = await entry.data.entity3?.value?.getObject();
+                            if (!list || !Array.isArray(list) || list.length <= 1) {
+                                break;
+                            }
+                            for (let i = 0; i < list.length; i++) {
+                                const val = list[i].trim();
+                                if (!val) {
+                                    continue;
+                                }
+                                pageConfig.pageItems.push({
+                                    role: 'writeTargetByValue',
+                                    type: 'button',
+                                    dpInit: this.parent.dpInit,
+                                    data: {
+                                        entity1: {
+                                            value: {
+                                                mode: 'auto',
+                                                type: 'triggered',
+                                                regexp: /.?\.members$/,
+                                                dp: '',
+                                                read: `
+                                                    if (typeof val === 'string') {                                                    
+                                                        const t = val.split(',').map(s => s.trim());
+                                                        return t.includes('${val}');
+                                                    };
+                                                    return false;`,
+                                            },
+                                        },
+                                        text: { true: { type: 'const', constVal: val } },
+                                        icon: {
+                                            true: {
+                                                value: { type: 'const', constVal: 'speaker' },
+                                                color: { type: 'const', constVal: Color.on },
+                                            },
+                                            false: {
+                                                value: { type: 'const', constVal: 'speaker' },
+                                                color: { type: 'const', constVal: Color.off },
+                                            },
+                                        },
+                                        setValue1: {
+                                            mode: 'auto',
+                                            type: 'state',
+                                            commonType: 'string',
+                                            dp: '',
+                                            writeable: true,
+                                            regexp: /.?\.add_to_group$/,
+                                            write: `if (val) return '${val}'; else return '';`,
+                                        },
+                                        setValue2: {
+                                            mode: 'auto',
+                                            type: 'state',
+                                            commonType: 'string',
+                                            dp: '',
+                                            writeable: true,
+                                            regexp: /.?\.remove_from_group$/,
+                                            write: `if (val) return '${val}'; else return '';`,
+                                        },
+                                    },
+                                });
+                            }
+                            this.parent.directChildPage = this.parent.basePanel.newPage(tempConfig, pageConfig);
+                            if (this.parent.directChildPage) {
+                                this.parent.directChildPage.directParentPage = this.parent;
+                                await this.parent.directChildPage.init();
+                                await this.parent.basePanel.setActivePage(this.parent.directChildPage);
+                            }
+                        }
+                        break;
+                    }
+                    if (entry.role === 'writeTargetByValue') {
+                        const value: boolean | null =
+                            (entry.data.entity1?.value && (await entry.data.entity1.value.getBoolean())) ?? null;
+                        if (value) {
+                            await entry.data.setValue2?.setStateTrue();
+                        } else {
+                            await entry.data.setValue1?.setStateTrue();
+                        }
+                        break;
+                    }
                     const item = entry.data;
                     if (item.confirm) {
                         if (this.confirmClick === 'lock') {

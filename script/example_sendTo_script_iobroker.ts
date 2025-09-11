@@ -695,7 +695,7 @@ async function configuration (): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.11.0';
+const version = '0.11.1';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1140,6 +1140,7 @@ declare namespace ScriptConfig {
          * The media dp to use, most a folder, device or channel. Not a state.
          */
         id: string;
+        name?: string;
         mediaDevice?: string; //???
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;
@@ -1161,6 +1162,10 @@ declare namespace ScriptConfig {
         equalizerList?: string[];
         repeatList?: string[];
         globalTracklist?: string[];
+        /* Volume */
+        minValue?: number;
+         /* Volume */
+        maxValue?: number;
         /** detailed configuration */
         itemsColorOn?: {
             trackList?: RGB;

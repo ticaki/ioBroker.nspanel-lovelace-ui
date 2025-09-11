@@ -145,6 +145,37 @@ export async function getPageSonos(
                         dp: '',
                     },
                 },
+                useGroupVolume: {
+                    mode: 'auto',
+                    type: 'triggered',
+                    regexp: /.?\.members$/,
+                    dp: '',
+                    read: `
+                        if (typeof val === 'string') {
+                            const t = val.split(',');
+                            return t.length > 1;
+                        };
+                        return false;`,
+                },
+                volumeGroup: {
+                    value: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume.group'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.group_volume$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume.group'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.group_volume$/,
+                        dp: '',
+                    },
+                },
+
                 artist: {
                     value: {
                         mode: 'auto',
@@ -281,18 +312,30 @@ export async function getPageSonos(
     }
 
     //speaker select
-    if (!page.media.deactivateDefaultItems?.speakerList) {
+    if (
+        !page.media.deactivateDefaultItems?.speakerList &&
+        Array.isArray(page.media.speakerList) &&
+        page.media.speakerList.length > 1
+    ) {
         gridItem.pageItems.push({
-            role: '',
-            type: 'input_sel',
+            role: 'selectGrid',
+            type: 'button',
 
             data: {
-                color: {
-                    true: {
-                        type: 'const',
-                        constVal: Color.HMIOn,
+                entity1: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        regexp: /.?\.members$/,
+                        dp: '',
+                        read: `
+                        let data = val;
+                        if (typeof val === 'string') {
+                        const t = val.split(',').map(i => i.trim());
+                            return t.length < 2 || t[0] !==('${page.media.speakerList[0]}');
+                        };
+                        return true;`,
                     },
-                    false: undefined,
                 },
                 icon: {
                     true: {
@@ -303,49 +346,19 @@ export async function getPageSonos(
                         value: { type: 'const', constVal: 'speaker-multiple' },
                         color: await configManager.getIconColor(page.media.itemsColorOff?.speakerList, Color.bad),
                     },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
                 },
-                entityInSel: {
+                /**
+                 * Für role selectGrid ist entity3 die Liste der möglichen Werte
+                 */
+                entity3: {
                     value: {
                         type: 'const',
-                        constVal: 'Sonos Speaker',
+                        constVal: JSON.stringify(page.media.speakerList || []),
                     },
                 },
-                headline: {
-                    type: 'const',
-                    constVal: 'speakerList',
-                },
-                /**
-                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-                 */
-                valueList: {
-                    type: 'const',
-                    constVal: JSON.stringify(page.media.speakerList || []),
-                },
-                /**
-                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-                 */
-                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
                 enabled: {
-                    mode: 'auto',
-                    type: 'triggered',
-                    regexp: /.?\.members$/,
-                    dp: '',
-                    read: `
-                    let data = val;
-                    if (typeof val === 'string') {
-                        try {
-                            data = JSON.parse(val);
-                        } catch {
-                            return false;
-                        }
-                    }
-                    if (Array.isArray(data)) {
-                        return data.length >= 2 || ${(page.media.speakerList && page.media.speakerList.length > 0) ?? false};
-                    }
-                    return false;`,
+                    type: 'const',
+                    constVal: true,
                 },
             },
         });
