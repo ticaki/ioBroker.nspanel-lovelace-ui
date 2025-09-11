@@ -23,7 +23,7 @@ __export(getSpotify_exports, {
 module.exports = __toCommonJS(getSpotify_exports);
 var import_Color = require("../../const/Color");
 async function getPageSpotify(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
   if (justCheck) {
     return { gridItem, messages: ["done"] };
   }
@@ -399,13 +399,20 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
       }
     });
   }
-  if (((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.clock) !== true) {
+  if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.clock)) {
     gridItem.pageItems.push({
       template: "text.clock",
-      dpInit: ""
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            color: ((_p = page.media.itemsColorOn) == null ? void 0 : _p.clock) ? await configManager.getIconColor((_q = page.media.itemsColorOn) == null ? void 0 : _q.clock) : void 0
+          }
+        }
+      }
     });
   }
-  if (((_p = page.media.deactivateDefaultItems) == null ? void 0 : _p.repeat) !== true) {
+  if (((_r = page.media.deactivateDefaultItems) == null ? void 0 : _r.repeat) !== true) {
     gridItem.pageItems.push({
       role: "repeatValue",
       type: "button",

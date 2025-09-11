@@ -463,6 +463,7 @@ declare namespace ScriptConfig {
             reminder?: RGB;
             crossfade?: RGB;
             favoriteList?: RGB;
+            clock?: RGB;
         };
         itemsColorOff?: {
             trackList?: RGB;
@@ -474,6 +475,7 @@ declare namespace ScriptConfig {
             reminder?: RGB;
             crossfade?: RGB;
             favoriteList?: RGB;
+            clock?: RGB;
         };
         deactivateDefaultItems?: {
             trackList?: boolean;

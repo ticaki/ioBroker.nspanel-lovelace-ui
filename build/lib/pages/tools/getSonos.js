@@ -34,7 +34,7 @@ module.exports = __toCommonJS(getSonos_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
 async function getPageSonos(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
   const viewStr = arr.join(".");
@@ -459,10 +459,17 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
   if (!((_s = page.media.deactivateDefaultItems) == null ? void 0 : _s.clock)) {
     gridItem.pageItems.push({
       template: "text.clock",
-      dpInit: ""
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            color: ((_t = page.media.itemsColorOn) == null ? void 0 : _t.clock) ? await configManager.getIconColor((_u = page.media.itemsColorOn) == null ? void 0 : _u.clock) : void 0
+          }
+        }
+      }
     });
   }
-  if (((_t = page.media.deactivateDefaultItems) == null ? void 0 : _t.trackList) !== true) {
+  if (((_v = page.media.deactivateDefaultItems) == null ? void 0 : _v.trackList) !== true) {
     gridItem.pageItems.push({
       role: "spotify-tracklist",
       type: "input_sel",
@@ -471,7 +478,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "animation-play-outline" },
-            color: await configManager.getIconColor((_u = page.media.itemsColorOn) == null ? void 0 : _u.playList, import_Color.Color.activated)
+            color: await configManager.getIconColor((_w = page.media.itemsColorOn) == null ? void 0 : _w.playList, import_Color.Color.activated)
           }
         },
         entityInSel: {
@@ -517,7 +524,17 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
-  if (!((_v = page.media.deactivateDefaultItems) == null ? void 0 : _v.repeat)) {
+  if (!((_x = page.media.deactivateDefaultItems) == null ? void 0 : _x.repeat)) {
+    const tempOn = await configManager.getIconColor((_y = page.media.itemsColorOn) == null ? void 0 : _y.repeat);
+    const tempOff = await configManager.getIconColor((_z = page.media.itemsColorOff) == null ? void 0 : _z.repeat);
+    let colorOn;
+    let colorOff;
+    if (tempOn && tempOn.type === "const") {
+      colorOn = tempOn.constVal;
+    }
+    if (tempOff && tempOff.type === "const") {
+      colorOff = tempOff.constVal;
+    }
     gridItem.pageItems.push({
       role: "repeatValue",
       type: "button",
@@ -548,11 +565,11 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
               dp: "",
               read: `switch (val) {
                                     case 0:
-                                        return Color.deactivated;
+                                        return ${colorOff ? JSON.stringify(colorOff) : "Color.deactivated"};
                                     case 1:
-                                        return Color.activated;
+                                        return ${colorOn ? JSON.stringify(colorOn) : "Color.activated"};
                                     case 2:
-                                        return Color.option4;
+                                        return ${colorOn ? JSON.stringify(colorOn) : "Color.option4"};
                                 }`
             }
           }
@@ -597,7 +614,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
-  if (!((_w = page.media.deactivateDefaultItems) == null ? void 0 : _w.crossfade)) {
+  if (!((_A = page.media.deactivateDefaultItems) == null ? void 0 : _A.crossfade)) {
     gridItem.pageItems.push({
       role: "",
       type: "button",
@@ -606,11 +623,11 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_x = page.media.itemsColorOn) == null ? void 0 : _x.crossfade, import_Color.Color.activated)
+            color: await configManager.getIconColor((_B = page.media.itemsColorOn) == null ? void 0 : _B.crossfade, import_Color.Color.activated)
           },
           false: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_y = page.media.itemsColorOff) == null ? void 0 : _y.crossfade, import_Color.Color.deactivated)
+            color: await configManager.getIconColor((_C = page.media.itemsColorOff) == null ? void 0 : _C.crossfade, import_Color.Color.deactivated)
           }
         },
         entity1: {

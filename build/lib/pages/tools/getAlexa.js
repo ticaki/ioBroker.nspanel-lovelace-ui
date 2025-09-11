@@ -34,7 +34,7 @@ module.exports = __toCommonJS(getAlexa_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
 async function getPageAlexa(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
   const viewStr = arr.join(".");
@@ -548,10 +548,17 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
   if (!((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.clock)) {
     gridItem.pageItems.push({
       template: "text.clock",
-      dpInit: ""
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            color: ((_r = page.media.itemsColorOn) == null ? void 0 : _r.clock) ? await configManager.getIconColor((_s = page.media.itemsColorOn) == null ? void 0 : _s.clock) : void 0
+          }
+        }
+      }
     });
   }
-  if (!((_r = page.media.deactivateDefaultItems) == null ? void 0 : _r.repeat)) {
+  if (!((_t = page.media.deactivateDefaultItems) == null ? void 0 : _t.repeat)) {
     gridItem.pageItems.push({
       role: "",
       type: "text",
@@ -560,11 +567,11 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "repeat-variant" },
-            color: await configManager.getIconColor((_s = page.media.itemsColorOn) == null ? void 0 : _s.repeat, import_Color.Color.activated)
+            color: await configManager.getIconColor((_u = page.media.itemsColorOn) == null ? void 0 : _u.repeat, import_Color.Color.activated)
           },
           false: {
             value: { type: "const", constVal: "repeat" },
-            color: await configManager.getIconColor((_t = page.media.itemsColorOff) == null ? void 0 : _t.repeat, import_Color.Color.deactivated)
+            color: await configManager.getIconColor((_v = page.media.itemsColorOff) == null ? void 0 : _v.repeat, import_Color.Color.deactivated)
           },
           scale: void 0,
           maxBri: void 0,

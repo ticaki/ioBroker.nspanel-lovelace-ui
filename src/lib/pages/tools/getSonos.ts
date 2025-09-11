@@ -1,4 +1,4 @@
-import { Color } from '../../const/Color';
+import { Color, type RGB } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
 import * as tools from '../../const/tools';
@@ -479,6 +479,15 @@ export async function getPageSonos(
         gridItem.pageItems.push({
             template: 'text.clock',
             dpInit: '',
+            data: {
+                icon: {
+                    true: {
+                        color: page.media.itemsColorOn?.clock
+                            ? await configManager.getIconColor(page.media.itemsColorOn?.clock)
+                            : undefined,
+                    },
+                },
+            },
         });
     }
     //tracklist
@@ -541,6 +550,17 @@ export async function getPageSonos(
     }
     // repeat
     if (!page.media.deactivateDefaultItems?.repeat) {
+        const tempOn = await configManager.getIconColor(page.media.itemsColorOn?.repeat);
+        const tempOff = await configManager.getIconColor(page.media.itemsColorOff?.repeat);
+        let colorOn: RGB | undefined;
+        let colorOff: RGB | undefined;
+        if (tempOn && tempOn.type === 'const') {
+            colorOn = tempOn.constVal as RGB;
+        }
+        if (tempOff && tempOff.type === 'const') {
+            colorOff = tempOff.constVal as RGB;
+        }
+
         gridItem.pageItems.push({
             role: 'repeatValue',
             type: 'button',
@@ -572,11 +592,11 @@ export async function getPageSonos(
                             dp: '',
                             read: `switch (val) {
                                     case 0:
-                                        return Color.deactivated;
+                                        return ${colorOff ? JSON.stringify(colorOff) : 'Color.deactivated'};
                                     case 1:
-                                        return Color.activated;
+                                        return ${colorOn ? JSON.stringify(colorOn) : 'Color.activated'};
                                     case 2:
-                                        return Color.option4;
+                                        return ${colorOn ? JSON.stringify(colorOn) : 'Color.option4'};
                                 }`,
                         },
                     },

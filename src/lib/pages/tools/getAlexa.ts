@@ -556,6 +556,15 @@ export async function getPageAlexa(
         gridItem.pageItems.push({
             template: 'text.clock',
             dpInit: '',
+            data: {
+                icon: {
+                    true: {
+                        color: page.media.itemsColorOn?.clock
+                            ? await configManager.getIconColor(page.media.itemsColorOn?.clock)
+                            : undefined,
+                    },
+                },
+            },
         });
     }
     // repeat
