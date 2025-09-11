@@ -308,7 +308,7 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
         },
         heading1: {
           type: "const",
-          constVal: "Crossfade"
+          constVal: "crossfade"
         },
         minValue1: { type: "const", constVal: 0 },
         maxValue1: { type: "const", constVal: 8 },
