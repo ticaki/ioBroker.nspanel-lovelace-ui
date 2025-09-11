@@ -106,7 +106,7 @@ export class BaseClassTriggerd extends BaseClass {
         if (this.waitForTimeout) {
             return false;
         }
-        
+
         if (this.blockUpdateUntilTime) {
             if (this.blockUpdateUntilTime.getTime() > new Date().getTime()) {
                 if (this.updateTimeout) {

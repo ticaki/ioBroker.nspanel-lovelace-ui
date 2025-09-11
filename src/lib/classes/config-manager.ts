@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
-import {isPageItemDataItemsOptions} from '../types/type-pageItem';
+import { isPageItemDataItemsOptions } from '../types/type-pageItem';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
