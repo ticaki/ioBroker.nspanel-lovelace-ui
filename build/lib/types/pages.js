@@ -233,6 +233,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "indicator",
   "indicator.connected",
   "level.volume.group",
+  "media.mode.crossfade",
   ""
 ]);
 function isStateRole(F) {

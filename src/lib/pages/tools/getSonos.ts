@@ -621,6 +621,43 @@ export async function getPageSonos(
             },
         });
     }
+    // crossfade
+    if (!page.media.deactivateDefaultItems?.crossfade) {
+        gridItem.pageItems.push({
+            role: '',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'shuffle' },
+                        color: await configManager.getIconColor(page.media.itemsColorOn?.crossfade, Color.activated),
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'shuffle' },
+                        color: await configManager.getIconColor(page.media.itemsColorOff?.crossfade, Color.deactivated),
+                    },
+                },
+                entity1: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        role: 'media.mode.crossfade',
+                        regexp: /\.crossfade$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'media.mode.crossfade',
+                        regexp: /\.crossfade$/,
+                        dp: '',
+                    },
+                },
+            },
+        });
+    }
 
     return { gridItem, messages };
 }

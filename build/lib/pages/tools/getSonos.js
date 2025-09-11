@@ -34,7 +34,7 @@ module.exports = __toCommonJS(getSonos_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
 async function getPageSonos(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
   const viewStr = arr.join(".");
@@ -592,6 +592,41 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
                                     return 0;
                             }
                             return 0;`
+          }
+        }
+      }
+    });
+  }
+  if (!((_w = page.media.deactivateDefaultItems) == null ? void 0 : _w.crossfade)) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "shuffle" },
+            color: await configManager.getIconColor((_x = page.media.itemsColorOn) == null ? void 0 : _x.crossfade, import_Color.Color.activated)
+          },
+          false: {
+            value: { type: "const", constVal: "shuffle" },
+            color: await configManager.getIconColor((_y = page.media.itemsColorOff) == null ? void 0 : _y.crossfade, import_Color.Color.deactivated)
+          }
+        },
+        entity1: {
+          value: {
+            mode: "auto",
+            type: "triggered",
+            role: "media.mode.crossfade",
+            regexp: /\.crossfade$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: "media.mode.crossfade",
+            regexp: /\.crossfade$/,
+            dp: ""
           }
         }
       }

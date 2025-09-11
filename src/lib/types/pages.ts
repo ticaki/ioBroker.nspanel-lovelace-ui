@@ -233,10 +233,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'indicator',
     'indicator.connected',
     'level.volume.group',
+    'media.mode.crossfade',
     '',
 ]);
 
 export type StateRole =
+    | 'media.mode.crossfade'
     | 'level.volume.group'
     | 'indicator.connected'
     | 'indicator'
