@@ -21,6 +21,7 @@ export type PageTemplateIdent =
     | 'media.amazon';
 
 export type TemplateIdent =
+    | 'text.brightsky.bot1Value'
     | 'text.clock'
     | 'text.brightsky.hourlyweather'
     | 'text.brightsky.windgust'
