@@ -112,7 +112,7 @@ function getScaledNumberRaw(
         if (oldValue === null) {
             n = Math.round(Color.scale(n, min, max, 0, 100));
         } else {
-            n = Color.scale(n, 0, 100, min, max);
+            n = Color.scale(n, min, max, 0, 100);
             /*if (oldValue !== false) {
                 if (oldValue > n) {
                     n = Math.floor(n);
@@ -133,21 +133,22 @@ export async function getScaledNumber(
     if (!i) {
         return null;
     }
-    let nval = i.value && (await i.value.getNumber());
-    if (nval != null) {
-        nval = nval * ((i.factor && (await i.factor.getNumber())) ?? 1);
+    let value = i.value && (await i.value.getNumber());
+    if (value != null) {
+        value = value * ((i.factor && (await i.factor.getNumber())) ?? 1);
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
-            nval = getScaledNumberRaw(nval, min, max);
+            value = getScaledNumberRaw(value, min, max);
         }
+
         if ('negate' in i && i.negate) {
             const reverse = await i.negate.getBoolean();
             if (reverse != null && reverse) {
-                nval = -nval;
+                value = -value;
             }
         }
-        return nval;
+        return value;
     }
     return null;
 }
@@ -269,6 +270,10 @@ export async function setScaledNumber(
 
     if (i.minScale !== undefined && i.maxScale !== undefined) {
         value = Color.scale(value, 0, 100, (await i.minScale.getNumber()) ?? 0, (await i.maxScale.getNumber()) ?? 100);
+    }
+    if (i.set?.options.scale) {
+        const scale = i.set.options.scale;
+        value = Color.scale(value, 0, 100, scale.min, scale.max ?? 100);
     }
     if (i.set?.writeable) {
         await i.set.setState(value);

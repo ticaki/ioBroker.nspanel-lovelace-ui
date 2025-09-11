@@ -137,7 +137,7 @@ function getScaledNumberRaw(n, min, max, oldValue = null) {
     if (oldValue === null) {
       n = Math.round(import_Color.Color.scale(n, min, max, 0, 100));
     } else {
-      n = import_Color.Color.scale(n, 0, 100, min, max);
+      n = import_Color.Color.scale(n, min, max, 0, 100);
       {
         n = Math.round(n);
       }
@@ -150,21 +150,21 @@ async function getScaledNumber(i) {
   if (!i) {
     return null;
   }
-  let nval = i.value && await i.value.getNumber();
-  if (nval != null) {
-    nval = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
+  let value = i.value && await i.value.getNumber();
+  if (value != null) {
+    value = value * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
     if (i.minScale !== void 0 && i.maxScale !== void 0) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
-      nval = getScaledNumberRaw(nval, min, max);
+      value = getScaledNumberRaw(value, min, max);
     }
     if ("negate" in i && i.negate) {
       const reverse = await i.negate.getBoolean();
       if (reverse != null && reverse) {
-        nval = -nval;
+        value = -value;
       }
     }
-    return nval;
+    return value;
   }
   return null;
 }
@@ -260,16 +260,20 @@ async function setSliderCTFromValue(i, value) {
   }
 }
 async function setScaledNumber(i, value) {
-  var _a, _b, _c, _d;
+  var _a, _b, _c, _d, _e, _f;
   if (!i || !i.set && !i.value) {
     return;
   }
   if (i.minScale !== void 0 && i.maxScale !== void 0) {
     value = import_Color.Color.scale(value, 0, 100, (_a = await i.minScale.getNumber()) != null ? _a : 0, (_b = await i.maxScale.getNumber()) != null ? _b : 100);
   }
-  if ((_c = i.set) == null ? void 0 : _c.writeable) {
+  if ((_c = i.set) == null ? void 0 : _c.options.scale) {
+    const scale = i.set.options.scale;
+    value = import_Color.Color.scale(value, 0, 100, scale.min, (_d = scale.max) != null ? _d : 100);
+  }
+  if ((_e = i.set) == null ? void 0 : _e.writeable) {
     await i.set.setState(value);
-  } else if ((_d = i.value) == null ? void 0 : _d.writeable) {
+  } else if ((_f = i.value) == null ? void 0 : _f.writeable) {
     await i.value.setState(value);
   }
 }
