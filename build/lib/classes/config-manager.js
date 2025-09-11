@@ -48,6 +48,7 @@ var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_pageMedia = require("../pages/pageMedia");
+var import_type_pageItem = require("../types/type-pageItem");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   //colorOn: RGB = Color.On;
@@ -1125,7 +1126,7 @@ class ConfigManager extends import_library.BaseClass {
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e, _f, _g;
     if (this.isNativePageItem(item)) {
-      if (!isPageItemDataItemsOptions(item.native)) {
+      if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
       }
       if (item.navigate && !item.targetPage) {
@@ -2056,7 +2057,7 @@ class ConfigManager extends import_library.BaseClass {
       return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
     }
     if (this.isNativePageItem(item)) {
-      if (!isPageItemDataItemsOptions(item.native)) {
+      if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
       }
       itemConfig = item.native;
@@ -3945,7 +3946,7 @@ class ConfigManager extends import_library.BaseClass {
       result.role = "combined";
       result.data.icon.true.text = result.data.icon.false.text;
     }
-    if (isPageItemDataItemsOptions(result)) {
+    if (isScreensaverPageItemDataItemsOptions(result)) {
       return result;
     }
     throw new Error("Invalid data");
@@ -4080,7 +4081,7 @@ class ConfigManager extends import_library.BaseClass {
     if (entity.ScreensaverEntityOffText) {
       result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
     }
-    if (isPageItemDataItemsOptions(result)) {
+    if (isScreensaverPageItemDataItemsOptions(result)) {
       return result;
     }
     throw new Error("Invalid data");
@@ -4219,7 +4220,7 @@ class ConfigManager extends import_library.BaseClass {
 function isIconScaleElement(obj) {
   return obj && obj.val_min !== void 0 && obj.val_max !== void 0;
 }
-function isPageItemDataItemsOptions(obj) {
+function isScreensaverPageItemDataItemsOptions(obj) {
   return obj && obj.modeScr && obj.data;
 }
 // Annotate the CommonJS export names for ESM import in node:

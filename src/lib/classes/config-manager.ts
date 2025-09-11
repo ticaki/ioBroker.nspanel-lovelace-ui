@@ -18,6 +18,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
+import {isPageItemDataItemsOptions} from '../types/type-pageItem';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -4650,7 +4651,7 @@ export class ConfigManager extends BaseClass {
             result.role = 'combined';
             result.data!.icon.true!.text = result.data!.icon.false!.text;
         }
-        if (isPageItemDataItemsOptions(result)) {
+        if (isScreensaverPageItemDataItemsOptions(result)) {
             return result;
         }
         throw new Error('Invalid data');
@@ -4814,7 +4815,7 @@ export class ConfigManager extends BaseClass {
             result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
         }
 
-        if (isPageItemDataItemsOptions(result)) {
+        if (isScreensaverPageItemDataItemsOptions(result)) {
             return result;
         }
         throw new Error('Invalid data');
@@ -4980,6 +4981,6 @@ export class ConfigManager extends BaseClass {
 function isIconScaleElement(obj: any): obj is ScriptConfig.IconScaleElement {
     return obj && obj.val_min !== undefined && obj.val_max !== undefined;
 }
-function isPageItemDataItemsOptions(obj: any): obj is typePageItem.PageItemDataItemsOptions {
+function isScreensaverPageItemDataItemsOptions(obj: any): obj is typePageItem.PageItemDataItemsOptions {
     return obj && obj.modeScr && obj.data;
 }
