@@ -42,6 +42,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   canBeHidden = false;
   triggerParent = false;
   dpInit = "";
+  blockUpdateUntilTime = null;
   enums = "";
   device = "";
   sendToPanel = (payload, ackForType, opt) => {
@@ -82,6 +83,9 @@ class BaseClassTriggerd extends import_library.BaseClass {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
     var _a;
+    if (this.unload) {
+      return false;
+    }
     if (!this.visibility && !(this.neverDeactivateTrigger || this.canBeHidden && ((_a = this.parent) == null ? void 0 : _a.visibility) || from.neverDeactivateTrigger)) {
       this.log.debug(`[${this.basePanel.friendlyName} ${this.name}] Page not visible, ignore trigger!`);
       return false;
@@ -92,11 +96,29 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (this.waitForTimeout) {
       return false;
     }
+    if (this.blockUpdateUntilTime) {
+      if (this.blockUpdateUntilTime.getTime() > (/* @__PURE__ */ new Date()).getTime()) {
+        if (this.updateTimeout) {
+          this.adapter.clearTimeout(this.updateTimeout);
+        }
+        this.updateTimeout = this.adapter.setTimeout(
+          async () => {
+            if (this.unload) {
+              return;
+            }
+            this.updateTimeout = void 0;
+            if (this.doUpdate) {
+              this.doUpdate = false;
+              await this.onStateTrigger(dp, from);
+            }
+          },
+          this.blockUpdateUntilTime.getTime() - (/* @__PURE__ */ new Date()).getTime() + 20
+        );
+      }
+      this.blockUpdateUntilTime = null;
+    }
     if (this.updateTimeout) {
       this.doUpdate = true;
-      return false;
-    }
-    if (this.unload) {
       return false;
     }
     this.waitForTimeout = this.adapter.setTimeout(async () => {

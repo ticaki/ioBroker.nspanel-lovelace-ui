@@ -40,6 +40,7 @@ export class BaseClassTriggerd extends BaseClass {
     canBeHidden: boolean = false;
     triggerParent: boolean = false;
     dpInit: string | RegExp = '';
+    protected blockUpdateUntilTime: Date | null = null;
     protected enums: string | string[] = '';
     protected device: string = '';
     protected sendToPanel: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = (
@@ -84,6 +85,9 @@ export class BaseClassTriggerd extends BaseClass {
     async reset(): Promise<void> {}
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
+        if (this.unload) {
+            return false;
+        }
         if (
             !this.visibility &&
             !(
@@ -102,13 +106,33 @@ export class BaseClassTriggerd extends BaseClass {
         if (this.waitForTimeout) {
             return false;
         }
+        
+        if (this.blockUpdateUntilTime) {
+            if (this.blockUpdateUntilTime.getTime() > new Date().getTime()) {
+                if (this.updateTimeout) {
+                    this.adapter.clearTimeout(this.updateTimeout);
+                }
+                this.updateTimeout = this.adapter.setTimeout(
+                    async () => {
+                        if (this.unload) {
+                            return;
+                        }
+                        this.updateTimeout = undefined;
+                        if (this.doUpdate) {
+                            this.doUpdate = false;
+                            await this.onStateTrigger(dp, from);
+                        }
+                    },
+                    this.blockUpdateUntilTime.getTime() - new Date().getTime() + 20,
+                );
+            }
+            this.blockUpdateUntilTime = null;
+        }
         if (this.updateTimeout) {
             this.doUpdate = true;
             return false;
         }
-        if (this.unload) {
-            return false;
-        }
+
         this.waitForTimeout = this.adapter.setTimeout(async () => {
             this.waitForTimeout = undefined;
             await this.onStateTrigger(dp, from);
@@ -139,6 +163,7 @@ export class BaseClassTriggerd extends BaseClass {
         }, this.minUpdateInterval);
         return true;
     };
+
     protected async onStateTrigger(_dp: string, _from: BaseClassTriggerd): Promise<void> {
         this.adapter.log.warn(
             `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`,

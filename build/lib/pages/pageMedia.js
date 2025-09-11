@@ -481,6 +481,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         break;
       }
       case "volumeSlider": {
+        this.blockUpdateUntilTime = new Date((/* @__PURE__ */ new Date()).getTime() + 800);
         if (await ((_e = items.data.useGroupVolume) == null ? void 0 : _e.getBoolean()) && items.data.volumeGroup) {
           const v = parseInt(event.opt);
           await tools.setScaledNumber(items.data.volumeGroup, v);
