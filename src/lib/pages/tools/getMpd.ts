@@ -275,6 +275,46 @@ export async function getPageMpd(
             dpInit: '',
         });
     }
+    if (page.media.deactivateDefaultItems?.crossfade !== true) {
+        gridItem.pageItems.push({
+            role: '',
+            type: 'number',
+            dpInit: '',
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'shuffle' },
+                        color: await configManager.getIconColor(page.media.itemsColorOn?.repeat, Color.activated),
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'shuffle' },
+                        color: await configManager.getIconColor(page.media.itemsColorOff?.repeat, Color.deactivated),
+                    },
+                },
+                entity1: {
+                    value: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        regexp: /\.crossfade$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'triggered',
+                        regexp: /\.crossfade$/,
+                        dp: '',
+                    },
+                },
+                heading1: {
+                    type: 'const',
+                    constVal: 'crossfade',
+                },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 8 },
+                steps1: { type: 'const', constVal: 0.5 },
+            },
+        });
+    }
 
     return { gridItem, messages };
 }

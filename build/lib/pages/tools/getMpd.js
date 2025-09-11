@@ -23,7 +23,7 @@ __export(getMpd_exports, {
 module.exports = __toCommonJS(getMpd_exports);
 var import_Color = require("../../const/Color");
 async function getPageMpd(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
   if (justCheck) {
     return { gridItem, messages: ["done"] };
   }
@@ -274,6 +274,46 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
     gridItem.pageItems.push({
       template: "text.clock",
       dpInit: ""
+    });
+  }
+  if (((_l = page.media.deactivateDefaultItems) == null ? void 0 : _l.crossfade) !== true) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "shuffle" },
+            color: await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.repeat, import_Color.Color.activated)
+          },
+          false: {
+            value: { type: "const", constVal: "shuffle" },
+            color: await configManager.getIconColor((_n = page.media.itemsColorOff) == null ? void 0 : _n.repeat, import_Color.Color.deactivated)
+          }
+        },
+        entity1: {
+          value: {
+            mode: "auto",
+            type: "triggered",
+            regexp: /\.crossfade$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "triggered",
+            regexp: /\.crossfade$/,
+            dp: ""
+          }
+        },
+        heading1: {
+          type: "const",
+          constVal: "Crossfade"
+        },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 8 },
+        steps1: { type: "const", constVal: 0.5 }
+      }
     });
   }
   return { gridItem, messages };
