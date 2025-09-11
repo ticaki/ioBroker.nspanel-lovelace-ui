@@ -666,6 +666,7 @@ export class Panel extends BaseClass {
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
+        await this.adapter.delay(100);
         this.initDone = true;
         this.restartLoops();
     };
