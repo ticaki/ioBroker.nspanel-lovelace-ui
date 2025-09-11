@@ -251,16 +251,23 @@ export class PageMenu extends Page {
             if (maxItems <= 0) {
                 return result;
             }
+            const multiplePages = total > maxItems;
 
-            let start = this.step * maxItems;
+            let start = this.step * (maxItems - (multiplePages ? 1 : 0));
             if (start >= total) {
                 this.step = 0;
                 start = 0;
             }
 
+            const moreAfterWindow = start + maxItems < total;
+            const moreBeforeWindow = start > 0;
+
+            // show arrow if there are multiple pages and either we can go forward OR we are on the last page (wrap)
+            const shouldShowArrow = multiplePages && (moreAfterWindow || moreBeforeWindow);
+
             const tasks: Promise<string>[] = [];
 
-            for (let i = 0; i < maxItems; i++) {
+            for (let i = 0; i < maxItems - (shouldShowArrow ? 1 : 0); i++) {
                 const idx = start + i;
                 const item = items[idx];
                 if (item) {
@@ -277,16 +284,9 @@ export class PageMenu extends Page {
 
             const results = await Promise.all(tasks);
 
-            for (let i = 0; i < maxItems; i++) {
+            for (let i = 0; i < maxItems - (shouldShowArrow ? 1 : 0); i++) {
                 result[i] = results[i];
             }
-
-            const moreAfterWindow = start + maxItems < total;
-            const moreBeforeWindow = start > 0;
-            const multiplePages = total > maxItems;
-
-            // show arrow if there are multiple pages and either we can go forward OR we are on the last page (wrap)
-            const shouldShowArrow = multiplePages && (moreAfterWindow || moreBeforeWindow);
 
             if (shouldShowArrow) {
                 this.nextArrow = true;

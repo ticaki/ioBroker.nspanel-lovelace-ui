@@ -228,13 +228,17 @@ class PageMenu extends import_Page.Page {
       if (maxItems <= 0) {
         return result;
       }
-      let start = this.step * maxItems;
+      const multiplePages = total > maxItems;
+      let start = this.step * (maxItems - (multiplePages ? 1 : 0));
       if (start >= total) {
         this.step = 0;
         start = 0;
       }
+      const moreAfterWindow = start + maxItems < total;
+      const moreBeforeWindow = start > 0;
+      const shouldShowArrow = multiplePages && (moreAfterWindow || moreBeforeWindow);
       const tasks = [];
-      for (let i = 0; i < maxItems; i++) {
+      for (let i = 0; i < maxItems - (shouldShowArrow ? 1 : 0); i++) {
         const idx = start + i;
         const item = items[idx];
         if (item) {
@@ -246,13 +250,9 @@ class PageMenu extends import_Page.Page {
         }
       }
       const results = await Promise.all(tasks);
-      for (let i = 0; i < maxItems; i++) {
+      for (let i = 0; i < maxItems - (shouldShowArrow ? 1 : 0); i++) {
         result[i] = results[i];
       }
-      const moreAfterWindow = start + maxItems < total;
-      const moreBeforeWindow = start > 0;
-      const multiplePages = total > maxItems;
-      const shouldShowArrow = multiplePages && (moreAfterWindow || moreBeforeWindow);
       if (shouldShowArrow) {
         this.nextArrow = true;
         result[maxItems - 1] = this.arrowPageItem ? (_f = await this.arrowPageItem.getPageItemPayload()) != null ? _f : "~~~~~" : "~~~~~";
