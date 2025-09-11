@@ -248,7 +248,7 @@ export class Panel extends BaseClass {
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
-            let pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
+            const pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
 
             if (!pageConfig || !pageConfig.config) {
                 continue;
@@ -263,91 +263,12 @@ export class Panel extends BaseClass {
                 hidden: pageConfig.hidden || false,
                 dpInit: pageConfig.dpInit,
             };
-            switch (pageConfig.config.card) {
-                case 'cardChart': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageChartBar(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardLChart': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageChartLine(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardEntities': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageEntities(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardSchedule': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageSchedule(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardGrid3':
-                case 'cardGrid2':
-                case 'cardGrid': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageGrid(pmconfig, pageConfig);
-                    break;
-                }
-
-                case 'cardThermo': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageThermo(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardThermo2': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageThermo2(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardMedia': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageMedia(pmconfig, pageConfig);
-                    break;
-                }
-
-                case 'cardQR': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageQR(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardAlarm': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageAlarm(pmconfig, pageConfig);
-                    break;
-                }
-                case 'cardPower': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PagePower(pmconfig, pageConfig);
-                    break;
-                }
-                case 'popupNotify2':
-                case 'popupNotify': {
-                    pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageNotify(pmconfig, pageConfig);
-                    break;
-                }
-                case 'screensaver':
-                case 'screensaver2':
-                case 'screensaver3': {
-                    scsFound++;
-
-                    const ssconfig: PageInterface = {
-                        card: pageConfig.config.card,
-                        panel: this,
-                        id: String(a),
-                        name: `${pageConfig.uniqueID}`,
-                        adapter: this.adapter,
-                        dpInit: '',
-                    };
-                    this.screenSaver = new Screensaver(ssconfig, pageConfig);
-                    this.pages[a] = this.screenSaver;
-                    break;
-                }
-                default: {
-                    this.log.error(`Page config is missing card property for page ${pageConfig.uniqueID}`);
+            const Page = this.newPage(pmconfig, pageConfig);
+            if (Page) {
+                this.pages[a] = Page;
+                if (Page instanceof Screensaver) {
+                    this.screenSaver = Page;
+                    scsFound += 1;
                 }
             }
         }
@@ -362,6 +283,81 @@ export class Panel extends BaseClass {
             navigationConfig: options.navigation,
         };
         this.navigation = new Navigation(navConfig);
+    }
+
+    newPage(pmconfig: PageInterface, pageConfig: pages.PageBaseConfig): Page | undefined {
+        switch (pageConfig.config?.card) {
+            case 'cardChart': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageChartBar(pmconfig, pageConfig);
+            }
+            case 'cardLChart': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageChartLine(pmconfig, pageConfig);
+            }
+            case 'cardEntities': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageEntities(pmconfig, pageConfig);
+            }
+            case 'cardSchedule': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageSchedule(pmconfig, pageConfig);
+            }
+            case 'cardGrid3':
+            case 'cardGrid2':
+            case 'cardGrid': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageGrid(pmconfig, pageConfig);
+            }
+
+            case 'cardThermo': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageThermo(pmconfig, pageConfig);
+            }
+            case 'cardThermo2': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageThermo2(pmconfig, pageConfig);
+            }
+            case 'cardMedia': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageMedia(pmconfig, pageConfig);
+            }
+
+            case 'cardQR': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageQR(pmconfig, pageConfig);
+            }
+            case 'cardAlarm': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageAlarm(pmconfig, pageConfig);
+            }
+            case 'cardPower': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PagePower(pmconfig, pageConfig);
+            }
+            case 'popupNotify2':
+            case 'popupNotify': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageNotify(pmconfig, pageConfig);
+            }
+            case 'screensaver':
+            case 'screensaver2':
+            case 'screensaver3': {
+                const ssconfig: PageInterface = {
+                    card: pageConfig.config.card,
+                    panel: this,
+                    id: pmconfig.id,
+                    name: `${pageConfig.uniqueID}`,
+                    adapter: this.adapter,
+                    dpInit: '',
+                };
+
+                return new Screensaver(ssconfig, pageConfig);
+            }
+            default: {
+                throw new Error(`Page config is missing card property for page ${pageConfig.uniqueID}`);
+            }
+        }
     }
 
     init = async (): Promise<void> => {

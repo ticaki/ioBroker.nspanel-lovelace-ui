@@ -231,7 +231,7 @@ class Panel extends import_library.BaseClass {
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
-      let pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
+      const pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
       if (!pageConfig || !pageConfig.config) {
         continue;
       }
@@ -245,88 +245,12 @@ class Panel extends import_library.BaseClass {
         hidden: pageConfig.hidden || false,
         dpInit: pageConfig.dpInit
       };
-      switch (pageConfig.config.card) {
-        case "cardChart": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageChartBar.PageChartBar(pmconfig, pageConfig);
-          break;
-        }
-        case "cardLChart": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageChartLine.PageChartLine(pmconfig, pageConfig);
-          break;
-        }
-        case "cardEntities": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageEntities.PageEntities(pmconfig, pageConfig);
-          break;
-        }
-        case "cardSchedule": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageSchedule.PageSchedule(pmconfig, pageConfig);
-          break;
-        }
-        case "cardGrid3":
-        case "cardGrid2":
-        case "cardGrid": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
-          break;
-        }
-        case "cardThermo": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
-          break;
-        }
-        case "cardThermo2": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageThermo2.PageThermo2(pmconfig, pageConfig);
-          break;
-        }
-        case "cardMedia": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageMedia.PageMedia(pmconfig, pageConfig);
-          break;
-        }
-        case "cardQR": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageQR.PageQR(pmconfig, pageConfig);
-          break;
-        }
-        case "cardAlarm": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageAlarm.PageAlarm(pmconfig, pageConfig);
-          break;
-        }
-        case "cardPower": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
-          break;
-        }
-        case "popupNotify2":
-        case "popupNotify": {
-          pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageNotification.PageNotify(pmconfig, pageConfig);
-          break;
-        }
-        case "screensaver":
-        case "screensaver2":
-        case "screensaver3": {
-          scsFound++;
-          const ssconfig = {
-            card: pageConfig.config.card,
-            panel: this,
-            id: String(a),
-            name: `${pageConfig.uniqueID}`,
-            adapter: this.adapter,
-            dpInit: ""
-          };
-          this.screenSaver = new import_screensaver.Screensaver(ssconfig, pageConfig);
-          this.pages[a] = this.screenSaver;
-          break;
-        }
-        default: {
-          this.log.error(`Page config is missing card property for page ${pageConfig.uniqueID}`);
+      const Page = this.newPage(pmconfig, pageConfig);
+      if (Page) {
+        this.pages[a] = Page;
+        if (Page instanceof import_screensaver.Screensaver) {
+          this.screenSaver = Page;
+          scsFound += 1;
         }
       }
     }
@@ -341,6 +265,78 @@ class Panel extends import_library.BaseClass {
       navigationConfig: options.navigation
     };
     this.navigation = new import_navigation.Navigation(navConfig);
+  }
+  newPage(pmconfig, pageConfig) {
+    var _a;
+    switch ((_a = pageConfig.config) == null ? void 0 : _a.card) {
+      case "cardChart": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageChartBar.PageChartBar(pmconfig, pageConfig);
+      }
+      case "cardLChart": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageChartLine.PageChartLine(pmconfig, pageConfig);
+      }
+      case "cardEntities": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageEntities.PageEntities(pmconfig, pageConfig);
+      }
+      case "cardSchedule": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageSchedule.PageSchedule(pmconfig, pageConfig);
+      }
+      case "cardGrid3":
+      case "cardGrid2":
+      case "cardGrid": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageGrid.PageGrid(pmconfig, pageConfig);
+      }
+      case "cardThermo": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageThermo.PageThermo(pmconfig, pageConfig);
+      }
+      case "cardThermo2": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageThermo2.PageThermo2(pmconfig, pageConfig);
+      }
+      case "cardMedia": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageMedia.PageMedia(pmconfig, pageConfig);
+      }
+      case "cardQR": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageQR.PageQR(pmconfig, pageConfig);
+      }
+      case "cardAlarm": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageAlarm.PageAlarm(pmconfig, pageConfig);
+      }
+      case "cardPower": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pagePower.PagePower(pmconfig, pageConfig);
+      }
+      case "popupNotify2":
+      case "popupNotify": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageNotification.PageNotify(pmconfig, pageConfig);
+      }
+      case "screensaver":
+      case "screensaver2":
+      case "screensaver3": {
+        const ssconfig = {
+          card: pageConfig.config.card,
+          panel: this,
+          id: pmconfig.id,
+          name: `${pageConfig.uniqueID}`,
+          adapter: this.adapter,
+          dpInit: ""
+        };
+        return new import_screensaver.Screensaver(ssconfig, pageConfig);
+      }
+      default: {
+        throw new Error(`Page config is missing card property for page ${pageConfig.uniqueID}`);
+      }
+    }
   }
   init = async () => {
     var _a, _b;

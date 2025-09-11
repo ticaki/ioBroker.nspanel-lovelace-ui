@@ -38,12 +38,24 @@ var import_types = require("../types/types");
 var import_pageItem = require("../pages/pageItem");
 var import_tools = require("../const/tools");
 var import_templateArray = require("../templates/templateArray");
+var import_icon_mapping = require("../const/icon_mapping");
+var import_Color = require("../const/Color");
 class Page extends import_baseClassPage.BaseClassPage {
   card;
   id;
   lastCardCounter = 0;
   isScreensaver;
   hidden = false;
+  /**
+   * Direct reference to the parent page,
+   * bypassing navigation logic.
+   */
+  directParentPage;
+  /**
+   * Direct reference to the child page,
+   * bypassing navigation logic.
+   */
+  directChildPage;
   //readonly enums: string | string[];
   config;
   //config: Card['config'];
@@ -97,6 +109,9 @@ class Page extends import_baseClassPage.BaseClassPage {
         }
         const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
         const enums = this.enums ? this.enums : options.enums;
+        if (!dpInit && !enums) {
+          this.log.debug(`No dpInit or enums for pageItem ${a} in ${this.name}`);
+        }
         options.data = dpInit || enums ? await this.basePanel.statesControler.getDataItemsFromAuto(
           dpInit,
           options.data,
@@ -263,10 +278,41 @@ class Page extends import_baseClassPage.BaseClassPage {
     }
     return result;
   }
+  getNavigation(side) {
+    if (this.directParentPage) {
+      let left = "";
+      let right = "";
+      if (!side || side === "left") {
+        left = (0, import_tools.getPayload)(
+          "button",
+          "bUp",
+          import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
+          String(import_Color.Color.rgb_dec565(import_Color.Color.navParent)),
+          "",
+          ""
+        );
+      }
+      if (!side || side === "right") {
+        right = (0, import_tools.getPayload)("", "", "", "", "", "");
+      }
+      if (!side) {
+        return (0, import_tools.getPayload)(left, right);
+      }
+      return side === "left" ? left : right;
+    }
+    return this.basePanel.navigation.buildNavigationString(side);
+  }
   goLeft() {
+    if (this.directParentPage) {
+      void this.basePanel.setActivePage(this.directParentPage, false);
+      return;
+    }
     this.basePanel.navigation.goLeft();
   }
   goRight() {
+    if (this.directParentPage) {
+      return;
+    }
     this.basePanel.navigation.goRight();
   }
   async onVisibilityChange(val) {
@@ -288,9 +334,6 @@ class Page extends import_baseClassPage.BaseClassPage {
   setLastPage(_p) {
   }
   removeLastPage(_p) {
-  }
-  getNavigation() {
-    return this.basePanel.navigation.buildNavigationString();
   }
   async update() {
     this.adapter.log.warn(
@@ -340,6 +383,14 @@ class Page extends import_baseClassPage.BaseClassPage {
   }
   async delete() {
     await super.delete();
+    if (this.directChildPage) {
+      await this.directChildPage.delete();
+      this.directChildPage = void 0;
+    }
+    if (this.directParentPage) {
+      this.directParentPage.directChildPage = void 0;
+      this.directParentPage = void 0;
+    }
     if (this.pageItems) {
       for (const item of this.pageItems) {
         item && await item.delete();

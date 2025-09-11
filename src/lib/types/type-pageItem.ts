@@ -258,6 +258,24 @@ export type PageItemDataItemsOptions =
       >)
     | PageItemDataItemsOptionsWithOutTemplate;
 
+export function isPageItemDataItemsOptions(obj: any): obj is PageItemDataItemsOptions {
+    if (!obj || typeof obj !== 'object') {
+        return false;
+    }
+
+    // Mit Template
+    if ('template' in obj && typeof obj.template === 'string') {
+        return true;
+    }
+
+    // Ohne Template, aber mit type und data
+    if ('type' in obj && typeof obj.type === 'string' && 'data' in obj) {
+        return true;
+    }
+
+    return false;
+}
+
 export type PageItemOptionsTemplate = {
     template?: Types.TemplateIdent;
     role?: pages.DeviceRole;

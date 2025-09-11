@@ -232,10 +232,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'value.mode.thermostat',
     'indicator',
     'indicator.connected',
+    'level.volume.group',
     '',
 ]);
 
 export type StateRole =
+    | 'level.volume.group'
     | 'indicator.connected'
     | 'indicator'
     | 'value.mode.thermostat'
@@ -354,6 +356,14 @@ export type StateRole =
     | '';
 
 export type DeviceRole =
+    /**
+     * Defines the datapoints to write to depending on the current read of entity1 state.
+     * If the read value is `true`, setValue1 is written with true,
+     * if the read value is `false`, setValue2 is written with true.
+     */
+    | 'writeTargetByValue'
+    /* selectGrid erzeugt im parent ein GridPage mit den items aus entity3 das muß dort auch zerstört werden */
+    | 'selectGrid'
     | 'repeatValue'
     | 'spotify-playlist'
     | 'spotify-tracklist'
@@ -897,6 +907,8 @@ type PageMediaBaseConfig = {
     artist?: typePageItem.ValueEntryTypeWithColor;
     shuffle?: typePageItem.ScaledNumberType;
     volume?: typePageItem.ScaledNumberType;
+    useGroupVolume?: boolean;
+    volumeGroup?: typePageItem.ScaledNumberType;
     icon?: string;
     play?: string;
     onOffColor?: typePageItem.ColorEntryTypeBooleanStandard;

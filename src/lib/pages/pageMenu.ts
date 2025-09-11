@@ -166,7 +166,14 @@ export class PageMenu extends Page {
         } else if (typeof this.config.filterType === 'number') {
             const filtered: typeof this.tempItems = [];
             for (const p of this.pageItems) {
-                if (p?.dataItems && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)) {
+                if (
+                    p?.dataItems &&
+                    (p.dataItems.filter == null ||
+                        p.dataItems.filter === this.config.filterType ||
+                        (typeof p.dataItems.filter === 'number' &&
+                            p.dataItems.filter < 0 &&
+                            p.dataItems.filter !== -this.config.filterType))
+                ) {
                     filtered.push(p);
                 }
             }
@@ -354,7 +361,7 @@ export class PageMenu extends Page {
                 this.adapter.clearTimeout(this.doubleClick);
                 this.doubleClick = undefined;
                 if (this.lastdirection === 'left') {
-                    this.basePanel.navigation.goLeft();
+                    super.goLeft();
                     return;
                 }
             } else {
@@ -380,7 +387,7 @@ export class PageMenu extends Page {
 
         // wenn es gar keine weitere Seite gibt, delegiere nach links
         if (stride === 0 || total <= maxItems) {
-            this.basePanel.navigation.goLeft();
+            super.goLeft();
             return;
         }
 
@@ -388,7 +395,7 @@ export class PageMenu extends Page {
 
         if (prevStart < 0) {
             // wir sind auf der ersten Seite -> nach außen navigieren
-            this.basePanel.navigation.goLeft();
+            super.goLeft();
         } else {
             this.step -= 1;
             void this.update();
@@ -409,7 +416,7 @@ export class PageMenu extends Page {
                 this.adapter.clearTimeout(this.doubleClick);
                 this.doubleClick = undefined;
                 if (this.lastdirection === 'right') {
-                    this.basePanel.navigation.goRight();
+                    super.goRight();
                     return;
                 }
             } else {
@@ -465,8 +472,8 @@ export class PageMenu extends Page {
         const hasPrev = start > 0;
         const hasNext = start + maxItems < total;
 
-        let left = hasPrev ? '' : this.basePanel.navigation.buildNavigationString('left');
-        let right = hasNext ? '' : this.basePanel.navigation.buildNavigationString('right');
+        let left = hasPrev ? '' : super.getNavigation('left');
+        let right = hasNext ? '' : super.getNavigation('right');
 
         if (!left) {
             left = getPayload(

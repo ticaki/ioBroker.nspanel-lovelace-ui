@@ -8,10 +8,12 @@ import {
     type TemplateIdent,
 } from '../types/types';
 import { PageItem } from '../pages/pageItem';
-import { deepAssign, getRegExp } from '../const/tools';
+import { deepAssign, getPayload, getRegExp } from '../const/tools';
 import type { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 import { pageItemTemplates } from '../templates/templateArray';
 import type { PageInterface, PageItemInterface } from './PageInterface';
+import { Icons } from '../const/icon_mapping';
+import { Color, type RGB } from '../const/Color';
 
 //interface Page extends BaseClass | PageConfig..
 export type PageConfigAll = pages.PageBaseConfig;
@@ -22,7 +24,17 @@ export class Page extends BaseClassPage {
     private lastCardCounter: number = 0;
     public readonly isScreensaver: boolean;
     public hidden: boolean = false;
-    //readonly enums: string | string[];
+    /**
+     * Direct reference to the parent page,
+     * bypassing navigation logic.
+     */
+    public directParentPage: Page | undefined;
+
+    /**
+     * Direct reference to the child page,
+     * bypassing navigation logic.
+     */
+    public directChildPage: Page | undefined; //readonly enums: string | string[];
     config: pages.PageBaseConfig['config'];
     //config: Card['config'];
     constructor(
@@ -90,6 +102,9 @@ export class Page extends BaseClassPage {
                 // search states for mode auto
                 const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
                 const enums = this.enums ? this.enums : options.enums;
+                if (!dpInit && !enums) {
+                    this.log.debug(`No dpInit or enums for pageItem ${a} in ${this.name}`);
+                }
 
                 options.data =
                     dpInit || enums
@@ -289,10 +304,44 @@ export class Page extends BaseClassPage {
         return result;
     }
 
+    protected getNavigation(side?: 'left' | 'right'): string {
+        if (this.directParentPage) {
+            let left = '';
+            let right = '';
+            if (!side || side === 'left') {
+                left = getPayload(
+                    'button',
+                    'bUp',
+                    Icons.GetIcon('arrow-up-bold'),
+                    String(Color.rgb_dec565(Color.navParent as RGB)),
+                    '',
+                    '',
+                );
+            }
+            if (!side || side === 'right') {
+                right = getPayload('', '', '', '', '', '');
+            }
+            if (!side) {
+                return getPayload(left, right);
+            }
+            return side === 'left' ? left : right;
+        }
+
+        return this.basePanel.navigation.buildNavigationString(side);
+    }
+
     goLeft(): void {
+        if (this.directParentPage) {
+            void this.basePanel.setActivePage(this.directParentPage, false);
+            return;
+        }
         this.basePanel.navigation.goLeft();
     }
+
     goRight(): void {
+        if (this.directParentPage) {
+            return;
+        }
         this.basePanel.navigation.goRight();
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
@@ -316,10 +365,6 @@ export class Page extends BaseClassPage {
 
     setLastPage(_p: Page | undefined): void {}
     removeLastPage(_p: Page | undefined): void {}
-
-    protected getNavigation(): string {
-        return this.basePanel.navigation.buildNavigationString();
-    }
 
     public async update(): Promise<void> {
         this.adapter.log.warn(
@@ -377,6 +422,14 @@ export class Page extends BaseClassPage {
     }
     async delete(): Promise<void> {
         await super.delete();
+        if (this.directChildPage) {
+            await this.directChildPage.delete();
+            this.directChildPage = undefined;
+        }
+        if (this.directParentPage) {
+            this.directParentPage.directChildPage = undefined;
+            this.directParentPage = undefined;
+        }
         if (this.pageItems) {
             for (const item of this.pageItems) {
                 item && (await item.delete());

@@ -28,7 +28,6 @@ const cardTemplates = {
     adapter: "0_userdata.0",
     card: "cardEntities",
     alwaysOn: "none",
-    useColor: false,
     items: void 0,
     config: {
       card: "cardEntities",

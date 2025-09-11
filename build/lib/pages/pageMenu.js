@@ -178,7 +178,7 @@ class PageMenu extends import_Page.Page {
     } else if (typeof this.config.filterType === "number") {
       const filtered = [];
       for (const p of this.pageItems) {
-        if ((p == null ? void 0 : p.dataItems) && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType)) {
+        if ((p == null ? void 0 : p.dataItems) && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType || typeof p.dataItems.filter === "number" && p.dataItems.filter < 0 && p.dataItems.filter !== -this.config.filterType)) {
           filtered.push(p);
         }
       }
@@ -318,7 +318,7 @@ class PageMenu extends import_Page.Page {
         this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
         if (this.lastdirection === "left") {
-          this.basePanel.navigation.goLeft();
+          super.goLeft();
           return;
         }
       } else {
@@ -339,12 +339,12 @@ class PageMenu extends import_Page.Page {
     const effective = requested === "half" && pages.isCardMenuHalfPageScrollType(this.config.card) ? "half" : "page";
     const stride = effective === "page" ? maxItems : Math.max(1, Math.floor(maxItems / 2));
     if (stride === 0 || total <= maxItems) {
-      this.basePanel.navigation.goLeft();
+      super.goLeft();
       return;
     }
     const prevStart = (this.step - 1) * stride;
     if (prevStart < 0) {
-      this.basePanel.navigation.goLeft();
+      super.goLeft();
     } else {
       this.step -= 1;
       void this.update();
@@ -363,7 +363,7 @@ class PageMenu extends import_Page.Page {
         this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
         if (this.lastdirection === "right") {
-          this.basePanel.navigation.goRight();
+          super.goRight();
           return;
         }
       } else {
@@ -407,8 +407,8 @@ class PageMenu extends import_Page.Page {
     const start = this.step * stride;
     const hasPrev = start > 0;
     const hasNext = start + maxItems < total;
-    let left = hasPrev ? "" : this.basePanel.navigation.buildNavigationString("left");
-    let right = hasNext ? "" : this.basePanel.navigation.buildNavigationString("right");
+    let left = hasPrev ? "" : super.getNavigation("left");
+    let right = hasNext ? "" : super.getNavigation("right");
     if (!left) {
       left = (0, import_tools.getPayload)(
         "button",
