@@ -263,12 +263,12 @@ export function isPageItemDataItemsOptions(obj: any): obj is PageItemDataItemsOp
         return false;
     }
 
-    // Mit Template
+    // With Template
     if ('template' in obj && typeof obj.template === 'string') {
         return true;
     }
 
-    // Ohne Template, aber mit type und data
+    // Without Template, but with type and data
     if ('type' in obj && typeof obj.type === 'string' && 'data' in obj) {
         return true;
     }
