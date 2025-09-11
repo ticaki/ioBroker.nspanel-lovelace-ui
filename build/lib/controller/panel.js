@@ -112,7 +112,6 @@ class Panel extends import_library.BaseClass {
   detach = { left: false, right: false };
   persistentPageItems = {};
   info = {
-    isOnline: false,
     nspanel: {
       displayVersion: "",
       model: "",
@@ -609,7 +608,6 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
-    await this.adapter.delay(100);
     this.initDone = true;
     this.restartLoops();
   };
@@ -1256,8 +1254,9 @@ class Panel extends import_library.BaseClass {
         this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
         this.sendRules();
         await this.writeInfo();
-        await this.adapter.delay(1e3);
+        await this.adapter.delay(500);
         this.sendDimmode();
+        await this.adapter.delay(300);
         this.navigation.resetPosition();
         const start = this.navigation.getCurrentMainPage();
         if (start === void 0) {

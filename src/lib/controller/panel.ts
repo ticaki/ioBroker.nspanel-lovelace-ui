@@ -122,7 +122,6 @@ export class Panel extends BaseClass {
     public persistentPageItems: Record<string, PageItem> = {};
 
     info: Types.PanelInfo = {
-        isOnline: false,
         nspanel: {
             displayVersion: '',
             model: '',
@@ -666,7 +665,6 @@ export class Panel extends BaseClass {
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
-        await this.adapter.delay(100);
         this.initDone = true;
         this.restartLoops();
     };
@@ -1390,9 +1388,11 @@ export class Panel extends BaseClass {
                 this.sendRules();
                 await this.writeInfo();
                 // wait 1s to have tasmota time to be ready
-                await this.adapter.delay(1000);
+                await this.adapter.delay(500);
 
                 this.sendDimmode();
+                await this.adapter.delay(300);
+
                 this.navigation.resetPosition();
 
                 const start = this.navigation.getCurrentMainPage();
