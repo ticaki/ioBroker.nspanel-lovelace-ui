@@ -424,6 +424,7 @@ declare namespace ScriptConfig {
          * The media dp to use, most a folder, device or channel. Not a state.
          */
         id: string;
+        name?: string;
         mediaDevice?: string; //???
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;
@@ -446,6 +447,11 @@ declare namespace ScriptConfig {
 
         repeatList?: string[];
         globalTracklist?: string[];
+
+        /* Volume */
+        minValue?: number;
+        /* Volume */
+        maxValue?: number;
         /** detailed configuration */
         itemsColorOn?: {
             trackList?: RGB;
@@ -481,7 +487,7 @@ declare namespace ScriptConfig {
             favoriteList?: boolean;
             crossfade?: boolean;
         };
-    } & PageBaseItem;
+    };
 
     export type PageThermo2PageItems = {
         heatCycleIndex?: number;
