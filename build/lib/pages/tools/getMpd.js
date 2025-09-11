@@ -23,7 +23,7 @@ __export(getMpd_exports, {
 module.exports = __toCommonJS(getMpd_exports);
 var import_Color = require("../../const/Color");
 async function getPageMpd(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
   if (justCheck) {
     return { gridItem, messages: ["done"] };
   }
@@ -253,10 +253,7 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
           false: {
             value: { type: "const", constVal: "repeat" },
             color: await configManager.getIconColor((_j = page.media.itemsColorOff) == null ? void 0 : _j.repeat, import_Color.Color.deactivated)
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          }
         },
         entity1: {
           value: {
@@ -270,13 +267,20 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
       }
     });
   }
-  if (((_k = page.media.deactivateDefaultItems) == null ? void 0 : _k.clock) !== true) {
+  if (!((_k = page.media.deactivateDefaultItems) == null ? void 0 : _k.clock)) {
     gridItem.pageItems.push({
       template: "text.clock",
-      dpInit: ""
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            color: ((_l = page.media.itemsColorOn) == null ? void 0 : _l.clock) ? await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.clock) : void 0
+          }
+        }
+      }
     });
   }
-  if (((_l = page.media.deactivateDefaultItems) == null ? void 0 : _l.crossfade) !== true) {
+  if (((_n = page.media.deactivateDefaultItems) == null ? void 0 : _n.crossfade) !== true) {
     gridItem.pageItems.push({
       role: "",
       type: "number",
@@ -285,11 +289,11 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
         icon: {
           true: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.repeat, import_Color.Color.activated)
+            color: await configManager.getIconColor((_o = page.media.itemsColorOn) == null ? void 0 : _o.repeat, import_Color.Color.activated)
           },
           false: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_n = page.media.itemsColorOff) == null ? void 0 : _n.repeat, import_Color.Color.deactivated)
+            color: await configManager.getIconColor((_p = page.media.itemsColorOff) == null ? void 0 : _p.repeat, import_Color.Color.deactivated)
           }
         },
         entity1: {

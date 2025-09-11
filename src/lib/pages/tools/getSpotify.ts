@@ -1,4 +1,4 @@
-import { Color } from '../../const/Color';
+import { Color, type RGB } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
 
@@ -563,6 +563,16 @@ export async function getPageSpotify(
 
     // repeat
     if (page.media.deactivateDefaultItems?.repeat !== true) {
+        const tempOn = await configManager.getIconColor(page.media.itemsColorOn?.repeat);
+        const tempOff = await configManager.getIconColor(page.media.itemsColorOff?.repeat);
+        let colorOn: RGB | undefined;
+        let colorOff: RGB | undefined;
+        if (tempOn && tempOn.type === 'const') {
+            colorOn = tempOn.constVal as RGB;
+        }
+        if (tempOff && tempOff.type === 'const') {
+            colorOff = tempOff.constVal as RGB;
+        }
         gridItem.pageItems.push({
             role: 'repeatValue',
             type: 'button',
@@ -596,11 +606,11 @@ export async function getPageSpotify(
                             dp: '',
                             read: `switch (val) {
                                     case 'off':
-                                        return Color.deactivated;
+                                        return ${colorOff ? JSON.stringify(colorOff) : 'Color.deactivated'};
                                     case 'context':
-                                        return Color.activated;
+                                        return ${colorOn ? JSON.stringify(colorOn) : 'Color.activated'};
                                     case 'track':
-                                        return Color.option4;
+                                        return ${colorOn ? JSON.stringify(colorOn) : 'Color.option4'};
                                     default:
                                         return false;
                                 }`,

@@ -23,7 +23,7 @@ __export(getSpotify_exports, {
 module.exports = __toCommonJS(getSpotify_exports);
 var import_Color = require("../../const/Color");
 async function getPageSpotify(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
   if (justCheck) {
     return { gridItem, messages: ["done"] };
   }
@@ -413,6 +413,16 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     });
   }
   if (((_r = page.media.deactivateDefaultItems) == null ? void 0 : _r.repeat) !== true) {
+    const tempOn = await configManager.getIconColor((_s = page.media.itemsColorOn) == null ? void 0 : _s.repeat);
+    const tempOff = await configManager.getIconColor((_t = page.media.itemsColorOff) == null ? void 0 : _t.repeat);
+    let colorOn;
+    let colorOff;
+    if (tempOn && tempOn.type === "const") {
+      colorOn = tempOn.constVal;
+    }
+    if (tempOff && tempOff.type === "const") {
+      colorOff = tempOff.constVal;
+    }
     gridItem.pageItems.push({
       role: "repeatValue",
       type: "button",
@@ -445,11 +455,11 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
               dp: "",
               read: `switch (val) {
                                     case 'off':
-                                        return Color.deactivated;
+                                        return ${colorOff ? JSON.stringify(colorOff) : "Color.deactivated"};
                                     case 'context':
-                                        return Color.activated;
+                                        return ${colorOn ? JSON.stringify(colorOn) : "Color.activated"};
                                     case 'track':
-                                        return Color.option4;
+                                        return ${colorOn ? JSON.stringify(colorOn) : "Color.option4"};
                                     default:
                                         return false;
                                 }`

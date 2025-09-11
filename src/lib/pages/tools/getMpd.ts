@@ -251,9 +251,6 @@ export async function getPageMpd(
                         value: { type: 'const', constVal: 'repeat' },
                         color: await configManager.getIconColor(page.media.itemsColorOff?.repeat, Color.deactivated),
                     },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
                 },
                 entity1: {
                     value: {
