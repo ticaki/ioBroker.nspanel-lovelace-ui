@@ -96,6 +96,7 @@ class PanelSend extends import_library.BaseClass {
     }
   };
   sendMessageLoop = async () => {
+    var _a;
     const msg = this.messageDb[0];
     if (msg === void 0 || this.unload) {
       if (this.messageTimeout) {
@@ -113,6 +114,10 @@ class PanelSend extends import_library.BaseClass {
       }
     }
     this.losingDelay = this.losingDelay + 1e3;
+    await this.mqttClient.publish(this.topic, msg.payload, { ...(_a = msg.opt) != null ? _a : {}, qos: 1 });
+    if (this.unload) {
+      return;
+    }
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
   };

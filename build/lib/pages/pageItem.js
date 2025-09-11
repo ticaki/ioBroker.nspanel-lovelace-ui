@@ -1802,6 +1802,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           if (this.timeouts.brightnessSlider) {
             this.adapter.clearTimeout(this.timeouts.brightnessSlider);
           }
+          if (this.unload) {
+            break;
+          }
           this.timeouts.brightnessSlider = this.adapter.setTimeout(
             async (item2, value2) => {
               var _a2, _b2, _c2, _d2;
@@ -1844,6 +1847,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           const item = entry.data;
           if (this.timeouts.colorTempSlider) {
             this.adapter.clearTimeout(this.timeouts.colorTempSlider);
+          }
+          if (this.unload) {
+            break;
           }
           this.timeouts.colorTempSlider = this.adapter.setTimeout(
             async (item2, value2) => {
@@ -2167,6 +2173,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       case "number-set": {
         if (this.timeouts["number-set"]) {
           this.adapter.clearTimeout(this.timeouts["number-set"]);
+        }
+        if (this.unload) {
+          break;
         }
         if (entry.type === "number") {
           this.timeouts["number-set"] = this.adapter.setTimeout(

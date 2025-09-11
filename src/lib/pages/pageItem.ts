@@ -2064,6 +2064,10 @@ export class PageItem extends BaseClassTriggerd {
                     if (this.timeouts.brightnessSlider) {
                         this.adapter.clearTimeout(this.timeouts.brightnessSlider);
                     }
+                    if (this.unload) {
+                        break;
+                    }
+
                     this.timeouts.brightnessSlider = this.adapter.setTimeout(
                         async (item, value) => {
                             if (item?.dimmer?.value?.writeable || item?.dimmer?.set?.writeable) {
@@ -2110,6 +2114,10 @@ export class PageItem extends BaseClassTriggerd {
                     if (this.timeouts.colorTempSlider) {
                         this.adapter.clearTimeout(this.timeouts.colorTempSlider);
                     }
+                    if (this.unload) {
+                        break;
+                    }
+
                     this.timeouts.colorTempSlider = this.adapter.setTimeout(
                         async (item: typeof entry.data, value) => {
                             if (item && item.White && item.White.value) {
@@ -2454,6 +2462,10 @@ export class PageItem extends BaseClassTriggerd {
                 if (this.timeouts['number-set']) {
                     this.adapter.clearTimeout(this.timeouts['number-set']);
                 }
+                if (this.unload) {
+                    break;
+                }
+
                 if (entry.type === 'number') {
                     this.timeouts['number-set'] = this.adapter.setTimeout(
                         async value => {

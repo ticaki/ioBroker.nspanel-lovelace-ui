@@ -553,13 +553,15 @@ class StatesControler extends import_library.BaseClass {
     if (StatesControler.tempObjectDBTimeout) {
       adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
     }
-    StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
-      if (adapter.unload) {
-        return;
-      }
-      StatesControler.tempObjectDBTimeout = void 0;
-      StatesControler.TempObjectDB = { data: void 0, keys: [], enums: void 0 };
-    }, 1e4);
+    if (!adapter.unload) {
+      StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
+        if (adapter.unload) {
+          return;
+        }
+        StatesControler.tempObjectDBTimeout = void 0;
+        StatesControler.TempObjectDB = { data: void 0, keys: [], enums: void 0 };
+      }, 2e4);
+    }
     return StatesControler.TempObjectDB;
   }
   /**

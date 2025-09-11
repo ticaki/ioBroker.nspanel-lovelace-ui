@@ -658,14 +658,15 @@ export class StatesControler extends BaseClass {
         if (StatesControler.tempObjectDBTimeout) {
             adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
         }
-        StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
-            if (adapter.unload) {
-                return;
-            }
-            StatesControler.tempObjectDBTimeout = undefined;
-            StatesControler.TempObjectDB = { data: undefined, keys: [], enums: undefined };
-        }, 10000);
-
+        if (!adapter.unload) {
+            StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
+                if (adapter.unload) {
+                    return;
+                }
+                StatesControler.tempObjectDBTimeout = undefined;
+                StatesControler.TempObjectDB = { data: undefined, keys: [], enums: undefined };
+            }, 20000);
+        }
         return StatesControler.TempObjectDB;
     }
     /**

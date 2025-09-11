@@ -107,10 +107,10 @@ export class PageMenu extends Page {
         if (this.autoLoopTimeout) {
             this.adapter.clearTimeout(this.autoLoopTimeout);
         }
-        if (this.unload) {
+        if (!this.config || this.config.scrollPresentation !== 'auto') {
             return;
         }
-        if (!this.config || this.config.scrollPresentation !== 'auto') {
+        if (this.unload) {
             return;
         }
         this.autoLoopTimeout = this.adapter.setTimeout(

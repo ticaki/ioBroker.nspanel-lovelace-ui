@@ -829,6 +829,9 @@ export class Panel extends BaseClass {
                         this.info.nspanel.berryDriverVersion,
                         definition.genericStateObjects.panel.panels.info.nspanel.berryDriverVersion,
                     );
+                    if (this.unload) {
+                        return;
+                    }
                     this.adapter.setTimeout(async () => {
                         let result: axios.AxiosResponse<any, any> | undefined = undefined;
                         try {
@@ -1266,6 +1269,9 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
+        if (this.unload) {
+            return;
+        }
         this.loopTimeout = this.adapter.setTimeout(() => {
             this.loop();
         }, 200);
@@ -1364,6 +1370,9 @@ export class Panel extends BaseClass {
         switch (event.method) {
             case 'startup': {
                 if (this.blockStartup || !this.initDone) {
+                    return;
+                }
+                if (this.unload) {
                     return;
                 }
                 this.blockStartup = this.adapter.setTimeout(() => {

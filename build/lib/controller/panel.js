@@ -755,6 +755,9 @@ class Panel extends import_library.BaseClass {
             this.info.nspanel.berryDriverVersion,
             definition.genericStateObjects.panel.panels.info.nspanel.berryDriverVersion
           );
+          if (this.unload) {
+            return;
+          }
           this.adapter.setTimeout(async () => {
             let result = void 0;
             try {
@@ -1139,6 +1142,9 @@ class Panel extends import_library.BaseClass {
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
+    if (this.unload) {
+      return;
+    }
     this.loopTimeout = this.adapter.setTimeout(() => {
       this.loop();
     }, 200);
@@ -1232,6 +1238,9 @@ class Panel extends import_library.BaseClass {
     switch (event.method) {
       case "startup": {
         if (this.blockStartup || !this.initDone) {
+          return;
+        }
+        if (this.unload) {
           return;
         }
         this.blockStartup = this.adapter.setTimeout(() => {

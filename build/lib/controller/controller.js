@@ -107,13 +107,13 @@ class Controller extends Library.BaseClass {
       await this.adapter.delay(10);
     } catch {
     }
-    if (this.unload) {
-      return;
-    }
     const next = new Date(now);
     next.setSeconds(0, 10);
     next.setMinutes(now.getMinutes() + 1);
     const diff = next.getTime() - Date.now();
+    if (this.unload) {
+      return;
+    }
     this.minuteLoopTimeout = this.adapter.setTimeout(() => this.minuteLoop(), diff);
   };
   /**
@@ -127,9 +127,6 @@ class Controller extends Library.BaseClass {
     const hourNow = now.getHours();
     next.setHours(now.getHours() + 1, 0, 4);
     const diff = next.getTime() - now.getTime();
-    if (this.unload) {
-      return;
-    }
     try {
       if (hourNow === 0) {
         const currentTime = await this.getCurrentTime();
@@ -141,6 +138,9 @@ class Controller extends Library.BaseClass {
     }
     if (hourNow % 8 === 0) {
       await this.checkOnlineVersion();
+    }
+    if (this.unload) {
+      return;
     }
     this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
   };

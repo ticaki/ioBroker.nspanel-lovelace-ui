@@ -117,6 +117,11 @@ export class PanelSend extends BaseClass {
             }
         }
         this.losingDelay = this.losingDelay + 1000;
+
+        await this.mqttClient.publish(this.topic, msg.payload, { ...(msg.opt ?? {}), qos: 1 });
+        if (this.unload) {
+            return;
+        }
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     };
