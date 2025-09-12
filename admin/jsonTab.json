@@ -169,6 +169,66 @@
                     "xl": 3
                 }
             }
+        },
+        "sietmap": {
+            "type": "panel",
+            "label": "sietmap",
+            "items": {
+                "sietmapAccordion": {
+                    "type": "accordion",
+                    "label": "sietmapAccordion",
+                    "titleAttr": "col1",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "items": [
+                        {
+                            "type": "table",
+                            "label": "sietmapTable",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 12,
+                            "lg": 12,
+                            "xl": 12,
+                            "items": [
+                                {
+                                    "type": "text",
+                                    "attr": "col1",
+                                    "label": "Column 1",
+                                    "default": ""
+                                },
+                                {
+                                    "type": "text",
+                                    "attr": "col2",
+                                    "label": "Column 2",
+                                    "default": ""
+                                },
+                                {
+                                    "type": "text",
+                                    "attr": "col3",
+                                    "label": "Column 3",
+                                    "default": ""
+                                },
+                                {
+                                    "type": "text",
+                                    "attr": "col4",
+                                    "label": "Column 4",
+                                    "default": ""
+                                }
+                            ],
+                            "default": [
+                                { "col1": "", "col2": "", "col3": "", "col4": "" },
+                                { "col1": "", "col2": "", "col3": "", "col4": "" },
+                                { "col1": "", "col2": "", "col3": "", "col4": "" },
+                                { "col1": "", "col2": "", "col3": "", "col4": "" },
+                                { "col1": "", "col2": "", "col3": "", "col4": "" }
+                            ]
+                        }
+                    ]
+                }
+            }
         }
     }
 }
