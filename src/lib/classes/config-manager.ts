@@ -4003,8 +4003,11 @@ export class ConfigManager extends BaseClass {
             pageItems.push(...arr);
         }
         // if weatherEntity is set, add alot weather data to screensaver :)
-        // only works with accuweather atm
+        if (this.adapter.config.weatherEntity) {
+            config.weatherEntity = this.adapter.config.weatherEntity;
+        }
         if (config.weatherEntity) {
+            config.weatherEntity = `${config.weatherEntity.split('.').slice(0, 2).join('.')}.`;
             const toAdd: typeof pageItems = [];
             const add = config.weatherAddDefaultItems;
             const addAll = add === true;
@@ -4273,7 +4276,7 @@ export class ConfigManager extends BaseClass {
                 if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
                     pageItems.push({
                         template: 'text.brightsky.favorit',
-                        dpInit: `/^brightsky\\.${instance}\\.weather\\.currently\\./`,
+                        dpInit: `/^brightsky\\.${instance}\\.current\\./`,
                         modeScr: 'favorit',
                     });
                 }

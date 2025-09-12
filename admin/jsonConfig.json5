@@ -549,6 +549,23 @@
                         }
                     ]
                 },
+                "_headerweatherEntity": {
+                    "type": "header",
+                    "text": "headerweatherEntity",
+                    "size": 3
+                },
+                "weatherEntity": {
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2,
+                    "type": "selectSendTo",
+                    "label": "weatherEntityLabel",
+                    "default": "",
+                    "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "command": "getWeatherEntities"
+                },
                 "_headerDateFormat": {
                     "type": "header",
                     "text": "headerDateFormat",

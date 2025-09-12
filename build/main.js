@@ -107,6 +107,14 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.config.testCase) {
       this.log.warn("Testcase mode!");
     }
+    if (this.config.weatherEntity === void 0 || typeof this.config.weatherEntity !== "string") {
+      this.config.weatherEntity = "";
+    } else if (this.config.weatherEntity !== "" && definition.weatherEntities.findIndex((a) => this.config.weatherEntity.startsWith(a)) === -1) {
+      this.log.error(
+        `Invalid weatherEntity index, set to ${this.config.weatherEntity}. Report this to the developer! Use custom.`
+      );
+      this.config.weatherEntity = "";
+    }
     this.mainConfiguration = [];
     const obj = await this.getForeignObjectAsync(this.namespace);
     if (obj && obj.native) {
@@ -456,6 +464,33 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
       switch (obj.command) {
+        case "getweatherEntity": {
+          const adapterObj = await this.getObjectViewAsync("system", "instance", {
+            startkey: "system.adapter.",
+            endkey: "system.adapter.\u9999"
+          });
+          const adapters = [];
+          if (adapterObj && adapterObj.rows && adapterObj.rows.length > 0) {
+            for (const r of adapterObj.rows) {
+              if (r && r.id && definition.weatherEntities.findIndex((a) => r.id.includes(a)) !== -1) {
+                adapters.push(r.id.replace("system.adapter.", ""));
+              }
+            }
+          }
+          const result = adapters.sort().map((a) => {
+            return { value: a, label: a };
+          });
+          result.unshift({ label: this.library.getTranslation("custom"), value: "" });
+          if (obj.callback) {
+            this.sendTo(
+              obj.from,
+              obj.command,
+              result ? result : [{ label: "Not available", value: "" }],
+              obj.callback
+            );
+          }
+          break;
+        }
         case "config": {
           const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
           if (obj1 && obj1.native && JSON.stringify(obj1.native.Testconfig2) !== JSON.stringify(obj.message)) {

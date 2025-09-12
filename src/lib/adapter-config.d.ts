@@ -20,6 +20,7 @@ declare global {
             defaultValueCardThermo: boolean;
             forceTFTVersion: string;
             colorTheme: number;
+            weatherEntity: string;
             fixBrokenCommonTypes: boolean;
 
             //onlyStartFromSystemConfig: boolean;

@@ -2489,7 +2489,7 @@ const textTemplates = {
           mode: "auto",
           type: "state",
           dp: "",
-          regexp: /\.currently\.temperature$/
+          regexp: /\.current\.temperature$/
         },
         decimal: {
           type: "const",
@@ -2659,7 +2659,7 @@ const textTemplates = {
       }
     }
   },
-  //Brightsky min max temperature
+  //Brightsky min max temperature and day icon
   "text.brightsky.bot2values": {
     role: "2values",
     type: "text",
@@ -2875,7 +2875,7 @@ const textTemplates = {
       }
     }
   },
-  //Brightsky min max temperature
+  //Brightsky temperature and hourly icon
   "text.brightsky.bot1Value": {
     role: "",
     type: "text",

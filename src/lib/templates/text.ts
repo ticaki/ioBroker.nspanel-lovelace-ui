@@ -2492,7 +2492,7 @@ export const textTemplates: TemplateItems = {
                     mode: 'auto',
                     type: 'state',
                     dp: '',
-                    regexp: /\.currently\.temperature$/,
+                    regexp: /\.current\.temperature$/,
                 },
                 decimal: {
                     type: 'const',
@@ -2664,7 +2664,7 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-    //Brightsky min max temperature
+    //Brightsky min max temperature and day icon
     'text.brightsky.bot2values': {
         role: '2values',
         type: 'text',
@@ -2880,7 +2880,7 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-    //Brightsky min max temperature
+    //Brightsky temperature and hourly icon
     'text.brightsky.bot1Value': {
         role: '',
         type: 'text',

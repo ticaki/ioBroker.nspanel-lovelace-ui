@@ -38,7 +38,8 @@ __export(definition_exports, {
   getTasmotaTimeZone: () => getTasmotaTimeZone,
   tasmotaOtaUrl: () => tasmotaOtaUrl,
   tasmotaTimeZones: () => tasmotaTimeZones,
-  tasmotaTimeZonesAdmin: () => tasmotaTimeZonesAdmin
+  tasmotaTimeZonesAdmin: () => tasmotaTimeZonesAdmin,
+  weatherEntities: () => weatherEntities
 });
 module.exports = __toCommonJS(definition_exports);
 var types = __toESM(require("../types/types"));
@@ -4649,6 +4650,7 @@ function getTasmotaTimeZone(label) {
   const tz = tasmotaTimeZones.find((tz2) => tz2.label === label);
   return tz ? tz.value : "";
 }
+const weatherEntities = ["brightsky", "openweathermap", "pirate-weather", "accuweather"];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Defaults,
@@ -4661,6 +4663,7 @@ function getTasmotaTimeZone(label) {
   getTasmotaTimeZone,
   tasmotaOtaUrl,
   tasmotaTimeZones,
-  tasmotaTimeZonesAdmin
+  tasmotaTimeZonesAdmin,
+  weatherEntities
 });
 //# sourceMappingURL=definition.js.map

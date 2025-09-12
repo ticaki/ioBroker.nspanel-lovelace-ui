@@ -3351,7 +3351,11 @@ class ConfigManager extends import_library.BaseClass {
     for (const arr of blocks) {
       pageItems.push(...arr);
     }
+    if (this.adapter.config.weatherEntity) {
+      config.weatherEntity = this.adapter.config.weatherEntity;
+    }
     if (config.weatherEntity) {
+      config.weatherEntity = `${config.weatherEntity.split(".").slice(0, 2).join(".")}.`;
       const toAdd = [];
       const add = config.weatherAddDefaultItems;
       const addAll = add === true;
@@ -3611,7 +3615,7 @@ class ConfigManager extends import_library.BaseClass {
         if (pageItems.findIndex((x) => x.modeScr === "favorit") === -1) {
           pageItems.push({
             template: "text.brightsky.favorit",
-            dpInit: `/^brightsky\\.${instance}\\.weather\\.currently\\./`,
+            dpInit: `/^brightsky\\.${instance}\\.current\\./`,
             modeScr: "favorit"
           });
         }
