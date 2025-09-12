@@ -1391,7 +1391,6 @@ export class Panel extends BaseClass {
                 await this.adapter.delay(500);
 
                 this.sendDimmode();
-                await this.adapter.delay(300);
 
                 this.navigation.resetPosition();
 

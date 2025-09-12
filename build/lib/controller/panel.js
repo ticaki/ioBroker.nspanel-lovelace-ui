@@ -1256,7 +1256,6 @@ class Panel extends import_library.BaseClass {
         await this.writeInfo();
         await this.adapter.delay(500);
         this.sendDimmode();
-        await this.adapter.delay(300);
         this.navigation.resetPosition();
         const start = this.navigation.getCurrentMainPage();
         if (start === void 0) {

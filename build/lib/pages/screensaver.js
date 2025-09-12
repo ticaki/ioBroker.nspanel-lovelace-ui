@@ -284,8 +284,8 @@ class Screensaver extends import_Page.Page {
     this.step = 0;
     if (v) {
       this.sendType();
-      await this.restartRotationLoop();
       await this.HandleTime();
+      await this.restartRotationLoop();
     } else {
       if (this.timeoutRotation) {
         this.adapter.clearTimeout(this.timeoutRotation);
