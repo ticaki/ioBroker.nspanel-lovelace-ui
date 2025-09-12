@@ -148,6 +148,14 @@
     "adminUI": {
       "config": "json"
     },
+    "adminTab": {
+      "link": "jsonTab.json",
+      "singleton": false,
+      "name": {
+        "en": "Panel Config",
+        "de": "Panel Konfig"
+      }
+    },
     "dependencies": [
       {
         "js-controller": ">=7.0.6"
