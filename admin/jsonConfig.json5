@@ -564,7 +564,7 @@
                     "label": "weatherEntityLabel",
                     "default": "",
                     "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
-                    "command": "getWeatherEntities"
+                    "command": "getWeatherEntity"
                 },
                 "_headerDateFormat": {
                     "type": "header",

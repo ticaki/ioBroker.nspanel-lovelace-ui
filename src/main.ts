@@ -551,7 +551,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
-                case 'getweatherEntity': {
+                case 'getWeatherEntity': {
                     const adapterObj = await this.getObjectViewAsync('system', 'instance', {
                         startkey: 'system.adapter.',
                         endkey: 'system.adapter.\u9999',
