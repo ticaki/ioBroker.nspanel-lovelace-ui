@@ -110,12 +110,12 @@ export class PageMenu extends Page {
         if (!this.config || this.config.scrollPresentation !== 'auto') {
             return;
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.autoLoopTimeout = this.adapter.setTimeout(
             () => {
-                if (this.visibility && !this.sleep && !this.unload) {
+                if ((this.visibility && !this.sleep && !this.unload) || this.adapter.unload) {
                     this.nextTick();
                 }
 
@@ -366,7 +366,7 @@ export class PageMenu extends Page {
                 }
             } else {
                 this.lastdirection = 'left';
-                if (this.unload) {
+                if (this.unload || this.adapter.unload) {
                     return;
                 }
                 this.doubleClick = this.adapter.setTimeout(() => {
@@ -421,7 +421,7 @@ export class PageMenu extends Page {
                 }
             } else {
                 this.lastdirection = 'right';
-                if (this.unload) {
+                if (this.unload || this.adapter.unload) {
                     return;
                 }
                 this.doubleClick = this.adapter.setTimeout(() => {
@@ -511,6 +511,7 @@ export class PageMenu extends Page {
     }
 
     async delete(): Promise<void> {
+        await super.delete();
         if (this.doubleClick) {
             this.adapter.clearTimeout(this.doubleClick);
             this.doubleClick = undefined;
@@ -520,6 +521,5 @@ export class PageMenu extends Page {
             this.autoLoopTimeout = undefined;
         }
         this.tempItems = [];
-        await super.delete();
     }
 }

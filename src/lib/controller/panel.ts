@@ -360,7 +360,7 @@ export class Panel extends BaseClass {
     }
 
     init = async (): Promise<void> => {
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.log.debug(`Panel ${this.name} is initialised!`);
@@ -665,7 +665,6 @@ export class Panel extends BaseClass {
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
-        this.initDone = true;
         this.restartLoops();
     };
 
@@ -828,7 +827,7 @@ export class Panel extends BaseClass {
                         this.info.nspanel.berryDriverVersion,
                         definition.genericStateObjects.panel.panels.info.nspanel.berryDriverVersion,
                     );
-                    if (this.unload) {
+                    if (this.unload || this.adapter.unload) {
                         return;
                     }
                     this.adapter.setTimeout(async () => {
@@ -866,8 +865,9 @@ export class Panel extends BaseClass {
             //this.log.info(`Receive a message from ${topic} with ${message}`);
         } else if (topic.endsWith('/tele/LWT')) {
             if (message === 'Offline') {
+                //this.log.warn('LWT shows offline!');
                 // deaktiviert, weils zu falschen offline meldungen bei 1 nutzer kommt
-                this.isOnline = false;
+                //this.isOnline = false;
             }
         } else if (topic.endsWith('/tele/INFO1')) {
             this.restartLoops();
@@ -1223,6 +1223,9 @@ export class Panel extends BaseClass {
      * @param sec seconds for timeout
      */
     sendScreensaverTimeout(sec: number): void {
+        if (this.unload) {
+            return;
+        }
         this.log.debug(`Set screeensaver timeout to ${sec}s.`);
         this.sendToPanel(`timeout~${sec}`, false);
     }
@@ -1261,6 +1264,9 @@ export class Panel extends BaseClass {
                 definition.genericStateObjects.panel.panels.cmd.dim.dayMode,
             );
         }
+        if (this.unload) {
+            return;
+        }
         this.sendToPanel(cmd, false);
     }
 
@@ -1268,7 +1274,7 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.loopTimeout = this.adapter.setTimeout(() => {
@@ -1285,7 +1291,7 @@ export class Panel extends BaseClass {
                 this.sendToPanel('pageType~pageStartup', false, { retain: true });
             }
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.loopTimeout = this.adapter.setTimeout(() => this.loop, t);
@@ -1312,7 +1318,6 @@ export class Panel extends BaseClass {
             false,
             definition.genericStateObjects.panel.panels.info.isOnline,
         );
-        await this.panelSend.delete();
         await this.navigation.delete();
         await this.screenSaver?.delete();
         for (const a of this.pages) {
@@ -1320,6 +1325,7 @@ export class Panel extends BaseClass {
                 await a.delete();
             }
         }
+        await this.panelSend.delete();
         this.controller.mqttClient.removeByFunction(this.onMessage);
         this.persistentPageItems = {};
         this.pages = [];
@@ -1371,7 +1377,7 @@ export class Panel extends BaseClass {
                 if (this.blockStartup || !this.initDone) {
                     return;
                 }
-                if (this.unload) {
+                if (this.unload || this.adapter.unload) {
                     return;
                 }
                 this.blockStartup = this.adapter.setTimeout(() => {
@@ -1388,7 +1394,7 @@ export class Panel extends BaseClass {
                 this.sendRules();
                 await this.writeInfo();
                 // wait 1s to have tasmota time to be ready
-                await this.adapter.delay(500);
+                await this.adapter.delay(100);
 
                 this.sendDimmode();
 

@@ -1811,9 +1811,6 @@ export class PageItem extends BaseClassTriggerd {
         return this.parent ? `${this.parent.name}.${this.id}` : this.id;
     }
     async delete(): Promise<void> {
-        this.visibility = false;
-        this.unload = true;
-        await this.controller.statesControler.deactivateTrigger(this);
         if (this.parent.currentPanel.persistentPageItems[this.id]) {
             if (!this.parent.currentPanel.unload) {
                 return;
@@ -1822,6 +1819,9 @@ export class PageItem extends BaseClassTriggerd {
             delete this.parent.currentPanel.persistentPageItems[this.id];
         }
         await super.delete();
+        this.visibility = false;
+        this.unload = true;
+        await this.controller.statesControler.deactivateTrigger(this);
         this.controller.statesControler.deletePageLoop();
     }
 
@@ -2064,10 +2064,9 @@ export class PageItem extends BaseClassTriggerd {
                     if (this.timeouts.brightnessSlider) {
                         this.adapter.clearTimeout(this.timeouts.brightnessSlider);
                     }
-                    if (this.unload) {
+                    if (this.unload || this.adapter.unload) {
                         break;
                     }
-
                     this.timeouts.brightnessSlider = this.adapter.setTimeout(
                         async (item, value) => {
                             if (item?.dimmer?.value?.writeable || item?.dimmer?.set?.writeable) {
@@ -2114,10 +2113,9 @@ export class PageItem extends BaseClassTriggerd {
                     if (this.timeouts.colorTempSlider) {
                         this.adapter.clearTimeout(this.timeouts.colorTempSlider);
                     }
-                    if (this.unload) {
+                    if (this.unload || this.adapter.unload) {
                         break;
                     }
-
                     this.timeouts.colorTempSlider = this.adapter.setTimeout(
                         async (item: typeof entry.data, value) => {
                             if (item && item.White && item.White.value) {
@@ -2462,7 +2460,7 @@ export class PageItem extends BaseClassTriggerd {
                 if (this.timeouts['number-set']) {
                     this.adapter.clearTimeout(this.timeouts['number-set']);
                 }
-                if (this.unload) {
+                if (this.unload || this.adapter.unload) {
                     break;
                 }
 

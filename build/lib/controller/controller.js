@@ -106,7 +106,7 @@ class Controller extends Library.BaseClass {
     next.setSeconds(0, 10);
     next.setMinutes(now.getMinutes() + 1);
     const diff = next.getTime() - Date.now();
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.minuteLoopTimeout = this.adapter.setTimeout(() => this.minuteLoop(), diff);
@@ -134,7 +134,7 @@ class Controller extends Library.BaseClass {
     if (hourNow % 8 === 0) {
       await this.checkOnlineVersion();
     }
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
@@ -338,10 +338,10 @@ class Controller extends Library.BaseClass {
       }
     }
     const newPanel = new Panel.Panel(this.adapter, panel);
-    await this.adapter.delay(100);
     if (await newPanel.isValid()) {
       this.panels.push(newPanel);
       await newPanel.init();
+      newPanel.initDone = true;
       this.log.debug(`Panel ${newPanel.name} created`);
     } else {
       await newPanel.delete();

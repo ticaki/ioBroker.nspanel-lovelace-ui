@@ -413,7 +413,7 @@ class PageQR extends import_Page.Page {
     );
   }
   async onStateTrigger(_id) {
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.adapter.setTimeout(() => this.update(), 50);

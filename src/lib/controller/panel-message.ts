@@ -41,7 +41,7 @@ export class PanelSend extends BaseClass {
     }
 
     onMessage: callbackMessageType = async (topic: string, message: string) => {
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             //this.mqttClient.unsubscribe(`${this.configTopic}/stat/RESULT`);
             //return;
         }
@@ -73,7 +73,7 @@ export class PanelSend extends BaseClass {
                             this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
                         }
                     }
-                    if (this.unload) {
+                    if (this.unload || this.adapter.unload) {
                         return;
                     }
                     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
@@ -90,6 +90,9 @@ export class PanelSend extends BaseClass {
             this.messageDb.length > 0 &&
             this.messageDb.some(a => a.payload === payload && a.opt === opt)
         ) {
+            return;
+        }
+        if (!this.panel?.isOnline && payload !== 'pageType~pageStartup') {
             return;
         }
         this.messageDb.push({ payload: payload, opt: opt, ackForType: ackForType });
@@ -111,7 +114,7 @@ export class PanelSend extends BaseClass {
         if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
             this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
         }
-        if (this.losingMessageCount++ > 30) {
+        if (this.losingMessageCount++ > 3) {
             if (this.panel) {
                 this.panel.isOnline = false;
             }
@@ -121,7 +124,9 @@ export class PanelSend extends BaseClass {
         if (this.unload) {
             return;
         }
-        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
+        if (!this.adapter.unload) {
+            this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
+        }
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     };
 
@@ -132,12 +137,10 @@ export class PanelSend extends BaseClass {
         ) {
             return;
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             this.messageDbTasmota = [];
         }
-        if (this.adapter.unload) {
-            return;
-        }
+
         this.messageDbTasmota.push({ topic: topic, payload: payload, opt: opt });
 
         if (this.messageTimeoutTasmota === undefined) {
@@ -165,7 +168,7 @@ export class PanelSend extends BaseClass {
             this.messageDbTasmota.unshift(msg);
             this.losingDelay = this.losingDelay + 1000; // sanfter Backoff
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 10);

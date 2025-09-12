@@ -153,7 +153,7 @@ ${message.text}`;
           pos = pos2;
         }
         if (!this.rotationTimeout) {
-          if (this.unload) {
+          if (this.unload || this.adapter.unload) {
             return;
           }
           this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3e3);
@@ -220,17 +220,17 @@ ${message.text}`;
     }
     this.step++;
     await this.update();
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.rotationTimeout = this.adapter.setTimeout(this.rotation, 1500);
   };
   async delete() {
+    await super.delete();
     if (this.rotationTimeout) {
       this.adapter.clearTimeout(this.rotationTimeout);
     }
     this.rotationTimeout = void 0;
-    await super.delete();
   }
   async onStateTrigger(_dp) {
     this.step = 0;

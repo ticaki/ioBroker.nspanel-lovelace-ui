@@ -83,7 +83,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
     var _a;
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return false;
     }
     if (!this.visibility && !(this.neverDeactivateTrigger || this.canBeHidden && ((_a = this.parent) == null ? void 0 : _a.visibility) || from.neverDeactivateTrigger)) {
@@ -103,7 +103,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         }
         this.updateTimeout = this.adapter.setTimeout(
           async () => {
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
               return;
             }
             this.updateTimeout = void 0;
@@ -128,7 +128,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         this.adapter.clearTimeout(this.alwaysOnState);
       }
       if (this.alwaysOn === "action") {
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
           return;
         }
         this.alwaysOnState = this.adapter.setTimeout(
@@ -140,7 +140,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
       }
     }, 20);
     this.updateTimeout = this.adapter.setTimeout(async () => {
-      if (this.unload) {
+      if (this.unload || this.adapter.unload) {
         return;
       }
       this.updateTimeout = void 0;
@@ -163,9 +163,9 @@ class BaseClassTriggerd extends import_library.BaseClass {
     }
   }
   async delete() {
+    await super.delete();
     await this.setVisibility(false);
     this.parent = void 0;
-    await super.delete();
     if (this.waitForTimeout) {
       this.adapter.clearTimeout(this.waitForTimeout);
     }
@@ -181,7 +181,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (v !== this.visibility) {
       this.visibility = v;
       if (this.visibility) {
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
           return;
         }
         this.log.debug(`[${this.basePanel.friendlyName}] Switch page to visible!`);
@@ -203,7 +203,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
           this.controller && await this.controller.statesControler.deactivateTrigger(this);
         }
       }
-      if (this.unload) {
+      if (this.unload || this.adapter.unload) {
         return;
       }
       await this.onVisibilityChange(v);
@@ -211,7 +211,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.alwaysOn != "ignore") {
           if (this.alwaysOn != "none") {
             if (this.alwaysOn === "action") {
-              if (this.unload) {
+              if (this.unload || this.adapter.unload) {
                 return;
               }
               this.alwaysOnState = this.adapter.setTimeout(
@@ -230,7 +230,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
       }
     } else {
       this.visibility = v;
-      if (this.unload) {
+      if (this.unload || this.adapter.unload) {
         return;
       }
       if (this.visibility) {

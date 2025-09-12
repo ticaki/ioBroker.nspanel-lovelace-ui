@@ -256,7 +256,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             const states = await this.getStatesAsync('*');
             await this.library.initStates(states);
             await this.onMqttConnect();
-            await this.delay(2000);
+            await this.delay(1000);
 
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
@@ -503,21 +503,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             callback();
         }
     }
-    //test
-    // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
-    // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
-    // /**
-    //  * Is called if a subscribed object changes
-    //  */
-    // private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
-    //     if (obj) {
-    //         // The object was changed
-    //         this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-    //     } else {
-    //         // The object was deleted
-    //         this.log.info(`object ${id} deleted`);
-    //     }
-    // }
 
     /**
      * Is called if a subscribed state changes
@@ -685,79 +670,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
 
-                /*case 'RefreshDevices': {
-                    if (this.timeoutAdmin) {
-                        if (obj.callback) {
-                            this.sendTo(obj.from, obj.command, { error: 'sendToAdminRunning' }, obj.callback);
-                            break;
-                        }
-                    }
-                    const device = { id: '', name: obj.message.name, topic: obj.message.topic, ip: '' };
-
-                    const mqtt = new MQTT.MQTTClientClass(
-                        this,
-                        this.config.mqttIp,
-                        this.config.mqttPort,
-                        this.config.mqttUsername,
-                        this.config.mqttPassword,
-                        this.config.mqttServer,
-                        (topic, message) => {
-                            this.log.debug(`${topic} ${message}`);
-                        },
-                    );
-                    await this.delay(100);
-                    const checkTasmota = async (
-                        mqtt: MQTT.MQTTClientClass,
-                        topic: string,
-                    ): Promise<{ status: boolean; id: string; ip: string }> => {
-                        return new Promise(resolve => {
-                            this.timeoutAdmin = this.setTimeout(() => {
-                                this.timeoutAdmin = null;
-                                resolve({ status: false, id: '', ip: '' });
-                            }, 5000);
-                            void mqtt
-                                .subscript(`${topic}/stat/STATUS0`, (_topic: string, _message: string) => {
-                                    const msg = JSON.parse(_message) as STATUS0;
-                                    if (msg.StatusNET) {
-                                        resolve({
-                                            status: true,
-                                            ip: msg.StatusNET.IPAddress,
-                                            id: this.library.cleandp(msg.StatusNET.Mac, false, true),
-                                        });
-                                    }
-                                })
-                                .then(() => {
-                                    void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
-                                });
-                        });
-                    };
-
-                    const result = await checkTasmota(mqtt, device.topic);
-                    if (this.timeoutAdmin) {
-                        this.clearTimeout(this.timeoutAdmin);
-                        this.timeoutAdmin = null;
-                    }
-
-                    await mqtt.destroy();
-                    if (result.status) {
-                        device.id = result.id;
-                        device.ip = result.ip;
-                        const index = this.config.panels.findIndex(a => a.topic === device.topic);
-                        //if (index !== -1) {
-                        this.config.panels[index] = device;
-                        if (obj.callback) {
-                            this.sendTo(obj.from, obj.command, { native: device }, obj.callback);
-                            this.sendTo(obj.from, obj.command, { result: 'ok' }, obj.callback);
-                            break;
-                        }
-                        //}
-                    }
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, { error: 'sendToRefreshFail' }, obj.callback);
-                    }
-
-                    break;
-                }*/
                 case 'testCase': {
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { testSuccessful: this.testSuccessful }, obj.callback);

@@ -49,7 +49,7 @@ class PanelSend extends import_library.BaseClass {
     this.panel = config.panel;
   }
   onMessage = async (topic, message) => {
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
     }
     if (!topic.endsWith("/stat/RESULT")) {
       return;
@@ -76,7 +76,7 @@ class PanelSend extends import_library.BaseClass {
               this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
             }
           }
-          if (this.unload) {
+          if (this.unload || this.adapter.unload) {
             return;
           }
           this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
@@ -87,7 +87,11 @@ class PanelSend extends import_library.BaseClass {
     }
   };
   addMessage = (payload, ackForType, opt) => {
+    var _a;
     if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.some((a) => a.payload === payload && a.opt === opt)) {
+      return;
+    }
+    if (!((_a = this.panel) == null ? void 0 : _a.isOnline) && payload !== "pageType~pageStartup") {
       return;
     }
     this.messageDb.push({ payload, opt, ackForType });
@@ -107,7 +111,7 @@ class PanelSend extends import_library.BaseClass {
     if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
       this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
     }
-    if (this.losingMessageCount++ > 30) {
+    if (this.losingMessageCount++ > 3) {
       if (this.panel) {
         this.panel.isOnline = false;
       }
@@ -116,18 +120,17 @@ class PanelSend extends import_library.BaseClass {
     if (this.unload) {
       return;
     }
-    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
+    if (!this.adapter.unload) {
+      this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
+    }
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
   };
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {
       return;
     }
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       this.messageDbTasmota = [];
-    }
-    if (this.adapter.unload) {
-      return;
     }
     this.messageDbTasmota.push({ topic, payload, opt });
     if (this.messageTimeoutTasmota === void 0) {
@@ -153,7 +156,7 @@ class PanelSend extends import_library.BaseClass {
       this.messageDbTasmota.unshift(msg);
       this.losingDelay = this.losingDelay + 1e3;
     }
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 10);

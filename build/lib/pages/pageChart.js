@@ -246,7 +246,7 @@ class PageChart extends import_Page.Page {
     await super.onVisibilityChange(val);
   }
   async onStateTrigger(_id) {
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.adapter.setTimeout(() => this.update(), 50);

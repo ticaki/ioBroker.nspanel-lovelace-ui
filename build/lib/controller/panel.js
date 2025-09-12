@@ -339,7 +339,7 @@ class Panel extends import_library.BaseClass {
   }
   init = async () => {
     var _a, _b;
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.log.debug(`Panel ${this.name} is initialised!`);
@@ -608,7 +608,6 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
-    this.initDone = true;
     this.restartLoops();
   };
   sendToPanelClass = () => {
@@ -754,7 +753,7 @@ class Panel extends import_library.BaseClass {
             this.info.nspanel.berryDriverVersion,
             definition.genericStateObjects.panel.panels.info.nspanel.berryDriverVersion
           );
-          if (this.unload) {
+          if (this.unload || this.adapter.unload) {
             return;
           }
           this.adapter.setTimeout(async () => {
@@ -782,7 +781,6 @@ class Panel extends import_library.BaseClass {
       }
     } else if (topic.endsWith("/tele/LWT")) {
       if (message === "Offline") {
-        this.isOnline = false;
       }
     } else if (topic.endsWith("/tele/INFO1")) {
       this.restartLoops();
@@ -1098,6 +1096,9 @@ class Panel extends import_library.BaseClass {
    * @param sec seconds for timeout
    */
   sendScreensaverTimeout(sec) {
+    if (this.unload) {
+      return;
+    }
     this.log.debug(`Set screeensaver timeout to ${sec}s.`);
     this.sendToPanel(`timeout~${sec}`, false);
   }
@@ -1135,13 +1136,16 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.cmd.dim.dayMode
       );
     }
+    if (this.unload) {
+      return;
+    }
     this.sendToPanel(cmd, false);
   }
   restartLoops() {
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.loopTimeout = this.adapter.setTimeout(() => {
@@ -1157,7 +1161,7 @@ class Panel extends import_library.BaseClass {
         this.sendToPanel("pageType~pageStartup", false, { retain: true });
       }
     }
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.loopTimeout = this.adapter.setTimeout(() => this.loop, t);
@@ -1182,7 +1186,6 @@ class Panel extends import_library.BaseClass {
       false,
       definition.genericStateObjects.panel.panels.info.isOnline
     );
-    await this.panelSend.delete();
     await this.navigation.delete();
     await ((_a = this.screenSaver) == null ? void 0 : _a.delete());
     for (const a of this.pages) {
@@ -1190,6 +1193,7 @@ class Panel extends import_library.BaseClass {
         await a.delete();
       }
     }
+    await this.panelSend.delete();
     this.controller.mqttClient.removeByFunction(this.onMessage);
     this.persistentPageItems = {};
     this.pages = [];
@@ -1239,7 +1243,7 @@ class Panel extends import_library.BaseClass {
         if (this.blockStartup || !this.initDone) {
           return;
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
           return;
         }
         this.blockStartup = this.adapter.setTimeout(() => {
@@ -1254,7 +1258,7 @@ class Panel extends import_library.BaseClass {
         this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
         this.sendRules();
         await this.writeInfo();
-        await this.adapter.delay(500);
+        await this.adapter.delay(100);
         this.sendDimmode();
         this.navigation.resetPosition();
         const start = this.navigation.getCurrentMainPage();

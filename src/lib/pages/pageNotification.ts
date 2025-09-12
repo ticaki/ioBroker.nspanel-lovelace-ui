@@ -145,7 +145,7 @@ export class PageNotify extends Page {
                     pos = pos2;
                 }
                 if (!this.rotationTimeout) {
-                    if (this.unload) {
+                    if (this.unload || this.adapter.unload) {
                         return;
                     }
                     this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3000);
@@ -212,17 +212,17 @@ export class PageNotify extends Page {
         }
         this.step++;
         await this.update();
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.rotationTimeout = this.adapter.setTimeout(this.rotation, 1500);
     };
     async delete(): Promise<void> {
+        await super.delete();
         if (this.rotationTimeout) {
             this.adapter.clearTimeout(this.rotationTimeout);
         }
         this.rotationTimeout = undefined;
-        await super.delete();
     }
     protected async onStateTrigger(_dp: string): Promise<void> {
         this.step = 0;

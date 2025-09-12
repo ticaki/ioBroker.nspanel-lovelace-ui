@@ -24,8 +24,8 @@ export class SystemNotifications extends BaseClass {
         await this.handleIobrokerNotifications();
     }
     async delete(): Promise<void> {
-        await this.writeConfig();
         await super.delete();
+        await this.writeConfig();
         if (this.messageTimeout) {
             this.adapter.clearTimeout(this.messageTimeout);
         }
@@ -76,7 +76,9 @@ export class SystemNotifications extends BaseClass {
 
         for (const host of hosts) {
             this.log.debug(`Request notifications from "${host}"`);
-
+            if (this.unload || this.adapter.unload) {
+                return;
+            }
             const _helper = async (): Promise<GetNotificationsResponse> => {
                 return new Promise(resolve => {
                     setTimeout(() => {
@@ -146,7 +148,7 @@ export class SystemNotifications extends BaseClass {
         if (this.messageTimeout) {
             return;
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.messageTimeout = this.adapter.setTimeout(async () => {

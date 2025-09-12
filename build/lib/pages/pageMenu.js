@@ -132,12 +132,12 @@ class PageMenu extends import_Page.Page {
     if (!this.config || this.config.scrollPresentation !== "auto") {
       return;
     }
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.autoLoopTimeout = this.adapter.setTimeout(
       () => {
-        if (this.visibility && !this.sleep && !this.unload) {
+        if (this.visibility && !this.sleep && !this.unload || this.adapter.unload) {
           this.nextTick();
         }
         this.autoLoop();
@@ -323,7 +323,7 @@ class PageMenu extends import_Page.Page {
         }
       } else {
         this.lastdirection = "left";
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
           return;
         }
         this.doubleClick = this.adapter.setTimeout(() => {
@@ -368,7 +368,7 @@ class PageMenu extends import_Page.Page {
         }
       } else {
         this.lastdirection = "right";
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
           return;
         }
         this.doubleClick = this.adapter.setTimeout(() => {
@@ -441,6 +441,7 @@ class PageMenu extends import_Page.Page {
     this.step = 0;
   }
   async delete() {
+    await super.delete();
     if (this.doubleClick) {
       this.adapter.clearTimeout(this.doubleClick);
       this.doubleClick = void 0;
@@ -450,7 +451,6 @@ class PageMenu extends import_Page.Page {
       this.autoLoopTimeout = void 0;
     }
     this.tempItems = [];
-    await super.delete();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

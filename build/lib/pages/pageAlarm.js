@@ -279,7 +279,7 @@ class PageAlarm extends import_Page.Page {
             await this.setStatus("disarmed");
           }
         }
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
           return;
         }
         this.adapter.setTimeout(() => this.update(), 50);
@@ -324,7 +324,7 @@ class PageAlarm extends import_Page.Page {
           if (this.status === "disarmed" && approved) {
             await this.setStatus("arming");
             await this.setMode(button);
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
               return;
             }
             this.adapter.setTimeout(() => this.update(), 50);
@@ -332,7 +332,7 @@ class PageAlarm extends import_Page.Page {
           } else if (!approved) {
             await this.setStatus("armed");
             await this.setMode(button);
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
               return;
             }
             this.adapter.setTimeout(() => this.update(), 50);
@@ -343,7 +343,7 @@ class PageAlarm extends import_Page.Page {
           if (this.status === "armed" && approved) {
             await this.setStatus("pending");
             await this.setMode(button);
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
               return;
             }
             this.adapter.setTimeout(() => this.update(), 50);
@@ -351,7 +351,7 @@ class PageAlarm extends import_Page.Page {
           } else if (!approved) {
             await this.setStatus("disarmed");
             await this.setMode(button);
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
               return;
             }
             this.adapter.setTimeout(() => this.update(), 50);

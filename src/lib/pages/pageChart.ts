@@ -251,7 +251,7 @@ export class PageChart extends Page {
     }
 
     protected async onStateTrigger(_id: string): Promise<void> {
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
         this.adapter.setTimeout(() => this.update(), 50);

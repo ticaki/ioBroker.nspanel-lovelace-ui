@@ -80,7 +80,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     super(config, options);
     this.config = options.config;
     this.currentPlayer = (_a = this.config.ident) != null ? _a : "";
-    this.minUpdateInterval = 2e3;
+    this.minUpdateInterval = 1800;
   }
   async init() {
     var _a, _b, _c, _d, _e;
@@ -481,7 +481,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         break;
       }
       case "volumeSlider": {
-        this.blockUpdateUntilTime = new Date((/* @__PURE__ */ new Date()).getTime() + 1e3);
+        this.blockUpdateUntilTime = new Date((/* @__PURE__ */ new Date()).getTime() + 1500);
         if (await ((_e = items.data.useGroupVolume) == null ? void 0 : _e.getBoolean()) && items.data.volumeGroup) {
           const v = parseInt(event.opt);
           await tools.setScaledNumber(items.data.volumeGroup, v);

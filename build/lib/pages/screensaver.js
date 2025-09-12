@@ -308,7 +308,7 @@ class Screensaver extends import_Page.Page {
       return;
     }
     this.step = this.step > 1e4 ? 0 : this.step + 1;
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.timeoutRotation = this.adapter.setTimeout(
@@ -426,7 +426,7 @@ class Screensaver extends import_Page.Page {
         }
       }
       await this.pageItems[event.id].onCommand(event.action, event.opt);
-      if (this.unload) {
+      if (this.unload || this.adapter.unload) {
         return;
       }
       this.blockButtons = this.adapter.setTimeout(() => {

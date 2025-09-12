@@ -85,7 +85,7 @@ export class BaseClassTriggerd extends BaseClass {
     async reset(): Promise<void> {}
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
-        if (this.unload) {
+        if (this.unload || this.adapter.unload) {
             return false;
         }
         if (
@@ -114,7 +114,7 @@ export class BaseClassTriggerd extends BaseClass {
                 }
                 this.updateTimeout = this.adapter.setTimeout(
                     async () => {
-                        if (this.unload) {
+                        if (this.unload || this.adapter.unload) {
                             return;
                         }
                         this.updateTimeout = undefined;
@@ -140,7 +140,7 @@ export class BaseClassTriggerd extends BaseClass {
                 this.adapter.clearTimeout(this.alwaysOnState);
             }
             if (this.alwaysOn === 'action') {
-                if (this.unload) {
+                if (this.unload || this.adapter.unload) {
                     return;
                 }
                 this.alwaysOnState = this.adapter.setTimeout(
@@ -152,7 +152,7 @@ export class BaseClassTriggerd extends BaseClass {
             }
         }, 20);
         this.updateTimeout = this.adapter.setTimeout(async () => {
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
                 return;
             }
             this.updateTimeout = undefined;
@@ -177,9 +177,9 @@ export class BaseClassTriggerd extends BaseClass {
         }
     }
     async delete(): Promise<void> {
+        await super.delete();
         await this.setVisibility(false);
         this.parent = undefined;
-        await super.delete();
         if (this.waitForTimeout) {
             this.adapter.clearTimeout(this.waitForTimeout);
         }
@@ -195,7 +195,7 @@ export class BaseClassTriggerd extends BaseClass {
         if (v !== this.visibility) {
             this.visibility = v;
             if (this.visibility) {
-                if (this.unload) {
+                if (this.unload || this.adapter.unload) {
                     return;
                 }
 
@@ -219,7 +219,7 @@ export class BaseClassTriggerd extends BaseClass {
                     this.controller && (await this.controller.statesControler.deactivateTrigger(this));
                 }
             }
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
                 return;
             }
             await this.onVisibilityChange(v);
@@ -227,7 +227,7 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.alwaysOn != 'ignore') {
                     if (this.alwaysOn != 'none') {
                         if (this.alwaysOn === 'action') {
-                            if (this.unload) {
+                            if (this.unload || this.adapter.unload) {
                                 return;
                             }
                             this.alwaysOnState = this.adapter.setTimeout(
@@ -247,7 +247,7 @@ export class BaseClassTriggerd extends BaseClass {
         } else {
             this.visibility = v;
             // bin mir nicht sicher ob das für alles passt.
-            if (this.unload) {
+            if (this.unload || this.adapter.unload) {
                 return;
             }
             if (this.visibility) {

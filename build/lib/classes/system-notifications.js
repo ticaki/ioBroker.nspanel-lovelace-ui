@@ -44,8 +44,8 @@ class SystemNotifications extends import_library.BaseClass {
     await this.handleIobrokerNotifications();
   }
   async delete() {
-    await this.writeConfig();
     await super.delete();
+    await this.writeConfig();
     if (this.messageTimeout) {
       this.adapter.clearTimeout(this.messageTimeout);
     }
@@ -93,6 +93,9 @@ class SystemNotifications extends import_library.BaseClass {
     hosts = hosts || await this.getAllHosts();
     for (const host of hosts) {
       this.log.debug(`Request notifications from "${host}"`);
+      if (this.unload || this.adapter.unload) {
+        return;
+      }
       const _helper = async () => {
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -150,7 +153,7 @@ class SystemNotifications extends import_library.BaseClass {
     if (this.messageTimeout) {
       return;
     }
-    if (this.unload) {
+    if (this.unload || this.adapter.unload) {
       return;
     }
     this.messageTimeout = this.adapter.setTimeout(async () => {

@@ -36,7 +36,7 @@ class StatesControler extends import_library.BaseClass {
     this.timespan = timespan;
     this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 6e4);
     this.intervalObjectDatabase = this.adapter.setInterval(() => {
-      if (this.unload) {
+      if (this.unload || this.adapter.unload) {
         return;
       }
       this.objectDatabase = {};
@@ -139,7 +139,7 @@ class StatesControler extends import_library.BaseClass {
         throw new Error(`Got invalid object for ${id}`);
       }
       this.triggerDB[id].common = obj.common;
-      if (this.unload) {
+      if (this.unload || this.adapter.unload) {
         return;
       }
       await this.adapter.subscribeForeignStatesAsync(id);
