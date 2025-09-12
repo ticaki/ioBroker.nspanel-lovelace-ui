@@ -57,12 +57,7 @@ export class Controller extends Library.BaseClass {
         if (this.adapter.mqttServer) {
             this.adapter.mqttServer.controller = this;
         }
-        for (const panelConfig of options.panels) {
-            if (panelConfig === undefined) {
-                continue;
-            }
-            void this.addPanel(structuredClone(panelConfig));
-        }
+        void this.init(options.panels);
         this.log.debug(`${this.name} created`);
     }
 
@@ -234,7 +229,7 @@ export class Controller extends Library.BaseClass {
         return null;
     };
 
-    async init(): Promise<void> {
+    async init(panels: Partial<Panel.panelConfigPartial>[]): Promise<void> {
         await this.statesControler.setInternalState(
             '///time',
             await this.getCurrentTime(),
@@ -307,24 +302,19 @@ export class Controller extends Library.BaseClass {
         await this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
 
         void this.systemNotification.init();
-        /*this.log.debug(`Create ${this.panels.length} panels`);
-        for (const panel of this.panels) {
-            await this.adapter.delay(100);
-            if (await panel.isValid()) {
-                newPanels.push(panel);
-                void panel.init();
-            } else {
-                await panel.delete();
-                this.adapter.testSuccessful = false;
-                this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+
+        const tasks: Promise<void>[] = [];
+        for (const panelConfig of panels) {
+            if (panelConfig === undefined) {
+                continue;
             }
+            tasks.push(this.addPanel(structuredClone(panelConfig)));
         }
-        this.panels = newPanels;*/
+
+        await Promise.all(tasks);
         void this.minuteLoop();
         void this.hourLoop();
         await this.checkOnlineVersion();
-        await this.getTasmotaVersion();
-        await this.getTFTVersion();
     }
 
     addPanel = async (panel: Partial<Panel.panelConfigPartial>): Promise<void> => {
@@ -444,7 +434,7 @@ export class Controller extends Library.BaseClass {
                 : result.data.tft.split('_')[0];
             for (const p of this.panels) {
                 if (p) {
-                    p.info.nspanel.onlineVersion = version;
+                    p.info.nspanel.onlineVersion = version.trim();
                 }
             }
         } catch {

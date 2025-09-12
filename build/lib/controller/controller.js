@@ -78,12 +78,7 @@ class Controller extends Library.BaseClass {
     if (this.adapter.mqttServer) {
       this.adapter.mqttServer.controller = this;
     }
-    for (const panelConfig of options.panels) {
-      if (panelConfig === void 0) {
-        continue;
-      }
-      void this.addPanel(structuredClone(panelConfig));
-    }
+    void this.init(options.panels);
     this.log.debug(`${this.name} created`);
   }
   minuteLoop = async () => {
@@ -238,7 +233,7 @@ class Controller extends Library.BaseClass {
     }
     return null;
   };
-  async init() {
+  async init(panels) {
     await this.statesControler.setInternalState(
       "///time",
       await this.getCurrentTime(),
@@ -308,11 +303,17 @@ class Controller extends Library.BaseClass {
     );
     await this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
     void this.systemNotification.init();
+    const tasks = [];
+    for (const panelConfig of panels) {
+      if (panelConfig === void 0) {
+        continue;
+      }
+      tasks.push(this.addPanel(structuredClone(panelConfig)));
+    }
+    await Promise.all(tasks);
     void this.minuteLoop();
     void this.hourLoop();
     await this.checkOnlineVersion();
-    await this.getTasmotaVersion();
-    await this.getTFTVersion();
   }
   addPanel = async (panel) => {
     let index = this.panels.findIndex((p) => p.topic === panel.topic);
@@ -420,7 +421,7 @@ class Controller extends Library.BaseClass {
       const version = this.adapter.config.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
       for (const p of this.panels) {
         if (p) {
-          p.info.nspanel.onlineVersion = version;
+          p.info.nspanel.onlineVersion = version.trim();
         }
       }
     } catch {

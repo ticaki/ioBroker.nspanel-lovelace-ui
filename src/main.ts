@@ -421,7 +421,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 name: 'controller',
                 panels: structuredClone(this.mainConfiguration),
             });
-            await this.controller.init();
+
             /*setInterval(() => {
                 this.log.debug(
                     `${Math.trunc(mem)}k/${String(Math.trunc(process.memoryUsage().heapUsed / 1024))}k Start/Jetzt: `,

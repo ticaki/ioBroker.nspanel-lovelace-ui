@@ -345,7 +345,6 @@ class NspanelLovelaceUi extends utils.Adapter {
         name: "controller",
         panels: structuredClone(this.mainConfiguration)
       });
-      await this.controller.init();
     } catch (e) {
       this.testSuccessful = false;
       this.log.error(`Error onReady: ${e}`);
