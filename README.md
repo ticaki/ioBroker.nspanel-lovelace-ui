@@ -147,7 +147,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.4.0 (2025-09-13)
 - (ticaki) Panels can now be restarted individually while the adapter is running; faulty or missing configurations prevent restart with clear error messages
 - (ticaki) Media logo field now supports Alexa play/pause toggle and Spotify seek position popup
 - (ticaki) Added new channel role "media" with status display and pageMedia fallback; for this role only, added `asControl` as PageItem property
@@ -161,7 +161,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Page items on the cardMedia can be given custom colours
 - (ticaki) Each card belonging to the Menu group can use classic or arrow scrolling - default is classic (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)
 - (ticaki) When scrolling classic there is half page or full page “page” or “half” - default is “page” - “half” is supported by cardGrid*, cardThermo2
-
 
 ### 0.3.0 (2025-09-01)
 - (ticaki) Refractor code
