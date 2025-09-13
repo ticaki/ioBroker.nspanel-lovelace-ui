@@ -107,7 +107,7 @@ class ConfigManager extends import_library.BaseClass {
       };
     }
     let messages = [];
-    this.log.info(`Start converting configuration for ${config.panelName || config.panelTopic}`);
+    this.log.debug(`Start converting configuration for ${config.panelName || config.panelTopic}`);
     let file = void 0;
     if (fs.existsSync(import_path.default.join(__dirname, "../../script"))) {
       file = fs.readFileSync(import_path.default.join(__dirname, "../../script/example_sendTo_script_iobroker.ts"), "utf8");

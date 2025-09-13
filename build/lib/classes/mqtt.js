@@ -61,7 +61,7 @@ class MQTTClientClass extends import_library.BaseClass {
       rejectUnauthorized: false
     });
     this.client.on("connect", () => {
-      this.log.info("MQTT connected.");
+      this.log.debug("MQTT connected.");
       this.ready = true;
       if (this._onConnect) {
         this._onConnect.callback(this._onConnect.timeout);

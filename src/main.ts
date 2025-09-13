@@ -191,7 +191,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.log.warn(`No script config found for ${a.topic}`);
                         await manager.delete();
                     } else if (usedConfig === 'raw') {
-                        this.log.info(`Config for ${a.topic}: raw`);
+                        this.log.debug(`Config for ${a.topic}: raw`);
                     } else {
                         // usedConfig === 'converted'
                         if (rawFound && rawConversionFailed) {

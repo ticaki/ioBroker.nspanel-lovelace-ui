@@ -91,7 +91,7 @@ export class ConfigManager extends BaseClass {
         }
         let messages: string[] = [];
 
-        this.log.info(`Start converting configuration for ${config.panelName || config.panelTopic}`);
+        this.log.debug(`Start converting configuration for ${config.panelName || config.panelTopic}`);
         let file = undefined;
         if (fs.existsSync(path.join(__dirname, '../../script'))) {
             file = fs.readFileSync(path.join(__dirname, '../../script/example_sendTo_script_iobroker.ts'), 'utf8');

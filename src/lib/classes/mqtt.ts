@@ -53,7 +53,7 @@ export class MQTTClientClass extends BaseClass {
         });
 
         this.client.on('connect', () => {
-            this.log.info('MQTT connected.');
+            this.log.debug('MQTT connected.');
             this.ready = true;
             if (this._onConnect) {
                 this._onConnect.callback(this._onConnect.timeout);
