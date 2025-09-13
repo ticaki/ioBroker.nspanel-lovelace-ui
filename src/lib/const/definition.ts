@@ -1800,7 +1800,13 @@ export const tasmotaOtaUrl = 'http://ota.tasmota.com/tasmota32/release/';
 
 export const ScreenSaverConst: Record<
     types.ScreensaverModeType,
-    Record<types.ScreenSaverPlaces, { maxEntries: Record<types.NSpanelModel, number> }>
+    Record<
+        types.ScreenSaverPlaces,
+        {
+            maxEntries: Pick<Record<types.NSpanelModel, number>, 'eu'> &
+                Partial<Omit<Record<types.NSpanelModel, number>, 'eu'>>;
+        }
+    >
 > = {
     standard: {
         left: {
@@ -1885,7 +1891,7 @@ export const ScreenSaverConst: Record<
             maxEntries: { eu: 0 },
         },
         bottom: {
-            maxEntries: { eu: 3 },
+            maxEntries: { eu: 3, 'us-p': 5, 'us-l': 3 },
         },
         alternate: {
             maxEntries: { eu: 0 },

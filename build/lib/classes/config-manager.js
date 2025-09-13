@@ -4119,7 +4119,6 @@ class ConfigManager extends import_library.BaseClass {
     } else if (typeof def === "string" && (def == null ? void 0 : def.startsWith("default.color.from.start."))) {
       return { type: "const", constVal: def };
     }
-    this.adapter.log.warn(`Invalid color value: ${JSON.stringify(item)}`);
     return void 0;
   }
   validStateId(id) {

@@ -42,12 +42,16 @@ class StatesControler extends import_library.BaseClass {
       this.objectDatabase = {};
     }, 18e4);
   }
-  deletePageLoop = () => {
+  deletePageLoop = (f) => {
     var _a, _b, _c;
     const removeIds = [];
     for (const id of Object.keys(this.triggerDB)) {
       const entry = this.triggerDB[id];
       const removeIdx = [];
+      if (f && entry.f === f) {
+        removeIds.push(id);
+        continue;
+      }
       for (let i = 0; i < entry.to.length; i++) {
         const it = entry.to[i];
         if ((it == null ? void 0 : it.unload) || ((_a = it == null ? void 0 : it.parent) == null ? void 0 : _a.unload) || ((_c = (_b = it == null ? void 0 : it.parent) == null ? void 0 : _b.basePanel) == null ? void 0 : _c.unload)) {
@@ -57,7 +61,8 @@ class StatesControler extends import_library.BaseClass {
       if (removeIdx.length) {
         removeIdx.sort((a, b) => b - a);
         for (const idx of removeIdx) {
-          for (const key of Object.keys(entry)) {
+          for (let idx2 = Object.keys(entry).length - 1; idx2 >= 0; idx2--) {
+            const key = Object.keys(entry)[idx2];
             const val = entry[key];
             if (Array.isArray(val) && idx >= 0 && idx < val.length) {
               val.splice(idx, 1);

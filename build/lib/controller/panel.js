@@ -1188,18 +1188,19 @@ class Panel extends import_library.BaseClass {
     );
     await this.navigation.delete();
     await ((_a = this.screenSaver) == null ? void 0 : _a.delete());
+    this.screenSaver = void 0;
     for (const a of this.pages) {
       if (a) {
         await a.delete();
       }
     }
     await this.panelSend.delete();
+    this.statesControler.deletePageLoop(this.onInternalCommand);
     this.controller.mqttClient.removeByFunction(this.onMessage);
     this.persistentPageItems = {};
     this.pages = [];
     this._activePage = void 0;
     this.data = {};
-    this.screenSaver = void 0;
   }
   getPagebyUniqueID(uniqueID) {
     var _a;

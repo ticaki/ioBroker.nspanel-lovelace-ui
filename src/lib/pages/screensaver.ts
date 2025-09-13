@@ -221,7 +221,10 @@ export class Screensaver extends Page {
             Object.assign(message.options[place], overwrite[place]);
 
             // Windowing/paging
-            const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+            let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+            if (max == null) {
+                max = Definition.ScreenSaverConst[layout][place].maxEntries.eu;
+            }
             let items = message.options[place] || [];
             if (items.length > max) {
                 const windows = Math.ceil(items.length / max);

@@ -1320,18 +1320,19 @@ export class Panel extends BaseClass {
         );
         await this.navigation.delete();
         await this.screenSaver?.delete();
+        this.screenSaver = undefined;
         for (const a of this.pages) {
             if (a) {
                 await a.delete();
             }
         }
         await this.panelSend.delete();
+        this.statesControler.deletePageLoop(this.onInternalCommand);
         this.controller.mqttClient.removeByFunction(this.onMessage);
         this.persistentPageItems = {};
         this.pages = [];
         this._activePage = undefined;
         this.data = {};
-        this.screenSaver = undefined;
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {

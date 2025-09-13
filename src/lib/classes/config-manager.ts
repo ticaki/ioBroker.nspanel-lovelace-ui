@@ -4865,7 +4865,6 @@ export class ConfigManager extends BaseClass {
         } else if (typeof def === 'string' && def?.startsWith('default.color.from.start.')) {
             return { type: 'const', constVal: def };
         }
-        this.adapter.log.warn(`Invalid color value: ${JSON.stringify(item)}`);
         return undefined;
     }
     validStateId(id: string): boolean {

@@ -50,12 +50,16 @@ export class StatesControler extends BaseClass {
             this.objectDatabase = {};
         }, 180000);
     }
-    deletePageLoop = (): void => {
+    deletePageLoop = (f?: getInternalFunctionType): void => {
         const removeIds: string[] = [];
 
         for (const id of Object.keys(this.triggerDB)) {
             const entry = this.triggerDB[id];
             const removeIdx: number[] = [];
+            if (f && entry.f === f) {
+                removeIds.push(id);
+                continue;
+            }
 
             // Sammle zu löschende Indizes aus entry.to
             for (let i = 0; i < entry.to.length; i++) {
@@ -71,7 +75,8 @@ export class StatesControler extends BaseClass {
 
                 // Für alle Array-Properties in entry den gleichen Index entfernen
                 for (const idx of removeIdx) {
-                    for (const key of Object.keys(entry)) {
+                    for (let idx2 = Object.keys(entry).length - 1; idx2 >= 0; idx2--) {
+                        const key = Object.keys(entry)[idx2];
                         const val = (entry as any)[key];
                         if (Array.isArray(val) && idx >= 0 && idx < val.length) {
                             val.splice(idx, 1);

@@ -198,7 +198,10 @@ class Screensaver extends import_Page.Page {
       const ordered = appendsByPlace[place].sort((a, b) => a.idx - b.idx).map((e) => e.payload);
       message.options[place].push(...ordered);
       Object.assign(message.options[place], overwrite[place]);
-      const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+      let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+      if (max == null) {
+        max = Definition.ScreenSaverConst[layout][place].maxEntries.eu;
+      }
       let items = message.options[place] || [];
       if (items.length > max) {
         const windows = Math.ceil(items.length / max);
