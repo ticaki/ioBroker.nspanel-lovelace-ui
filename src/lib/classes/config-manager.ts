@@ -4725,13 +4725,15 @@ export class ConfigManager extends BaseClass {
                 constVal: { local: 'de', format: entity.ScreensaverEntityDateFormat },
             };
         }
-        if (entity.ScreensaverEntityEnabled === false) {
-            result.data.enabled = { type: 'const', constVal: false };
-        } else if (
-            typeof entity.ScreensaverEntityEnabled === 'string' &&
-            (await this.existsState(entity.ScreensaverEntityEnabled))
-        ) {
-            result.data.enabled = { type: 'triggered', dp: entity.ScreensaverEntityEnabled };
+        if ('ScreensaverEntityEnabled' in entity) {
+            if (entity.ScreensaverEntityEnabled === false) {
+                result.data.enabled = { type: 'const', constVal: false };
+            } else if (
+                typeof entity.ScreensaverEntityEnabled === 'string' &&
+                (await this.existsState(entity.ScreensaverEntityEnabled))
+            ) {
+                result.data.enabled = { type: 'triggered', dp: entity.ScreensaverEntityEnabled };
+            }
         }
 
         let color: Types.DataItemsOptions | undefined = undefined;
@@ -4754,6 +4756,17 @@ export class ConfigManager extends BaseClass {
             result.data.icon = {
                 true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) },
             };
+        }
+        if ('ScreensaverEntityVisibleCondition' in entity) {
+            if (entity.ScreensaverEntityVisibleCondition && result.data.entity1.value) {
+                result.data.enabled = {
+                    ...result.data.entity1.value,
+                    read: `
+                val = ${typeof result.data.entity1.value?.read === 'string' ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
+                return ${entity.ScreensaverEntityVisibleCondition};
+                `,
+                };
+            }
         }
         if (
             dataType === 'number' &&

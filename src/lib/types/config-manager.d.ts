@@ -736,7 +736,7 @@ declare namespace ScriptConfig {
 
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
     export type ScreenSaverElement = { type: ScreenSaverType } & (
-        | {
+        | ({
               type: 'script';
               ScreensaverEntity: string;
               ScreensaverEntityText: string;
@@ -772,8 +772,28 @@ declare namespace ScriptConfig {
                     ]
                */
               ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
-              ScreensaverEntityEnabled?: string | boolean | null;
-          }
+          } & (
+              | {
+                    ScreensaverEntityEnabled?: string | boolean | null;
+                }
+              | {
+                    /**
+                     * Optional condition that determines whether a ScreensaverEntity should be visible.
+                     *
+                     * - If `undefined`, the entity is always shown (`true`).
+                     * - If provided, the adapter prepends `return` to the string and evaluates it.
+                     *   The result must be a boolean:
+                     *   - `true` → the entity is shown.
+                     *   - `false` → the entity is hidden.
+                     *
+                     * Example:
+                     * ```ts
+                     * ScreensaverEntityVisibleCondition: "val.length > 0 && val !== 'OFF'"
+                     * ```
+                     */
+                    ScreensaverEntityVisibleCondition?: string;
+                }
+          ))
         | { type: 'native'; native: any }
         | {
               type: 'template';

@@ -3956,6 +3956,7 @@ class ConfigManager extends import_library.BaseClass {
     throw new Error("Invalid data");
   }
   async getEntityData(entity, mode, defaultColors) {
+    var _a;
     const result = {
       modeScr: mode,
       type: "text",
@@ -4008,10 +4009,12 @@ class ConfigManager extends import_library.BaseClass {
         constVal: { local: "de", format: entity.ScreensaverEntityDateFormat }
       };
     }
-    if (entity.ScreensaverEntityEnabled === false) {
-      result.data.enabled = { type: "const", constVal: false };
-    } else if (typeof entity.ScreensaverEntityEnabled === "string" && await this.existsState(entity.ScreensaverEntityEnabled)) {
-      result.data.enabled = { type: "triggered", dp: entity.ScreensaverEntityEnabled };
+    if ("ScreensaverEntityEnabled" in entity) {
+      if (entity.ScreensaverEntityEnabled === false) {
+        result.data.enabled = { type: "const", constVal: false };
+      } else if (typeof entity.ScreensaverEntityEnabled === "string" && await this.existsState(entity.ScreensaverEntityEnabled)) {
+        result.data.enabled = { type: "triggered", dp: entity.ScreensaverEntityEnabled };
+      }
     }
     let color = void 0;
     if (entity.ScreensaverEntityOnColor) {
@@ -4031,6 +4034,17 @@ class ConfigManager extends import_library.BaseClass {
       result.data.icon = {
         true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) }
       };
+    }
+    if ("ScreensaverEntityVisibleCondition" in entity) {
+      if (entity.ScreensaverEntityVisibleCondition && result.data.entity1.value) {
+        result.data.enabled = {
+          ...result.data.entity1.value,
+          read: `
+                val = ${typeof ((_a = result.data.entity1.value) == null ? void 0 : _a.read) === "string" ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
+                return ${entity.ScreensaverEntityVisibleCondition};
+                `
+        };
+      }
     }
     if (dataType === "number" && entity.ScreensaverEntityIconSelect && Array.isArray(entity.ScreensaverEntityIconSelect)) {
       const obj2 = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
