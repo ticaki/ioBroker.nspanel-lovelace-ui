@@ -215,6 +215,8 @@ class Panel extends import_library.BaseClass {
     if (typeof this.panelSend.addMessageTasmota === "function") {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     }
+    this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
+    this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
     this.statesControler = options.controller.statesControler;
     options.pages = options.pages.filter((b) => {
       var _a2, _b2, _c;
@@ -1211,6 +1213,8 @@ class Panel extends import_library.BaseClass {
     return (_a = this.pages[index]) != null ? _a : null;
   }
   async writeInfo() {
+    this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
+    this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
     await this.library.writeFromJson(
       `panels.${this.name}.info`,
       "panel.panels.info",

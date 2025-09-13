@@ -49,6 +49,10 @@ class Controller extends Library.BaseClass {
   dailyIntervalTimeout;
   dataCache = {};
   options;
+  globalPanelInfo = {
+    availableTftFirmwareVersion: "",
+    availableTasmotaFirmwareVersion: ""
+  };
   systemNotification;
   constructor(adapter, options) {
     super(adapter, options.name);
@@ -419,10 +423,9 @@ class Controller extends Library.BaseClass {
         return;
       }
       const version = this.adapter.config.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
-      for (const p of this.panels) {
-        if (p) {
-          p.info.nspanel.onlineVersion = version.trim();
-        }
+      this.globalPanelInfo.availableTftFirmwareVersion = version.trim();
+      for (const panel of this.panels) {
+        panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
       }
     } catch {
     }
@@ -435,10 +438,9 @@ class Controller extends Library.BaseClass {
         const data = response.data;
         const TasmotaTagName = data.tag_name;
         const TasmotaVersionOnline = TasmotaTagName.replace(/v/i, "");
-        for (const p of this.panels) {
-          if (p) {
-            p.info.tasmota.onlineVersion = TasmotaVersionOnline;
-          }
+        this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
+        for (const panel of this.panels) {
+          panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
         }
       }
     } catch {

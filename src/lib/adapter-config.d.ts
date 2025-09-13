@@ -22,6 +22,7 @@ declare global {
             colorTheme: number;
             weatherEntity: string;
             fixBrokenCommonTypes: boolean;
+            hideDeveloperSymbols: boolean;
 
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;

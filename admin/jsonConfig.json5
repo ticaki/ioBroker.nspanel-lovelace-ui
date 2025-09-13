@@ -3358,6 +3358,16 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "hideDeveloperSymbols": {
+                    "type": "checkbox",
+                    "label": "hideDeveloperSymbols",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
                 "_header": {
                     "type": "header",
                     "label": "Not used",

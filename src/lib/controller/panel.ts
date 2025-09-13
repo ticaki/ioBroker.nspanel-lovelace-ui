@@ -225,6 +225,8 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessageTasmota === 'function') {
             this.sendToTasmota = this.panelSend.addMessageTasmota;
         }
+        this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
+        this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
         // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
@@ -1344,6 +1346,8 @@ export class Panel extends BaseClass {
     }
 
     async writeInfo(): Promise<void> {
+        this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
+        this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
         await this.library.writeFromJson(
             `panels.${this.name}.info`,
             'panel.panels.info',

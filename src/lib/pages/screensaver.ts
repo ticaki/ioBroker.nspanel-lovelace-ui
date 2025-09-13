@@ -454,7 +454,9 @@ export class Screensaver extends Page {
         let icon = `${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`;
         if (this.basePanel.info.nspanel.displayVersion === '0.0.0') {
             // only for development firmware
-            icon = `~${Icons.GetIcon('cog-refresh-outline')}`;
+            if (!this.adapter.config.hideDeveloperSymbols) {
+                icon = `~${Icons.GetIcon('cog-refresh-outline')}`;
+            }
         } else if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
             // only for newer firmwares
             icon = `~${Icons.GetIcon('wrench-clock')}`;

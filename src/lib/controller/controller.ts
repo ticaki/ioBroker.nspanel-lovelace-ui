@@ -23,6 +23,10 @@ export class Controller extends Library.BaseClass {
     private dailyIntervalTimeout: ioBroker.Interval | undefined;
     private dataCache: Record<string, { time: number; data: any }> = {};
     private options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] };
+    public globalPanelInfo: { availableTftFirmwareVersion: string; availableTasmotaFirmwareVersion: string } = {
+        availableTftFirmwareVersion: '',
+        availableTasmotaFirmwareVersion: '',
+    };
 
     systemNotification: SystemNotifications;
 
@@ -432,10 +436,9 @@ export class Controller extends Library.BaseClass {
             const version = this.adapter.config.useBetaTFT
                 ? result.data['tft-beta'].split('_')[0]
                 : result.data.tft.split('_')[0];
-            for (const p of this.panels) {
-                if (p) {
-                    p.info.nspanel.onlineVersion = version.trim();
-                }
+            this.globalPanelInfo.availableTftFirmwareVersion = version.trim();
+            for (const panel of this.panels) {
+                panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
             }
         } catch {
             // nothing
@@ -451,10 +454,10 @@ export class Controller extends Library.BaseClass {
 
                 const TasmotaTagName = data.tag_name; // Filter JSON by "tag_name" and write to variable
                 const TasmotaVersionOnline = TasmotaTagName.replace(/v/i, ''); // Filter unnecessary "v" from variable and write to release variable
-                for (const p of this.panels) {
-                    if (p) {
-                        p.info.tasmota.onlineVersion = TasmotaVersionOnline;
-                    }
+
+                this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
+                for (const panel of this.panels) {
+                    panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
                 }
             }
         } catch {
