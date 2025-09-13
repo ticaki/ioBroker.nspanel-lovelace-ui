@@ -25,7 +25,7 @@ import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
 //import fs from 'fs';
-axios.defaults.timeout = 15000;
+axios.defaults.timeout = 15_000;
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -749,7 +749,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
                                 );
                                 await axios.get(u.href);
-                                this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60000));
+                                this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60_000));
 
                                 u = new URL(
                                     `http://${obj.message.tasmotaIP}/cm?` +
@@ -761,7 +761,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 );
 
                                 await axios.get(u.href);
-                                this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60000));
+                                this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60_000));
 
                                 u = new URL(
                                     `http://${obj.message.tasmotaIP}/cm?` +
@@ -841,7 +841,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     );
                                     this.log.debug(`URL: ${url}`);
                                     await axios.get(url);
-                                    this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20000));
+                                    this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
                                     await this.delay(7000);
                                 } catch (e: any) {
                                     this.log.error(`Error: while installing berry - ${e}`);

@@ -201,7 +201,7 @@ export class PagePower extends Page {
             if (typeof config[key] === 'number') {
                 maxSpeedScale.push(config[key]);
             } else {
-                maxSpeedScale.push(10000);
+                maxSpeedScale.push(10_000);
             }
         }
 

@@ -121,7 +121,7 @@ export class PageMenu extends Page {
 
                 this.autoLoop();
             },
-            (this.config.scrollAutoTiming < 2 ? 3000 : this.config.scrollAutoTiming * 1000) || 15000,
+            (this.config.scrollAutoTiming < 2 ? 3000 : this.config.scrollAutoTiming * 1000) || 15_000,
         );
     }
 
@@ -520,6 +520,10 @@ export class PageMenu extends Page {
             this.adapter.clearTimeout(this.autoLoopTimeout);
             this.autoLoopTimeout = undefined;
         }
-        this.tempItems = [];
+        if (this.arrowPageItem) {
+            await this.arrowPageItem.delete();
+            this.arrowPageItem = undefined;
+        }
+        this.tempItems = undefined; // statt [] um Referenzen zu lösen
     }
 }

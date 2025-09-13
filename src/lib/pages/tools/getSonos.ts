@@ -19,7 +19,7 @@ export async function getPageSonos(
         viewStr && arr.length === 3
             ? await configManager.adapter.getObjectViewAsync('system', 'channel', {
                   startkey: `${viewStr}.`,
-                  endkey: `${viewStr}${String.fromCharCode(0xfffd)}`,
+                  endkey: `${viewStr}${String.fromCharCode(0xff_fd)}`,
               })
             : { rows: [] };
 

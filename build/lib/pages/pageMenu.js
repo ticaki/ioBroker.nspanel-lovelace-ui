@@ -450,7 +450,11 @@ class PageMenu extends import_Page.Page {
       this.adapter.clearTimeout(this.autoLoopTimeout);
       this.autoLoopTimeout = void 0;
     }
-    this.tempItems = [];
+    if (this.arrowPageItem) {
+      await this.arrowPageItem.delete();
+      this.arrowPageItem = void 0;
+    }
+    this.tempItems = void 0;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

@@ -26,6 +26,13 @@ var import_library = require("../classes/library");
 var import_tools = require("../const/tools");
 class StatesControler extends import_library.BaseClass {
   triggerDB = {};
+  /**
+   * Holds subscriptions created while the subscription system is temporarily blocked.
+   *
+   * - `undefined`: blocking is not active (normal mode, new subscriptions are applied immediately).
+   * - `string[]`: blocking is active; new subscriptions are collected here until the block is lifted.
+   */
+  blockedSubscriptions;
   deletePageInterval;
   stateDB = {};
   objectDatabase = {};
@@ -34,7 +41,9 @@ class StatesControler extends import_library.BaseClass {
   constructor(adapter, name = "", timespan = 15e3) {
     super(adapter, name || "StatesDB");
     this.timespan = timespan;
-    this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 6e4);
+    this.deletePageInterval = this.adapter.setInterval(async () => {
+      void this.deletePageLoop();
+    }, 18e4);
     this.intervalObjectDatabase = this.adapter.setInterval(() => {
       if (this.unload || this.adapter.unload) {
         return;
@@ -42,8 +51,8 @@ class StatesControler extends import_library.BaseClass {
       this.objectDatabase = {};
     }, 18e4);
   }
-  deletePageLoop = (f) => {
-    var _a, _b, _c;
+  deletePageLoop = async (f) => {
+    var _a, _b, _c, _d, _e;
     const removeIds = [];
     for (const id of Object.keys(this.triggerDB)) {
       const entry = this.triggerDB[id];
@@ -54,7 +63,7 @@ class StatesControler extends import_library.BaseClass {
       }
       for (let i = 0; i < entry.to.length; i++) {
         const it = entry.to[i];
-        if ((it == null ? void 0 : it.unload) || ((_a = it == null ? void 0 : it.parent) == null ? void 0 : _a.unload) || ((_c = (_b = it == null ? void 0 : it.parent) == null ? void 0 : _b.basePanel) == null ? void 0 : _c.unload)) {
+        if ((it == null ? void 0 : it.unload) || ((_a = it == null ? void 0 : it.parent) == null ? void 0 : _a.unload) || ((_c = (_b = it == null ? void 0 : it.parent) == null ? void 0 : _b.basePanel) == null ? void 0 : _c.unload) || ((_e = (_d = it == null ? void 0 : it.parent) == null ? void 0 : _d.parent) == null ? void 0 : _e.unload)) {
           removeIdx.push(i);
         }
       }
@@ -74,9 +83,22 @@ class StatesControler extends import_library.BaseClass {
         removeIds.push(id);
       }
     }
+    this.blockedSubscriptions = [];
     for (const id of removeIds) {
+      await this.adapter.unsubscribeForeignStatesAsync(id);
       delete this.triggerDB[id];
     }
+    while (this.blockedSubscriptions && this.blockedSubscriptions.length > 0) {
+      for (let idx = this.blockedSubscriptions.length - 1; idx >= 0; idx--) {
+        if (idx >= this.blockedSubscriptions.length) {
+          continue;
+        }
+        const id = this.blockedSubscriptions[idx];
+        await this.adapter.subscribeForeignStatesAsync(id);
+        this.blockedSubscriptions.splice(idx, 1);
+      }
+    }
+    this.blockedSubscriptions = void 0;
   };
   async delete() {
     await super.delete();
@@ -147,7 +169,13 @@ class StatesControler extends import_library.BaseClass {
       if (this.unload || this.adapter.unload) {
         return;
       }
-      await this.adapter.subscribeForeignStatesAsync(id);
+      if (this.blockedSubscriptions) {
+        if (!this.blockedSubscriptions.includes(id)) {
+          this.blockedSubscriptions.push(id);
+        }
+      } else {
+        await this.adapter.subscribeForeignStatesAsync(id);
+      }
       if (this.adapter.config.debugLogStates) {
         this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
       }
@@ -225,6 +253,12 @@ class StatesControler extends import_library.BaseClass {
         this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
       }
       if (!entry.subscribed.some((a) => a)) {
+        if (this.blockedSubscriptions) {
+          const idx = this.blockedSubscriptions.indexOf(id);
+          if (idx !== -1) {
+            this.blockedSubscriptions.splice(idx, 1);
+          }
+        }
         await this.adapter.unsubscribeForeignStatesAsync(id);
       }
     }

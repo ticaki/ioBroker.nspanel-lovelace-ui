@@ -1566,7 +1566,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.visibility = false;
     this.unload = true;
     await this.controller.statesControler.deactivateTrigger(this);
-    this.controller.statesControler.deletePageLoop();
+    await this.controller.statesControler.deletePageLoop();
   }
   async onCommand(action, value) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;

@@ -92,7 +92,7 @@ export class Library extends BaseClass {
         if (this.adapter.config.logUnknownTokens) {
             this.unknownTokensInterval = this.adapter.setInterval(() => {
                 this.log.info(`Unknown tokens: ${JSON.stringify(this.unknownTokens)}`);
-            }, 60000);
+            }, 60_000);
         }
     }
 

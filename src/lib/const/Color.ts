@@ -1164,14 +1164,14 @@ export class Color extends ColorBase {
      */
     static rgb_to_cie(red: number, green: number, blue: number): string {
         //Apply a gamma correction to the RGB values, which makes the color more vivid and more the like the color displayed on the screen of your device
-        const vred = red > 0.04045 ? Math.pow((red + 0.055) / (1.0 + 0.055), 2.4) : red / 12.92;
-        const vgreen = green > 0.04045 ? Math.pow((green + 0.055) / (1.0 + 0.055), 2.4) : green / 12.92;
-        const vblue = blue > 0.04045 ? Math.pow((blue + 0.055) / (1.0 + 0.055), 2.4) : blue / 12.92;
+        const vred = red > 0.040_45 ? Math.pow((red + 0.055) / (1.0 + 0.055), 2.4) : red / 12.92;
+        const vgreen = green > 0.040_45 ? Math.pow((green + 0.055) / (1.0 + 0.055), 2.4) : green / 12.92;
+        const vblue = blue > 0.040_45 ? Math.pow((blue + 0.055) / (1.0 + 0.055), 2.4) : blue / 12.92;
 
         //RGB values to XYZ using the Wide RGB D65 conversion formula
-        const X = vred * 0.664511 + vgreen * 0.154324 + vblue * 0.162028;
-        const Y = vred * 0.283881 + vgreen * 0.668433 + vblue * 0.047685;
-        const Z = vred * 0.000088 + vgreen * 0.07231 + vblue * 0.986039;
+        const X = vred * 0.664_511 + vgreen * 0.154_324 + vblue * 0.162_028;
+        const Y = vred * 0.283_881 + vgreen * 0.668_433 + vblue * 0.047_685;
+        const Z = vred * 0.000_088 + vgreen * 0.072_31 + vblue * 0.986_039;
 
         //Calculate the xy values from the XYZ values
         const ciex = (X / (X + Y + Z)).toFixed(4);
@@ -1305,26 +1305,26 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
         9700: { r: 207, g: 221, b: 255 },
         9800: { r: 206, g: 220, b: 255 },
         9900: { r: 205, g: 220, b: 255 },
-        10000: { r: 207, g: 218, b: 255 },
-        10100: { r: 207, g: 218, b: 255 },
-        10200: { r: 206, g: 217, b: 255 },
-        10300: { r: 205, g: 217, b: 255 },
-        10400: { r: 204, g: 216, b: 255 },
-        10500: { r: 204, g: 216, b: 255 },
-        10600: { r: 203, g: 215, b: 255 },
-        10700: { r: 202, g: 215, b: 255 },
-        10800: { r: 202, g: 214, b: 255 },
-        10900: { r: 201, g: 214, b: 255 },
-        11000: { r: 200, g: 213, b: 255 },
-        11100: { r: 200, g: 213, b: 255 },
-        11200: { r: 199, g: 212, b: 255 },
-        11300: { r: 198, g: 212, b: 255 },
-        11400: { r: 198, g: 212, b: 255 },
-        11500: { r: 197, g: 211, b: 255 },
-        11600: { r: 197, g: 211, b: 255 },
-        11700: { r: 197, g: 210, b: 255 },
-        11800: { r: 196, g: 210, b: 255 },
-        11900: { r: 195, g: 210, b: 255 },
-        12000: { r: 195, g: 209, b: 255 },
+        10_000: { r: 207, g: 218, b: 255 },
+        10_100: { r: 207, g: 218, b: 255 },
+        10_200: { r: 206, g: 217, b: 255 },
+        10_300: { r: 205, g: 217, b: 255 },
+        10_400: { r: 204, g: 216, b: 255 },
+        10_500: { r: 204, g: 216, b: 255 },
+        10_600: { r: 203, g: 215, b: 255 },
+        10_700: { r: 202, g: 215, b: 255 },
+        10_800: { r: 202, g: 214, b: 255 },
+        10_900: { r: 201, g: 214, b: 255 },
+        11_000: { r: 200, g: 213, b: 255 },
+        11_100: { r: 200, g: 213, b: 255 },
+        11_200: { r: 199, g: 212, b: 255 },
+        11_300: { r: 198, g: 212, b: 255 },
+        11_400: { r: 198, g: 212, b: 255 },
+        11_500: { r: 197, g: 211, b: 255 },
+        11_600: { r: 197, g: 211, b: 255 },
+        11_700: { r: 197, g: 210, b: 255 },
+        11_800: { r: 196, g: 210, b: 255 },
+        11_900: { r: 195, g: 210, b: 255 },
+        12_000: { r: 195, g: 209, b: 255 },
     };
 }

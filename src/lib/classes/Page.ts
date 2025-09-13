@@ -436,6 +436,7 @@ export class Page extends BaseClassPage {
             }
         }
         this.pageItems = [];
+        this.pageItemConfig = [];
     }
 }
 

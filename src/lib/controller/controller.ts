@@ -9,7 +9,7 @@ import axios from 'axios';
 import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 import { Color } from '../const/Color';
 
-axios.defaults.timeout = 15000;
+axios.defaults.timeout = 15_000;
 
 /**
  * Controller Class

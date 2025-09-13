@@ -614,8 +614,8 @@ class Panel extends import_library.BaseClass {
   };
   sendToPanelClass = () => {
   };
-  sendToPanel = (payload, ackForType, opt) => {
-    this.sendToPanelClass(payload, ackForType, opt);
+  sendToPanel = (payload, ackForType, force, opt) => {
+    this.sendToPanelClass(payload, ackForType, force, opt);
   };
   /**
    * Activate a page or toggle sleep on the current page.
@@ -1160,7 +1160,8 @@ class Panel extends import_library.BaseClass {
     if (!this.isOnline) {
       t = 5e3;
       if (!this.flashing) {
-        this.sendToPanel("pageType~pageStartup", false, { retain: true });
+        this.panelSend.resetMessageDB();
+        this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
       }
     }
     if (this.unload || this.adapter.unload) {
@@ -1174,7 +1175,7 @@ class Panel extends import_library.BaseClass {
   async delete() {
     var _a;
     await super.delete();
-    this.sendToPanel("pageType~pageStartup", false, { retain: true });
+    this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
     !this.adapter.unload && await this.adapter.delay(10);
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
@@ -1197,8 +1198,8 @@ class Panel extends import_library.BaseClass {
       }
     }
     await this.panelSend.delete();
-    this.statesControler.deletePageLoop(this.onInternalCommand);
     this.controller.mqttClient.removeByFunction(this.onMessage);
+    await this.statesControler.deletePageLoop(this.onInternalCommand);
     this.persistentPageItems = {};
     this.pages = [];
     this._activePage = void 0;

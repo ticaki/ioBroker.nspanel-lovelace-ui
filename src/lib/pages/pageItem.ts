@@ -202,7 +202,7 @@ export class PageItem extends BaseClassTriggerd {
                 str && arr.length === 3
                     ? await this.adapter.getObjectViewAsync('system', 'device', {
                           startkey: `${str}.`,
-                          endkey: `${str}${String.fromCharCode(0xfffd)}`,
+                          endkey: `${str}${String.fromCharCode(0xff_fd)}`,
                       })
                     : { rows: [] };
             this.tempData = [];
@@ -1822,7 +1822,7 @@ export class PageItem extends BaseClassTriggerd {
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
-        this.controller.statesControler.deletePageLoop();
+        await this.controller.statesControler.deletePageLoop();
     }
 
     async onCommand(action: string, value: string): Promise<boolean> {

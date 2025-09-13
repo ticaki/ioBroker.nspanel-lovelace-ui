@@ -25,7 +25,7 @@ export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;
     private blockButtons: ioBroker.Timeout | undefined;
-    rotationTime: number = 300000;
+    rotationTime: number = 300_000;
     public screensaverIndicatorButtons: boolean = false;
     public screensaverSwipe: boolean = false;
     private _infoIcon: any = '';
@@ -385,7 +385,7 @@ export class Screensaver extends Page {
             this.step = 0;
             return;
         }
-        this.step = this.step > 10000 ? 0 : this.step + 1;
+        this.step = this.step > 10_000 ? 0 : this.step + 1;
         if (this.unload || this.adapter.unload) {
             return;
         }

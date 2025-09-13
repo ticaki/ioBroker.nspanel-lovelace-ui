@@ -26,7 +26,7 @@ export class PanelSend extends BaseClass {
         return this._losingDelay;
     }
     set losingDelay(v: number) {
-        this._losingDelay = Math.max(1000, Math.min(30000, v));
+        this._losingDelay = Math.max(1000, Math.min(30_000, v));
     }
     constructor(
         adapter: AdapterClassDefinition,
@@ -40,10 +40,18 @@ export class PanelSend extends BaseClass {
         this.panel = config.panel;
     }
 
+    public resetMessageDB(): void {
+        this.messageDb = [];
+        if (this.messageTimeout) {
+            this.adapter.clearTimeout(this.messageTimeout);
+        }
+        this.messageTimeout = undefined;
+        this.losingMessageCount = 0;
+        this._losingDelay = 1000;
+    }
     onMessage: callbackMessageType = async (topic: string, message: string) => {
         if (this.unload || this.adapter.unload) {
-            //this.mqttClient.unsubscribe(`${this.configTopic}/stat/RESULT`);
-            //return;
+            return;
         }
         if (!topic.endsWith('/stat/RESULT')) {
             return;
@@ -73,9 +81,7 @@ export class PanelSend extends BaseClass {
                             this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
                         }
                     }
-                    if (this.unload || this.adapter.unload) {
-                        return;
-                    }
+
                     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
                 }
             }
@@ -84,7 +90,12 @@ export class PanelSend extends BaseClass {
         }
     };
 
-    readonly addMessage = (payload: string, ackForType: boolean, opt?: IClientPublishOptions): void => {
+    readonly addMessage = (
+        payload: string,
+        ackForType: boolean,
+        force?: boolean,
+        opt?: IClientPublishOptions,
+    ): void => {
         if (
             this.messageTimeout !== undefined &&
             this.messageDb.length > 0 &&
@@ -92,8 +103,11 @@ export class PanelSend extends BaseClass {
         ) {
             return;
         }
-        if (!this.panel?.isOnline && payload !== 'pageType~pageStartup') {
+        if (!this.panel?.isOnline && force !== true) {
             return;
+        }
+        if (force === true) {
+            this.resetMessageDB();
         }
         this.messageDb.push({ payload: payload, opt: opt, ackForType: ackForType });
         if (this.messageTimeout === undefined) {
@@ -183,6 +197,7 @@ export class PanelSend extends BaseClass {
         if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
             this.adapter.clearTimeout(this.messageTimeoutTasmota);
         }
+        (this as any).onMessage = async () => {};
         this.panel = undefined;
         this.messageDb = [];
         this.messageDbTasmota = [];

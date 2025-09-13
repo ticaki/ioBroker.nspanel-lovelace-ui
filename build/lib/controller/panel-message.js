@@ -48,8 +48,18 @@ class PanelSend extends import_library.BaseClass {
     this.topic = config.topic + import_definition.SendTopicAppendix;
     this.panel = config.panel;
   }
+  resetMessageDB() {
+    this.messageDb = [];
+    if (this.messageTimeout) {
+      this.adapter.clearTimeout(this.messageTimeout);
+    }
+    this.messageTimeout = void 0;
+    this.losingMessageCount = 0;
+    this._losingDelay = 1e3;
+  }
   onMessage = async (topic, message) => {
     if (this.unload || this.adapter.unload) {
+      return;
     }
     if (!topic.endsWith("/stat/RESULT")) {
       return;
@@ -76,9 +86,6 @@ class PanelSend extends import_library.BaseClass {
               this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
             }
           }
-          if (this.unload || this.adapter.unload) {
-            return;
-          }
           this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
         }
       }
@@ -86,13 +93,16 @@ class PanelSend extends import_library.BaseClass {
       this.log.error(`onMessage: ${err}`);
     }
   };
-  addMessage = (payload, ackForType, opt) => {
+  addMessage = (payload, ackForType, force, opt) => {
     var _a;
     if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.some((a) => a.payload === payload && a.opt === opt)) {
       return;
     }
-    if (!((_a = this.panel) == null ? void 0 : _a.isOnline) && payload !== "pageType~pageStartup") {
+    if (!((_a = this.panel) == null ? void 0 : _a.isOnline) && force !== true) {
       return;
+    }
+    if (force === true) {
+      this.resetMessageDB();
     }
     this.messageDb.push({ payload, opt, ackForType });
     if (this.messageTimeout === void 0) {
@@ -170,6 +180,8 @@ class PanelSend extends import_library.BaseClass {
     if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
       this.adapter.clearTimeout(this.messageTimeoutTasmota);
     }
+    this.onMessage = async () => {
+    };
     this.panel = void 0;
     this.messageDb = [];
     this.messageDbTasmota = [];

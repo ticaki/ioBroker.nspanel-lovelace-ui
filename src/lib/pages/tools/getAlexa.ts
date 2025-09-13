@@ -19,7 +19,7 @@ export async function getPageAlexa(
         viewStr && arr.length === 3
             ? await configManager.adapter.getObjectViewAsync('system', 'device', {
                   startkey: `${viewStr}.`,
-                  endkey: `${viewStr}${String.fromCharCode(0xfffd)}`,
+                  endkey: `${viewStr}${String.fromCharCode(0xff_fd)}`,
               })
             : { rows: [] };
 

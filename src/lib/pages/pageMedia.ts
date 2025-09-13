@@ -497,6 +497,7 @@ export class PageMedia extends PageMenu {
         this.step = 0;
         this.headlinePos = 0;
         this.titelPos = 0;
+        this.artistPos = 0;
     }
     async onButtonEvent(event: types.IncomingEvent): Promise<void> {
         if (!this.getVisibility() || this.sleep) {

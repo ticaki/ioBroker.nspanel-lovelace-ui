@@ -670,13 +670,19 @@ export class Panel extends BaseClass {
         this.restartLoops();
     };
 
-    private sendToPanelClass: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = () => {};
-    protected sendToPanel: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = (
+    private sendToPanelClass: (
         payload: string,
         ackForType: boolean,
+        force?: boolean,
         opt?: IClientPublishOptions,
-    ) => {
-        this.sendToPanelClass(payload, ackForType, opt);
+    ) => void = () => {};
+    protected sendToPanel: (
+        payload: string,
+        ackForType: boolean,
+        force?: boolean,
+        opt?: IClientPublishOptions,
+    ) => void = (payload: string, ackForType: boolean, force?: boolean, opt?: IClientPublishOptions) => {
+        this.sendToPanelClass(payload, ackForType, force, opt);
     };
     /**
      * Activate a page or toggle sleep on the current page.
@@ -1286,11 +1292,12 @@ export class Panel extends BaseClass {
 
     loop = (): void => {
         this.pages = this.pages.filter(a => a && !a.unload);
-        let t = Math.random() * 30000 + 10000;
+        let t = Math.random() * 30_000 + 10_000;
         if (!this.isOnline) {
             t = 5000;
             if (!this.flashing) {
-                this.sendToPanel('pageType~pageStartup', false, { retain: true });
+                this.panelSend.resetMessageDB();
+                this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
             }
         }
         if (this.unload || this.adapter.unload) {
@@ -1305,7 +1312,7 @@ export class Panel extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
-        this.sendToPanel('pageType~pageStartup', false, { retain: true });
+        this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
         !this.adapter.unload && (await this.adapter.delay(10));
 
         if (this.blockStartup) {
@@ -1329,8 +1336,8 @@ export class Panel extends BaseClass {
             }
         }
         await this.panelSend.delete();
-        this.statesControler.deletePageLoop(this.onInternalCommand);
         this.controller.mqttClient.removeByFunction(this.onMessage);
+        await this.statesControler.deletePageLoop(this.onInternalCommand);
         this.persistentPageItems = {};
         this.pages = [];
         this._activePage = undefined;
@@ -1387,7 +1394,7 @@ export class Panel extends BaseClass {
                 }
                 this.blockStartup = this.adapter.setTimeout(() => {
                     this.blockStartup = null;
-                }, 10000);
+                }, 10_000);
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;

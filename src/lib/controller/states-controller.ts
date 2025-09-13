@@ -31,6 +31,13 @@ export class StatesControler extends BaseClass {
             change: ('ne' | 'ts')[];
         };
     } = {};
+    /**
+     * Holds subscriptions created while the subscription system is temporarily blocked.
+     *
+     * - `undefined`: blocking is not active (normal mode, new subscriptions are applied immediately).
+     * - `string[]`: blocking is active; new subscriptions are collected here until the block is lifted.
+     */
+    private blockedSubscriptions: string[] | undefined;
     private deletePageInterval: ioBroker.Interval | undefined;
 
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number; common: ioBroker.StateCommon } } = {};
@@ -39,18 +46,20 @@ export class StatesControler extends BaseClass {
 
     timespan: number;
 
-    constructor(adapter: NspanelLovelaceUi, name: string = '', timespan: number = 15000) {
+    constructor(adapter: NspanelLovelaceUi, name: string = '', timespan: number = 15_000) {
         super(adapter, name || 'StatesDB');
         this.timespan = timespan;
-        this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 60000);
+        this.deletePageInterval = this.adapter.setInterval(async () => {
+            void this.deletePageLoop();
+        }, 180_000);
         this.intervalObjectDatabase = this.adapter.setInterval(() => {
             if (this.unload || this.adapter.unload) {
                 return;
             }
             this.objectDatabase = {};
-        }, 180000);
+        }, 180_000);
     }
-    deletePageLoop = (f?: getInternalFunctionType): void => {
+    deletePageLoop = async (f?: getInternalFunctionType): Promise<void> => {
         const removeIds: string[] = [];
 
         for (const id of Object.keys(this.triggerDB)) {
@@ -64,7 +73,7 @@ export class StatesControler extends BaseClass {
             // Sammle zu löschende Indizes aus entry.to
             for (let i = 0; i < entry.to.length; i++) {
                 const it = entry.to[i];
-                if (it?.unload || it?.parent?.unload || it?.parent?.basePanel?.unload) {
+                if (it?.unload || it?.parent?.unload || it?.parent?.basePanel?.unload || it?.parent?.parent?.unload) {
                     removeIdx.push(i);
                 }
             }
@@ -89,10 +98,22 @@ export class StatesControler extends BaseClass {
                 removeIds.push(id);
             }
         }
-
+        this.blockedSubscriptions = [];
         for (const id of removeIds) {
+            await this.adapter.unsubscribeForeignStatesAsync(id);
             delete this.triggerDB[id];
         }
+        while (this.blockedSubscriptions && this.blockedSubscriptions.length > 0) {
+            for (let idx = this.blockedSubscriptions.length - 1; idx >= 0; idx--) {
+                if (idx >= this.blockedSubscriptions.length) {
+                    continue;
+                }
+                const id = this.blockedSubscriptions[idx];
+                await this.adapter.subscribeForeignStatesAsync(id);
+                this.blockedSubscriptions.splice(idx, 1);
+            }
+        }
+        this.blockedSubscriptions = undefined;
     };
 
     async delete(): Promise<void> {
@@ -179,7 +200,13 @@ export class StatesControler extends BaseClass {
             if (this.unload || this.adapter.unload) {
                 return;
             }
-            await this.adapter.subscribeForeignStatesAsync(id);
+            if (this.blockedSubscriptions) {
+                if (!this.blockedSubscriptions.includes(id)) {
+                    this.blockedSubscriptions.push(id);
+                }
+            } else {
+                await this.adapter.subscribeForeignStatesAsync(id);
+            }
             if (this.adapter.config.debugLogStates) {
                 this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
             }
@@ -265,6 +292,13 @@ export class StatesControler extends BaseClass {
                 this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
             }
             if (!entry.subscribed.some(a => a)) {
+                if (this.blockedSubscriptions) {
+                    const idx = this.blockedSubscriptions.indexOf(id);
+                    if (idx !== -1) {
+                        this.blockedSubscriptions.splice(idx, 1);
+                    }
+                }
+
                 await this.adapter.unsubscribeForeignStatesAsync(id);
             }
         }
@@ -670,7 +704,7 @@ export class StatesControler extends BaseClass {
                 }
                 StatesControler.tempObjectDBTimeout = undefined;
                 StatesControler.TempObjectDB = { data: undefined, keys: [], enums: undefined };
-            }, 20000);
+            }, 20_000);
         }
         return StatesControler.TempObjectDB;
     }

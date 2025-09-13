@@ -43,16 +43,17 @@ export class BaseClassTriggerd extends BaseClass {
     protected blockUpdateUntilTime: Date | null = null;
     protected enums: string | string[] = '';
     protected device: string = '';
-    protected sendToPanel: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = (
+    protected sendToPanel: (
         payload: string,
         ackForType: boolean,
+        force?: boolean,
         opt?: IClientPublishOptions,
-    ) => {
+    ) => void = (payload: string, ackForType: boolean, force?: boolean, opt?: IClientPublishOptions) => {
         if (this.filterDuplicateMessages && payload == this.lastMessage) {
             return;
         }
         this.lastMessage = payload;
-        this.sendToPanelClass(payload, ackForType, opt);
+        this.sendToPanelClass(payload, ackForType, force, opt);
     };
     resetLastMessage(): void {
         this.lastMessage = '';
@@ -75,8 +76,13 @@ export class BaseClassTriggerd extends BaseClass {
     set currentPanel(p: Panel | undefined) {
         this._currentPanel = p;
     }
-    protected sendToPanelClass(payload: string, ackForType: boolean, opt?: IClientPublishOptions): void {
-        this.currentPanel.panelSend.addMessage(payload, ackForType, opt);
+    protected sendToPanelClass(
+        payload: string,
+        ackForType: boolean,
+        force?: boolean,
+        opt?: IClientPublishOptions,
+    ): void {
+        this.currentPanel.panelSend.addMessage(payload, ackForType, force, opt);
     }
     get controller(): Controller {
         // checked in constructor

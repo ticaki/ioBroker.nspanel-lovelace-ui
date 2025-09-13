@@ -45,12 +45,12 @@ class BaseClassTriggerd extends import_library.BaseClass {
   blockUpdateUntilTime = null;
   enums = "";
   device = "";
-  sendToPanel = (payload, ackForType, opt) => {
+  sendToPanel = (payload, ackForType, force, opt) => {
     if (this.filterDuplicateMessages && payload == this.lastMessage) {
       return;
     }
     this.lastMessage = payload;
-    this.sendToPanelClass(payload, ackForType, opt);
+    this.sendToPanelClass(payload, ackForType, force, opt);
   };
   resetLastMessage() {
     this.lastMessage = "";
@@ -73,8 +73,8 @@ class BaseClassTriggerd extends import_library.BaseClass {
   set currentPanel(p) {
     this._currentPanel = p;
   }
-  sendToPanelClass(payload, ackForType, opt) {
-    this.currentPanel.panelSend.addMessage(payload, ackForType, opt);
+  sendToPanelClass(payload, ackForType, force, opt) {
+    this.currentPanel.panelSend.addMessage(payload, ackForType, force, opt);
   }
   get controller() {
     return this.adapter.controller;

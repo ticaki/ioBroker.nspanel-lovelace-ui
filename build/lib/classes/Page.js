@@ -397,6 +397,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       }
     }
     this.pageItems = [];
+    this.pageItemConfig = [];
   }
 }
 function isMediaButtonActionType(F) {

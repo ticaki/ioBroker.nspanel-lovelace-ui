@@ -434,6 +434,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.step = 0;
     this.headlinePos = 0;
     this.titelPos = 0;
+    this.artistPos = 0;
   }
   async onButtonEvent(event) {
     var _a, _b, _c, _d, _e;
