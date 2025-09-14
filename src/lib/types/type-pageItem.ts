@@ -228,7 +228,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
         | PageItemFanDataItemsOptions
         | PageItemTimerDataItemsOptions
         | PageItemSeparator
-    ) & { filter?: true | false | number };
+    ) & { filter?: pages.filterType };
 export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
@@ -240,7 +240,7 @@ export type PageItemDataItemsOptions =
           color?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions; scale?: Types.IconScaleElement };
           icon?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
           iconText?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
-          filter?: true | false | number;
+          filter?: pages.filterType;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
               pages.ChangeDeepPartial<
@@ -606,7 +606,7 @@ export type PageItemBase = {
     setValue3?: string;
     /**
      * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-     * 
+     *
      */
     valueList?: number;
     valueList2?: number;
@@ -703,7 +703,7 @@ export type PageItemUnion = {
     modeScr?: Types.ScreenSaverPlaces | undefined;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
-    filter?: true | false | number;
+    filter?: pages.filterType;
 };
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };

@@ -149,10 +149,10 @@ export class PageMenu extends Page {
         this.tempItems = (await this.getEnabledPageItems()) || [];
 
         // filtering
-        if (this.config.filterType === 'true' || this.config.filterType === 'false') {
-            const wantTrue = this.config.filterType === 'true';
+        if (this.config.filterType === true || this.config.filterType === false) {
+            const wantTrue = this.config.filterType === true;
             const filtered: typeof this.tempItems = [];
-            for (const p of this.pageItems) {
+            for (const p of this.tempItems) {
                 if (
                     p?.dataItems?.data &&
                     'entity1' in p.dataItems.data &&
@@ -165,7 +165,7 @@ export class PageMenu extends Page {
             this.tempItems = filtered;
         } else if (typeof this.config.filterType === 'number') {
             const filtered: typeof this.tempItems = [];
-            for (const p of this.pageItems) {
+            for (const p of this.tempItems) {
                 if (
                     p?.dataItems &&
                     (p.dataItems.filter == null ||
@@ -173,6 +173,18 @@ export class PageMenu extends Page {
                         (typeof p.dataItems.filter === 'number' &&
                             p.dataItems.filter < 0 &&
                             p.dataItems.filter !== -this.config.filterType))
+                ) {
+                    filtered.push(p);
+                }
+            }
+            this.tempItems = filtered;
+        } else if (typeof this.config.filterType === 'string') {
+            const filtered: typeof this.tempItems = [];
+            const filter = this.config.filterType.split(',');
+            for (const p of this.tempItems) {
+                if (
+                    p?.dataItems &&
+                    (typeof p.dataItems.filter !== 'string' || filter.indexOf(String(p.dataItems.filter)) !== -1)
                 ) {
                     filtered.push(p);
                 }

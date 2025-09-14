@@ -400,11 +400,13 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (await ((_d = item.data.useGroupVolume) == null ? void 0 : _d.getBoolean()) && item.data.volumeGroup) {
       const v = await tools.getScaledNumber(item.data.volumeGroup);
       if (v !== null) {
+        this.config.filterType = "volumeGroup";
         message.volume = String(v);
       }
     } else if (item.data.volume) {
       const v = await tools.getScaledNumber(item.data.volume);
       if (v !== null) {
+        this.config.filterType = "volume";
         message.volume = String(v);
       }
     }

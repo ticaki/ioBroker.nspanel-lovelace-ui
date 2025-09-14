@@ -778,6 +778,7 @@ export type cardScheduleDataItems = {
     card: Extract<cardEntitiesTypes, 'cardSchedule'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
+export type filterType = true | false | number | string;
 
 type PageMenuBaseConfig = {
     cardRole?: CardRole;
@@ -794,7 +795,7 @@ type PageMenuBaseConfig = {
      * - `"false"`: Show only items whose primary entity resolves to `false`.
      * - `number`: Show only items matching the given numeric filter value.
      */
-    filterType?: 'true' | 'false' | number;
+    filterType?: filterType;
 } &
     /**
      * Standard scroll presentations.

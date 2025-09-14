@@ -509,14 +509,12 @@ export async function getPageSonos(
             },
         });
     }
-
-    // volume presets
-    /*
     if (page.media.volumePresets) {
         gridItem.pageItems.push({
             role: '',
             type: 'input_sel',
             dpInit: '',
+            filter: 'volume',
 
             data: {
                 icon: {
@@ -557,7 +555,56 @@ export async function getPageSonos(
                 },
             },
         });
-    }*/
+    }
+    // volume presets group
+    if (page.media.volumePresets) {
+        gridItem.pageItems.push({
+            role: '',
+            type: 'input_sel',
+            dpInit: '',
+            filter: 'volumeGroup',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'volume-source' },
+                        color: await configManager.getIconColor(
+                            page.media.itemsColorOn?.volumePresets,
+                            Color.activated,
+                        ),
+                    },
+                },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume.group'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.group_volume$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume.group'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.group_volume$/,
+                        dp: '',
+                    },
+                },
+                valueList: {
+                    type: 'const',
+                    constVal: JSON.stringify(page.media.volumePresets || []),
+                },
+
+                headline: {
+                    type: 'const',
+                    constVal: 'volumePresets',
+                },
+            },
+        });
+    }
+
     //tracklist
     if (page.media.deactivateDefaultItems?.trackList !== true) {
         gridItem.pageItems.push({
