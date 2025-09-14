@@ -331,6 +331,9 @@ class Page extends import_baseClassPage.BaseClassPage {
       }
     }
   }
+  getdpInitForChild() {
+    return "";
+  }
   setLastPage(_p) {
   }
   removeLastPage(_p) {

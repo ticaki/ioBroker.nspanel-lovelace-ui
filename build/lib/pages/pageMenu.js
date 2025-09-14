@@ -265,6 +265,19 @@ class PageMenu extends import_Page.Page {
   }
   async onVisibilityChange(val) {
     if (val) {
+      if (this.directParentPage) {
+        const dp = this.directParentPage.getdpInitForChild();
+        if (dp) {
+          if (typeof dp === "string") {
+            const v = (0, import_tools.getRegExp)(`^${dp.replace(/\./g, "\\.").replace(/\*/g, ".*")}`);
+            if (v) {
+              this.dpInit = v;
+            }
+          } else {
+            this.dpInit = dp;
+          }
+        }
+      }
       if (this.config && pages.isPageMenuConfig(this.config)) {
         switch (this.config.card) {
           case "cardSchedule":

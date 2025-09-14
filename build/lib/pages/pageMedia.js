@@ -70,6 +70,7 @@ class PageMedia extends import_pageMenu.PageMenu {
   artistPos = 0;
   originalName = "";
   playerName = "";
+  serviceName = "";
   /**
    * The identifier of the current media player.
    * Alexa ist es this.config.ident - der Pfad zum device
@@ -97,7 +98,8 @@ class PageMedia extends import_pageMenu.PageMenu {
       const o = id ? await this.controller.adapter.getForeignObjectAsync(id) : null;
       this.originalName = (o == null ? void 0 : o.common) && ((_d = o.common) == null ? void 0 : _d.name) && (typeof o.common.name === "object" ? o.common.name.de || o.common.name.en : (_e = o == null ? void 0 : o.common) == null ? void 0 : _e.name) || "";
       const arr = typeof this.config.ident === "string" ? this.config.ident.split(".") : [];
-      switch (arr[0]) {
+      this.serviceName = arr[0];
+      switch (this.serviceName) {
         case "alexa2":
         case "spotify-premium":
         case "mpd":
@@ -732,6 +734,10 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.sleep = true;
       this.sendToPanel(msg, false);
     }
+  }
+  getdpInitForChild() {
+    var _a, _b;
+    return (_b = (_a = this.currentItem) == null ? void 0 : _a.ident) != null ? _b : "";
   }
   async delete() {
     var _a;

@@ -2,7 +2,7 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { getPayload } from '../const/tools';
+import { getPayload, getRegExp } from '../const/tools';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import { handleCardRole } from './data-collection-functions';
@@ -305,6 +305,19 @@ export class PageMenu extends Page {
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
+            if (this.directParentPage) {
+                const dp = this.directParentPage.getdpInitForChild();
+                if (dp) {
+                    if (typeof dp === 'string') {
+                        const v = getRegExp(`^${dp.replace(/\./g, '\\.').replace(/\*/g, '.*')}`);
+                        if (v) {
+                            this.dpInit = v;
+                        }
+                    } else {
+                        this.dpInit = dp;
+                    }
+                }
+            }
             if (this.config && pages.isPageMenuConfig(this.config)) {
                 switch (this.config.card) {
                     case 'cardSchedule':

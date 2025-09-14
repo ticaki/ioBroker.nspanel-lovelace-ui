@@ -362,7 +362,9 @@ export class Page extends BaseClassPage {
             }
         }
     }
-
+    getdpInitForChild(): string | RegExp {
+        return '';
+    }
     setLastPage(_p: Page | undefined): void {}
     removeLastPage(_p: Page | undefined): void {}
 
