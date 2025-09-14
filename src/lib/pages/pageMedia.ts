@@ -108,7 +108,7 @@ export class PageMedia extends PageMenu {
                         this.coordinator = new Dataitem(
                             this.adapter,
                             {
-                                name: `${this.id}-coordina1tor`,
+                                name: `${this.id}-coordinator`,
                                 type: 'triggered',
                                 dp: dp,
                                 writeable: false,
