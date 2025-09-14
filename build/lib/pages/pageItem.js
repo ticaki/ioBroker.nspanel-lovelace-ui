@@ -1629,6 +1629,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 name: `sub_${this.parent.name}`,
                 adapter: this.adapter,
                 panel: this.parent.currentPanel,
+                alwaysOn: this.parent.alwaysOn,
                 card: "cardGrid2"
               };
               const list = await ((_i = (_h = entry.data.entity3) == null ? void 0 : _h.value) == null ? void 0 : _i.getObject());

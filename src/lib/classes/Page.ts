@@ -42,6 +42,8 @@ export class Page extends BaseClassPage {
         pageItemsConfig: pages.PageBaseConfig | undefined,
         isScreensaver: boolean = false,
     ) {
+        card.alwaysOn =
+            card.alwaysOn || (pageItemsConfig && pageItemsConfig.alwaysOn ? pageItemsConfig.alwaysOn : 'none');
         super(card, pageItemsConfig && pageItemsConfig.pageItems);
         this.isScreensaver = isScreensaver;
         this.card = card.card;

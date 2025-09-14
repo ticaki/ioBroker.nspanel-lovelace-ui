@@ -61,6 +61,7 @@ class Page extends import_baseClassPage.BaseClassPage {
   //config: Card['config'];
   constructor(card, pageItemsConfig, isScreensaver = false) {
     var _a;
+    card.alwaysOn = card.alwaysOn || (pageItemsConfig && pageItemsConfig.alwaysOn ? pageItemsConfig.alwaysOn : "none");
     super(card, pageItemsConfig && pageItemsConfig.pageItems);
     this.isScreensaver = isScreensaver;
     this.card = card.card;

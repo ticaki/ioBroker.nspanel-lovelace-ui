@@ -1887,6 +1887,7 @@ export class PageItem extends BaseClassTriggerd {
                                 name: `sub_${this.parent.name}`,
                                 adapter: this.adapter,
                                 panel: this.parent.currentPanel,
+                                alwaysOn: this.parent.alwaysOn,
                                 card: 'cardGrid2',
                             };
                             const list = await entry.data.entity3?.value?.getObject();
