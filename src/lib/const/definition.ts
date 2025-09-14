@@ -4739,3 +4739,41 @@ export function getTasmotaTimeZone(label: string): string {
 }
 
 export const weatherEntities = ['brightsky', 'openweathermap', 'pirate-weather', 'accuweather'] as const;
+
+/**
+ * Type Guard für DimConfig-Key.
+ *
+ * @param key - Zu prüfender Wert.
+ * @returns True, wenn key ein gültiger DimConfig-Key ist.
+ */
+export function isDimConfigKey(key: unknown): key is keyof DimConfig {
+    if (typeof key !== 'string') {
+        return false;
+    }
+    return [
+        'standby',
+        'active',
+        'dayMode',
+        'nightStandby',
+        'nightActive',
+        'nightHourStart',
+        'nightHourEnd',
+        'schedule',
+    ].includes(key);
+}
+
+// 3) Wert-Guard abhängig vom Key
+const dimTypeMap: { [P in keyof DimConfig]: 'number' | 'boolean' } = {
+    standby: 'number',
+    active: 'number',
+    dayMode: 'boolean',
+    nightStandby: 'number',
+    nightActive: 'number',
+    nightHourStart: 'number',
+    nightHourEnd: 'number',
+    schedule: 'boolean',
+} as const;
+
+export function isDimValueForKey<K extends keyof DimConfig>(key: K, val: unknown): val is DimConfig[K] {
+    return typeof val === dimTypeMap[key];
+}

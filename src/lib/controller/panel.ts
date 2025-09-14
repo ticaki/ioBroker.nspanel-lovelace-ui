@@ -1,6 +1,6 @@
 import { PanelSend } from './panel-message';
 
-import { Screensaver, type ScreensaverConfigType } from '../pages/screensaver';
+import { Screensaver } from '../pages/screensaver';
 import * as Types from '../types/types';
 import * as pages from '../types/pages';
 import type { Controller } from './controller';
@@ -44,7 +44,6 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     friendlyName?: string;
     pages: PageConfigAll[];
     navigation: NavigationConfig['navigationConfig'];
-    config: ScreensaverConfigType;
     updated: boolean;
 }
 
@@ -93,21 +92,11 @@ export class Panel extends BaseClass {
     readonly reivCallbacks: callbackMessageType[] = [];
     readonly panelSend: PanelSend;
     readonly statesControler: StatesControler;
-    readonly config: ScreensaverConfigType;
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
 
     timeout: number;
-    dim: {
-        standby: number;
-        active: number;
-        dayMode: boolean;
-        nightStandby: number;
-        nightActive: number;
-        nightHourStart: number;
-        nightHourEnd: number;
-        schedule: boolean;
-    } = {
+    dim: DimConfig = {
         standby: definition.genericStateObjects.panel.panels.cmd.dim.standby.common.def,
         active: definition.genericStateObjects.panel.panels.cmd.dim.active.common.def,
         dayMode: definition.genericStateObjects.panel.panels.cmd.dim.dayMode.common.def,
@@ -215,7 +204,6 @@ export class Panel extends BaseClass {
         this.timeout = options.timeout || 15;
         this.buttons = options.buttons;
         this.CustomFormat = options.CustomFormat ?? '';
-        this.config = options.config;
         this.format = { ...DefaultOptions.format, ...(options.format as any) };
         this.controller = options.controller;
         this.topic = options.topic;
@@ -378,7 +366,6 @@ export class Panel extends BaseClass {
             topic: this.topic,
             tasmotaName: this.friendlyName,
             name: this.name,
-            //configName: this.configName,
         };
 
         // remove unused dim states
@@ -421,12 +408,13 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.buttons.right,
         );
         const keys = Object.keys(this.dim);
-        for (const d of keys) {
-            const key = d as keyof typeof this.dim;
+        for (const key of keys) {
+            if (!definition.isDimConfigKey(key)) {
+                continue;
+            }
             const state = this.library.readdb(`panels.${this.name}.cmd.dim.${key}`);
-            if (state && state.val != null && key in this.dim && typeof state.val === typeof this.dim[key]) {
-                //@ts-expect-error
-                this.dim[key] = state.val;
+            if (state && state.val != null && definition.isDimValueForKey(key, state.val)) {
+                (this.dim as any)[key] = state.val;
             }
             await this.library.writedp(
                 `panels.${this.name}.cmd.dim.${key}`,
@@ -580,7 +568,6 @@ export class Panel extends BaseClass {
         const scs: Page[] = this.pages.filter(
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
-        //const s = scs.filter(a => currentScreensaver && a.name === currentScreensaver.val);
         if (currentScreensaver && currentScreensaver.val != null) {
             if (scs && scs[0]) {
                 this.screenSaver = scs[0] as Screensaver;
@@ -779,8 +766,6 @@ export class Panel extends BaseClass {
             if (s) {
                 this.log.info('is online!');
             } else {
-                //void this.controller.removePanel(this);
-                //void this.controller.addPanel(this.options);
                 this._activePage && void this._activePage.setVisibility(false);
                 this.restartLoops();
                 this.log.warn('is offline!');
@@ -870,7 +855,6 @@ export class Panel extends BaseClass {
                     return;
                 }
             }
-            //this.log.info(`Receive a message from ${topic} with ${message}`);
         } else if (topic.endsWith('/tele/LWT')) {
             if (message === 'Offline') {
                 //this.log.warn('LWT shows offline!');
@@ -982,18 +966,17 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'mainNavigationPoint': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    this.navigation.setMainPageByName(state.val ? String(state.val) : 'main');
-                    await this.library.writedp(
-                        `panels.${this.name}.cmd.mainNavigationPoint`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        state.val ? String(state.val) : 'main',
-                    );
+                    const v = state.val;
+                    if (typeof v === 'string') {
+                        this.navigation.setMainPageByName(v ? v : 'main');
+                        await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : 'main');
+                    }
                     break;
                 }
                 case 'goToNavigationPoint': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    await this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
+                    if (typeof state.val === 'string') {
+                        await this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
+                    }
                     break;
                 }
                 case 'screenSaver.timeout': {
@@ -1216,8 +1199,7 @@ export class Panel extends BaseClass {
                 case 'buzzer': {
                     if (state && state.val != null && typeof state.val === 'string' && state.val.trim()) {
                         this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
-                        // Clear the state after sending command
-                        await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, '', false);
+                        await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, '', true);
                     }
                     break;
                 }
@@ -1431,7 +1413,6 @@ export class Panel extends BaseClass {
                     this.screenSaver.pageItems = await this.screenSaver.createPageItems(
                         this.screenSaver.pageItemConfig,
                     );
-                    //this.controller && (await this.controller.statesControler.activateTrigger(this.screenSaver));
                     await this.screenSaver.HandleDate();
                     await this.screenSaver.HandleTime();
                 }
@@ -1624,7 +1605,6 @@ export class Panel extends BaseClass {
                 case 'cmd/bigIconLeft': {
                     this.info.nspanel.bigIconLeft = !!state.val;
                     this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
-                    //this.statesControler.setInternalState(`${this.name}/cmd/bigIconLeft`, !!state.val, true);
                     await this.library.writeFromJson(
                         `panels.${this.name}.info`,
                         'panel.panels.info',
@@ -1636,7 +1616,6 @@ export class Panel extends BaseClass {
                 case 'cmd/bigIconRight': {
                     this.info.nspanel.bigIconRight = !!state.val;
                     this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
-                    //this.statesControler.setInternalState(`${this.name}/cmd/bigIconRight`, !!state.val, true);
                     await this.library.writeFromJson(
                         `panels.${this.name}.info`,
                         'panel.panels.info',
@@ -1646,8 +1625,7 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/screenSaverTimeout': {
-                    if (typeof state.val !== 'boolean') {
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    if (typeof state.val === 'string' || typeof state.val === 'number') {
                         const val = parseInt(String(state.val));
                         this.timeout = val;
                         this.sendScreensaverTimeout(this.timeout);
@@ -1657,51 +1635,60 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/dimStandby': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    const val = parseInt(String(state.val));
-                    this.dim.standby = val;
-                    this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dim.standby`, this.dim.standby);
+                    if (typeof state.val === 'string' || typeof state.val === 'number') {
+                        const val = parseInt(String(state.val));
+                        this.dim.standby = val;
+                        this.sendDimmode();
+                        await this.library.writedp(`panels.${this.name}.cmd.dim.standby`, this.dim.standby);
+                    }
                     break;
                 }
                 case 'cmd/dimActive': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    const val = parseInt(String(state.val));
-                    this.dim.active = val;
-                    this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dim.active`, this.dim.active);
+                    if (typeof state.val === 'string' || typeof state.val === 'number') {
+                        const val = parseInt(String(state.val));
+                        this.dim.active = val;
+                        this.sendDimmode();
+                        await this.library.writedp(`panels.${this.name}.cmd.dim.active`, this.dim.active);
+                    }
                     break;
                 }
                 case 'cmd/dimNightActive': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    const val = parseInt(String(state.val));
-                    this.dim.nightActive = val;
-                    this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightActive`, this.dim.nightActive);
+                    if (typeof state.val === 'string' || typeof state.val === 'number') {
+                        const val = parseInt(String(state.val));
+                        this.dim.nightActive = val;
+                        this.sendDimmode();
+                        await this.library.writedp(`panels.${this.name}.cmd.dim.nightActive`, this.dim.nightActive);
+                    }
                     break;
                 }
                 case 'cmd/dimNightStandby': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    const val = parseInt(String(state.val));
-                    this.dim.nightStandby = val;
-                    this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightStandby`, this.dim.nightStandby);
+                    if (typeof state.val === 'string' || typeof state.val === 'number') {
+                        const val = parseInt(String(state.val));
+                        this.dim.nightStandby = val;
+                        this.sendDimmode();
+                        await this.library.writedp(`panels.${this.name}.cmd.dim.nightStandby`, this.dim.nightStandby);
+                    }
                     break;
                 }
                 case 'cmd/dimNightHourStart': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    const val = parseInt(String(state.val));
-                    this.dim.nightHourStart = val;
-                    this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourStart`, this.dim.nightHourStart);
+                    if (typeof state.val === 'string' || typeof state.val === 'number') {
+                        const val = parseInt(String(state.val));
+                        this.dim.nightHourStart = val;
+                        this.sendDimmode();
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.dim.nightHourStart`,
+                            this.dim.nightHourStart,
+                        );
+                    }
                     break;
                 }
                 case 'cmd/dimNightHourEnd': {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    const val = parseInt(String(state.val));
-                    this.dim.nightHourEnd = val;
-                    this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourEnd`, this.dim.nightHourEnd);
+                    if (typeof state.val === 'string' || typeof state.val === 'number') {
+                        const val = parseInt(String(state.val));
+                        this.dim.nightHourEnd = val;
+                        this.sendDimmode();
+                        await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourEnd`, this.dim.nightHourEnd);
+                    }
                     break;
                 }
                 case 'cmd/NotificationCleared2':

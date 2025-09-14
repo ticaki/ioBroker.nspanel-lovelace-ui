@@ -1,7 +1,68 @@
 import * as fs from 'fs';
 import { requiredScriptDataPoints } from '../const/config-manager-const';
 
+import { promises as fsp } from 'fs';
+import * as path from 'path';
+
+const slug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
+const esc = (s: string | undefined): string => (s ?? '').replace(/\|/g, '\\|');
+
+/**
+ * Generates ALIAS.md with table of contents and channel/state documentation.
+ */
 export async function generateAliasDocumentation(): Promise<void> {
+    const checkPath = '.dev-data';
+    if (!fs.existsSync(checkPath)) {
+        return;
+    }
+
+    const header =
+        '| Channel role | State ID | common.type | common.role | required | common.write | description |\n' +
+        '| :---: | :--- | :--- | :--- | :---: | :---: | :--- |\n';
+
+    let toc = '# Table of contents\n';
+    let body = '';
+
+    toc += `* [Remarks](#${slug('Remarks')})\n`;
+
+    const folders = Object.keys(requiredScriptDataPoints).sort();
+
+    for (const folder of folders) {
+        const data = requiredScriptDataPoints[folder as keyof typeof requiredScriptDataPoints];
+        const sectionAnchor = slug(folder);
+
+        toc += `* [${folder}](#${sectionAnchor})\n`;
+        body += `\n### ${folder}\n${header}`;
+
+        const keys = Object.keys(data.data).sort();
+        let firstRow = true;
+
+        for (const key of keys) {
+            const row = data.data[key as keyof typeof data.data];
+            if (!row) {
+                continue;
+            }
+
+            const channelCol = firstRow ? `**${folder}**` : '"';
+            firstRow = false;
+
+            body += `| ${channelCol} | ${
+                row.useKey ? esc(key) : `~~${esc(key)}~~`
+            } | ${esc(getStringOrArray(row.type))} | ${esc(
+                getStringOrArray(row.role),
+            )} | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${esc(row.description)} |\n`;
+        }
+    }
+
+    body =
+        `\n## Remarks\n\n` +
+        `- (not fully implemented) Crossed out DPs can be named arbitrarily. Use the struck key only for questions in issues or in the forum.\n` +
+        `\n${body}`;
+
+    const out = `${toc}\n${body}`;
+    await fsp.writeFile(path.join(process.cwd(), 'ALIAS.md'), out, 'utf8');
+}
+/*export async function generateAliasDocumentation(): Promise<void> {
     const checkPath = '.dev-data';
     let header = `| Channel role | State ID | common.type | common.role | required | common.write | description |  \n`;
     header += `| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  \n`;
@@ -32,46 +93,6 @@ export async function generateAliasDocumentation(): Promise<void> {
         table +=
             '\n -(not fully implemented) Crossed out DPs can be called whatever you want, only use the name if you have questions in issues or in the forum. \n';
         fs.writeFileSync('ALIAS.md', table + readme);
-    }
-}
-
-/*import ChannelDetector, { PatternControl, type DetectOptions, type Types } from '@iobroker/type-detector';
-import {NspanelLovelaceUi} from '../types/NspanelLovelaceUi';
-
-export async function testTypeDetector(adapter: NspanelLovelaceUi): Promise<void> {
-    const detector: ChannelDetector = new ChannelDetector();
-
-    //const keys = Object.keys(objects); // For optimization
-    const usedIds: string[] = []; // To not allow using of same ID in more than one device
-    const ignoreIndicators: string[] = ['UNREACH_STICKY']; // Ignore indicators by name
-    //const allowedTypes: Types[] = ['button', 'rgb', 'dimmer', 'light']; // Supported types. Leave it null if you want to get ALL devices.
-
-    const options: DetectOptions = {
-        objects: adapter.
-        id: 'hm-rpc.0.LEQ1214232.1', // Channel, device or state, that must be detected
-        _keysOptional: keys,
-        _usedIdsOptional: usedIds,
-        ignoreIndicators,
-        // allowedTypes,
-    };
-    const test = adapter.getStatesOfAsync
-    let controls: PatternControl[] | undefined | null = detector.detect(options);
-    if (controls) {
-        const cs = controls.map((control: PatternControl) => {
-            const id = control.states.find((state: DetectorState) => state.id).id;
-            if (id) {
-                console.log(`In ${options.id} was detected "${control.type}" with following states:`);
-                control.states
-                    .filter((state: DetectorState) => state.id)
-                    .forEach((state: DetectorState) => {
-                        console.log(`    ${state.name} => ${state.id}`);
-                    });
-
-                return { control, id };
-            }
-        });
-    } else {
-        console.log(`Nothing found for ${options.id}`);
     }
 }*/
 

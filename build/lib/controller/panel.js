@@ -93,7 +93,6 @@ class Panel extends import_library.BaseClass {
   reivCallbacks = [];
   panelSend;
   statesControler;
-  config;
   CustomFormat;
   sendToTasmota = () => {
   };
@@ -205,7 +204,6 @@ class Panel extends import_library.BaseClass {
     this.timeout = options.timeout || 15;
     this.buttons = options.buttons;
     this.CustomFormat = (_b = options.CustomFormat) != null ? _b : "";
-    this.config = options.config;
     this.format = { ...DefaultOptions.format, ...options.format };
     this.controller = options.controller;
     this.topic = options.topic;
@@ -356,7 +354,6 @@ class Panel extends import_library.BaseClass {
       topic: this.topic,
       tasmotaName: this.friendlyName,
       name: this.name
-      //configName: this.configName,
     };
     if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
       await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
@@ -393,10 +390,12 @@ class Panel extends import_library.BaseClass {
       definition.genericStateObjects.panel.panels.buttons.right
     );
     const keys = Object.keys(this.dim);
-    for (const d of keys) {
-      const key = d;
+    for (const key of keys) {
+      if (!definition.isDimConfigKey(key)) {
+        continue;
+      }
       const state2 = this.library.readdb(`panels.${this.name}.cmd.dim.${key}`);
-      if (state2 && state2.val != null && key in this.dim && typeof state2.val === typeof this.dim[key]) {
+      if (state2 && state2.val != null && definition.isDimValueForKey(key, state2.val)) {
         this.dim[key] = state2.val;
       }
       await this.library.writedp(
@@ -875,16 +874,17 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "mainNavigationPoint": {
-          this.navigation.setMainPageByName(state.val ? String(state.val) : "main");
-          await this.library.writedp(
-            `panels.${this.name}.cmd.mainNavigationPoint`,
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            state.val ? String(state.val) : "main"
-          );
+          const v = state.val;
+          if (typeof v === "string") {
+            this.navigation.setMainPageByName(v ? v : "main");
+            await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : "main");
+          }
           break;
         }
         case "goToNavigationPoint": {
-          await this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
+          if (typeof state.val === "string") {
+            await this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
+          }
           break;
         }
         case "screenSaver.timeout": {
@@ -1085,7 +1085,7 @@ class Panel extends import_library.BaseClass {
         case "buzzer": {
           if (state && state.val != null && typeof state.val === "string" && state.val.trim()) {
             this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
-            await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, "", false);
+            await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, "", true);
           }
           break;
         }
@@ -1484,7 +1484,7 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cmd/screenSaverTimeout": {
-          if (typeof state.val !== "boolean") {
+          if (typeof state.val === "string" || typeof state.val === "number") {
             const val = parseInt(String(state.val));
             this.timeout = val;
             this.sendScreensaverTimeout(this.timeout);
@@ -1494,45 +1494,60 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cmd/dimStandby": {
-          const val = parseInt(String(state.val));
-          this.dim.standby = val;
-          this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dim.standby`, this.dim.standby);
+          if (typeof state.val === "string" || typeof state.val === "number") {
+            const val = parseInt(String(state.val));
+            this.dim.standby = val;
+            this.sendDimmode();
+            await this.library.writedp(`panels.${this.name}.cmd.dim.standby`, this.dim.standby);
+          }
           break;
         }
         case "cmd/dimActive": {
-          const val = parseInt(String(state.val));
-          this.dim.active = val;
-          this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dim.active`, this.dim.active);
+          if (typeof state.val === "string" || typeof state.val === "number") {
+            const val = parseInt(String(state.val));
+            this.dim.active = val;
+            this.sendDimmode();
+            await this.library.writedp(`panels.${this.name}.cmd.dim.active`, this.dim.active);
+          }
           break;
         }
         case "cmd/dimNightActive": {
-          const val = parseInt(String(state.val));
-          this.dim.nightActive = val;
-          this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dim.nightActive`, this.dim.nightActive);
+          if (typeof state.val === "string" || typeof state.val === "number") {
+            const val = parseInt(String(state.val));
+            this.dim.nightActive = val;
+            this.sendDimmode();
+            await this.library.writedp(`panels.${this.name}.cmd.dim.nightActive`, this.dim.nightActive);
+          }
           break;
         }
         case "cmd/dimNightStandby": {
-          const val = parseInt(String(state.val));
-          this.dim.nightStandby = val;
-          this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dim.nightStandby`, this.dim.nightStandby);
+          if (typeof state.val === "string" || typeof state.val === "number") {
+            const val = parseInt(String(state.val));
+            this.dim.nightStandby = val;
+            this.sendDimmode();
+            await this.library.writedp(`panels.${this.name}.cmd.dim.nightStandby`, this.dim.nightStandby);
+          }
           break;
         }
         case "cmd/dimNightHourStart": {
-          const val = parseInt(String(state.val));
-          this.dim.nightHourStart = val;
-          this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourStart`, this.dim.nightHourStart);
+          if (typeof state.val === "string" || typeof state.val === "number") {
+            const val = parseInt(String(state.val));
+            this.dim.nightHourStart = val;
+            this.sendDimmode();
+            await this.library.writedp(
+              `panels.${this.name}.cmd.dim.nightHourStart`,
+              this.dim.nightHourStart
+            );
+          }
           break;
         }
         case "cmd/dimNightHourEnd": {
-          const val = parseInt(String(state.val));
-          this.dim.nightHourEnd = val;
-          this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourEnd`, this.dim.nightHourEnd);
+          if (typeof state.val === "string" || typeof state.val === "number") {
+            const val = parseInt(String(state.val));
+            this.dim.nightHourEnd = val;
+            this.sendDimmode();
+            await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourEnd`, this.dim.nightHourEnd);
+          }
           break;
         }
         case "cmd/NotificationCleared2":

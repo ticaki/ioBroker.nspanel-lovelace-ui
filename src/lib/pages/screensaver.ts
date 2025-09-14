@@ -14,13 +14,6 @@ import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { Color, type RGB } from '../const/Color';
 
-export type ScreensaverConfigType = {
-    momentLocale: string;
-    locale: string; //Intl.DateTimeFormat;
-    iconBig1: boolean;
-    iconBig2: boolean;
-};
-
 export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;

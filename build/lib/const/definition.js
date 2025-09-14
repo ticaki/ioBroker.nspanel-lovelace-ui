@@ -36,6 +36,8 @@ __export(definition_exports, {
   defaultChannel: () => defaultChannel,
   genericStateObjects: () => genericStateObjects,
   getTasmotaTimeZone: () => getTasmotaTimeZone,
+  isDimConfigKey: () => isDimConfigKey,
+  isDimValueForKey: () => isDimValueForKey,
   tasmotaOtaUrl: () => tasmotaOtaUrl,
   tasmotaTimeZones: () => tasmotaTimeZones,
   tasmotaTimeZonesAdmin: () => tasmotaTimeZonesAdmin,
@@ -4651,6 +4653,34 @@ function getTasmotaTimeZone(label) {
   return tz ? tz.value : "";
 }
 const weatherEntities = ["brightsky", "openweathermap", "pirate-weather", "accuweather"];
+function isDimConfigKey(key) {
+  if (typeof key !== "string") {
+    return false;
+  }
+  return [
+    "standby",
+    "active",
+    "dayMode",
+    "nightStandby",
+    "nightActive",
+    "nightHourStart",
+    "nightHourEnd",
+    "schedule"
+  ].includes(key);
+}
+const dimTypeMap = {
+  standby: "number",
+  active: "number",
+  dayMode: "boolean",
+  nightStandby: "number",
+  nightActive: "number",
+  nightHourStart: "number",
+  nightHourEnd: "number",
+  schedule: "boolean"
+};
+function isDimValueForKey(key, val) {
+  return typeof val === dimTypeMap[key];
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Defaults,
@@ -4661,6 +4691,8 @@ const weatherEntities = ["brightsky", "openweathermap", "pirate-weather", "accuw
   defaultChannel,
   genericStateObjects,
   getTasmotaTimeZone,
+  isDimConfigKey,
+  isDimValueForKey,
   tasmotaOtaUrl,
   tasmotaTimeZones,
   tasmotaTimeZonesAdmin,
