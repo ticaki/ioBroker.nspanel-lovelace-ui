@@ -71,6 +71,8 @@ class PageMedia extends import_pageMenu.PageMenu {
   originalName = "";
   playerName = "";
   serviceName = "";
+  itemAtCreate = [];
+  playerNameList = {};
   /**
    * The identifier of the current media player.
    * Alexa ist es this.config.ident - der Pfad zum device
@@ -194,25 +196,37 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (this.currentPlayer === dp) {
       return;
     }
+    if (this.itemAtCreate.indexOf(dp) !== -1) {
+      return;
+    }
     let index = this.items.findIndex((i) => i.ident === dp);
     let newOne = false;
     if (index === -1) {
       if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
         if (!name) {
+          this.itemAtCreate.push(dp);
           const o = dp ? await this.controller.adapter.getForeignObjectAsync(dp) : null;
           if ((o == null ? void 0 : o.common) && ((_b = o.common) == null ? void 0 : _b.name)) {
             name = typeof o.common.name === "object" ? this.adapter.language ? o.common.name[this.adapter.language] || o.common.name.en : o.common.name.en : o.common.name;
           }
         }
+        this.playerNameList[dp] = name;
         const reg = tools.getRegExp(`/^${dp.split(".").join("\\.")}/`) || dp;
         this.items.push(await this.createMainItems(this.config, "", reg));
         index = this.items.length - 1;
         this.items[index].ident = dp;
-        await this.controller.statesControler.activateTrigger(this);
         newOne = true;
       }
     }
     if (index === 0) {
+      if (this.serviceName === "sonos" && this.items.length > 1) {
+        let hackDP = `${this.items[0].ident}.favorites_list`;
+        const s = await this.adapter.getForeignStateAsync(hackDP);
+        if (s && s.val && typeof s.val === "string" && s.val.includes(",")) {
+          hackDP = `${this.items[0].ident}.favorites_set`;
+          await this.adapter.setForeignStateAsync(hackDP, s.val.split(",")[0] || "");
+        }
+      }
       this.playerName = "";
     } else {
       this.playerName = name;
@@ -229,13 +243,24 @@ class PageMedia extends import_pageMenu.PageMenu {
         }
       }
     }
+    this.itemAtCreate = this.itemAtCreate.filter((i) => i !== dp);
     this.currentPlayer = dp;
     await this.update();
   }
   async update() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (!this.visibility || this.sleep) {
       return;
+    }
+    if (this.serviceName === "sonos" && this.coordinator) {
+      const v = await ((_a = this.coordinator) == null ? void 0 : _a.getString());
+      if (v) {
+        const ident = this.config.ident ? this.config.ident.split(".").slice(0, 3).concat([v]).join(".") : "";
+        if (ident && ident !== this.currentPlayer) {
+          await this.updateCurrentPlayer(ident, this.playerNameList[ident] || "");
+          return;
+        }
+      }
     }
     let index = this.items.findIndex((i) => i.ident === this.currentPlayer);
     index = index === -1 ? 0 : index;
@@ -347,7 +372,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.artistPos = nextPos;
     }
     message.shuffle_icon = "";
-    if ((_b = (_a = item.data.shuffle) == null ? void 0 : _a.value) == null ? void 0 : _b.type) {
+    if ((_c = (_b = item.data.shuffle) == null ? void 0 : _b.value) == null ? void 0 : _c.type) {
       let value = null;
       if (!item.data.shuffle.enabled || await item.data.shuffle.enabled.getBoolean() === true) {
         switch (item.data.shuffle.value.type) {
@@ -372,7 +397,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         message.shuffle_icon = value ? "shuffle-variant" : "shuffle-disabled";
       }
     }
-    if (await ((_c = item.data.useGroupVolume) == null ? void 0 : _c.getBoolean()) && item.data.volumeGroup) {
+    if (await ((_d = item.data.useGroupVolume) == null ? void 0 : _d.getBoolean()) && item.data.volumeGroup) {
       const v = await tools.getScaledNumber(item.data.volumeGroup);
       if (v !== null) {
         message.volume = String(v);
@@ -737,7 +762,15 @@ class PageMedia extends import_pageMenu.PageMenu {
   }
   getdpInitForChild() {
     var _a, _b;
-    return (_b = (_a = this.currentItem) == null ? void 0 : _a.ident) != null ? _b : "";
+    switch (this.serviceName) {
+      case "sonos":
+        return (_b = (_a = this.currentItem) == null ? void 0 : _a.ident) != null ? _b : "";
+      case "alexa2":
+      case "spotify-premium":
+      case "mpd":
+        return "";
+    }
+    return "";
   }
   async delete() {
     var _a;

@@ -47,6 +47,8 @@ export class PageMedia extends PageMenu {
     private originalName: string = '';
     private playerName: string = '';
     private serviceName: 'alexa2' | 'spotify-premium' | 'mpd' | 'sonos' | '' = '';
+    private itemAtCreate: string[] = [];
+    private playerNameList: Record<string, string> = {};
     /**
      * The identifier of the current media player.
      * Alexa ist es this.config.ident - der Pfad zum device
@@ -203,11 +205,15 @@ export class PageMedia extends PageMenu {
         if (this.currentPlayer === dp) {
             return;
         }
+        if (this.itemAtCreate.indexOf(dp) !== -1) {
+            return;
+        }
         let index = this.items.findIndex(i => i.ident === dp);
         let newOne = false;
         if (index === -1) {
             if (this.config?.card === 'cardMedia') {
                 if (!name) {
+                    this.itemAtCreate.push(dp);
                     const o = dp ? await this.controller.adapter.getForeignObjectAsync(dp) : null;
                     if (o?.common && o.common?.name) {
                         name =
@@ -218,15 +224,24 @@ export class PageMedia extends PageMenu {
                                 : o.common.name;
                     }
                 }
+                this.playerNameList[dp] = name;
                 const reg = tools.getRegExp(`/^${dp.split('.').join('\\.')}/`) || dp;
                 this.items.push(await this.createMainItems(this.config, '', reg));
                 index = this.items.length - 1;
                 this.items[index].ident = dp;
-                await this.controller.statesControler.activateTrigger(this);
                 newOne = true;
             }
         }
         if (index === 0) {
+            // Hack: set Sonos favorites_set to the first favorite to reset the “still playing” behavior.
+            if (this.serviceName === 'sonos' && this.items.length > 1) {
+                let hackDP = `${this.items[0].ident}.favorites_list`;
+                const s = await this.adapter.getForeignStateAsync(hackDP);
+                if (s && s.val && typeof s.val === 'string' && s.val.includes(',')) {
+                    hackDP = `${this.items[0].ident}.favorites_set`;
+                    await this.adapter.setForeignStateAsync(hackDP, s.val.split(',')[0] || '');
+                }
+            }
             this.playerName = '';
         } else {
             this.playerName = name;
@@ -243,6 +258,7 @@ export class PageMedia extends PageMenu {
                 }
             }
         }
+        this.itemAtCreate = this.itemAtCreate.filter(i => i !== dp);
         this.currentPlayer = dp;
         await this.update();
     }
@@ -252,6 +268,16 @@ export class PageMedia extends PageMenu {
             return;
         }
         // Find current item by player ident, fallback to first item
+        if (this.serviceName === 'sonos' && this.coordinator) {
+            const v = await this.coordinator?.getString();
+            if (v) {
+                const ident = this.config.ident ? this.config.ident.split('.').slice(0, 3).concat([v]).join('.') : '';
+                if (ident && ident !== this.currentPlayer) {
+                    await this.updateCurrentPlayer(ident, this.playerNameList[ident] || '');
+                    return;
+                }
+            }
+        }
         let index = this.items.findIndex(i => i.ident === this.currentPlayer);
         index = index === -1 ? 0 : index;
         if (index === 0) {

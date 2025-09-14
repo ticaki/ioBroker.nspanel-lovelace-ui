@@ -1871,7 +1871,10 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         break;
                     }
-                    if (entry.role === 'selectGrid') {
+                    if (entry.role === 'SonosSpeaker') {
+                        if (!this.parent || !(this.parent.config?.card === 'cardMedia')) {
+                            break;
+                        }
                         if (this.parent.directChildPage) {
                             this.log.debug(
                                 `Button with role:selectGrid id:${this.id} show Page:${this.parent.directChildPage.id}`,
@@ -1886,13 +1889,19 @@ export class PageItem extends BaseClassTriggerd {
                                 panel: this.parent.currentPanel,
                                 card: 'cardGrid2',
                             };
+                            const list = await entry.data.entity3?.value?.getObject();
+
                             const pageConfig: PageBaseConfig = {
                                 uniqueID: `temp253451_${this.parent.id}`,
-                                alwaysOn: 'none',
+                                alwaysOn: this.parent.alwaysOn,
                                 items: undefined,
-                                dpInit: this.parent.dpInit,
+                                dpInit: this.parent.config.ident, // important a string not regexp
                                 config: {
                                     card: 'cardGrid2',
+                                    cardRole: entry.role,
+                                    options: {
+                                        cardRoleList: list as string[],
+                                    },
                                     data: {
                                         headline: {
                                             type: 'const',
@@ -1902,66 +1911,7 @@ export class PageItem extends BaseClassTriggerd {
                                 },
                                 pageItems: [],
                             };
-                            const list = await entry.data.entity3?.value?.getObject();
-                            if (!list || !Array.isArray(list) || list.length <= 1) {
-                                break;
-                            }
-                            for (let i = 0; i < list.length; i++) {
-                                const val = list[i].trim();
-                                if (!val) {
-                                    continue;
-                                }
-                                pageConfig.pageItems.push({
-                                    role: 'writeTargetByValue',
-                                    type: 'button',
-                                    dpInit: this.parent.dpInit,
-                                    data: {
-                                        entity1: {
-                                            value: {
-                                                mode: 'auto',
-                                                type: 'triggered',
-                                                regexp: /.?\.members$/,
-                                                dp: '',
-                                                read: `
-                                                    if (typeof val === 'string') {                                                    
-                                                        const t = val.split(',').map(s => s.trim());
-                                                        return t.includes('${val}');
-                                                    };
-                                                    return false;`,
-                                            },
-                                        },
-                                        text: { true: { type: 'const', constVal: val } },
-                                        icon: {
-                                            true: {
-                                                value: { type: 'const', constVal: 'speaker' },
-                                                color: { type: 'const', constVal: Color.on },
-                                            },
-                                            false: {
-                                                value: { type: 'const', constVal: 'speaker' },
-                                                color: { type: 'const', constVal: Color.off },
-                                            },
-                                        },
-                                        setValue1: {
-                                            mode: 'auto',
-                                            type: 'state',
-                                            commonType: 'string',
-                                            dp: '',
-                                            writeable: true,
-                                            regexp: /.?\.add_to_group$/,
-                                            write: `if (val) return '${val}'; else return '';`,
-                                        },
-                                        setValue2: {
-                                            mode: 'auto',
-                                            type: 'state',
-                                            commonType: 'string',
-                                            dp: '',
-                                            writeable: true,
-                                            regexp: /.?\.remove_from_group$/,
-                                            write: `if (val) return '${val}'; else return '';`,
-                                        },
-                                    },
-                                });
-                            }
+
                             this.parent.directChildPage = this.parent.basePanel.newPage(tempConfig, pageConfig);
                             if (this.parent.directChildPage) {
                                 this.parent.directChildPage.directParentPage = this.parent;

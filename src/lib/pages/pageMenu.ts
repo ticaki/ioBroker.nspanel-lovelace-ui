@@ -344,7 +344,7 @@ export class PageMenu extends Page {
                         this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
                         break;
                 }
-                const temp = await handleCardRole(this.adapter, this.config.cardRole, this);
+                const temp = await handleCardRole(this.adapter, this.config.cardRole, this, this.config?.options);
                 if (temp) {
                     this.pageItemConfig = temp;
                 }

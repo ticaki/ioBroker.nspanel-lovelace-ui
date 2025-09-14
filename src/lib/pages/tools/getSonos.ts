@@ -314,56 +314,75 @@ export async function getPageSonos(
     }
 
     //speaker select
-    if (
-        !page.media.deactivateDefaultItems?.speakerList &&
-        Array.isArray(page.media.speakerList) &&
-        page.media.speakerList.length > 1
-    ) {
-        gridItem.pageItems.push({
-            role: 'selectGrid',
-            type: 'button',
+    if (!page.media.deactivateDefaultItems?.speakerList) {
+        const selects: string[] = [];
+        let currentName = '';
+        const list = page.media.speakerList;
+        if (devices && devices.rows && devices.rows.length !== 0) {
+            if (list && list.length > 0) {
+                devices.rows
+                    .filter(v => list.includes(tools.getStringFromStringOrTranslated(adapter, v.value.common.name)))
+                    .forEach(v => selects.push(tools.getStringFromStringOrTranslated(adapter, v.value.common.name)));
+            } else {
+                devices.rows.forEach(v =>
+                    selects.push(tools.getStringFromStringOrTranslated(adapter, v.value.common.name)),
+                );
+            }
+            currentName =
+                devices.rows
+                    .filter(v => v.id === str)
+                    .map(v => tools.getStringFromStringOrTranslated(adapter, v.value.common.name))[0] || '';
+        }
+        let arr = list && list.length > 0 ? selects.filter(t => list.find(s => s === t) == null) : selects;
+        arr = arr.concat(list ?? []);
+        arr = arr.filter((item, pos) => item && arr.indexOf(item) === pos);
+        if (arr.length > 1) {
+            gridItem.pageItems.push({
+                role: 'SonosSpeaker',
+                type: 'button',
 
-            data: {
-                entity1: {
-                    value: {
-                        mode: 'auto',
-                        type: 'triggered',
-                        regexp: /.?\.members$/,
-                        dp: '',
-                        read: `
+                data: {
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            type: 'triggered',
+                            regexp: /.?\.members$/,
+                            dp: '',
+                            read: `
                         let data = val;
                         if (typeof val === 'string') {
                         const t = val.split(',').map(i => i.trim());
-                            return t.length < 2 || t[0] !==('${page.media.speakerList[0]}');
+                            return t.length < 2 || t.includes('${currentName}');
                         };
                         return true;`,
+                        },
                     },
-                },
-                icon: {
-                    true: {
-                        value: { type: 'const', constVal: 'speaker-multiple' },
-                        color: await configManager.getIconColor(page.media.itemsColorOn?.speakerList, Color.good),
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'speaker-multiple' },
+                            color: await configManager.getIconColor(page.media.itemsColorOn?.speakerList, Color.good),
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'speaker-multiple' },
+                            color: await configManager.getIconColor(page.media.itemsColorOff?.speakerList, Color.bad),
+                        },
                     },
-                    false: {
-                        value: { type: 'const', constVal: 'speaker-multiple' },
-                        color: await configManager.getIconColor(page.media.itemsColorOff?.speakerList, Color.bad),
+                    /**
+                     * Für role selectGrid ist entity3 die Liste der möglichen Werte
+                     */
+                    entity3: {
+                        value: {
+                            type: 'const',
+                            constVal: JSON.stringify(page.media.speakerList || []),
+                        },
                     },
-                },
-                /**
-                 * Für role selectGrid ist entity3 die Liste der möglichen Werte
-                 */
-                entity3: {
-                    value: {
+                    enabled: {
                         type: 'const',
-                        constVal: JSON.stringify(page.media.speakerList || []),
+                        constVal: true,
                     },
                 },
-                enabled: {
-                    type: 'const',
-                    constVal: true,
-                },
-            },
-        });
+            });
+        }
     }
     //favorite select
     if (!page.media.deactivateDefaultItems?.favoriteList) {

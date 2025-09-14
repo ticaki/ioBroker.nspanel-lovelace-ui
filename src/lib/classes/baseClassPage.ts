@@ -24,7 +24,6 @@ export interface BaseClassTriggerdInterface {
  */
 export class BaseClassTriggerd extends BaseClass {
     private updateTimeout: ioBroker.Timeout | undefined;
-    private waitForTimeout: ioBroker.Timeout | undefined;
     private doUpdate: boolean = true;
     protected minUpdateInterval: number;
     protected visibility: boolean = false;
@@ -109,9 +108,6 @@ export class BaseClassTriggerd extends BaseClass {
         if (this.sleep && !this.neverDeactivateTrigger) {
             return false;
         }
-        if (this.waitForTimeout) {
-            return false;
-        }
 
         if (this.blockUpdateUntilTime) {
             if (this.blockUpdateUntilTime.getTime() > new Date().getTime()) {
@@ -139,34 +135,45 @@ export class BaseClassTriggerd extends BaseClass {
             return false;
         }
 
-        this.waitForTimeout = this.adapter.setTimeout(async () => {
-            this.waitForTimeout = undefined;
-            await this.onStateTrigger(dp, from);
-            if (this.alwaysOnState) {
-                this.adapter.clearTimeout(this.alwaysOnState);
-            }
-            if (this.alwaysOn === 'action') {
-                if (this.unload || this.adapter.unload) {
-                    return;
-                }
-                this.alwaysOnState = this.adapter.setTimeout(
-                    () => {
-                        this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
-                    },
-                    this.basePanel.timeout * 1000 || 5000,
-                );
-            }
-        }, 20);
         this.updateTimeout = this.adapter.setTimeout(async () => {
             if (this.unload || this.adapter.unload) {
                 return;
             }
             this.updateTimeout = undefined;
             if (this.doUpdate) {
+                if (this.alwaysOnState) {
+                    this.adapter.clearTimeout(this.alwaysOnState);
+                }
+                if (this.alwaysOn === 'action') {
+                    if (this.unload || this.adapter.unload) {
+                        return;
+                    }
+                    this.alwaysOnState = this.adapter.setTimeout(
+                        () => {
+                            this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+                        },
+                        this.basePanel.timeout * 1000 || 5000,
+                    );
+                }
                 this.doUpdate = false;
                 await this.onStateTrigger(dp, from);
             }
-        }, this.minUpdateInterval);
+        }, this.minUpdateInterval ?? 50);
+        if (this.alwaysOnState) {
+            this.adapter.clearTimeout(this.alwaysOnState);
+        }
+        if (this.alwaysOn === 'action') {
+            if (this.unload || this.adapter.unload) {
+                return false;
+            }
+            this.alwaysOnState = this.adapter.setTimeout(
+                () => {
+                    this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+                },
+                this.basePanel.timeout * 1000 || 5000,
+            );
+        }
+        await this.onStateTrigger(dp, from);
         return true;
     };
 
@@ -186,9 +193,6 @@ export class BaseClassTriggerd extends BaseClass {
         await super.delete();
         await this.setVisibility(false);
         this.parent = undefined;
-        if (this.waitForTimeout) {
-            this.adapter.clearTimeout(this.waitForTimeout);
-        }
         if (this.alwaysOnState) {
             this.adapter.clearTimeout(this.alwaysOnState);
         }

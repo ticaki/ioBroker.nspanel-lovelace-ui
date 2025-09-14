@@ -264,6 +264,7 @@ class PageMenu extends import_Page.Page {
     return result;
   }
   async onVisibilityChange(val) {
+    var _a;
     if (val) {
       if (this.directParentPage) {
         const dp = this.directParentPage.getdpInitForChild();
@@ -303,7 +304,7 @@ class PageMenu extends import_Page.Page {
             this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
             break;
         }
-        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
+        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this, (_a = this.config) == null ? void 0 : _a.options);
         if (temp) {
           this.pageItemConfig = temp;
         }

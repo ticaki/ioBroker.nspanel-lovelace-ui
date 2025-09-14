@@ -26,7 +26,6 @@ var import_library = require("./library");
 var import_definition = require("../const/definition");
 class BaseClassTriggerd extends import_library.BaseClass {
   updateTimeout;
-  waitForTimeout;
   doUpdate = true;
   minUpdateInterval;
   visibility = false;
@@ -82,7 +81,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   async reset() {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
-    var _a;
+    var _a, _b;
     if (this.unload || this.adapter.unload) {
       return false;
     }
@@ -91,9 +90,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
       return false;
     }
     if (this.sleep && !this.neverDeactivateTrigger) {
-      return false;
-    }
-    if (this.waitForTimeout) {
       return false;
     }
     if (this.blockUpdateUntilTime) {
@@ -121,34 +117,45 @@ class BaseClassTriggerd extends import_library.BaseClass {
       this.doUpdate = true;
       return false;
     }
-    this.waitForTimeout = this.adapter.setTimeout(async () => {
-      this.waitForTimeout = void 0;
-      await this.onStateTrigger(dp, from);
-      if (this.alwaysOnState) {
-        this.adapter.clearTimeout(this.alwaysOnState);
-      }
-      if (this.alwaysOn === "action") {
-        if (this.unload || this.adapter.unload) {
-          return;
-        }
-        this.alwaysOnState = this.adapter.setTimeout(
-          () => {
-            this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
-          },
-          this.basePanel.timeout * 1e3 || 5e3
-        );
-      }
-    }, 20);
     this.updateTimeout = this.adapter.setTimeout(async () => {
       if (this.unload || this.adapter.unload) {
         return;
       }
       this.updateTimeout = void 0;
       if (this.doUpdate) {
+        if (this.alwaysOnState) {
+          this.adapter.clearTimeout(this.alwaysOnState);
+        }
+        if (this.alwaysOn === "action") {
+          if (this.unload || this.adapter.unload) {
+            return;
+          }
+          this.alwaysOnState = this.adapter.setTimeout(
+            () => {
+              this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+            },
+            this.basePanel.timeout * 1e3 || 5e3
+          );
+        }
         this.doUpdate = false;
         await this.onStateTrigger(dp, from);
       }
-    }, this.minUpdateInterval);
+    }, (_b = this.minUpdateInterval) != null ? _b : 50);
+    if (this.alwaysOnState) {
+      this.adapter.clearTimeout(this.alwaysOnState);
+    }
+    if (this.alwaysOn === "action") {
+      if (this.unload || this.adapter.unload) {
+        return false;
+      }
+      this.alwaysOnState = this.adapter.setTimeout(
+        () => {
+          this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+        },
+        this.basePanel.timeout * 1e3 || 5e3
+      );
+    }
+    await this.onStateTrigger(dp, from);
     return true;
   };
   async onStateTrigger(_dp, _from) {
@@ -166,9 +173,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
     await super.delete();
     await this.setVisibility(false);
     this.parent = void 0;
-    if (this.waitForTimeout) {
-      this.adapter.clearTimeout(this.waitForTimeout);
-    }
     if (this.alwaysOnState) {
       this.adapter.clearTimeout(this.alwaysOnState);
     }

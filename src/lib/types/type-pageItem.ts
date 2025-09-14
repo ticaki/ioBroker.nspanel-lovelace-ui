@@ -690,7 +690,7 @@ export type PageTypeUnionTemplate = {
 //XOR<XOR<A, B>, C>
 
 export type PageItemUnion = {
-    role?: pages.DeviceRole;
+    role?: pages.DeviceRole | pages.CardRole;
     template?: undefined;
     readOptions?: Record<string, string>;
     dpInit?: string | RegExp;

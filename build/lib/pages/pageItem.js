@@ -1569,7 +1569,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     await this.controller.statesControler.deletePageLoop();
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1613,7 +1613,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             break;
           }
-          if (entry.role === "selectGrid") {
+          if (entry.role === "SonosSpeaker") {
+            if (!this.parent || !(((_g = this.parent.config) == null ? void 0 : _g.card) === "cardMedia")) {
+              break;
+            }
             if (this.parent.directChildPage) {
               this.log.debug(
                 `Button with role:selectGrid id:${this.id} show Page:${this.parent.directChildPage.id}`
@@ -1628,13 +1631,19 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 panel: this.parent.currentPanel,
                 card: "cardGrid2"
               };
+              const list = await ((_i = (_h = entry.data.entity3) == null ? void 0 : _h.value) == null ? void 0 : _i.getObject());
               const pageConfig = {
                 uniqueID: `temp253451_${this.parent.id}`,
-                alwaysOn: "none",
+                alwaysOn: this.parent.alwaysOn,
                 items: void 0,
-                dpInit: this.parent.dpInit,
+                dpInit: this.parent.config.ident,
+                // important a string not regexp
                 config: {
                   card: "cardGrid2",
+                  cardRole: entry.role,
+                  options: {
+                    cardRoleList: list
+                  },
                   data: {
                     headline: {
                       type: "const",
@@ -1644,66 +1653,6 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 },
                 pageItems: []
               };
-              const list = await ((_h = (_g = entry.data.entity3) == null ? void 0 : _g.value) == null ? void 0 : _h.getObject());
-              if (!list || !Array.isArray(list) || list.length <= 1) {
-                break;
-              }
-              for (let i = 0; i < list.length; i++) {
-                const val = list[i].trim();
-                if (!val) {
-                  continue;
-                }
-                pageConfig.pageItems.push({
-                  role: "writeTargetByValue",
-                  type: "button",
-                  dpInit: this.parent.dpInit,
-                  data: {
-                    entity1: {
-                      value: {
-                        mode: "auto",
-                        type: "triggered",
-                        regexp: /.?\.members$/,
-                        dp: "",
-                        read: `
-                                                    if (typeof val === 'string') {                                                    
-                                                        const t = val.split(',').map(s => s.trim());
-                                                        return t.includes('${val}');
-                                                    };
-                                                    return false;`
-                      }
-                    },
-                    text: { true: { type: "const", constVal: val } },
-                    icon: {
-                      true: {
-                        value: { type: "const", constVal: "speaker" },
-                        color: { type: "const", constVal: import_Color.Color.on }
-                      },
-                      false: {
-                        value: { type: "const", constVal: "speaker" },
-                        color: { type: "const", constVal: import_Color.Color.off }
-                      }
-                    },
-                    setValue1: {
-                      mode: "auto",
-                      type: "state",
-                      commonType: "string",
-                      dp: "",
-                      writeable: true,
-                      regexp: /.?\.add_to_group$/,
-                      write: `if (val) return '${val}'; else return '';`
-                    },
-                    setValue2: {
-                      mode: "auto",
-                      type: "state",
-                      commonType: "string",
-                      dp: "",
-                      writeable: true,
-                      regexp: /.?\.remove_from_group$/,
-                      write: `if (val) return '${val}'; else return '';`
-                    }
-                  }
-                });
-              }
               this.parent.directChildPage = this.parent.basePanel.newPage(tempConfig, pageConfig);
               if (this.parent.directChildPage) {
                 this.parent.directChildPage.directParentPage = this.parent;
@@ -1714,11 +1663,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             break;
           }
           if (entry.role === "writeTargetByValue") {
-            const value3 = (_j = ((_i = entry.data.entity1) == null ? void 0 : _i.value) && await entry.data.entity1.value.getBoolean()) != null ? _j : null;
+            const value3 = (_k = ((_j = entry.data.entity1) == null ? void 0 : _j.value) && await entry.data.entity1.value.getBoolean()) != null ? _k : null;
             if (value3) {
-              await ((_k = entry.data.setValue2) == null ? void 0 : _k.setStateTrue());
+              await ((_l = entry.data.setValue2) == null ? void 0 : _l.setStateTrue());
             } else {
-              await ((_l = entry.data.setValue1) == null ? void 0 : _l.setStateTrue());
+              await ((_m = entry.data.setValue1) == null ? void 0 : _m.setStateTrue());
             }
             break;
           }
@@ -1735,10 +1684,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             await this.parent.update();
           }
           if (item.popup) {
-            const test = (_m = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _m : true;
+            const test = (_n = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _n : true;
             if (test && item.popup.getMessage && item.popup.setMessage) {
               const message = await item.popup.getMessage.getString();
-              const headline = (_n = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _n : "";
+              const headline = (_o = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _o : "";
               if (message) {
                 await item.popup.setMessage.setState(
                   JSON.stringify({ headline, message })
@@ -1747,7 +1696,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
             break;
           }
-          let value2 = (_o = item.setNavi && await item.setNavi.getString()) != null ? _o : null;
+          let value2 = (_p = item.setNavi && await item.setNavi.getString()) != null ? _p : null;
           if (value2 !== null) {
             await this.parent.currentPanel.navigation.setTargetPageByName(value2);
             break;
@@ -1757,7 +1706,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             break;
           }
           if (item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
-            value2 = (_q = item.entity1 && await ((_p = item.entity1.value) == null ? void 0 : _p.getBoolean())) != null ? _q : false;
+            value2 = (_r = item.entity1 && await ((_q = item.entity1.value) == null ? void 0 : _q.getBoolean())) != null ? _r : false;
             if (value2) {
               await item.setFalse.setStateTrue();
             } else {
@@ -1773,7 +1722,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             await item.setValue2.setStateTrue();
             break;
           }
-          if ((_s = (_r = item.entity1) == null ? void 0 : _r.value) == null ? void 0 : _s.writeable) {
+          if ((_t = (_s = item.entity1) == null ? void 0 : _s.value) == null ? void 0 : _t.writeable) {
             await item.entity1.value.setStateFlip();
             break;
           }
@@ -1788,9 +1737,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         } else if (entry.type === "fan") {
           const item = entry.data;
-          if ((_t = item.entity1) == null ? void 0 : _t.set) {
+          if ((_u = item.entity1) == null ? void 0 : _u.set) {
             await item.entity1.set.setStateFlip();
-          } else if ((_v = (_u = item.entity1) == null ? void 0 : _u.value) == null ? void 0 : _v.writeable) {
+          } else if ((_w = (_v = item.entity1) == null ? void 0 : _v.value) == null ? void 0 : _w.writeable) {
             await item.entity1.value.setStateFlip();
           }
         }
@@ -1833,9 +1782,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             entity = item.entity3;
           }
           if (entity && entity.set && entity.set.writeable) {
-            if (!Array.isArray(entity.set.options.role) && ((_w = entity.set.options.role) == null ? void 0 : _w.startsWith("button"))) {
+            if (!Array.isArray(entity.set.options.role) && ((_x = entity.set.options.role) == null ? void 0 : _x.startsWith("button"))) {
               await entity.set.setStateTrue();
-            } else if (!Array.isArray(entity.set.options.role) && ((_x = entity.set.options.role) == null ? void 0 : _x.startsWith("switch"))) {
+            } else if (!Array.isArray(entity.set.options.role) && ((_y = entity.set.options.role) == null ? void 0 : _y.startsWith("switch"))) {
               await entity.set.setStateFlip();
             }
           }
@@ -1905,7 +1854,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb) && ((_y = item == null ? void 0 : item.color) == null ? void 0 : _y.true) && item.color.true.options.role !== "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_z = item == null ? void 0 : item.color) == null ? void 0 : _z.true) && item.color.true.options.role !== "level.color.rgb") {
                   await item.color.true.setState(JSON.stringify(rgb));
                   break;
                 }
@@ -2151,14 +2100,14 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 const minValue = item[`minValue${b}`];
                 let min = 0;
                 if (minValue) {
-                  min = (_z = await minValue.getNumber()) != null ? _z : 0;
+                  min = (_A = await minValue.getNumber()) != null ? _A : 0;
                 } else if (entity && entity.value && entity.value.common.min != void 0) {
                   min = entity.value.common.min;
                 }
                 const maxValue = item[`maxValue${b}`];
                 let max = 100;
                 if (maxValue) {
-                  max = (_A = await maxValue.getNumber()) != null ? _A : 100;
+                  max = (_B = await maxValue.getNumber()) != null ? _B : 100;
                 } else if (entity && entity.value && entity.value.common.max != void 0) {
                   max = entity.value.common.max;
                 }
@@ -2251,7 +2200,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_B = this.dataItems.data.entity1) == null ? void 0 : _B.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_C = this.dataItems.data.entity1) == null ? void 0 : _C.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2261,7 +2210,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_C = this.dataItems.data.entity1) == null ? void 0 : _C.set) && await this.dataItems.data.entity1.set.setState(r);
+              ((_D = this.dataItems.data.entity1) == null ? void 0 : _D.set) && await this.dataItems.data.entity1.set.setState(r);
             }
             break;
           }
@@ -2292,7 +2241,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_D = this.dataItems.data.entity1) == null ? void 0 : _D.set) && await this.dataItems.data.entity1.set.setState(r);
+                ((_E = this.dataItems.data.entity1) == null ? void 0 : _E.set) && await this.dataItems.data.entity1.set.setState(r);
               }
               break;
             }

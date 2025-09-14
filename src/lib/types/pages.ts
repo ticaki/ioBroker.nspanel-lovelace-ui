@@ -4,7 +4,7 @@ import { type PageItem } from '../pages/pageItem';
 import type * as typePageItem from './type-pageItem';
 import type * as Types from './types';
 
-export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates';
+export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker';
 
 export function isCardEntitiesType(F: any): F is cardEntitiesTypes {
     return ['cardEntities', 'cardSchedule'].indexOf(F) !== -1;
@@ -408,7 +408,8 @@ export type DeviceRole =
     | 'fan'
     | 'value.uv'
     | 'heatcycle'
-    | '';
+    | ''
+    | CardRole;
 
 export function isStateRole(F: string): F is StateRole {
     switch (F as StateRole) {
@@ -533,12 +534,18 @@ export function isAlarmButtonEvent(F: any): F is AlarmButtonEvents {
     return ['A1', 'A2', 'A3', 'A4', 'D1', 'U1'].indexOf(F) !== -1;
 }
 
-export type PageMenuConfig =
+export type PageMenuConfig = (
     | cardThermo2DataItemOptions
     | cardGridDataItemOptions
     | cardEntitiesDataItemOptions
     | cardScheduleDataItemOptions
-    | cardMediaDataItemOptions;
+    | cardMediaDataItemOptions
+) & {
+    options?: {
+        cardRoleList?: string[];
+        indentifier?: string;
+    };
+};
 
 export type PageOthersConfigs =
     | cardPowerDataItemOptions
