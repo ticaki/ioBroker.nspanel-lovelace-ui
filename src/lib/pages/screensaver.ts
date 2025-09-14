@@ -60,7 +60,7 @@ export class Screensaver extends Page {
                 break;
             }
         }
-        config.alwaysOn = 'none';
+        options.alwaysOn = 'none';
         super(config, options);
         this.screensaverIndicatorButtons = options.config.screensaverIndicatorButtons ?? false;
         this.screensaverSwipe = options.config.screensaverSwipe ?? false;

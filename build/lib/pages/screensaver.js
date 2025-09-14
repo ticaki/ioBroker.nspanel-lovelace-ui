@@ -74,7 +74,7 @@ class Screensaver extends import_Page.Page {
         break;
       }
     }
-    config.alwaysOn = "none";
+    options.alwaysOn = "none";
     super(config, options);
     this.screensaverIndicatorButtons = (_a = options.config.screensaverIndicatorButtons) != null ? _a : false;
     this.screensaverSwipe = (_b = options.config.screensaverSwipe) != null ? _b : false;
