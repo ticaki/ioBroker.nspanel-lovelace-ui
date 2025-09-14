@@ -1629,14 +1629,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               await this.parent.basePanel.setActivePage(this.parent.directChildPage);
             } else if (this.parent.config) {
               this.log.debug(`Create temp page for Button with role:selectGrid id:${this.id}`);
+              const list = await ((_i = (_h = entry.data.entity3) == null ? void 0 : _h.value) == null ? void 0 : _i.getObject());
               const tempConfig = {
                 id: `temp253451_${this.parent.id}`,
                 name: `sub_${this.parent.name}`,
                 adapter: this.adapter,
                 panel: this.parent.currentPanel,
-                card: "cardGrid2"
+                card: list == null || !Array.isArray(list) || list.length == 0 || list.length > 4 && list.length <= 6 || list.length > 8 && list.length <= 12 ? "cardGrid" : list.length <= 4 ? "cardGrid3" : "cardGrid2"
               };
-              const list = await ((_i = (_h = entry.data.entity3) == null ? void 0 : _h.value) == null ? void 0 : _i.getObject());
               const pageConfig = {
                 uniqueID: `temp253451_${this.parent.id}`,
                 alwaysOn: this.parent.alwaysOn,
