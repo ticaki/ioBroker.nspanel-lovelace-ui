@@ -112,7 +112,7 @@ class PageMedia extends import_pageMenu.PageMenu {
             this.coordinator = new import_data_item.Dataitem(
               this.adapter,
               {
-                name: `${this.id}-coordina1tor`,
+                name: `${this.id}-coordinator`,
                 type: "triggered",
                 dp,
                 writeable: false

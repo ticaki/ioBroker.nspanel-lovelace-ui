@@ -1,7 +1,7 @@
 import { Color, type RGB } from '../const/Color';
 import { BaseClass } from './library';
 import type { StatesControler } from '../controller/states-controller';
-import type { BaseClassTriggerd } from './baseClassPage';
+import type { BaseTriggeredPage } from './baseClassPage';
 
 import * as NSPanel from '../types/types';
 
@@ -18,7 +18,7 @@ export class Dataitem extends BaseClass {
     //private obj: ioBroker.Object | null | undefined;
     stateDB: StatesControler;
     type: ioBroker.CommonType | undefined = undefined;
-    parent: BaseClassTriggerd;
+    parent: BaseTriggeredPage;
     common: Partial<ioBroker.StateCommon> = {};
     private _writeable: boolean = false;
     /**
@@ -26,10 +26,10 @@ export class Dataitem extends BaseClass {
      *
      * @param adapter this of adapter
      * @param options {NSPanel.DataItemsOptions}
-     * @param parent {BaseClassTriggerd}
+     * @param parent {BaseTriggeredPage}
      * @param db {StatesControler}
      */
-    constructor(adapter: any, options: NSPanel.DataItemsOptions, parent: BaseClassTriggerd, db: StatesControler) {
+    constructor(adapter: any, options: NSPanel.DataItemsOptions, parent: BaseTriggeredPage, db: StatesControler) {
         super(adapter, options.name || '');
         this.options = options;
         this.stateDB = db;

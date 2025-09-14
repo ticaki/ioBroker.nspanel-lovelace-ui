@@ -10,7 +10,7 @@ import * as pages from '../types/pages';
 import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
 import type { PageInterface } from '../classes/PageInterface';
-import type { BaseClassTriggerd } from '../classes/baseClassPage';
+import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { Color, type RGB } from '../const/Color';
 
@@ -401,7 +401,7 @@ export class Screensaver extends Page {
      * @param _dp - the dp that triggered the state
      * @param from - the class that triggered the state
      */
-    onStateTrigger = async (_dp: string, from: BaseClassTriggerd): Promise<void> => {
+    onStateTrigger = async (_dp: string, from: BaseTriggeredPage): Promise<void> => {
         const config = this.config;
         if (
             !config ||

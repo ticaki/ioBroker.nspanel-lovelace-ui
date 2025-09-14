@@ -14,11 +14,11 @@ import {
     type PageBaseConfig,
 } from '../types/pages';
 import type { Screensaver } from './screensaver';
-import { BaseClassTriggerd } from '../classes/baseClassPage';
+import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
-export class PageItem extends BaseClassTriggerd {
+export class PageItem extends BaseTriggeredPage {
     defaultOnColor = Color.White;
     defaultOffColor = Color.Blue;
     config: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined;
@@ -34,7 +34,12 @@ export class PageItem extends BaseClassTriggerd {
         config: Omit<PageItemInterface, 'pageItemsConfig' | 'parent'> & { parent: Page },
         options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
     ) {
-        super({ ...config });
+        super({
+            name: config.name,
+            adapter: config.adapter,
+            panel: config.panel,
+            dpInit: config.dpInit,
+        });
         this.id = config.id;
         this.config = options;
         if (!config || !config.parent) {
@@ -1887,7 +1892,6 @@ export class PageItem extends BaseClassTriggerd {
                                 name: `sub_${this.parent.name}`,
                                 adapter: this.adapter,
                                 panel: this.parent.currentPanel,
-                                alwaysOn: this.parent.alwaysOn,
                                 card: 'cardGrid2',
                             };
                             const list = await entry.data.entity3?.value?.getObject();
@@ -2593,7 +2597,7 @@ export class PageItem extends BaseClassTriggerd {
         }
         return true;
     }
-    protected async onStateTrigger(id: string = '', from?: BaseClassTriggerd): Promise<void> {
+    protected async onStateTrigger(id: string = '', from?: BaseTriggeredPage): Promise<void> {
         if (this.lastPopupType) {
             if (this.lastPopupType === 'popupThermo') {
                 await this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null);

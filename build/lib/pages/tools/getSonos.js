@@ -328,7 +328,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     }
     let arr2 = list && list.length > 0 ? selects.filter((t) => list.find((s) => s === t) == null) : selects;
     arr2 = arr2.concat(list != null ? list : []);
-    arr2 = arr2.filter((item, pos) => item && arr2.indexOf(item) === pos);
+    arr2 = [...new Set(arr2.filter(Boolean))];
     if (arr2.length > 1) {
       gridItem.pageItems.push({
         role: "SonosSpeaker",

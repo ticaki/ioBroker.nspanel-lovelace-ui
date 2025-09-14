@@ -37,7 +37,7 @@ var tools = __toESM(require("../const/tools"));
 var import_icon_mapping = require("../const/icon_mapping");
 var import_pages = require("../types/pages");
 var import_baseClassPage = require("../classes/baseClassPage");
-class PageItem extends import_baseClassPage.BaseClassTriggerd {
+class PageItem extends import_baseClassPage.BaseTriggeredPage {
   defaultOnColor = import_Color.Color.White;
   defaultOffColor = import_Color.Color.Blue;
   config;
@@ -51,7 +51,12 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
   confirmClick = "lock";
   timeouts = {};
   constructor(config, options) {
-    super({ ...config });
+    super({
+      name: config.name,
+      adapter: config.adapter,
+      panel: config.panel,
+      dpInit: config.dpInit
+    });
     this.id = config.id;
     this.config = options;
     if (!config || !config.parent) {
@@ -1629,7 +1634,6 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
                 name: `sub_${this.parent.name}`,
                 adapter: this.adapter,
                 panel: this.parent.currentPanel,
-                alwaysOn: this.parent.alwaysOn,
                 card: "cardGrid2"
               };
               const list = await ((_i = (_h = entry.data.entity3) == null ? void 0 : _h.value) == null ? void 0 : _i.getObject());
@@ -2702,8 +2706,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         for (let a = 0; a < v.length; a++) {
           const arr = v[a].split("?");
           if (arr.length >= 2) {
-            list.list.push(this.library.getTranslation(v[a][0]));
-            list.states.push(String(v[a][1]));
+            list.list.push(this.library.getTranslation(arr[0]));
+            list.states.push(String(arr[1]));
           } else {
             list.list.push(this.library.getTranslation(v[a]));
             list.states.push(String(a));

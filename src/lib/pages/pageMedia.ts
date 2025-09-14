@@ -14,7 +14,7 @@ import { getPageAlexa } from './tools/getAlexa';
 import { getPageMpd } from './tools/getMpd';
 import { getPageSonos } from './tools/getSonos';
 import { PageItem } from './pageItem';
-import type { BaseClassTriggerd } from '../classes/baseClassPage';
+import type { BaseTriggeredPage } from '../classes/baseClassPage';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
@@ -592,7 +592,7 @@ export class PageMedia extends PageMenu {
         );
     }
 
-    onStateTrigger = async (dp: string, from: BaseClassTriggerd): Promise<void> => {
+    onStateTrigger = async (dp: string, from: BaseTriggeredPage): Promise<void> => {
         if (from === this && dp === this.coordinator?.options.dp) {
             const v = await this.coordinator?.getString();
             if (v) {

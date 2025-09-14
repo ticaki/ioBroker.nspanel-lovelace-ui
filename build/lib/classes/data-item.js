@@ -51,7 +51,7 @@ class Dataitem extends import_library.BaseClass {
    *
    * @param adapter this of adapter
    * @param options {NSPanel.DataItemsOptions}
-   * @param parent {BaseClassTriggerd}
+   * @param parent {BaseTriggeredPage}
    * @param db {StatesControler}
    */
   constructor(adapter, options, parent, db) {

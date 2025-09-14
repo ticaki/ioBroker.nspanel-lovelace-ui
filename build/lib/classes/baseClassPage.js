@@ -19,12 +19,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var baseClassPage_exports = {};
 __export(baseClassPage_exports, {
   BaseClassPage: () => BaseClassPage,
-  BaseClassTriggerd: () => BaseClassTriggerd
+  BaseTriggeredPage: () => BaseTriggeredPage
 });
 module.exports = __toCommonJS(baseClassPage_exports);
 var import_library = require("./library");
 var import_definition = require("../const/definition");
-class BaseClassTriggerd extends import_library.BaseClass {
+class BaseTriggeredPage extends import_library.BaseClass {
   updateTimeout;
   doUpdate = true;
   minUpdateInterval;
@@ -54,14 +54,13 @@ class BaseClassTriggerd extends import_library.BaseClass {
   resetLastMessage() {
     this.lastMessage = "";
   }
-  constructor(card) {
-    var _a;
+  constructor(card, alwaysOn = "none") {
     super(card.adapter, card.name);
     this.minUpdateInterval = 400;
     if (!this.adapter.controller) {
       throw new Error("No controller! bye bye");
     }
-    this.alwaysOn = (_a = card.alwaysOn) != null ? _a : "none";
+    this.alwaysOn = alwaysOn;
     this.basePanel = card.panel;
     this._currentPanel = card.panel;
   }
@@ -254,11 +253,11 @@ class BaseClassTriggerd extends import_library.BaseClass {
     );
   }
 }
-class BaseClassPage extends BaseClassTriggerd {
+class BaseClassPage extends BaseTriggeredPage {
   pageItemConfig;
   pageItems;
-  constructor(card, pageItemsConfig) {
-    super(card);
+  constructor(card, alwaysOn = "none", pageItemsConfig) {
+    super(card, alwaysOn);
     this.pageItemConfig = pageItemsConfig;
   }
   async getEnabledPageItems() {
@@ -280,6 +279,6 @@ class BaseClassPage extends BaseClassTriggerd {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BaseClassPage,
-  BaseClassTriggerd
+  BaseTriggeredPage
 });
 //# sourceMappingURL=baseClassPage.js.map

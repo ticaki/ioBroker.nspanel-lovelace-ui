@@ -34,7 +34,7 @@ __export(Page_exports, {
 module.exports = __toCommonJS(Page_exports);
 var pages = __toESM(require("../types/pages"));
 var import_baseClassPage = require("./baseClassPage");
-var import_types = require("../types/types");
+var types = __toESM(require("../types/types"));
 var import_pageItem = require("../pages/pageItem");
 var import_tools = require("../const/tools");
 var import_templateArray = require("../templates/templateArray");
@@ -61,8 +61,7 @@ class Page extends import_baseClassPage.BaseClassPage {
   //config: Card['config'];
   constructor(card, pageItemsConfig, isScreensaver = false) {
     var _a;
-    card.alwaysOn = card.alwaysOn || (pageItemsConfig && pageItemsConfig.alwaysOn ? pageItemsConfig.alwaysOn : "none");
-    super(card, pageItemsConfig && pageItemsConfig.pageItems);
+    super(card, pageItemsConfig && pageItemsConfig.alwaysOn, pageItemsConfig && pageItemsConfig.pageItems);
     this.isScreensaver = isScreensaver;
     this.card = card.card;
     this.id = card.id;
@@ -376,7 +375,7 @@ class Page extends import_baseClassPage.BaseClassPage {
     let msg = null;
     if (action && value !== void 0 && await item.onCommand(action, value)) {
       return;
-    } else if ((0, import_types.isPopupType)(popup) && action !== "bExit") {
+    } else if (types.isPopupType(popup) && action !== "bExit") {
       this.basePanel.lastCard = "";
       msg = await item.GeneratePopup(popup);
     }

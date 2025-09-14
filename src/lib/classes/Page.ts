@@ -1,12 +1,6 @@
 import * as pages from '../types/pages';
 import { BaseClassPage } from './baseClassPage';
-import {
-    isPopupType,
-    type ButtonActionType,
-    type IncomingEvent,
-    type PopupType,
-    type TemplateIdent,
-} from '../types/types';
+import * as types from '../types/types';
 import { PageItem } from '../pages/pageItem';
 import { deepAssign, getPayload, getRegExp } from '../const/tools';
 import type { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
@@ -42,9 +36,7 @@ export class Page extends BaseClassPage {
         pageItemsConfig: pages.PageBaseConfig | undefined,
         isScreensaver: boolean = false,
     ) {
-        card.alwaysOn =
-            card.alwaysOn || (pageItemsConfig && pageItemsConfig.alwaysOn ? pageItemsConfig.alwaysOn : 'none');
-        super(card, pageItemsConfig && pageItemsConfig.pageItems);
+        super(card, pageItemsConfig && pageItemsConfig.alwaysOn, pageItemsConfig && pageItemsConfig.pageItems);
         this.isScreensaver = isScreensaver;
         this.card = card.card;
         this.id = card.id;
@@ -152,7 +144,7 @@ export class Page extends BaseClassPage {
 
     async getItemFromTemplate(
         options: PageItemDataItemsOptions,
-        subtemplate: TemplateIdent = '',
+        subtemplate: types.TemplateIdent = '',
         loop: number = 0,
     ): Promise<PageItemDataItemsOptions | undefined> {
         if ('template' in options && options.template) {
@@ -236,7 +228,7 @@ export class Page extends BaseClassPage {
         return options;
     }
 
-    async onButtonEvent(event: IncomingEvent): Promise<void> {
+    async onButtonEvent(event: types.IncomingEvent): Promise<void> {
         this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
     }
     sendType(force?: boolean): void {
@@ -388,11 +380,11 @@ export class Page extends BaseClassPage {
      */
     public async onPopupRequest(
         id: number | string,
-        popup: PopupType | undefined,
+        popup: types.PopupType | undefined,
         // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        action: ButtonActionType | undefined | string,
+        action: types.ButtonActionType | undefined | string,
         value: string | undefined,
-        _event: IncomingEvent | null = null,
+        _event: types.IncomingEvent | null = null,
     ): Promise<void> {
         if (!this.pageItems || id == '') {
             this.log.debug(
@@ -415,7 +407,7 @@ export class Page extends BaseClassPage {
         let msg: string | null = null;
         if (action && value !== undefined && (await item.onCommand(action, value))) {
             return;
-        } else if (isPopupType(popup) && action !== 'bExit') {
+        } else if (types.isPopupType(popup) && action !== 'bExit') {
             this.basePanel.lastCard = '';
             msg = await item.GeneratePopup(popup);
         }
@@ -468,7 +460,7 @@ export function isMediaButtonActionType(F: string): F is MediaButtonActionType {
     return false;
 }
 type MediaButtonActionType = Extract<
-    ButtonActionType,
+    types.ButtonActionType,
     | 'media-back'
     | 'media-pause'
     | 'media-next'
