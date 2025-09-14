@@ -335,7 +335,7 @@ export async function getPageSonos(
         }
         let arr = list && list.length > 0 ? selects.filter(t => list.find(s => s === t) == null) : selects;
         arr = arr.concat(list ?? []);
-        arr = arr.filter((item, pos) => item && arr.indexOf(item) === pos);
+        arr = [...new Set(arr.filter(Boolean))];
         if (arr.length > 1) {
             gridItem.pageItems.push({
                 role: 'SonosSpeaker',
