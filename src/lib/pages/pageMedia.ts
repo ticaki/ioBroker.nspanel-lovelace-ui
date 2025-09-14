@@ -1,4 +1,4 @@
-import { isDataItem, type Dataitem } from '../classes/data-item';
+import { isDataItem, Dataitem } from '../classes/data-item';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import type { ColorEntryType } from '../types/type-pageItem';
@@ -14,6 +14,7 @@ import { getPageAlexa } from './tools/getAlexa';
 import { getPageMpd } from './tools/getMpd';
 import { getPageSonos } from './tools/getSonos';
 import { PageItem } from './pageItem';
+import type { BaseClassTriggerd } from '../classes/baseClassPage';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
@@ -45,7 +46,12 @@ export class PageMedia extends PageMenu {
     private artistPos: number = 0;
     private originalName: string = '';
     private playerName: string = '';
-    public currentPlayer: string | RegExp;
+    /**
+     * The identifier of the current media player.
+     * Alexa ist es this.config.ident - der Pfad zum device
+     */
+    public currentPlayer: string;
+    public coordinator: Dataitem | undefined;
     get logo(): PageItem | undefined {
         return this.currentItem?.logoItem;
     }
@@ -72,6 +78,62 @@ export class PageMedia extends PageMenu {
                     o.common?.name &&
                     (typeof o.common.name === 'object' ? o.common.name.de || o.common.name.en : o?.common?.name)) ||
                 '';
+            const arr = typeof this.config.ident === 'string' ? this.config.ident.split('.') : [];
+            switch (arr[0]) {
+                case 'alexa2':
+                case 'spotify-premium':
+                case 'mpd':
+                    break;
+                case 'sonos':
+                    {
+                        /**
+                         * Sonos grouping & coordinator resolution
+                         *
+                         * The coordinator datapoint is at:
+                         *   sonos.<inst>.root.<DEVICE_IP>.coordinator
+                         * Its value identifies the current group coordinator (IP-like token).
+                         * From that value, derive the coordinator device folder:
+                         *   sonos.<inst>.root.<COORDINATOR_IP>
+                         *
+                         * If the coordinator equals the configured player, nothing changes.
+                         * Otherwise, redirect control to the coordinator so all grouped players
+                         * show the same controls across panels. When the configured player
+                         * leaves the group, control automatically falls back to it.
+                         */
+                        const dp = arr.length >= 4 ? `${arr.slice(0, 4).join('.')}.coordinator` : '';
+                        this.coordinator = new Dataitem(
+                            this.adapter,
+                            {
+                                name: `${this.id}-coordina1tor`,
+                                type: 'triggered',
+                                dp: dp,
+                                writeable: false,
+                            },
+                            this,
+                            this.basePanel.statesControler,
+                        );
+                        if (!(await this.coordinator.isValidAndInit())) {
+                            await this.coordinator.delete();
+                            this.coordinator = undefined;
+                        }
+                        this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join('.') : '';
+                        const v = await this.coordinator?.getString();
+                        if (v) {
+                            const ident = this.config.ident
+                                ? this.config.ident.split('.').slice(0, 3).concat([v]).join('.')
+                                : '';
+                            if (ident && ident !== this.currentPlayer) {
+                                await this.updateCurrentPlayer(ident, '');
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    this.log.warn(
+                        `Media page with id ${this.config.ident} is not supported - only alexa2, spotify-premium, mpd, and sonos!`,
+                    );
+                    break;
+            }
         }
         await super.init();
     }
@@ -143,6 +205,17 @@ export class PageMedia extends PageMenu {
         let newOne = false;
         if (index === -1) {
             if (this.config?.card === 'cardMedia') {
+                if (!name) {
+                    const o = dp ? await this.controller.adapter.getForeignObjectAsync(dp) : null;
+                    if (o?.common && o.common?.name) {
+                        name =
+                            typeof o.common.name === 'object'
+                                ? this.adapter.language
+                                    ? o.common.name[this.adapter.language] || o.common.name.en
+                                    : o.common.name.en
+                                : o.common.name;
+                    }
+                }
                 const reg = tools.getRegExp(`/^${dp.split('.').join('\\.')}/`) || dp;
                 this.items.push(await this.createMainItems(this.config, '', reg));
                 index = this.items.length - 1;
@@ -176,7 +249,6 @@ export class PageMedia extends PageMenu {
         if (!this.visibility || this.sleep) {
             return;
         }
-
         // Find current item by player ident, fallback to first item
         let index = this.items.findIndex(i => i.ident === this.currentPlayer);
         index = index === -1 ? 0 : index;
@@ -490,7 +562,16 @@ export class PageMedia extends PageMenu {
         );
     }
 
-    onStateTrigger = async (): Promise<void> => {
+    onStateTrigger = async (dp: string, from: BaseClassTriggerd): Promise<void> => {
+        if (from === this && dp === this.coordinator?.options.dp) {
+            const v = await this.coordinator?.getString();
+            if (v) {
+                const ident = this.config.ident ? this.config.ident.split('.').slice(0, 3).concat([v]).join('.') : '';
+                if (ident && ident !== this.currentPlayer) {
+                    await this.updateCurrentPlayer(ident, '');
+                }
+            }
+        }
         await this.update();
     };
     async reset(): Promise<void> {
@@ -776,6 +857,8 @@ export class PageMedia extends PageMenu {
 
     async delete(): Promise<void> {
         await super.delete();
+        await this.coordinator?.delete();
+        this.coordinator = undefined;
         for (const item of this.items) {
             if (item.logoItem) {
                 await item.logoItem.delete();

@@ -920,6 +920,7 @@ type PageMediaBaseConfig = {
     pause?: string;
     forward?: string;
     backward?: string;
+    coordinator?: boolean;
 };
 
 type PageGridBaseConfig = {

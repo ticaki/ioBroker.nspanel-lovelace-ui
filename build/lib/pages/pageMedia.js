@@ -70,7 +70,12 @@ class PageMedia extends import_pageMenu.PageMenu {
   artistPos = 0;
   originalName = "";
   playerName = "";
+  /**
+   * The identifier of the current media player.
+   * Alexa ist es this.config.ident - der Pfad zum device
+   */
   currentPlayer;
+  coordinator;
   get logo() {
     var _a;
     return (_a = this.currentItem) == null ? void 0 : _a.logoItem;
@@ -83,7 +88,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 1800;
   }
   async init() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
       const i = await this.createMainItems(this.config, this.enums, this.dpInit);
       i.ident = (_b = this.config.ident) != null ? _b : "";
@@ -91,6 +96,46 @@ class PageMedia extends import_pageMenu.PageMenu {
       const id = (_c = this.config.ident) != null ? _c : "";
       const o = id ? await this.controller.adapter.getForeignObjectAsync(id) : null;
       this.originalName = (o == null ? void 0 : o.common) && ((_d = o.common) == null ? void 0 : _d.name) && (typeof o.common.name === "object" ? o.common.name.de || o.common.name.en : (_e = o == null ? void 0 : o.common) == null ? void 0 : _e.name) || "";
+      const arr = typeof this.config.ident === "string" ? this.config.ident.split(".") : [];
+      switch (arr[0]) {
+        case "alexa2":
+        case "spotify-premium":
+        case "mpd":
+          break;
+        case "sonos":
+          {
+            const dp = arr.length >= 4 ? `${arr.slice(0, 4).join(".")}.coordinator` : "";
+            this.coordinator = new import_data_item.Dataitem(
+              this.adapter,
+              {
+                name: `${this.id}-coordina1tor`,
+                type: "triggered",
+                dp,
+                writeable: false
+              },
+              this,
+              this.basePanel.statesControler
+            );
+            if (!await this.coordinator.isValidAndInit()) {
+              await this.coordinator.delete();
+              this.coordinator = void 0;
+            }
+            this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join(".") : "";
+            const v = await ((_f = this.coordinator) == null ? void 0 : _f.getString());
+            if (v) {
+              const ident = this.config.ident ? this.config.ident.split(".").slice(0, 3).concat([v]).join(".") : "";
+              if (ident && ident !== this.currentPlayer) {
+                await this.updateCurrentPlayer(ident, "");
+              }
+            }
+          }
+          break;
+        default:
+          this.log.warn(
+            `Media page with id ${this.config.ident} is not supported - only alexa2, spotify-premium, mpd, and sonos!`
+          );
+          break;
+      }
     }
     await super.init();
   }
@@ -143,7 +188,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     await super.onVisibilityChange(val);
   }
   async updateCurrentPlayer(dp, name) {
-    var _a;
+    var _a, _b;
     if (this.currentPlayer === dp) {
       return;
     }
@@ -151,6 +196,12 @@ class PageMedia extends import_pageMenu.PageMenu {
     let newOne = false;
     if (index === -1) {
       if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
+        if (!name) {
+          const o = dp ? await this.controller.adapter.getForeignObjectAsync(dp) : null;
+          if ((o == null ? void 0 : o.common) && ((_b = o.common) == null ? void 0 : _b.name)) {
+            name = typeof o.common.name === "object" ? this.adapter.language ? o.common.name[this.adapter.language] || o.common.name.en : o.common.name.en : o.common.name;
+          }
+        }
         const reg = tools.getRegExp(`/^${dp.split(".").join("\\.")}/`) || dp;
         this.items.push(await this.createMainItems(this.config, "", reg));
         index = this.items.length - 1;
@@ -427,7 +478,17 @@ class PageMedia extends import_pageMenu.PageMenu {
       tools.getPayloadArray(message.options)
     );
   }
-  onStateTrigger = async () => {
+  onStateTrigger = async (dp, from) => {
+    var _a, _b;
+    if (from === this && dp === ((_a = this.coordinator) == null ? void 0 : _a.options.dp)) {
+      const v = await ((_b = this.coordinator) == null ? void 0 : _b.getString());
+      if (v) {
+        const ident = this.config.ident ? this.config.ident.split(".").slice(0, 3).concat([v]).join(".") : "";
+        if (ident && ident !== this.currentPlayer) {
+          await this.updateCurrentPlayer(ident, "");
+        }
+      }
+    }
     await this.update();
   };
   async reset() {
@@ -673,7 +734,10 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
   }
   async delete() {
+    var _a;
     await super.delete();
+    await ((_a = this.coordinator) == null ? void 0 : _a.delete());
+    this.coordinator = void 0;
     for (const item of this.items) {
       if (item.logoItem) {
         await item.logoItem.delete();
