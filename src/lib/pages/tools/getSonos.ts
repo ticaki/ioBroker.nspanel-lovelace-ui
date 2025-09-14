@@ -509,6 +509,55 @@ export async function getPageSonos(
             },
         });
     }
+
+    // volume presets
+    /*
+    if (page.media.volumePresets) {
+        gridItem.pageItems.push({
+            role: '',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'volume-source' },
+                        color: await configManager.getIconColor(
+                            page.media.itemsColorOn?.volumePresets,
+                            Color.activated,
+                        ),
+                    },
+                },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.volume$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.volume$/,
+                        dp: '',
+                    },
+                },
+                valueList: {
+                    type: 'const',
+                    constVal: JSON.stringify(page.media.volumePresets || []),
+                },
+
+                headline: {
+                    type: 'const',
+                    constVal: 'volumePresets',
+                },
+            },
+        });
+    }*/
     //tracklist
     if (page.media.deactivateDefaultItems?.trackList !== true) {
         gridItem.pageItems.push({

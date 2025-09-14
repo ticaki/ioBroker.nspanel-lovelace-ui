@@ -604,6 +604,10 @@ export type PageItemBase = {
     setValue1?: string;
     setValue2?: string;
     setValue3?: string;
+    /**
+     * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+     * 
+     */
     valueList?: number;
     valueList2?: number;
     setNavi?: number;

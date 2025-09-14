@@ -401,7 +401,7 @@ export class PageMedia extends PageMenu {
         {
             const suffix = `| ${elapsed}${duration ? `-${duration}` : ''}`;
             const { text, nextPos } = tools.buildScrollingText(title, {
-                maxSize: 37,
+                maxSize: 36,
                 suffix,
                 sep: ' ',
                 pos: this.titelPos,
@@ -418,7 +418,7 @@ export class PageMedia extends PageMenu {
             const scrollText = album + div + artist;
 
             const { text, nextPos } = tools.buildScrollingText(scrollText, {
-                maxSize: 37,
+                maxSize: 36,
                 pos: this.artistPos,
             });
 

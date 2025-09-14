@@ -2516,7 +2516,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     return false;
   }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     const list = {};
     if (entityInSel && entityInSel.value) {
       if (role === "alexa-speaker") {
@@ -2674,6 +2674,25 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             }
           }
         }
+      } else if (["string", "number"].indexOf((_f = entityInSel.value.type) != null ? _f : "") !== -1 && valueList) {
+        list.list = [];
+        list.states = [];
+        const v = await (valueList == null ? void 0 : valueList.getObject());
+        if (v && Array.isArray(v) && v.every((ve) => typeof ve === "string")) {
+          const value = await tools.getValueEntryString(entityInSel);
+          for (let a = 0; a < v.length; a++) {
+            const arr = v[a].split("?");
+            if (arr.length >= 2) {
+              list.list.push(this.library.getTranslation(arr[0]));
+              list.states.push(String(arr[1]));
+              list.value = list.value || (v[a][1] === value ? v[a][0] : list.value);
+            } else {
+              list.list.push(this.library.getTranslation(v[a]));
+              list.states.push(String(a));
+            }
+          }
+        }
+        list.value = await tools.getValueEntryString(entityInSel) || void 0;
       }
     } else {
       list.list = [];
@@ -2681,10 +2700,15 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       const v = await (valueList == null ? void 0 : valueList.getObject());
       if (v && Array.isArray(v) && v.every((ve) => typeof ve === "string")) {
         for (let a = 0; a < v.length; a++) {
-          list.list.push(this.library.getTranslation(v[a]));
-          list.states.push(String(a));
+          const arr = v[a].split("?");
+          if (arr.length >= 2) {
+            list.list.push(this.library.getTranslation(v[a][0]));
+            list.states.push(String(v[a][1]));
+          } else {
+            list.list.push(this.library.getTranslation(v[a]));
+            list.states.push(String(a));
+          }
         }
-        list.value = "";
       }
     }
     return list;

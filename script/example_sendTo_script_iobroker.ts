@@ -1147,6 +1147,20 @@ declare namespace ScriptConfig {
         colorMediaTitle?: RGB;
         speakerList?: string[];
         /**
+         * Optional list of predefined volume presets.
+         * Each entry must be a string formatted as "name?value",
+         * e.g. ["quiet?5", "loud?95"].
+         *
+         * - `name`: Label shown in the UI.
+         * - `value`: Volume level (as stringified number).
+         *  
+         * Notes:
+        * - The effective volume will be clamped to `minValue` and `maxValue`.
+        *   For example, with minValue = 40 and maxValue = 60,
+        *   "loud?100" will result in volume = 60.
+         */
+        volumePresets?: string[];
+        /**
          * List of favorite playlists (whitelist).
          * - If present and non-empty, only the playlists in this list are shown.
          * - If empty or undefined, all available playlists are shown.
@@ -1177,6 +1191,7 @@ declare namespace ScriptConfig {
             reminder?: RGB;
             crossfade?: RGB;
             favoriteList?: RGB;
+            volumePresets?: RGB;
         };
         itemsColorOff?: {
             trackList?: RGB;
@@ -1188,6 +1203,7 @@ declare namespace ScriptConfig {
             reminder?: RGB;
             crossfade?: RGB;
             favoriteList?: RGB;
+            volumePresets?: RGB;
         };
         deactivateDefaultItems?: {
             trackList?: boolean;

@@ -3053,6 +3053,25 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
                 }
+            } else if (['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 && valueList) {
+                list.list = [];
+                list.states = [];
+                const v = await valueList?.getObject();
+                if (v && Array.isArray(v) && v.every(ve => typeof ve === 'string')) {
+                    const value = await tools.getValueEntryString(entityInSel);
+                    for (let a = 0; a < v.length; a++) {
+                        const arr = v[a].split('?');
+                        if (arr.length >= 2) {
+                            list.list.push(this.library.getTranslation(arr[0]));
+                            list.states.push(String(arr[1]));
+                            list.value = list.value || (v[a][1] === value ? v[a][0] : list.value);
+                        } else {
+                            list.list.push(this.library.getTranslation(v[a]));
+                            list.states.push(String(a));
+                        }
+                    }
+                }
+                list.value = (await tools.getValueEntryString(entityInSel)) || undefined;
             }
         } else {
             list.list = [];
@@ -3060,10 +3079,15 @@ export class PageItem extends BaseClassTriggerd {
             const v = await valueList?.getObject();
             if (v && Array.isArray(v) && v.every(ve => typeof ve === 'string')) {
                 for (let a = 0; a < v.length; a++) {
-                    list.list.push(this.library.getTranslation(v[a]));
-                    list.states.push(String(a));
+                    const arr = v[a].split('?');
+                    if (arr.length >= 2) {
+                        list.list.push(this.library.getTranslation(v[a][0]));
+                        list.states.push(String(v[a][1]));
+                    } else {
+                        list.list.push(this.library.getTranslation(v[a]));
+                        list.states.push(String(a));
+                    }
                 }
-                list.value = '';
             }
         }
         return list;

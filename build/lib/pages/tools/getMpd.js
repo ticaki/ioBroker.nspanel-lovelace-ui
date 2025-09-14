@@ -23,7 +23,7 @@ __export(getMpd_exports, {
 module.exports = __toCommonJS(getMpd_exports);
 var import_Color = require("../../const/Color");
 async function getPageMpd(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
   if (justCheck) {
     return { gridItem, messages: ["done"] };
   }
@@ -280,7 +280,51 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
       }
     });
   }
-  if (((_n = page.media.deactivateDefaultItems) == null ? void 0 : _n.crossfade) !== true) {
+  if (page.media.volumePresets) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "volume-source" },
+            color: await configManager.getIconColor(
+              (_n = page.media.itemsColorOn) == null ? void 0 : _n.volumePresets,
+              import_Color.Color.activated
+            )
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "state",
+            role: "level.volume",
+            scale: { min: (_o = page.media.minValue) != null ? _o : 0, max: (_p = page.media.maxValue) != null ? _p : 100 },
+            regexp: /\.volume$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: "",
+            scale: { min: (_q = page.media.minValue) != null ? _q : 0, max: (_r = page.media.maxValue) != null ? _r : 100 },
+            regexp: /\.setvol$/,
+            dp: ""
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.volumePresets || [])
+        },
+        headline: {
+          type: "const",
+          constVal: "volumePresets"
+        }
+      }
+    });
+  }
+  if (((_s = page.media.deactivateDefaultItems) == null ? void 0 : _s.crossfade) !== true) {
     gridItem.pageItems.push({
       role: "",
       type: "number",
@@ -289,11 +333,11 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
         icon: {
           true: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_o = page.media.itemsColorOn) == null ? void 0 : _o.repeat, import_Color.Color.activated)
+            color: await configManager.getIconColor((_t = page.media.itemsColorOn) == null ? void 0 : _t.repeat, import_Color.Color.activated)
           },
           false: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_p = page.media.itemsColorOff) == null ? void 0 : _p.repeat, import_Color.Color.deactivated)
+            color: await configManager.getIconColor((_u = page.media.itemsColorOff) == null ? void 0 : _u.repeat, import_Color.Color.deactivated)
           }
         },
         entity1: {
