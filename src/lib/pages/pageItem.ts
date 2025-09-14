@@ -3081,8 +3081,8 @@ export class PageItem extends BaseClassTriggerd {
                 for (let a = 0; a < v.length; a++) {
                     const arr = v[a].split('?');
                     if (arr.length >= 2) {
-                        list.list.push(this.library.getTranslation(v[a][0]));
-                        list.states.push(String(v[a][1]));
+                        list.list.push(this.library.getTranslation(arr[0]));
+                        list.states.push(String(arr[1]));
                     } else {
                         list.list.push(this.library.getTranslation(v[a]));
                         list.states.push(String(a));
