@@ -26,7 +26,8 @@ export default [
             'templates',
             '.dev-data',
             'script/**/*.ts',
-            'testumgebung/**/*.ts'
+            'testumgebung/**/*.ts',
+            'docs'
         ]
     },
 
