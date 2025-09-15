@@ -1,9 +1,11 @@
 import type { Page } from '../classes/Page';
 import type { AdapterClassDefinition } from '../classes/library';
 import { Color } from '../const/Color';
-import type { CardRole } from '../types/pages';
+import { getStringFromStringOrTranslated } from '../const/tools';
+import { exhaustiveCheck, type CardRole, type PageMenuConfig } from '../types/pages';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import type { PageEntities } from './pageEntities';
+import type { PageMedia } from './pageMedia';
 
 /**
  * Handles the role of a card and returns the corresponding page item data options.
@@ -11,6 +13,8 @@ import type { PageEntities } from './pageEntities';
  * @param adapter - The adapter instance used to interact with the system.
  * @param cardRole - The role of the card to handle. It can be 'AdapterConnection', 'AdapterStopped', or 'AdapterUpdates'.
  * @param [page] - The page instance, required for 'AdapterUpdates' role.
+ * @param _tempArr
+ * @param _options
  * @returns A promise that resolves to an array of page item data options or null if no data is found.
  * @description
  * This function processes different card roles and retrieves the corresponding data items based on the role.
@@ -36,6 +40,7 @@ export async function handleCardRole(
     adapter: AdapterClassDefinition,
     cardRole: CardRole | undefined,
     page?: Page | PageEntities,
+    _options?: PageMenuConfig['options'],
 ): Promise<PageItemDataItemsOptions[] | null> {
     if (!cardRole) {
         return null;
@@ -121,73 +126,175 @@ export async function handleCardRole(
             }
             return result;
         }
-        case 'AdapterUpdates': {
-            if (
-                !page ||
-                page.card !== 'cardEntities' ||
-                !('items' in page) ||
-                !page.items ||
-                page.items.card !== 'cardEntities'
-            ) {
-                return null;
-            }
-            if (!page.items.data.list) {
-                return null;
-            }
-            const value = (await page.items.data.list.getObject()) as any;
-            if (value && page.items.data.list.options.type !== 'const') {
-                const dp = page.items.data.list.options.dp;
-                const result = [];
-                for (const a in value) {
-                    const pi: PageItemDataItemsOptions = {
-                        role: '',
-                        type: 'text',
-                        dpInit: '',
+        case 'AdapterUpdates':
+            {
+                if (
+                    !page ||
+                    page.card !== 'cardEntities' ||
+                    !('items' in page) ||
+                    !page.items ||
+                    page.items.card !== 'cardEntities'
+                ) {
+                    return null;
+                }
+                if (!page.items.data.list) {
+                    return null;
+                }
+                const value = (await page.items.data.list.getObject()) as any;
+                if (value && page.items.data.list.options.type !== 'const') {
+                    const dp = page.items.data.list.options.dp;
+                    const result = [];
+                    for (const a in value) {
+                        const pi: PageItemDataItemsOptions = {
+                            role: '',
+                            type: 'text',
+                            dpInit: '',
 
-                        data: {
-                            icon: {
-                                true: {
-                                    value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                    color: { type: 'const', constVal: Color.good },
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: { type: 'const', constVal: 'checkbox-intermediate' },
+                                        color: { type: 'const', constVal: Color.good },
+                                    },
+                                    false: {
+                                        value: { type: 'const', constVal: 'checkbox-intermediate' },
+                                        color: { type: 'const', constVal: Color.bad },
+                                    },
                                 },
-                                false: {
-                                    value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                    color: { type: 'const', constVal: Color.bad },
+                                entity1: {
+                                    value: {
+                                        type: 'triggered',
+                                        dp: dp,
+                                        read: `return !!val`,
+                                    },
                                 },
-                            },
-                            entity1: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: dp,
-                                    read: `return !!val`,
+                                text: {
+                                    true: {
+                                        type: 'const',
+                                        constVal: a,
+                                    },
+                                    false: undefined,
                                 },
-                            },
-                            text: {
-                                true: {
-                                    type: 'const',
-                                    constVal: a,
-                                },
-                                false: undefined,
-                            },
-                            text1: {
-                                true: {
-                                    type: 'state',
-                                    dp: dp,
-                                    read: `if (!val || !val.startsWith('{') || !val.endsWith('}')) return '';
+                                text1: {
+                                    true: {
+                                        type: 'state',
+                                        dp: dp,
+                                        read: `if (!val || !val.startsWith('{') || !val.endsWith('}')) return '';
                                     const v = JSON.parse(val)
                                     return (
                                         v['${a}'] ? ('v' + v['${a}'].installedVersion.trim() + "\\r\\nv" + (v['${a}'].availableVersion.trim() + '  ' )) : 'done'
                                     );`,
-                                },
+                                    },
 
-                                false: undefined,
+                                    false: undefined,
+                                },
+                            },
+                        };
+                        result.push(pi);
+                    }
+                    return result;
+                }
+            }
+            break;
+        case 'SonosSpeaker':
+            {
+                let result: PageItemDataItemsOptions[] | null = null;
+                const _tempArr = _options?.cardRoleList;
+                //const ident = _options?.indentifier ?? '';
+                if (!((!_tempArr || Array.isArray(_tempArr)) && page && page.directParentPage)) {
+                    return null;
+                }
+                /*if (ident || !(typeof ident === 'string')) {
+                    adapter.log.error(` SonosSpeaker cardRole needs a string dpInit in page.parent.dpInit`);
+                    return null;
+                }*/
+                if (
+                    page.directParentPage.card !== 'cardMedia' ||
+                    (page.directParentPage as PageMedia).currentItem == null
+                ) {
+                    break;
+                }
+                const identifier = `${(page.directParentPage as PageMedia).currentItem?.ident}`;
+                const searchPath = identifier.split('.').slice(0, 3).join('.');
+                const view = await adapter.getObjectViewAsync('system', 'channel', {
+                    startkey: `${searchPath}.`,
+                    endkey: `${searchPath}${String.fromCharCode(0xff_fd)}`,
+                });
+                const selects: string[] = [];
+                if (view && view.rows && view.rows.length !== 0) {
+                    if (_tempArr && _tempArr.length > 0) {
+                        view.rows
+                            .filter(v =>
+                                _tempArr.includes(getStringFromStringOrTranslated(adapter, v.value.common.name)),
+                            )
+                            .forEach(v => selects.push(getStringFromStringOrTranslated(adapter, v.value.common.name)));
+                    } else {
+                        view.rows.forEach(v =>
+                            selects.push(getStringFromStringOrTranslated(adapter, v.value.common.name)),
+                        );
+                    }
+                }
+                let arr =
+                    _tempArr && _tempArr.length > 0
+                        ? selects.filter(t => _tempArr.find(s => s === t) == null)
+                        : selects;
+                arr = arr.concat(_tempArr ?? []);
+                arr = arr.filter((item, pos) => item && arr.indexOf(item) === pos); // make unique
+                arr = arr.sort((a, b) => a.localeCompare(b));
+
+                result = [];
+                for (let i = 0; i < arr.length; i++) {
+                    const val = arr[i].trim();
+                    if (!val) {
+                        continue;
+                    }
+                    result.push({
+                        role: 'writeTargetByValue',
+                        type: 'button',
+                        dpInit: '',
+                        data: {
+                            entity1: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `${identifier}.members`,
+                                    read: `
+                                            if (typeof val === 'string') {                                                    
+                                                const t = val.split(',').map(s => s.trim());
+                                                return t.includes('${val}');
+                                            };
+                                            return false;`,
+                                },
+                            },
+                            text: { true: { type: 'const', constVal: val } },
+                            icon: {
+                                true: {
+                                    value: { type: 'const', constVal: 'speaker' },
+                                    color: { type: 'const', constVal: Color.on },
+                                },
+                                false: {
+                                    value: { type: 'const', constVal: 'speaker' },
+                                    color: { type: 'const', constVal: Color.off },
+                                },
+                            },
+                            setValue1: {
+                                type: 'state',
+                                dp: `${identifier}.add_to_group`,
+                                write: `if (val) return '${val}'; else return '';`,
+                            },
+                            setValue2: {
+                                type: 'state',
+                                dp: `${identifier}.remove_from_group`,
+                                write: `if (val) return '${val}'; else return '';`,
                             },
                         },
-                    };
-                    result.push(pi);
+                    });
                 }
                 return result;
             }
+            break;
+        default: {
+            exhaustiveCheck(cardRole);
+            return null;
         }
     }
     return null;

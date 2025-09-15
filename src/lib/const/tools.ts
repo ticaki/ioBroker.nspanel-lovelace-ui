@@ -1496,4 +1496,21 @@ export function formatHMS(ms: number): string {
     return `${minutesStr}:${secondsStr}`;
 }
 
+export function getStringFromStringOrTranslated(
+    adapter: ioBroker.Adapter,
+    input: ioBroker.StringOrTranslated,
+    def?: string,
+): string {
+    if (typeof input === 'string') {
+        return input;
+    }
+    if (adapter.language && input[adapter.language]) {
+        return input[adapter.language] as string;
+    }
+    if (input.en) {
+        return input.en;
+    }
+    return def ?? ``;
+}
+
 export default formatHMS;

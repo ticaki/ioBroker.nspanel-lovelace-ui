@@ -34,7 +34,7 @@ module.exports = __toCommonJS(getSonos_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
 async function getPageSonos(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
   const viewStr = arr.join(".");
@@ -312,51 +312,69 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
-  if (!((_l = page.media.deactivateDefaultItems) == null ? void 0 : _l.speakerList) && Array.isArray(page.media.speakerList) && page.media.speakerList.length > 1) {
-    gridItem.pageItems.push({
-      role: "selectGrid",
-      type: "button",
-      data: {
-        entity1: {
-          value: {
-            mode: "auto",
-            type: "triggered",
-            regexp: /.?\.members$/,
-            dp: "",
-            read: `
+  if (!((_l = page.media.deactivateDefaultItems) == null ? void 0 : _l.speakerList)) {
+    const selects = [];
+    let currentName = "";
+    const list = page.media.speakerList;
+    if (devices && devices.rows && devices.rows.length !== 0) {
+      if (list && list.length > 0) {
+        devices.rows.filter((v) => list.includes(tools.getStringFromStringOrTranslated(adapter, v.value.common.name))).forEach((v) => selects.push(tools.getStringFromStringOrTranslated(adapter, v.value.common.name)));
+      } else {
+        devices.rows.forEach(
+          (v) => selects.push(tools.getStringFromStringOrTranslated(adapter, v.value.common.name))
+        );
+      }
+      currentName = devices.rows.filter((v) => v.id === str).map((v) => tools.getStringFromStringOrTranslated(adapter, v.value.common.name))[0] || "";
+    }
+    let arr2 = list && list.length > 0 ? selects.filter((t) => list.find((s) => s === t) == null) : selects;
+    arr2 = arr2.concat(list != null ? list : []);
+    arr2 = [...new Set(arr2.filter(Boolean))];
+    if (arr2.length > 1) {
+      gridItem.pageItems.push({
+        role: "SonosSpeaker",
+        type: "button",
+        data: {
+          entity1: {
+            value: {
+              mode: "auto",
+              type: "triggered",
+              regexp: /.?\.members$/,
+              dp: "",
+              read: `
                         let data = val;
                         if (typeof val === 'string') {
                         const t = val.split(',').map(i => i.trim());
-                            return t.length < 2 || t[0] !==('${page.media.speakerList[0]}');
+                            return t.length < 2 || t.includes('${currentName}');
                         };
                         return true;`
-          }
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "speaker-multiple" },
-            color: await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.speakerList, import_Color.Color.good)
+            }
           },
-          false: {
-            value: { type: "const", constVal: "speaker-multiple" },
-            color: await configManager.getIconColor((_n = page.media.itemsColorOff) == null ? void 0 : _n.speakerList, import_Color.Color.bad)
-          }
-        },
-        /**
-         * Für role selectGrid ist entity3 die Liste der möglichen Werte
-         */
-        entity3: {
-          value: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "speaker-multiple" },
+              color: await configManager.getIconColor((_m = page.media.itemsColorOn) == null ? void 0 : _m.speakerList, import_Color.Color.good)
+            },
+            false: {
+              value: { type: "const", constVal: "speaker-multiple" },
+              color: await configManager.getIconColor((_n = page.media.itemsColorOff) == null ? void 0 : _n.speakerList, import_Color.Color.bad)
+            }
+          },
+          /**
+           * Für role selectGrid ist entity3 die Liste der möglichen Werte
+           */
+          entity3: {
+            value: {
+              type: "const",
+              constVal: JSON.stringify(page.media.speakerList || [])
+            }
+          },
+          enabled: {
             type: "const",
-            constVal: JSON.stringify(page.media.speakerList || [])
+            constVal: true
           }
-        },
-        enabled: {
-          type: "const",
-          constVal: true
         }
-      }
-    });
+      });
+    }
   }
   if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.favoriteList)) {
     gridItem.pageItems.push({
@@ -469,7 +487,97 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
-  if (((_v = page.media.deactivateDefaultItems) == null ? void 0 : _v.trackList) !== true) {
+  if (page.media.volumePresets) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "input_sel",
+      dpInit: "",
+      filter: "volume",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "volume-source" },
+            color: await configManager.getIconColor(
+              (_v = page.media.itemsColorOn) == null ? void 0 : _v.volumePresets,
+              import_Color.Color.activated
+            )
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume"],
+            scale: { min: (_w = page.media.minValue) != null ? _w : 0, max: (_x = page.media.maxValue) != null ? _x : 100 },
+            regexp: /\.volume$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume"],
+            scale: { min: (_y = page.media.minValue) != null ? _y : 0, max: (_z = page.media.maxValue) != null ? _z : 100 },
+            regexp: /\.volume$/,
+            dp: ""
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.volumePresets || [])
+        },
+        headline: {
+          type: "const",
+          constVal: "volumePresets"
+        }
+      }
+    });
+  }
+  if (page.media.volumePresets) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "input_sel",
+      dpInit: "",
+      filter: "volumeGroup",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "volume-source" },
+            color: await configManager.getIconColor(
+              (_A = page.media.itemsColorOn) == null ? void 0 : _A.volumePresets,
+              import_Color.Color.activated
+            )
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume.group"],
+            scale: { min: (_B = page.media.minValue) != null ? _B : 0, max: (_C = page.media.maxValue) != null ? _C : 100 },
+            regexp: /\.group_volume$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume.group"],
+            scale: { min: (_D = page.media.minValue) != null ? _D : 0, max: (_E = page.media.maxValue) != null ? _E : 100 },
+            regexp: /\.group_volume$/,
+            dp: ""
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.volumePresets || [])
+        },
+        headline: {
+          type: "const",
+          constVal: "volumePresets"
+        }
+      }
+    });
+  }
+  if (((_F = page.media.deactivateDefaultItems) == null ? void 0 : _F.trackList) !== true) {
     gridItem.pageItems.push({
       role: "spotify-tracklist",
       type: "input_sel",
@@ -478,7 +586,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "animation-play-outline" },
-            color: await configManager.getIconColor((_w = page.media.itemsColorOn) == null ? void 0 : _w.playList, import_Color.Color.activated)
+            color: await configManager.getIconColor((_G = page.media.itemsColorOn) == null ? void 0 : _G.playList, import_Color.Color.activated)
           }
         },
         entityInSel: {
@@ -524,9 +632,9 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
-  if (!((_x = page.media.deactivateDefaultItems) == null ? void 0 : _x.repeat)) {
-    const tempOn = await configManager.getIconColor((_y = page.media.itemsColorOn) == null ? void 0 : _y.repeat);
-    const tempOff = await configManager.getIconColor((_z = page.media.itemsColorOff) == null ? void 0 : _z.repeat);
+  if (!((_H = page.media.deactivateDefaultItems) == null ? void 0 : _H.repeat)) {
+    const tempOn = await configManager.getIconColor((_I = page.media.itemsColorOn) == null ? void 0 : _I.repeat);
+    const tempOff = await configManager.getIconColor((_J = page.media.itemsColorOff) == null ? void 0 : _J.repeat);
     let colorOn;
     let colorOff;
     if (tempOn && tempOn.type === "const") {
@@ -614,7 +722,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
-  if (!((_A = page.media.deactivateDefaultItems) == null ? void 0 : _A.crossfade)) {
+  if (!((_K = page.media.deactivateDefaultItems) == null ? void 0 : _K.crossfade)) {
     gridItem.pageItems.push({
       role: "",
       type: "button",
@@ -623,11 +731,11 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_B = page.media.itemsColorOn) == null ? void 0 : _B.crossfade, import_Color.Color.activated)
+            color: await configManager.getIconColor((_L = page.media.itemsColorOn) == null ? void 0 : _L.crossfade, import_Color.Color.activated)
           },
           false: {
             value: { type: "const", constVal: "shuffle" },
-            color: await configManager.getIconColor((_C = page.media.itemsColorOff) == null ? void 0 : _C.crossfade, import_Color.Color.deactivated)
+            color: await configManager.getIconColor((_M = page.media.itemsColorOff) == null ? void 0 : _M.crossfade, import_Color.Color.deactivated)
           }
         },
         entity1: {

@@ -10,16 +10,9 @@ import * as pages from '../types/pages';
 import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
 import type { PageInterface } from '../classes/PageInterface';
-import type { BaseClassTriggerd } from '../classes/baseClassPage';
+import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { Color, type RGB } from '../const/Color';
-
-export type ScreensaverConfigType = {
-    momentLocale: string;
-    locale: string; //Intl.DateTimeFormat;
-    iconBig1: boolean;
-    iconBig2: boolean;
-};
 
 export class Screensaver extends Page {
     items: undefined;
@@ -60,7 +53,7 @@ export class Screensaver extends Page {
                 break;
             }
         }
-        config.alwaysOn = 'none';
+        options.alwaysOn = 'none';
         super(config, options);
         this.screensaverIndicatorButtons = options.config.screensaverIndicatorButtons ?? false;
         this.screensaverSwipe = options.config.screensaverSwipe ?? false;
@@ -401,7 +394,7 @@ export class Screensaver extends Page {
      * @param _dp - the dp that triggered the state
      * @param from - the class that triggered the state
      */
-    onStateTrigger = async (_dp: string, from: BaseClassTriggerd): Promise<void> => {
+    onStateTrigger = async (_dp: string, from: BaseTriggeredPage): Promise<void> => {
         const config = this.config;
         if (
             !config ||

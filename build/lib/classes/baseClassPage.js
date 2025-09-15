@@ -19,14 +19,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var baseClassPage_exports = {};
 __export(baseClassPage_exports, {
   BaseClassPage: () => BaseClassPage,
-  BaseClassTriggerd: () => BaseClassTriggerd
+  BaseTriggeredPage: () => BaseTriggeredPage
 });
 module.exports = __toCommonJS(baseClassPage_exports);
 var import_library = require("./library");
 var import_definition = require("../const/definition");
-class BaseClassTriggerd extends import_library.BaseClass {
+class BaseTriggeredPage extends import_library.BaseClass {
   updateTimeout;
-  waitForTimeout;
   doUpdate = true;
   minUpdateInterval;
   visibility = false;
@@ -55,14 +54,13 @@ class BaseClassTriggerd extends import_library.BaseClass {
   resetLastMessage() {
     this.lastMessage = "";
   }
-  constructor(card) {
-    var _a;
+  constructor(card, alwaysOn = "none") {
     super(card.adapter, card.name);
     this.minUpdateInterval = 400;
     if (!this.adapter.controller) {
       throw new Error("No controller! bye bye");
     }
-    this.alwaysOn = (_a = card.alwaysOn) != null ? _a : "none";
+    this.alwaysOn = alwaysOn;
     this.basePanel = card.panel;
     this._currentPanel = card.panel;
   }
@@ -82,7 +80,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   async reset() {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
-    var _a;
+    var _a, _b;
     if (this.unload || this.adapter.unload) {
       return false;
     }
@@ -91,9 +89,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
       return false;
     }
     if (this.sleep && !this.neverDeactivateTrigger) {
-      return false;
-    }
-    if (this.waitForTimeout) {
       return false;
     }
     if (this.blockUpdateUntilTime) {
@@ -121,34 +116,45 @@ class BaseClassTriggerd extends import_library.BaseClass {
       this.doUpdate = true;
       return false;
     }
-    this.waitForTimeout = this.adapter.setTimeout(async () => {
-      this.waitForTimeout = void 0;
-      await this.onStateTrigger(dp, from);
-      if (this.alwaysOnState) {
-        this.adapter.clearTimeout(this.alwaysOnState);
-      }
-      if (this.alwaysOn === "action") {
-        if (this.unload || this.adapter.unload) {
-          return;
-        }
-        this.alwaysOnState = this.adapter.setTimeout(
-          () => {
-            this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
-          },
-          this.basePanel.timeout * 1e3 || 5e3
-        );
-      }
-    }, 20);
     this.updateTimeout = this.adapter.setTimeout(async () => {
       if (this.unload || this.adapter.unload) {
         return;
       }
       this.updateTimeout = void 0;
       if (this.doUpdate) {
+        if (this.alwaysOnState) {
+          this.adapter.clearTimeout(this.alwaysOnState);
+        }
+        if (this.alwaysOn === "action") {
+          if (this.unload || this.adapter.unload) {
+            return;
+          }
+          this.alwaysOnState = this.adapter.setTimeout(
+            () => {
+              this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+            },
+            this.basePanel.timeout * 1e3 || 5e3
+          );
+        }
         this.doUpdate = false;
         await this.onStateTrigger(dp, from);
       }
-    }, this.minUpdateInterval);
+    }, (_b = this.minUpdateInterval) != null ? _b : 50);
+    if (this.alwaysOnState) {
+      this.adapter.clearTimeout(this.alwaysOnState);
+    }
+    if (this.alwaysOn === "action") {
+      if (this.unload || this.adapter.unload) {
+        return false;
+      }
+      this.alwaysOnState = this.adapter.setTimeout(
+        () => {
+          this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+        },
+        this.basePanel.timeout * 1e3 || 5e3
+      );
+    }
+    await this.onStateTrigger(dp, from);
     return true;
   };
   async onStateTrigger(_dp, _from) {
@@ -166,9 +172,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
     await super.delete();
     await this.setVisibility(false);
     this.parent = void 0;
-    if (this.waitForTimeout) {
-      this.adapter.clearTimeout(this.waitForTimeout);
-    }
     if (this.alwaysOnState) {
       this.adapter.clearTimeout(this.alwaysOnState);
     }
@@ -250,11 +253,11 @@ class BaseClassTriggerd extends import_library.BaseClass {
     );
   }
 }
-class BaseClassPage extends BaseClassTriggerd {
+class BaseClassPage extends BaseTriggeredPage {
   pageItemConfig;
   pageItems;
-  constructor(card, pageItemsConfig) {
-    super(card);
+  constructor(card, alwaysOn = "none", pageItemsConfig) {
+    super(card, alwaysOn);
     this.pageItemConfig = pageItemsConfig;
   }
   async getEnabledPageItems() {
@@ -276,6 +279,6 @@ class BaseClassPage extends BaseClassTriggerd {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BaseClassPage,
-  BaseClassTriggerd
+  BaseTriggeredPage
 });
 //# sourceMappingURL=baseClassPage.js.map

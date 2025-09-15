@@ -22,7 +22,10 @@ __export(data_collection_functions_exports, {
 });
 module.exports = __toCommonJS(data_collection_functions_exports);
 var import_Color = require("../const/Color");
-async function handleCardRole(adapter, cardRole, page) {
+var import_tools = require("../const/tools");
+var import_pages = require("../types/pages");
+async function handleCardRole(adapter, cardRole, page, _options) {
+  var _a;
   if (!cardRole) {
     return null;
   }
@@ -97,65 +100,153 @@ async function handleCardRole(adapter, cardRole, page) {
       }
       return result;
     }
-    case "AdapterUpdates": {
-      if (!page || page.card !== "cardEntities" || !("items" in page) || !page.items || page.items.card !== "cardEntities") {
-        return null;
-      }
-      if (!page.items.data.list) {
-        return null;
-      }
-      const value = await page.items.data.list.getObject();
-      if (value && page.items.data.list.options.type !== "const") {
-        const dp = page.items.data.list.options.dp;
-        const result = [];
-        for (const a in value) {
-          const pi = {
-            role: "",
-            type: "text",
-            dpInit: "",
-            data: {
-              icon: {
-                true: {
-                  value: { type: "const", constVal: "checkbox-intermediate" },
-                  color: { type: "const", constVal: import_Color.Color.good }
+    case "AdapterUpdates":
+      {
+        if (!page || page.card !== "cardEntities" || !("items" in page) || !page.items || page.items.card !== "cardEntities") {
+          return null;
+        }
+        if (!page.items.data.list) {
+          return null;
+        }
+        const value = await page.items.data.list.getObject();
+        if (value && page.items.data.list.options.type !== "const") {
+          const dp = page.items.data.list.options.dp;
+          const result = [];
+          for (const a in value) {
+            const pi = {
+              role: "",
+              type: "text",
+              dpInit: "",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: "checkbox-intermediate" },
+                    color: { type: "const", constVal: import_Color.Color.good }
+                  },
+                  false: {
+                    value: { type: "const", constVal: "checkbox-intermediate" },
+                    color: { type: "const", constVal: import_Color.Color.bad }
+                  }
                 },
-                false: {
-                  value: { type: "const", constVal: "checkbox-intermediate" },
-                  color: { type: "const", constVal: import_Color.Color.bad }
-                }
-              },
-              entity1: {
-                value: {
-                  type: "triggered",
-                  dp,
-                  read: `return !!val`
-                }
-              },
-              text: {
-                true: {
-                  type: "const",
-                  constVal: a
+                entity1: {
+                  value: {
+                    type: "triggered",
+                    dp,
+                    read: `return !!val`
+                  }
                 },
-                false: void 0
-              },
-              text1: {
-                true: {
-                  type: "state",
-                  dp,
-                  read: `if (!val || !val.startsWith('{') || !val.endsWith('}')) return '';
+                text: {
+                  true: {
+                    type: "const",
+                    constVal: a
+                  },
+                  false: void 0
+                },
+                text1: {
+                  true: {
+                    type: "state",
+                    dp,
+                    read: `if (!val || !val.startsWith('{') || !val.endsWith('}')) return '';
                                     const v = JSON.parse(val)
                                     return (
                                         v['${a}'] ? ('v' + v['${a}'].installedVersion.trim() + "\\r\\nv" + (v['${a}'].availableVersion.trim() + '  ' )) : 'done'
                                     );`
+                  },
+                  false: void 0
+                }
+              }
+            };
+            result.push(pi);
+          }
+          return result;
+        }
+      }
+      break;
+    case "SonosSpeaker":
+      {
+        let result = null;
+        const _tempArr = _options == null ? void 0 : _options.cardRoleList;
+        if (!((!_tempArr || Array.isArray(_tempArr)) && page && page.directParentPage)) {
+          return null;
+        }
+        if (page.directParentPage.card !== "cardMedia" || page.directParentPage.currentItem == null) {
+          break;
+        }
+        const identifier = `${(_a = page.directParentPage.currentItem) == null ? void 0 : _a.ident}`;
+        const searchPath = identifier.split(".").slice(0, 3).join(".");
+        const view = await adapter.getObjectViewAsync("system", "channel", {
+          startkey: `${searchPath}.`,
+          endkey: `${searchPath}${String.fromCharCode(65533)}`
+        });
+        const selects = [];
+        if (view && view.rows && view.rows.length !== 0) {
+          if (_tempArr && _tempArr.length > 0) {
+            view.rows.filter(
+              (v) => _tempArr.includes((0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name))
+            ).forEach((v) => selects.push((0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name)));
+          } else {
+            view.rows.forEach(
+              (v) => selects.push((0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name))
+            );
+          }
+        }
+        let arr = _tempArr && _tempArr.length > 0 ? selects.filter((t) => _tempArr.find((s) => s === t) == null) : selects;
+        arr = arr.concat(_tempArr != null ? _tempArr : []);
+        arr = arr.filter((item, pos) => item && arr.indexOf(item) === pos);
+        arr = arr.sort((a, b) => a.localeCompare(b));
+        result = [];
+        for (let i = 0; i < arr.length; i++) {
+          const val = arr[i].trim();
+          if (!val) {
+            continue;
+          }
+          result.push({
+            role: "writeTargetByValue",
+            type: "button",
+            dpInit: "",
+            data: {
+              entity1: {
+                value: {
+                  type: "triggered",
+                  dp: `${identifier}.members`,
+                  read: `
+                                            if (typeof val === 'string') {                                                    
+                                                const t = val.split(',').map(s => s.trim());
+                                                return t.includes('${val}');
+                                            };
+                                            return false;`
+                }
+              },
+              text: { true: { type: "const", constVal: val } },
+              icon: {
+                true: {
+                  value: { type: "const", constVal: "speaker" },
+                  color: { type: "const", constVal: import_Color.Color.on }
                 },
-                false: void 0
+                false: {
+                  value: { type: "const", constVal: "speaker" },
+                  color: { type: "const", constVal: import_Color.Color.off }
+                }
+              },
+              setValue1: {
+                type: "state",
+                dp: `${identifier}.add_to_group`,
+                write: `if (val) return '${val}'; else return '';`
+              },
+              setValue2: {
+                type: "state",
+                dp: `${identifier}.remove_from_group`,
+                write: `if (val) return '${val}'; else return '';`
               }
             }
-          };
-          result.push(pi);
+          });
         }
         return result;
       }
+      break;
+    default: {
+      (0, import_pages.exhaustiveCheck)(cardRole);
+      return null;
     }
   }
   return null;

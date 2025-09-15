@@ -14,11 +14,11 @@ import {
     type PageBaseConfig,
 } from '../types/pages';
 import type { Screensaver } from './screensaver';
-import { BaseClassTriggerd } from '../classes/baseClassPage';
+import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
-export class PageItem extends BaseClassTriggerd {
+export class PageItem extends BaseTriggeredPage {
     defaultOnColor = Color.White;
     defaultOffColor = Color.Blue;
     config: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined;
@@ -34,7 +34,12 @@ export class PageItem extends BaseClassTriggerd {
         config: Omit<PageItemInterface, 'pageItemsConfig' | 'parent'> & { parent: Page },
         options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
     ) {
-        super({ ...config });
+        super({
+            name: config.name,
+            adapter: config.adapter,
+            panel: config.panel,
+            dpInit: config.dpInit,
+        });
         this.id = config.id;
         this.config = options;
         if (!config || !config.parent) {
@@ -1871,7 +1876,10 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         break;
                     }
-                    if (entry.role === 'selectGrid') {
+                    if (entry.role === 'SonosSpeaker') {
+                        if (!this.parent || !(this.parent.config?.card === 'cardMedia')) {
+                            break;
+                        }
                         if (this.parent.directChildPage) {
                             this.log.debug(
                                 `Button with role:selectGrid id:${this.id} show Page:${this.parent.directChildPage.id}`,
@@ -1879,20 +1887,37 @@ export class PageItem extends BaseClassTriggerd {
                             await this.parent.basePanel.setActivePage(this.parent.directChildPage);
                         } else if (this.parent.config) {
                             this.log.debug(`Create temp page for Button with role:selectGrid id:${this.id}`);
+
+                            const list = await entry.data.entity3?.value?.getObject();
+
                             const tempConfig: PageInterface = {
                                 id: `temp253451_${this.parent.id}`,
                                 name: `sub_${this.parent.name}`,
                                 adapter: this.adapter,
                                 panel: this.parent.currentPanel,
-                                card: 'cardGrid2',
+                                card:
+                                    list == null ||
+                                    !Array.isArray(list) ||
+                                    list.length == 0 ||
+                                    (list.length > 4 && list.length <= 6) ||
+                                    (list.length > 8 && list.length <= 12)
+                                        ? 'cardGrid'
+                                        : list.length <= 4
+                                          ? 'cardGrid3'
+                                          : 'cardGrid2',
                             };
+
                             const pageConfig: PageBaseConfig = {
                                 uniqueID: `temp253451_${this.parent.id}`,
-                                alwaysOn: 'none',
+                                alwaysOn: this.parent.alwaysOn,
                                 items: undefined,
-                                dpInit: this.parent.dpInit,
+                                dpInit: this.parent.config.ident, // important a string not regexp
                                 config: {
                                     card: 'cardGrid2',
+                                    cardRole: entry.role,
+                                    options: {
+                                        cardRoleList: list as string[],
+                                    },
                                     data: {
                                         headline: {
                                             type: 'const',
@@ -1902,66 +1927,7 @@ export class PageItem extends BaseClassTriggerd {
                                 },
                                 pageItems: [],
                             };
-                            const list = await entry.data.entity3?.value?.getObject();
-                            if (!list || !Array.isArray(list) || list.length <= 1) {
-                                break;
-                            }
-                            for (let i = 0; i < list.length; i++) {
-                                const val = list[i].trim();
-                                if (!val) {
-                                    continue;
-                                }
-                                pageConfig.pageItems.push({
-                                    role: 'writeTargetByValue',
-                                    type: 'button',
-                                    dpInit: this.parent.dpInit,
-                                    data: {
-                                        entity1: {
-                                            value: {
-                                                mode: 'auto',
-                                                type: 'triggered',
-                                                regexp: /.?\.members$/,
-                                                dp: '',
-                                                read: `
-                                                    if (typeof val === 'string') {                                                    
-                                                        const t = val.split(',').map(s => s.trim());
-                                                        return t.includes('${val}');
-                                                    };
-                                                    return false;`,
-                                            },
-                                        },
-                                        text: { true: { type: 'const', constVal: val } },
-                                        icon: {
-                                            true: {
-                                                value: { type: 'const', constVal: 'speaker' },
-                                                color: { type: 'const', constVal: Color.on },
-                                            },
-                                            false: {
-                                                value: { type: 'const', constVal: 'speaker' },
-                                                color: { type: 'const', constVal: Color.off },
-                                            },
-                                        },
-                                        setValue1: {
-                                            mode: 'auto',
-                                            type: 'state',
-                                            commonType: 'string',
-                                            dp: '',
-                                            writeable: true,
-                                            regexp: /.?\.add_to_group$/,
-                                            write: `if (val) return '${val}'; else return '';`,
-                                        },
-                                        setValue2: {
-                                            mode: 'auto',
-                                            type: 'state',
-                                            commonType: 'string',
-                                            dp: '',
-                                            writeable: true,
-                                            regexp: /.?\.remove_from_group$/,
-                                            write: `if (val) return '${val}'; else return '';`,
-                                        },
-                                    },
-                                });
-                            }
+
                             this.parent.directChildPage = this.parent.basePanel.newPage(tempConfig, pageConfig);
                             if (this.parent.directChildPage) {
                                 this.parent.directChildPage.directParentPage = this.parent;
@@ -2642,7 +2608,7 @@ export class PageItem extends BaseClassTriggerd {
         }
         return true;
     }
-    protected async onStateTrigger(id: string = '', from?: BaseClassTriggerd): Promise<void> {
+    protected async onStateTrigger(id: string = '', from?: BaseTriggeredPage): Promise<void> {
         if (this.lastPopupType) {
             if (this.lastPopupType === 'popupThermo') {
                 await this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null);
@@ -3102,6 +3068,25 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
                 }
+            } else if (['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 && valueList) {
+                list.list = [];
+                list.states = [];
+                const v = await valueList?.getObject();
+                if (v && Array.isArray(v) && v.every(ve => typeof ve === 'string')) {
+                    const value = await tools.getValueEntryString(entityInSel);
+                    for (let a = 0; a < v.length; a++) {
+                        const arr = v[a].split('?');
+                        if (arr.length >= 2) {
+                            list.list.push(this.library.getTranslation(arr[0]));
+                            list.states.push(String(arr[1]));
+                            list.value = list.value || (v[a][1] === value ? v[a][0] : list.value);
+                        } else {
+                            list.list.push(this.library.getTranslation(v[a]));
+                            list.states.push(String(a));
+                        }
+                    }
+                }
+                list.value = (await tools.getValueEntryString(entityInSel)) || undefined;
             }
         } else {
             list.list = [];
@@ -3109,10 +3094,15 @@ export class PageItem extends BaseClassTriggerd {
             const v = await valueList?.getObject();
             if (v && Array.isArray(v) && v.every(ve => typeof ve === 'string')) {
                 for (let a = 0; a < v.length; a++) {
-                    list.list.push(this.library.getTranslation(v[a]));
-                    list.states.push(String(a));
+                    const arr = v[a].split('?');
+                    if (arr.length >= 2) {
+                        list.list.push(this.library.getTranslation(arr[0]));
+                        list.states.push(String(arr[1]));
+                    } else {
+                        list.list.push(this.library.getTranslation(v[a]));
+                        list.states.push(String(a));
+                    }
                 }
-                list.value = '';
             }
         }
         return list;

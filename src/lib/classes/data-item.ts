@@ -1,7 +1,7 @@
 import { Color, type RGB } from '../const/Color';
 import { BaseClass } from './library';
 import type { StatesControler } from '../controller/states-controller';
-import type { BaseClassTriggerd } from './baseClassPage';
+import type { BaseTriggeredPage } from './baseClassPage';
 
 import * as NSPanel from '../types/types';
 
@@ -18,7 +18,7 @@ export class Dataitem extends BaseClass {
     //private obj: ioBroker.Object | null | undefined;
     stateDB: StatesControler;
     type: ioBroker.CommonType | undefined = undefined;
-    parent: BaseClassTriggerd;
+    parent: BaseTriggeredPage;
     common: Partial<ioBroker.StateCommon> = {};
     private _writeable: boolean = false;
     /**
@@ -26,10 +26,10 @@ export class Dataitem extends BaseClass {
      *
      * @param adapter this of adapter
      * @param options {NSPanel.DataItemsOptions}
-     * @param parent {BaseClassTriggerd}
+     * @param parent {BaseTriggeredPage}
      * @param db {StatesControler}
      */
-    constructor(adapter: any, options: NSPanel.DataItemsOptions, parent: BaseClassTriggerd, db: StatesControler) {
+    constructor(adapter: any, options: NSPanel.DataItemsOptions, parent: BaseTriggeredPage, db: StatesControler) {
         super(adapter, options.name || '');
         this.options = options;
         this.stateDB = db;
@@ -94,7 +94,6 @@ export class Dataitem extends BaseClass {
                 if (!obj || obj.type != 'state' || !obj.common) {
                     this.log.warn(`801: ${this.options.dp} has a invalid state object!`);
                     return false;
-                    //throw new Error(`801: ${this.options.dp} has no state object! Bye Bye`);
                 }
                 this.type = this.type || obj.common.type;
                 this.options.role = obj.common.role;
@@ -176,7 +175,6 @@ export class Dataitem extends BaseClass {
                     } else {
                         state.val = this.options.read(state.val);
                     }
-                    //this.log.debug(JSON.stringify(state.val));
                 } catch (e) {
                     this.log.error(
                         `Read for dp: ${this.options.dp} is invalid! read: ${String(this.options.read)} Error: ${String(e)}`,
@@ -273,8 +271,11 @@ export class Dataitem extends BaseClass {
         const state = await this.getState();
         switch (this.options.type) {
             case 'const':
-                // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                return state && state.val !== null ? String(state.val) : null;
+                return state && state.val !== null
+                    ? typeof state.val === 'object'
+                        ? JSON.stringify(state.val)
+                        : String(state.val)
+                    : null;
             case 'state':
             case 'triggered':
                 if (this.options.substring) {

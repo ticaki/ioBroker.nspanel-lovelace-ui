@@ -2,29 +2,19 @@ import type { PageInterface } from './PageInterface';
 import type { PageItem } from '../pages/pageItem';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import type { Panel } from '../controller/panel';
-import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import { BaseClass } from './library';
 import { genericStateObjects } from '../const/definition';
 import type { Controller } from '../controller/controller';
 import type { IClientPublishOptions } from 'mqtt';
 import type { AlwaysOnMode } from '../types/types';
 
-export interface BaseClassTriggerdInterface {
-    name: string;
-    adapter: NspanelLovelaceUi;
-    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
-    panel: Panel;
-    dpInit?: string | RegExp;
-}
-
 /**
  * Basisklasse für alles das auf Statestriggern soll - also jede card / popup
  * übernimmt auch die Sichtbarkeitssteuerung das triggern wird pausiert wenn nicht sichtbar
  * mit async onStateTrigger(): Promise<void> {} können abgeleitete Klassen auf Triggerereignisse reagieren
  */
-export class BaseClassTriggerd extends BaseClass {
+export class BaseTriggeredPage extends BaseClass {
     private updateTimeout: ioBroker.Timeout | undefined;
-    private waitForTimeout: ioBroker.Timeout | undefined;
     private doUpdate: boolean = true;
     protected minUpdateInterval: number;
     protected visibility: boolean = false;
@@ -36,7 +26,7 @@ export class BaseClassTriggerd extends BaseClass {
     protected filterDuplicateMessages: boolean = true;
     neverDeactivateTrigger: boolean = false;
     sleep: boolean = false;
-    parent: BaseClassTriggerd | undefined = undefined;
+    parent: BaseTriggeredPage | undefined = undefined;
     canBeHidden: boolean = false;
     triggerParent: boolean = false;
     dpInit: string | RegExp = '';
@@ -59,13 +49,13 @@ export class BaseClassTriggerd extends BaseClass {
         this.lastMessage = '';
     }
 
-    constructor(card: BaseClassTriggerdInterface) {
+    constructor(card: BaseTriggeredPageInterface, alwaysOn: AlwaysOnMode = 'none') {
         super(card.adapter, card.name);
         this.minUpdateInterval = 400;
         if (!this.adapter.controller) {
             throw new Error('No controller! bye bye');
         }
-        this.alwaysOn = card.alwaysOn ?? 'none';
+        this.alwaysOn = alwaysOn;
         this.basePanel = card.panel;
         this._currentPanel = card.panel;
     }
@@ -90,7 +80,7 @@ export class BaseClassTriggerd extends BaseClass {
     }
     async reset(): Promise<void> {}
 
-    readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
+    readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseTriggeredPage): Promise<boolean> => {
         if (this.unload || this.adapter.unload) {
             return false;
         }
@@ -107,9 +97,6 @@ export class BaseClassTriggerd extends BaseClass {
         }
 
         if (this.sleep && !this.neverDeactivateTrigger) {
-            return false;
-        }
-        if (this.waitForTimeout) {
             return false;
         }
 
@@ -139,38 +126,49 @@ export class BaseClassTriggerd extends BaseClass {
             return false;
         }
 
-        this.waitForTimeout = this.adapter.setTimeout(async () => {
-            this.waitForTimeout = undefined;
-            await this.onStateTrigger(dp, from);
-            if (this.alwaysOnState) {
-                this.adapter.clearTimeout(this.alwaysOnState);
-            }
-            if (this.alwaysOn === 'action') {
-                if (this.unload || this.adapter.unload) {
-                    return;
-                }
-                this.alwaysOnState = this.adapter.setTimeout(
-                    () => {
-                        this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
-                    },
-                    this.basePanel.timeout * 1000 || 5000,
-                );
-            }
-        }, 20);
         this.updateTimeout = this.adapter.setTimeout(async () => {
             if (this.unload || this.adapter.unload) {
                 return;
             }
             this.updateTimeout = undefined;
             if (this.doUpdate) {
+                if (this.alwaysOnState) {
+                    this.adapter.clearTimeout(this.alwaysOnState);
+                }
+                if (this.alwaysOn === 'action') {
+                    if (this.unload || this.adapter.unload) {
+                        return;
+                    }
+                    this.alwaysOnState = this.adapter.setTimeout(
+                        () => {
+                            this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+                        },
+                        this.basePanel.timeout * 1000 || 5000,
+                    );
+                }
                 this.doUpdate = false;
                 await this.onStateTrigger(dp, from);
             }
-        }, this.minUpdateInterval);
+        }, this.minUpdateInterval ?? 50);
+        if (this.alwaysOnState) {
+            this.adapter.clearTimeout(this.alwaysOnState);
+        }
+        if (this.alwaysOn === 'action') {
+            if (this.unload || this.adapter.unload) {
+                return false;
+            }
+            this.alwaysOnState = this.adapter.setTimeout(
+                () => {
+                    this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+                },
+                this.basePanel.timeout * 1000 || 5000,
+            );
+        }
+        await this.onStateTrigger(dp, from);
         return true;
     };
 
-    protected async onStateTrigger(_dp: string, _from: BaseClassTriggerd): Promise<void> {
+    protected async onStateTrigger(_dp: string, _from: BaseTriggeredPage): Promise<void> {
         this.adapter.log.warn(
             `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`,
         );
@@ -186,9 +184,6 @@ export class BaseClassTriggerd extends BaseClass {
         await super.delete();
         await this.setVisibility(false);
         this.parent = undefined;
-        if (this.waitForTimeout) {
-            this.adapter.clearTimeout(this.waitForTimeout);
-        }
         if (this.alwaysOnState) {
             this.adapter.clearTimeout(this.alwaysOnState);
         }
@@ -273,11 +268,15 @@ export class BaseClassTriggerd extends BaseClass {
         );
     }
 }
-export class BaseClassPage extends BaseClassTriggerd {
+export class BaseClassPage extends BaseTriggeredPage {
     pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
     pageItems: (PageItem | undefined)[] | undefined;
-    constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
-        super(card);
+    constructor(
+        card: PageInterface,
+        alwaysOn: AlwaysOnMode = 'none',
+        pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined,
+    ) {
+        super(card, alwaysOn);
         this.pageItemConfig = pageItemsConfig;
     }
     async getEnabledPageItems(): Promise<(PageItem | undefined)[] | undefined> {

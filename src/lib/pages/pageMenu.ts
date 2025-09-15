@@ -2,7 +2,7 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { getPayload } from '../const/tools';
+import { getPayload, getRegExp } from '../const/tools';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import { handleCardRole } from './data-collection-functions';
@@ -149,10 +149,10 @@ export class PageMenu extends Page {
         this.tempItems = (await this.getEnabledPageItems()) || [];
 
         // filtering
-        if (this.config.filterType === 'true' || this.config.filterType === 'false') {
-            const wantTrue = this.config.filterType === 'true';
+        if (this.config.filterType === true || this.config.filterType === false) {
+            const wantTrue = this.config.filterType === true;
             const filtered: typeof this.tempItems = [];
-            for (const p of this.pageItems) {
+            for (const p of this.tempItems) {
                 if (
                     p?.dataItems?.data &&
                     'entity1' in p.dataItems.data &&
@@ -165,7 +165,7 @@ export class PageMenu extends Page {
             this.tempItems = filtered;
         } else if (typeof this.config.filterType === 'number') {
             const filtered: typeof this.tempItems = [];
-            for (const p of this.pageItems) {
+            for (const p of this.tempItems) {
                 if (
                     p?.dataItems &&
                     (p.dataItems.filter == null ||
@@ -173,6 +173,18 @@ export class PageMenu extends Page {
                         (typeof p.dataItems.filter === 'number' &&
                             p.dataItems.filter < 0 &&
                             p.dataItems.filter !== -this.config.filterType))
+                ) {
+                    filtered.push(p);
+                }
+            }
+            this.tempItems = filtered;
+        } else if (typeof this.config.filterType === 'string') {
+            const filtered: typeof this.tempItems = [];
+            const filter = this.config.filterType.split(',');
+            for (const p of this.tempItems) {
+                if (
+                    p?.dataItems &&
+                    (typeof p.dataItems.filter !== 'string' || filter.indexOf(String(p.dataItems.filter)) !== -1)
                 ) {
                     filtered.push(p);
                 }
@@ -305,6 +317,19 @@ export class PageMenu extends Page {
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
+            if (this.directParentPage) {
+                const dp = this.directParentPage.getdpInitForChild();
+                if (dp) {
+                    if (typeof dp === 'string') {
+                        const v = getRegExp(`^${dp.replace(/\./g, '\\.').replace(/\*/g, '.*')}`);
+                        if (v) {
+                            this.dpInit = v;
+                        }
+                    } else {
+                        this.dpInit = dp;
+                    }
+                }
+            }
             if (this.config && pages.isPageMenuConfig(this.config)) {
                 switch (this.config.card) {
                     case 'cardSchedule':
@@ -331,7 +356,7 @@ export class PageMenu extends Page {
                         this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
                         break;
                 }
-                const temp = await handleCardRole(this.adapter, this.config.cardRole, this);
+                const temp = await handleCardRole(this.adapter, this.config.cardRole, this, this.config?.options);
                 if (temp) {
                     this.pageItemConfig = temp;
                 }

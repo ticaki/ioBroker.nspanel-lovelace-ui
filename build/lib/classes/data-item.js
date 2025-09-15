@@ -51,7 +51,7 @@ class Dataitem extends import_library.BaseClass {
    *
    * @param adapter this of adapter
    * @param options {NSPanel.DataItemsOptions}
-   * @param parent {BaseClassTriggerd}
+   * @param parent {BaseTriggeredPage}
    * @param db {StatesControler}
    */
   constructor(adapter, options, parent, db) {
@@ -289,7 +289,7 @@ class Dataitem extends import_library.BaseClass {
     const state = await this.getState();
     switch (this.options.type) {
       case "const":
-        return state && state.val !== null ? String(state.val) : null;
+        return state && state.val !== null ? typeof state.val === "object" ? JSON.stringify(state.val) : String(state.val) : null;
       case "state":
       case "triggered":
         if (this.options.substring) {

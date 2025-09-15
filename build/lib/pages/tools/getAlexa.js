@@ -34,7 +34,7 @@ module.exports = __toCommonJS(getAlexa_exports);
 var import_Color = require("../../const/Color");
 var tools = __toESM(require("../../const/tools"));
 async function getPageAlexa(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
   const viewStr = arr.join(".");
@@ -558,7 +558,51 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
-  if (!((_t = page.media.deactivateDefaultItems) == null ? void 0 : _t.repeat)) {
+  if (page.media.volumePresets) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "volume-source" },
+            color: await configManager.getIconColor(
+              (_t = page.media.itemsColorOn) == null ? void 0 : _t.volumePresets,
+              import_Color.Color.activated
+            )
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume"],
+            scale: { min: (_u = page.media.minValue) != null ? _u : 0, max: (_v = page.media.maxValue) != null ? _v : 100 },
+            regexp: /.?\.Player\..?/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume"],
+            scale: { min: (_w = page.media.minValue) != null ? _w : 0, max: (_x = page.media.maxValue) != null ? _x : 100 },
+            regexp: /.?\.Player\..?/,
+            dp: ""
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.volumePresets || [])
+        },
+        headline: {
+          type: "const",
+          constVal: "volumePresets"
+        }
+      }
+    });
+  }
+  if (!((_y = page.media.deactivateDefaultItems) == null ? void 0 : _y.repeat)) {
     gridItem.pageItems.push({
       role: "",
       type: "text",
@@ -567,11 +611,11 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
         icon: {
           true: {
             value: { type: "const", constVal: "repeat-variant" },
-            color: await configManager.getIconColor((_u = page.media.itemsColorOn) == null ? void 0 : _u.repeat, import_Color.Color.activated)
+            color: await configManager.getIconColor((_z = page.media.itemsColorOn) == null ? void 0 : _z.repeat, import_Color.Color.activated)
           },
           false: {
             value: { type: "const", constVal: "repeat" },
-            color: await configManager.getIconColor((_v = page.media.itemsColorOff) == null ? void 0 : _v.repeat, import_Color.Color.deactivated)
+            color: await configManager.getIconColor((_A = page.media.itemsColorOff) == null ? void 0 : _A.repeat, import_Color.Color.deactivated)
           },
           scale: void 0,
           maxBri: void 0,

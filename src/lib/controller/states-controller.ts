@@ -6,7 +6,7 @@ import type { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/t
 import { getRegExp } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { StateRole } from '../types/pages';
-import type { BaseClassTriggerd } from '../classes/baseClassPage';
+import type { BaseTriggeredPage } from '../classes/baseClassPage';
 
 type getInternalFunctionType = (
     id: string,
@@ -21,7 +21,7 @@ export class StatesControler extends BaseClass {
     private triggerDB: {
         [key: string]: {
             state: nsPanelState;
-            to: BaseClassTriggerd[];
+            to: BaseTriggeredPage[];
             ts: number;
             subscribed: boolean[];
             common: ioBroker.StateCommon;
@@ -144,7 +144,7 @@ export class StatesControler extends BaseClass {
      */
     async setTrigger(
         id: string,
-        from: BaseClassTriggerd,
+        from: BaseTriggeredPage,
         internal: boolean = false,
         trigger: boolean = true,
         change?: 'ts',
@@ -233,7 +233,7 @@ export class StatesControler extends BaseClass {
      *
      * @param to Page
      */
-    async activateTrigger(to: BaseClassTriggerd | undefined): Promise<void> {
+    async activateTrigger(to: BaseTriggeredPage | undefined): Promise<void> {
         if (!to) {
             return;
         }
@@ -266,7 +266,7 @@ export class StatesControler extends BaseClass {
      *
      * @param to Page
      */
-    async deactivateTrigger(to: BaseClassTriggerd): Promise<void> {
+    async deactivateTrigger(to: BaseTriggeredPage): Promise<void> {
         for (const id in this.triggerDB) {
             if (to.neverDeactivateTrigger) {
                 continue;

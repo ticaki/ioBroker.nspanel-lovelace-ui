@@ -166,10 +166,10 @@ class PageMenu extends import_Page.Page {
       return result;
     }
     this.tempItems = await this.getEnabledPageItems() || [];
-    if (this.config.filterType === "true" || this.config.filterType === "false") {
-      const wantTrue = this.config.filterType === "true";
+    if (this.config.filterType === true || this.config.filterType === false) {
+      const wantTrue = this.config.filterType === true;
       const filtered = [];
-      for (const p of this.pageItems) {
+      for (const p of this.tempItems) {
         if (((_a = p == null ? void 0 : p.dataItems) == null ? void 0 : _a.data) && "entity1" in p.dataItems.data && ((_b = p.dataItems.data.entity1) == null ? void 0 : _b.value) && wantTrue === await p.dataItems.data.entity1.value.getBoolean()) {
           filtered.push(p);
         }
@@ -177,8 +177,17 @@ class PageMenu extends import_Page.Page {
       this.tempItems = filtered;
     } else if (typeof this.config.filterType === "number") {
       const filtered = [];
-      for (const p of this.pageItems) {
+      for (const p of this.tempItems) {
         if ((p == null ? void 0 : p.dataItems) && (p.dataItems.filter == null || p.dataItems.filter === this.config.filterType || typeof p.dataItems.filter === "number" && p.dataItems.filter < 0 && p.dataItems.filter !== -this.config.filterType)) {
+          filtered.push(p);
+        }
+      }
+      this.tempItems = filtered;
+    } else if (typeof this.config.filterType === "string") {
+      const filtered = [];
+      const filter = this.config.filterType.split(",");
+      for (const p of this.tempItems) {
+        if ((p == null ? void 0 : p.dataItems) && (typeof p.dataItems.filter !== "string" || filter.indexOf(String(p.dataItems.filter)) !== -1)) {
           filtered.push(p);
         }
       }
@@ -264,7 +273,21 @@ class PageMenu extends import_Page.Page {
     return result;
   }
   async onVisibilityChange(val) {
+    var _a;
     if (val) {
+      if (this.directParentPage) {
+        const dp = this.directParentPage.getdpInitForChild();
+        if (dp) {
+          if (typeof dp === "string") {
+            const v = (0, import_tools.getRegExp)(`^${dp.replace(/\./g, "\\.").replace(/\*/g, ".*")}`);
+            if (v) {
+              this.dpInit = v;
+            }
+          } else {
+            this.dpInit = dp;
+          }
+        }
+      }
       if (this.config && pages.isPageMenuConfig(this.config)) {
         switch (this.config.card) {
           case "cardSchedule":
@@ -290,7 +313,7 @@ class PageMenu extends import_Page.Page {
             this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
             break;
         }
-        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
+        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this, (_a = this.config) == null ? void 0 : _a.options);
         if (temp) {
           this.pageItemConfig = temp;
         }

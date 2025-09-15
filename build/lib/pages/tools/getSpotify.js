@@ -23,7 +23,7 @@ __export(getSpotify_exports, {
 module.exports = __toCommonJS(getSpotify_exports);
 var import_Color = require("../../const/Color");
 async function getPageSpotify(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
   if (justCheck) {
     return { gridItem, messages: ["done"] };
   }
@@ -412,9 +412,53 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
       }
     });
   }
-  if (((_r = page.media.deactivateDefaultItems) == null ? void 0 : _r.repeat) !== true) {
-    const tempOn = await configManager.getIconColor((_s = page.media.itemsColorOn) == null ? void 0 : _s.repeat);
-    const tempOff = await configManager.getIconColor((_t = page.media.itemsColorOff) == null ? void 0 : _t.repeat);
+  if (page.media.volumePresets) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "volume-source" },
+            color: await configManager.getIconColor(
+              (_r = page.media.itemsColorOn) == null ? void 0 : _r.volumePresets,
+              import_Color.Color.activated
+            )
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "triggered",
+            role: "",
+            scale: { min: (_s = page.media.minValue) != null ? _s : 0, max: (_t = page.media.maxValue) != null ? _t : 100 },
+            regexp: /.?\.player\.volume$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: "",
+            scale: { min: (_u = page.media.minValue) != null ? _u : 0, max: (_v = page.media.maxValue) != null ? _v : 100 },
+            regexp: /.?\.player\.volume$/,
+            dp: ""
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.volumePresets || [])
+        },
+        headline: {
+          type: "const",
+          constVal: "volumePresets"
+        }
+      }
+    });
+  }
+  if (((_w = page.media.deactivateDefaultItems) == null ? void 0 : _w.repeat) !== true) {
+    const tempOn = await configManager.getIconColor((_x = page.media.itemsColorOn) == null ? void 0 : _x.repeat);
+    const tempOff = await configManager.getIconColor((_y = page.media.itemsColorOff) == null ? void 0 : _y.repeat);
     let colorOn;
     let colorOff;
     if (tempOn && tempOn.type === "const") {

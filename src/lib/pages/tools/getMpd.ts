@@ -281,6 +281,52 @@ export async function getPageMpd(
             },
         });
     }
+    if (page.media.volumePresets) {
+        gridItem.pageItems.push({
+            role: '',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'volume-source' },
+                        color: await configManager.getIconColor(
+                            page.media.itemsColorOn?.volumePresets,
+                            Color.activated,
+                        ),
+                    },
+                },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: 'level.volume',
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.volume$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: '',
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.setvol$/,
+                        dp: '',
+                    },
+                },
+                valueList: {
+                    type: 'const',
+                    constVal: JSON.stringify(page.media.volumePresets || []),
+                },
+
+                headline: {
+                    type: 'const',
+                    constVal: 'volumePresets',
+                },
+            },
+        });
+    }
     if (page.media.deactivateDefaultItems?.crossfade !== true) {
         gridItem.pageItems.push({
             role: '',

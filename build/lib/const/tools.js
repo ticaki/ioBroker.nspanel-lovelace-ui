@@ -39,6 +39,7 @@ __export(tools_exports, {
   getRegExp: () => getRegExp,
   getScaledNumber: () => getScaledNumber,
   getSliderCTFromValue: () => getSliderCTFromValue,
+  getStringFromStringOrTranslated: () => getStringFromStringOrTranslated,
   getTemperaturColorFromValue: () => getTemperaturColorFromValue,
   getTranslation: () => getTranslation,
   getValueAutoUnit: () => getValueAutoUnit,
@@ -1141,6 +1142,18 @@ function formatHMS(ms) {
   }
   return `${minutesStr}:${secondsStr}`;
 }
+function getStringFromStringOrTranslated(adapter, input, def) {
+  if (typeof input === "string") {
+    return input;
+  }
+  if (adapter.language && input[adapter.language]) {
+    return input[adapter.language];
+  }
+  if (input.en) {
+    return input.en;
+  }
+  return def != null ? def : ``;
+}
 var tools_default = formatHMS;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -1164,6 +1177,7 @@ var tools_default = formatHMS;
   getRegExp,
   getScaledNumber,
   getSliderCTFromValue,
+  getStringFromStringOrTranslated,
   getTemperaturColorFromValue,
   getTranslation,
   getValueAutoUnit,

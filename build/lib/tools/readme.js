@@ -34,42 +34,53 @@ __export(readme_exports, {
 module.exports = __toCommonJS(readme_exports);
 var fs = __toESM(require("fs"));
 var import_config_manager_const = require("../const/config-manager-const");
+var import_fs = require("fs");
+var path = __toESM(require("path"));
+const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+const esc = (s) => (s != null ? s : "").replace(/\|/g, "\\|");
 async function generateAliasDocumentation() {
   const checkPath = ".dev-data";
-  let header = `| Channel role | State ID | common.type | common.role | required | common.write | description |  
-`;
-  header += `| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-`;
-  if (fs.existsSync(checkPath)) {
-    let lastFolder = "";
-    let table = "# Table of contents\n";
-    let readme = "";
-    table += `* [Remarks](#feature-${"Remarks".toLowerCase().replace(/[^a-z0-9]+/g, "")})
-`;
-    for (const f in import_config_manager_const.requiredScriptDataPoints) {
-      const folder = f;
-      const data = import_config_manager_const.requiredScriptDataPoints[folder];
-      readme += `### ${folder}
-`;
-      readme += header;
-      table += `* [${folder}](#${folder.toLowerCase().replace(/[^a-z0-9]+/g, "")})
-`;
-      for (const k in data.data) {
-        const key = k;
-        const row = data.data[key];
-        if (row === void 0) {
-          continue;
-        }
-        readme += `| **${folder == lastFolder ? '"' : folder}** | ${row.useKey ? key : `~~${key}~~`} | ${getStringOrArray(row.type)}| ${getStringOrArray(row.role)}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
-`;
-        lastFolder = folder;
-      }
-    }
-    table += `## Remarks
-`;
-    table += "\n -(not fully implemented) Crossed out DPs can be called whatever you want, only use the name if you have questions in issues or in the forum. \n";
-    fs.writeFileSync("ALIAS.md", table + readme);
+  if (!fs.existsSync(checkPath)) {
+    return;
   }
+  const header = "| Channel role | State ID | common.type | common.role | required | common.write | description |\n| :---: | :--- | :--- | :--- | :---: | :---: | :--- |\n";
+  let toc = "# Table of contents\n";
+  let body = "";
+  toc += `* [Remarks](#${slug("Remarks")})
+`;
+  const folders = Object.keys(import_config_manager_const.requiredScriptDataPoints).sort();
+  for (const folder of folders) {
+    const data = import_config_manager_const.requiredScriptDataPoints[folder];
+    const sectionAnchor = slug(folder);
+    toc += `* [${folder}](#${sectionAnchor})
+`;
+    body += `
+### ${folder}
+${header}`;
+    const keys = Object.keys(data.data).sort();
+    let firstRow = true;
+    for (const key of keys) {
+      const row = data.data[key];
+      if (!row) {
+        continue;
+      }
+      const channelCol = firstRow ? `**${folder}**` : '"';
+      firstRow = false;
+      body += `| ${channelCol} | ${row.useKey ? esc(key) : `~~${esc(key)}~~`} | ${esc(getStringOrArray(row.type))} | ${esc(
+        getStringOrArray(row.role)
+      )} | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${esc(row.description)} |
+`;
+    }
+  }
+  body = `
+## Remarks
+
+- (not fully implemented) Crossed out DPs can be named arbitrarily. Use the struck key only for questions in issues or in the forum.
+
+${body}`;
+  const out = `${toc}
+${body}`;
+  await import_fs.promises.writeFile(path.join(process.cwd(), "ALIAS.md"), out, "utf8");
 }
 function getStringOrArray(item) {
   if (Array.isArray(item)) {
