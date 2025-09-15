@@ -112,10 +112,10 @@
 - Validate panel configurations before processing.
 - Use proper error handling for Tasmota HTTP requests.
 - Initialize PageItems with proper templates and call `await pageItem.init()`.
-- Use StatesController for all state access to benefit from caching.
-- Properly subscribe to states before accessing them via `subscribeIfNeeded()`.
+- Use StatesController for state access when multiple panels need to read the same state frequently.
+- States for direct user settings (like screensaverLayout, dim settings) don't need StatesController caching.
 - Handle PageItem color themes consistently across all device types.
-- Implement proper cleanup in page/pageItem `destroy()` methods.
+- Implement proper cleanup in page/pageItem `delete()` methods.
 - Use appropriate page types (PageGrid, PageMenu, PageMedia) for different UI layouts.
 
 **Don’t**
@@ -125,9 +125,9 @@
 - Don’t introduce new deps casually; prefer stdlib or existing utils.
 - Don't ignore MQTT connection failures.
 - Don't modify panel firmware without proper validation.
-- Don't access states directly without using StatesController.
+- Don't use StatesController for direct user settings that are rarely accessed.
 - Don't create PageItems without proper template configuration.
-- Don't forget to call `page.destroy()` when removing pages.
+- Don't forget to call `page.delete()` when removing pages.
 - Don't mix page types (don't use PageGrid for media controls).
 - Don't ignore PageItem type constraints (light, shutter, button, etc.).
 - Don't cache state values without respecting the StatesController timespan.
@@ -181,10 +181,15 @@
   await pageGrid.init();
   await pageGrid.render();
   ```
-- StatesController subscription:
+- StatesController for frequently accessed states:
   ```ts
-  await statesController.subscribeIfNeeded('0_userdata.0.light.power', page, true);
-  const state = await statesController.getState('0_userdata.0.light.power');
+  // Use for states read by multiple panels
+  const state = await statesController.getState('hue.0.livingroom.temperature');
+  ```
+- Direct state access for user settings:
+  ```ts
+  // Use for rarely accessed direct user settings
+  const dimState = await this.getStateAsync('panels.panel1.cmd.dim.delay');
   ```
 - Color handling for PageItems:
   ```ts
