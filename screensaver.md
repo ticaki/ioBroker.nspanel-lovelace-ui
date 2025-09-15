@@ -13,6 +13,7 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 - [Entity-Typen](#entity-typen)
 - [Template Entities](#template-entities)
 - [Parameter-Referenz](#parameter-referenz)
+- [Verwendung von Farbkonstanten](#verwendung-von-farbkonstanten)
 - [IconScaleElement - Erweiterte Icon-Skalierung](#iconscaleelement---erweiterte-icon-skalierung)
 
 ### Templates und Icons
@@ -376,8 +377,8 @@ mrIcon1ScreensaverEntity: {
     ScreensaverEntity: 'Relay.1',
     ScreensaverEntityIconOn: 'lightbulb',
     ScreensaverEntityIconOff: 'lightbulb-outline',
-    ScreensaverEntityOnColor: {red: 253, green: 216, blue: 53},
-    ScreensaverEntityOffColor: {red: 68, green: 115, blue: 158}
+    ScreensaverEntityOnColor: On,      // Empfohlene gelbe An-Farbe
+    ScreensaverEntityOffColor: HMIOff  // Blaue Aus-Farbe
 },
 
 mrIcon2ScreensaverEntity: {
@@ -387,8 +388,8 @@ mrIcon2ScreensaverEntity: {
     ScreensaverEntityValue: 'alias.0.Beleuchtung.Flur.Helligkeit',
     ScreensaverEntityValueUnit: '%',
     ScreensaverEntityValueDecimalPlace: 0,
-    ScreensaverEntityOnColor: {red: 255, green: 255, blue: 0},
-    ScreensaverEntityOffColor: {red: 68, green: 115, blue: 158}
+    ScreensaverEntityOnColor: Yellow,  // Gelbe Farbe für helle Beleuchtung
+    ScreensaverEntityOffColor: HMIOff  // Standard Aus-Farbe
 }
 ```
 
@@ -414,8 +415,8 @@ mrIcon2ScreensaverEntity: {
 
 | Parameter | Typ | Beschreibung | Beispiel |
 |-----------|-----|--------------|----------|
-| `ScreensaverEntityOnColor` | RGB-Objekt | Farbe für Zustand "Ein" | `{red: 255, green: 0, blue: 0}` |
-| `ScreensaverEntityOffColor` | RGB-Objekt | Farbe für Zustand "Aus" | `{red: 0, green: 0, blue: 255}` |
+| `ScreensaverEntityOnColor` | RGB-Objekt/Konstante | Farbe für Zustand "Ein" | `On` oder `{red: 255, green: 0, blue: 0}` |
+| `ScreensaverEntityOffColor` | RGB-Objekt/Konstante | Farbe für Zustand "Aus" | `Off` oder `{red: 0, green: 0, blue: 255}` |
 | `ScreensaverEntityIconColor` | IconScale \| string | Dynamische Farbskala oder State-ID | `{val_min: 0, val_max: 100}` |
 
 ### Wert-Parameter
@@ -465,6 +466,70 @@ ScreensaverEntityIconColor: {
     log10: 'min'                               // Logarithmische Skalierung
 }
 ```
+
+### Verwendung von Farbkonstanten
+
+Anstatt Farben als JSON-Objekte zu definieren, können Sie die im Skript verfügbaren Farbkonstanten verwenden. Dies macht die Konfiguration übersichtlicher und weniger fehleranfällig:
+
+```typescript
+// Beispiel mit Farbkonstanten (empfohlen)
+ScreensaverEntityOnColor: On,      // Vordefinierte gelbe Farbe
+ScreensaverEntityOffColor: Off,    // Vordefinierte orange Farbe
+
+// Anstatt JSON-Definitionen
+ScreensaverEntityOnColor: {red: 253, green: 216, blue: 53},  // Manuell
+ScreensaverEntityOffColor: {red: 253, green: 128, blue: 0}   // Manuell
+```
+
+#### Verfügbare Farbkonstanten:
+
+**Standard UI-Farben:**
+- `On`, `Off` - Empfohlene An/Aus-Farben (Gelb/Orange)
+- `HMIOff`, `HMIOn` - Ursprüngliche Entity-Farben (Blau)
+- `HMIDark` - Hintergrundfarbe (Dunkelgrau)
+
+**Grundfarben:**
+- `Red`, `Green`, `Blue`, `Yellow`, `White`, `Black`, `Gray`
+- `Cyan`, `Magenta`, `DarkBlue`
+
+**Status-Farben:**
+- `MSRed`, `MSYellow`, `MSGreen` - Material Design Farben
+- `BatteryFull`, `BatteryEmpty` - Für Batteriestandsanzeigen
+
+**Menu-Farben:**
+- `Menu`, `MenuLowInd`, `MenuHighInd`
+
+**Farbskala (Gradient):**
+- `colorScale0` bis `colorScale10` - Verlauf von Grün über Gelb zu Rot
+
+**Wetter-Farben:**
+- `swClearNight`, `swCloudy`, `swFog`, `swRainy`, `swSunny`, etc.
+
+#### Beispiele mit Farbkonstanten:
+
+```typescript
+// MR-Icon mit Farbkonstanten
+mrIcon1ScreensaverEntity: {
+    type: 'script',
+    ScreensaverEntity: 'Relay.1',
+    ScreensaverEntityIconOn: 'lightbulb',
+    ScreensaverEntityOnColor: On,      // Gelb für Ein-Zustand
+    ScreensaverEntityOffColor: HMIOff  // Blau für Aus-Zustand
+}
+
+// Temperaturanzeige mit Gradient-Farben
+{
+    type: 'script',
+    ScreensaverEntity: 'sensor.temperature',
+    ScreensaverEntityIconColor: {
+        val_min: 0,
+        val_max: 35,
+        color_best: MSGreen  // Material Design Grün als Optimalfarbe
+    }
+}
+```
+
+Die Farbkonstanten werden am Ende des Beispielskripts definiert und sind in allen Konfigurationsbereichen verfügbar.
 
 ### IconScaleElement - Erweiterte Icon-Skalierung
 
@@ -1346,8 +1411,8 @@ const config: ScriptConfig.Config = {
         ScreensaverEntity: 'Relay.1',
         ScreensaverEntityIconOn: 'lightbulb',
         ScreensaverEntityIconOff: 'lightbulb-outline',
-        ScreensaverEntityOnColor: {red: 255, green: 255, blue: 0},
-        ScreensaverEntityOffColor: {red: 68, green: 115, blue: 158}
+        ScreensaverEntityOnColor: Yellow,  // Gelb für eingeschaltetes Licht
+        ScreensaverEntityOffColor: HMIOff  // Standard Aus-Farbe (Blau)
     },
     
     mrIcon2ScreensaverEntity: {
@@ -1358,8 +1423,8 @@ const config: ScriptConfig.Config = {
         ScreensaverEntityValue: 'alias.0.Licht.Flur.Helligkeit',
         ScreensaverEntityValueUnit: '%',
         ScreensaverEntityValueDecimalPlace: 0,
-        ScreensaverEntityOnColor: {red: 255, green: 200, blue: 0},
-        ScreensaverEntityOffColor: {red: 100, green: 100, blue: 100}
+        ScreensaverEntityOnColor: On,    // Empfohlene An-Farbe
+        ScreensaverEntityOffColor: Gray  // Graue Farbe für Aus-Zustand
     },
     
     // Erweiterte Optionen
