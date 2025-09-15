@@ -2,6 +2,35 @@
 
 Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nicht aktiv verwendet wird. Diese Dokumentation beschreibt alle Möglichkeiten zur Konfiguration des Bildschirmschoners in Ihrem Konfigurationsskript.
 
+## Inhaltsverzeichnis
+
+### Grundlagen
+- [Screensaver-Modi](#screensaver-modi)
+- [Bereiche im Detail](#bereiche-im-detail)
+- [MR-Icons (Relay-Symbole)](#mr-icons-relay-symbole)
+
+### Konfiguration
+- [Entity-Typen](#entity-typen)
+- [Template Entities](#template-entities)
+- [Parameter-Referenz](#parameter-referenz)
+- [IconScaleElement - Erweiterte Icon-Skalierung](#iconscaleelement---erweiterte-icon-skalierung)
+
+### Templates und Icons
+- [Text-Templates](#text-templates)
+- [Wetter-Integration](#wetter-integration)
+- [Icon-Referenz](#icon-referenz)
+
+### Praktische Beispiele
+- [Vollständige Konfigurationsbeispiele](#vollständige-konfigurationsbeispiele)
+- [Advanced Mode Beispiel](#advanced-mode-beispiel)
+- [Alternate Mode Beispiel](#alternate-mode-beispiel)
+- [Standard Mode Beispiel](#standard-mode-beispiel)
+- [Easy View Mode Beispiel](#easy-view-mode-beispiel)
+
+### Zusätzliche Funktionen
+- [Swipe-Funktionalität](#swipe-funktionalität)
+- [Wetter-Automatisierung](#wetter-automatisierung)
+
 ## Screensaver-Modi
 
 Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
@@ -33,14 +62,21 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ### MR-Icons (Relay-Symbole)
 
-Die MR-Icons sind interaktive Symbole für die Steuerung von Relays oder anderen schaltbaren Elementen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar und bieten folgende Funktionen:
+Die MR-Icons sind Anzeigeelemente im oberen Bereich des Screensavers zur Visualisierung von Relay-Status oder anderen schaltbaren Elementen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar.
 
 #### Eigenschaften der MR-Icons:
-- **Interaktive Steuerung**: Direkte Schaltung von Relays durch Tippen
+- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an (nicht berührbar)
+- **Steuerung über Hardware-Tasten**: Schaltung erfolgt über die physischen Tasten unterhalb des Displays
 - **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand
 - **Flexible Anbindung**: Können mit NSPanel-Relays oder beliebigen ioBroker-States verbunden werden
 - **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
 - **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
+- **Detach-Funktion**: Icons können von den Relay-Tasten getrennt werden
+
+#### Funktionsweise:
+- **Anzeige**: Die Icons im oberen Displaybereich zeigen den aktuellen Status
+- **Steuerung**: Die Schaltung erfolgt über die beiden Tasten unterhalb des Displays
+- **Konfiguration**: Betrifft sowohl die Anzeige oben als auch die Funktionalität der Tasten
 
 #### MR-Icon Bereiche:
 - **mrIcon1ScreensaverEntity**: Linkes Relay-Symbol
@@ -434,6 +470,15 @@ ScreensaverEntityIconColor: {
 
 Das `iconScaleElement` ermöglicht eine erweiterte Konfiguration der Icon-Farbgebung mit verschiedenen Modi und Optionen:
 
+#### Inhaltsübersicht IconScaleElement:
+- [Standard-Modus](#1-standard-modus-ohne-mode-parameter)
+- [TriGrad-Modus (Dreifarbiger Farbverlauf)](#2-trigrad-modus-dreifarbiger-farbverlauf)
+- [TriGradAnchor-Modus (mit Ankerpunkt)](#3-trigradanchor-modus-dreifarbiger-farbverlauf-mit-ankerpunkt)
+- [QuadriGradAnchor-Modus (Vierfarbig)](#4-quadrigradanchor-modus-vierfarbiger-farbverlauf-mit-ankerpunkt)
+- [Weitere Modi](#5-mixed-modus) (Mixed, Hue, CIE)
+- [Logarithmische Skalierung](#logarithmische-skalierung)
+- [Kombinationsbeispiele](#kombinationsbeispiele-für-komplexe-szenarien)
+
 #### Verfügbare Modi:
 
 **1. Standard-Modus (ohne mode-Parameter)**
@@ -447,7 +492,7 @@ iconScaleElement: {
 - Lineare Farbinterpolation zwischen Minimal- und Maximalwert
 - Automatische Farbwahl basierend auf dem Wertebereich
 
-**2. TriGrad-Modus**
+**2. TriGrad-Modus (Dreifarbiger Farbverlauf)**
 ```typescript
 iconScaleElement: {
     val_min: 0,
@@ -455,10 +500,14 @@ iconScaleElement: {
     mode: 'triGrad'
 }
 ```
-- Dreistufiger Farbverlauf (Grün → Gelb → Rot)
-- Geeignet für Warnstufen oder Statusanzeigen
+- **Farbverlauf**: Erstellt einen kontinuierlichen Übergang durch drei Farben: Grün → Gelb → Rot
+- **Anwendung**: Ideal für Warnstufen, Batteriezustände, oder Leistungsanzeigen
+- **Verhalten**: 
+  - Niedrige Werte (0-33%): Grün (gut)
+  - Mittlere Werte (34-66%): Gelb (mittel/Warnung)  
+  - Hohe Werte (67-100%): Rot (kritisch/schlecht)
 
-**3. TriGradAnchor-Modus**
+**3. TriGradAnchor-Modus (Dreifarbiger Farbverlauf mit Ankerpunkt)**
 ```typescript
 iconScaleElement: {
     val_min: 0,
@@ -467,10 +516,14 @@ iconScaleElement: {
     mode: 'triGradAnchor'
 }
 ```
-- Dreistufiger Farbverlauf mit Anker am Optimalwert
-- Grün bei val_best, Rot zu den Extremwerten hin
+- **Farbverlauf**: Dreistufiger Verlauf mit einem definierten Optimalpunkt
+- **Anwendung**: Für Werte wo ein mittlerer Bereich optimal ist (z.B. Luftfeuchtigkeit)
+- **Verhalten**:
+  - Bei val_best (50): Grün (optimal)
+  - Zu den Extremwerten hin: Über Gelb zu Rot (suboptimal bis kritisch)
+  - Symmetrischer Verlauf um den Ankerpunkt
 
-**4. QuadriGradAnchor-Modus**
+**4. QuadriGradAnchor-Modus (Vierfarbiger Farbverlauf mit Ankerpunkt)**
 ```typescript
 iconScaleElement: {
     val_min: -10,
@@ -479,8 +532,13 @@ iconScaleElement: {
     mode: 'quadriGradAnchor'
 }
 ```
-- Vierstufiger Farbverlauf mit Anker am Optimalwert
-- Besonders geeignet für Temperaturanzeigen
+- **Farbverlauf**: Vierstufiger Übergang für noch präzisere Darstellung
+- **Anwendung**: Besonders geeignet für Temperaturanzeigen oder komplexe Messwerte
+- **Verhalten**:
+  - Bei val_best (22°C): Grün (optimal)
+  - Leichte Abweichung: Hellgrün/Gelb (akzeptabel)
+  - Stärkere Abweichung: Orange (warnung)
+  - Extreme Werte: Rot (kritisch kalt/heiß)
 
 **5. Mixed-Modus**
 ```typescript
@@ -559,6 +617,50 @@ iconScaleElement: {
     val_max: 100,
     val_best: 80,
     mode: 'triGradAnchor'
+}
+```
+
+#### Kombinationsbeispiele für komplexe Szenarien:
+
+**Luftfeuchtigkeit mit Optimalbereich (40-60%):**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 100,
+    val_best: 50,        // Optimum bei 50%
+    mode: 'quadriGradAnchor',
+    log10: 'center'      // Betonung des mittleren Bereichs
+}
+```
+
+**Stromverbrauch mit logarithmischer Skalierung:**
+```typescript
+iconScaleElement: {
+    val_min: 1,
+    val_max: 5000,
+    mode: 'triGrad',
+    log10: 'max'        // Logarithmische Skalierung für große Wertebereiche
+}
+```
+
+**Komplexer Temperaturbereich mit präziser Gradation:**
+```typescript
+iconScaleElement: {
+    val_min: -20,
+    val_max: 45,
+    val_best: 21,        // Ideale Raumtemperatur
+    mode: 'quadriGradAnchor',
+    color_best: {red: 0, green: 255, blue: 0}  // Explizite Grünfärbung bei Optimum
+}
+```
+
+**Internet-Geschwindigkeit mit Hue-Farbverlauf:**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 100,        // 100 Mbit/s
+    mode: 'hue',         // Farbkreis-Verlauf von Rot bis Grün
+    log10: 'min'         // Betonung niedriger Geschwindigkeiten
 }
 ```
 
