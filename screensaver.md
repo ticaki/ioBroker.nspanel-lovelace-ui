@@ -4,68 +4,102 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 
 ## Inhaltsverzeichnis
 
-### Grundlagen
+<table>
+<tr>
+<td width="50%">
+
+**Grundlagen**
 - [Screensaver-Modi](#screensaver-modi)
+  - [Advanced Mode](#1-advanced-mode-standard)
+  - [Alternate Mode](#2-alternate-mode)
+  - [Standard Mode](#3-standard-mode)
+  - [Easy View Mode](#4-easy-view-mode)
 - [Bereiche im Detail](#bereiche-im-detail)
 - [MR-Icons (Relay-Symbole)](#mr-icons-relay-symbole)
+- [Wisch-Gesten (Swipe)](#wisch-gesten-swipe)
+- [Icons für NSPanel](#icons-für-nspanel)
 
-### Konfiguration
+**Konfiguration**
 - [Konfigurationsarten](#konfigurationsarten)
-- [Template-Konfiguration](#template-konfiguration)
+  - [Script-Konfiguration](#1-script-konfiguration-type-script)
+  - [Template-Konfiguration](#2-template-konfiguration-type-template)
+  - [Native-Konfiguration](#3-native-konfiguration-type-native)
+- [Konfigurationsbereiche](#konfigurationsbereiche)
+  - [favoritScreensaverEntity](#favoritscreensaverentity)
+  - [bottomScreensaverEntity](#bottomscreensaverentity)
+  - [indicatorScreensaverEntity](#indicatorscreensaverentity)
+  - [leftScreensaverEntity](#leftscreensaverentity)
+  - [alternateScreensaverEntity](#alternatescreensaverentity)
+  - [mrIcon1/2ScreensaverEntity](#mricon1screensaverentity--mricon2screensaverentity)
+
+</td>
+<td width="50%">
+
+**Erweiterte Konfiguration**
 - [Script-Konfiguration Parameter](#script-konfiguration-parameter)
 - [Verwendung von Farbkonstanten](#verwendung-von-farbkonstanten)
 - [IconScaleElement - Erweiterte Icon-Skalierung](#iconscaleelement---erweiterte-icon-skalierung)
 
-### Templates und Icons
-- [Zusätzliche Text-Templates](#zusätzliche-text-templates)
+**Templates und Text-Elemente**
+- [Template-Konfiguration](#template-konfiguration)
 - [Wetter-Templates](#wetter-templates)
-- [Icons für NSPanel](#icons-für-nspanel)
+  - [Pirate Weather](#pirate-weather)
+  - [OpenWeatherMap](#openweathermap)
+  - [AccuWeather](#accuweather)
+  - [BrightSky](#brightsky)
+- [Zusätzliche Text-Templates](#zusätzliche-text-templates)
+  - [Allgemeine Templates](#allgemeine-templates)
+  - [Fenster & Türen Templates](#fenster--türen-templates)
+  - [Bewegung & Sicherheit](#bewegung--sicherheit-templates)
+  - [Netzwerk & Verbindung](#netzwerk--verbindung-templates)
+  - [Spezielle Templates](#spezielle-templates)
 
-### Praktische Beispiele
+**Praktische Beispiele**
 - [Vollständige Arbeitsbeispiele für alle Modi](#vollständige-arbeitsbeispiele-für-alle-modi)
-- [Advanced Mode - Komplett-Konfiguration](#advanced-mode---komplett-konfiguration)
-- [Alternate Mode - Konfiguration](#alternate-mode---konfiguration)
-- [Standard Mode - Konfiguration](#standard-mode---konfiguration)
-- [Easy View Mode - Konfiguration](#easy-view-mode---konfiguration)
-
-### Zusätzliche Funktionen
-- [Wisch-Gesten (Swipe)](#wisch-gesten-swipe)
+  - [Advanced Mode - Komplett-Konfiguration](#advanced-mode---komplett-konfiguration)
+  - [Alternate Mode - Konfiguration](#alternate-mode---konfiguration)
+  - [Standard Mode - Konfiguration](#standard-mode---konfiguration)
+  - [Easy View Mode - Konfiguration](#easy-view-mode---konfiguration)
 - [Automatische Wetter-Elemente](#automatische-wetter-elemente)
+
+</td>
+</tr>
+</table>
 
 ## Screensaver-Modi
 
 Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
-### 1. Advanced Mode (Standard)
+## 1. Advanced Mode (Standard)
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen (meist Wetter)
 - **Left-Bereich** (3 Elemente): Linker Bereich für detaillierte Informationen
 - **Indicator-Bereich** (5 Elemente): Status-Indikatoren für schnelle Übersicht
 - **Bottom-Bereich** (6 Elemente): Scrollbare Liste zusätzlicher Informationen
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons (mrIcon1 + mrIcon2)
 
-### 2. Alternate Mode
+## 2. Alternate Mode
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen
 - **Alternate-Bereich** (1 Element): Alternative Ansicht für den Hauptbereich
 - **Bottom-Bereich** (3 Elemente): Reduzierte untere Informationsleiste
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
 
-### 3. Standard Mode
+## 3. Standard Mode
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
 - **Bottom-Bereich** (4 Elemente): Erweiterte untere Informationsleiste
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
 
-### 4. Easy View Mode
+## 4. Easy View Mode
 - **Bottom-Bereich** (3 Elemente): Extra große Schrift für bessere Lesbarkeit
 - **Keine Icons oder Texte**: Vereinfachte Darstellung ohne komplexe Elemente
 - **Keine MR-Icons**: Reduzierte Funktionalität für einfache Bedienung
 
 ## Bereiche im Detail
 
-### MR-Icons (Relay-Symbole)
+## MR-Icons (Relay-Symbole)
 
 Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen Bereich des Screensavers zur Visualisierung von Status-Informationen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar.
 
-#### Eigenschaften der MR-Icons:
+### Eigenschaften der MR-Icons:
 - **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
 - **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden
 - **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
@@ -74,16 +108,16 @@ Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen Bereich des Scre
 - **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
 - **Detach-Funktion**: Icons können vollständig unabhängig von den Hardware-Tasten konfiguriert werden
 
-#### Funktionsweise:
+### Funktionsweise:
 - **Anzeige**: Die Icons im oberen Displaybereich zeigen nur den aktuellen Status der verknüpften States
 - **Hardware-Tasten**: Die Tasten unterhalb des Displays sind separate Steuerelemente
 - **Konfiguration**: Die Icon-Konfiguration betrifft nur die visuelle Darstellung, nicht die Tastenfunktion
 
-#### MR-Icon Bereiche:
+### MR-Icon Bereiche:
 - **mrIcon1ScreensaverEntity**: Linkes Relay-Symbol
 - **mrIcon2ScreensaverEntity**: Rechtes Relay-Symbol
 
-#### Beispiel-Konfiguration für MR-Icons:
+### Beispiel-Konfiguration für MR-Icons:
 
 ```typescript
 // Direkte Relay-Steuerung
@@ -112,7 +146,7 @@ mrIcon2ScreensaverEntity: {
 }
 ```
 
-### Wisch-Gesten (Swipe)
+## Wisch-Gesten (Swipe)
 
 **Wichtiger Hinweis**: Wisch-Gesten (Swipe) wechseln NICHT zwischen verschiedenen Ansichten, sondern geben die Gestenerkennung in einen Datenpunkt aus. Dies ermöglicht es, benutzerdefinierte Aktionen auf Wischbewegungen zu programmieren.
 
@@ -123,15 +157,15 @@ advancedOptions: {
 }
 ```
 
-### Icons für NSPanel
+## Icons für NSPanel
 
 **Verfügbare Icons**: Alle verfügbaren Icons für das NSPanel finden Sie in der [NSPanel Icon Cheatsheet](https://docs.nspanel.pky.eu/icon-cheatsheet.html).
 
-#### Icon-Parameter:
+### Icon-Parameter:
 - `ScreensaverEntityIconOn`: Icon für den "Ein"-Zustand
 - `ScreensaverEntityIconOff`: Icon für den "Aus"-Zustand
 
-#### Icon-Beispiele:
+### Icon-Beispiele:
 ```typescript
 // Licht-Icons
 ScreensaverEntityIconOn: 'lightbulb-on',
@@ -467,7 +501,7 @@ ScreensaverEntityIconColor: {
 }
 ```
 
-### Verwendung von Farbkonstanten
+## Verwendung von Farbkonstanten
 
 Anstatt Farben als JSON-Objekte zu definieren, können Sie die im Skript verfügbaren Farbkonstanten verwenden. Dies macht die Konfiguration übersichtlicher und weniger fehleranfällig:
 
@@ -531,18 +565,9 @@ mrIcon1ScreensaverEntity: {
 
 Die Farbkonstanten werden am Ende des Beispielskripts definiert und sind in allen Konfigurationsbereichen verfügbar.
 
-### IconScaleElement - Erweiterte Icon-Skalierung
+## IconScaleElement - Erweiterte Icon-Skalierung
 
 Das `iconScaleElement` ermöglicht eine erweiterte Konfiguration der Icon-Farbgebung mit verschiedenen Modi und Optionen:
-
-#### Inhaltsübersicht IconScaleElement:
-- [Standard-Modus](#1-standard-modus-ohne-mode-parameter)
-- [TriGrad-Modus (Dreifarbiger Farbverlauf)](#2-trigrad-modus-dreifarbiger-farbverlauf)
-- [TriGradAnchor-Modus (mit Ankerpunkt)](#3-trigradanchor-modus-dreifarbiger-farbverlauf-mit-ankerpunkt)
-- [QuadriGradAnchor-Modus (Vierfarbig)](#4-quadrigradanchor-modus-vierfarbiger-farbverlauf-mit-ankerpunkt)
-- [Weitere Modi](#5-mixed-modus) (Mixed, Hue, CIE)
-- [Logarithmische Skalierung](#logarithmische-skalierung)
-- [Kombinationsbeispiele](#kombinationsbeispiele-für-komplexe-szenarien)
 
 #### Verfügbare Modi:
 
@@ -753,7 +778,7 @@ iconScaleElement: {
 
 ## Template-Konfiguration
 
-### Wetter-Templates
+## Wetter-Templates
 
 #### Pirate Weather
 - `text.pirate-weather.favorit` - Hauptwetter-Anzeige
@@ -791,11 +816,11 @@ iconScaleElement: {
 - `text.brightsky.solar`
 - `text.brightsky.bot2values`
 
-### Zusätzliche Text-Templates
+## Zusätzliche Text-Templates
 
 Neben den Wetter-Templates stehen weitere vorgefertigte Templates für verschiedene Gerätekategorien zur Verfügung:
 
-#### Allgemeine Templates
+### Allgemeine Templates
 
 **`text.clock`**
 - **Verwendung**: Aktuelle Uhrzeit
@@ -828,7 +853,7 @@ Neben den Wetter-Templates stehen weitere vorgefertigte Templates für verschied
 - **CommonType**: `boolean`
 - **Features**: Rote Warnung bei niedrigem Batteriestand
 
-#### Fenster & Türen Templates
+### Fenster & Türen Templates
 
 **`text.window.isOpen`**
 - **Verwendung**: Fensterstatus (Offen/Geschlossen)
@@ -860,7 +885,7 @@ Neben den Wetter-Templates stehen weitere vorgefertigte Templates für verschied
 - **CommonType**: `boolean`
 - **Features**: Offen (Cyan) / Geschlossen (Grün) Farbkodierung
 
-#### Bewegung & Sicherheit Templates
+### Bewegung & Sicherheit Templates
 
 **`text.motion`**
 - **Verwendung**: Bewegungsmelder
@@ -875,7 +900,7 @@ Neben den Wetter-Templates stehen weitere vorgefertigte Templates für verschied
 - **Regexp**: `/\.LEVEL$/`, `/\.TITLE$/`, `/\.INFO$/`
 - **Features**: 4-stufige Farbskala für Warnstufen
 
-#### Netzwerk & Verbindung Templates
+### Netzwerk & Verbindung Templates
 
 **`text.isOnline`**
 - **Verwendung**: Internet-/Geräteverbindung
@@ -887,7 +912,7 @@ Neben den Wetter-Templates stehen weitere vorgefertigte Templates für verschied
 - **Verwendung**: WLAN-Verbindungsstatus
 - **Features**: Statisches WLAN-Icon mit Beschriftung
 
-#### Spezielle Templates
+### Spezielle Templates
 
 **`text.info`**
 - **Verwendung**: Universelle Informationsanzeige mit benutzerdefinierten Werten
@@ -940,7 +965,7 @@ Die Templates können mit dem `dpInit`-Parameter auf spezifische Adapter-Instanz
 }
 ```
 
-### Automatische Wetter-Elemente
+## Automatische Wetter-Elemente
 
 Für automatisches Hinzufügen von Standard-Wetterelementen:
 
@@ -967,7 +992,7 @@ const config: ScriptConfig.Config = {
 
 ## Vollständige Arbeitsbeispiele für alle Modi
 
-### Advanced Mode - Komplett-Konfiguration
+## Advanced Mode - Komplett-Konfiguration
 
 ```typescript
 const config: ScriptConfig.Config = {
@@ -1109,7 +1134,7 @@ const config: ScriptConfig.Config = {
 };
 ```
 
-### Alternate Mode - Konfiguration
+## Alternate Mode - Konfiguration
 
 ```typescript
 const config: ScriptConfig.Config = {
@@ -1181,7 +1206,7 @@ const config: ScriptConfig.Config = {
 };
 ```
 
-### Standard Mode - Konfiguration
+## Standard Mode - Konfiguration
 
 ```typescript
 const config: ScriptConfig.Config = {
@@ -1245,7 +1270,7 @@ const config: ScriptConfig.Config = {
 };
 ```
 
-### Easy View Mode - Konfiguration
+## Easy View Mode - Konfiguration
 
 ```typescript
 const config: ScriptConfig.Config = {
