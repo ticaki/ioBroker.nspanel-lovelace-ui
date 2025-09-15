@@ -411,7 +411,7 @@ mrIcon1ScreensaverEntity: {
     ScreensaverEntity: 'Relay.1',
     ScreensaverEntityIconOn: 'lightbulb',
     ScreensaverEntityIconOff: 'lightbulb-outline',
-    ScreensaverEntityOnColor: On,      // Empfohlene gelbe An-Farbe
+    ScreensaverEntityOnColor: On,      // Empfohlene gelbe An-Farbe (siehe Abschnitt [Farbkonstanten](#farbkonstanten) für Definition)
     ScreensaverEntityOffColor: HMIOff  // Blaue Aus-Farbe
 },
 
