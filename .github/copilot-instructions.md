@@ -112,8 +112,8 @@
 - Validate panel configurations before processing.
 - Use proper error handling for Tasmota HTTP requests.
 - Initialize PageItems with proper templates and call `await pageItem.init()`.
-- Use StatesController for state access when multiple panels need to read the same state frequently.
-- States for direct user settings (like screensaverLayout, dim settings) don't need StatesController caching.
+- Use StatesController for state access for panels.
+- Use direct state access for accessed user settings from class Panels or Controller.
 - Handle PageItem color themes consistently across all device types.
 - Implement proper cleanup in page/pageItem `delete()` methods.
 - Use appropriate page types (PageGrid, PageMenu, PageMedia) for different UI layouts.
@@ -172,14 +172,13 @@
     dp: 'hue.0.Livingroom.Lamp.level'
   }, page, statesController);
   ```
-- Page configuration and rendering:
+- Page configuration:
   ```ts
   const pageGrid = new PageGrid(panelConfig, {
     config: { card: 'cardGrid', items: pageItems },
     items: { card: 'cardGrid', items: itemConfigs }
   });
   await pageGrid.init();
-  await pageGrid.render();
   ```
 - StatesController for frequently accessed states:
   ```ts
@@ -191,7 +190,7 @@
   // Use for rarely accessed direct user settings
   const dimState = await this.getStateAsync('panels.panel1.cmd.dim.delay');
   ```
-- Color handling for PageItems:
+- Color handling for Dataitems:
   ```ts
   const onColor = Color.getColorFromDefaultOrReturn(config.colorOn || Color.activated);
   const offColor = Color.getColorFromDefaultOrReturn(config.colorOff || Color.deactivated);
