@@ -111,6 +111,12 @@
 - Handle MQTT reconnection gracefully.
 - Validate panel configurations before processing.
 - Use proper error handling for Tasmota HTTP requests.
+- Initialize PageItems with proper templates and call `await pageItem.init()`.
+- Use StatesController for all state access to benefit from caching.
+- Properly subscribe to states before accessing them via `subscribeIfNeeded()`.
+- Handle PageItem color themes consistently across all device types.
+- Implement proper cleanup in page/pageItem `destroy()` methods.
+- Use appropriate page types (PageGrid, PageMenu, PageMedia) for different UI layouts.
 
 **Don’t**
 - Don’t write states in tight loops without debounce.
@@ -119,6 +125,12 @@
 - Don’t introduce new deps casually; prefer stdlib or existing utils.
 - Don't ignore MQTT connection failures.
 - Don't modify panel firmware without proper validation.
+- Don't access states directly without using StatesController.
+- Don't create PageItems without proper template configuration.
+- Don't forget to call `page.destroy()` when removing pages.
+- Don't mix page types (don't use PageGrid for media controls).
+- Don't ignore PageItem type constraints (light, shutter, button, etc.).
+- Don't cache state values without respecting the StatesController timespan.
 
 ## Common Snippets (NSPanel-specific)
 - Set connection:
@@ -143,6 +155,42 @@
   ```ts
   await this.setStateAsync(`panels.${panelName}.info.connection`, true, true);
   ```
+- PageItem creation with template:
+  ```ts
+  const pageItem = new PageItem(
+    { id: 'light1', name: 'Living Room Light', adapter: this, panel, dpInit: [] },
+    lightTemplate
+  );
+  await pageItem.init();
+  ```
+- DataItem with state subscription:
+  ```ts
+  const dataItem = new Dataitem(this, {
+    type: 'triggered',
+    mode: 'auto',
+    role: 'level.brightness',
+    dp: 'hue.0.Livingroom.Lamp.level'
+  }, page, statesController);
+  ```
+- Page configuration and rendering:
+  ```ts
+  const pageGrid = new PageGrid(panelConfig, {
+    config: { card: 'cardGrid', items: pageItems },
+    items: { card: 'cardGrid', items: itemConfigs }
+  });
+  await pageGrid.init();
+  await pageGrid.render();
+  ```
+- StatesController subscription:
+  ```ts
+  await statesController.subscribeIfNeeded('0_userdata.0.light.power', page, true);
+  const state = await statesController.getState('0_userdata.0.light.power');
+  ```
+- Color handling for PageItems:
+  ```ts
+  const onColor = Color.getColorFromDefaultOrReturn(config.colorOn || Color.activated);
+  const offColor = Color.getColorFromDefaultOrReturn(config.colorOff || Color.deactivated);
+  ```
 
 ## NSPanel TypeScript Rules
 - TypeScript-only (no JS). Strict mode enabled.
@@ -158,6 +206,75 @@
 - [NSPanel Adapter Wiki](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki) - **Primary source for NSPanel-specific behavior**
 - Hardware compatibility: Sonoff NSPanel with Tasmota firmware
 - UI Design: Based on Home Assistant Lovelace UI principles
+
+## NSPanel Deep Architecture & Page System
+
+### PageItem System (Device Types)
+- **PageItem class** (`/src/lib/pages/pageItem.ts`): Base class for all interactive elements on NSPanel screens.
+- **Device type templates** (`/src/lib/templates/`): Define behavior for different device types:
+  - `light.ts`: Light controls (on/off, dimmer, RGB, hue, brightness sliders)
+  - `shutter.ts`: Blind/shutter controls (position, up/down, stop)
+  - `button.ts`: Interactive buttons with customizable actions
+  - `text.ts`, `number.ts`: Input elements
+- **PageItem types**: `'light' | 'shutter' | 'delete' | 'text' | 'button' | 'switch' | 'number' | 'input_sel' | 'timer' | 'fan'`
+- **State mapping**: PageItems map to ioBroker states via `DataItem` objects with type definitions:
+  - `triggered`: React to state changes with specific roles (`level.brightness`, `switch`, etc.)
+  - `const`: Static values
+  - `internal`: Internal adapter states
+- **Color handling**: PageItems have configurable `defaultOnColor`/`defaultOffColor` and support theme-based coloring.
+
+### Page Types & Navigation
+- **PageMenu** (`pageMenu.ts`): Base class for scrollable menu pages with navigation arrows.
+  - Supports pagination with `step` and `maxItems` properties
+  - Handles auto-scrolling and user navigation
+  - Arrow controls: `iconLeft/Right`, `iconLeftP/RightP` for different states
+- **PageGrid** (`pageGrid.ts`): Grid layout for device controls, extends PageMenu.
+  - Card types: `cardGrid` (6 items), `cardGrid2` (8-9 items), `cardGrid3` (4 items)
+  - Different layouts based on panel model (`us-p` vs standard)
+- **PageMedia** (`pageMedia.ts`): Media player controls with service integration.
+  - Supports: Alexa, Spotify, MPD, Sonos
+  - Handles: play/pause, volume, track info, artist scrolling
+  - Service-specific tools in `/pages/tools/` directory
+- **PageEntities** (`pageEntities.ts`): Entity list view for cardEntities (4-5 items).
+- **Specialized pages**: PageChart, PageThermo, PageAlarm, PageSchedule, etc.
+
+### Internal State Management
+- **StatesController** (`/src/lib/controller/states-controller.ts`): Central state management system.
+  - Manages subscriptions to ioBroker states with caching (`timespan` parameter)
+  - `triggerDB`: Tracks state changes and triggers affected pages
+  - `stateDB`: Local state cache with timestamps
+  - `objectDatabase`: Object definitions cache
+  - Handles internal states (prefixed with `///`) vs external states
+- **DataItem** (`/src/lib/classes/data-item.ts`): Wrapper for individual state access.
+  - Compiles read/write functions with user-defined transformations
+  - Type validation and role-based behavior
+  - Color processing and value transformation
+  - Integration with `StatesController` for cached access
+- **Panel states structure**:
+  - `panels.{panelName}.info.*`: Panel connection, firmware version, model
+  - `panels.{panelName}.cmd.*`: Commands (buzzer, TFT updates, navigation)
+  - `panels.{panelName}.pages.*`: Page-specific states and data
+
+### Page Item Configuration & Templates
+- **Template system**: Predefined device configurations in `/src/lib/templates/`
+- **Role-based mapping**: Device templates define roles (`rgbSingle`, `blind`, `text.list`)
+- **Data structure**: Each template defines `icon`, `entity1`, `text`, `dimmer`, etc.
+- **Dynamic configuration**: PageItems can be configured via external scripts or admin interface
+- **Popup handling**: PageItems support popup dialogs for detailed control (light color picker, shutter position)
+
+### Event Handling & Updates
+- **Message flow**: MQTT → Controller → Panel → Page → PageItem → State update
+- **Update throttling**: Pages have `minUpdateInterval` to prevent excessive updates
+- **Event types**: `entityUpd`, button clicks, navigation events
+- **Trigger system**: Pages subscribe to relevant states via StatesController
+- **Auto-refresh**: Pages can have auto-loop functionality for dynamic content
+
+### Page Configuration Patterns
+- **Card-based config**: Each page type has specific configuration schema
+- **External script config**: Pages can be configured via OnMessage handler
+- **Multi-panel support**: Same page types can run on different panels with different configs
+- **Navigation integration**: Pages register with panel navigation system
+- **State synchronization**: Page states sync with ioBroker object tree
 
 ## Translation Guidelines
 - All user-facing strings must have translations in `/admin/i18n/*/translations.json`.
