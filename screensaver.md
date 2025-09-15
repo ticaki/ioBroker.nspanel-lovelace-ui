@@ -10,27 +10,27 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 - [MR-Icons (Relay-Symbole)](#mr-icons-relay-symbole)
 
 ### Konfiguration
-- [Entity-Typen](#entity-typen)
-- [Template Entities](#template-entities)
-- [Parameter-Referenz](#parameter-referenz)
+- [Konfigurationsarten](#konfigurationsarten)
+- [Template-Konfiguration](#template-konfiguration)
+- [Script-Konfiguration Parameter](#script-konfiguration-parameter)
 - [Verwendung von Farbkonstanten](#verwendung-von-farbkonstanten)
 - [IconScaleElement - Erweiterte Icon-Skalierung](#iconscaleelement---erweiterte-icon-skalierung)
 
 ### Templates und Icons
-- [Text-Templates](#text-templates)
-- [Wetter-Integration](#wetter-integration)
-- [Icon-Referenz](#icon-referenz)
+- [Zusätzliche Text-Templates](#zusätzliche-text-templates)
+- [Wetter-Templates](#wetter-templates)
+- [Icons für NSPanel](#icons-für-nspanel)
 
 ### Praktische Beispiele
-- [Vollständige Konfigurationsbeispiele](#vollständige-konfigurationsbeispiele)
-- [Advanced Mode Beispiel](#advanced-mode-beispiel)
-- [Alternate Mode Beispiel](#alternate-mode-beispiel)
-- [Standard Mode Beispiel](#standard-mode-beispiel)
-- [Easy View Mode Beispiel](#easy-view-mode-beispiel)
+- [Vollständige Arbeitsbeispiele für alle Modi](#vollständige-arbeitsbeispiele-für-alle-modi)
+- [Advanced Mode - Komplett-Konfiguration](#advanced-mode---komplett-konfiguration)
+- [Alternate Mode - Konfiguration](#alternate-mode---konfiguration)
+- [Standard Mode - Konfiguration](#standard-mode---konfiguration)
+- [Easy View Mode - Konfiguration](#easy-view-mode---konfiguration)
 
 ### Zusätzliche Funktionen
-- [Swipe-Funktionalität](#swipe-funktionalität)
-- [Wetter-Automatisierung](#wetter-automatisierung)
+- [Wisch-Gesten (Swipe)](#wisch-gesten-swipe)
+- [Automatische Wetter-Elemente](#automatische-wetter-elemente)
 
 ## Screensaver-Modi
 
@@ -63,21 +63,21 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ### MR-Icons (Relay-Symbole)
 
-Die MR-Icons sind Anzeigeelemente im oberen Bereich des Screensavers zur Visualisierung von Relay-Status oder anderen schaltbaren Elementen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar.
+Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen Bereich des Screensavers zur Visualisierung von Status-Informationen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar.
 
 #### Eigenschaften der MR-Icons:
-- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an (nicht berührbar)
-- **Steuerung über Hardware-Tasten**: Schaltung erfolgt über die physischen Tasten unterhalb des Displays
-- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand
-- **Flexible Anbindung**: Können mit NSPanel-Relays oder beliebigen ioBroker-States verbunden werden
+- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
+- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden
+- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
+- **Flexible Anbindung**: Können mit beliebigen ioBroker-States verbunden werden (nicht nur NSPanel-Relays)
 - **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
 - **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
-- **Detach-Funktion**: Icons können von den Relay-Tasten getrennt werden
+- **Detach-Funktion**: Icons können vollständig unabhängig von den Hardware-Tasten konfiguriert werden
 
 #### Funktionsweise:
-- **Anzeige**: Die Icons im oberen Displaybereich zeigen den aktuellen Status
-- **Steuerung**: Die Schaltung erfolgt über die beiden Tasten unterhalb des Displays
-- **Konfiguration**: Betrifft sowohl die Anzeige oben als auch die Funktionalität der Tasten
+- **Anzeige**: Die Icons im oberen Displaybereich zeigen nur den aktuellen Status der verknüpften States
+- **Hardware-Tasten**: Die Tasten unterhalb des Displays sind separate Steuerelemente
+- **Konfiguration**: Die Icon-Konfiguration betrifft nur die visuelle Darstellung, nicht die Tastenfunktion
 
 #### MR-Icon Bereiche:
 - **mrIcon1ScreensaverEntity**: Linkes Relay-Symbol
@@ -565,12 +565,27 @@ iconScaleElement: {
     mode: 'triGrad'
 }
 ```
-- **Farbverlauf**: Erstellt einen kontinuierlichen Übergang durch drei Farben: Grün → Gelb → Rot
+- **Standard-Farbverlauf**: Erstellt einen kontinuierlichen Übergang durch drei Farben: Grün → Gelb → Rot
 - **Anwendung**: Ideal für Warnstufen, Batteriezustände, oder Leistungsanzeigen
-- **Verhalten**: 
+- **Standard-Verhalten**: 
   - Niedrige Werte (0-33%): Grün (gut)
   - Mittlere Werte (34-66%): Gelb (mittel/Warnung)  
   - Hohe Werte (67-100%): Rot (kritisch/schlecht)
+
+**Besonderheit mit val_best:**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 100,
+    val_best: 50,
+    mode: 'triGrad'
+}
+```
+- **Spezielles Verhalten**: Bei Verwendung von val_best wird der Farbverlauf zu: **Rot → Gelb → Grün → Gelb → Rot**
+- **Bedeutung**: 
+  - val_min (0) und val_max (100): Rot (kritisch an beiden Extremen)
+  - val_best (50): Grün (optimal im mittleren Bereich)
+  - Dazwischen: Gelb (Übergangsbereiche)
 
 **3. TriGradAnchor-Modus (Dreifarbiger Farbverlauf mit Ankerpunkt)**
 ```typescript
@@ -599,6 +614,7 @@ iconScaleElement: {
 ```
 - **Farbverlauf**: Vierstufiger Übergang für noch präzisere Darstellung
 - **Anwendung**: Besonders geeignet für Temperaturanzeigen oder komplexe Messwerte
+- **Wichtig**: Bei quadriGrad-Modi ist **val_best der Ankerpunkt** (Optimum)
 - **Verhalten**:
   - Bei val_best (22°C): Grün (optimal)
   - Leichte Abweichung: Hellgrün/Gelb (akzeptabel)
