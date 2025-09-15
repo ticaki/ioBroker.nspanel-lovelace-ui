@@ -27,7 +27,7 @@ export default [
             '.dev-data',
             'script/**/*.ts',
             'testumgebung/**/*.ts',
-            'docs'
+            'doc'
         ]
     },
 
