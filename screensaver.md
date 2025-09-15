@@ -21,7 +21,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ### 3. Standard Mode
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
-- **Bottom-Bereich** (5 Elemente): Erweiterte untere Informationsleiste
+- **Bottom-Bereich** (4 Elemente): Erweiterte untere Informationsleiste
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
 
 ### 4. Easy View Mode
@@ -1013,7 +1013,7 @@ const config: ScriptConfig.Config = {
         modeScr: 'favorit'
     }],
     
-    // Bottom-Bereich (5 Elemente)
+    // Bottom-Bereich (4 Elemente)
     bottomScreensaverEntity: [
         {
             type: 'template',
@@ -1040,12 +1040,6 @@ const config: ScriptConfig.Config = {
             ScreensaverEntityText: 'Speicher',
             ScreensaverEntityUnitText: '%',
             ScreensaverEntityIconColor: {val_min: 0, val_max: 90, mode: 'triGrad'}
-        },
-        {
-            type: 'template',
-            template: 'text.brightsky.windspeed',
-            dpInit: `/^brightsky\\.0\\.weather\\.current\\.wind_speed$/`,
-            modeScr: 'bottom'
         }
     ],
     
