@@ -10,7 +10,7 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 
 **Grundlagen**
 - [Screensaver-Modi](#screensaver-modi)
-  - [Advanced Mode](#1-advanced-mode-standard)
+  - [Advanced Mode (Standard)](#1-advanced-mode-standard)
   - [Alternate Mode](#2-alternate-mode)
   - [Standard Mode](#3-standard-mode)
   - [Easy View Mode](#4-easy-view-mode)
