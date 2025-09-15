@@ -70,20 +70,20 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 
 Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
-## 1. Advanced Mode (Standard)
+## 1 Advanced Mode Standard
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen (meist Wetter)
 - **Left-Bereich** (3 Elemente): Linker Bereich für detaillierte Informationen
 - **Indicator-Bereich** (5 Elemente): Status-Indikatoren für schnelle Übersicht
 - **Bottom-Bereich** (6 Elemente): Scrollbare Liste zusätzlicher Informationen
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons (mrIcon1 + mrIcon2)
 
-## 2. Alternate Mode
+## 2 Alternate Mode
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen
 - **Alternate-Bereich** (1 Element): Alternative Ansicht für den Hauptbereich
 - **Bottom-Bereich** (3 Elemente): Reduzierte untere Informationsleiste
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
 
-## 3. Standard Mode
+## 3 Standard Mode
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
 - **Bottom-Bereich** (4 Elemente): Erweiterte untere Informationsleiste
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
