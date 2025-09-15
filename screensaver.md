@@ -2,15 +2,118 @@
 
 Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nicht aktiv verwendet wird. Diese Dokumentation beschreibt alle Möglichkeiten zur Konfiguration des Bildschirmschoners in Ihrem Konfigurationsskript.
 
-## Übersicht
+## Screensaver-Modi
 
-Der Screensaver kann verschiedene Bereiche anzeigen:
-- **Favorit-Bereich**: Hauptbereich für wichtige Informationen (meist Wetter)
-- **Bottom-Bereich**: Unterer Bereich für zusätzliche Informationen
-- **Left-Bereich**: Linker Bereich für Status-Informationen
-- **Indicator-Bereich**: Indikator-Icons für schnelle Statusübersicht
-- **Alternate-Bereich**: Alternative Ansicht für den Hauptbereich
-- **MR-Icons**: Schaltbare Relay-Icons
+Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
+
+### 1. Advanced Mode (Standard)
+- **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen (meist Wetter)
+- **Left-Bereich** (3 Elemente): Linker Bereich für detaillierte Informationen
+- **Indicator-Bereich** (5 Elemente): Status-Indikatoren für schnelle Übersicht
+- **Bottom-Bereich** (6 Elemente): Scrollbare Liste zusätzlicher Informationen
+- **MR-Icons** (2 Elemente): Schaltbare Relay-Icons (mrIcon1 + mrIcon2)
+
+### 2. Alternate Mode
+- **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen
+- **Alternate-Bereich** (1 Element): Alternative Ansicht für den Hauptbereich
+- **Bottom-Bereich** (3 Elemente): Reduzierte untere Informationsleiste
+- **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
+
+### 3. Standard Mode
+- **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
+- **Bottom-Bereich** (5 Elemente): Erweiterte untere Informationsleiste
+- **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
+
+### 4. Easy View Mode
+- **Bottom-Bereich** (3 Elemente): Extra große Schrift für bessere Lesbarkeit
+- **Keine Icons oder Texte**: Vereinfachte Darstellung ohne komplexe Elemente
+- **Keine MR-Icons**: Reduzierte Funktionalität für einfache Bedienung
+
+## Bereiche im Detail
+
+### MR-Icons (Relay-Symbole)
+
+Die MR-Icons sind interaktive Symbole für die Steuerung von Relays oder anderen schaltbaren Elementen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar und bieten folgende Funktionen:
+
+#### Eigenschaften der MR-Icons:
+- **Interaktive Steuerung**: Direkte Schaltung von Relays durch Tippen
+- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand
+- **Flexible Anbindung**: Können mit NSPanel-Relays oder beliebigen ioBroker-States verbunden werden
+- **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
+- **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
+
+#### MR-Icon Bereiche:
+- **mrIcon1ScreensaverEntity**: Linkes Relay-Symbol
+- **mrIcon2ScreensaverEntity**: Rechtes Relay-Symbol
+
+#### Beispiel-Konfiguration für MR-Icons:
+
+```typescript
+// Direkte Relay-Steuerung
+mrIcon1ScreensaverEntity: {
+    type: 'script',
+    ScreensaverEntity: 'Relay.1',
+    ScreensaverEntityIconOn: 'lightbulb-on',
+    ScreensaverEntityIconOff: 'lightbulb-off',
+    ScreensaverEntityText: 'Licht',
+    ScreensaverEntityIconColor: {
+        val_min: 0,
+        val_max: 1,
+        val_best: 1
+    }
+}
+
+// Externe Geräte-Steuerung mit Statuswert
+mrIcon2ScreensaverEntity: {
+    type: 'script',
+    ScreensaverEntity: 'hue.0.Wohnzimmer.Lampe.on',
+    ScreensaverEntityValue: 'hue.0.Wohnzimmer.Lampe.level',
+    ScreensaverEntityIconOn: 'ceiling-light',
+    ScreensaverEntityIconOff: 'ceiling-light-outline',
+    ScreensaverEntityText: 'Dimmer',
+    ScreensaverEntityUnitText: '%'
+}
+```
+
+### Wisch-Gesten (Swipe)
+
+**Wichtiger Hinweis**: Wisch-Gesten (Swipe) wechseln NICHT zwischen verschiedenen Ansichten, sondern geben die Gestenerkennung in einen Datenpunkt aus. Dies ermöglicht es, benutzerdefinierte Aktionen auf Wischbewegungen zu programmieren.
+
+Die Swipe-Funktion kann in den erweiterten Optionen aktiviert werden:
+```typescript
+advancedOptions: {
+    screensaverSwipe: true  // Aktiviert Swipe-Gestenerkennung
+}
+```
+
+### Icons für NSPanel
+
+**Verfügbare Icons**: Alle verfügbaren Icons für das NSPanel finden Sie in der [NSPanel Icon Cheatsheet](https://docs.nspanel.pky.eu/icon-cheatsheet.html).
+
+#### Icon-Parameter:
+- `ScreensaverEntityIconOn`: Icon für den "Ein"-Zustand
+- `ScreensaverEntityIconOff`: Icon für den "Aus"-Zustand
+
+#### Icon-Beispiele:
+```typescript
+// Licht-Icons
+ScreensaverEntityIconOn: 'lightbulb-on',
+ScreensaverEntityIconOff: 'lightbulb-off',
+
+// Wetter-Icons
+ScreensaverEntityIconOn: 'weather-sunny',
+ScreensaverEntityIconOff: 'weather-cloudy',
+
+// Geräte-Icons
+ScreensaverEntityIconOn: 'power-plug',
+ScreensaverEntityIconOff: 'power-plug-off',
+
+// Status-Icons
+ScreensaverEntityIconOn: 'check-circle',
+ScreensaverEntityIconOff: 'alert-circle-outline'
+```
+
+**Wichtiger Hinweis**: Verwenden Sie ausschließlich Icons aus der [NSPanel Icon Cheatsheet](https://docs.nspanel.pky.eu/icon-cheatsheet.html). Andere Material Design Icons werden möglicherweise nicht korrekt angezeigt.
 
 ## Konfigurationsarten
 
@@ -327,6 +430,138 @@ ScreensaverEntityIconColor: {
 }
 ```
 
+### IconScaleElement - Erweiterte Icon-Skalierung
+
+Das `iconScaleElement` ermöglicht eine erweiterte Konfiguration der Icon-Farbgebung mit verschiedenen Modi und Optionen:
+
+#### Verfügbare Modi:
+
+**1. Standard-Modus (ohne mode-Parameter)**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 100,
+    val_best: 50    // Optional: Optimalwert für spezielle Hervorhebung
+}
+```
+- Lineare Farbinterpolation zwischen Minimal- und Maximalwert
+- Automatische Farbwahl basierend auf dem Wertebereich
+
+**2. TriGrad-Modus**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 100,
+    mode: 'triGrad'
+}
+```
+- Dreistufiger Farbverlauf (Grün → Gelb → Rot)
+- Geeignet für Warnstufen oder Statusanzeigen
+
+**3. TriGradAnchor-Modus**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 100,
+    val_best: 50,
+    mode: 'triGradAnchor'
+}
+```
+- Dreistufiger Farbverlauf mit Anker am Optimalwert
+- Grün bei val_best, Rot zu den Extremwerten hin
+
+**4. QuadriGradAnchor-Modus**
+```typescript
+iconScaleElement: {
+    val_min: -10,
+    val_max: 40,
+    val_best: 22,
+    mode: 'quadriGradAnchor'
+}
+```
+- Vierstufiger Farbverlauf mit Anker am Optimalwert
+- Besonders geeignet für Temperaturanzeigen
+
+**5. Mixed-Modus**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 100,
+    mode: 'mixed'
+}
+```
+- Kombiniert verschiedene Farbalgoritmen
+- Erweiterte Farbmischung für komplexe Darstellungen
+
+**6. Hue-Modus**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 360,
+    mode: 'hue'
+}
+```
+- Farbton-basierte Skalierung über den Farbkreis
+- Ideal für Farbwert-Anzeigen (Hue-Lampen)
+
+**7. CIE-Modus**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 1,
+    mode: 'cie'
+}
+```
+- CIE-Farbräume-basierte Skalierung
+- Wissenschaftlich präzise Farbdarstellung
+
+#### Logarithmische Skalierung:
+
+```typescript
+iconScaleElement: {
+    val_min: 1,
+    val_max: 1000,
+    log10: 'max'    // 'min', 'max', oder 'center'
+}
+```
+
+**Optionen für log10:**
+- `'min'`: Logarithmische Skalierung zum Minimum hin
+- `'max'`: Logarithmische Skalierung zum Maximum hin  
+- `'center'`: Logarithmische Skalierung zur Mitte hin
+
+#### Beispiele für verschiedene Anwendungen:
+
+**Temperatur-Anzeige:**
+```typescript
+iconScaleElement: {
+    val_min: -10,
+    val_max: 35,
+    val_best: 22,
+    mode: 'quadriGradAnchor'
+}
+```
+
+**Wind-Geschwindigkeit:**
+```typescript
+iconScaleElement: {
+    val_min: 0,
+    val_max: 120,
+    mode: 'triGrad',
+    log10: 'max'
+}
+```
+
+**Batterie-Level:**
+```typescript
+iconScaleElement: {
+    val_min: 10,
+    val_max: 100,
+    val_best: 80,
+    mode: 'triGradAnchor'
+}
+```
+
 ### Farbmodi
 
 - **mixed**: Lineare Interpolation zwischen zwei RGB-Farben (Standard)
@@ -373,6 +608,155 @@ ScreensaverEntityIconColor: {
 - `text.brightsky.solar`
 - `text.brightsky.bot2values`
 
+### Zusätzliche Text-Templates
+
+Neben den Wetter-Templates stehen weitere vorgefertigte Templates für verschiedene Gerätekategorien zur Verfügung:
+
+#### Allgemeine Templates
+
+**`text.clock`**
+- **Verwendung**: Aktuelle Uhrzeit
+- **States**: Interne Zeitquelle (`///time`)
+- **Role**: `text`
+- **CommonType**: `string`
+- **Regexp**: Interne Zeit-Variable
+
+**`text.temperature`**
+- **Verwendung**: Temperaturanzeige mit Farbskala
+- **States**: Sucht nach States mit Role `value.temperature`
+- **Role**: `value.temperature`
+- **CommonType**: `number`
+- **Regexp**: Keine spezifische (verwendet Role-basierte Suche)
+- **Features**: Automatische Farbskala basierend auf Temperaturwerten
+
+**`text.battery`**
+- **Verwendung**: Batteriestand mit dynamischen Icons
+- **States**: Batterie-Status und Ladezustand
+- **Role**: `value.battery`, `value.power` (für Ladestatus)
+- **CommonType**: `number`, `boolean`
+- **Features**: 
+  - Automatische Icon-Auswahl basierend auf Füllstand
+  - Unterscheidung zwischen Laden/Entladen
+  - Prozentanzeige mit Einheit
+
+**`text.battery.low`**
+- **Verwendung**: Batteriewarnung bei niedrigem Stand
+- **Role**: `indicator.lowbat`
+- **CommonType**: `boolean`
+- **Features**: Rote Warnung bei niedrigem Batteriestand
+
+#### Fenster & Türen Templates
+
+**`text.window.isOpen`**
+- **Verwendung**: Fensterstatus (Offen/Geschlossen)
+- **Role**: `sensor.window`, `sensor.open`
+- **CommonType**: `boolean`
+- **Features**: Grünes Icon bei geöffneten, rotes bei geschlossenen Fenstern
+
+**`text.window.isClose`**
+- **Verwendung**: Invertierter Fensterstatus
+- **Role**: `sensor.window`, `sensor.open`
+- **CommonType**: `boolean`
+- **Features**: Invertierte Logik von `text.window.isOpen`
+
+**`text.door.isOpen`**
+- **Verwendung**: Türstatus
+- **Role**: `sensor.door`, `sensor.open`
+- **CommonType**: `boolean`
+- **Features**: Tür-spezifische Icons
+
+**`text.gate.isOpen`**
+- **Verwendung**: Tor-/Garagenstatus
+- **Role**: `sensor.door`, `switch.gate`, `sensor.open`
+- **CommonType**: `boolean`
+- **Features**: Garage/Tor-spezifische Icons
+
+**`text.lock`**
+- **Verwendung**: Schloss-Status
+- **Role**: `switch.lock`, `state`
+- **CommonType**: `boolean`
+- **Features**: Offen (Cyan) / Geschlossen (Grün) Farbkodierung
+
+#### Bewegung & Sicherheit Templates
+
+**`text.motion`**
+- **Verwendung**: Bewegungsmelder
+- **Role**: `sensor.motion`
+- **CommonType**: `boolean`
+- **Features**: Aktivierungsanzeige mit Farbwechsel
+
+**`text.warning`**
+- **Verwendung**: Warnmeldungen mit verschiedenen Stufen
+- **Role**: `value.warning`, `weather.title.short`, `weather.title`
+- **CommonType**: `number`, `string`
+- **Regexp**: `/\.LEVEL$/`, `/\.TITLE$/`, `/\.INFO$/`
+- **Features**: 4-stufige Farbskala für Warnstufen
+
+#### Netzwerk & Verbindung Templates
+
+**`text.isOnline`**
+- **Verwendung**: Internet-/Geräteverbindung
+- **Role**: `indicator.reachable`
+- **CommonType**: `boolean`
+- **Features**: Online (Grün) / Offline (Rot) Anzeige
+
+**`text.wlan`**
+- **Verwendung**: WLAN-Verbindungsstatus
+- **Features**: Statisches WLAN-Icon mit Beschriftung
+
+#### Spezielle Templates
+
+**`text.info`**
+- **Verwendung**: Universelle Informationsanzeige mit benutzerdefinierten Werten
+- **Role**: `state`, `value.rgb`, `text`
+- **Regexp**: `/\.ACTUAL$/`, `/\.USERICON$/`, `/\.COLORDEC$/`, `/\.BUTTONTEXT$/`
+- **Features**: 
+  - Benutzerdefinierte Icons über `USERICON`-State
+  - Benutzerdefinierte Farben über `COLORDEC`-State
+  - Dynamische Texte über verschiedene Text-States
+
+**`text.shutter.navigation`**
+- **Verwendung**: Rolladen-/Jalousiensteuerung
+- **Role**: `blind`
+- **Regexp**: `/\.ACTUAL$/`, `/\.TILT_ACTUAL$/`
+- **Features**: 
+  - Position und Neigungsanzeige
+  - Verschiedene Icons für Zustände (offen, geschlossen, in Bewegung)
+
+#### Adapter-spezifische Templates
+
+**`text.battery.bydhvs`** (BYD HVS Batteriespeicher)
+- **Adapter**: `bydhvs`
+- **Role**: `value.battery`, `value.power`
+- **Regexp**: `/\.State\.SOC$/`, `/\.State\.Power$/`
+- **Features**: BYD-spezifische Batterieanzeige mit Lade-/Entladestatus
+
+**Wind-Templates (verschiedene Adapter)**
+- `text.sainlogic.windarrow` - SainLogic Wetterstation mit Windpfeil
+- `text.custom.windarrow` - Universeller Windpfeil
+- `text.hmip.windcombo` - HomeMatic IP Windanzeige
+
+**Sonnenauf-/untergangs-Templates**
+- `text.openweathermap.sunriseset` - OpenWeatherMap Sonnenzeiten
+- `text.accuweather.sunriseset` - AccuWeather Sonnenzeiten
+
+**Fahrplan-Templates**
+- `text.fahrplan.departure` - Deutsche Bahn Abfahrten
+- `text.alias.fahrplan.departure` - Alias-Version für Fahrpläne
+
+### Template-Verwendung
+
+Die Templates können mit dem `dpInit`-Parameter auf spezifische Adapter-Instanzen angewendet werden:
+
+```typescript
+{
+    type: 'template',
+    template: 'text.battery',
+    dpInit: `/^zigbee\\.0\\..*\\.battery$/`,  // Alle Zigbee-Batteriestates
+    modeScr: 'indicator'
+}
+```
+
 ### Automatische Wetter-Elemente
 
 Für automatisches Hinzufügen von Standard-Wetterelementen:
@@ -395,6 +779,327 @@ const config: ScriptConfig.Config = {
         uvIndex: true,
         solar: true  // nur BrightSky
     }
+};
+```
+
+## Vollständige Arbeitsbeispiele für alle Modi
+
+### Advanced Mode - Komplett-Konfiguration
+
+```typescript
+const config: ScriptConfig.Config = {
+    panelName: 'Wohnzimmer NSPanel',
+    panelTopic: 'nspanel-wohnzimmer',
+    
+    // Wetter-Integration
+    weatherEntity: 'pirate-weather.0.',
+    
+    // Favorit-Bereich (Hauptwetter)
+    favoritScreensaverEntity: [{
+        type: 'template',
+        template: 'text.pirate-weather.favorit',
+        dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\./`,
+        modeScr: 'favorit'
+    }],
+    
+    // Left-Bereich (3 Elemente)
+    leftScreensaverEntity: [
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Wohnzimmer.Temperatur',
+            ScreensaverEntityIconOn: 'thermometer',
+            ScreensaverEntityText: 'Innen',
+            ScreensaverEntityUnitText: '°C',
+            ScreensaverEntityIconColor: {val_min: 18, val_max: 26, val_best: 22}
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Wohnzimmer.Luftfeuchtigkeit',
+            ScreensaverEntityIconOn: 'water-percent',
+            ScreensaverEntityText: 'Feuchte',
+            ScreensaverEntityUnitText: '%',
+            ScreensaverEntityIconColor: {val_min: 30, val_max: 70, val_best: 45}
+        },
+        {
+            type: 'template',
+            template: 'text.clock',
+            modeScr: 'left'
+        }
+    ],
+    
+    // Indicator-Bereich (5 Elemente)
+    indicatorScreensaverEntity: [
+        {
+            type: 'template',
+            template: 'text.window.isOpen',
+            dpInit: `/^alias\\.0\\.Wohnzimmer\\.Fenster.*$/`,
+            modeScr: 'indicator'
+        },
+        {
+            type: 'template',
+            template: 'text.motion',
+            dpInit: `/^zigbee\\.0\\..*\\.occupancy$/`,
+            modeScr: 'indicator'
+        },
+        {
+            type: 'template',
+            template: 'text.battery.low',
+            dpInit: `/^zigbee\\.0\\..*\\.battery_low$/`,
+            modeScr: 'indicator'
+        },
+        {
+            type: 'template',
+            template: 'text.isOnline',
+            dpInit: `/^alias\\.0\\.System\\.Internet$/`,
+            modeScr: 'indicator'
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Sicherheit.Status',
+            ScreensaverEntityIconOn: 'shield-check',
+            ScreensaverEntityIconOff: 'shield-alert',
+            ScreensaverEntityText: 'Alarm'
+        }
+    ],
+    
+    // Bottom-Bereich (6 Elemente)
+    bottomScreensaverEntity: [
+        {
+            type: 'template',
+            template: 'text.pirate-weather.bot2values',
+            dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.01.*/`,
+            modeScr: 'bottom'
+        },
+        {
+            type: 'template',
+            template: 'text.pirate-weather.bot2values',
+            dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.02.*/`,
+            modeScr: 'bottom'
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Energie.Verbrauch.Aktuell',
+            ScreensaverEntityIconOn: 'flash',
+            ScreensaverEntityText: 'Verbrauch',
+            ScreensaverEntityUnitText: 'W',
+            ScreensaverEntityIconColor: {val_min: 0, val_max: 5000, mode: 'triGrad'}
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Heizung.Vorlauftemperatur',
+            ScreensaverEntityIconOn: 'radiator',
+            ScreensaverEntityText: 'Heizung',
+            ScreensaverEntityUnitText: '°C',
+            ScreensaverEntityIconColor: {val_min: 20, val_max: 80, val_best: 45}
+        },
+        {
+            type: 'template',
+            template: 'text.pirate-weather.windspeed',
+            dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\.windSpeed$/`,
+            modeScr: 'bottom'
+        },
+        {
+            type: 'template',
+            template: 'text.pirate-weather.sunriseset',
+            dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.*/`,
+            modeScr: 'bottom'
+        }
+    ],
+    
+    // MR-Icons
+    mrIcon1ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: 'Relay.1',
+        ScreensaverEntityIconOn: 'lightbulb-on',
+        ScreensaverEntityIconOff: 'lightbulb-off',
+        ScreensaverEntityText: 'Licht',
+        ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1}
+    },
+    
+    mrIcon2ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: 'alias.0.Wohnzimmer.Steckdose',
+        ScreensaverEntityIconOn: 'power-plug',
+        ScreensaverEntityIconOff: 'power-plug-off',
+        ScreensaverEntityText: 'Steckdose'
+    }
+};
+```
+
+### Alternate Mode - Konfiguration
+
+```typescript
+const config: ScriptConfig.Config = {
+    panelName: 'Küche NSPanel',
+    panelTopic: 'nspanel-kueche',
+    
+    // Favorit-Bereich
+    favoritScreensaverEntity: [{
+        type: 'template',
+        template: 'text.openweathermap.favorit',
+        dpInit: `/^openweathermap\\.0\\.forecast\\.current\\./`,
+        modeScr: 'favorit'
+    }],
+    
+    // Alternate-Bereich (Alternative Ansicht)
+    alternateScreensaverEntity: [{
+        type: 'script',
+        ScreensaverEntity: 'alias.0.Kueche.CO2',
+        ScreensaverEntityIconOn: 'molecule-co2',
+        ScreensaverEntityText: 'CO₂',
+        ScreensaverEntityUnitText: 'ppm',
+        ScreensaverEntityIconColor: {
+            val_min: 400,
+            val_max: 1200,
+            val_best: 600,
+            mode: 'triGradAnchor'
+        }
+    }],
+    
+    // Bottom-Bereich (nur 3 Elemente)
+    bottomScreensaverEntity: [
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Kueche.Temperatur',
+            ScreensaverEntityIconOn: 'thermometer',
+            ScreensaverEntityText: 'Küche',
+            ScreensaverEntityUnitText: '°C'
+        },
+        {
+            type: 'template',
+            template: 'text.clock',
+            modeScr: 'bottom'
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Kueche.Helligkeit',
+            ScreensaverEntityIconOn: 'brightness-6',
+            ScreensaverEntityText: 'Licht',
+            ScreensaverEntityUnitText: 'lux'
+        }
+    ],
+    
+    // MR-Icons
+    mrIcon1ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: 'alias.0.Kueche.Unterschrankbeleuchtung',
+        ScreensaverEntityIconOn: 'led-strip',
+        ScreensaverEntityIconOff: 'led-strip-variant-off',
+        ScreensaverEntityText: 'LED'
+    },
+    
+    mrIcon2ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: 'alias.0.Kueche.Dunstabzug',
+        ScreensaverEntityIconOn: 'fan',
+        ScreensaverEntityIconOff: 'fan-off',
+        ScreensaverEntityText: 'Lüfter'
+    }
+};
+```
+
+### Standard Mode - Konfiguration
+
+```typescript
+const config: ScriptConfig.Config = {
+    panelName: 'Flur NSPanel',
+    panelTopic: 'nspanel-flur',
+    
+    // Favorit-Bereich
+    favoritScreensaverEntity: [{
+        type: 'template',
+        template: 'text.brightsky.favorit',
+        dpInit: `/^brightsky\\.0\\.weather\\.current\\./`,
+        modeScr: 'favorit'
+    }],
+    
+    // Bottom-Bereich (5 Elemente)
+    bottomScreensaverEntity: [
+        {
+            type: 'template',
+            template: 'text.clock',
+            modeScr: 'bottom'
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Flur.Temperatur',
+            ScreensaverEntityIconOn: 'thermometer',
+            ScreensaverEntityText: 'Flur',
+            ScreensaverEntityUnitText: '°C'
+        },
+        {
+            type: 'template',
+            template: 'text.motion',
+            dpInit: `/^zigbee\\.0\\.Flur_Bewegung\\.occupancy$/`,
+            modeScr: 'bottom'
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.System.Speicherplatz',
+            ScreensaverEntityIconOn: 'harddisk',
+            ScreensaverEntityText: 'Speicher',
+            ScreensaverEntityUnitText: '%',
+            ScreensaverEntityIconColor: {val_min: 0, val_max: 90, mode: 'triGrad'}
+        },
+        {
+            type: 'template',
+            template: 'text.brightsky.windspeed',
+            dpInit: `/^brightsky\\.0\\.weather\\.current\\.wind_speed$/`,
+            modeScr: 'bottom'
+        }
+    ],
+    
+    // MR-Icons
+    mrIcon1ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: 'alias.0.Flur.Deckenlampe',
+        ScreensaverEntityIconOn: 'ceiling-light',
+        ScreensaverEntityIconOff: 'ceiling-light-outline',
+        ScreensaverEntityText: 'Decke'
+    },
+    
+    mrIcon2ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: 'alias.0.Flur.Nachtlicht',
+        ScreensaverEntityIconOn: 'lightbulb-night',
+        ScreensaverEntityIconOff: 'lightbulb-night-outline',
+        ScreensaverEntityText: 'Nacht'
+    }
+};
+```
+
+### Easy View Mode - Konfiguration
+
+```typescript
+const config: ScriptConfig.Config = {
+    panelName: 'Seniorenzimmer NSPanel',
+    panelTopic: 'nspanel-senior',
+    
+    // Easy View hat nur Bottom-Bereich mit extra großer Schrift (3 Elemente)
+    bottomScreensaverEntity: [
+        {
+            type: 'template',
+            template: 'text.clock',
+            modeScr: 'bottom'
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Wohnzimmer.Temperatur',
+            ScreensaverEntityText: 'Temperatur',
+            ScreensaverEntityUnitText: '°C',
+            ScreensaverEntityDecimalPlaces: 0  // Ganze Zahlen für bessere Lesbarkeit
+        },
+        {
+            type: 'script',
+            ScreensaverEntity: 'alias.0.Wettervorhersage.Heute.Max',
+            ScreensaverEntityText: 'Außen Max',
+            ScreensaverEntityUnitText: '°C',
+            ScreensaverEntityDecimalPlaces: 0
+        }
+    ]
+    
+    // KEINE mrIcon-Konfiguration - Easy View unterstützt keine MR-Icons
+    // KEINE komplexen Icons oder Farbskalierung - Fokus auf Einfachheit
 };
 ```
 
