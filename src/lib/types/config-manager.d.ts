@@ -868,19 +868,23 @@ declare namespace ScriptConfig {
         val_max: number;
         val_best?: number;
         /**
-         * The 3. color for color best. Only with val_best.
+         * Optional best-color (nur wirksam, wenn `val_best` gesetzt ist).
          */
         color_best?: RGB;
         /**
-         * The color mix mode. Default is 'mixed'.
-         * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
-         * 'cie': the target colour is achieved by mixing according to the CIE colour table.
-         * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
-         * 'triGrad': the target colour is interpolated in a three-color gradient from red to green.
+         * Color scale mode. Default is 'mixed'.
+         * - 'mixed': interpolate linearly between two RGB colors.
+         * - 'cie': interpolate using CIE color table.
+         * - 'hue': interpolate via hue/saturation/brightness.
+         * - 'triGrad': three-color gradient red→yellow→green, ignores custom colors.
+         * - 'triGradAnchor': like triGrad but anchors yellow to val_best.
+         * - 'quadriGrad': four-color gradient red→yellow→green→blue, ignores custom colors.
+         * - 'quadriGradAnchor': like quadriGrad but anchors green to val_best.
          */
-        mode?: 'mixed' | 'hue' | 'cie' | 'triGrad';
+        mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
         /**
-         * The logarithm scaling to max, min or leave undefined for linear scaling.
+         * Apply logarithmic scaling. Use 'max' or 'min'.
+         * Undefined = linear scaling.
          */
         log10?: 'max' | 'min';
     };
