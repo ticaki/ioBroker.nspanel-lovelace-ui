@@ -780,8 +780,15 @@ iconScaleElement: {
 
 ## Wetter-Templates
 
+Wetter-Templates sind spezialisierte Template-Konfigurationen, die **zwingend den `dpInit`-Parameter benötigen**. Dieser Parameter definiert den Regex-Pattern zur automatischen Erkennung der entsprechenden Wetter-States.
+
+### Wichtiger Hinweis
+**Alle Wetter-Templates funktionieren nur mit korrekter `dpInit`-Konfiguration!** Der `dpInit`-Parameter muss auf den entsprechenden Wetteradapter und dessen State-Struktur angepasst werden.
+
 #### Pirate Weather
-- `text.pirate-weather.favorit` - Hauptwetter-Anzeige
+
+**Verfügbare Templates:**
+- `text.pirate-weather.favorit` - Hauptwetter-Anzeige (für Favorit-Bereich)
 - `text.pirate-weather.sunriseset` - Sonnenauf-/untergang
 - `text.pirate-weather.windspeed` - Windgeschwindigkeit
 - `text.pirate-weather.windgust` - Böen
@@ -790,13 +797,81 @@ iconScaleElement: {
 - `text.pirate-weather.bot2values` - Wettervorhersage Tage
 - `text.pirate-weather.hourlyweather` - Stündliche Vorhersage
 
+**Beispiel-Konfigurationen:**
+
+```typescript
+// Favorit-Wetter für Hauptanzeige
+favoritScreensaverEntity: [
+    {
+        type: 'template',
+        template: 'text.pirate-weather.favorit',
+        dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\./`,
+        modeScr: 'favorit'
+    }
+]
+
+// Wettervorhersage für Bottom-Bereich (Tag 1-3)
+bottomScreensaverEntity: [
+    {
+        type: 'template',
+        template: 'text.pirate-weather.bot2values',
+        dpInit: `/^pirate-weather\\.0.+?\\.daily\\.01/`,  // Tag 1
+        modeScr: 'bottom'
+    },
+    {
+        type: 'template',
+        template: 'text.pirate-weather.bot2values',
+        dpInit: `/^pirate-weather\\.0.+?\\.daily\\.02/`,  // Tag 2
+        modeScr: 'bottom'
+    },
+    {
+        type: 'template',
+        template: 'text.pirate-weather.sunriseset',
+        dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
+        modeScr: 'bottom'
+    }
+]
+```
+
 #### OpenWeatherMap
+
+**Verfügbare Templates:**
 - `text.openweathermap.favorit`
 - `text.openweathermap.sunriseset`
 - `text.openweathermap.windspeed`
 - `text.openweathermap.windgust`
 - `text.openweathermap.winddirection`
 - `text.openweathermap.bot2values`
+
+**Beispiel-Konfiguration:**
+
+```typescript
+// OpenWeatherMap Hauptwetter
+favoritScreensaverEntity: [
+    {
+        type: 'template',
+        template: 'text.openweathermap.favorit',
+        dpInit: `/^openweathermap\\.0.+/`,
+        modeScr: 'favorit'
+    }
+]
+
+// Tagesvorhersagen
+bottomScreensaverEntity: [
+    {
+        type: 'template',
+        template: 'text.openweathermap.bot2values',
+        dpInit: `/^openweathermap\\.0.+?day0/`,  // Heute
+        modeScr: 'bottom'
+    },
+    {
+        type: 'template',
+        template: 'text.openweathermap.windspeed',
+        dpInit: `/^openweathermap\\.0./`,
+        modeScr: 'bottom'
+    }
+]
+```
 
 #### AccuWeather
 - `text.accuweather.favorit`
@@ -815,6 +890,49 @@ iconScaleElement: {
 - `text.brightsky.winddirection`
 - `text.brightsky.solar`
 - `text.brightsky.bot2values`
+
+**BrightSky Beispiel:**
+
+```typescript
+bottomScreensaverEntity: [
+    {
+        type: 'template',
+        template: 'text.brightsky.sunriseset',
+        dpInit: `/^brightsky\\.0\\.daily\\.00.+/`,
+        modeScr: 'bottom'
+    },
+    {
+        type: 'template',
+        template: 'text.brightsky.solar',
+        dpInit: `/^brightsky\\.0\\.current./`,
+        modeScr: 'bottom'
+    }
+]
+```
+
+### Automatische Wetter-Element-Integration
+
+Anstatt alle Wetter-Templates manuell zu konfigurieren, kann die automatische Integration genutzt werden:
+
+```typescript
+const config: ScriptConfig.Config = {
+    weatherEntity: 'pirate-weather.0.',  // Basis-Wetteradapter
+    weatherAddDefaultItems: true,        // Alle Standard-Elemente hinzufügen
+    
+    // ODER selektive Aktivierung:
+    weatherAddDefaultItems: {
+        sunriseSet: true,
+        forecastDay1: true,
+        forecastDay2: true,
+        forecastDay3: false,
+        windSpeed: true,
+        windGust: true,
+        windDirection: true,
+        uvIndex: true,
+        solar: true  // nur BrightSky
+    }
+}
+```
 
 ## Zusätzliche Text-Templates
 
