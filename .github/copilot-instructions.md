@@ -221,7 +221,7 @@
   - `shutter.ts`: Blind/shutter controls (position, up/down, stop)
   - `button.ts`: Interactive buttons with customizable actions
   - `text.ts`, `number.ts`: Input elements
-- **PageItem types**: `'light' | 'shutter' | 'delete' | 'text' | 'button' | 'switch' | 'number' | 'input_sel' | 'timer' | 'fan'`
+- **PageItem types**: `'light' | 'shutter' | 'delete' (special type for removing items, not a physical device) | 'text' | 'button' | 'switch' | 'number' | 'input_sel' | 'timer' | 'fan'`
 - **State mapping**: PageItems map to ioBroker states via `DataItem` objects with type definitions:
   - `triggered`: React to state changes with specific roles (`level.brightness`, `switch`, etc.)
   - `const`: Static values
