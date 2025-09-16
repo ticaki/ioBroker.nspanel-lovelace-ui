@@ -316,7 +316,6 @@ export async function getPageSonos(
     //speaker select
     if (!page.media.deactivateDefaultItems?.speakerList) {
         const selects: string[] = [];
-        let currentName = '';
         const list = page.media.speakerList;
         if (devices && devices.rows && devices.rows.length !== 0) {
             if (list && list.length > 0) {
@@ -328,10 +327,6 @@ export async function getPageSonos(
                     selects.push(tools.getStringFromStringOrTranslated(adapter, v.value.common.name)),
                 );
             }
-            currentName =
-                devices.rows
-                    .filter(v => v.id === str)
-                    .map(v => tools.getStringFromStringOrTranslated(adapter, v.value.common.name))[0] || '';
         }
         let arr = list && list.length > 0 ? selects.filter(t => list.find(s => s === t) == null) : selects;
         arr = arr.concat(list ?? []);
