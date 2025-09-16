@@ -220,31 +220,41 @@ export async function handleCardRole(
                     startkey: `${searchPath}.`,
                     endkey: `${searchPath}${String.fromCharCode(0xff_fd)}`,
                 });
-                const selects: string[] = [];
+                const selects: { name: string; id: string }[] = [];
                 if (view && view.rows && view.rows.length !== 0) {
                     if (_tempArr && _tempArr.length > 0) {
                         view.rows
                             .filter(v =>
                                 _tempArr.includes(getStringFromStringOrTranslated(adapter, v.value.common.name)),
                             )
-                            .forEach(v => selects.push(getStringFromStringOrTranslated(adapter, v.value.common.name)));
+                            .forEach(v => {
+                                selects.push({
+                                    name: getStringFromStringOrTranslated(adapter, v.value.common.name),
+                                    id: v.id,
+                                });
+                            });
                     } else {
                         view.rows.forEach(v =>
-                            selects.push(getStringFromStringOrTranslated(adapter, v.value.common.name)),
+                            selects.push({
+                                name: getStringFromStringOrTranslated(adapter, v.value.common.name),
+                                id: v.id,
+                            }),
                         );
                     }
                 }
                 let arr =
                     _tempArr && _tempArr.length > 0
-                        ? selects.filter(t => _tempArr.find(s => s === t) == null)
+                        ? selects.filter(t => _tempArr.findIndex(s => s === t.name) !== -1)
                         : selects;
-                arr = arr.concat(_tempArr ?? []);
-                arr = arr.filter((item, pos) => item && arr.indexOf(item) === pos); // make unique
-                arr = arr.sort((a, b) => a.localeCompare(b));
+                arr = arr.concat((_tempArr ?? []).map(n => ({ name: n, id: `` })));
+                const seen = new Set();
+                arr = arr.filter(item => item && !seen.has(item.name) && seen.add(item.name));
+                arr = arr.sort((a, b) => a.name.localeCompare(b.name));
 
                 result = [];
                 for (let i = 0; i < arr.length; i++) {
-                    const val = arr[i].trim();
+                    const val = arr[i].name.trim();
+                    const id = arr[i].id.trim();
                     if (!val) {
                         continue;
                     }
@@ -268,10 +278,10 @@ export async function handleCardRole(
                             headline: { type: 'const', constVal: val },
                             dimmer: {
                                 value: {
-                                    mode: 'auto',
+                                    //mode: 'auto',
                                     type: 'triggered',
-                                    regexp: /\.volume$/,
-                                    dp: `${identifier}.volume`,
+                                    //regexp: /\.volume$/,
+                                    dp: `${id}.volume`,
                                 },
                                 minScale: { type: 'const', constVal: _options?.min ?? 0 },
                                 maxScale: { type: 'const', constVal: _options?.max ?? 100 },

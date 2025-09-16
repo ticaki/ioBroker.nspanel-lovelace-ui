@@ -183,20 +183,30 @@ async function handleCardRole(adapter, cardRole, page, _options) {
           if (_tempArr && _tempArr.length > 0) {
             view.rows.filter(
               (v) => _tempArr.includes((0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name))
-            ).forEach((v) => selects.push((0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name)));
+            ).forEach((v) => {
+              selects.push({
+                name: (0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name),
+                id: v.id
+              });
+            });
           } else {
             view.rows.forEach(
-              (v) => selects.push((0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name))
+              (v) => selects.push({
+                name: (0, import_tools.getStringFromStringOrTranslated)(adapter, v.value.common.name),
+                id: v.id
+              })
             );
           }
         }
-        let arr = _tempArr && _tempArr.length > 0 ? selects.filter((t) => _tempArr.find((s) => s === t) == null) : selects;
-        arr = arr.concat(_tempArr != null ? _tempArr : []);
-        arr = arr.filter((item, pos) => item && arr.indexOf(item) === pos);
-        arr = arr.sort((a, b) => a.localeCompare(b));
+        let arr = _tempArr && _tempArr.length > 0 ? selects.filter((t) => _tempArr.findIndex((s) => s === t.name) !== -1) : selects;
+        arr = arr.concat((_tempArr != null ? _tempArr : []).map((n) => ({ name: n, id: `` })));
+        const seen = /* @__PURE__ */ new Set();
+        arr = arr.filter((item) => item && !seen.has(item.name) && seen.add(item.name));
+        arr = arr.sort((a, b) => a.name.localeCompare(b.name));
         result = [];
         for (let i = 0; i < arr.length; i++) {
-          const val = arr[i].trim();
+          const val = arr[i].name.trim();
+          const id = arr[i].id.trim();
           if (!val) {
             continue;
           }
@@ -220,10 +230,10 @@ async function handleCardRole(adapter, cardRole, page, _options) {
               headline: { type: "const", constVal: val },
               dimmer: {
                 value: {
-                  mode: "auto",
+                  //mode: 'auto',
                   type: "triggered",
-                  regexp: /\.volume$/,
-                  dp: `${identifier}.volume`
+                  //regexp: /\.volume$/,
+                  dp: `${id}.volume`
                 },
                 minScale: { type: "const", constVal: (_b = _options == null ? void 0 : _options.min) != null ? _b : 0 },
                 maxScale: { type: "const", constVal: (_c = _options == null ? void 0 : _options.max) != null ? _c : 100 }
