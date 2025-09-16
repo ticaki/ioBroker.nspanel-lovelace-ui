@@ -193,7 +193,7 @@ Hier Beispiele mit dem linken Button, der rechte Button heißt `buttonRight`.
 ---
 ## Screensaver  
   
-Beim Screensaver lassen sich mehere Layouts auswählen. Diese werden über die Serviceseiten aktiviert. Im Script, was vom Adapter automatisch angelegt wird, sind schon diverse Einträge für alle Layouts hinterlegt. Diese müssen nur etwas angepasst werden, gleichen aber im Großen und Ganzem dem Script. Weitere Details zum Screensaver in einem [eigenen Kapitel.](Screensaver) 
+Beim Screensaver lassen sich mehere Layouts auswählen. Diese werden über die Serviceseiten aktiviert. Im Script, was vom Adapter automatisch angelegt wird, sind schon diverse Einträge für alle Layouts hinterlegt. Diese müssen nur etwas angepasst werden, gleichen aber im Großen und Ganzem dem Script. Weitere Details zum Screensaver in einem [eigenen Kapitel.](screensaver) 
 
 ---
 
