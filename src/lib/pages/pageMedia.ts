@@ -239,6 +239,7 @@ export class PageMedia extends PageMenu {
                 for (const item of this.pageItems) {
                     item && (await item.delete());
                 }
+                this.removeTempItems();
             }
             const pi = [];
             if (this.pageItemConfig) {

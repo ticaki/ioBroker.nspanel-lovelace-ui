@@ -530,6 +530,10 @@ export class PageMenu extends Page {
             await this.update();
         }
     }
+    removeTempItems(): void {
+        this.tempItems = undefined; // statt [] um Referenzen zu lösen
+        this.tempItems = [];
+    }
 
     async reset(): Promise<void> {
         this.step = 0;

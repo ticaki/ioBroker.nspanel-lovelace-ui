@@ -460,6 +460,10 @@ class PageMenu extends import_Page.Page {
       await this.update();
     }
   }
+  removeTempItems() {
+    this.tempItems = void 0;
+    this.tempItems = [];
+  }
   async reset() {
     this.step = 0;
   }
