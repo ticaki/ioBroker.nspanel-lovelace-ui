@@ -247,5 +247,8 @@
     "sunset": "日落",
     "technical": "技术的",
     "trackList": "轨道列表",
-    "media.seek": "播放位置"
+    "media.seek": "播放位置",
+    "StateObjects.buzzer": "蜂鸣器控制",
+    "favoriteList": "最爱列表",
+    "crossfade": "Crossfade"
 }

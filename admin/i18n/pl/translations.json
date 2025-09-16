@@ -247,5 +247,8 @@
     "sunset": "Zachód słońca",
     "technical": "Techniczny",
     "trackList": "Lista ścieżek",
-    "media.seek": "Pozycja odtwarzania"
+    "media.seek": "Pozycja odtwarzania",
+    "StateObjects.buzzer": "Kontrola brzęczyka",
+    "favoriteList": "Lista ulubionych",
+    "crossfade": "Krzyżowanie"
 }

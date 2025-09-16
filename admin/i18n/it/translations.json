@@ -247,5 +247,8 @@
     "sunset": "Tramonto",
     "technical": "Tecnico",
     "trackList": "Elenco delle tracce",
-    "media.seek": "Posizione di riproduzione"
+    "media.seek": "Posizione di riproduzione",
+    "StateObjects.buzzer": "Controllo del cicalino",
+    "favoriteList": "Elenco dei preferiti",
+    "crossfade": "Crossfade"
 }

@@ -247,5 +247,8 @@
     "sunset": "Pôr do sol",
     "technical": "Técnico",
     "trackList": "Lista de faixas",
-    "media.seek": "Posição de reprodução"
+    "media.seek": "Posição de reprodução",
+    "StateObjects.buzzer": "Controle da campainha",
+    "favoriteList": "Lista de favoritos",
+    "crossfade": "Crossfade"
 }

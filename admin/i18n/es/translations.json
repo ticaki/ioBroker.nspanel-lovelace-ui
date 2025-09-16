@@ -247,5 +247,8 @@
     "sunset": "Atardecer",
     "technical": "Técnico",
     "trackList": "Lista de pistas",
-    "media.seek": "Posición de reproducción"
+    "media.seek": "Posición de reproducción",
+    "StateObjects.buzzer": "Control de timbres",
+    "favoriteList": "Lista de favoritos",
+    "crossfade": "Enchufe"
 }

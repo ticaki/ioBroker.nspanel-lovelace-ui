@@ -247,5 +247,8 @@
     "sunset": "Закат",
     "technical": "Технический",
     "trackList": "Трек -список",
-    "media.seek": "Позиция воспроизведения"
+    "media.seek": "Позиция воспроизведения",
+    "StateObjects.buzzer": "Управление зуммером",
+    "favoriteList": "Список фаворитов",
+    "crossfade": "Кроссфейд"
 }

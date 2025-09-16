@@ -247,5 +247,8 @@
     "sunset": "Coucher de soleil",
     "technical": "Technique",
     "trackList": "Liste de pistes",
-    "media.seek": "Position de lecture"
+    "media.seek": "Position de lecture",
+    "StateObjects.buzzer": "Contrôle du buzzer",
+    "favoriteList": "Liste des favoris",
+    "crossfade": "Falsification"
 }

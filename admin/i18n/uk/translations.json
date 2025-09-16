@@ -247,5 +247,8 @@
     "sunset": "Захід сонця",
     "technical": "Технічний",
     "trackList": "Список треку",
-    "media.seek": "Позиція відтворення"
+    "media.seek": "Позиція відтворення",
+    "StateObjects.buzzer": "Зумерний контроль",
+    "favoriteList": "Список улюблених",
+    "crossfade": "Хрестоподібне"
 }

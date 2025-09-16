@@ -247,5 +247,8 @@
     "sunset": "Zonsondergang",
     "technical": "Technisch",
     "trackList": "Tracklijst",
-    "media.seek": "Afspeelpositie"
+    "media.seek": "Afspeelpositie",
+    "StateObjects.buzzer": "Zoemerbesturing",
+    "favoriteList": "Favorietenlijst",
+    "crossfade": "Crossfade"
 }
