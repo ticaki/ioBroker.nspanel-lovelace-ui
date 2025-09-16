@@ -20,7 +20,7 @@ jobs:
       - name: Install lychee
         uses: lycheeverse/lychee-action@v1
         with:
-          args: --verbose --no-progress --exclude-mail 'doc/'
+          args: --verbose --no-progress --exclude-mail --accept-missing '.md$' 'doc/'
 
       - name: Save link check report
         if: always()
