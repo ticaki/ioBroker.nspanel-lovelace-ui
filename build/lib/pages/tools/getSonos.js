@@ -124,6 +124,13 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
           dp: "",
           read: `return val ? val*1000 : val;`
         },
+        station: {
+          mode: "auto",
+          type: "triggered",
+          role: "media.station",
+          regexp: /\.current_station$/,
+          dp: ""
+        },
         onOffColor: {
           true: page.media.colorMediaIcon ? { color: await configManager.getIconColor(page.media.colorMediaIcon) } : { color: { type: "const", constVal: import_Color.Color.on } },
           false: page.media.colorMediaIcon ? void 0 : { color: { type: "const", constVal: import_Color.Color.off } }

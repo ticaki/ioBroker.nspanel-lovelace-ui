@@ -114,6 +114,13 @@ export async function getPageSonos(
                     dp: '',
                     read: `return val ? val*1000 : val;`,
                 },
+                station: {
+                    mode: 'auto',
+                    type: 'triggered',
+                    role: 'media.station',
+                    regexp: /\.current_station$/,
+                    dp: '',
+                },
                 onOffColor: {
                     true: page.media.colorMediaIcon
                         ? { color: await configManager.getIconColor(page.media.colorMediaIcon) }

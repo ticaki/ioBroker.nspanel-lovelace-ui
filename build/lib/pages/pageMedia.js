@@ -73,6 +73,7 @@ class PageMedia extends import_pageMenu.PageMenu {
   serviceName = "";
   itemAtCreate = [];
   playerNameList = {};
+  updateViewTimeout = null;
   /**
    * The identifier of the current media player.
    * Alexa ist es this.config.ident - der Pfad zum device
@@ -267,10 +268,17 @@ class PageMedia extends import_pageMenu.PageMenu {
     await this.update();
   }
   async update() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (!this.visibility || this.sleep) {
       return;
     }
+    if (this.updateViewTimeout) {
+      this.adapter.clearTimeout(this.updateViewTimeout);
+    }
+    this.updateViewTimeout = this.adapter.setTimeout(async () => {
+      this.updateViewTimeout = null;
+      await this.update();
+    }, 5e3);
     if (this.serviceName === "sonos" && this.coordinator) {
       const v = await ((_a = this.coordinator) == null ? void 0 : _a.getString());
       if (v) {
@@ -292,7 +300,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       return;
     }
     const message = {};
-    let duration = "", elapsed = "", title = "", album = "", artist = "";
+    let duration = "", elapsed = "", title = "", album = "", artist = "", station = "";
     const isPlaying = await this.isPlaying();
     {
       const v = await tools.getValueEntryString(item.data.title);
@@ -338,7 +346,13 @@ class PageMedia extends import_pageMenu.PageMenu {
         artist = v;
       }
     }
-    if (item.data.duration && item.data.elapsed) {
+    {
+      const v = await ((_b = item.data.station) == null ? void 0 : _b.getString());
+      if (v != null && isPlaying) {
+        station = v;
+      }
+    }
+    if (!station && item.data.duration && item.data.elapsed) {
       const d = await item.data.duration.getNumber();
       if (d) {
         duration = tools.formatHMS(d);
@@ -370,7 +384,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.headlinePos = nextPos;
     }
     {
-      const suffix = `| ${elapsed}${duration ? `-${duration}` : ""}`;
+      const suffix = station ? `| ${station} ` : `| ${elapsed}${duration ? `-${duration}` : ""}`;
       const { text, nextPos } = tools.buildScrollingText(title, {
         maxSize: 36,
         suffix,
@@ -391,9 +405,9 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.artistPos = nextPos;
     }
     message.shuffle_icon = "";
-    if ((_c = (_b = item.data.shuffle) == null ? void 0 : _b.value) == null ? void 0 : _c.type) {
+    if ((_d = (_c = item.data.shuffle) == null ? void 0 : _c.value) == null ? void 0 : _d.type) {
       let value = null;
-      if (!item.data.shuffle.enabled || await item.data.shuffle.enabled.getBoolean() === true) {
+      if (!station && (!item.data.shuffle.enabled || await item.data.shuffle.enabled.getBoolean() === true)) {
         switch (item.data.shuffle.value.type) {
           case "string": {
             const v = await item.data.shuffle.value.getString();
@@ -416,7 +430,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         message.shuffle_icon = value ? "shuffle-variant" : "shuffle-disabled";
       }
     }
-    if (await ((_d = item.data.useGroupVolume) == null ? void 0 : _d.getBoolean()) && item.data.volumeGroup) {
+    if (await ((_e = item.data.useGroupVolume) == null ? void 0 : _e.getBoolean()) && item.data.volumeGroup) {
       const v = await tools.getScaledNumber(item.data.volumeGroup);
       if (v !== null) {
         this.config.filterType = "volumeGroup";
@@ -797,6 +811,10 @@ class PageMedia extends import_pageMenu.PageMenu {
     var _a;
     await super.delete();
     await ((_a = this.coordinator) == null ? void 0 : _a.delete());
+    if (this.updateViewTimeout) {
+      this.adapter.clearTimeout(this.updateViewTimeout);
+      this.updateViewTimeout = null;
+    }
     this.coordinator = void 0;
     for (const item of this.items) {
       if (item.logoItem) {

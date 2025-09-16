@@ -49,6 +49,7 @@ export class PageMedia extends PageMenu {
     private serviceName: 'alexa2' | 'spotify-premium' | 'mpd' | 'sonos' | '' = '';
     private itemAtCreate: string[] = [];
     private playerNameList: Record<string, string> = {};
+    private updateViewTimeout: ioBroker.Timeout | null | undefined = null;
     /**
      * The identifier of the current media player.
      * Alexa ist es this.config.ident - der Pfad zum device
@@ -287,6 +288,15 @@ export class PageMedia extends PageMenu {
         if (!this.visibility || this.sleep) {
             return;
         }
+        // update all 5 seconds
+        if (this.updateViewTimeout) {
+            this.adapter.clearTimeout(this.updateViewTimeout);
+        }
+        this.updateViewTimeout = this.adapter.setTimeout(async () => {
+            this.updateViewTimeout = null;
+            await this.update();
+        }, 5000);
+
         // Find current item by player ident, fallback to first item
         if (this.serviceName === 'sonos' && this.coordinator) {
             const v = await this.coordinator?.getString();
@@ -319,7 +329,8 @@ export class PageMedia extends PageMenu {
             elapsed = '',
             title = '',
             album = '',
-            artist = '';
+            artist = '',
+            station = '';
 
         const isPlaying = await this.isPlaying();
         // Title string
@@ -375,8 +386,16 @@ export class PageMedia extends PageMenu {
             }
         }
 
+        // Station string
+        {
+            const v = await item.data.station?.getString();
+            if (v != null && isPlaying) {
+                station = v;
+            }
+        }
+
         // Duration + elapsed
-        if (item.data.duration && item.data.elapsed) {
+        if (!station && item.data.duration && item.data.elapsed) {
             const d = await item.data.duration.getNumber(); // media length in ms
             if (d) {
                 duration = tools.formatHMS(d);
@@ -419,7 +438,7 @@ export class PageMedia extends PageMenu {
         // Title scrolling with duration/elapsed suffix
         // ---------------------
         {
-            const suffix = `| ${elapsed}${duration ? `-${duration}` : ''}`;
+            const suffix = station ? `| ${station} ` : `| ${elapsed}${duration ? `-${duration}` : ''}`;
             const { text, nextPos } = tools.buildScrollingText(title, {
                 maxSize: 36,
                 suffix,
@@ -452,7 +471,7 @@ export class PageMedia extends PageMenu {
         message.shuffle_icon = '';
         if (item.data.shuffle?.value?.type) {
             let value: null | true | false = null;
-            if (!item.data.shuffle.enabled || (await item.data.shuffle.enabled.getBoolean()) === true) {
+            if (!station && (!item.data.shuffle.enabled || (await item.data.shuffle.enabled.getBoolean()) === true)) {
                 switch (item.data.shuffle.value.type) {
                     case 'string': {
                         const v = await item.data.shuffle.value.getString();
@@ -919,6 +938,10 @@ export class PageMedia extends PageMenu {
     async delete(): Promise<void> {
         await super.delete();
         await this.coordinator?.delete();
+        if (this.updateViewTimeout) {
+            this.adapter.clearTimeout(this.updateViewTimeout);
+            this.updateViewTimeout = null;
+        }
         this.coordinator = undefined;
         for (const item of this.items) {
             if (item.logoItem) {

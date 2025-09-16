@@ -234,10 +234,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'indicator.connected',
     'level.volume.group',
     'media.mode.crossfade',
+    'media.station',
     '',
 ]);
 
 export type StateRole =
+    | 'media.station'
     | 'media.mode.crossfade'
     | 'level.volume.group'
     | 'indicator.connected'
@@ -917,6 +919,7 @@ type PageMediaBaseConfig = {
     title?: typePageItem.ValueEntryTypeWithColor;
     duration?: string;
     elapsed?: string;
+    station?: boolean;
     artist?: typePageItem.ValueEntryTypeWithColor;
     shuffle?: typePageItem.ScaledNumberType;
     volume?: typePageItem.ScaledNumberType;
