@@ -1581,12 +1581,13 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return this.parent ? `${this.parent.name}.${this.id}` : this.id;
   }
   async delete() {
-    var _a;
-    if ((_a = this.parent.currentPanel) == null ? void 0 : _a.persistentPageItems[this.id]) {
-      if (!this.parent.currentPanel.unload) {
-        return;
+    if (this.parent.currentPanel != null && this.parent.currentPanel.persistentPageItems != null) {
+      if (this.parent.currentPanel.persistentPageItems[this.id]) {
+        if (!this.parent.currentPanel.unload) {
+          return;
+        }
+        delete this.parent.currentPanel.persistentPageItems[this.id];
       }
-      delete this.parent.currentPanel.persistentPageItems[this.id];
     }
     await super.delete();
     this.visibility = false;

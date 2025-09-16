@@ -1841,12 +1841,14 @@ export class PageItem extends BaseTriggeredPage {
         return this.parent ? `${this.parent.name}.${this.id}` : this.id;
     }
     async delete(): Promise<void> {
-        if (this.parent.currentPanel?.persistentPageItems[this.id]) {
-            if (!this.parent.currentPanel.unload) {
-                return;
-            }
+        if (this.parent.currentPanel != null && this.parent.currentPanel.persistentPageItems != null) {
+            if (this.parent.currentPanel.persistentPageItems[this.id]) {
+                if (!this.parent.currentPanel.unload) {
+                    return;
+                }
 
-            delete this.parent.currentPanel.persistentPageItems[this.id];
+                delete this.parent.currentPanel.persistentPageItems[this.id];
+            }
         }
         await super.delete();
         this.visibility = false;
