@@ -30,13 +30,47 @@ jobs:
                   mkdir -p reports
                   mv lychee/out.md reports/link-check-report.md || true
 
-            - name: Create or update link check issue
-              if: steps.lychee.outcome == 'failure'
-              uses: peter-evans/create-or-update-issue@v4
+            - name: Find existing issue
+              id: find_issue
+              uses: actions/github-script@v6
               with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  title: 'Broken links detected'
-                  body-file: reports/link-check-report.md
-                  labels: docs
-                  assignees: tt-tom17
-                  state: open
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                script: |
+                  const title = "Broken links detected";
+                  const { data: issues } = await github.rest.issues.listForRepo({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    state: "open"
+                  });
+                  const issue = issues.find(i => i.title === title);
+                  if (issue) return issue.number;
+                  return "";
+            - name: Create or update issue
+              if: steps.find_issue.outputs.result != ""
+              uses: actions/github-script@v6
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                script: |
+                  const issue_number = steps.find_issue.outputs.result;
+                  const body = require('fs').readFileSync('reports/link-check-report.md', 'utf8');
+                  await github.rest.issues.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number,
+                    body
+                  });
+            - name: Create issue if none exists
+              if: steps.find_issue.outputs.result == ""
+              uses: actions/github-script@v6
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                script: |
+                  const body = require('fs').readFileSync('reports/link-check-report.md', 'utf8');
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: "Broken links detected",
+                    body,
+                    labels: ["docs"],
+                    assignees: ["tt-tom17"]
+                  });
