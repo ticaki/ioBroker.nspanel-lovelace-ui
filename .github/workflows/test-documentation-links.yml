@@ -17,60 +17,30 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Install lychee
+            - name: Install and run lychee
               uses: lycheeverse/lychee-action@v2
               with:
                   args: --verbose --no-progress --fallback-extensions md,mdx --include-wikilinks 'doc/'
+              continue-on-error: true
+              id: lychee
 
             - name: Save link check report
-              id: lychee
-              continue-on-error: true
-              if: failure()
+              if: steps.lychee.outcome == 'failure'
               run: |
                   mkdir -p reports
-                  mv lychee/out.md reports/link-check-report.md || true
+                  cp lychee/out.md reports/link-check-report.md 2>/dev/null || echo "No report file found" > reports/link-check-report.md
 
-            - name: Find existing issue
-              id: find_issue
-              uses: actions/github-script@v6
-              with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                script: |
-                  const title = "Broken links detected";
-                  const { data: issues } = await github.rest.issues.listForRepo({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    state: "open"
-                  });
-                  const issue = issues.find(i => i.title === title);
-                  if (issue) return issue.number;
-                  return "";
-            - name: Create or update issue
-              if: steps.find_issue.outputs.result != ""
-              uses: actions/github-script@v6
-              with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                script: |
-                  const issue_number = steps.find_issue.outputs.result;
-                  const body = require('fs').readFileSync('reports/link-check-report.md', 'utf8');
-                  await github.rest.issues.update({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number,
-                    body
-                  });
-            - name: Create issue if none exists
-              if: steps.find_issue.outputs.result == ""
-              uses: actions/github-script@v6
-              with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                script: |
-                  const body = require('fs').readFileSync('reports/link-check-report.md', 'utf8');
-                  await github.rest.issues.create({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    title: "Broken links detected",
-                    body,
-                    labels: ["docs"],
-                    assignees: ["tt-tom17"]
-                  });
+            - name: Create/Update issue
+              if: steps.lychee.outcome == 'failure'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  title="Broken links detected in documentation"
+                  num=$(gh issue list -S "in:title \"$title\" is:open" -L 1 --json number -q ".[0].number")
+                  if [ -n "$num" ]; then
+                    echo "Updating existing issue #$num"
+                    gh issue edit "$num" --body-file reports/link-check-report.md
+                  else
+                    echo "Creating new issue"
+                    gh issue create --title "$title" --body-file reports/link-check-report.md --label documentation --assignee tt-tom17
+                  fi
