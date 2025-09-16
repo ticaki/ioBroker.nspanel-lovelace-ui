@@ -70,25 +70,37 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 
 Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
-## 1 Advanced Mode Standard
+## 1 Advanced Mode Standard  
+  
+<img alt='screensaverAdv' src='../Pictures/screensaver/screensaverAdv.png'>  
+
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen (meist Wetter)
 - **Left-Bereich** (3 Elemente): Linker Bereich für detaillierte Informationen
 - **Indicator-Bereich** (5 Elemente): Status-Indikatoren für schnelle Übersicht
 - **Bottom-Bereich** (6 Elemente): Scrollbare Liste zusätzlicher Informationen
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons (mrIcon1 + mrIcon2)
 
-## 2 Alternate Mode
+## 2 Alternate Mode  
+  
+<img alt='screensaverAlt' src='../Pictures/screensaver/screensaverAlt.png'>  
+    
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen
 - **Alternate-Bereich** (1 Element): Alternative Ansicht für den Hauptbereich
 - **Bottom-Bereich** (3 Elemente): Reduzierte untere Informationsleiste
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
 
-## 3 Standard Mode
+## 3 Standard Mode  
+  
+<img alt='screensaverStd' src='../Pictures/screensaver/screensaverStd.png'>  
+    
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
 - **Bottom-Bereich** (4 Elemente): Erweiterte untere Informationsleiste
 - **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
 
-## 4. Easy View Mode
+## 4. Easy View Mode  
+  
+<img alt='screensaverEsay' src='../Pictures/screensaver/screensaverEsay.png'>  
+  
 - **Bottom-Bereich** (3 Elemente): Extra große Schrift für bessere Lesbarkeit
 - **Keine Icons oder Texte**: Vereinfachte Darstellung ohne komplexe Elemente
 - **Keine MR-Icons**: Reduzierte Funktionalität für einfache Bedienung

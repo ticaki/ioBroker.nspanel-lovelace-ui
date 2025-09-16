@@ -30,7 +30,7 @@
 - [Screensaver](ScriptConfig#screensaver) iA  
 
 **Screensaver**  
-- [Einleitung](Screensaver.md#einleitung) iA  
+- [Einleitung](screensaver)   
 
 **Standard Pages**  
 - [Einleitung](Pages)  
