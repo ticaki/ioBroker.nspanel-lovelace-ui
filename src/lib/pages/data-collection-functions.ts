@@ -249,8 +249,8 @@ export async function handleCardRole(
                         continue;
                     }
                     result.push({
-                        role: 'writeTargetByValue',
-                        type: 'button',
+                        role: 'volume.mute',
+                        type: 'light',
                         dpInit: '',
                         data: {
                             entity1: {
@@ -265,7 +265,17 @@ export async function handleCardRole(
                                             return false;`,
                                 },
                             },
-                            text: { true: { type: 'const', constVal: val } },
+                            headline: { type: 'const', constVal: val },
+                            dimmer: {
+                                value: {
+                                    mode: 'auto',
+                                    type: 'triggered',
+                                    regexp: /\.volume$/,
+                                    dp: `${identifier}.volume`,
+                                },
+                                minScale: { type: 'const', constVal: _options?.min ?? 0 },
+                                maxScale: { type: 'const', constVal: _options?.max ?? 100 },
+                            },
                             icon: {
                                 true: {
                                     value: { type: 'const', constVal: 'speaker' },

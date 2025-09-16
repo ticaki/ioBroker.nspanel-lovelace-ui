@@ -25,7 +25,7 @@ var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
 var import_pages = require("../types/pages");
 async function handleCardRole(adapter, cardRole, page, _options) {
-  var _a;
+  var _a, _b, _c;
   if (!cardRole) {
     return null;
   }
@@ -201,8 +201,8 @@ async function handleCardRole(adapter, cardRole, page, _options) {
             continue;
           }
           result.push({
-            role: "writeTargetByValue",
-            type: "button",
+            role: "volume.mute",
+            type: "light",
             dpInit: "",
             data: {
               entity1: {
@@ -217,7 +217,17 @@ async function handleCardRole(adapter, cardRole, page, _options) {
                                             return false;`
                 }
               },
-              text: { true: { type: "const", constVal: val } },
+              headline: { type: "const", constVal: val },
+              dimmer: {
+                value: {
+                  mode: "auto",
+                  type: "triggered",
+                  regexp: /\.volume$/,
+                  dp: `${identifier}.volume`
+                },
+                minScale: { type: "const", constVal: (_b = _options == null ? void 0 : _options.min) != null ? _b : 0 },
+                maxScale: { type: "const", constVal: (_c = _options == null ? void 0 : _options.max) != null ? _c : 100 }
+              },
               icon: {
                 true: {
                   value: { type: "const", constVal: "speaker" },

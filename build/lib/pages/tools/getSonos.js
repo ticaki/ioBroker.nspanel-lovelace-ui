@@ -336,17 +336,11 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         data: {
           entity1: {
             value: {
-              mode: "auto",
+              //mode: 'auto',
               type: "triggered",
-              regexp: /.?\.members$/,
-              dp: "",
-              read: `
-                        let data = val;
-                        if (typeof val === 'string') {
-                        const t = val.split(',').map(i => i.trim());
-                            return t.length < 2 || t.includes('${currentName}');
-                        };
-                        return true;`
+              //regexp: /.?\.coordinator$/,
+              dp: `${str}.coordinator`,
+              read: ` return val === '${str.split(".").pop()}'`
             }
           },
           icon: {

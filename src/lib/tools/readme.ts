@@ -60,7 +60,7 @@ export async function generateAliasDocumentation(): Promise<void> {
         `\n${body}`;
 
     const out = `${toc}\n${body}`;
-    await fsp.writeFile(path.join(process.cwd(), 'ALIAS.md'), out, 'utf8');
+    await fsp.writeFile(path.join(process.cwd(), 'doc/de/ALIAS.md'), out, 'utf8');
 }
 /*export async function generateAliasDocumentation(): Promise<void> {
     const checkPath = '.dev-data';
