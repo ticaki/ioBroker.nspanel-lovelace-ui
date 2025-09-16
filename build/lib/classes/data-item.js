@@ -287,19 +287,23 @@ class Dataitem extends import_library.BaseClass {
    */
   async getString() {
     const state = await this.getState();
-    switch (this.options.type) {
-      case "const":
-        return state && state.val !== null ? typeof state.val === "object" ? JSON.stringify(state.val) : String(state.val) : null;
-      case "state":
-      case "triggered":
-        if (this.options.substring) {
-          const args = this.options.substring;
-          return state && state.val !== null ? String(state.val).substring(args[0], args[1]) : null;
-        }
-        return state && state.val !== null ? String(state.val) : null;
-      case "internalState":
-      case "internal":
-        return state && state.val !== null ? String(state.val) : null;
+    try {
+      switch (this.options.type) {
+        case "const":
+          return state && state.val !== null ? typeof state.val === "object" ? JSON.stringify(state.val) : String(state.val).replaceAll("~", "-") : null;
+        case "state":
+        case "triggered":
+          if (this.options.substring) {
+            const args = this.options.substring;
+            return state && state.val !== null ? typeof state.val === "object" ? JSON.stringify(state.val) : String(state.val).replaceAll("~", "-").substring(args[0], args[1]) : null;
+          }
+          return state && state.val !== null ? typeof state.val === "object" ? JSON.stringify(state.val) : String(state.val).replaceAll("~", "-") : null;
+        case "internalState":
+        case "internal":
+          return state && state.val !== null ? String(state.val).replaceAll("~", "-") : null;
+      }
+    } catch {
+      this.log.error(`Error in getString for ${this.options.dp}`);
     }
     return null;
   }

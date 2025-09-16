@@ -639,7 +639,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           break;
       }
     }
-    this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
+    this.log.warn(
+      `Something went wrong on ${this.id} type: ${this.config && this.config.type} role: ${this.dataItems && this.dataItems.role} dataitems.type: ${this.dataItems && this.dataItems.type}!`
+    );
     return "~~~~~";
   }
   getDetailPayload(message) {
@@ -1135,7 +1137,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0 && sList.states !== void 0) {
             if (sList.list.length > 0) {
               sList.list = sList.list.slice(0, 48);
-              message.modeList = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
+              message.modeList = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a.replace("?", ""))).join("?") : "";
               message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
             }
           } else {
@@ -1153,7 +1155,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             list = list.map(
               (a) => tools.formatInSelText(this.library.getTranslation(a))
             );
-            message.modeList = list.join("?");
+            message.modeList = list.map((a) => a.replace("?", "")).join("?");
             if (message.modeList && message.modeList.length > 900) {
               message.modeList = message.modeList.slice(0, 900);
               this.log.warn("Value list has more as 900 chars!");
@@ -1194,7 +1196,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0) {
           if (sList.list.length > 0) {
             sList.list.splice(48);
-            message.list = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
+            message.list = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a.replace("?", ""))).join("?") : "";
             message.currentState = tools.formatInSelText(this.library.getTranslation(sList.value));
             if (mode !== "popupThermo") {
               break;
@@ -1234,7 +1236,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           list = [];
         }
         list = list.map((a) => tools.formatInSelText(this.library.getTranslation(a)));
-        message.list = list.join("?");
+        message.list = list.map((a) => a.replace("?", "")).join("?");
         if (message.list && message.list.length > 900) {
           message.list = message.list.slice(0, 900);
           this.log.warn("Value list has more as 900 chars!");

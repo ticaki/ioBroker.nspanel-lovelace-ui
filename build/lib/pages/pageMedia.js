@@ -224,6 +224,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         for (const item of this.pageItems) {
           item && await item.delete();
         }
+        this.removeTempItems();
       }
       const pi = [];
       if (this.pageItemConfig) {

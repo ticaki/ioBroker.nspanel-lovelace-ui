@@ -771,7 +771,9 @@ export class PageItem extends BaseTriggeredPage {
                     break;
             }
         }
-        this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
+        this.log.warn(
+            `Something went wrong on ${this.id} type: ${this.config && this.config.type} role: ${this.dataItems && this.dataItems.role} dataitems.type: ${this.dataItems && this.dataItems.type}!`,
+        );
         return '~~~~~';
     }
 
@@ -1312,7 +1314,7 @@ export class PageItem extends BaseTriggeredPage {
                         if (sList.list.length > 0) {
                             sList.list = sList.list.slice(0, 48);
                             message.modeList = Array.isArray(sList.list)
-                                ? sList.list.map((a: string) => tools.formatInSelText(a)).join('?')
+                                ? sList.list.map((a: string) => tools.formatInSelText(a.replace('?', ''))).join('?')
                                 : '';
 
                             message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
@@ -1337,7 +1339,7 @@ export class PageItem extends BaseTriggeredPage {
                             tools.formatInSelText(this.library.getTranslation(a)),
                         );
 
-                        message.modeList = (list as string[]).join('?');
+                        message.modeList = (list as string[]).map(a => a.replace('?', '')).join('?');
 
                         if (message.modeList && message.modeList.length > 900) {
                             message.modeList = message.modeList.slice(0, 900);
@@ -1393,7 +1395,7 @@ export class PageItem extends BaseTriggeredPage {
                     if (sList.list.length > 0) {
                         sList.list.splice(48);
                         message.list = Array.isArray(sList.list)
-                            ? sList.list.map((a: string) => tools.formatInSelText(a)).join('?')
+                            ? sList.list.map((a: string) => tools.formatInSelText(a.replace('?', ''))).join('?')
                             : '';
 
                         message.currentState = tools.formatInSelText(this.library.getTranslation(sList.value));
@@ -1443,7 +1445,7 @@ export class PageItem extends BaseTriggeredPage {
 
                 list = (list as string[]).map((a: string) => tools.formatInSelText(this.library.getTranslation(a)));
 
-                message.list = (list as string[]).join('?');
+                message.list = (list as string[]).map(a => a.replace('?', '')).join('?');
 
                 if (message.list && message.list.length > 900) {
                     message.list = message.list.slice(0, 900);

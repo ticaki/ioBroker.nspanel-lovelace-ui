@@ -643,9 +643,19 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                 } else {
                                                     r.messages.push(`Panel ${topic} not found in controller`);
                                                 }
+                                            } else {
+                                                r.messages.push(`Panel ${topic} not found in script`);
                                             }
+                                        } else {
+                                            r.messages.push(
+                                                this.controller ? `Controller not exist` : `Config not exist`,
+                                            );
                                         }
+                                    } else {
+                                        r.messages.push(`No config found after conversion`);
                                     }
+                                } else {
+                                    r.messages.push(`Please send more as 0, '', false, null or undefined!`);
                                 }
                             } catch (e: any) {
                                 this.log.error(`Error in configuration: ${e.message}`);
