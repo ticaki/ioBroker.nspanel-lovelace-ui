@@ -1,36 +1,42 @@
 name: Test Documentation Links
 
 on:
-  pull_request:
-    paths:
-      - 'doc/**'
-  push:
-    branches:
-      - main
-    paths:
-      - 'doc/**'
+    pull_request:
+        paths:
+            - 'doc/**'
+    push:
+        branches:
+            - main
+        paths:
+            - 'doc/**'
 
 jobs:
-  link-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    link-check:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Install lychee
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: --verbose --no-progress --exclude-mail --accept-missing '.md$' 'doc/'
+            - name: Install lychee
+              uses: lycheeverse/lychee-action@v2
+              with:
+                  args: --verbose --no-progress --fallback-extensions md,mdx --include-wikilinks 'doc/'
 
-      - name: Save link check report
-        if: always()
-        run: |
-          mkdir -p reports
-          mv lychee/out.md reports/link-check-report.md || true
+            - name: Save link check report
+              id: lychee
+              continue-on-error: true
+              if: failure()
+              run: |
+                  mkdir -p reports
+                  mv lychee/out.md reports/link-check-report.md || true
 
-      - name: Upload report as artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: link-check-report
-          path: reports/link-check-report.md
+            - name: Create or update link check issue
+              if: steps.lychee.outcome == 'failure'
+              uses: peter-evans/create-or-update-issue@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  title: 'Broken links detected'
+                  body-file: reports/link-check-report.md
+                  labels: docs
+                  assignees: tt-tom17
+                  state: open
