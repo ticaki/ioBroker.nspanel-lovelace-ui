@@ -1,5 +1,5 @@
 # Default ownership - all users have basic access
-*           @ticaki @Armilar @tt-tom17
+# *           @ticaki @Armilar @tt-tom17
 
 # Specific ownership rules - these require approval from the designated codeowner
 /.github/   @ticaki
