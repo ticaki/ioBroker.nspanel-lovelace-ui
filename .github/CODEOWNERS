@@ -1,2 +1,10 @@
+# Default ownership - all users have basic access
 *           @ticaki @Armilar @tt-tom17
+
+# Specific ownership rules - these require approval from the designated codeowner
+/.github/   @ticaki
+/doc/       @tt-tom17
 /HMI/       @Armilar
+package.json @ticaki
+tsconfig.json @ticaki
+.gitignore  @ticaki

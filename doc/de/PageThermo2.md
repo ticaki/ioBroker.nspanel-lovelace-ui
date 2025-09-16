@@ -15,7 +15,7 @@ Struktur:
 - [PageItemerweiterung](#pageitemerweiterung) 
 
 ### Aussehen: 
- <img alt='Thermo2WithDP' src='Pictures/PageThermo2/Thermo2MitDatenpunkten.png'>
+ <img alt='Thermo2WithDP' src='../Pictures/PageThermo2/Thermo2MitDatenpunkten.png'>
 
 ### Feature:
 
@@ -107,8 +107,8 @@ const Thermo2New: PageType = {
 
 #### Gemeinsame Eigenschaften
 
-<img alt='Thermo2_1' src='Pictures/PageThermo2/Thermo2_1.png'>
-<img alt='Thermo2_2' src='Pictures/PageThermo2/Thermo2_2.png'>
+<img alt='Thermo2_1' src='../Pictures/PageThermo2/Thermo2_1.png'>
+<img alt='Thermo2_2' src='../Pictures/PageThermo2/Thermo2_2.png'>
 
 Hier sind die Eigenschaften beschrieben die zusätzlich zu `name`, `id` bzw. `name`, `set` angegeben werden können und was sie bedeuten:
 

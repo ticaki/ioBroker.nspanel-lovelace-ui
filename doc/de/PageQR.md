@@ -10,7 +10,7 @@ Die PageQR erzeugt auf dem Panel ein QR-Code, der mit dem Handy zum Beispiel ges
 
 ---  
 ## Einstellung im Admin
-<img alt= 'PageQR Free' src='Pictures/pageQR/pageQRFree.png'>  
+<img alt= 'PageQR Free' src='../Pictures/pageQR/pageQRFree.png'>  
   
 Mit Auswahl des Tab `PageQR` kommt ihr an die Einstellungen. Um eine neue Page zu erstellen, klickt ihr auf das PLUS-Zeichen und es erscheinen die Datenfelder für die Page. (siehe Bild oben)  
 1. Zuerst legt ihr den Seitennamen fest, dieser darf sich im gesamten Panel nicht wiederholen. Es ist die ID für diese Seite und ist identisch mit dem `uniqueName`. Der Name erscheint auch in dem grauen Balken, dadruch könnt ihr bei mehreren Seiten sie leicht unterscheiden.
@@ -20,7 +20,7 @@ Mit Auswahl des Tab `PageQR` kommt ihr an die Einstellungen. Um eine neue Page z
 5. Auswahl des QR-Typs. Es gibt aktuell drei Typen Wifi, Telefon und URL. 
   
 ### Wifi  
-<img alt='PageQR Wifi' src='Pictures/pageQR/pageQRWifi.png'>  
+<img alt='PageQR Wifi' src='../Pictures/pageQR/pageQRWifi.png'>  
 Beim Typ Wifi stehen folgende Felder zusätzlich zur Verfügung.  
 
 - **SSID - URL - TEL** -> Hier wird der Name des Wlan eingeben  
@@ -37,24 +37,24 @@ Beim Typ Wifi stehen folgende Felder zusätzlich zur Verfügung.
 > [!Note]  
 > Wenn der Datenpunkt hinterlegt ist, wird im Panel an der Stelle des Passwortes ein Schalter eingeblendet. Mit diesem wird dann der Datenpunkt auf true / false gesetzt.  
 
-<img alt='panelWifi' src='Pictures/pageQR/panelPageQRWifiPW.png' height='250' ><img alt='panelWifi' src='Pictures/pageQR/panelPageQRWifiSwitch.png' height='250' >  
+<img alt='panelWifi' src='../Pictures/pageQR/panelPageQRWifiPW.png' height='250' ><img alt='panelWifi' src='../Pictures/pageQR/panelPageQRWifiSwitch.png' height='250' >  
 
 ---  
 
 ### TELEFON  
-<img alt='PageQR TEL' src='Pictures/pageQR/pageQRTel.png'>  
+<img alt='PageQR TEL' src='../Pictures/pageQR/pageQRTel.png'>  
   
 Beim Type TEL kann eine Telefonnummer in den Code eingebettet werden. Nachdem scannen mit dem Handy, kann man diese direkt wählen. Um International zu bleiben, sollte die Nummer mit der Ländervorwahl beginnen z.B. +49 für Deutschland.  
 
-<img alt='panelWifi' src='Pictures/pageQR/panelPageQRTelefon.png' height='250' >  
+<img alt='panelWifi' src='../Pictures/pageQR/panelPageQRTelefon.png' height='250' >  
 
 ---  
 
 ### URL
-<img alt='PageQR URL' src='Pictures/pageQR/pageQRUrl.png'>  
+<img alt='PageQR URL' src='../Pictures/pageQR/pageQRUrl.png'>  
 Hier bei handelt es sich um den klassischen QR-Code wie er in jeder Werbung zu finden ist. Im Code verbirgt sich eine URL - die nach dem Scan aufgerufen werden kann. z.B. https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageQR  
 
-<img alt='panelWifi' src='Pictures/pageQR/panelPageQRURL.png' height='250' >  
+<img alt='panelWifi' src='../Pictures/pageQR/panelPageQRURL.png' height='250' >  
   
 ---  
 
