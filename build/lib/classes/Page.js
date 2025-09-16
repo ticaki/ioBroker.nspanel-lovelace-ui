@@ -44,6 +44,7 @@ class Page extends import_baseClassPage.BaseClassPage {
   card;
   id;
   lastCardCounter = 0;
+  //protected overridePageItemsDpInit: string | RegExp = '';
   isScreensaver;
   hidden = false;
   /**
@@ -118,7 +119,7 @@ class Page extends import_baseClassPage.BaseClassPage {
           "appendix" in options ? options.appendix : void 0,
           this.enums ? this.enums : options.enums
         ) : options.data;
-        options = JSON.parse(JSON.stringify(options));
+        options = structuredClone(options);
         if (options) {
           options.dpInit = dpInit;
         }
@@ -126,13 +127,13 @@ class Page extends import_baseClassPage.BaseClassPage {
       }
     }
   }
-  async initPageItems(item) {
+  async initPageItems(item, overrideDpInit = "") {
     var _a;
     let options = item;
     if (options === void 0) {
       return void 0;
     }
-    const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
+    const dpInit = (_a = overrideDpInit || (this.dpInit ? this.dpInit : options.dpInit)) != null ? _a : "";
     const enums = this.enums ? this.enums : options.enums;
     options.data = dpInit || enums ? await this.basePanel.statesControler.getDataItemsFromAuto(
       dpInit,

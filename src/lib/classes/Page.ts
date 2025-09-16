@@ -16,8 +16,10 @@ export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
     private lastCardCounter: number = 0;
+    //protected overridePageItemsDpInit: string | RegExp = '';
     public readonly isScreensaver: boolean;
     public hidden: boolean = false;
+
     /**
      * Direct reference to the parent page,
      * bypassing navigation logic.
@@ -109,7 +111,7 @@ export class Page extends BaseClassPage {
                               this.enums ? this.enums : options.enums,
                           )
                         : options.data;
-                options = JSON.parse(JSON.stringify(options));
+                options = structuredClone(options);
                 if (options) {
                     options.dpInit = dpInit;
                 }
@@ -118,12 +120,15 @@ export class Page extends BaseClassPage {
         }
     }
 
-    async initPageItems(item: PageItemDataItemsOptions | undefined): Promise<PageItemDataItemsOptions | undefined> {
+    async initPageItems(
+        item: PageItemDataItemsOptions | undefined,
+        overrideDpInit: string | RegExp = '',
+    ): Promise<PageItemDataItemsOptions | undefined> {
         let options = item;
         if (options === undefined) {
             return undefined;
         }
-        const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
+        const dpInit = (overrideDpInit || (this.dpInit ? this.dpInit : options.dpInit)) ?? '';
         const enums = this.enums ? this.enums : options.enums;
 
         options.data =
