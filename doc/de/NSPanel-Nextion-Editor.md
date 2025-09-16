@@ -6,7 +6,7 @@ Wenn man sein NSPanel schon fest verbaut hat und dann z.B. eine neue Seite konfi
 Auch nach einem Update des ioBroker Skripts kann man mit dieser Lösung einfach im Emulator testen, ob noch alles klappt, bevor man das Skript in seiner Live-Instanz aktualisiert.
 Und Last but not least ist diese Möglichkeit auch für all diejenigen Interessant, die noch kein NSPanel haben, aber selbiges vor dem Kauf einmal testen möchten.
 
-![nextionEditor](Pictures/emulator/nextionEditor.png)  
+![nextionEditor](../Pictures/emulator/nextionEditor.png)  
 
 
 ## Voraussetzungen
@@ -17,7 +17,7 @@ Ihr braucht:
 * den Nextion Editor  
 * und eine ioBroker-Installation.  
 
-<img src="Pictures/emulator/esp32.jpeg" alt= "esp32" width="25%" heigth= "25%">  
+<img src="../Pictures/emulator/esp32.jpeg" alt= "esp32" width="25%" heigth= "25%">  
 
 > Der ESP32 bleibt mit einem Datenkabel mit dem USB-Port des PC's verbunden.
 
@@ -33,7 +33,7 @@ Nachdem die WLAN-Daten hinterlegt sind, gelangt Ihr mit einem weiteren Klick dir
 
 Nachdem nun der ESP wieder erreichbar ist, prüft man in den Einstellungen unter _Gerät konfigurieren_, ob RX (GPIO3) und TX (GPIO1) auf none stehen.
 
-<img src="Pictures/emulator/tasmotaConfig.png" alt= "esp32" width="25%" heigth= "25%">   
+<img src="../Pictures/emulator/tasmotaConfig.png" alt= "esp32" width="25%" heigth= "25%">   
 
 Anschließend könnt Ihr Tasmota und MQTT über den Admin des Adapter einstellen. Da zu volgt ihr der Anleitung bis zu dem Punkt, wo ihr den Button für NSPanel Initzialisierung drückt. [Link zur Anleitung](Adapter-Installation.md#grundeinstellung)  
 
@@ -42,12 +42,12 @@ Anschließend könnt Ihr Tasmota und MQTT über den Admin des Adapter einstellen
 
 Zuerst ladet ihr euch diese Datei aus Gihub [tasmota/Emulator/autoexec.be](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/tasmota/Emulator/autoexec.be) herrunter.
 
-<img src="Pictures/emulator/Github.png" alt= "esp32" width="25%" heigth= "25%">  
+<img src="../Pictures/emulator/Github.png" alt= "esp32" width="25%" heigth= "25%">  
 
 Wenn das Panel in der Liste angezeigt wird, muss der Berry Treiber von Hand installiert werden. 
 Dazu wechselt ihr wieder auf euren ESP32 Chip und geht auf "Werkzeuge -> Dateisystem verwalten"  
 
-<img src="Pictures/emulator/dateisystem.png" alt= "esp32" width="25%" heigth= "25%">  
+<img src="../Pictures/emulator/dateisystem.png" alt= "esp32" width="25%" heigth= "25%">  
 
 Sollte jetzt wie im Bild zusehen ist, schon eine autoexec.be enthalten sein löscht diese mit dem Flammen Symbol.  
 Mit dem Button "Datei auswählen" wählt ihr die geladene Datei aus und mit klick auf `Upload` wird sie auf den Chip geladen.  
@@ -61,7 +61,7 @@ Zunächst braucht man noch den Nextion Editor:
 
 sowie die HMI-Datei hier aus dem Repository (liegt im Verzeichnis HMI). Nachdem der Editor installiert ist, diesen Starten und die Datei nspanel.hmi im Nextion Editor öffnen. Anschließend im Editor oben auf Debug klicken. Es öffnet sich ein neues Fenster. Dort unten links von _Keyboard Input_ auf _User MCU Input_ umstellen, den COM-Port des ESP auswählen und die Baud-Rate auf 115200 stellen. Mit Start verbindet man sich nun zum ESP.
 
-<img src="Pictures/emulator/netionEditorPort.png" alt= "esp32" width="75%" heigth= "75%">    
+<img src="../Pictures/emulator/netionEditorPort.png" alt= "esp32" width="75%" heigth= "75%">    
 
 Nun kann das DEV-Skript im ioBroker ausgeführt werden. Hat man alles richtig gemacht, erscheint nach kurzer Zeit die erste Seite im Nextion Editor.
 

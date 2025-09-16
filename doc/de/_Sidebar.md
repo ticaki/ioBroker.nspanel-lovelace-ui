@@ -1,5 +1,5 @@
-![Panel eu_us mit logo](<Pictures/Panel eu_us mit logo.png>)  
-![SOnOFFLogo](Pictures/SOnOffLogo.png)   
+![Panel eu_us mit logo](<../Pictures/Panel eu_us mit logo.png>)  
+![SOnOFFLogo](../Pictures/SOnOffLogo.png)   
 # [Adapter - Home](Home)  
 ## TFT Release: v5.0.0  
 [![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  Link funktioniert -> logo falsch
@@ -50,5 +50,5 @@
 **FAQ**  
 
 **Finde uns**  
-[![iobrokerLogo](Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
+[![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
  
