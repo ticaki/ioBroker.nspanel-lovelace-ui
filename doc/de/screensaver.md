@@ -99,11 +99,12 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 4. Easy View Mode  
   
-<img alt='screensaverEsay' src='../Pictures/screensaver/screensaverEsay.png'>  
+<img alt='screensaverEsay' src='../Pictures/screensaver/screensaverEasy.png' width='70%'>  
   
 - **Bottom-Bereich** (3 Elemente): Extra große Schrift für bessere Lesbarkeit
 - **Keine Icons oder Texte**: Vereinfachte Darstellung ohne komplexe Elemente
 - **Keine MR-Icons**: Reduzierte Funktionalität für einfache Bedienung
+- **Update Info**: dieses Symbol ist auf allen Screensavern zu sehen, wenn es ein Update vom TFT, Berry oder Adapter gibt.  
 
 ## Bereiche im Detail
 
