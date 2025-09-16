@@ -230,6 +230,7 @@ export class Color extends ColorBase {
     static readonly colorAlexa: RGB = { r: 49, g: 196, b: 243 }; // voice assistant
     static readonly HMIOn: RGB = { r: 3, g: 169, b: 244 }; // CTA/primary active
     static readonly HMIOff: RGB = { r: 68, g: 115, b: 158 }; // inactive (cool)
+    static readonly DarkHMIOff: RGB = { r: 54, g: 92, b: 126 }; // inactive (cool)
     static readonly TechMint: RGB = { r: 200, g: 255, b: 255 }; // clean info bg
     static readonly Cyan: RGB = { r: 0, g: 255, b: 255 }; // info/neutral progress
 
@@ -598,7 +599,7 @@ export class Color extends ColorBase {
         hot: Color.Red,
         cold: Color.Blue,
         on: Color.HMIOn,
-        off: Color.HMIOff,
+        off: Color.DarkHMIOff,
         light: Color.White,
         dark: Color.DarkGray,
         warning: Color.Yellow,
