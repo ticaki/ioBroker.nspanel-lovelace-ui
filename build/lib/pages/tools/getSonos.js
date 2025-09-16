@@ -314,7 +314,6 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
   }
   if (!((_l = page.media.deactivateDefaultItems) == null ? void 0 : _l.speakerList)) {
     const selects = [];
-    let currentName = "";
     const list = page.media.speakerList;
     if (devices && devices.rows && devices.rows.length !== 0) {
       if (list && list.length > 0) {
@@ -324,7 +323,6 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
           (v) => selects.push(tools.getStringFromStringOrTranslated(adapter, v.value.common.name))
         );
       }
-      currentName = devices.rows.filter((v) => v.id === str).map((v) => tools.getStringFromStringOrTranslated(adapter, v.value.common.name))[0] || "";
     }
     let arr2 = list && list.length > 0 ? selects.filter((t) => list.find((s) => s === t) == null) : selects;
     arr2 = arr2.concat(list != null ? list : []);
@@ -336,17 +334,11 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
         data: {
           entity1: {
             value: {
-              mode: "auto",
+              //mode: 'auto',
               type: "triggered",
-              regexp: /.?\.members$/,
-              dp: "",
-              read: `
-                        let data = val;
-                        if (typeof val === 'string') {
-                        const t = val.split(',').map(i => i.trim());
-                            return t.length < 2 || t.includes('${currentName}');
-                        };
-                        return true;`
+              //regexp: /.?\.coordinator$/,
+              dp: `${str}.coordinator`,
+              read: ` return val === '${str.split(".").pop()}'`
             }
           },
           icon: {

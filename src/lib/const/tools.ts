@@ -67,7 +67,7 @@ export async function setValueEntry(
         await i.value.setState(res);
     } else if (i.set || i.value) {
         const t = i.set || i.value;
-        t.log.warn(t.name || '???' + ' is not writeable');
+        t.log.warn(`${t.name || '???'} is not writeable`);
     }
 }
 export async function getValueEntryNumber(

@@ -232,14 +232,34 @@ export class PageMedia extends PageMenu {
                 newOne = true;
             }
         }
-        if (index === 0) {
+
+        if (this.serviceName === 'sonos') {
+            if (this.pageItems) {
+                for (const item of this.pageItems) {
+                    item && (await item.delete());
+                }
+            }
+            const pi = [];
+            if (this.pageItemConfig) {
+                for (const pageitem of this.pageItemConfig) {
+                    pi.push(
+                        await this.initPageItems(
+                            pageitem,
+                            tools.getRegExp(this.items[index].ident || '', { startsWith: true }) || '',
+                        ),
+                    );
+                }
+                this.pageItems = await this.createPageItems(pi, this.items[index].ident || '');
+            }
             // Hack: set Sonos favorites_set to the first favorite to reset the “still playing” behavior.
-            if (this.serviceName === 'sonos' && this.items.length > 1) {
-                let hackDP = `${this.items[0].ident}.favorites_list`;
-                const s = await this.adapter.getForeignStateAsync(hackDP);
-                if (s && s.val && typeof s.val === 'string' && s.val.includes(',')) {
-                    hackDP = `${this.items[0].ident}.favorites_set`;
-                    await this.adapter.setForeignStateAsync(hackDP, s.val.split(',')[0] || '');
+            if (index === 0) {
+                if (this.items.length > 1) {
+                    let hackDP = `${this.items[0].ident}.favorites_list`;
+                    const s = await this.adapter.getForeignStateAsync(hackDP);
+                    if (s && s.val && typeof s.val === 'string' && s.val.includes(',')) {
+                        hackDP = `${this.items[0].ident}.favorites_set`;
+                        await this.adapter.setForeignStateAsync(hackDP, s.val.split(',')[0] || '');
+                    }
                 }
             }
             this.playerName = '';

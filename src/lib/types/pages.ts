@@ -358,6 +358,7 @@ export type StateRole =
     | '';
 
 export type DeviceRole =
+    | 'volume.mute'
     /**
      * Defines the datapoints to write to depending on the current read of entity1 state.
      * If the read value is `true`, setValue1 is written with true,
@@ -544,6 +545,8 @@ export type PageMenuConfig = (
     options?: {
         cardRoleList?: string[];
         indentifier?: string;
+        min?: number;
+        max?: number;
     };
 };
 

@@ -223,6 +223,8 @@ class Color extends ColorBase {
   // CTA/primary active
   static HMIOff = { r: 68, g: 115, b: 158 };
   // inactive (cool)
+  static DarkHMIOff = { r: 54, g: 92, b: 126 };
+  // inactive (cool)
   static TechMint = { r: 200, g: 255, b: 255 };
   // clean info bg
   static Cyan = { r: 0, g: 255, b: 255 };
@@ -595,7 +597,7 @@ class Color extends ColorBase {
     hot: Color.Red,
     cold: Color.Blue,
     on: Color.HMIOn,
-    off: Color.HMIOff,
+    off: Color.DarkHMIOff,
     light: Color.White,
     dark: Color.DarkGray,
     warning: Color.Yellow,

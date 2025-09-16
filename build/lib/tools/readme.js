@@ -80,7 +80,7 @@ ${header}`;
 ${body}`;
   const out = `${toc}
 ${body}`;
-  await import_fs.promises.writeFile(path.join(process.cwd(), "ALIAS.md"), out, "utf8");
+  await import_fs.promises.writeFile(path.join(process.cwd(), "doc/de/ALIAS.md"), out, "utf8");
 }
 function getStringOrArray(item) {
   if (Array.isArray(item)) {

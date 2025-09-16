@@ -270,76 +270,86 @@ export class PageItem extends BaseTriggeredPage {
                 case 'light':
                 case 'light2': {
                     const item = entry.data;
-                    message.type =
-                        isCardGridType(this.parent.card) &&
-                        (this.config.role === 'light' || this.config.role === 'socket')
-                            ? 'switch'
-                            : this.parent.currentPanel.overrideLightPopup
-                              ? this.parent.currentPanel.lightPopupV2 && this.parent.currentPanel.meetsVersion('4.7.5')
-                                  ? 'light2'
-                                  : 'light'
-                              : entry.type;
-
+                    if (this.config.role === 'volume.mute') {
+                        message.type = 'light';
+                    } else {
+                        message.type =
+                            isCardGridType(this.parent.card) &&
+                            (this.config.role === 'light' || this.config.role === 'socket')
+                                ? 'switch'
+                                : this.parent.currentPanel.overrideLightPopup
+                                  ? this.parent.currentPanel.lightPopupV2 &&
+                                    this.parent.currentPanel.meetsVersion('4.7.5')
+                                      ? 'light2'
+                                      : 'light'
+                                  : entry.type;
+                    }
                     const v = await tools.getValueEntryBoolean(item.entity1);
                     const dimmer = (item.dimmer && item.dimmer.value && (await item.dimmer.value.getNumber())) ?? null;
-                    let rgb: RGB | null =
-                        (await tools.getRGBfromRGBThree(item)) ??
-                        (item.color && item.color.true && (await item.color.true.getRGBValue())) ??
-                        null;
-                    const nhue = (item.hue && (await item.hue.getNumber())) ?? null;
-                    if (rgb === null && nhue) {
-                        rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
-                    }
-                    message.icon = await tools.getIconEntryValue(item.icon, v, '', '');
-                    let colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
-                        ? 'none'
-                        : (await item.colorMode.getBoolean())
-                          ? 'hue'
-                          : 'ct';
-
-                    if (colorMode === 'none') {
-                        const ctState = item.ct && item.ct.value && (await item.ct.value.getState());
-                        const colorState =
-                            (item.Red && (await item.Red.getState())) ??
-                            (item.Green && (await item.Green.getState())) ??
-                            (item.Blue && (await item.Blue.getState())) ??
-                            (item.color && item.color.true && (await item.color.true.getState())) ??
-                            (item.hue && (await item.hue.getState())) ??
+                    if (this.config.role === 'volume.mute') {
+                        message.icon = await tools.getIconEntryValue(item.icon, !!v, 'volume-high');
+                        message.optionalValue = v ? '1' : '0';
+                        message.iconColor = await tools.getIconEntryColor(item.icon, !!v, Color.on, Color.off);
+                    } else {
+                        let rgb: RGB | null =
+                            (await tools.getRGBfromRGBThree(item)) ??
+                            (item.color && item.color.true && (await item.color.true.getRGBValue())) ??
                             null;
-                        if (ctState && colorState) {
-                            if (ctState.ts > colorState.ts) {
+                        const nhue = (item.hue && (await item.hue.getNumber())) ?? null;
+                        if (rgb === null && nhue) {
+                            rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
+                        }
+                        message.icon = await tools.getIconEntryValue(item.icon, v, '', '');
+                        let colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
+                            ? 'none'
+                            : (await item.colorMode.getBoolean())
+                              ? 'hue'
+                              : 'ct';
+
+                        if (colorMode === 'none') {
+                            const ctState = item.ct && item.ct.value && (await item.ct.value.getState());
+                            const colorState =
+                                (item.Red && (await item.Red.getState())) ??
+                                (item.Green && (await item.Green.getState())) ??
+                                (item.Blue && (await item.Blue.getState())) ??
+                                (item.color && item.color.true && (await item.color.true.getState())) ??
+                                (item.hue && (await item.hue.getState())) ??
+                                null;
+                            if (ctState && colorState) {
+                                if (ctState.ts > colorState.ts) {
+                                    colorMode = 'ct';
+                                } else {
+                                    colorMode = 'hue';
+                                }
+                            } else if (ctState) {
                                 colorMode = 'ct';
-                            } else {
+                            } else if (colorState) {
                                 colorMode = 'hue';
                             }
-                        } else if (ctState) {
-                            colorMode = 'ct';
-                        } else if (colorState) {
-                            colorMode = 'hue';
                         }
-                    }
 
-                    const iconColor =
-                        dimmer != null
-                            ? item.icon?.true?.color
-                                ? await item.icon.true.color.getRGBValue()
-                                : Color.Yellow
-                            : null;
-                    message.iconColor =
-                        (colorMode === 'hue'
-                            ? await tools.GetIconColor(
-                                  rgb ?? undefined,
-                                  dimmer != null ? (dimmer > 30 ? dimmer : 30) : v,
-                              )
-                            : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
-                        (iconColor
-                            ? await tools.GetIconColor(iconColor, dimmer != null ? (dimmer > 30 ? dimmer : 30) : v)
-                            : await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
-                        '';
-                    if (v) {
-                        message.optionalValue = '1';
-                    } else {
-                        message.optionalValue = '0';
+                        const iconColor =
+                            dimmer != null
+                                ? item.icon?.true?.color
+                                    ? await item.icon.true.color.getRGBValue()
+                                    : Color.Yellow
+                                : null;
+                        message.iconColor =
+                            (colorMode === 'hue'
+                                ? await tools.GetIconColor(
+                                      rgb ?? undefined,
+                                      dimmer != null ? (dimmer > 30 ? dimmer : 30) : v,
+                                  )
+                                : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
+                            (iconColor
+                                ? await tools.GetIconColor(iconColor, dimmer != null ? (dimmer > 30 ? dimmer : 30) : v)
+                                : await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
+                            '';
+                        if (v) {
+                            message.optionalValue = '1';
+                        } else {
+                            message.optionalValue = '0';
+                        }
                     }
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.headline, v)) ?? message.displayName ?? '',
@@ -1098,6 +1108,7 @@ export class PageItem extends BaseTriggeredPage {
                     case 'rgbThree':
                     case 'rgbSingle':
                     case 'rgb.hex':
+                    case 'volume.mute':
                     default: {
                         message.type = '2Sliders';
                         if (message.type !== '2Sliders' || entry.type !== 'light') {
@@ -1134,102 +1145,116 @@ export class PageItem extends BaseTriggeredPage {
                         if (message.buttonState !== 'disable') {
                             message.icon = await tools.getIconEntryValue(item.icon, message.buttonState, '', '');
                         }
-
-                        message.slidersColor =
-                            (await tools.getIconEntryColor(
-                                item.icon,
-                                message.slider1Pos === undefined || message.slider1Pos === 'disable'
-                                    ? null
-                                    : (message.slider1Pos ?? message.buttonState === true),
-                                Color.White,
-                            )) ?? 'disable';
-                        let rgb = null;
-                        switch (this.config.role) {
-                            case 'socket':
-                            case 'light':
-                            case 'dimmer':
-                            case 'ct':
-                                break;
-                            case 'hue': {
-                                const nhue = (item.hue && (await item.hue.getNumber())) ?? null;
-                                if (nhue != null) {
-                                    rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
+                        if (this.config.role !== 'volume.mute') {
+                            message.slidersColor =
+                                (await tools.getIconEntryColor(
+                                    item.icon,
+                                    message.slider1Pos === undefined || message.slider1Pos === 'disable'
+                                        ? null
+                                        : (message.slider1Pos ?? message.buttonState === true),
+                                    Color.White,
+                                )) ?? 'disable';
+                            let rgb = null;
+                            switch (this.config.role) {
+                                case 'socket':
+                                case 'light':
+                                case 'dimmer':
+                                case 'ct':
+                                    break;
+                                case 'hue': {
+                                    const nhue = (item.hue && (await item.hue.getNumber())) ?? null;
+                                    if (nhue != null) {
+                                        rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
+                                    }
+                                    break;
                                 }
-                                break;
+                                case 'rgbThree': {
+                                    rgb = (await tools.getRGBfromRGBThree(item)) ?? null;
+                                    break;
+                                }
+                                case 'rgbSingle': {
+                                    rgb =
+                                        (item.color && item.color.true && (await item.color.true.getRGBValue())) ??
+                                        null;
+                                    break;
+                                }
+                                case 'rgb.hex': {
+                                    rgb =
+                                        (item.color && item.color.true && (await item.color.true.getRGBValue())) ??
+                                        null;
+                                    break;
+                                }
                             }
-                            case 'rgbThree': {
-                                rgb = (await tools.getRGBfromRGBThree(item)) ?? null;
-                                break;
+                            message.slider2Pos = 'disable';
+                            if (item.White) {
+                                const val = await tools.getScaledNumber(item.White);
+                                message.slider2Pos = val ?? 'disable';
+                            } else if (item.ct && item.ct.value) {
+                                const ct = await tools.getSliderCTFromValue(item.ct);
+                                if (ct !== null) {
+                                    message.slider2Pos = parseInt(ct);
+                                }
                             }
-                            case 'rgbSingle': {
-                                rgb = (item.color && item.color.true && (await item.color.true.getRGBValue())) ?? null;
-                                break;
-                            }
-                            case 'rgb.hex': {
-                                rgb = (item.color && item.color.true && (await item.color.true.getRGBValue())) ?? null;
-                                break;
-                            }
-                        }
-                        message.slider2Pos = 'disable';
-                        if (item.White) {
-                            const val = await tools.getScaledNumber(item.White);
-                            message.slider2Pos = val ?? 'disable';
-                        } else if (item.ct && item.ct.value) {
-                            const ct = await tools.getSliderCTFromValue(item.ct);
-                            if (ct !== null) {
-                                message.slider2Pos = parseInt(ct);
-                            }
-                        }
-                        let colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
-                            ? 'none'
-                            : (await item.colorMode.getBoolean())
-                              ? 'hue'
-                              : 'ct';
-                        if (colorMode === 'none') {
-                            const ctState = item.ct && item.ct.value && (await item.ct.value.getState());
-                            const colorState =
-                                (item.Red && (await item.Red.getState())) ??
-                                (item.Green && (await item.Green.getState())) ??
-                                (item.Blue && (await item.Blue.getState())) ??
-                                (item.color && item.color.true && (await item.color.true.getState())) ??
-                                (item.hue && (await item.hue.getState())) ??
-                                null;
-                            if (ctState && colorState) {
-                                if (ctState.ts > colorState.ts) {
+                            let colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
+                                ? 'none'
+                                : (await item.colorMode.getBoolean())
+                                  ? 'hue'
+                                  : 'ct';
+                            if (colorMode === 'none') {
+                                const ctState = item.ct && item.ct.value && (await item.ct.value.getState());
+                                const colorState =
+                                    (item.Red && (await item.Red.getState())) ??
+                                    (item.Green && (await item.Green.getState())) ??
+                                    (item.Blue && (await item.Blue.getState())) ??
+                                    (item.color && item.color.true && (await item.color.true.getState())) ??
+                                    (item.hue && (await item.hue.getState())) ??
+                                    null;
+                                if (ctState && colorState) {
+                                    if (ctState.ts > colorState.ts) {
+                                        colorMode = 'ct';
+                                    } else {
+                                        colorMode = 'hue';
+                                    }
+                                } else if (ctState) {
                                     colorMode = 'ct';
-                                } else {
+                                } else if (colorState) {
                                     colorMode = 'hue';
                                 }
-                            } else if (ctState) {
-                                colorMode = 'ct';
-                            } else if (colorState) {
-                                colorMode = 'hue';
                             }
-                        }
-                        message.hueMode = rgb !== null;
-                        if (rgb !== null && colorMode === 'hue') {
-                            message.slidersColor = await tools.GetIconColor(
-                                rgb,
-                                message.slider1Pos !== 'disable' && message.slider1Pos != null
-                                    ? message.slider1Pos > 30
-                                        ? message.slider1Pos
-                                        : 30
-                                    : message.buttonState !== 'disable' && message.buttonState !== false,
-                            );
-                        }
-                        if (message.slider2Pos !== 'disable' && colorMode === 'ct') {
+                            message.hueMode = rgb !== null;
+                            if (rgb !== null && colorMode === 'hue') {
+                                message.slidersColor = await tools.GetIconColor(
+                                    rgb,
+                                    message.slider1Pos !== 'disable' && message.slider1Pos != null
+                                        ? message.slider1Pos > 30
+                                            ? message.slider1Pos
+                                            : 30
+                                        : message.buttonState !== 'disable' && message.buttonState !== false,
+                                );
+                            }
+                            if (message.slider2Pos !== 'disable' && colorMode === 'ct') {
+                                message.slidersColor =
+                                    (await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ?? '';
+                            }
+
+                            message.popup = !!item.entityInSel?.value; //message.slider2Pos !== 'disable' && rgb !== null;
+
+                            message.slider2Translation =
+                                (item.text2 && item.text2.true && (await item.text2.true.getString())) ?? undefined;
+
+                            message.hue_translation =
+                                (item.text3 && item.text3.true && (await item.text3.true.getString())) ?? undefined;
+                        } else {
+                            message.slider2Pos = 'disable';
                             message.slidersColor =
-                                (await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ?? '';
+                                (await tools.getIconEntryColor(
+                                    item.icon,
+                                    message.buttonState !== false,
+                                    Color.White,
+                                )) ?? 'disable';
                         }
-
-                        message.popup = !!item.entityInSel?.value; //message.slider2Pos !== 'disable' && rgb !== null;
-
                         message.slider1Translation =
                             (item.text1 && item.text1.true && (await item.text1.true.getString())) ?? undefined;
-                        message.slider2Translation =
-                            (item.text2 && item.text2.true && (await item.text2.true.getString())) ?? undefined;
-                        message.hue_translation =
-                            (item.text3 && item.text3.true && (await item.text3.true.getString())) ?? undefined;
 
                         if (message.slider1Translation !== undefined) {
                             message.slider1Translation = this.library.getTranslation(message.slider1Translation);
@@ -1816,7 +1841,7 @@ export class PageItem extends BaseTriggeredPage {
         return this.parent ? `${this.parent.name}.${this.id}` : this.id;
     }
     async delete(): Promise<void> {
-        if (this.parent.currentPanel.persistentPageItems[this.id]) {
+        if (this.parent.currentPanel?.persistentPageItems[this.id]) {
             if (!this.parent.currentPanel.unload) {
                 return;
             }
@@ -1937,16 +1962,7 @@ export class PageItem extends BaseTriggeredPage {
                         }
                         break;
                     }
-                    if (entry.role === 'writeTargetByValue') {
-                        const value: boolean | null =
-                            (entry.data.entity1?.value && (await entry.data.entity1.value.getBoolean())) ?? null;
-                        if (value) {
-                            await entry.data.setValue2?.setStateTrue();
-                        } else {
-                            await entry.data.setValue1?.setStateTrue();
-                        }
-                        break;
-                    }
+
                     const item = entry.data;
                     if (item.confirm) {
                         if (this.confirmClick === 'lock') {
@@ -2006,6 +2022,16 @@ export class PageItem extends BaseTriggeredPage {
                         break;
                     }
                 } else if (entry.type === 'light' || entry.type === 'light2') {
+                    if (entry.role === 'volume.mute') {
+                        const value: boolean | null =
+                            (entry.data.entity1?.value && (await entry.data.entity1.value.getBoolean())) ?? null;
+                        if (value) {
+                            await entry.data.setValue2?.setStateTrue();
+                        } else {
+                            await entry.data.setValue1?.setStateTrue();
+                        }
+                        break;
+                    }
                     const item = entry.data;
                     item.entity1 && item.entity1.set && (await item.entity1.set.setStateFlip());
                     item.setValue1 && (await item.setValue1.setStateFlip());
@@ -2113,6 +2139,14 @@ export class PageItem extends BaseTriggeredPage {
                     entry.type === 'switch' ||
                     entry.type === 'fan'
                 ) {
+                    if (entry.type === 'light' && entry.role === 'volume.mute') {
+                        if (value !== '1') {
+                            await entry.data.setValue2?.setStateTrue();
+                        } else {
+                            await entry.data.setValue1?.setStateTrue();
+                        }
+                        break;
+                    }
                     const item = entry.data;
                     if (item && item.entity1) {
                         await tools.setValueEntry(item.entity1, value === '1');

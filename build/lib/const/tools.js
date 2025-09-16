@@ -101,7 +101,7 @@ async function setValueEntry(i, value, sca = true) {
     await i.value.setState(res);
   } else if (i.set || i.value) {
     const t = i.set || i.value;
-    t.log.warn(t.name || "??? is not writeable");
+    t.log.warn(`${t.name || "???"} is not writeable`);
   }
 }
 async function getValueEntryNumber(i, s = true, options) {
