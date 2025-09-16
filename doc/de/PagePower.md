@@ -11,7 +11,7 @@
 ---
 ## Grundeinstellung  
   
- <img alt= 'PagePower allg' src='Pictures/pagePower/pagePowerallg.png'>  
+ <img alt= 'PagePower allg' src='../Pictures/pagePower/pagePowerallg.png'>  
    
  Mit Auswahl des Tab `PagePower` kommt ihr an die Einstellungen. Um eine neue Page zu erstellen, klickt ihr auf das PLUS-Zeichen und es erscheinen die Datenfelder für die Page. (siehe Bild oben)  
 1. Zuerst legt ihr den Seitennamen fest, dieser darf sich im gesamten Panel nicht wiederholen. Es ist die ID für diese Seite und ist identisch mit dem `uniqueName`. Der Name erscheint auch in dem grauen Balken, dadruch könnt ihr bei mehreren Seiten sie leicht unterscheiden.
@@ -22,12 +22,12 @@
 ---  
 ## Erzeuger / Verbraucher  
   
-<img alt='pagePowerItem' src='Pictures/pagePower/pagePowerItem.png'>  
+<img alt='pagePowerItem' src='../Pictures/pagePower/pagePowerItem.png'>  
 
 + **Icon** -> über das Selctfeld kann ein Icon ausgewählt werden, dabei unterstütz euch die Selectivesuche und schlägt Varianten vor.  
 + **Datenpunkt für Leistung** -> den Datenpunkt auswählen, der die Leistung (Watt) enthält   
   
- <img alt='pagePowerItemMore' src='Pictures/pagePower/pagePowerItemMore.png'>  
+ <img alt='pagePowerItemMore' src='../Pictures/pagePower/pagePowerItemMore.png'>  
    
  + **Anzahl der Dezimalstellen**, die dargestellt werden sollen, unabhängig von der Anzahl im Datenpunkt  
  + **Einheit** Hiermit wird die kleinste darzustellende Einheit ausgewählt. Durch die AutoUnit-Funktion wird die Einheit erhöht, wenn die Zahl vierstellig wird. z.B 999W werden bei Erhöhung zu 1kW. Wenn im Datenpunkt eine Einheit definiert ist, ist diese führend und überschreibt diese hier im Admin.  
@@ -35,7 +35,7 @@
  + Durch setzen des Haken kann die **Flußrichtung umgekehrt** werden. Alle Erzeuger sollten zur Mitte fließen und Verbraucher davon weg. Die Mitte der Seite spiegelt den Verteilerkasten wieder, wo alle Verbraucher und Erzeuger zusammen kommen.  
  + **Iconfarbe** -> mit dem ColorPicture kann die Farbe des Icon ausgewählt werden. Soll das Icon nach Höhe der Leistung seine Farbe ändern, dann aktiviert `Farbskale verwenden`.  
    
- <img alt='' src='Pictures/pagePower/pagePowerItemUsecolor.png'>
+ <img alt='' src='../Pictures/pagePower/pagePowerItemUsecolor.png'>
 
 Mit den Werten `min Leistung`, `max Leistung`, `best Leistung` wird der Farbverlauf von Grün nach Rot festgelegt. Es gibt mehrere Möglichkeiten den Verlauf einzustellen. Welcher Wert Grün ist entscheidet der Wert von `best Leistung`.
 + **Beispiel 1**  
@@ -61,7 +61,7 @@ Mit **Beschreibung/Titel** könnt ihr über der Flussanzeige einen Text einblend
 ---  
 ### Home  
 
-<img alt='pagePowerHome' src='Pictures/pagePower/pagePowerHome.png'>  
+<img alt='pagePowerHome' src='../Pictures/pagePower/pagePowerHome.png'>  
   
 Home ist der mittlere Teil der Page, hier laufen alle Leistungen zusammen. Es ist der virtuelle Stromkasten mit seinem Zähler. Es gibt hier zwei Felder die Ihr nutzen könnt um Werte anzeigen zu lassen.  
 
