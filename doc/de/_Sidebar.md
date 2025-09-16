@@ -37,7 +37,7 @@
 - [Page QR](PageQR)  
 - [Page Power](PagePower)  
 - [Page Chart](PageChart)
-- [Page Alarm](PageAlarm) in Arbeit 
+- [Page Alarm](PageAlarm) iA
 - [Page Media](PageMedia)   
 - [Page Thermo2](PageThermo2) 
   
