@@ -1,4 +1,4 @@
-# Mediaplayer (`cardMedia`)
+# Mediaplayer (cardMedia)
 
 **Stand:** 11.06.2025  
 **Unterstützte Adapter:** `spotify-premium`, `alexa2`, `mpd`, `sonos`
@@ -116,6 +116,19 @@ media: {
 - **Logo‑Feld**: Je nach Quelle kann das Logo z. B. Play/Pause toggeln oder ein Seek‑Popup öffnen.
 
 ---
+
+## Bilder zur cardMedia
+
+Hauptseite z.B.  Alexa oder Spotify  
+<img alt='alexa2' src='../Pictures/pageMedia/alexa2.png' width= '45%'> <img alt='spotify' src='../Pictures/pageMedia/spotify.png' width='45%'>  
+  
+Equalizer und Trakliste  
+<img alt='equalizer' src='../Pictures/pageMedia/equalizer.png' width= '45%'> <img alt='trakliste' src='../Pictures/pageMedia/tracklist.png' width='45%'>  
+  
+Speaker und Playlist  
+<img alt='speaker' src='../Pictures/pageMedia/speaker.png' width= '45%'> <img alt='playliste' src='../Pictures/pageMedia/playlist.png' width='45%'>  
+  
+Bilder können je nach Konfiguration abweichen oder nicht vorhanden sein  
 
 ```typescript
 // Nur als Referenz – die Erklärung steht oben.
