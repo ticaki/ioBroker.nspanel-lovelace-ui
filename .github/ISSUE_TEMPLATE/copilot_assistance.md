@@ -22,6 +22,7 @@ assignees: ''
 
 **Versions:**
 - Adapter version: `x.x.x`
+- Admin version: `x.x.x`
 - JS-Controller version: `x.x.x` <!-- get with: iobroker -v -->
 - Node.js version: `x.x.x` <!-- get with: node -v -->
 
