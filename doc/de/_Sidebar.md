@@ -45,7 +45,7 @@
 - [Developer Templates](Developer-Templates)  
 - [Developer News (Latest)](Developer-News-(Latest))
 - [Developer Readme](Developer-Readme)
-- [Alias Table](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md)
+- [Alias Table](ALIAS)
   
 **FAQ**  
 

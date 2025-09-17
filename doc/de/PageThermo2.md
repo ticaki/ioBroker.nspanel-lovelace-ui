@@ -54,7 +54,7 @@ Eine komplette Seite sieht im Skript z.B. so aus
 ```
 
 #### Alias
-Wie gewohnt kann man Aliase (siehe [Tabelle](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md)) verwenden. Die Role **airCondition** erzeugt 2 Heizkreise. Die wird eingestellt durch `name2`, `iconHeatCycle2`, `iconHeatCycleOnColor2` und `iconHeatCycleOffColor2`. Viele der optionalen Datenpunkte sind drin und werden Heizkreis bezogen als Pageitems hinzugefügt. Fehlende bitte reklamieren.
+Wie gewohnt kann man Aliase (siehe [Tabelle](ALIAS)) verwenden. Die Role **airCondition** erzeugt 2 Heizkreise. Die wird eingestellt durch `name2`, `iconHeatCycle2`, `iconHeatCycleOnColor2` und `iconHeatCycleOffColor2`. Viele der optionalen Datenpunkte sind drin und werden Heizkreis bezogen als Pageitems hinzugefügt. Fehlende bitte reklamieren.
 ```typescript
     const Thermo2New: PageType = {
         type: 'cardThermo2',
