@@ -13,9 +13,9 @@
 ***
 
 
-**Folge zum Flashen entweder diesem Video** https://www.youtube.com/watch?v=uqPz08ZpFW8 ...
+**Follow either this video for flashing** https://www.youtube.com/watch?v=uqPz08ZpFW8 ...
 
-... **oder gehe nach der nachfolgenden Beschreibung vor**:
+... **or proceed according to the following description**:
 
 Die Touch-Platte hat nur zwei Schrauben, mit denen die Kunststoffabdeckung befestigt ist. Beim Entfernen kommt eine gut beschriftete Platine mit der Aufschrift „E32-MSW-NX“ und „NSPanel-EU“ zum Vorschein.
 
