@@ -5,7 +5,7 @@
 
 ## SONOFF NSPanel Lovelace UI GUI - NEXT LEVEL
 
-<img src="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/assets/102996011/dfb187fd-3a6f-41cb-9da6-26569e186e9b" width="443px" height="310px" >  <img src="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/assets/102996011/66b54f11-6f22-4b3a-a946-6886a46c79dc" width="443px" height="310px" >  
+<img src="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/assets/102996011/dfb187fd-3a6f-41cb-9da6-26569e186e9b" width="443px" height="310px" >  <img src="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/assets/102996011/66b54f11-6f22-4b3a-a946-6886a46c79dc" width="443px" height="310px" >
 
 
 
