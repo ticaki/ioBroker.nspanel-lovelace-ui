@@ -40,7 +40,7 @@
 ## Screensaver - Changing Sunset/Sunrise in one Icon
 
 ```typeScript
-        // Bottom Entity - Sonnenaufgang - Sonnenuntergang im Wechsel
+        // Bottom Entity - Sunrise - Sunset alternating
         {
             template: 'text.accuweather.sunriseset',
             dpInit: '/^accuweather\.0.Daily.+/',

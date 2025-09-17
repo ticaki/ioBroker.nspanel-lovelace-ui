@@ -197,23 +197,23 @@ ScreensaverEntityIconOn: 'check-circle',
 ScreensaverEntityIconOff: 'alert-circle-outline'
 ```
 
-**Wichtiger Hinweis**: Verwenden Sie ausschließlich Icons aus der [NSPanel Icon Cheatsheet](https://docs.nspanel.pky.eu/icon-cheatsheet.html). Andere Material Design Icons werden möglicherweise nicht korrekt angezeigt.
+**Important Note**: Use exclusively icons from the [NSPanel Icon Cheatsheet](https://docs.nspanel.pky.eu/icon-cheatsheet.html). Other Material Design Icons may not display correctly.
 
-## Konfigurationsarten
+## Configuration Types
 
-Es gibt drei verschiedene Arten, wie Screensaver-Elemente konfiguriert werden können:
+There are three different ways screensaver elements can be configured:
 
-### 1. Script-Configuration (`type: 'script'`)
+### 1. Script Configuration (`type: 'script'`)
 
-Die flexibelste Methode zur manuellen Configuration einzelner Elemente:
+The most flexible method for manual configuration of individual elements:
 
 ```typescript
 {
     type: 'script',
-    ScreensaverEntity: 'alias.0.Temperatur.ACTUAL',
+    ScreensaverEntity: 'alias.0.Temperature.ACTUAL',
     ScreensaverEntityIconOn: 'thermometer',
     ScreensaverEntityIconOff: 'thermometer-off',
-    ScreensaverEntityText: 'Innentemperatur',
+    ScreensaverEntityText: 'Indoor Temperature',
     ScreensaverEntityUnitText: '°C',
     ScreensaverEntityFactor: 1,
     ScreensaverEntityDecimalPlaces: 1,
@@ -221,9 +221,9 @@ Die flexibelste Methode zur manuellen Configuration einzelner Elemente:
 }
 ```
 
-### 2. Template-Configuration (`type: 'template'`)
+### 2. Template Configuration (`type: 'template'`)
 
-Vorgefertigte Templates für häufige Anwendungsfälle:
+Predefined templates for common use cases:
 
 ```typescript
 {
@@ -234,15 +234,15 @@ Vorgefertigte Templates für häufige Anwendungsfälle:
 }
 ```
 
-### 3. Native-Configuration (`type: 'native'`)
+### 3. Native Configuration (`type: 'native'`)
 
-Direkte Configuration der internen Adapter-Struktur (für Experten):
+Direct configuration of internal adapter structure (for experts):
 
 ```typescript
 {
     type: 'native',
     native: {
-        // Komplexe interne Struktur
+        // Complex internal structure
         role: 'text',
         data: { /* ... */ }
     }
