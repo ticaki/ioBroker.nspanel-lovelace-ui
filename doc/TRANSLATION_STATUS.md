@@ -5,23 +5,23 @@ This document tracks the translation status of the NSPanel Lovelace UI adapter d
 ## Translation Progress
 
 ### ✅ Completed Languages (Available for Users)
-| Language | Status | Key Files Translated | Notes |
-|----------|--------|---------------------|-------|
-| 🇩🇪 **Deutsch** | ✅ Complete | All files | Original German documentation |
-| 🇬🇧 **English** | ✅ Complete | All key files | Professional translations completed |
-| 🇪🇸 **Español** | ✅ Ready | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
-| 🇫🇷 **Français** | ✅ Ready | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
-| 🇮🇹 **Italiano** | ✅ Ready | Home, Sidebar, Footer, General, ScriptConfig | Key documentation files translated |
+| Language | Status | Coverage | Notes |
+|----------|--------|----------|-------|
+| 🇩🇪 **Deutsch** | ✅ Complete | 100% | Original German documentation |
+| 🇬🇧 **English** | ✅ Complete | 100% | Professional translations completed |
 
 ### 🔄 Community Translation Needed
-| Language | Status | Current State | How to Contribute |
-|----------|--------|---------------|-------------------|
-| 🇳🇱 **Nederlands** | 🔄 Basic Structure | General.md translated only | Translate remaining files using German source |
-| 🇵🇹 **Português** | 🔄 Basic Structure | General.md translated only | Translate remaining files using German source |
-| 🇵🇱 **Polski** | 🔄 Structure Only | TODO markers only | Complete translation needed |
-| 🇷🇺 **Русский** | 🔄 Structure Only | TODO markers only | Complete translation needed |
-| 🇺🇦 **Українська** | 🔄 Structure Only | TODO markers only | Complete translation needed |
-| 🇨🇳 **中文** | 🔄 Structure Only | TODO markers only | Complete translation needed |
+| Language | Status | Current Progress | Priority Files Missing |
+|----------|--------|------------------|----------------------|
+| 🇪🇸 **Español** | 🔄 Partial | ~15% (2 files only) | Most documentation files need translation |
+| 🇫🇷 **Français** | 🔄 Partial | ~15% (2 files only) | Most documentation files need translation |
+| 🇮🇹 **Italiano** | 🔄 Partial | ~10% (1 file only) | Most documentation files need translation |
+| 🇳🇱 **Nederlands** | 🔄 Minimal | ~5% | Almost all files need translation |
+| 🇵🇹 **Português** | 🔄 Minimal | ~5% | Almost all files need translation |
+| 🇵🇱 **Polski** | 🔄 Structure Only | 0% | Complete translation needed |
+| 🇷🇺 **Русский** | 🔄 Structure Only | 0% | Complete translation needed |
+| 🇺🇦 **Українська** | 🔄 Structure Only | 0% | Complete translation needed |
+| 🇨🇳 **中文** | 🔄 Structure Only | 0% | Complete translation needed |
 
 ## File Structure
 

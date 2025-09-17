@@ -6,13 +6,13 @@ Choose your preferred language for the documentation:
 
 [![🇩🇪 Deutsch](https://img.shields.io/badge/🇩🇪-Deutsch-blue)](de/Home.md)
 [![🇬🇧 English](https://img.shields.io/badge/🇬🇧-English-blue)](en/Home.md)
-[![🇪🇸 Español](https://img.shields.io/badge/🇪🇸-Español-blue)](es/Home.md)
-[![🇫🇷 Français](https://img.shields.io/badge/🇫🇷-Français-blue)](fr/Home.md)
-[![🇮🇹 Italiano](https://img.shields.io/badge/🇮🇹-Italiano-blue)](it/Home.md)
 
 ### Additional Languages (Community Translations Welcome)
 
 The following languages have basic structure in place but need community translations:
+- 🇪🇸 Español (Spanish) 
+- 🇫🇷 Français (French)
+- 🇮🇹 Italiano (Italian)
 - 🇳🇱 Nederlands (Dutch)
 - 🇵🇱 Polski (Polish)  
 - 🇵🇹 Português (Portuguese)
