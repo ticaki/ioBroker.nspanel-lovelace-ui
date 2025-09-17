@@ -1,4 +1,4 @@
-## Konvertierung der Skriptkonfiguration in Adapterkonfig
+## Converting Script Configuration to Adapter Configuration
 
 ### Cards
 - [x] cardChart

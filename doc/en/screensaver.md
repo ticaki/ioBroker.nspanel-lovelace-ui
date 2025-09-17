@@ -101,45 +101,45 @@ The screensaver has different modes with different layouts:
   
 <img alt='screensaverEsay' src='../Pictures/screensaver/screensaverEasy.png' width='70%'>  
   
-- **Bottom-Bereich** (3 Elemente): Extra große Schrift für bessere Lesbarkeit
-- **Keine Icons oder Texte**: Vereinfachte Darstellung ohne komplexe Elemente
-- **Keine MR-Icons**: Reduzierte Funktionalität für einfache Bedienung
-- **Update Info**: dieses Symbol ist auf allen Screensavern zu sehen, wenn es ein Update vom TFT, Berry oder Adapter gibt.  
+- **Bottom Area** (3 elements): Extra large font for better readability
+- **No icons or texts**: Simplified display without complex elements
+- **No MR-Icons**: Reduced functionality for simple operation
+- **Update Info**: this symbol can be seen on all screensavers when there is an update of TFT, Berry or Adapter.  
 
-## Bereiche im Detail
+## Areas in Detail
 
-## MR-Icons (Relay-Symbole)
+## MR-Icons (Relay Symbols)
 
-Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen Bereich des Screensavers zur Visualisierung von Status-Informationen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar.
+The MR-Icons are **exclusively display elements** in the upper area of the screensaver for visualizing status information. They are available in all screensaver modes except Easy View.
 
-### Eigenschaften der MR-Icons:
-- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
-- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden
-- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
-- **Flexible Anbindung**: Können mit beliebigen ioBroker-States verbunden werden (nicht nur NSPanel-Relays)
-- **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
-- **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
-- **Detach-Funktion**: Icons können vollständig unabhängig von den Hardware-Tasten konfiguriert werden
+### Properties of MR-Icons:
+- **Pure status display**: Icons only show the current state and have **no controlling function**
+- **Hardware buttons**: The physical buttons below the display can be configured independently
+- **Visual status**: Color change based on on/off state of the linked states
+- **Flexible connection**: Can be connected to any ioBroker states (not just NSPanel relays)
+- **Configurable icons**: Different symbols depending on application (light, socket, etc.)
+- **Extended display**: Additional value for status displays possible
+- **Detach function**: Icons can be configured completely independently from the hardware buttons
 
-### Funktionsweise:
-- **Anzeige**: Die Icons im oberen Displaybereich zeigen nur den aktuellen Status der verknüpften States
-- **Hardware-Tasten**: Die Tasten unterhalb des Displays sind separate Steuerelemente
-- **Configuration**: Die Icon-Configuration betrifft nur die visuelle Darstellung, nicht die Tastenfunktion
+### Functionality:
+- **Display**: The icons in the upper display area only show the current status of the linked states
+- **Hardware buttons**: The buttons below the display are separate control elements
+- **Configuration**: The icon configuration only affects the visual display, not the button function
 
-### MR-Icon Bereiche:
-- **mrIcon1ScreensaverEntity**: Linkes Relay-Symbol
-- **mrIcon2ScreensaverEntity**: Rechtes Relay-Symbol
+### MR-Icon Areas:
+- **mrIcon1ScreensaverEntity**: Left relay symbol
+- **mrIcon2ScreensaverEntity**: Right relay symbol
 
-### Beispiel-Configuration für MR-Icons:
+### Example Configuration for MR-Icons:
 
 ```typescript
-// Direkte Relay-Steuerung
+// Direct relay control
 mrIcon1ScreensaverEntity: {
     type: 'script',
     ScreensaverEntity: 'Relay.1',
     ScreensaverEntityIconOn: 'lightbulb-on',
     ScreensaverEntityIconOff: 'lightbulb-off',
-    ScreensaverEntityText: 'Licht',
+    ScreensaverEntityText: 'Light',
     ScreensaverEntityIconColor: {
         val_min: 0,
         val_max: 1,
@@ -147,7 +147,7 @@ mrIcon1ScreensaverEntity: {
     }
 }
 
-// Externe Geräte-Steuerung mit Statuswert
+// External device control with status value
 mrIcon2ScreensaverEntity: {
     type: 'script',
     ScreensaverEntity: 'hue.0.Wohnzimmer.Lampe.on',

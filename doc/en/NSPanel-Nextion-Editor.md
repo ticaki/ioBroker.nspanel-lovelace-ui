@@ -1,32 +1,32 @@
-# Das ioBroker Skript auch ohne NSPanel ausprobieren
+# Try the ioBroker Script even without NSPanel
 
 ## Introduction
 
-Wenn man sein NSPanel schon fest verbaut hat und dann z.B. eine neue Seite konfigurieren muss, dann ist man ständig zwischen seinem Rechner und dem Panel am hin-und-her laufen um die Funktionalität zu testen. Die Bewegung als solches mag gut tun, ist aber hier der Effizienz in der Entwicklung der neuen Seite nicht zuträglich.
-Auch nach einem Update des ioBroker Skripts kann man mit dieser Lösung einfach im Emulator testen, ob noch alles klappt, bevor man das Skript in seiner Live-Instanz aktualisiert.
-Und Last but not least ist diese Möglichkeit auch für all diejenigen Interessant, die noch kein NSPanel haben, aber selbiges vor dem Kauf einmal testen möchten.
+If you have already permanently installed your NSPanel and then need to configure a new page, for example, you are constantly running back and forth between your computer and the panel to test the functionality. The movement as such may be good for you, but here it is not conducive to the efficiency in developing the new page.
+Even after an update of the ioBroker script, you can simply test in the emulator with this solution whether everything still works before updating the script in your live instance.
+And last but not least, this possibility is also interesting for all those who don't have an NSPanel yet, but would like to test it before buying.
 
 ![nextionEditor](../Pictures/emulator/nextionEditor.png)  
 
 
-## Voraussetzungen
+## Requirements
 
-Ihr braucht:  
-* einen PC (ich habe es mit Windows 11 bei mir aktuell vertestet)  
-* einen ESP32 mit Tasmota32  
-* den Nextion Editor  
-* und eine ioBroker-Installation.  
+You need:  
+* a PC (I have currently tested it with Windows 11)  
+* an ESP32 with Tasmota32  
+* the Nextion Editor  
+* and an ioBroker installation.  
 
 <img src="../Pictures/emulator/esp32.jpeg" alt= "esp32" width="25%" heigth= "25%">  
 
-> Der ESP32 bleibt mit einem Datenkabel mit dem USB-Port des PC's verbunden.
+> The ESP32 remains connected to the USB port of the PC with a data cable.
 
 
-## Vorbereitungen
+## Preparations
 
-Nachdem Euer ESP32 angekommen ist, müsst Ihr diesen via USB an den PC anschließen. Ich musste mir für meinen ESP32 noch den passenden Treiber installieren (CP210x_Universal_Windows_Driver). Nachdem ich den Treiber installiert hatte, taucht im Gerätemanager unter Anschlüsse bei mir ein _Silicon Labs CP210x USB to UART Bridge_ an _COM3_ auf.  
+After your ESP32 has arrived, you must connect it to the PC via USB. I had to install the appropriate driver for my ESP32 (CP210x_Universal_Windows_Driver). After I installed the driver, a _Silicon Labs CP210x USB to UART Bridge_ on _COM3_ appears in the device manager under connections.  
 
-Nun installieren wir Tasmota über den Webinstaller auf dem ESP: Dazu ruft Ihr die Seite https://tasmota.github.io/install/ im Browser auf. Lt. Dokumentation von Tasmota müsst Ihr hierfür den Browser Edge oder Chrome nehmen. Dort wählt Ihr rechts im Auswahlmenü _ESP32_ und links im Auswahlmenü _Tasmota DE_. Anschließend klickt Ihr auf _CONNECT_ und wählt den COM-Port von Eurer CP210x USB to UART Bridge aus.  
+Now we install Tasmota on the ESP via the web installer: To do this, you call up the page https://tasmota.github.io/install/ in the browser. According to Tasmota documentation, you must use the Edge or Chrome browser for this. There you select _ESP32_ in the selection menu on the right and _Tasmota DE_ in the selection menu on the left. Then you click on _CONNECT_ and select the COM port of your CP210x USB to UART Bridge.  
 
 Nachdem die Verbindung hergestellt wurde, installiert ihr Tasmota auf dem EPS32. War die Installation erfolgreich, könnt Ihr im nächsten Schritt Eure WLAN-Daten eintragen.  
 Nachdem die WLAN-Daten hinterlegt sind, gelangt Ihr mit einem weiteren Klick direkt auf die Tasmota Seite vom Gerät. War dies Erfolgreich, schließen wir die Tasmota Installation Seite und trennen kurz die USB Verbindung.  
