@@ -1,4 +1,4 @@
-# Mediaplayer (cardMedia)
+# Media Player (cardMedia)
 
 **Stand:** 11.06.2025  
 **Unterstützte Adapter:** `spotify-premium`, `alexa2`, `mpd`, `sonos`
