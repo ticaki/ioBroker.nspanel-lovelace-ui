@@ -8,7 +8,7 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 <tr>
 <td width="50%">
 
-**Grundlagen**
+**Basics**
 - [Screensaver-Modi](#screensaver-modi)
   - [Advanced Mode (Standard)](#1-advanced-mode-standard)
   - [Alternate Mode](#2-alternate-mode)

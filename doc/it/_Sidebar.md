@@ -1,56 +1,54 @@
-<!-- TODO: Translate from German to Italiano -->
-
 ![Panel eu_us mit logo](<../Pictures/Panel eu_us mit logo.png>)  
 ![SOnOFFLogo](../Pictures/SOnOffLogo.png)   
-# [Adapter - Home](Home)  
-## TFT Release: v5.0.0  
-[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  Link funktioniert -> logo falsch
+# [Adattatore - Home](Home)  
+## Rilascio TFT: v5.0.0  
+[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  Link funziona -> logo errato
 ---
-## Adapter Version  
+## Versione Adattatore  
 [![npm](https://img.shields.io/npm/v/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/releases) ![Number of Installations](https://iobroker.live/badges/nspanel-lovelace-ui-installed.svg)
   
   
-**Einleitung**  
-- [Funktionsübersicht]()  
+**Introduzione**  
+- [Panoramica Funzionalità]()  
   
-**Basisinstallation**  
-- [NSPanel flashen](NSPanel-flashen)  
-- [Adapterinstallation](Adapter-Installation)  
-- [NSPanel Emulator](NSPanel-Nextion-Editor)  
+**Installazione Base**  
+- [Flash NSPanel](NSPanel-flashen)  
+- [Installazione Adattatore](Adapter-Installation)  
+- [Emulatore NSPanel](NSPanel-Nextion-Editor)
 
-**Adapter Admin**
-- [General](General) iA  
-- [NSPanelsetting](NSPanelsetting) iA  
-- [Maintain](Maintain) iA  
-- [Navigation Overview](Navigation) iA  
-- [Developer](Developer) iA  
+**Admin Adattatore**
+- [Generale](General) iA  
+- [Impostazioni NSPanel](NSPanelsetting) iA  
+- [Manutenzione](Maintain) iA  
+- [Panoramica Navigazione](Navigation) iA  
+- [Sviluppatore](Developer) iA  
   
-**Konfiguratiosscript**
-- [Einleitung](ScriptConfig) iA
-- [Grundlagen Seitenerstellung](ScriptConfig#seiten-konfiguration)  
-- [PageItems erstellen](ScriptConfig#pageitems) iA  
+**Script di Configurazione**
+- [Introduzione](ScriptConfig) iA
+- [Basi Creazione Pagine](ScriptConfig#page-configuration)  
+- [Creare PageItems](ScriptConfig#pageitems) iA  
 - [Screensaver](ScriptConfig#screensaver) iA  
 
 **Screensaver**  
-- [Einleitung](screensaver)   
+- [Introduzione](screensaver)   
 
-**Standard Pages**  
-- [Einleitung](Pages)  
-- [Page QR](PageQR)  
-- [Page Power](PagePower)  
-- [Page Chart](PageChart)
-- [Page Alarm](PageAlarm) iA
-- [Page Media](PageMedia)   
-- [Page Thermo2](PageThermo2) 
+**Pagine Standard**  
+- [Introduzione](Pages)  
+- [Pagina QR](PageQR)  
+- [Pagina Power](PagePower)  
+- [Pagina Chart](PageChart)
+- [Pagina Alarm](PageAlarm) iA
+- [Pagina Media](PageMedia)   
+- [Pagina Thermo2](PageThermo2) 
   
-**Developer**  
-- [Developer Templates](Developer-Templates)  
-- [Developer News (Latest)](Developer-News-(Latest))
-- [Developer Readme](Developer-Readme)
-- [Alias Table](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md)
+**Sviluppatore**  
+- [Template Sviluppatore](Developer-Templates)  
+- [Notizie Sviluppatore (Ultime)](Developer-News-(Latest))
+- [Readme Sviluppatore](Developer-Readme)
+- [Tabella Alias](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md)
   
-**FAQ**  
+**Domande Frequenti**  
 
-**Finde uns**  
+**Trovaci**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
  

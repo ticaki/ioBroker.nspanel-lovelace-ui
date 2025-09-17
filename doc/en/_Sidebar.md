@@ -18,7 +18,7 @@
 
 **Adapter Admin**
 - [General](General) iA  
-- [NSPanel Settings](NSPanelsetting) iA  
+- [NSPanel Settings](NSPanel Settings) iA  
 - [Maintain](Maintain) iA  
 - [Navigation Overview](Navigation) iA  
 - [Developer](Developer) iA  

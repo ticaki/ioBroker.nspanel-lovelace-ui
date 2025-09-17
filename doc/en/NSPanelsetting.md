@@ -1,1 +1,1 @@
-# NSPanelsetting
+# NSPanel Settings
