@@ -2,7 +2,7 @@
 name: Copilot Agent Assistance
 about: Request help from GitHub Copilot Agent for NSPanel Lovelace UI issues
 title: '[Copilot] '
-labels: 'copilot-assistance'
+labels: ['copilot-assistance']
 assignees: ''
 ---
 
