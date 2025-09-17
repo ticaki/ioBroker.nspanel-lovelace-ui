@@ -1,6 +1,6 @@
 # Introduction Standard Pages  
 
-Die Pages PageQR, PageChart, PagePower und PageAlarm folgen einer festen Einstellung, deshalb haben wir uns entschieden diese im Admin abzubilden. Alle Settings werden dort vorgenommen und im Adapter gespeichert. Im Konfig-Script ist dann nur ein Verweis auf die Seite nötig. Auf den folgenden Pages wird jede Page mit ihren Einstellmöglichkeiten beschrieben.  
+The Pages PageQR, PageChart, PagePower and PageAlarm follow a fixed configuration, so we decided to implement these in the Admin interface. All settings are made there and stored in the adapter. In the configuration script, only a reference to the page is needed. On the following pages, each page is described with its configuration options.  
 - [PageQR](PageQR)  
 - [PageChart](PageChart)  
 - [PagePower](PagePower)  

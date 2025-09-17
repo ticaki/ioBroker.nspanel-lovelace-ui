@@ -1,30 +1,30 @@
 # Screensaver Configuration
 
-Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nicht aktiv verwendet wird. Diese Dokumentation beschreibt alle Möglichkeiten zur Configuration des Bildschirmschoners in Ihrem Konfigurationsskript.
+The screensaver is the view that is displayed on the NSPanel when it is not actively being used. This documentation describes all possibilities for configuring the screensaver in your configuration script.
 
-## Inhaltsverzeichnis
+## Table of Contents
 
 <table>
 <tr>
 <td width="50%">
 
 **Basics**
-- [Screensaver-Modi](#screensaver-modi)
+- [Screensaver Modes](#screensaver-modes)
   - [Advanced Mode (Standard)](#1-advanced-mode-standard)
   - [Alternate Mode](#2-alternate-mode)
   - [Standard Mode](#3-standard-mode)
   - [Easy View Mode](#4-easy-view-mode)
-- [Bereiche im Detail](#bereiche-im-detail)
-- [MR-Icons (Relay-Symbole)](#mr-icons-relay-symbole)
-- [Wisch-Gesten (Swipe)](#wisch-gesten-swipe)
-- [Icons für NSPanel](#icons-für-nspanel)
+- [Areas in Detail](#areas-in-detail)
+- [MR-Icons (Relay Symbols)](#mr-icons-relay-symbols)
+- [Swipe Gestures](#swipe-gestures)
+- [Icons for NSPanel](#icons-for-nspanel)
 
 **Configuration**
-- [Konfigurationsarten](#konfigurationsarten)
-  - [Script-Configuration](#1-script-konfiguration-type-script)
-  - [Template-Configuration](#2-template-konfiguration-type-template)
-  - [Native-Configuration](#3-native-konfiguration-type-native)
-- [Konfigurationsbereiche](#konfigurationsbereiche)
+- [Configuration Types](#configuration-types)
+  - [Script Configuration](#1-script-configuration-type-script)
+  - [Template Configuration](#2-template-configuration-type-template)
+  - [Native Configuration](#3-native-configuration-type-native)
+- [Configuration Areas](#configuration-areas)
   - [favoritScreensaverEntity](#favoritscreensaverentity)
   - [bottomScreensaverEntity](#bottomscreensaverentity)
   - [indicatorScreensaverEntity](#indicatorscreensaverentity)
@@ -35,67 +35,67 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
 </td>
 <td width="50%">
 
-**Erweiterte Configuration**
-- [Script-Configuration Parameter](#script-konfiguration-parameter)
-- [Verwendung von Farbkonstanten](#verwendung-von-farbkonstanten)
-- [IconScaleElement - Erweiterte Icon-Skalierung](#iconscaleelement---erweiterte-icon-skalierung)
+**Advanced Configuration**
+- [Script Configuration Parameters](#script-configuration-parameters)
+- [Using Color Constants](#using-color-constants)
+- [IconScaleElement - Advanced Icon Scaling](#iconscaleelement---advanced-icon-scaling)
 
-**Templates und Text-Elemente**
-- [Template-Configuration](#template-konfiguration)
-- [Wetter-Templates](#wetter-templates)
+**Templates and Text Elements**
+- [Template Configuration](#template-configuration)
+- [Weather Templates](#weather-templates)
   - [Pirate Weather](#pirate-weather)
   - [OpenWeatherMap](#openweathermap)
   - [AccuWeather](#accuweather)
   - [BrightSky](#brightsky)
-- [Zusätzliche Text-Templates](#zusätzliche-text-templates)
-  - [Allgemeine Templates](#allgemeine-templates)
-  - [Fenster & Türen Templates](#fenster--türen-templates)
-  - [Bewegung & Sicherheit](#bewegung--sicherheit-templates)
-  - [Netzwerk & Verbindung](#netzwerk--verbindung-templates)
-  - [Spezielle Templates](#spezielle-templates)
+- [Additional Text Templates](#additional-text-templates)
+  - [General Templates](#general-templates)
+  - [Window & Door Templates](#window--door-templates)
+  - [Motion & Security Templates](#motion--security-templates)
+  - [Network & Connection Templates](#network--connection-templates)
+  - [Special Templates](#special-templates)
 
-**Praktische Beispiele**
-- [Vollständige Arbeitsbeispiele für alle Modi](#vollständige-arbeitsbeispiele-für-alle-modi)
-  - [Advanced Mode - Komplett-Configuration](#advanced-mode---komplett-konfiguration)
-  - [Alternate Mode - Configuration](#alternate-mode---konfiguration)
-  - [Standard Mode - Configuration](#standard-mode---konfiguration)
-  - [Easy View Mode - Configuration](#easy-view-mode---konfiguration)
-- [Automatische Wetter-Elemente](#automatische-wetter-elemente)
+**Practical Examples**
+- [Complete Working Examples for All Modes](#complete-working-examples-for-all-modes)
+  - [Advanced Mode - Complete Configuration](#advanced-mode---complete-configuration)
+  - [Alternate Mode - Configuration](#alternate-mode---configuration)
+  - [Standard Mode - Configuration](#standard-mode---configuration)
+  - [Easy View Mode - Configuration](#easy-view-mode---configuration)
+- [Automatic Weather Elements](#automatic-weather-elements)
 
 </td>
 </tr>
 </table>
 
-## Screensaver-Modi
+## Screensaver Modes
 
-Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
+The screensaver has different modes with different layouts:
 
 ## 1 Advanced Mode Standard  
   
 <img alt='screensaverAdv' src='../Pictures/screensaver/screensaverAdv.png'>  
 
-- **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen (meist Wetter)
-- **Left-Bereich** (3 Elemente): Linker Bereich für detaillierte Informationen
-- **Indicator-Bereich** (5 Elemente): Status-Indikatoren für schnelle Übersicht
-- **Bottom-Bereich** (6 Elemente): Scrollbare Liste zusätzlicher Informationen
-- **MR-Icons** (2 Elemente): Schaltbare Relay-Icons (mrIcon1 + mrIcon2)
+- **Favorit Area** (1 element): Main area for important information (usually weather)
+- **Left Area** (3 elements): Left area for detailed information
+- **Indicator Area** (5 elements): Status indicators for quick overview
+- **Bottom Area** (6 elements): Scrollable list of additional information
+- **MR-Icons** (2 elements): Switchable relay icons (mrIcon1 + mrIcon2)
 
 ## 2 Alternate Mode  
   
 <img alt='screensaverAlt' src='../Pictures/screensaver/screensaverAlt.png'>  
     
-- **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen
-- **Alternate-Bereich** (1 Element): Alternative Ansicht für den Hauptbereich
-- **Bottom-Bereich** (3 Elemente): Reduzierte untere Informationsleiste
-- **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
+- **Favorit Area** (1 element): Main area for important information
+- **Alternate Area** (1 element): Alternative view for the main area
+- **Bottom Area** (3 elements): Reduced bottom information bar
+- **MR-Icons** (2 elements): Switchable relay icons
 
 ## 3 Standard Mode  
   
 <img alt='screensaverStd' src='../Pictures/screensaver/screensaverStd.png'>  
     
-- **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
-- **Bottom-Bereich** (4 Elemente): Erweiterte untere Informationsleiste
-- **MR-Icons** (2 Elemente): Schaltbare Relay-Icons
+- **Favorit Area** (1 element): Main area for important information  
+- **Bottom Area** (4 elements): Extended bottom information bar
+- **MR-Icons** (2 elements): Switchable relay icons
 
 ## 4. Easy View Mode  
   
