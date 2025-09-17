@@ -1,31 +1,31 @@
 # PagePower  
   
 **Content**
-+ [Grundeinstellung](#grundeinstellung)  
-    + [Erzeuger / Verbraucher](#erzeuger--verbraucher)  
++ [Basic Settings](#basic-settings)  
+    + [Producers / Consumers](#producers--consumers)  
     + [Home ](#home)    
-+ [Verweis im Konifg Script](#verweis-im-konfig-script)   
++ [Reference in Config Script](#reference-in-config-script)   
 
- Die Page Power ermöglicht bis zu 6 Verbraucher / Erzeuger darzustellen und zu verrechnen. Sie soll die Stromverteilung in eurem Smarthome abbilden. Icons, Farbverläufe, Geschwidigkeit der Flußrichtung sowie die Flußrichtung selbst lassen sich hier einstellen. Die Einstellmöglichkeiten erklären wir an einem Beispiel. Ihr könnt mehrere dieser Pages erstellen. Auf welchem Panel ihr diese dann nutzt, entscheidet ihr im Konfig-Script des jeweiligen Panels.  
+The PagePower enables up to 6 consumers / producers to be displayed and calculated. It should map the power distribution in your smart home. Icons, color gradients, speed of flow direction as well as the flow direction itself can be set here. We explain the setting options with an example. You can create multiple of these pages. On which panel you then use them is decided in the config script of the respective panel.  
   
 ---
-## Grundeinstellung  
+## Basic Settings  
   
  <img alt= 'PagePower allg' src='../Pictures/pagePower/pagePowerallg.png'>  
    
- Mit Auswahl des Tab `PagePower` kommt ihr an die Settings. Um eine neue Page zu erstellen, klickt ihr auf das PLUS-Zeichen und es erscheinen die Datenfelder für die Page. (siehe Bild oben)  
-1. Zuerst legt ihr den Seitennamen fest, dieser darf sich im gesamten Panel nicht wiederholen. Es ist die ID für diese Seite und ist identisch mit dem `uniqueName`. Der Name erscheint auch in dem grauen Balken, dadruch könnt ihr bei mehreren Pages sie leicht unterscheiden.
-2. Die Überschrift auf der Seite festlegen.
-3. Wenn ihr den Haken bei `alwaysOnDisplay` setzt, bleibt die Seite permanent sichtbar und spring nicht automatisch in den Screensaver. Damit der Screensaver wieder aktiv wird, müsst ihr auf eine andere Seite springen.  
-4. Option `Seite ausblenden` ermöglicht die Seite aus der Navigation zu entfernen, wenn in der Serviceseite `System`die Option `hide Page` aktiv ist.
+By selecting the `PagePower` tab you get to the settings. To create a new page, click on the PLUS sign and the data fields for the page will appear. (see image above)  
+1. First you define the page name, which must not be repeated in the entire panel. It is the ID for this page and is identical to the `uniqueName`. The name also appears in the gray bar, so you can easily distinguish between multiple pages.
+2. Set the heading on the page.
+3. If you check `alwaysOnDisplay`, the page remains permanently visible and does not automatically jump to the screensaver. For the screensaver to become active again, you must jump to another page.  
+4. Option `Hide page` allows you to remove the page from navigation when the `hide Page` option is active in the service page `System`.
   
 ---  
-## Erzeuger / Verbraucher  
+## Producers / Consumers  
   
 <img alt='pagePowerItem' src='../Pictures/pagePower/pagePowerItem.png'>  
 
-+ **Icon** -> über das Selctfeld kann ein Icon ausgewählt werden, dabei unterstütz euch die Selectivesuche und schlägt Varianten vor.  
-+ **Datenpunkt für Leistung** -> den Datenpunkt auswählen, der die Leistung (Watt) enthält   
++ **Icon** -> via the select field an icon can be selected, the selective search supports you and suggests variants.  
++ **Data point for power** -> select the data point that contains the power (watts)   
   
  <img alt='pagePowerItemMore' src='../Pictures/pagePower/pagePowerItemMore.png'>  
    

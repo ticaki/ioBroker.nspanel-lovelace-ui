@@ -1,33 +1,33 @@
 # Page Thermo2  
   
-Die PageThermo hat ein neues Design bekommen und zusätzliche Funktionen. Sie kann jetzt mehrere Heizkreise verwalten und zusätzlich zu den Datenpunkten des Thermostats normale PageItems aufnehmen, damit ist sie in Ihrer Konfiguratiion offener.
+The PageThermo has received a new design and additional functions. It can now manage multiple heating circuits and in addition to the thermostat data points, it can accommodate normal PageItems, making it more open in its configuration.
 
-## Configuration der PageThermo2 im Adapter
-Diese unterscheitet sich von der Skriptkonfiguration, daher eine komplette Beschreibung.
-Struktur:
-- [Aussehen](#aussehen)
-- [Feature](#feature)
-- [Probleme](#bekannte-probleme)
-- [Configuration](#konfiguration)
+## Configuration of PageThermo2 in the Adapter
+This differs from the script configuration, therefore a complete description.
+Structure:
+- [Appearance](#appearance)
+- [Features](#features)
+- [Problems](#known-problems)
+- [Configuration](#configuration)
     - [Alias](#alias)
-    - [Direkt über Datenpunkte](#direkt-über-datenpunkte)
-    - [Gemeinsame Optionen](#gemeinsame-eigenschaften)
-- [PageItemerweiterung](#pageitemerweiterung) 
+    - [Directly via Data Points](#directly-via-data-points)
+    - [Common Options](#common-properties)
+- [PageItem Extension](#pageitem-extension) 
 
-### Aussehen: 
+### Appearance: 
  <img alt='Thermo2WithDP' src='../Pictures/PageThermo2/Thermo2MitDatenpunkten.png'>
 
-### Feature:
+### Features:
 
-- bis zu 8 Heizkreise möglich (z.B. Heizung/Klimaanlage oder Küche/Wohnzimmer/...)
-- unendliche Anzahl an Pageitems (mit Blätterfunktion), das sind die 8 aussen rum und Nr. 9 zwischen dem + und -
-- Pageitems können einem Heizkreis zu geordnet werden (automatisch erzeugt werden bei mehreren Heizkreisen immer einem zugewiesen)
-- Überschriften sind per Heizkreis
-- Die Zeilen ober und unterhalb der Einstelltemperatur sind frei definierbar mit icon, wert, unit
+- up to 8 heating circuits possible (e.g. heating/air conditioning or kitchen/living room/...)
+- infinite number of page items (with page turning function), these are the 8 around the outside and No. 9 between the + and -
+- Page items can be assigned to a heating circuit (automatically generated when multiple heating circuits are always assigned to one)
+- Headings are per heating circuit
+- The lines above and below the set temperature are freely definable with icon, value, unit
 
-### Bekannte Probleme
-- leichtes Flackern auf Grund der hübschen Optik - das wird bleiben
-- Mode und Modeset könnten noch inkonsequent sein - in arbeit
+### Known Problems
+- slight flickering due to the beautiful appearance - this will remain
+- Mode and Modeset could still be inconsistent - work in progress
 
 ### Configuration
 Eine komplette Seite sieht im Skript z.B. so aus 
