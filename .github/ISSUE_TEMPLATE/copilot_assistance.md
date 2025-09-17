@@ -17,7 +17,7 @@ assignees: ''
 ## Basic Information
 **NSPanel Model:**
 - [ ] NSPanel EU
-- [ ] NSPanel US-P  
+- [ ] NSPanel US-P
 - [ ] NSPanel US-L
 
 **Versions:**
