@@ -1,54 +1,52 @@
-<!-- TODO: Translate from German to Français -->
+## Configuration de Base (MQTT)
+Dans l'onglet `General`, MQTT doit être configuré et le PIN pour les pages de service doit être assigné.  
 
-## Grundeinstellung (MQTT)
-Im Tab `General` muss der MQTT eingestellt und die Pin für die Serviceseiten vergeben werden.  
+  - Lors de l'utilisation du serveur MQTT interne (**de l'adaptateur**), il est possible de remplir automatiquement les données en utilisant le bouton. Cette fonction recherche également un port libre pour éviter des problèmes avec d'autres adaptateurs (ex. Shelly, Sonoff). Toutes les paramètres MQTT dans Tasmota sont écrasés et adaptés au **serveur MQTT de l'adaptateur**.  
+  - Lors de l'utilisation d'un serveur MQTT externe (mosquitto ou adaptateur MQTT), les champs ci-dessous doivent être remplis en conséquence.  
+    - IP vers le serveur MQTT externe -> Pour l'adaptateur MQTT, entrer l'IP d'ioBroker.  
+    - Port MQTT -> s'assurer que le port n'est pas déjà utilisé par un autre adaptateur ou service.  
+    - Nom d'utilisateur et mot de passe -> avec lesquels Tasmota (Panel) doit se connecter au serveur.  
 
-  - Bei der Nutzung des internen MQTT Server (**vom Adapter**), ist es möglich, über den Button die Daten automatisch ausfüllen zu lassen. Diese Funktion sucht auch einen freien Port, damit es nicht zu Problemen  mit anderen Adapter kommt. (z.B. Shelly, Sonoff). Es werden **alle** MQTT-Einstellungen in Tasmota überschrieben und an den **Adater-MQTT-Server** angepasst.  
-  - Bei Nutzung eines externen MQTT-Servers (mosquitto oder MQTT-Adapter) sind die Felder unten entsprechend selbst auszufüllen.  
-    - IP zum externen MQTT-Server -> Beim MQTT-Adapter ist die IP vom iobroker einzutragen.  
-    - MQTT-Port -> es daruf zu achten, dass der Port nicht schon von einem anderen Adapter oder Dienst/Service genutzt wird.  
-    - Benutzername und Passwort -> mit welchem sich Tasmota (Panel) beim Server anmelden muss.  
+  <img alt= "Écran de démarrage" src="../Pictures/Installation/Installation_Start.png" width="100%" height="100%"/>
+  - après sauvegarde, vous pouvez passer à la page `Paramètres du Panel`. 
 
-  <img alt= "Startbild" src="../Pictures/Installation/Installation_Start.png" width="100%" height="100%"/>
-  - nach dem Speichern kann auf der Seite `Panel Einstellungen` gewechselt werden. 
-
-## Panel Einstellungen  
+## Paramètres du Panel  
   
-  <img alt= "Panel Schritt 1" src="../Pictures/Installation/Installation_Panels_1.png" width="100%" height="100%"/>  
+  <img alt= "Panel Étape 1" src="../Pictures/Installation/Installation_Panels_1.png" width="100%" height="100%"/>  
   
-- die IP-Adresse, nach Möglichkeit eine feste IP im Router einstellen  
-- einen Namen für das Panel vergeben  
-- den Mqtt-Topic unter dem das Panel lauscht  
-- den Panel-Typ [EU, US-P, US-L]  
-- Zeitzone auswählen  
+- l'adresse IP, si possible définir une IP fixe dans le routeur  
+- assigner un nom pour le panel  
+- le topic MQTT sous lequel le panel écoute  
+- le type de panel [EU, US-P, US-L]  
+- sélectionner le fuseau horaire  
 
-zum Schluss auf den Button `NSPanel-Initialisierung` klicken.  
-Es werden die MQTT-Daten und Tasmota-Einstellungen an das Panel gesendet und damit alle Einstellungen richtig gesetzt. Desweiteren wird der Berry-Treiber installiert, sowie die NSPanel Firmware installiert(ca. 10 Minuten).  
-Nach der Initialisierung wird das Panel in die Liste automatisch eingetragen.  
+Enfin, cliquer sur le bouton `Initialisation NSPanel`.  
+Les données MQTT et paramètres Tasmota sont envoyés au panel et tous les paramètres sont correctement définis. De plus, le pilote Berry est installé, ainsi que le firmware NSPanel (env. 10 minutes).  
+Après l'initialisation, le panel est automatiquement inscrit dans la liste.  
 
-<img alt= "Panel Schritt 2" src="../Pictures/Installation/Installation_Panels_2.png" width="100%" height="100%"/>  
-_Informationen nicht ausführen_
-Mit den Tasmota-Tools, diese sind haupsächlich zur Fehlerbehebung vorhanden, kann der Berry-Treiber und die TFT-Firmware installiert/neuinstalliert werden. Dazu wird die IP/Panel im Feld `IP des Panel` ausgewäht. Zusätlich besteht die Möglichkeit Tasmota neu zu starten und in die WebUI von Tasmota zu springen. (neues Fenster / Popup) 
-<img alt= "Panel Schritt 3" src="../Pictures/Installation/Installation_Panels_3.png" width="100%" height="100%"/>
-_ab hier wieder weiter_
-Im Anschuss die Einstellungen Speichern und den Admin einmal schliessen. Danach kann mit der [Maintain Seite](#maintain) weiter gemacht werden.
+<img alt= "Panel Étape 2" src="../Pictures/Installation/Installation_Panels_2.png" width="100%" height="100%"/>  
+_Ne pas exécuter les informations_
+Avec les outils Tasmota, qui sont principalement disponibles pour le dépannage, le pilote Berry et le firmware TFT peuvent être installés/réinstallés. Pour cela, l'IP/Panel est sélectionné dans le champ `IP du Panel`. De plus, il est possible de redémarrer Tasmota et de passer à la WebUI Tasmota. (nouvelle fenêtre / popup) 
+<img alt= "Panel Étape 3" src="../Pictures/Installation/Installation_Panels_3.png" width="100%" height="100%"/>
+_continuer à partir d'ici_
+Ensuite, sauvegarder les paramètres et fermer l'admin une fois. Ensuite, vous pouvez continuer avec la [page Maintain](#maintain).
 
 ## Maintain  
 
-<img alt= "Panel Schritt 4" src="../Pictures/Installation/Installation_Panels_4.png" width="100%" height="100%"/>  
+<img alt= "Panel Étape 4" src="../Pictures/Installation/Installation_Panels_4.png" width="100%" height="100%"/>  
 
-In der Seite `Maintain` das Panel auswählen und über den Button `Script` die aktuelle Version des Konfig-Scriptes anlegen. Es wird im JavaScript-Adapter in einem Ordner mit dem Namen der Adapter-Instanz gespeichert. Der Dateiname gleicht dem Panelnamen. Die anderen Einstellungen werden im Kapitel [**Adapter Admin** / Maintain](Maintain) erläutert.  
+Sur la page `Maintain`, sélectionner le panel et créer la version actuelle du script de configuration via le bouton `Script`. Il est sauvegardé dans l'adaptateur JavaScript dans un dossier avec le nom de l'instance de l'adaptateur. Le nom du fichier correspond au nom du panel. Les autres paramètres sont expliqués dans le chapitre [**Admin de l'Adaptateur** / Maintain](Maintain).  
 
-<img alt= "Panel Schritt 5" src="../Pictures/Installation/Installation_Panels_5.png" width="50%" height="100%"/>
+<img alt= "Panel Étape 5" src="../Pictures/Installation/Installation_Panels_5.png" width="50%" height="100%"/>
 
-- das Konfig-Script 
+- le script de configuration 
 
-[Beispiel Konfigurationsskript](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/script/example_sendTo_script_iobroker.ts)
+[Script de Configuration d'Exemple](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/script/example_sendTo_script_iobroker.ts)
   
-Jetzt das Script einmal starten (es beendet sich selbst wieder) und die Instanz neu starten. Wenn alles richtig gemacht wurde, sollte jetzt die Serviceseite auf dem Panel erscheinen.  
-Weitere Erläuterungen zu diesem Script erhaltet ihr hier. [**Konfiguratiosscript** / Einleitung](ScriptConfig)  
+Maintenant démarrer le script une fois (il se termine automatiquement) et redémarrer l'instance. Si tout a été fait correctement, la page de service devrait maintenant apparaître sur le panel.  
+D'autres explications sur ce script peuvent être trouvées ici. [**Script de Configuration** / Introduction](ScriptConfig)  
 
-Bei Fragen fragen - Discord, Frum, hier, Telegram, Teams alles vorhanden :)
+Si vous avez des questions, demandez - Discord, Forum, ici, Telegram, Teams - tout est disponible :)
 
 
 [Alias Tabelle](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md)  

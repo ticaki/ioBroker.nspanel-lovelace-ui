@@ -1,9 +1,7 @@
-<!-- TODO: Translate from German to Italiano -->
+# Spiegazioni per lo Script di Configurazione dell'Adattatore
 
-# Erläuterungen zum Konfig - Script für den Adapter
-
-Es gibt in dem Script drei Bereiche:  
-- [Seiten-Konfiguration](#seiten-konfiguration)
+Ci sono tre aree nello script:  
+- [Configurazione delle Pagine](#configurazione-delle-pagine)
 ```typescript
         /***********************************************************************
          **                                                                   **
@@ -12,7 +10,7 @@ Es gibt in dem Script drei Bereiche:
          ***********************************************************************/
 ```  
   
-- [Screensaver-Konfiguration](#screensaver)
+- [Configurazione Screensaver](#screensaver)
 ``` typescript
         /***********************************************************************
          **                                                                   **
@@ -21,8 +19,8 @@ Es gibt in dem Script drei Bereiche:
          ***********************************************************************/
 ```
   
-- Codebereich  
-Änderungen im Codebereich sind vom User nicht nötig. Sollten für das Script Updates zur Verfügung stehen, können diese über die [Maintain Seite](Maintain) des Admin eingespielt werden.
+- Area Codice  
+Le modifiche nell'area del codice non sono necessarie per l'utente. Se sono disponibili aggiornamenti per lo script, questi possono essere applicati tramite la [pagina Maintain](Maintain) dell'admin.
 ```typescript
     /**
      ********************************************************************************
@@ -45,52 +43,52 @@ Es gibt in dem Script drei Bereiche:
      */
 ```  
 
-## Seiten-Konfiguration   
+## Configurazione delle Pagine   
   
-Die Konfiguration der Seiten gleich fast der wie im Panel-Script. Es gibt ein paar wichtige Punkte die sich von dem Panel_Script unterscheiden.  
-- Jede Seite braucht die Eigenschaft `uniqueName` -> Das ist ein eindeutiger Name für die Seite.   
-- Die Hauptseite muß als `uniqueName` **main** haben  
-- `next`, `prev`, `home`, `parent` müssen **Strings** sein, die auf einen der `uniqueName` verweist.
-- Seiten die in `pages` eingetragen werden, werden im Kreis miteinander verlinkt, alle anderen Seiten die verwendet werden sollen müssen in `subPages` aufgeführt sein. 
-- Die erste Zeile hat sich auch etwas geändert. Aus `let main: Pagetype ={` wird `const main: ScriptConfig.PageGrid = {` Die Page hinter `ScriptConfig` gleicht dem type `cardxxx`. Hier im Beispiel PageGrid = cardGrid.  
-- `button1` und `button2` ***haben eine neue Konfiguration*** mehr dazu [hier](#hardwarebutton-config)
+La configurazione delle pagine è quasi uguale a quella del Panel Script. Ci sono alcuni punti importanti che differiscono dal Panel_Script.  
+- Ogni pagina ha bisogno della proprietà `uniqueName` -> Questo è un nome unico per la pagina.   
+- La pagina principale deve avere **main** come `uniqueName`  
+- `next`, `prev`, `home`, `parent` devono essere **stringhe** che fanno riferimento a uno degli `uniqueName`.
+- Le pagine che vengono inserite in `pages` sono collegate tra loro in cerchio, tutte le altre pagine che devono essere utilizzate devono essere elencate in `subPages`. 
+- Anche la prima riga è cambiata leggermente. Da `let main: Pagetype ={` diventa `const main: ScriptConfig.PageGrid = {` La Page dietro `ScriptConfig` corrisponde al type `cardxxx`. Qui nell'esempio PageGrid = cardGrid.  
+- `button1` e `button2` ***hanno una nuova configurazione*** maggiori informazioni [qui](#hardwarebutton-config)
 
 
-Hier ein Beispiel für eine Hauptseite   
+Ecco un esempio per una pagina principale   
 ```typescript
 const main: ScriptConfig.PageGrid = {
     type: 'cardGrid',
     uniqueName: 'main',
-    heading: 'Wohnzimmer',
+    heading: 'Soggiorno',
     useColor: true,
     items: [
-        // hier kommen die PageItems rein
+        // I PageItems vanno qui
     ]
 };
 ```
   
-Hier eine Subpage  
+Ecco una sottopagina  
 ```typescript
    const lichttest: ScriptConfig.PageEntities = {
         type: 'cardEntities',
-        heading: 'Lichttest',
+        heading: 'Test Luci',
         uniqueName: 'lichttest',
         home: 'main',
         prev: 'gate',
         useColor: true,
         items: [
-            // hier kommen die PageItems rein
+            // I PageItems vanno qui
         ]
     };
 ```  
   
-* `const NameDerSeite:` -> Das Wort _NameDerSeite_ ist hier ein Platzhalter. Man gibt der Seite hier einen eindeutigen Namen, allerdings bitte ohne Leerzeichen bei mehreren Worten und vermeide Sonderzeichen.  
-* `'type':` -> Der Typ der Seite, wie zuvor schon beschrieben. PageType und type haben immer den gleichen Postfix. Bei type ist es aber CardType statt PageType. Folglich haben wir hier in Hochkomma eingefasst 'cardEntities' oder 'cardGrid', etc.  
-* `'heading':` -> Der Seitenname oder auch Überschrift, der auf der Seite auf dem NSPanel oben in der Mitte dargestellt wird. Er ist in Hochkommas zu fassen.   
-* `'items':` ->  Hier wird der eigentliche Inhalt der Seite eingetragen. Pro dazustellendem Element erfasst man hier ein sogenanntes `PageItem` welches dann die darzustellenden Parameter erhält.  
+* `const NomePagina:` -> La parola _NomePagina_ è un segnaposto qui. Dai alla pagina un nome unico qui, ma per favore senza spazi per più parole ed evita caratteri speciali.  
+* `'type':` -> Il tipo di pagina, come già descritto. PageType e type hanno sempre lo stesso suffisso. Con type è CardType invece di PageType. Di conseguenza abbiamo qui tra virgolette 'cardEntities' o 'cardGrid', ecc.  
+* `'heading':` -> Il nome della pagina o titolo che viene visualizzato sulla pagina del NSPanel in alto al centro. Deve essere tra virgolette.   
+* `'items':` ->  Qui viene inserito il contenuto effettivo della pagina. Per ogni elemento da visualizzare, inserisci un cosiddetto `PageItem` che poi riceve i parametri da visualizzare.  
 
 ---  
-## Optionale Parameter  
+## Parametri Opzionali  
 
         useColor?: boolean;
         subPage?: boolean;

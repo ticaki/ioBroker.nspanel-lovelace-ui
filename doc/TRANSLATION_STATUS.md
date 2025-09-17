@@ -13,9 +13,9 @@ This document tracks the translation status of the NSPanel Lovelace UI adapter d
 ### 🟡 Partially Translated Languages  
 | Language | Status | Key Files Translated | Notes |
 |----------|--------|---------------------|-------|
-| 🇪🇸 **Español** | 🟡 Basic | Home, Sidebar, Footer, General | Basic structure in place |
-| 🇫🇷 **Français** | 🟡 Basic | Home, Sidebar, Footer, General | Basic structure in place |
-| 🇮🇹 **Italiano** | 🟡 Basic | Home, Sidebar, Footer, General | Basic structure in place |
+| 🇪🇸 **Español** | 🟡 Good | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
+| 🇫🇷 **Français** | 🟡 Good | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
+| 🇮🇹 **Italiano** | 🟡 Good | Home, Sidebar, Footer, General, ScriptConfig | Key documentation files translated |
 | 🇳🇱 **Nederlands** | 🟡 Basic | General | Minimal translation |
 | 🇵🇹 **Português** | 🟡 Basic | General | Minimal translation |
 

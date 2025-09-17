@@ -1,9 +1,7 @@
-<!-- TODO: Translate from German to Français -->
+# Explications pour le Script de Configuration de l'Adaptateur
 
-# Erläuterungen zum Konfig - Script für den Adapter
-
-Es gibt in dem Script drei Bereiche:  
-- [Seiten-Konfiguration](#seiten-konfiguration)
+Il y a trois domaines dans le script :  
+- [Configuration des Pages](#configuration-des-pages)
 ```typescript
         /***********************************************************************
          **                                                                   **
@@ -12,7 +10,7 @@ Es gibt in dem Script drei Bereiche:
          ***********************************************************************/
 ```  
   
-- [Screensaver-Konfiguration](#screensaver)
+- [Configuration de l'Écran de Veille](#écran-de-veille)
 ``` typescript
         /***********************************************************************
          **                                                                   **
@@ -21,8 +19,8 @@ Es gibt in dem Script drei Bereiche:
          ***********************************************************************/
 ```
   
-- Codebereich  
-Änderungen im Codebereich sind vom User nicht nötig. Sollten für das Script Updates zur Verfügung stehen, können diese über die [Maintain Seite](Maintain) des Admin eingespielt werden.
+- Zone de Code  
+Les modifications dans la zone de code ne sont pas nécessaires pour l'utilisateur. Si des mises à jour sont disponibles pour le script, elles peuvent être appliquées via la [page Maintain](Maintain) de l'admin.
 ```typescript
     /**
      ********************************************************************************
@@ -45,52 +43,52 @@ Es gibt in dem Script drei Bereiche:
      */
 ```  
 
-## Seiten-Konfiguration   
+## Configuration des Pages   
   
-Die Konfiguration der Seiten gleich fast der wie im Panel-Script. Es gibt ein paar wichtige Punkte die sich von dem Panel_Script unterscheiden.  
-- Jede Seite braucht die Eigenschaft `uniqueName` -> Das ist ein eindeutiger Name für die Seite.   
-- Die Hauptseite muß als `uniqueName` **main** haben  
-- `next`, `prev`, `home`, `parent` müssen **Strings** sein, die auf einen der `uniqueName` verweist.
-- Seiten die in `pages` eingetragen werden, werden im Kreis miteinander verlinkt, alle anderen Seiten die verwendet werden sollen müssen in `subPages` aufgeführt sein. 
-- Die erste Zeile hat sich auch etwas geändert. Aus `let main: Pagetype ={` wird `const main: ScriptConfig.PageGrid = {` Die Page hinter `ScriptConfig` gleicht dem type `cardxxx`. Hier im Beispiel PageGrid = cardGrid.  
-- `button1` und `button2` ***haben eine neue Konfiguration*** mehr dazu [hier](#hardwarebutton-config)
+La configuration des pages est presque identique à celle du Panel Script. Il y a quelques points importants qui diffèrent du Panel_Script.  
+- Chaque page a besoin de la propriété `uniqueName` -> C'est un nom unique pour la page.   
+- La page principale doit avoir **main** comme `uniqueName`  
+- `next`, `prev`, `home`, `parent` doivent être des **strings** qui référencent l'un des `uniqueName`.
+- Les pages qui sont entrées dans `pages` sont liées entre elles en cercle, toutes les autres pages qui doivent être utilisées doivent être listées dans `subPages`. 
+- La première ligne a également changé légèrement. De `let main: Pagetype ={` devient `const main: ScriptConfig.PageGrid = {` La Page derrière `ScriptConfig` correspond au type `cardxxx`. Ici dans l'exemple PageGrid = cardGrid.  
+- `button1` et `button2` ***ont une nouvelle configuration*** plus d'informations [ici](#hardwarebutton-config)
 
 
-Hier ein Beispiel für eine Hauptseite   
+Voici un exemple pour une page principale   
 ```typescript
 const main: ScriptConfig.PageGrid = {
     type: 'cardGrid',
     uniqueName: 'main',
-    heading: 'Wohnzimmer',
+    heading: 'Salon',
     useColor: true,
     items: [
-        // hier kommen die PageItems rein
+        // Les PageItems vont ici
     ]
 };
 ```
   
-Hier eine Subpage  
+Voici une sous-page  
 ```typescript
    const lichttest: ScriptConfig.PageEntities = {
         type: 'cardEntities',
-        heading: 'Lichttest',
+        heading: 'Test d\'Éclairage',
         uniqueName: 'lichttest',
         home: 'main',
         prev: 'gate',
         useColor: true,
         items: [
-            // hier kommen die PageItems rein
+            // Les PageItems vont ici
         ]
     };
 ```  
   
-* `const NameDerSeite:` -> Das Wort _NameDerSeite_ ist hier ein Platzhalter. Man gibt der Seite hier einen eindeutigen Namen, allerdings bitte ohne Leerzeichen bei mehreren Worten und vermeide Sonderzeichen.  
-* `'type':` -> Der Typ der Seite, wie zuvor schon beschrieben. PageType und type haben immer den gleichen Postfix. Bei type ist es aber CardType statt PageType. Folglich haben wir hier in Hochkomma eingefasst 'cardEntities' oder 'cardGrid', etc.  
-* `'heading':` -> Der Seitenname oder auch Überschrift, der auf der Seite auf dem NSPanel oben in der Mitte dargestellt wird. Er ist in Hochkommas zu fassen.   
-* `'items':` ->  Hier wird der eigentliche Inhalt der Seite eingetragen. Pro dazustellendem Element erfasst man hier ein sogenanntes `PageItem` welches dann die darzustellenden Parameter erhält.  
+* `const NomDePage:` -> Le mot _NomDePage_ est un marqueur de position ici. Vous donnez à la page un nom unique ici, mais s'il vous plaît sans espaces pour plusieurs mots et évitez les caractères spéciaux.  
+* `'type':` -> Le type de page, comme déjà décrit. PageType et type ont toujours le même suffixe. Avec type c'est CardType au lieu de PageType. Par conséquent, nous avons ici entre guillemets 'cardEntities' ou 'cardGrid', etc.  
+* `'heading':` -> Le nom de la page ou titre qui est affiché sur la page du NSPanel en haut au centre. Il doit être entre guillemets.   
+* `'items':` ->  Ici le contenu réel de la page est saisi. Pour chaque élément à afficher, vous saisissez un soi-disant `PageItem` qui reçoit ensuite les paramètres à afficher.  
 
 ---  
-## Optionale Parameter  
+## Paramètres Optionnels  
 
         useColor?: boolean;
         subPage?: boolean;
