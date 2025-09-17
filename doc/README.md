@@ -9,12 +9,18 @@ Choose your preferred language for the documentation:
 [![🇪🇸 Español](https://img.shields.io/badge/🇪🇸-Español-blue)](es/Home.md)
 [![🇫🇷 Français](https://img.shields.io/badge/🇫🇷-Français-blue)](fr/Home.md)
 [![🇮🇹 Italiano](https://img.shields.io/badge/🇮🇹-Italiano-blue)](it/Home.md)
-[![🇳🇱 Nederlands](https://img.shields.io/badge/🇳🇱-Nederlands-blue)](nl/Home.md)
-[![🇵🇱 Polski](https://img.shields.io/badge/🇵🇱-Polski-blue)](pl/Home.md)
-[![🇵🇹 Português](https://img.shields.io/badge/🇵🇹-Português-blue)](pt/Home.md)
-[![🇷🇺 Русский](https://img.shields.io/badge/🇷🇺-Русский-blue)](ru/Home.md)
-[![🇺🇦 Українська](https://img.shields.io/badge/🇺🇦-Українська-blue)](uk/Home.md)
-[![🇨🇳 中文](https://img.shields.io/badge/🇨🇳-中文-blue)](zh-cn/Home.md)
+
+### Additional Languages (Community Translations Welcome)
+
+The following languages have basic structure in place but need community translations:
+- 🇳🇱 Nederlands (Dutch)
+- 🇵🇱 Polski (Polish)  
+- 🇵🇹 Português (Portuguese)
+- 🇷🇺 Русский (Russian)
+- 🇺🇦 Українська (Ukrainian)
+- 🇨🇳 中文 (Chinese)
+
+**Want to contribute?** See our [Translation Status Guide](TRANSLATION_STATUS.md) for details on how to help translate the documentation.
 
 ---
 

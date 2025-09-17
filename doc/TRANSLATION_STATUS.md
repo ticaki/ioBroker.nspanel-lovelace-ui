@@ -4,28 +4,24 @@ This document tracks the translation status of the NSPanel Lovelace UI adapter d
 
 ## Translation Progress
 
-### ✅ Completed Languages
+### ✅ Completed Languages (Available for Users)
 | Language | Status | Key Files Translated | Notes |
 |----------|--------|---------------------|-------|
-| 🇩🇪 **Deutsch** | ✅ Original | All files | Original German documentation |
+| 🇩🇪 **Deutsch** | ✅ Complete | All files | Original German documentation |
 | 🇬🇧 **English** | ✅ Complete | All key files | Professional translations completed |
+| 🇪🇸 **Español** | ✅ Ready | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
+| 🇫🇷 **Français** | ✅ Ready | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
+| 🇮🇹 **Italiano** | ✅ Ready | Home, Sidebar, Footer, General, ScriptConfig | Key documentation files translated |
 
-### 🟡 Partially Translated Languages  
-| Language | Status | Key Files Translated | Notes |
-|----------|--------|---------------------|-------|
-| 🇪🇸 **Español** | 🟡 Good | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
-| 🇫🇷 **Français** | 🟡 Good | Home, Sidebar, Footer, General, ScriptConfig, Adapter-Installation | Major documentation files translated |
-| 🇮🇹 **Italiano** | 🟡 Good | Home, Sidebar, Footer, General, ScriptConfig | Key documentation files translated |
-| 🇳🇱 **Nederlands** | 🟡 Basic | General | Minimal translation |
-| 🇵🇹 **Português** | 🟡 Basic | General | Minimal translation |
-
-### 🔴 Placeholder Languages
-| Language | Status | Notes |
-|----------|--------|-------|
-| 🇵🇱 **Polski** | 🔴 Placeholder | Structure created, needs translation |
-| 🇷🇺 **Русский** | 🔴 Placeholder | Structure created, needs translation |
-| 🇺🇦 **Українська** | 🔴 Placeholder | Structure created, needs translation |
-| 🇨🇳 **中文** | 🔴 Placeholder | Structure created, needs translation |
+### 🔄 Community Translation Needed
+| Language | Status | Current State | How to Contribute |
+|----------|--------|---------------|-------------------|
+| 🇳🇱 **Nederlands** | 🔄 Basic Structure | General.md translated only | Translate remaining files using German source |
+| 🇵🇹 **Português** | 🔄 Basic Structure | General.md translated only | Translate remaining files using German source |
+| 🇵🇱 **Polski** | 🔄 Structure Only | TODO markers only | Complete translation needed |
+| 🇷🇺 **Русский** | 🔄 Structure Only | TODO markers only | Complete translation needed |
+| 🇺🇦 **Українська** | 🔄 Structure Only | TODO markers only | Complete translation needed |
+| 🇨🇳 **中文** | 🔄 Structure Only | TODO markers only | Complete translation needed |
 
 ## File Structure
 
@@ -87,7 +83,35 @@ The repository includes helper scripts in `/tmp/` for:
 - Creating language structure (`translate-docs.js`)
 - Improving English translations (`improve-english.js`)
 
+## Contributing Translations
+
+To contribute translations:
+
+1. **Choose a language** from the "Community Translation Needed" section above
+2. **Navigate to the language directory** (e.g., `doc/nl/` for Dutch)
+3. **Start with these priority files** in order:
+   - `Home.md` - Main landing page  
+   - `_Sidebar.md` - Navigation menu
+   - `ScriptConfig.md` - Configuration documentation (most important technical content)
+   - `Adapter-Installation.md` - Installation guide
+4. **Translation guidelines**:
+   - Remove `<!-- TODO: Translate -->` comments when translating
+   - Keep all code examples and variable names exactly as they are
+   - Preserve image links and technical terminology
+   - Update internal links to point to same-language files
+5. **Submit a pull request** with your translations
+
+### Translation Template
+
+When translating, replace German content but preserve:
+- All `code blocks` and technical examples
+- Image paths: `../Pictures/...`
+- Configuration variables and technical terms
+- Link structures (update language but keep relative paths)
+
 ---
 
-**Last Updated**: Created during Issue #462 implementation
+**Last Updated**: Created during Issue #462 implementation  
 **Contributors**: copilot, ticaki
+
+**Need help?** Open an issue or ask in the ioBroker forum!
