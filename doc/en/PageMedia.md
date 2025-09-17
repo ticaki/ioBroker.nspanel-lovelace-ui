@@ -47,24 +47,24 @@ const pageMediaTest1: PageType = {
 | `colorMediaTitle` | Farbe für die Titel‑Zeile | s. Farbe |
 | `speakerList` | Liste erlaubter/angezeigter Lautsprecher | **Sonos/Spotify:** Auswahl ohne Liste → keine Speaker. **Andere:** Whitelist (leer = alle) |
 | `favoriteList` | **Whitelist** für Favoriten‑Playlists | Leer oder nicht gesetzt = zeige alle |
-| `playList` | Liste verfügbarer Playlists | **Alexa/Spotify:** aus Adapter. **Sonos:** nutzergeneriert (Adapter kann sie nicht einlesen) |
-| `minValue` | Minimale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
-| `maxValue` | Maximale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
-| `itemsColorOn` | On‑Farbe für einzelne Standard‑PageItems | pro Item überschreibbar (s. unten) |
-| `itemsColorOff` | Off‑Farbe für einzelne Standard‑PageItems | s. unten |
-| `deactivateDefaultItems` | Standard‑PageItems gezielt ausblenden | s. unten + Beispiel |
+| `playList` | List of available playlists | **Alexa/Spotify:** from adapter. **Sonos:** user-generated (adapter cannot read them) |
+| `minValue` | Minimum volume (panel) | Mapping to device scale |
+| `maxValue` | Maximum volume (panel) | Mapping to device scale |
+| `itemsColorOn` | On color for individual standard PageItems | can be overridden per item (see below) |
+| `itemsColorOff` | Off color for individual standard PageItems | see below |
+| `deactivateDefaultItems` | Selectively hide standard PageItems | see below + example |
 
-### Standard‑PageItems (für Farben/Deaktivieren)
+### Standard PageItems (for colors/deactivation)
 - `trackList`, `speakerList`, `repeat`, `equalizer`, `playList`, `online`, `reminder`, `clock`, `favoriteList`, `crossfade`
 
-> **Farben verwenden:** An dieser Stelle **bitte Farbnamen** wie `Blue`, `MSRed`, `HMIOn`, `HMIOff` etc. benutzen – **es ist auch möglich eigene zu verwenden** `{red:…, green:…, blue:…}`‑JSON.  
-> (Nur in Beispielen unten werden Farbnamen gezeigt – es gibt keine separate Farbtabelle in dieser Doku.)
+> **Use colors:** At this point **please use color names** like `Blue`, `MSRed`, `HMIOn`, `HMIOff` etc. – **it is also possible to use your own** `{red:…, green:…, blue:…}`‑JSON.  
+> (Only in examples below are color names shown – there is no separate color table in this documentation.)
 
 ---
 
-## Beispiele
+## Examples
 
-### 1) Farben pro Item überschreiben
+### 1) Override colors per item
 ```ts
 media: {
   id: 'spotify-premium.0',
@@ -78,10 +78,10 @@ media: {
 }
 ```
 
-### 2) Standard‑Items ausblenden
+### 2) Hide standard items
 ```ts
 media: {
-  id: 'alexa2.0.Echo-Devices.DEINE_ID',
+  id: 'alexa2.0.Echo-Devices.YOUR_ID',
   deactivateDefaultItems: {
     trackList: true,
     equalizer: true,
@@ -90,12 +90,12 @@ media: {
 }
 ```
 
-### 3) Whitelist für Favoriten / eigene Playlists
+### 3) Whitelist for favorites / custom playlists
 ```ts
 media: {
   id: 'sonos.0.root.192_168_178_209',
-  favoriteList: ['Best of 90s', 'Morning Vibes'], // Whitelist – nur diese anzeigen
-  playList: ['Living Room Mix', 'Party'],        // Sonos: nutzergeneriert
+  favoriteList: ['Best of 90s', 'Morning Vibes'], // Whitelist – only show these
+  playList: ['Living Room Mix', 'Party'],        // Sonos: user-generated
 }
 ```
 

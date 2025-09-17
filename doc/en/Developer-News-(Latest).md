@@ -2,48 +2,48 @@
 
 [Latest Changes](#latest-changes) 
 * [Navigation](#navigation)
-* [Doppelklicks (Bestätigung)](#doppelklicks-(bestätigung)) 
-* [Doppelklicks](#doppelklicks) 
-* [Verwendung von Themenfarben](#verwendung-von-Themenfarben)
-* [Bearbeiten von Übersetzungen](#bearbeiten-von-übersetzungen)
-* [Einfügen des Servicemenüs](#einfügen-des-servicemenüs)
-* [Zugriff auf Paneldatenpunkte](#zugriff-auf-paneldatenpunkte)
-* [Anlegen von Popups](#anlegen-von-popups)
-* [Configuration - Enums](#konfiguration---enums)
-* [Platzhalter - dbInit](#platzhalter---dbinit)
+* [Double Clicks (Confirmation)](#double-clicks-confirmation) 
+* [Double Clicks](#double-clicks) 
+* [Use of Theme Colors](#use-of-theme-colors)
+* [Editing Translations](#editing-translations)
+* [Inserting the Service Menu](#inserting-the-service-menu)
+* [Access to Panel Data Points](#access-to-panel-data-points)
+* [Creating Popups](#creating-popups)
+* [Configuration - Enums](#configuration---enums)
+* [Placeholder - dbInit](#placeholder---dbinit)
 
 ---
 
 # Latest Changes
 
 ## Navigation
-Die Navigation bietet 2 Pages, jeweils mit 2 Klickmöglichkeiten und 3 Icons. Links und rechts sind die jeweiligen Pages auf dem Panel.
-- single only: Darstellung als Pfeil in die jeweilige Richtung in weiß
-- double only: Darstellung als parent(Pfeil nach oben) links oder home rechts in weiß
-- single und double definiert: Darstellung als outline Pfeil nach links oben oder rechts oben.
-Nur wenn beide definiert sind gibt es eine Doppelklick.
+The navigation offers 2 pages, each with 2 click options and 3 icons. Left and right are the respective pages on the panel.
+- single only: Display as arrow in the respective direction in white
+- double only: Display as parent (arrow up) on the left or home on the right in white
+- single and double defined: Display as outline arrow to the top left or top right.
+Only when both are defined is there a double click.
 
-Zusätzlich nochmal die Blätterfunktion:
-- Entities: links ein blauer Pfeil nach oben, rechts ein blauer Pfeil nach unten bis zum jeweiligen Ende der Blätter funktion dann folgt die darstellung wie oben beschrieben.
-- Grids: ein blauer Pfeil nach links oder rechts (scrolltype page), bei Zeilenweisen blättern ist die Darstellung wie Entities.
+Additionally, the page turning function:
+- Entities: a blue arrow up on the left, a blue arrow down on the right until the respective end of the page turning function, then the display follows as described above.
+- Grids: a blue arrow to the left or right (scrolltype page), for row-wise page turning the display is like Entities.
 
 
-## Doppelklicks (Bestätigung)
+## Double Clicks (Confirmation)
 **09.03.2024**
 
-Im Pageitem type `button` gibt es mit gesetztem Datenpunkt `confirm: {type: 'const', constVal: 'sure?`}` die Option nach dem ersten Klick den Text aus confirm anzeigen zu lassen und noch einen 2. abzuwarten, bevor die Aktion ausgelöst wird, siehe Tasmota Restart.
+In the Pageitem type `button` there is with set data point `confirm: {type: 'const', constVal: 'sure?`}` the option after the first click to display the text from confirm and wait for another 2nd one before the action is triggered, see Tasmota Restart.
 
-## Doppelklicks
+## Double Clicks
 **09.03.2024**
 
-Doppelklicks in der Navigation
-- in der normalen Navigation werden diese mit der Eigenschaft double konfiguriert. Wenn in der Navigation nur ein double vor kommt ist es ein single wird aber als parent/Home dargestellt.
-- in der Pages/Zeilenblätterfunktion löst ein Doppelklick einen Navigationsklick in die entsprechende Richtung aus, so als wenn schon durchgeblättert hätte.
+Double clicks in navigation
+- in normal navigation these are configured with the double property. If only one double occurs in navigation it is a single but is displayed as parent/Home.
+- in the Pages/line page turning function a double click triggers a navigation click in the corresponding direction, as if you had already turned through.
 
 
-## Verwendung von Themenfarben
+## Use of Theme Colors
 **09.03.2024**
-Es gibt folgende Themenkonstanten die man aktuell verwenden kann:
+There are the following theme constants that you can currently use:
 ```typescript
 export interface ColorThemenInterface {
     good: RGB;
