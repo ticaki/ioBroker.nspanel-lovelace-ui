@@ -6,10 +6,9 @@ labels: 'copilot-assistance'
 assignees: ''
 ---
 
-<!-- 
-This template helps you provide the essential information for successful Copilot Agent processing.
-Both English and German descriptions are accepted.
--->
+**Note: Both English and German descriptions are accepted.**
+
+<!-- This template helps you provide the essential information for successful Copilot Agent processing. -->
 
 ## Issue Description
 **What do you want to achieve or what problem are you experiencing?**
