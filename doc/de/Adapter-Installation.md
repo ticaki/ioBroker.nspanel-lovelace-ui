@@ -49,4 +49,4 @@ Weitere Erläuterungen zu diesem Script erhaltet ihr hier. [**Konfiguratiosscrip
 Bei Fragen fragen - Discord, Frum, hier, Telegram, Teams alles vorhanden :)
 
 
-[Alias Tabelle](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md)  
+[Alias Tabelle](ALIAS)  
