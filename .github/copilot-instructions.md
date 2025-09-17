@@ -286,3 +286,8 @@
 - At minimum, English (`en`) translations are required.
 - Follow existing translation key patterns.
 - Card/popup names should be consistent with Lovelace UI terminology.
+
+## German Documentation Review Requirements
+- **IMPORTANT**: When copilot changes anything in the `doc/de` directory, @tt-tom17 must be requested as a reviewer in the PR.
+- Additionally, mention @tt-tom17 in the PR description with a short summary of the German documentation changes made.
+- This ensures proper review of German language documentation changes.
