@@ -1,33 +1,33 @@
 # PageChart  
   
-Die PageChart ermöglicht zwei Darstellungen von Chart, Blaken und Line. Es kann ausgewählt werden, ob die Daten extern aufbereitet werden und wie beim alten Script per Datenpunkte zur Verfügunggestellt werden oder ein Adapter zur Datenspeicherung genutzt wird. Aktuell wrid SQL, InfluxV2 und Hinstory unterstüzt.  
+The PageChart enables two types of chart display: Bar and Line. You can choose whether the data is prepared externally and made available via data points as in the old script, or whether an adapter is used for data storage. Currently SQL, InfluxV2 and History are supported.  
 
 <img alt='Linechart' src= '../Pictures/pageChart/Linechart.png'> <img alt= 'Balkenchart' src='../Pictures/pageChart/Balkenchart.png'>  
 
-## Grundeinstellungen  
+## Basic Settings  
   
 <img alt='Chartallg' src='../Pictures/pageChart/pageChartallg.png'>  
   
-Mit Auswahl des Tab `PageChart` kommt ihr an die Settings. Um eine neue Page zu erstellen, klickt ihr auf das PLUS-Zeichen und es erscheinen die Datenfelder für die Page. (siehe Bild oben)  
-1. Zuerst legt ihr den Seitennamen fest, dieser darf sich im gesamten Panel nicht wiederholen. Es ist die ID für diese Seite und ist identisch mit dem `uniqueName`. Der Name erscheint auch in dem grauen Balken, dadruch könnt ihr bei mehreren Pages sie leicht unterscheiden.
-2. Die Überschrift auf der Seite festlegen.
-3. Wenn ihr den Haken bei `alwaysOnDisplay` setzt, bleibt die Seite permanent sichtbar und spring nicht automatisch in den Screensaver. Damit der Screensaver wieder aktiv wird, müsst ihr auf eine andere Seite springen.  
-4. Option `Seite ausblenden` ermöglicht die Seite aus der Navigation zu entfernen, wenn in der Serviceseite `System`die Option `hide Page` aktiv ist.  
-5. mit dem Farbfeld kann die Farbe der Line/Balken festgelegt werden.  
-6. den Type auswählen, barChart -> Balken und lineChart -> Linen  
+By selecting the `PageChart` tab you get to the settings. To create a new page, click on the PLUS sign and the data fields for the page will appear. (see image above)  
+1. First you define the page name, which must not be repeated in the entire panel. It is the ID for this page and is identical to the `uniqueName`. The name also appears in the gray bar, so you can easily distinguish between multiple pages.
+2. Set the heading on the page.
+3. If you check `alwaysOnDisplay`, the page remains permanently visible and does not automatically jump to the screensaver. For the screensaver to become active again, you must jump to another page.  
+4. Option `Hide page` allows you to remove the page from navigation when the `hide Page` option is active in the service page `System`.  
+5. with the color field you can set the color of the line/bars.  
+6. select the type, barChart -> bars and lineChart -> lines  
 <img alt='chartTyp' src='../Pictures/pageChart/pageChartType.png'>  
-7. Datenherkunft `oldScriptVersion` oder `dbAdapter`  
+7. Data source `oldScriptVersion` or `dbAdapter`  
 <img alt= 'AdapterInstanz' src='../Pictures/pageChart/pageChartAdapter.png'>  
 
-    - **oldScriptVerion** -> hierbei müssen die Werte für Scale und Daten extern aufbereitet werden. Sie gleichen dem Schema vom NSPanel-Script. Es müssen nur die Datenpunkte für Scale und Daten eingetragen werden. Im Wiki vom NSPanel-Script gibt es Beispiele für Javascripte, die Daten aus einer Datenbank auslesen und aufbereitet in die Datenpunkte für Scale und Daten schreibt.  
-    - **dbAdapter** -> Wenn ihr mit einem Datenbankadapter Daten in eine Datenbank sichert, könnt ihr im Feld `DatenQuelle`die Instanz des Adapter auswählen. Im Feld `Datenpunkt für archivierte Werte` muss der selbe Datenpunkt ausgewählt werden, welcher auch im Adapter konfiguriert wurde.  
-        - Zeitraum festlegen in Stunden,
-        - Alle wie viel Stunden ein Strich an die X-Achse kommt,
-        - beim Balkenchart wird ein Factor ausgewählt, um große Werte sinnvoll auf dem Display darzustellen 
-        - Alle wieviel Stnden ein Scalenwert an die X-Achse geschrieben werden soll 
-8. die Bezeichnung der Y-Achse z.B. die Einheit  
+    - **oldScriptVersion** -> the values for scale and data must be prepared externally. They match the schema from the NSPanel script. Only the data points for scale and data need to be entered. In the wiki of the NSPanel script there are examples of JavaScript that read data from a database and write it prepared into the data points for scale and data.  
+    - **dbAdapter** -> If you save data to a database with a database adapter, you can select the instance of the adapter in the `Data source` field. In the `Data point for archived values` field, the same data point must be selected that was also configured in the adapter.  
+        - Set time period in hours,
+        - Every how many hours a line comes to the X-axis,
+        - with bar chart a factor is selected to meaningfully display large values on the display 
+        - Every how many hours a scale value should be written to the X-axis 
+8. the designation of the Y-axis, e.g. the unit  
   
-## Verweis im Konfig Script
+## Reference in Config Script
 ```typescript
 // LineChart
     const temperatur: ScriptConfig.PageChart = {

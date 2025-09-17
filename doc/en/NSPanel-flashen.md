@@ -1,14 +1,14 @@
-**Benötigt wird:**
-* FTDI-Adapter
+**Required:**
+* FTDI adapter
 * Sonoff NSPanel
-* 5 Pins einer Pinleiste mit 2,54mm Pinabstand (Pitch)
-* 5 Jumper/Dupont Kabel Female/Female trennbar
-* Ein klein wenig Mut, denn wir übernehmen für Schäden durch diese Anleitung keine Haftung ;-)
+* 5 pins of a pin header with 2.54mm pin spacing (pitch)
+* 5 jumper/dupont cables female/female separable
+* A little bit of courage, because we take no responsibility for damage from this guide ;-)
 
 > [!IMPORTANT]  
-> **Achtung!**  
-> * Dieser Vorgang kann nicht rückgängig gemacht werden!  
-> * Es gibt **"keine"** bekannte Anleitung zurück zur Original-Firmware  
+> **Attention!**  
+> * This process cannot be undone!  
+> * There is **"no"** known guide back to the original firmware  
 
 ***
 
