@@ -634,8 +634,31 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                         config.name ||
                                                         config.topic;
                                                     await this.controller.removePanel(this.controller.panels[index]);
-                                                    await this.delay(500);
+                                                    if (this.unload) {
+                                                        if (obj.callback) {
+                                                            this.sendTo(
+                                                                obj.from,
+                                                                obj.command,
+                                                                'Adapter is stopping',
+                                                                obj.callback,
+                                                            );
+                                                        }
+                                                        return;
+                                                    }
+                                                    await this.delay(1500);
+                                                    if (this.unload) {
+                                                        if (obj.callback) {
+                                                            this.sendTo(
+                                                                obj.from,
+                                                                obj.command,
+                                                                'Adapter is stopping',
+                                                                obj.callback,
+                                                            );
+                                                        }
+                                                        return;
+                                                    }
                                                     await this.controller.addPanel(config);
+
                                                     const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
                                                     this.log.info(msg);
                                                     r.messages.push(msg);

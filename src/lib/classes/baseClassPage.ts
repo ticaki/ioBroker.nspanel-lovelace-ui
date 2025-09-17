@@ -22,7 +22,6 @@ export class BaseTriggeredPage extends BaseClass {
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     readonly basePanel: Panel;
-    public _currentPanel: Panel | undefined;
     protected filterDuplicateMessages: boolean = true;
     neverDeactivateTrigger: boolean = false;
     sleep: boolean = false;
@@ -57,22 +56,15 @@ export class BaseTriggeredPage extends BaseClass {
         }
         this.alwaysOn = alwaysOn;
         this.basePanel = card.panel;
-        this._currentPanel = card.panel;
     }
 
-    get currentPanel(): Panel {
-        return this._currentPanel ?? this.basePanel;
-    }
-    set currentPanel(p: Panel | undefined) {
-        this._currentPanel = p;
-    }
     protected sendToPanelClass(
         payload: string,
         ackForType: boolean,
         force?: boolean,
         opt?: IClientPublishOptions,
     ): void {
-        this.currentPanel.panelSend.addMessage(payload, ackForType, force, opt);
+        this.basePanel.panelSend.addMessage(payload, ackForType, force, opt);
     }
     get controller(): Controller {
         // checked in constructor

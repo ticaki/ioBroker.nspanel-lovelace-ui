@@ -73,7 +73,7 @@ export class PageItem extends BaseTriggeredPage {
         const config = structuredClone(this.config);
 
         const tempItem: typePageItem.PageItemDataItems['data'] =
-            (await this.parent.currentPanel.statesControler.createDataItems(
+            (await this.parent.basePanel.statesControler.createDataItems(
                 config.data,
                 this,
                 {},
@@ -115,7 +115,7 @@ export class PageItem extends BaseTriggeredPage {
                             list &&
                             list[a] &&
                             list[a].id &&
-                            (await this.parent.currentPanel.statesControler.getObjectAsync(list[a].id));
+                            (await this.parent.basePanel.statesControler.getObjectAsync(list[a].id));
                         if (test && test.common && test.common.write) {
                             this.tempData[a] = true;
                         }
@@ -165,8 +165,8 @@ export class PageItem extends BaseTriggeredPage {
                         break;
                     }
                     this.tempData = { status: 'pause', value: 0, role: 'timer' };
-                    if (!this.parent.currentPanel.persistentPageItems[this.id]) {
-                        this.parent.currentPanel.persistentPageItems[this.id] = this;
+                    if (!this.parent.basePanel.persistentPageItems[this.id]) {
+                        this.parent.basePanel.persistentPageItems[this.id] = this;
                     }
                 }
                 break;
@@ -176,7 +176,7 @@ export class PageItem extends BaseTriggeredPage {
             ['screensaver', 'screensaver2', 'screensaver3', 'popupNotify', 'popupNotify2'].indexOf(this.parent.card) !==
             -1
         ) {
-            if (!this.parent.currentPanel.persistentPageItems[this.id]) {
+            if (!this.parent.basePanel.persistentPageItems[this.id]) {
                 if (this.config.modeScr) {
                     switch (this.config.modeScr) {
                         case 'left':
@@ -194,7 +194,7 @@ export class PageItem extends BaseTriggeredPage {
                     }
                 }
 
-                this.parent.currentPanel.persistentPageItems[this.id] = this;
+                this.parent.basePanel.persistentPageItems[this.id] = this;
                 await this.controller.statesControler.activateTrigger(this);
             }
         }
@@ -277,9 +277,8 @@ export class PageItem extends BaseTriggeredPage {
                             isCardGridType(this.parent.card) &&
                             (this.config.role === 'light' || this.config.role === 'socket')
                                 ? 'switch'
-                                : this.parent.currentPanel.overrideLightPopup
-                                  ? this.parent.currentPanel.lightPopupV2 &&
-                                    this.parent.currentPanel.meetsVersion('4.7.5')
+                                : this.parent.basePanel.overrideLightPopup
+                                  ? this.parent.basePanel.lightPopupV2 && this.parent.basePanel.meetsVersion('4.7.5')
                                       ? 'light2'
                                       : 'light'
                                   : entry.type;
@@ -1843,13 +1842,13 @@ export class PageItem extends BaseTriggeredPage {
         return this.parent ? `${this.parent.name}.${this.id}` : this.id;
     }
     async delete(): Promise<void> {
-        if (this.parent.currentPanel != null && this.parent.currentPanel.persistentPageItems != null) {
-            if (this.parent.currentPanel.persistentPageItems[this.id]) {
-                if (!this.parent.currentPanel.unload) {
+        if (this.parent.basePanel != null && this.parent.basePanel.persistentPageItems != null) {
+            if (this.parent.basePanel.persistentPageItems[this.id]) {
+                if (!this.parent.basePanel.unload) {
                     return;
                 }
 
-                delete this.parent.currentPanel.persistentPageItems[this.id];
+                delete this.parent.basePanel.persistentPageItems[this.id];
             }
         }
         await super.delete();
@@ -1884,8 +1883,8 @@ export class PageItem extends BaseTriggeredPage {
                     this.log.debug(`Button ${this.id} was pressed!`);
                     if (this.parent.isScreensaver) {
                         if (!(this.parent as Screensaver).screensaverIndicatorButtons) {
-                            this.parent.currentPanel.navigation.resetPosition();
-                            await this.parent.currentPanel.navigation.setCurrentPage();
+                            this.parent.basePanel.navigation.resetPosition();
+                            await this.parent.basePanel.navigation.setCurrentPage();
                             break;
                         }
                     }
@@ -1923,7 +1922,7 @@ export class PageItem extends BaseTriggeredPage {
                                 id: `temp253451_${this.parent.id}`,
                                 name: `sub_${this.parent.name}`,
                                 adapter: this.adapter,
-                                panel: this.parent.currentPanel,
+                                panel: this.parent.basePanel,
                                 card:
                                     list == null ||
                                     !Array.isArray(list) ||
@@ -1995,7 +1994,7 @@ export class PageItem extends BaseTriggeredPage {
                     }
                     let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
-                        await this.parent.currentPanel.navigation.setTargetPageByName(value);
+                        await this.parent.basePanel.navigation.setTargetPageByName(value);
                         break;
                     }
 
@@ -2659,11 +2658,11 @@ export class PageItem extends BaseTriggeredPage {
         }
         if (
             from &&
-            this.parent.currentPanel.isOnline &&
-            this.parent === this.parent.currentPanel.screenSaver &&
-            this.parent.currentPanel.screenSaver
+            this.parent.basePanel.isOnline &&
+            this.parent === this.parent.basePanel.screenSaver &&
+            this.parent.basePanel.screenSaver
         ) {
-            await this.parent.currentPanel.screenSaver.onStateTrigger(id, from);
+            await this.parent.basePanel.screenSaver.onStateTrigger(id, from);
         }
     }
     async getListCommands(setList: Dataitem | undefined): Promise<typePageItem.listCommand[] | null> {
@@ -2831,7 +2830,7 @@ export class PageItem extends BaseTriggeredPage {
         const v = value as keyof typeof list;
         if (list && list[v]) {
             try {
-                const obj = await this.parent.currentPanel.statesControler.getObjectAsync(list[v].id);
+                const obj = await this.parent.basePanel.statesControler.getObjectAsync(list[v].id);
                 if (!obj || !obj.common || obj.type !== 'state') {
                     throw new Error('Dont get obj!');
                 }

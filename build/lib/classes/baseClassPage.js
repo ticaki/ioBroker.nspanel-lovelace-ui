@@ -33,7 +33,6 @@ class BaseTriggeredPage extends import_library.BaseClass {
   alwaysOnState;
   lastMessage = "";
   basePanel;
-  _currentPanel;
   filterDuplicateMessages = true;
   neverDeactivateTrigger = false;
   sleep = false;
@@ -62,17 +61,9 @@ class BaseTriggeredPage extends import_library.BaseClass {
     }
     this.alwaysOn = alwaysOn;
     this.basePanel = card.panel;
-    this._currentPanel = card.panel;
-  }
-  get currentPanel() {
-    var _a;
-    return (_a = this._currentPanel) != null ? _a : this.basePanel;
-  }
-  set currentPanel(p) {
-    this._currentPanel = p;
   }
   sendToPanelClass(payload, ackForType, force, opt) {
-    this.currentPanel.panelSend.addMessage(payload, ackForType, force, opt);
+    this.basePanel.panelSend.addMessage(payload, ackForType, force, opt);
   }
   get controller() {
     return this.adapter.controller;
