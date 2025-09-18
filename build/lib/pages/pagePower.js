@@ -721,38 +721,49 @@ class PagePower extends import_Page.Page {
     let result = PagePowerMessageDefault;
     result = (0, import_tools.deepAssign)(result, message);
     return (0, import_tools.getPayload)(
-      "entityUpd",
-      result.headline,
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", result.headline),
       result.navigation,
-      "",
-      "",
-      result.homeIcon,
-      result.homeColor,
-      result.homeName,
-      result.homeValueBot,
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      result.homeValueTop,
-      "",
-      this.getMessageItem(result.leftTop),
-      this.getMessageItem(result.leftMiddle),
-      this.getMessageItem(result.leftBottom),
-      this.getMessageItem(result.rightTop),
-      this.getMessageItem(result.rightMiddle),
-      this.getMessageItem(result.rightBottom)
+      (0, import_tools.getPayloadRemoveTilde)(
+        "",
+        "",
+        result.homeIcon,
+        result.homeColor,
+        result.homeName,
+        result.homeValueBot,
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        result.homeValueTop,
+        ""
+      ),
+      (0, import_tools.getPayload)(
+        this.getMessageItem(result.leftTop),
+        this.getMessageItem(result.leftMiddle),
+        this.getMessageItem(result.leftBottom),
+        this.getMessageItem(result.rightTop),
+        this.getMessageItem(result.rightMiddle),
+        this.getMessageItem(result.rightBottom)
+      )
     );
   }
   getMessageItem(i) {
     var _a, _b, _c, _d, _e;
     if (!i) {
-      return (0, import_tools.getPayload)("", "", "", "", "", "", "");
+      return (0, import_tools.getPayloadRemoveTilde)("", "", "", "", "", "", "");
     }
     this.log.debug(`${i.icon} ${i.iconColor} ${i.name}  ${i.value} ${String(i.speed)}`);
-    return (0, import_tools.getPayload)("", "", (_a = i.icon) != null ? _a : "", (_b = i.iconColor) != null ? _b : "", (_c = i.name) != null ? _c : "", (_d = i.value) != null ? _d : "", String((_e = i.speed) != null ? _e : ""));
+    return (0, import_tools.getPayloadRemoveTilde)(
+      "",
+      "",
+      (_a = i.icon) != null ? _a : "",
+      (_b = i.iconColor) != null ? _b : "",
+      (_c = i.name) != null ? _c : "",
+      (_d = i.value) != null ? _d : "",
+      String((_e = i.speed) != null ? _e : "")
+    );
   }
   async onStateTrigger() {
     await this.update();

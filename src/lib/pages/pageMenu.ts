@@ -2,7 +2,7 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { getPayload, getRegExp } from '../const/tools';
+import { getPayload, getPayloadArray, getPayloadRemoveTilde, getRegExp } from '../const/tools';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import { handleCardRole } from './data-collection-functions';
@@ -501,7 +501,7 @@ export class PageMenu extends Page {
         let right = hasNext ? '' : super.getNavigation('right');
 
         if (!left) {
-            left = getPayload(
+            left = getPayloadRemoveTilde(
                 'button',
                 'bSubPrev',
                 effective === 'page' ? Icons.GetIcon('arrow-up-bold-outline') : Icons.GetIcon('arrow-up-bold'),
@@ -512,7 +512,7 @@ export class PageMenu extends Page {
         }
 
         if (!right) {
-            right = getPayload(
+            right = getPayloadRemoveTilde(
                 'button',
                 'bSubNext',
                 effective === 'page' ? Icons.GetIcon('arrow-down-bold-outline') : Icons.GetIcon('arrow-down-bold'),
@@ -537,6 +537,14 @@ export class PageMenu extends Page {
 
     async reset(): Promise<void> {
         this.step = 0;
+    }
+
+    protected getMessage(message: any): string {
+        return getPayload(
+            getPayloadRemoveTilde('entityUpd', message.headline),
+            message.navigation,
+            getPayloadArray(message.options),
+        );
     }
 
     async delete(): Promise<void> {

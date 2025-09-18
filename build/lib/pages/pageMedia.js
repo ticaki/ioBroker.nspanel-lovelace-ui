@@ -524,18 +524,19 @@ class PageMedia extends import_pageMenu.PageMenu {
   }
   getMessage(message) {
     return tools.getPayload(
-      "entityUpd",
-      message.headline,
+      tools.getPayloadRemoveTilde("entityUpd", message.headline),
       message.navigation,
-      message.id,
-      message.name,
-      message.titelColor,
-      message.artist,
-      message.artistColor,
-      message.volume,
-      import_icon_mapping.Icons.GetIcon(message.iconplaypause),
-      message.onoffbuttonColor,
-      import_icon_mapping.Icons.GetIcon(message.shuffle_icon),
+      tools.getPayloadRemoveTilde(
+        message.id,
+        message.name,
+        message.titelColor,
+        message.artist,
+        message.artistColor,
+        message.volume,
+        import_icon_mapping.Icons.GetIcon(message.iconplaypause),
+        message.onoffbuttonColor,
+        import_icon_mapping.Icons.GetIcon(message.shuffle_icon)
+      ),
       message.logo,
       //'~~~~~'
       tools.getPayloadArray(message.options)

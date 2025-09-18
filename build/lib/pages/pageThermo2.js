@@ -31,7 +31,7 @@ __export(pageThermo2_exports, {
   PageThermo2: () => PageThermo2
 });
 module.exports = __toCommonJS(pageThermo2_exports);
-var import_tools = require("../const/tools");
+var tools = __toESM(require("../const/tools"));
 var import_pageMenu = require("./pageMenu");
 var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
@@ -188,7 +188,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         const step = Math.round((await ((_c = data.stepValue) == null ? void 0 : _c.getNumber()) || 0.5) * 10);
         const min = Math.round((await ((_d = data.minValue) == null ? void 0 : _d.getNumber()) || 15) * 10);
         const max = Math.round((await ((_e = data.maxValue) == null ? void 0 : _e.getNumber()) || 28) * 10);
-        let dstTemp = Math.round((await (0, import_tools.getValueEntryNumber)(data.entity3) || 0) * 10);
+        let dstTemp = Math.round((await tools.getValueEntryNumber(data.entity3) || 0) * 10);
         dstTemp = Math.min(Math.max(dstTemp, min), max);
         dstTemp = Math.round((dstTemp - min) / step) * step + min;
         message.dstTemp = dstTemp.toString();
@@ -200,21 +200,45 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         const statesText = this.library.getTranslation(await ((_i = data.mode) == null ? void 0 : _i.getString()) || "");
         for (let i = 0; i < 7; i++) {
           message.options[i] = `text~${this.name}.${i}~${[
-            await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon1, true, "thermometer"),
+            await tools.getIconEntryValue(data == null ? void 0 : data.icon1, true, "thermometer"),
             ((await ((_k = (_j = data == null ? void 0 : data.entity1) == null ? void 0 : _j.value) == null ? void 0 : _k.getNumber()) || 0) * 10).toString(),
             await ((_m = (_l = data == null ? void 0 : data.entity1) == null ? void 0 : _l.unit) == null ? void 0 : _m.getString()) || "\xB0C",
-            await (0, import_tools.getIconEntryValue)(data == null ? void 0 : data.icon2, true, "water-percent"),
+            await tools.getIconEntryValue(data == null ? void 0 : data.icon2, true, "water-percent"),
             ((await ((_o = (_n = data == null ? void 0 : data.entity2) == null ? void 0 : _n.value) == null ? void 0 : _o.getNumber()) || 0) * 10).toString(),
             await ((_q = (_p = data == null ? void 0 : data.entity2) == null ? void 0 : _p.unit) == null ? void 0 : _q.getString()) || "%",
             statesText
           ][i]}~${[
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_r = data == null ? void 0 : data.power) == null ? void 0 : _r.getBoolean()), import_Color.Color.Green),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_s = data == null ? void 0 : data.power) == null ? void 0 : _s.getBoolean()), import_Color.Color.Green),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon1, !!await ((_t = data == null ? void 0 : data.power) == null ? void 0 : _t.getBoolean()), import_Color.Color.Green),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_u = data == null ? void 0 : data.power) == null ? void 0 : _u.getBoolean()), import_Color.Color.Magenta),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_v = data == null ? void 0 : data.power) == null ? void 0 : _v.getBoolean()), import_Color.Color.Magenta),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon2, !!await ((_w = data == null ? void 0 : data.power) == null ? void 0 : _w.getBoolean()), import_Color.Color.Magenta),
-            await (0, import_tools.getIconEntryColor)(data == null ? void 0 : data.icon5, true, import_Color.Color.MSYellow)
+            await tools.getIconEntryColor(
+              data == null ? void 0 : data.icon1,
+              !!await ((_r = data == null ? void 0 : data.power) == null ? void 0 : _r.getBoolean()),
+              import_Color.Color.Green
+            ),
+            await tools.getIconEntryColor(
+              data == null ? void 0 : data.icon1,
+              !!await ((_s = data == null ? void 0 : data.power) == null ? void 0 : _s.getBoolean()),
+              import_Color.Color.Green
+            ),
+            await tools.getIconEntryColor(
+              data == null ? void 0 : data.icon1,
+              !!await ((_t = data == null ? void 0 : data.power) == null ? void 0 : _t.getBoolean()),
+              import_Color.Color.Green
+            ),
+            await tools.getIconEntryColor(
+              data == null ? void 0 : data.icon2,
+              !!await ((_u = data == null ? void 0 : data.power) == null ? void 0 : _u.getBoolean()),
+              import_Color.Color.Magenta
+            ),
+            await tools.getIconEntryColor(
+              data == null ? void 0 : data.icon2,
+              !!await ((_v = data == null ? void 0 : data.power) == null ? void 0 : _v.getBoolean()),
+              import_Color.Color.Magenta
+            ),
+            await tools.getIconEntryColor(
+              data == null ? void 0 : data.icon2,
+              !!await ((_w = data == null ? void 0 : data.power) == null ? void 0 : _w.getBoolean()),
+              import_Color.Color.Magenta
+            ),
+            await tools.getIconEntryColor(data == null ? void 0 : data.icon5, true, import_Color.Color.MSYellow)
           ][i]}~~${["", "", "", "", "", "", (_y = await ((_x = data == null ? void 0 : data.power) == null ? void 0 : _x.getNumber())) != null ? _y : 1][i]}`;
         }
       }
@@ -263,9 +287,9 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       const data = Array.isArray(this.items.data) ? this.items.data[this.index] ? this.items.data[this.index] : null : this.items.data;
       if (data) {
         const newValLow = parseInt(event.opt) / 10;
-        const valLow = (_a = await (0, import_tools.getValueEntryNumber)(data.entity3)) != null ? _a : null;
+        const valLow = (_a = await tools.getValueEntryNumber(data.entity3)) != null ? _a : null;
         if (valLow !== null && newValLow !== valLow) {
-          await (0, import_tools.setValueEntry)(data.entity3, newValLow);
+          await tools.setValueEntry(data.entity3, newValLow);
         }
       }
     } else if (event.action === "hvac_action" && this.pageItems && this.pageItems[Number(event.opt.split("?")[1])]) {
@@ -276,18 +300,19 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     await super.onButtonEvent(event);
   }
   getMessage(message) {
-    return (0, import_tools.getPayload)(
-      "entityUpd",
-      message.headline,
+    return tools.getPayload(
+      tools.getPayloadRemoveTilde("entityUpd", message.headline),
       message.navigation,
-      String(this.name),
-      String(message.dstTemp),
-      String(message.minTemp),
-      String(message.maxTemp),
-      message.tempStep,
-      message.unit,
-      !message.power ? "1" : "1",
-      (0, import_tools.getPayloadArray)(message.options)
+      tools.getPayloadRemoveTilde(
+        String(this.name),
+        String(message.dstTemp),
+        String(message.minTemp),
+        String(message.maxTemp),
+        message.tempStep,
+        message.unit,
+        !message.power ? "1" : "1"
+      ),
+      tools.getPayloadArray(message.options)
     );
   }
   async onVisibilityChange(val) {

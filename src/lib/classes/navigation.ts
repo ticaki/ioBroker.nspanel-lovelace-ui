@@ -3,7 +3,7 @@ import { BaseClass, type AdapterClassDefinition } from './library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import type { Page } from './Page';
-import { getPayload } from '../const/tools';
+import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import { genericStateObjects } from '../const/definition';
 type optionalActionsType = 'notifications';
 export type NavigationItemConfig = {
@@ -364,7 +364,7 @@ export class Navigation extends BaseClass {
                 item.left.single !== undefined &&
                 (item.left.double === undefined || this.doubleClickTimeout === undefined)
             ) {
-                navigationString = getPayload(
+                navigationString = getPayloadRemoveTilde(
                     'button',
                     'bSubPrev',
                     item.left.double === undefined
@@ -377,7 +377,7 @@ export class Navigation extends BaseClass {
                     '',
                 );
             } else if (item.left.double !== undefined) {
-                navigationString = getPayload(
+                navigationString = getPayloadRemoveTilde(
                     'button',
                     'bUp',
                     Icons.GetIcon('arrow-up-bold'),
@@ -396,7 +396,7 @@ export class Navigation extends BaseClass {
                 item.right.single !== undefined &&
                 (item.right.double === undefined || this.doubleClickTimeout === undefined)
             ) {
-                navigationString2 = getPayload(
+                navigationString2 = getPayloadRemoveTilde(
                     'button',
                     'bSubNext',
                     item.right.double === undefined
@@ -409,7 +409,7 @@ export class Navigation extends BaseClass {
                     '',
                 );
             } else if (item.right.double !== undefined) {
-                navigationString2 = getPayload(
+                navigationString2 = getPayloadRemoveTilde(
                     'button',
                     'bHome',
                     Icons.GetIcon('home'),

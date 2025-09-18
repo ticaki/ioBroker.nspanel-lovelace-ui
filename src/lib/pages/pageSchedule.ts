@@ -1,5 +1,4 @@
 import type { PageInterface } from '../classes/PageInterface';
-import { getPayload, getPayloadArray } from '../const/tools';
 import type * as pages from '../types/pages';
 import { PageMenu } from './pageMenu';
 
@@ -66,9 +65,7 @@ export class PageSchedule extends PageMenu {
 
         this.sendToPanel(this.getMessage(msg), false);
     }
-    private getMessage(message: pages.PageScheduleMessage): string {
-        return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));
-    }
+
     protected async onStateTrigger(): Promise<void> {
         await this.update();
     }

@@ -613,20 +613,21 @@ export class PageMedia extends PageMenu {
         return null;
     }
 
-    private getMessage(message: pages.PageMediaMessage): string {
+    protected getMessage(message: pages.PageMediaMessage): string {
         return tools.getPayload(
-            'entityUpd',
-            message.headline,
+            tools.getPayloadRemoveTilde('entityUpd', message.headline),
             message.navigation,
-            message.id,
-            message.name,
-            message.titelColor,
-            message.artist,
-            message.artistColor,
-            message.volume,
-            Icons.GetIcon(message.iconplaypause),
-            message.onoffbuttonColor,
-            Icons.GetIcon(message.shuffle_icon),
+            tools.getPayloadRemoveTilde(
+                message.id,
+                message.name,
+                message.titelColor,
+                message.artist,
+                message.artistColor,
+                message.volume,
+                Icons.GetIcon(message.iconplaypause),
+                message.onoffbuttonColor,
+                Icons.GetIcon(message.shuffle_icon),
+            ),
             message.logo, //'~~~~~'
             tools.getPayloadArray(message.options),
         );

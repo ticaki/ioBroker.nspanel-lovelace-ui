@@ -21,7 +21,6 @@ __export(pageEntities_exports, {
   PageEntities: () => PageEntities
 });
 module.exports = __toCommonJS(pageEntities_exports);
-var import_tools = require("../const/tools");
 var import_pageMenu = require("./pageMenu");
 const PageEntitiesMessageDefault = {
   event: "entityUpd",
@@ -72,9 +71,6 @@ class PageEntities extends import_pageMenu.PageMenu {
     message.navigation = this.getNavigation();
     const msg = { ...structuredClone(PageEntitiesMessageDefault), ...message };
     this.sendToPanel(this.getMessage(msg), false);
-  }
-  getMessage(message) {
-    return (0, import_tools.getPayload)("entityUpd", message.headline, message.navigation, (0, import_tools.getPayloadArray)(message.options));
   }
   async onStateTrigger() {
     await this.update();

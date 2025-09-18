@@ -7,6 +7,7 @@ import {
     getIconEntryColor,
     getIconEntryValue,
     getPayload,
+    getPayloadRemoveTilde,
     getScaledNumber,
     getValueAutoUnit,
     getValueEntryNumber,
@@ -774,38 +775,49 @@ export class PagePower extends Page {
         let result: pages.PagePowerMessage = PagePowerMessageDefault;
         result = deepAssign(result, message) as pages.PagePowerMessage;
         return getPayload(
-            'entityUpd',
-            result.headline,
+            getPayloadRemoveTilde('entityUpd', result.headline),
             result.navigation,
-            '',
-            '',
-            result.homeIcon,
-            result.homeColor,
-            result.homeName,
-            result.homeValueBot,
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            result.homeValueTop,
-            '',
-            this.getMessageItem(result.leftTop),
-            this.getMessageItem(result.leftMiddle),
-            this.getMessageItem(result.leftBottom),
-            this.getMessageItem(result.rightTop),
-            this.getMessageItem(result.rightMiddle),
-            this.getMessageItem(result.rightBottom),
+            getPayloadRemoveTilde(
+                '',
+                '',
+                result.homeIcon,
+                result.homeColor,
+                result.homeName,
+                result.homeValueBot,
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                result.homeValueTop,
+                '',
+            ),
+            getPayload(
+                this.getMessageItem(result.leftTop),
+                this.getMessageItem(result.leftMiddle),
+                this.getMessageItem(result.leftBottom),
+                this.getMessageItem(result.rightTop),
+                this.getMessageItem(result.rightMiddle),
+                this.getMessageItem(result.rightBottom),
+            ),
         );
     }
 
     private getMessageItem(i: pages.PagePowerMessageItem | undefined): string {
         if (!i) {
-            return getPayload('', '', '', '', '', '', '');
+            return getPayloadRemoveTilde('', '', '', '', '', '', '');
         }
         this.log.debug(`${i.icon} ${i.iconColor} ${i.name}  ${i.value} ${String(i.speed)}`);
-        return getPayload('', '', i.icon ?? '', i.iconColor ?? '', i.name ?? '', i.value ?? '', String(i.speed ?? ''));
+        return getPayloadRemoveTilde(
+            '',
+            '',
+            i.icon ?? '',
+            i.iconColor ?? '',
+            i.name ?? '',
+            i.value ?? '',
+            String(i.speed ?? ''),
+        );
     }
     protected async onStateTrigger(): Promise<void> {
         await this.update();

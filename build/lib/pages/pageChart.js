@@ -186,11 +186,7 @@ class PageChart extends import_Page.Page {
     return (0, import_tools.getPayload)(
       "entityUpd",
       result.headline,
-      result.navigation,
-      result.color,
-      result.text,
-      result.ticks.join(":"),
-      result.value
+      (0, import_tools.getPayloadRemoveTilde)(result.navigation, result.color, result.text, result.ticks.join(":"), result.value)
     );
   }
   async onVisibilityChange(val) {

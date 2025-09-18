@@ -1,12 +1,5 @@
 import { type PageInterface } from '../classes/PageInterface';
-import {
-    getIconEntryColor,
-    getIconEntryValue,
-    getPayload,
-    getPayloadArray,
-    getValueEntryNumber,
-    setValueEntry,
-} from '../const/tools';
+import * as tools from '../const/tools';
 import type * as pages from '../types/pages';
 import type * as Types from '../types/types';
 
@@ -201,7 +194,7 @@ export class PageThermo2 extends PageMenu {
                 const step = Math.round(((await data.stepValue?.getNumber()) || 0.5) * 10);
                 const min = Math.round(((await data.minValue?.getNumber()) || 15) * 10);
                 const max = Math.round(((await data.maxValue?.getNumber()) || 28) * 10);
-                let dstTemp = Math.round(((await getValueEntryNumber(data.entity3)) || 0) * 10);
+                let dstTemp = Math.round(((await tools.getValueEntryNumber(data.entity3)) || 0) * 10);
                 dstTemp = Math.min(Math.max(dstTemp, min), max);
                 dstTemp = Math.round((dstTemp - min) / step) * step + min;
                 message.dstTemp = dstTemp.toString();
@@ -217,23 +210,47 @@ export class PageThermo2 extends PageMenu {
                 for (let i = 0; i < 7; i++) {
                     message.options[i] = `text~${this.name}.${i}~${
                         [
-                            await getIconEntryValue(data?.icon1, true, 'thermometer'),
+                            await tools.getIconEntryValue(data?.icon1, true, 'thermometer'),
                             (((await data?.entity1?.value?.getNumber()) || 0) * 10).toString(),
                             (await data?.entity1?.unit?.getString()) || '°C',
-                            await getIconEntryValue(data?.icon2, true, 'water-percent'),
+                            await tools.getIconEntryValue(data?.icon2, true, 'water-percent'),
                             (((await data?.entity2?.value?.getNumber()) || 0) * 10).toString(),
                             (await data?.entity2?.unit?.getString()) || '%',
                             statesText,
                         ][i]
                     }~${
                         [
-                            await getIconEntryColor(data?.icon1, !!(await data?.power?.getBoolean()), Color.Green),
-                            await getIconEntryColor(data?.icon1, !!(await data?.power?.getBoolean()), Color.Green),
-                            await getIconEntryColor(data?.icon1, !!(await data?.power?.getBoolean()), Color.Green),
-                            await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
-                            await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
-                            await getIconEntryColor(data?.icon2, !!(await data?.power?.getBoolean()), Color.Magenta),
-                            await getIconEntryColor(data?.icon5, true, Color.MSYellow),
+                            await tools.getIconEntryColor(
+                                data?.icon1,
+                                !!(await data?.power?.getBoolean()),
+                                Color.Green,
+                            ),
+                            await tools.getIconEntryColor(
+                                data?.icon1,
+                                !!(await data?.power?.getBoolean()),
+                                Color.Green,
+                            ),
+                            await tools.getIconEntryColor(
+                                data?.icon1,
+                                !!(await data?.power?.getBoolean()),
+                                Color.Green,
+                            ),
+                            await tools.getIconEntryColor(
+                                data?.icon2,
+                                !!(await data?.power?.getBoolean()),
+                                Color.Magenta,
+                            ),
+                            await tools.getIconEntryColor(
+                                data?.icon2,
+                                !!(await data?.power?.getBoolean()),
+                                Color.Magenta,
+                            ),
+                            await tools.getIconEntryColor(
+                                data?.icon2,
+                                !!(await data?.power?.getBoolean()),
+                                Color.Magenta,
+                            ),
+                            await tools.getIconEntryColor(data?.icon5, true, Color.MSYellow),
                         ][i]
                     }~~${['', '', '', '', '', '', (await data?.power?.getNumber()) ?? 1][i]}`;
                 }
@@ -289,9 +306,9 @@ export class PageThermo2 extends PageMenu {
                 : this.items.data;
             if (data) {
                 const newValLow = parseInt(event.opt) / 10;
-                const valLow = (await getValueEntryNumber(data.entity3)) ?? null;
+                const valLow = (await tools.getValueEntryNumber(data.entity3)) ?? null;
                 if (valLow !== null && newValLow !== valLow) {
-                    await setValueEntry(data.entity3, newValLow);
+                    await tools.setValueEntry(data.entity3, newValLow);
                 }
             }
         } else if (
@@ -306,19 +323,20 @@ export class PageThermo2 extends PageMenu {
         await super.onButtonEvent(event);
     }
 
-    private getMessage(message: pages.PageThermo2Message): string {
-        return getPayload(
-            'entityUpd',
-            message.headline,
+    protected getMessage(message: pages.PageThermo2Message): string {
+        return tools.getPayload(
+            tools.getPayloadRemoveTilde('entityUpd', message.headline),
             message.navigation,
-            String(this.name),
-            String(message.dstTemp),
-            String(message.minTemp),
-            String(message.maxTemp),
-            message.tempStep,
-            message.unit,
-            !message.power ? '1' : '1',
-            getPayloadArray(message.options),
+            tools.getPayloadRemoveTilde(
+                String(this.name),
+                String(message.dstTemp),
+                String(message.minTemp),
+                String(message.maxTemp),
+                message.tempStep,
+                message.unit,
+                !message.power ? '1' : '1',
+            ),
+            tools.getPayloadArray(message.options),
         );
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {

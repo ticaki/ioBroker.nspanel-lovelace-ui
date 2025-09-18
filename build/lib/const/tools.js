@@ -35,6 +35,8 @@ __export(tools_exports, {
   getItemMesssage: () => getItemMesssage,
   getPayload: () => getPayload,
   getPayloadArray: () => getPayloadArray,
+  getPayloadArrayRemoveTilde: () => getPayloadArrayRemoveTilde,
+  getPayloadRemoveTilde: () => getPayloadRemoveTilde,
   getRGBfromRGBThree: () => getRGBfromRGBThree,
   getRegExp: () => getRegExp,
   getScaledNumber: () => getScaledNumber,
@@ -899,14 +901,20 @@ function getItemMesssage(msg) {
   if (msg.intNameEntity) {
     id.push(msg.intNameEntity);
   }
-  return getPayload(
+  return getPayloadRemoveTilde(
     (_a = msg.type) != null ? _a : messageItemDefault.type,
     (_b = id.join("?")) != null ? _b : messageItemDefault.intNameEntity,
     (_c = msg.icon) != null ? _c : messageItemDefault.icon,
     (_d = msg.iconColor) != null ? _d : messageItemDefault.iconColor,
-    (_e = msg.displayName) != null ? _e : messageItemDefault.displayName,
-    (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue
+    (_e = msg.displayName) != null ? _e : messageItemDefault.displayName.replace("~", "-"),
+    (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue.replace("~", "-")
   );
+}
+function getPayloadArrayRemoveTilde(s) {
+  return s.map((i) => i.replace("~", "-")).join("~");
+}
+function getPayloadRemoveTilde(...s) {
+  return s.map((i) => i.replace("~", "-")).join("~");
 }
 function getPayloadArray(s) {
   return s.join("~");
@@ -1173,6 +1181,8 @@ var tools_default = formatHMS;
   getItemMesssage,
   getPayload,
   getPayloadArray,
+  getPayloadArrayRemoveTilde,
+  getPayloadRemoveTilde,
   getRGBfromRGBThree,
   getRegExp,
   getScaledNumber,

@@ -468,7 +468,7 @@ export class PageItem extends BaseTriggeredPage {
                         let max = item.entity1 && item.entity1.value && item.entity1.value.common.max;
                         min = (item.minValue1 && (await item.minValue1.getNumber())) ?? min ?? 0;
                         max = (item.maxValue1 && (await item.maxValue1.getNumber())) ?? max ?? 100;
-                        return tools.getPayload(
+                        return tools.getPayloadRemoveTilde(
                             message.type,
                             message.intNameEntity,
                             message.icon,
@@ -625,7 +625,7 @@ export class PageItem extends BaseTriggeredPage {
                         const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : '';
 
                         message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
-                        return tools.getPayload(
+                        return tools.getPayloadRemoveTilde(
                             entry.type,
                             message.intNameEntity + additionalId,
                             message.icon,
@@ -678,7 +678,7 @@ export class PageItem extends BaseTriggeredPage {
                         const max =
                         (item.entity1 && item.entity1.maxScale && (await item.entity1.maxScale.getNumber())) ?? 100;
                         */
-                            return tools.getPayload(
+                            return tools.getPayloadRemoveTilde(
                                 message.type,
                                 message.intNameEntity,
                                 message.icon,
@@ -751,7 +751,7 @@ export class PageItem extends BaseTriggeredPage {
                             message.displayName = this.library.getTranslation(
                                 (await tools.getEntryTextOnOff(item.headline, true)) ?? message.displayName ?? '',
                             );
-                            return tools.getPayload(
+                            return tools.getPayloadRemoveTilde(
                                 message.type,
                                 message.intNameEntity,
                                 message.icon,
@@ -765,7 +765,7 @@ export class PageItem extends BaseTriggeredPage {
                 }
                 case 'empty':
                     {
-                        return tools.getPayload('', 'delete', '', '', '', '');
+                        return tools.getPayloadRemoveTilde('', 'delete', '', '', '', '');
                     }
                     break;
             }
@@ -798,7 +798,7 @@ export class PageItem extends BaseTriggeredPage {
                     popup: false,
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(
+                return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
                     result.icon ?? '',
@@ -824,7 +824,7 @@ export class PageItem extends BaseTriggeredPage {
                     list: '',
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(
+                return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail2',
                     result.entityName,
                     '',
@@ -844,7 +844,12 @@ export class PageItem extends BaseTriggeredPage {
                     list: '',
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(result.headline, result.entityName, result.currentState, result.list);
+                return tools.getPayloadRemoveTilde(
+                    result.headline,
+                    result.entityName,
+                    result.currentState,
+                    result.list,
+                );
                 break;
             }
             case 'popupFan': {
@@ -861,7 +866,7 @@ export class PageItem extends BaseTriggeredPage {
                     modeList: '',
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(
+                return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
                     result.icon,
@@ -891,7 +896,7 @@ export class PageItem extends BaseTriggeredPage {
                     text3: '',
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(
+                return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
                     '',
@@ -933,7 +938,7 @@ export class PageItem extends BaseTriggeredPage {
                     pos2: 'disable',
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(
+                return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
                     result.pos1,
@@ -983,7 +988,7 @@ export class PageItem extends BaseTriggeredPage {
                     shutterClosedIsZero: this.adapter.config.shutterClosedIsZero ? '1' : '0',
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(
+                return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
                     result.pos1,
@@ -1042,7 +1047,7 @@ export class PageItem extends BaseTriggeredPage {
                     hSlider3Visibility: 'disable',
                 };
                 result = { ...result, ...message };
-                return tools.getPayload(
+                return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
                     result.tSlider1,

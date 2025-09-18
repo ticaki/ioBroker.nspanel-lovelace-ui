@@ -4,7 +4,7 @@ import { Color } from '../const/Color';
 import {
     getIconEntryColor,
     getIconEntryValue,
-    getPayload,
+    getPayloadRemoveTilde,
     getValueEntryBoolean,
     getValueEntryNumber,
     setTriggeredToState,
@@ -167,7 +167,7 @@ export class PageNotify extends Page {
         }
     }
     private getMessage(message: Partial<pages.PageNotifyMessage>): string {
-        return getPayload(
+        return getPayloadRemoveTilde(
             'entityUpdateDetail',
             this.id,
             message.headline ?? '',
@@ -182,7 +182,7 @@ export class PageNotify extends Page {
         );
     }
     private getMessage2(message: Partial<pages.PageNotifyMessage>): string {
-        return getPayload(
+        return getPayloadRemoveTilde(
             'entityUpdateDetail',
             this.id,
             message.headline ?? '',

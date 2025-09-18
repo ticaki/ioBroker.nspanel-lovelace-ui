@@ -2,7 +2,7 @@ import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
-import { getIconEntryColor, getPayload } from '../const/tools';
+import { getIconEntryColor, getPayload, getPayloadRemoveTilde } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -187,11 +187,7 @@ export class PageChart extends Page {
         return getPayload(
             'entityUpd',
             result.headline,
-            result.navigation,
-            result.color,
-            result.text,
-            result.ticks.join(':'),
-            result.value,
+            getPayloadRemoveTilde(result.navigation, result.color, result.text, result.ticks.join(':'), result.value),
         );
     }
 

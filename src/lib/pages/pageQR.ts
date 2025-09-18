@@ -2,7 +2,7 @@ import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
-import { getPayload } from '../const/tools';
+import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -381,22 +381,23 @@ export class PageQR extends Page {
         let result: pages.PageQRMessage = PageQRMessageDefault;
         result = { ...result, ..._message } as pages.PageQRMessage;
         return getPayload(
-            'entityUpd',
-            result.headline,
+            getPayloadRemoveTilde('entityUpd', result.headline),
             result.navigation,
-            result.textQR,
-            result.type1,
-            result.internalName1,
-            result.iconId1,
-            result.iconColor1,
-            result.displayName1,
-            result.optionalValue1,
-            result.type2,
-            result.internalName2,
-            result.iconId2,
-            result.iconColor2,
-            result.displayName2,
-            result.optionalValue2,
+            getPayloadRemoveTilde(
+                result.textQR,
+                result.type1,
+                result.internalName1,
+                result.iconId1,
+                result.iconColor1,
+                result.displayName1,
+                result.optionalValue1,
+                result.type2,
+                result.internalName2,
+                result.iconId2,
+                result.iconColor2,
+                result.displayName2,
+                result.optionalValue2,
+            ),
         );
     }
 
