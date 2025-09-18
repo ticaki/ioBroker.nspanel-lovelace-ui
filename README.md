@@ -147,6 +147,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) made script configuration transfer more robust
+
 ### 0.4.0 (2025-09-13)
 - (ticaki) Panels can now be restarted individually while the adapter is running; faulty or missing configurations prevent restart with clear error messages
 - (ticaki) Media logo field now supports Alexa play/pause toggle and Spotify seek position popup
