@@ -906,15 +906,15 @@ function getItemMesssage(msg) {
     (_b = id.join("?")) != null ? _b : messageItemDefault.intNameEntity,
     (_c = msg.icon) != null ? _c : messageItemDefault.icon,
     (_d = msg.iconColor) != null ? _d : messageItemDefault.iconColor,
-    (_e = msg.displayName) != null ? _e : messageItemDefault.displayName.replace("~", "-"),
-    (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue.replace("~", "-")
+    (_e = msg.displayName) != null ? _e : messageItemDefault.displayName.replaceAll("~", "-"),
+    (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue.replaceAll("~", "-")
   );
 }
 function getPayloadArrayRemoveTilde(s) {
-  return s.map((i) => i.replace("~", "-")).join("~");
+  return s.map((i) => String(i).replaceAll("~", "-")).join("~");
 }
 function getPayloadRemoveTilde(...s) {
-  return s.map((i) => i.replace("~", "-")).join("~");
+  return s.map((i) => i.replaceAll("~", "-")).join("~");
 }
 function getPayloadArray(s) {
   return s.join("~");
