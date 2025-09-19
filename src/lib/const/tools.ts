@@ -1095,7 +1095,7 @@ export function getItemMesssage(msg: Partial<MessageItem> | undefined): string {
 }
 
 export function getPayloadArrayRemoveTilde(s: any[]): string {
-    return s.map(i => i.replaceAll('~', '-')).join('~');
+    return s.map(i => String(i).replaceAll('~', '-')).join('~');
 }
 export function getPayloadRemoveTilde(...s: string[]): string {
     return s.map(i => i.replaceAll('~', '-')).join('~');
