@@ -88,6 +88,7 @@ class PageChart extends import_Page.Page {
         this.log.debug(`Ticks: ${message.ticks.join(",")}`);
       }
     }
+    this.sendType(true);
     this.sendToPanel(this.getMessage(message), false);
   }
   static async getChartPageConfig(configManager, index, gridItem, messages, page) {
@@ -240,10 +241,10 @@ class PageChart extends import_Page.Page {
           this.checkState = false;
         }
       }
+      await this.update();
     } catch (error) {
       this.log.error(`Error onVisibilityChange: ${error}`);
     }
-    await super.onVisibilityChange(val);
   }
   async onStateTrigger(_id) {
     if (this.unload || this.adapter.unload) {
