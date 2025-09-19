@@ -43,7 +43,7 @@ export type PageTypeCards =
     | 'screensaver'
     | 'screensaver2'
     | 'screensaver3'
-    | 'cardBurnRec'
+    //| 'cardBurnRec'
     | 'cardItemSpecial' // besonders, interne Card zum verwalten von pageItems
     | 'popupNotify'
     | 'popupNotify2'

@@ -237,15 +237,19 @@ export class Page extends BaseClassPage {
         this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
     }
     sendType(force?: boolean): void {
+        let forceSend = force || false;
         let renderCurrentPage = false;
         switch (this.card) {
+            //case 'cardBurnRec':
             case 'cardChart':
             case 'cardLChart':
+            case 'cardThermo':
+                forceSend = true;
+            //@disable-next-line no-fallthrough
             case 'cardEntities':
             case 'cardGrid':
             case 'cardGrid2':
             case 'cardGrid3':
-            case 'cardThermo':
             case 'cardMedia':
             case 'cardUnlock':
             case 'cardQR':
@@ -254,7 +258,6 @@ export class Page extends BaseClassPage {
             case 'screensaver':
             case 'screensaver2':
             case 'screensaver3':
-            case 'cardBurnRec':
             case 'cardItemSpecial':
             case 'cardSchedule':
             case 'cardThermo2':
@@ -268,10 +271,10 @@ export class Page extends BaseClassPage {
                 pages.exhaustiveCheck(this.card);
                 break;
         }
-        if (force || this.basePanel.lastCard !== this.card || this.card === 'cardThermo') {
+        if (forceSend || this.basePanel.lastCard !== this.card) {
             this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
         } else {
-            if (this.lastCardCounter++ > 10) {
+            if (this.lastCardCounter++ > 15) {
                 this.lastCardCounter = 0;
                 this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
             }
