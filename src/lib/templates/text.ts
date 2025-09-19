@@ -2582,6 +2582,7 @@ export const textTemplates: TemplateItems = {
                         type: 'triggered',
                         role: 'weather.icon.name',
                         mode: 'auto',
+                        regexp: /.\.icon$/,
                         dp: '',
                         read: `
                             switch (val) {
