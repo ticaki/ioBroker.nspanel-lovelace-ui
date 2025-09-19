@@ -99,7 +99,7 @@ export class Page extends BaseClassPage {
                 const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
                 const enums = this.enums ? this.enums : options.enums;
                 if (!dpInit && !enums) {
-                    this.log.debug(`No dpInit or enums for pageItem ${a} in ${this.name}`);
+                    //this.log.debug(`No dpInit or enums for pageItem ${a} in ${this.name}`);
                 }
 
                 options.data =

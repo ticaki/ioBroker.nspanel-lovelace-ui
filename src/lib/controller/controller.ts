@@ -89,7 +89,8 @@ export class Controller extends Library.BaseClass {
             const currentTimeString = await this.getCurrentTimeString();
             await this.statesControler.setInternalState('///timeString', currentTimeString, true);
             await this.adapter.delay(10);
-        } catch {
+        } catch (e) {
+            this.log.error(`minuteLoop error: ${e instanceof Error ? e.message : JSON.stringify(e)}`);
             // Fehler werden geschluckt, damit die Loop nicht stoppt
         }
 

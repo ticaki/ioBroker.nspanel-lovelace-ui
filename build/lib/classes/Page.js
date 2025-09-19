@@ -111,7 +111,6 @@ class Page extends import_baseClassPage.BaseClassPage {
         const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
         const enums = this.enums ? this.enums : options.enums;
         if (!dpInit && !enums) {
-          this.log.debug(`No dpInit or enums for pageItem ${a} in ${this.name}`);
         }
         options.data = dpInit || enums ? await this.basePanel.statesControler.getDataItemsFromAuto(
           dpInit,
