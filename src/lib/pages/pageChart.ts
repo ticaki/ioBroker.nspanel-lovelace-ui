@@ -75,6 +75,7 @@ export class PageChart extends Page {
                 this.log.debug(`Ticks: ${message.ticks.join(',')}`);
             }
         }
+        this.sendType(true);
         this.sendToPanel(this.getMessage(message), false);
     }
 
@@ -244,10 +245,12 @@ export class PageChart extends Page {
                     this.checkState = false;
                 }
             }
+            await this.update();
         } catch (error) {
             this.log.error(`Error onVisibilityChange: ${error as string}`);
         }
-        await super.onVisibilityChange(val);
+        // keine Pageitems in chart vorhanden
+        // await super.onVisibilityChange(val);
     }
 
     protected async onStateTrigger(_id: string): Promise<void> {
