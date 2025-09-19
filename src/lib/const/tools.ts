@@ -1089,8 +1089,8 @@ export function getItemMesssage(msg: Partial<MessageItem> | undefined): string {
         id.join('?') ?? messageItemDefault.intNameEntity,
         msg.icon ?? messageItemDefault.icon,
         msg.iconColor ?? messageItemDefault.iconColor,
-        msg.displayName ?? messageItemDefault.displayName.replace('~', '-'),
-        msg.optionalValue ?? messageItemDefault.optionalValue.replace('~', '-'),
+        msg.displayName ?? messageItemDefault.displayName.replaceAll('~', '-'),
+        msg.optionalValue ?? messageItemDefault.optionalValue.replaceAll('~', '-'),
     );
 }
 
