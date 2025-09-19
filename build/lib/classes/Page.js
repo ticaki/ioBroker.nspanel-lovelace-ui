@@ -226,7 +226,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       case "cardLChart":
       case "cardThermo":
         forceSend = true;
-      //@disable-next-line no-fallthrough
+      // eslint-disable-next-line no-fallthrough
       case "cardEntities":
       case "cardGrid":
       case "cardGrid2":
