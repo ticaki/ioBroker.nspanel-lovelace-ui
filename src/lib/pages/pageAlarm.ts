@@ -3,7 +3,7 @@ import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { genericStateObjects } from '../const/definition';
 import { Icons } from '../const/icon_mapping';
-import { getPayload } from '../const/tools';
+import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -246,22 +246,23 @@ export class PageAlarm extends Page {
         let result: pages.PageAlarmMessage = PageAlarmMessageDefault;
         result = { ...result, ...message } as pages.PageAlarmMessage;
         return getPayload(
-            'entityUpd',
-            result.headline,
+            getPayloadRemoveTilde('entityUpd', result.headline),
             result.navigation,
-            result.intNameEntity,
-            result.button1,
-            result.status1,
-            result.button2,
-            result.status2,
-            result.button3,
-            result.status3,
-            result.button4,
-            result.status4,
-            result.icon,
-            result.iconColor,
-            result.numpad,
-            result.flashing,
+            getPayloadRemoveTilde(
+                result.intNameEntity,
+                result.button1,
+                result.status1,
+                result.button2,
+                result.status2,
+                result.button3,
+                result.status3,
+                result.button4,
+                result.status4,
+                result.icon,
+                result.iconColor,
+                result.numpad,
+                result.flashing,
+            ),
         );
     }
 

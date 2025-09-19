@@ -1084,16 +1084,22 @@ export function getItemMesssage(msg: Partial<MessageItem> | undefined): string {
     if (msg.intNameEntity) {
         id.push(msg.intNameEntity);
     }
-    return getPayload(
+    return getPayloadRemoveTilde(
         msg.type ?? messageItemDefault.type,
         id.join('?') ?? messageItemDefault.intNameEntity,
         msg.icon ?? messageItemDefault.icon,
         msg.iconColor ?? messageItemDefault.iconColor,
-        msg.displayName ?? messageItemDefault.displayName,
-        msg.optionalValue ?? messageItemDefault.optionalValue,
+        msg.displayName ?? messageItemDefault.displayName.replaceAll('~', '-'),
+        msg.optionalValue ?? messageItemDefault.optionalValue.replaceAll('~', '-'),
     );
 }
 
+export function getPayloadArrayRemoveTilde(s: any[]): string {
+    return s.map(i => String(i).replaceAll('~', '-')).join('~');
+}
+export function getPayloadRemoveTilde(...s: string[]): string {
+    return s.map(i => i.replaceAll('~', '-')).join('~');
+}
 export function getPayloadArray(s: any[]): string {
     return s.join('~');
 }

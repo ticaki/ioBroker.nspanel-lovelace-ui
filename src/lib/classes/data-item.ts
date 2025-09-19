@@ -275,7 +275,7 @@ export class Dataitem extends BaseClass {
                     return state && state.val !== null
                         ? typeof state.val === 'object'
                             ? JSON.stringify(state.val)
-                            : String(state.val).replaceAll('~', '-')
+                            : String(state.val)
                         : null;
                 case 'state':
                 case 'triggered':
@@ -285,18 +285,18 @@ export class Dataitem extends BaseClass {
                         return state && state.val !== null
                             ? typeof state.val === 'object'
                                 ? JSON.stringify(state.val)
-                                : String(state.val).replaceAll('~', '-').substring(args[0], args[1])
+                                : String(state.val).substring(args[0], args[1])
                             : null;
                     }
                     return state && state.val !== null
                         ? typeof state.val === 'object'
                             ? JSON.stringify(state.val)
-                            : String(state.val).replaceAll('~', '-')
+                            : String(state.val)
                         : null;
                 case 'internalState':
                 case 'internal':
                     // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    return state && state.val !== null ? String(state.val).replaceAll('~', '-') : null;
+                    return state && state.val !== null ? String(state.val) : null;
             }
         } catch {
             this.log.error(`Error in getString for ${this.options.dp}`);

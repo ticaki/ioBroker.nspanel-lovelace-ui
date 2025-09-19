@@ -128,7 +128,7 @@ class PageThermo extends import_Page.Page {
           const temp = pageItems[a];
           if (temp) {
             const arr = (await temp.getPageItemPayload()).split("~");
-            message.options[b] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "1", arr[1]);
+            message.options[b] = (0, import_tools.getPayloadRemoveTilde)(arr[2], arr[3], arr[5] == "1" ? "1" : "1", arr[1]);
           } else {
             (0, import_tools.getPayload)("", "", "", "");
           }
@@ -138,7 +138,7 @@ class PageThermo extends import_Page.Page {
           const temp = this.pageItems[0];
           if (temp) {
             const arr = (await temp.getPageItemPayload()).split("~");
-            message.options[7] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "0", arr[1]);
+            message.options[7] = (0, import_tools.getPayloadRemoveTilde)(arr[2], arr[3], arr[5] == "1" ? "1" : "0", arr[1]);
           } else {
             (0, import_tools.getPayload)("", "", "", "");
           }
@@ -292,23 +292,26 @@ class PageThermo extends import_Page.Page {
   }
   getMessage(message) {
     return (0, import_tools.getPayload)(
-      "entityUpd",
-      message.headline,
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", message.headline),
       message.navigation,
-      message.intNameEntity,
-      String(message.currentTemp),
-      String(message.dstTemp),
-      message.status,
-      String(message.minTemp),
-      String(message.maxTemp),
-      message.tempStep,
+      (0, import_tools.getPayloadRemoveTilde)(
+        message.intNameEntity,
+        String(message.currentTemp),
+        String(message.dstTemp),
+        message.status,
+        String(message.minTemp),
+        String(message.maxTemp),
+        message.tempStep
+      ),
       (0, import_tools.getPayloadArray)(message.options),
-      message.tCurTempLbl,
-      message.tStateLbl,
-      message.tALbl,
-      message.tCF,
-      String(message.temp2),
-      String(message.btDetail)
+      (0, import_tools.getPayloadRemoveTilde)(
+        message.tCurTempLbl,
+        message.tStateLbl,
+        message.tALbl,
+        message.tCF,
+        String(message.temp2),
+        String(message.btDetail)
+      )
     );
   }
   async onVisibilityChange(val) {

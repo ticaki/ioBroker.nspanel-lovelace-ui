@@ -1,7 +1,7 @@
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Icons } from '../const/icon_mapping';
-import { getPayload, getPayloadArray, getValueEntryString } from '../const/tools';
+import { getPayloadRemoveTilde, getValueEntryString, getPayload, getPayloadArray } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { ButtonActionType, IncomingEvent, PopupType } from '../types/types';
 
@@ -126,7 +126,7 @@ export class PageThermo extends Page {
                     const temp = pageItems[a];
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
-                        message.options[b] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '1', arr[1]);
+                        message.options[b] = getPayloadRemoveTilde(arr[2], arr[3], arr[5] == '1' ? '1' : '1', arr[1]);
                     } else {
                         getPayload('', '', '', '');
                     }
@@ -137,7 +137,7 @@ export class PageThermo extends Page {
                     const temp = this.pageItems[0];
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
-                        message.options[7] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
+                        message.options[7] = getPayloadRemoveTilde(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
                     } else {
                         getPayload('', '', '', '');
                     }
@@ -335,23 +335,26 @@ export class PageThermo extends Page {
 
     private getMessage(message: pages.PageThermoMessage): string {
         return getPayload(
-            'entityUpd',
-            message.headline,
+            getPayloadRemoveTilde('entityUpd', message.headline),
             message.navigation,
-            message.intNameEntity,
-            String(message.currentTemp),
-            String(message.dstTemp),
-            message.status,
-            String(message.minTemp),
-            String(message.maxTemp),
-            message.tempStep,
+            getPayloadRemoveTilde(
+                message.intNameEntity,
+                String(message.currentTemp),
+                String(message.dstTemp),
+                message.status,
+                String(message.minTemp),
+                String(message.maxTemp),
+                message.tempStep,
+            ),
             getPayloadArray(message.options),
-            message.tCurTempLbl,
-            message.tStateLbl,
-            message.tALbl,
-            message.tCF,
-            String(message.temp2),
-            String(message.btDetail),
+            getPayloadRemoveTilde(
+                message.tCurTempLbl,
+                message.tStateLbl,
+                message.tALbl,
+                message.tCF,
+                String(message.temp2),
+                String(message.btDetail),
+            ),
         );
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {

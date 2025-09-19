@@ -219,7 +219,7 @@ class Screensaver extends import_Page.Page {
           if (place !== "indicator") {
             arr[1] = "";
           }
-          message.options[place][i] = tools.getPayloadArray(arr);
+          message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
         }
       }
     }
@@ -234,7 +234,7 @@ class Screensaver extends import_Page.Page {
     if (!this.basePanel.isOnline) {
       return;
     }
-    const msg = enabled ? tools.getPayload("notify", this.headingNotification, this.textNotification) : tools.getPayload("notify", "", "");
+    const msg = enabled ? tools.getPayloadRemoveTilde("notify", this.headingNotification, this.textNotification) : tools.getPayload("notify", "", "");
     this.sendToPanel(msg, false);
   }
   /** Current info icon (readonly property wrapper). */
@@ -412,7 +412,7 @@ class Screensaver extends import_Page.Page {
       this.basePanel.info.nspanel.bigIconLeft ? "1" : "",
       this.basePanel.info.nspanel.bigIconRight ? "1" : ""
     ];
-    const msg = tools.getPayloadArray(msgArray);
+    const msg = tools.getPayloadArrayRemoveTilde(msgArray);
     this.sendToPanel(msg, false);
   }
   async onButtonEvent(event) {

@@ -319,7 +319,7 @@ class Navigation extends import_library.BaseClass {
     let navigationString = "";
     if (!side || side === "left") {
       if (item.left.single !== void 0 && (item.left.double === void 0 || this.doubleClickTimeout === void 0)) {
-        navigationString = (0, import_tools.getPayload)(
+        navigationString = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bSubPrev",
           item.left.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-left-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-left-bold-outline"),
@@ -328,7 +328,7 @@ class Navigation extends import_library.BaseClass {
           ""
         );
       } else if (item.left.double !== void 0) {
-        navigationString = (0, import_tools.getPayload)(
+        navigationString = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bUp",
           import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
@@ -343,7 +343,7 @@ class Navigation extends import_library.BaseClass {
     let navigationString2 = "";
     if (!side || side === "right") {
       if (item.right.single !== void 0 && (item.right.double === void 0 || this.doubleClickTimeout === void 0)) {
-        navigationString2 = (0, import_tools.getPayload)(
+        navigationString2 = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bSubNext",
           item.right.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-right-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-right-bold-outline"),
@@ -352,7 +352,7 @@ class Navigation extends import_library.BaseClass {
           ""
         );
       } else if (item.right.double !== void 0) {
-        navigationString2 = (0, import_tools.getPayload)(
+        navigationString2 = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bHome",
           import_icon_mapping.Icons.GetIcon("home"),

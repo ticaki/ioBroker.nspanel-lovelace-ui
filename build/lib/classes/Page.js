@@ -284,7 +284,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       let left = "";
       let right = "";
       if (!side || side === "left") {
-        left = (0, import_tools.getPayload)(
+        left = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bUp",
           import_icon_mapping.Icons.GetIcon("arrow-up-bold"),

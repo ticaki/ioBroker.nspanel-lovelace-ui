@@ -237,7 +237,7 @@ export class Screensaver extends Page {
                     if (place !== 'indicator') {
                         arr[1] = '';
                     }
-                    message.options[place][i] = tools.getPayloadArray(arr);
+                    message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
                 }
             }
         }
@@ -256,7 +256,7 @@ export class Screensaver extends Page {
         }
 
         const msg = enabled
-            ? tools.getPayload('notify', this.headingNotification, this.textNotification)
+            ? tools.getPayloadRemoveTilde('notify', this.headingNotification, this.textNotification)
             : tools.getPayload('notify', '', '');
 
         this.sendToPanel(msg, false);
@@ -489,7 +489,7 @@ export class Screensaver extends Page {
             this.basePanel.info.nspanel.bigIconLeft ? '1' : '',
             this.basePanel.info.nspanel.bigIconRight ? '1' : '',
         ];
-        const msg = tools.getPayloadArray(msgArray);
+        const msg = tools.getPayloadArrayRemoveTilde(msgArray);
         this.sendToPanel(msg, false);
     }
 

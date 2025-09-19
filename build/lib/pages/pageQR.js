@@ -394,22 +394,23 @@ class PageQR extends import_Page.Page {
     let result = PageQRMessageDefault;
     result = { ...result, ..._message };
     return (0, import_tools.getPayload)(
-      "entityUpd",
-      result.headline,
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", result.headline),
       result.navigation,
-      result.textQR,
-      result.type1,
-      result.internalName1,
-      result.iconId1,
-      result.iconColor1,
-      result.displayName1,
-      result.optionalValue1,
-      result.type2,
-      result.internalName2,
-      result.iconId2,
-      result.iconColor2,
-      result.displayName2,
-      result.optionalValue2
+      (0, import_tools.getPayloadRemoveTilde)(
+        result.textQR,
+        result.type1,
+        result.internalName1,
+        result.iconId1,
+        result.iconColor1,
+        result.displayName1,
+        result.optionalValue1,
+        result.type2,
+        result.internalName2,
+        result.iconId2,
+        result.iconColor2,
+        result.displayName2,
+        result.optionalValue2
+      )
     );
   }
   async onStateTrigger(_id) {

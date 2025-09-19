@@ -433,7 +433,7 @@ class PageMenu extends import_Page.Page {
     let left = hasPrev ? "" : super.getNavigation("left");
     let right = hasNext ? "" : super.getNavigation("right");
     if (!left) {
-      left = (0, import_tools.getPayload)(
+      left = (0, import_tools.getPayloadRemoveTilde)(
         "button",
         "bSubPrev",
         effective === "page" ? import_icon_mapping.Icons.GetIcon("arrow-up-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
@@ -443,7 +443,7 @@ class PageMenu extends import_Page.Page {
       );
     }
     if (!right) {
-      right = (0, import_tools.getPayload)(
+      right = (0, import_tools.getPayloadRemoveTilde)(
         "button",
         "bSubNext",
         effective === "page" ? import_icon_mapping.Icons.GetIcon("arrow-down-bold-outline") : import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
@@ -466,6 +466,13 @@ class PageMenu extends import_Page.Page {
   }
   async reset() {
     this.step = 0;
+  }
+  getMessage(message) {
+    return (0, import_tools.getPayload)(
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", message.headline),
+      message.navigation,
+      (0, import_tools.getPayloadArray)(message.options)
+    );
   }
   async delete() {
     await super.delete();

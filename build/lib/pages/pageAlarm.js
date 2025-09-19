@@ -242,22 +242,23 @@ class PageAlarm extends import_Page.Page {
     let result = PageAlarmMessageDefault;
     result = { ...result, ...message };
     return (0, import_tools.getPayload)(
-      "entityUpd",
-      result.headline,
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", result.headline),
       result.navigation,
-      result.intNameEntity,
-      result.button1,
-      result.status1,
-      result.button2,
-      result.status2,
-      result.button3,
-      result.status3,
-      result.button4,
-      result.status4,
-      result.icon,
-      result.iconColor,
-      result.numpad,
-      result.flashing
+      (0, import_tools.getPayloadRemoveTilde)(
+        result.intNameEntity,
+        result.button1,
+        result.status1,
+        result.button2,
+        result.status2,
+        result.button3,
+        result.status3,
+        result.button4,
+        result.status4,
+        result.icon,
+        result.iconColor,
+        result.numpad,
+        result.flashing
+      )
     );
   }
   async onStateTrigger(id) {

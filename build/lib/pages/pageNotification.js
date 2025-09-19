@@ -175,7 +175,7 @@ ${message.text}`;
   }
   getMessage(message) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i;
-    return (0, import_tools.getPayload)(
+    return (0, import_tools.getPayloadRemoveTilde)(
       "entityUpdateDetail",
       this.id,
       (_a = message.headline) != null ? _a : "",
@@ -191,7 +191,7 @@ ${message.text}`;
   }
   getMessage2(message) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
-    return (0, import_tools.getPayload)(
+    return (0, import_tools.getPayloadRemoveTilde)(
       "entityUpdateDetail",
       this.id,
       (_a = message.headline) != null ? _a : "",

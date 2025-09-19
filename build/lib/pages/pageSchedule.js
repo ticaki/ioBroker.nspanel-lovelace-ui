@@ -21,7 +21,6 @@ __export(pageSchedule_exports, {
   PageSchedule: () => PageSchedule
 });
 module.exports = __toCommonJS(pageSchedule_exports);
-var import_tools = require("../const/tools");
 var import_pageMenu = require("./pageMenu");
 const PageScheduleMessageDefault = {
   event: "entityUpd",
@@ -72,9 +71,6 @@ class PageSchedule extends import_pageMenu.PageMenu {
     message.navigation = this.getNavigation();
     const msg = { ...structuredClone(PageScheduleMessageDefault), ...message };
     this.sendToPanel(this.getMessage(msg), false);
-  }
-  getMessage(message) {
-    return (0, import_tools.getPayload)("entityUpd", message.headline, message.navigation, (0, import_tools.getPayloadArray)(message.options));
   }
   async onStateTrigger() {
     await this.update();

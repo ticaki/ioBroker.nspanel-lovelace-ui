@@ -2,7 +2,7 @@ import * as pages from '../types/pages';
 import { BaseClassPage } from './baseClassPage';
 import * as types from '../types/types';
 import { PageItem } from '../pages/pageItem';
-import { deepAssign, getPayload, getRegExp } from '../const/tools';
+import { deepAssign, getPayload, getPayloadRemoveTilde, getRegExp } from '../const/tools';
 import type { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 import { pageItemTemplates } from '../templates/templateArray';
 import type { PageInterface, PageItemInterface } from './PageInterface';
@@ -308,7 +308,7 @@ export class Page extends BaseClassPage {
             let left = '';
             let right = '';
             if (!side || side === 'left') {
-                left = getPayload(
+                left = getPayloadRemoveTilde(
                     'button',
                     'bUp',
                     Icons.GetIcon('arrow-up-bold'),
