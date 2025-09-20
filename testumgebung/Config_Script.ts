@@ -1722,7 +1722,7 @@ declare namespace ScriptConfig {
             ScreensaverEntityOffColor?: RGB;
             ScreensaverEntityOnText?: string | null;
             ScreensaverEntityOffText?: string | null;
-            ScreensaverEntityNaviToPage?: PageType;
+            ScreensaverEntityNaviToPage?: string;
             /**
              * To show different icons for different values in the screensaver
              * 
