@@ -365,7 +365,17 @@ function swapKeyValue(obj: Record<string, string>): Record<string, string> {
     return swapped;
 }
 
-export type ScreenSaverPlaces = 'left' | 'bottom' | 'indicator' | 'alternate' | 'favorit' | 'mricon' | 'time' | 'date';
+export type ScreenSaverPlaces =
+    | 'left'
+    | 'bottom'
+    | 'indicator'
+    | 'alternate'
+    | 'favorit'
+    | 'mricon'
+    | 'time'
+    | 'date'
+    | 'notify';
+
 export type NSpanelModel = 'eu' | 'us-p' | 'us-l';
 export type Config = {
     leftEntity: boolean;

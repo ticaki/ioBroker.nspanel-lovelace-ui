@@ -718,6 +718,7 @@ declare namespace ScriptConfig {
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
         mrIcon1ScreensaverEntity: ScreenSaverMRElement;
         mrIcon2ScreensaverEntity: ScreenSaverMRElement;
+        notifyScreensaverEntity?: ScreenSaverNotifyElement[];
         defaultOnColor: RGB;
         defaultOffColor: RGB;
         defaultBackgroundColor: RGB;
@@ -815,6 +816,50 @@ declare namespace ScriptConfig {
               template: string;
               dpInit: string;
               modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+          }
+    );
+
+    export type ScreenSaverNotifyElement = { type: ScreenSaverType } & (
+        | ({
+              type: 'script';
+              /**
+               * Lower number = higher priority
+               */
+              Priority: number;
+              Headline: string;
+              HeadlinePrefix?: string;
+              Text: string;
+              TextSuffix?: string;
+              TextPrefix?: string;
+              HeadlineIcon?: string | null;
+          } & (
+              | {
+                    Enabled: string | boolean | null;
+                }
+              | {
+                    /**
+                     *  Condition that determines whether a Notify should be visible.
+                     *
+                     * - If `undefined`, the entity is always shown (`true`).
+                     * - If provided, the adapter prepends `return` to the string and evaluates it.
+                     *   The result must be a boolean:
+                     *   - `true` → the entity is shown.
+                     *   - `false` → the entity is hidden.
+                     *
+                     * Example:
+                     * ```ts
+                     * VisibleCondition: "val.length > 0 && val !== 'OFF'"
+                     * ```
+                     */
+                    VisibleCondition: string;
+                }
+          ))
+        | { type: 'native'; native: any }
+        | {
+              type: 'template';
+              template: string;
+              dpInit: string;
+              modeScr: 'notify';
           }
     );
 
