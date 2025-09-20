@@ -7610,9 +7610,9 @@
     "val": "25",
     "ack": false
   },
-  "0_userdata.0.ScreensaverNotify.Headline_iocn": {
+  "0_userdata.0.ScreensaverNotify.Headline_icon": {
     "common": {
-      "name": "Headline_iocn",
+      "name": "Headline_icon",
       "desc": "Manuell erzeugt",
       "role": "state",
       "type": "string",
@@ -7622,7 +7622,7 @@
     },
     "type": "state",
     "native": {},
-    "_id": "0_userdata.0.ScreensaverNotify.Headline_iocn",
+    "_id": "0_userdata.0.ScreensaverNotify.Headline_icon",
     "acl": {
       "object": 1636,
       "state": 1636,
