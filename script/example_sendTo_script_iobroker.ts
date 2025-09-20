@@ -695,7 +695,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.11.5';
+const version = '0.12.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1484,14 +1484,15 @@ declare namespace ScriptConfig {
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
         mrIcon1ScreensaverEntity: ScreenSaverMRElement;
         mrIcon2ScreensaverEntity: ScreenSaverMRElement;
+        notifyScreensaverEntity?: ScreenSaverNotifyElement[];
         /**
          * The default color for the panel.
          * @deprecated use defaultOnColor and defaultOffColor
          */
         defaultColor?: RGB;
-        defaultOnColor: RGB;
-        defaultOffColor: RGB;
-        defaultBackgroundColor: RGB;
+        defaultOnColor?: RGB;
+        defaultOffColor?: RGB;
+        defaultBackgroundColor?: RGB;
         pages: PageType[];
         subPages: PageType[];
         restartAdapter?: boolean;
@@ -1611,6 +1612,52 @@ declare namespace ScriptConfig {
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
         }
     );
+
+    export type ScreenSaverNotifyElement = { type: ScreenSaverType } & (
+        | ({
+              type: 'script';
+              /**
+               * Lower number = higher priority
+               */
+              Priority: number;
+              Headline: string;
+              HeadlinePrefix?: string;
+              HeadlineUnit?: string;
+              Text: string;
+              TextSuffix?: string;
+              TextPrefix?: string;
+              HeadlineIcon?: string | null;
+          } & (
+              | {
+                    Enabled: string | boolean | null;
+                }
+              | {
+                    /**
+                     *  Condition that determines whether a Notify should be visible.
+                     *
+                     * - If `undefined`, the entity is always shown (`true`).
+                     * - If provided, the adapter prepends `return` to the string and evaluates it.
+                     *   The result must be a boolean:
+                     *   - `true` → the entity is shown.
+                     *   - `false` → the entity is hidden.
+                     *
+                     * Example:
+                     * ```ts
+                     * VisibleCondition: "val.length > 0 && val !== 'OFF'"
+                     * ```
+                     */
+                    VisibleCondition: string;
+                }
+          ))
+        | { type: 'native'; native: any }
+        | {
+              type: 'template';
+              template: string;
+              dpInit: string;
+              modeScr: 'notify';
+          }
+    );
+
     export type WeatherAddDefaultItemsJson = {
         sunriseSet?: boolean; // Sunrise/Sunset
         forecastDay1?: boolean; // Forecast Day 1

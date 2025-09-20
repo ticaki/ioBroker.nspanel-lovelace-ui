@@ -3951,6 +3951,22 @@ export class ConfigManager extends BaseClass {
             const res = await Promise.all(tasks);
             return res.filter((r): r is typePageItem.PageItemDataItemsOptions => !!r);
         };
+        const loadNotifySection = async (
+            items: ScriptConfig.ScreenSaverNotifyElement[] | undefined,
+            mode: 'notify',
+            errorLabel: string,
+        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+            if (!items || items.length === 0) {
+                return [];
+            }
+            const tasks = items.map(item =>
+                this.getNotifyEntityData(item, mode).catch(err => {
+                    throw new Error(`${errorLabel} - ${String(err)}`);
+                }),
+            );
+            const res = await Promise.all(tasks);
+            return res.filter((r): r is typePageItem.PageItemDataItemsOptions => !!r);
+        };
 
         const loadElementSectionUndef = async (
             items: ScriptConfig.ScreenSaverElementWithUndefined[] | undefined,
@@ -3996,6 +4012,7 @@ export class ConfigManager extends BaseClass {
             loadElementSectionUndef(config.indicatorScreensaverEntity, 'indicator', 'indicatorScreensaverEntity'),
             loadMrIcon(config.mrIcon1ScreensaverEntity, 'mrIcon1ScreensaverEntity'),
             loadMrIcon(config.mrIcon2ScreensaverEntity, 'mrIcon2ScreensaverEntity'),
+            loadNotifySection(config.notifyScreensaverEntity, 'notify', 'notifyScreensaverEntity'),
         ]);
 
         // In fixer Block-Reihenfolge zusammenführen
@@ -4660,6 +4677,70 @@ export class ConfigManager extends BaseClass {
         throw new Error('Invalid data');
     }
 
+    async getNotifyEntityData(
+        entity: ScriptConfig.ScreenSaverNotifyElement,
+        mode: Types.ScreenSaverPlaces,
+    ): Promise<typePageItem.PageItemDataItemsOptions> {
+        const result: typePageItem.PageItemDataItemsOptions = {
+            modeScr: mode,
+            type: 'text',
+            data: { entity1: {} },
+        };
+        if (entity.type === 'native') {
+            const temp = structuredClone(entity.native) as typePageItem.PageItemDataItemsOptions;
+            return temp;
+        } else if (entity.type === 'template') {
+            const temp = structuredClone(entity) as unknown as typePageItem.PageItemDataItemsOptions;
+            delete temp.type;
+            return temp;
+        }
+        if (!result.data.entity1) {
+            throw new Error('Invalid data');
+        }
+        result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.Headline || ' ', true);
+        if (entity.HeadlinePrefix) {
+            result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix);
+        }
+        if (entity.HeadlineUnit) {
+            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit);
+        }
+        result.data.entity1.suffix = {
+            type: 'const',
+            constVal: `<sp!it>${typeof entity.Priority === 'number' ? entity.Priority : 99}`,
+        };
+        result.data.entity2 = structuredClone(result.data.entity1);
+        if (entity.Text) {
+            result.data.text = {
+                true: {
+                    value: await this.getFieldAsDataItemConfig(entity.Text, true),
+                    prefix: entity.TextPrefix ? await this.getFieldAsDataItemConfig(entity.TextPrefix) : undefined,
+                    suffix: entity.TextSuffix ? await this.getFieldAsDataItemConfig(entity.TextSuffix) : undefined,
+                },
+            };
+        }
+        if (entity.HeadlineIcon) {
+            result.data.icon = {
+                true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon) },
+            };
+        }
+        if ('VisibleCondition' in entity && entity.VisibleCondition && result.data.entity1.value) {
+            result.data.enabled = {
+                ...result.data.entity1.value,
+                read: `
+                val = ${typeof result.data.entity1.value?.read === 'string' ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
+                return ${entity.VisibleCondition};
+                `,
+            };
+        } else if ('Enabled' in entity && entity.Enabled != null) {
+            result.data.enabled = await this.getFieldAsDataItemConfig(entity.Enabled ? entity.Enabled : 'true', true);
+        } else {
+            throw new Error(
+                `No Enabled or VisibleCondition in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`,
+            );
+        }
+        return result;
+    }
+
     async getEntityData(
         entity: ScriptConfig.ScreenSaverElement,
         mode: Types.ScreenSaverPlaces,
@@ -4740,16 +4821,6 @@ export class ConfigManager extends BaseClass {
                 constVal: { local: 'de', format: entity.ScreensaverEntityDateFormat },
             };
         }
-        if ('ScreensaverEntityEnabled' in entity) {
-            if (entity.ScreensaverEntityEnabled === false) {
-                result.data.enabled = { type: 'const', constVal: false };
-            } else if (
-                typeof entity.ScreensaverEntityEnabled === 'string' &&
-                (await this.existsState(entity.ScreensaverEntityEnabled))
-            ) {
-                result.data.enabled = { type: 'triggered', dp: entity.ScreensaverEntityEnabled };
-            }
-        }
 
         let color: Types.DataItemsOptions | undefined = undefined;
         if (entity.ScreensaverEntityOnColor) {
@@ -4772,16 +4843,23 @@ export class ConfigManager extends BaseClass {
                 true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) },
             };
         }
-        if ('ScreensaverEntityVisibleCondition' in entity) {
-            if (entity.ScreensaverEntityVisibleCondition && result.data.entity1.value) {
-                result.data.enabled = {
-                    ...result.data.entity1.value,
-                    read: `
+        if (
+            'ScreensaverEntityVisibleCondition' in entity &&
+            entity.ScreensaverEntityVisibleCondition &&
+            result.data.entity1.value
+        ) {
+            result.data.enabled = {
+                ...result.data.entity1.value,
+                read: `
                 val = ${typeof result.data.entity1.value?.read === 'string' ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
                 return ${entity.ScreensaverEntityVisibleCondition};
                 `,
-                };
-            }
+            };
+        } else if ('ScreensaverEntityEnabled' in entity) {
+            result.data.enabled = await this.getFieldAsDataItemConfig(
+                entity.ScreensaverEntityEnabled ? entity.ScreensaverEntityEnabled : true,
+                true,
+            );
         }
         if (
             dataType === 'number' &&
@@ -4853,7 +4931,7 @@ export class ConfigManager extends BaseClass {
     }
 
     async getFieldAsDataItemConfig(
-        possibleId: string | number | ScriptConfig.RGB,
+        possibleId: string | number | ScriptConfig.RGB | boolean,
         isTrigger: boolean = false,
     ): Promise<Types.DataItemsOptions> {
         if (typeof possibleId === 'string') {

@@ -25,6 +25,8 @@ export class Screensaver extends Page {
     private timeoutRotation: ioBroker.Timeout | undefined = undefined;
     public headingNotification: string = '';
     public textNotification: string = '';
+    public customNotification: boolean = false;
+    private activeNotification: boolean = false;
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (
@@ -105,6 +107,7 @@ export class Screensaver extends Page {
                 mricon: [],
                 favorit: [],
                 alternate: [],
+                notify: [],
             },
         };
         const overwrite: Record<Types.ScreenSaverPlaces, string[]> = {
@@ -116,6 +119,7 @@ export class Screensaver extends Page {
             mricon: [],
             favorit: [],
             alternate: [],
+            notify: [],
         };
 
         if (!this.pageItems) {
@@ -186,6 +190,7 @@ export class Screensaver extends Page {
             mricon: [],
             favorit: [],
             alternate: [],
+            notify: [],
         };
 
         for (const r of results) {
@@ -217,6 +222,10 @@ export class Screensaver extends Page {
             let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
             if (max == null) {
                 max = Definition.ScreenSaverConst[layout][place].maxEntries.eu;
+            }
+            if (place === 'notify') {
+                message.options[place] = message.options[place].filter(n => n && n !== '~~~~~');
+                max = message.options[place].length;
             }
             let items = message.options[place] || [];
             if (items.length > max) {
@@ -250,13 +259,23 @@ export class Screensaver extends Page {
      *
      * @param enabled When true, send heading + text; otherwise clear the notify.
      */
-    sendNotify(enabled: boolean): void {
+    public sendNotify(enabled: boolean): void {
         if (!this.basePanel.isOnline) {
             return;
         }
+        this.customNotification = enabled && (this.headingNotification !== '' || this.textNotification !== '');
 
-        const msg = enabled
-            ? tools.getPayloadRemoveTilde('notify', this.headingNotification, this.textNotification)
+        void this.HandleNotification();
+    }
+
+    #sendNotify(enabled: boolean, heading: string = '', text: string = ''): void {
+        if (!this.basePanel.isOnline) {
+            return;
+        }
+        this.activeNotification = enabled && (heading !== '' || text !== '');
+
+        const msg = this.activeNotification
+            ? tools.getPayloadRemoveTilde('notify', heading, text)
             : tools.getPayload('notify', '', '');
 
         this.sendToPanel(msg, false);
@@ -306,7 +325,9 @@ export class Screensaver extends Page {
         this.sendToPanel(msg, false);
         this.sendColors();
         await this.HandleScreensaverStatusIcons();
+        await this.HandleNotification();
     }
+
     public async createPageItems(
         pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined,
     ): Promise<(PageItem | undefined)[] | undefined> {
@@ -429,6 +450,10 @@ export class Screensaver extends Page {
                             await this.HandleDate();
                             break;
                         }
+                        case 'notify': {
+                            await this.HandleNotification();
+                            break;
+                        }
                     }
                 }
             }
@@ -491,6 +516,42 @@ export class Screensaver extends Page {
         ];
         const msg = tools.getPayloadArrayRemoveTilde(msgArray);
         this.sendToPanel(msg, false);
+    }
+
+    async HandleNotification(): Promise<void> {
+        if (this.basePanel.isOnline === false) {
+            return;
+        }
+        const message = await this.getData(['notify']);
+        if (message === null) {
+            return;
+        }
+        // only use valid notify entries
+        // format: type~int~icon~color~heading<sp!it>prio~text
+        // lower prio = higher priority
+        const notifyList = message.options.notify
+            .map(n => n.split('~'))
+            .filter(n => n[4] !== '' || n[5] !== '')
+            .map(n => {
+                const s = n[5].split('<sp!it>');
+                const text = n[4];
+                const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
+                const heading = `${n[2]} ${s[0]}`.trim();
+                return { heading, text, prio };
+            })
+            .sort((a, b) => (a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1));
+
+        if (this.customNotification === true) {
+            this.#sendNotify(this.customNotification, this.headingNotification, this.textNotification);
+        } else if (notifyList.length > 0) {
+            const heading = notifyList[0].heading;
+            const text = notifyList[0].text;
+            if (heading !== '' || text !== '') {
+                this.#sendNotify(true, heading, text);
+            }
+        } else if (this.activeNotification) {
+            this.#sendNotify(false);
+        }
     }
 
     async onButtonEvent(event: Types.IncomingEvent): Promise<void> {

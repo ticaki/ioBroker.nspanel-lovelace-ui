@@ -5,6 +5,10 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -26,6 +30,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 var screensaver_exports = {};
 __export(screensaver_exports, {
   Screensaver: () => Screensaver
@@ -39,17 +47,8 @@ var pages = __toESM(require("../types/pages"));
 var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
 var import_Color = require("../const/Color");
-class Screensaver extends import_Page.Page {
-  items;
-  step = 0;
-  blockButtons;
-  rotationTime = 3e5;
-  screensaverIndicatorButtons = false;
-  screensaverSwipe = false;
-  _infoIcon = "";
-  timeoutRotation = void 0;
-  headingNotification = "";
-  textNotification = "";
+var _Screensaver_instances, sendNotify_fn;
+const _Screensaver = class _Screensaver extends import_Page.Page {
   //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, options) {
     var _a, _b;
@@ -76,6 +75,84 @@ class Screensaver extends import_Page.Page {
     }
     options.alwaysOn = "none";
     super(config, options);
+    __privateAdd(this, _Screensaver_instances);
+    __publicField(this, "items");
+    __publicField(this, "step", 0);
+    __publicField(this, "blockButtons");
+    __publicField(this, "rotationTime", 3e5);
+    __publicField(this, "screensaverIndicatorButtons", false);
+    __publicField(this, "screensaverSwipe", false);
+    __publicField(this, "_infoIcon", "");
+    __publicField(this, "timeoutRotation");
+    __publicField(this, "headingNotification", "");
+    __publicField(this, "textNotification", "");
+    __publicField(this, "customNotification", false);
+    __publicField(this, "activeNotification", false);
+    __publicField(this, "rotationLoop", async () => {
+      if (!this.visibility) {
+        return;
+      }
+      await this.update();
+      if (this.rotationTime === 0) {
+        this.step = 0;
+        return;
+      }
+      this.step = this.step > 1e4 ? 0 : this.step + 1;
+      if (this.unload || this.adapter.unload) {
+        return;
+      }
+      this.timeoutRotation = this.adapter.setTimeout(
+        this.rotationLoop,
+        this.rotationTime < 3e3 ? 3e3 : this.rotationTime
+      );
+    });
+    /**
+     * ..
+     *
+     * @param _dp - the dp that triggered the state
+     * @param from - the class that triggered the state
+     */
+    __publicField(this, "onStateTrigger", async (_dp, from) => {
+      const config = this.config;
+      if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
+        return;
+      }
+      if (from instanceof import_pageItem.PageItem && this.pageItems) {
+        const index = parseInt(from.id.split("?")[1]);
+        const item = this.pageItems[index];
+        if (item && item.config) {
+          const place = item.config.modeScr;
+          if (place !== void 0) {
+            switch (place) {
+              case "left":
+              case "bottom":
+              case "indicator":
+              case "alternate":
+              case "favorit": {
+                await this.update();
+                break;
+              }
+              case "mricon": {
+                await this.HandleScreensaverStatusIcons();
+                break;
+              }
+              case "time": {
+                await this.HandleTime();
+                break;
+              }
+              case "date": {
+                await this.HandleDate();
+                break;
+              }
+              case "notify": {
+                await this.HandleNotification();
+                break;
+              }
+            }
+          }
+        }
+      }
+    });
     this.screensaverIndicatorButtons = (_a = options.config.screensaverIndicatorButtons) != null ? _a : false;
     this.screensaverSwipe = (_b = options.config.screensaverSwipe) != null ? _b : false;
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
@@ -119,7 +196,8 @@ class Screensaver extends import_Page.Page {
         bottom: [],
         mricon: [],
         favorit: [],
-        alternate: []
+        alternate: [],
+        notify: []
       }
     };
     const overwrite = {
@@ -130,7 +208,8 @@ class Screensaver extends import_Page.Page {
       bottom: [],
       mricon: [],
       favorit: [],
-      alternate: []
+      alternate: [],
+      notify: []
     };
     if (!this.pageItems) {
       return message;
@@ -178,7 +257,8 @@ class Screensaver extends import_Page.Page {
       bottom: [],
       mricon: [],
       favorit: [],
-      alternate: []
+      alternate: [],
+      notify: []
     };
     for (const r of results) {
       if (!r) {
@@ -201,6 +281,10 @@ class Screensaver extends import_Page.Page {
       let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
       if (max == null) {
         max = Definition.ScreenSaverConst[layout][place].maxEntries.eu;
+      }
+      if (place === "notify") {
+        message.options[place] = message.options[place].filter((n) => n && n !== "~~~~~");
+        max = message.options[place].length;
       }
       let items = message.options[place] || [];
       if (items.length > max) {
@@ -234,8 +318,8 @@ class Screensaver extends import_Page.Page {
     if (!this.basePanel.isOnline) {
       return;
     }
-    const msg = enabled ? tools.getPayloadRemoveTilde("notify", this.headingNotification, this.textNotification) : tools.getPayload("notify", "", "");
-    this.sendToPanel(msg, false);
+    this.customNotification = enabled && (this.headingNotification !== "" || this.textNotification !== "");
+    void this.HandleNotification();
   }
   /** Current info icon (readonly property wrapper). */
   get infoIcon() {
@@ -275,6 +359,7 @@ class Screensaver extends import_Page.Page {
     this.sendToPanel(msg, false);
     this.sendColors();
     await this.HandleScreensaverStatusIcons();
+    await this.HandleNotification();
   }
   async createPageItems(pageItemsConfig) {
     return await super.createPageItems(pageItemsConfig);
@@ -301,67 +386,6 @@ class Screensaver extends import_Page.Page {
     }
     await this.rotationLoop();
   }
-  rotationLoop = async () => {
-    if (!this.visibility) {
-      return;
-    }
-    await this.update();
-    if (this.rotationTime === 0) {
-      this.step = 0;
-      return;
-    }
-    this.step = this.step > 1e4 ? 0 : this.step + 1;
-    if (this.unload || this.adapter.unload) {
-      return;
-    }
-    this.timeoutRotation = this.adapter.setTimeout(
-      this.rotationLoop,
-      this.rotationTime < 3e3 ? 3e3 : this.rotationTime
-    );
-  };
-  /**
-   * ..
-   *
-   * @param _dp - the dp that triggered the state
-   * @param from - the class that triggered the state
-   */
-  onStateTrigger = async (_dp, from) => {
-    const config = this.config;
-    if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
-      return;
-    }
-    if (from instanceof import_pageItem.PageItem && this.pageItems) {
-      const index = parseInt(from.id.split("?")[1]);
-      const item = this.pageItems[index];
-      if (item && item.config) {
-        const place = item.config.modeScr;
-        if (place !== void 0) {
-          switch (place) {
-            case "left":
-            case "bottom":
-            case "indicator":
-            case "alternate":
-            case "favorit": {
-              await this.update();
-              break;
-            }
-            case "mricon": {
-              await this.HandleScreensaverStatusIcons();
-              break;
-            }
-            case "time": {
-              await this.HandleTime();
-              break;
-            }
-            case "date": {
-              await this.HandleDate();
-              break;
-            }
-          }
-        }
-      }
-    }
-  };
   async HandleTime() {
     if (this.basePanel.isOnline === false) {
       return;
@@ -414,6 +438,33 @@ class Screensaver extends import_Page.Page {
     ];
     const msg = tools.getPayloadArrayRemoveTilde(msgArray);
     this.sendToPanel(msg, false);
+  }
+  async HandleNotification() {
+    if (this.basePanel.isOnline === false) {
+      return;
+    }
+    const message = await this.getData(["notify"]);
+    if (message === null) {
+      return;
+    }
+    const notifyList = message.options.notify.map((n) => n.split("~")).filter((n) => n[4] !== "" || n[5] !== "").map((n) => {
+      const s = n[5].split("<sp!it>");
+      const text = n[4];
+      const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
+      const heading = `${n[2]} ${s[0]}`.trim();
+      return { heading, text, prio };
+    }).sort((a, b) => a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1);
+    if (this.customNotification === true) {
+      __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, this.customNotification, this.headingNotification, this.textNotification);
+    } else if (notifyList.length > 0) {
+      const heading = notifyList[0].heading;
+      const text = notifyList[0].text;
+      if (heading !== "" || text !== "") {
+        __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text);
+      }
+    } else if (this.activeNotification) {
+      __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, false);
+    }
   }
   async onButtonEvent(event) {
     if (event.page && event.id && this.pageItems && this.pageItems[event.id]) {
@@ -470,7 +521,7 @@ class Screensaver extends import_Page.Page {
     }
   }
   overwriteModel(mode, init = false) {
-    if (mode === Screensaver.mapModeToNumber(this.mode)) {
+    if (mode === _Screensaver.mapModeToNumber(this.mode)) {
       return;
     }
     switch (mode) {
@@ -502,7 +553,7 @@ class Screensaver extends import_Page.Page {
         return;
       }
     }
-    this.mode = Screensaver.mapNumberToMode(mode);
+    this.mode = _Screensaver.mapNumberToMode(mode);
     if (!init && this.visibility) {
       this.sendType();
       void this.update();
@@ -518,7 +569,17 @@ class Screensaver extends import_Page.Page {
   static mapNumberToMode(mode) {
     return Types.arrayOfScreensaverModes[mode];
   }
-}
+};
+_Screensaver_instances = new WeakSet();
+sendNotify_fn = function(enabled, heading = "", text = "") {
+  if (!this.basePanel.isOnline) {
+    return;
+  }
+  this.activeNotification = enabled && (heading !== "" || text !== "");
+  const msg = this.activeNotification ? tools.getPayloadRemoveTilde("notify", heading, text) : tools.getPayload("notify", "", "");
+  this.sendToPanel(msg, false);
+};
+let Screensaver = _Screensaver;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Screensaver

@@ -1574,8 +1574,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493011678,
-    "val": "[56,76,96,116,136]",
-    "ack": true
+    "val": "[\n  50,\n  70,\n  90,\n  110,\n  131\n]",
+    "ack": false
   },
   "0_userdata.0.Charts.AussenTemp.Werte": {
     "common": {
@@ -1602,8 +1602,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493011732,
-    "val": "0^12:00+60+120+180+240^16:00+300+360+420+480^20:00+540+600+660+720^00:00+780+840+900+960^04:00+1020+1080+1140+1200^08:00+1260+1320+1380~60:133~120:129~180:113~240:121~300:127~360:131~420:137~480:128~540:119~600:105~660:103~720:95~780:71~840:62~900:60~960:60~1020:59~1080:57~1140:56~1200:60~1260:56~1320:61~1380:65~1440:69~1440:90",
-    "ack": true
+    "val": "0^12:00+1439^12:~60:133~120:129~180:113~240:121~300:127~360:131~420:137~480:128~540:119~600:105~660:103~720:95~780:71~840:62~900:60~960:60~1020:59~1080:57~1140:56~1200:60~1260:56~1320:61~1380:115~1440:20",
+    "ack": false
   },
   "0_userdata.0.Charts.Heizung": {
     "type": "folder",
@@ -1648,8 +1648,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493011747,
-    "val": "[0,91,182,273,364]",
-    "ack": true
+    "val": "[\n  0,\n  25,\n  50,\n  85\n]",
+    "ack": false
   },
   "0_userdata.0.Charts.Heizung.Werte": {
     "common": {
@@ -1670,7 +1670,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493011757,
-    "val": "364^19~114~192~331~261~167~169~244^26~186~172~169~181~178~178~92^2~133~158~128~106~97~106~86^9",
+    "val": "64^19~14~92~31~61~67~69~44^26~86~72~69~81~18~78~92^2~33~58~28~16~97~16~86^9",
     "ack": true
   },
   "0_userdata.0.Countdown": {
@@ -2087,8 +2087,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497235333,
-    "val": true,
-    "ack": true
+    "val": false,
+    "ack": false
   },
   "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.Departure": {
     "common": {
@@ -2118,8 +2118,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497235344,
-    "val": "14:48",
-    "ack": true
+    "val": "12:25",
+    "ack": false
   },
   "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.Direction": {
     "common": {
@@ -2149,8 +2149,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497235393,
-    "val": "Blankenfelde (S)",
-    "ack": true
+    "val": "Zepernik",
+    "ack": false
   },
   "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.Vehicle": {
     "common": {
@@ -2180,8 +2180,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497235402,
-    "val": "train",
-    "ack": true
+    "val": "bus",
+    "ack": false
   },
   "0_userdata.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1": {
     "type": "folder",
@@ -3972,7 +3972,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102347064,
-    "val": 1,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Gate.Set": {
@@ -3997,7 +3997,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753102380107,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "0_userdata.0.Gate.Stop": {
@@ -4327,7 +4327,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168743307,
@@ -4355,7 +4355,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168743332,
-    "val": 14,
+    "val": 24,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat1.SetPoint": {
@@ -4455,7 +4455,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168743413,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat1.Working": {
@@ -4523,7 +4523,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168766574,
-    "val": 24,
+    "val": 28,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat2.Automatic": {
@@ -4623,7 +4623,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168766667,
-    "val": 30,
+    "val": 60,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat2.Lowbat": {
@@ -4723,7 +4723,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168766750,
-    "val": 1,
+    "val": 0,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat2.Party": {
@@ -4798,7 +4798,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168766808,
-    "val": 14,
+    "val": 19.3,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat2.SetPoint": {
@@ -5241,7 +5241,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168776354,
-    "val": 14,
+    "val": 24.5,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat3.SetPoint": {
@@ -5531,7 +5531,7 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": false,
+    "val": true,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168789962,
@@ -5684,7 +5684,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168790112,
-    "val": 14,
+    "val": 25.5,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat4.SetPoint": {
@@ -5759,7 +5759,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168790183,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Heizkreise.Thermostat4.WindowOpen": {
@@ -5809,7 +5809,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756168790224,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "0_userdata.0.Hue": {
@@ -5995,7 +5995,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106148358,
-    "val": 90,
+    "val": 1,
     "ack": false
   },
   "0_userdata.0.Humidity_Value": {
@@ -6038,7 +6038,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753106163665,
-    "val": 0,
+    "val": 1,
     "ack": false
   },
   "0_userdata.0.Info": {
@@ -7570,6 +7570,296 @@
     "val": true,
     "ack": false
   },
+  "0_userdata.0.ScreensaverNotify": {
+    "common": {
+      "name": "ScreensaverNotify"
+    },
+    "type": "folder",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386432617,
+    "_id": "0_userdata.0.ScreensaverNotify",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "0_userdata.0.ScreensaverNotify.Headline": {
+    "common": {
+      "name": "Headline",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": ""
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386664450,
+    "_id": "0_userdata.0.ScreensaverNotify.Headline",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": "25",
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Headline_icon": {
+    "common": {
+      "name": "Headline_icon",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.ScreensaverNotify.Headline_icon",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758387150140,
+    "val": "water",
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Headline_prefix": {
+    "common": {
+      "name": "Headline_prefix",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": ""
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386685106,
+    "_id": "0_userdata.0.ScreensaverNotify.Headline_prefix",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": "die Badewanne ",
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Headline_unit": {
+    "common": {
+      "name": "Headline_unit",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": ""
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386702397,
+    "_id": "0_userdata.0.ScreensaverNotify.Headline_unit",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": " mm",
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Notify_1": {
+    "common": {
+      "name": "Notify_1",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386455855,
+    "_id": "0_userdata.0.ScreensaverNotify.Notify_1",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": false,
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Notify_2": {
+    "common": {
+      "name": "Notify_1",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.ScreensaverNotify.Notify_2",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386488114,
+    "val": true,
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Notify_3": {
+    "common": {
+      "name": "Notify_1",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.ScreensaverNotify.Notify_3",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386497360,
+    "val": false,
+    "ack": true
+  },
+  "0_userdata.0.ScreensaverNotify.Notify_4": {
+    "common": {
+      "name": "Notify_1",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.ScreensaverNotify.Notify_4",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386504768,
+    "val": false,
+    "ack": true
+  },
+  "0_userdata.0.ScreensaverNotify.Text": {
+    "common": {
+      "name": "Text",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": ""
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386713947,
+    "_id": "0_userdata.0.ScreensaverNotify.Text",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": "KLO",
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Text_prefix": {
+    "common": {
+      "name": "Text_prefix",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": ""
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386725907,
+    "_id": "0_userdata.0.ScreensaverNotify.Text_prefix",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "val": "Wasserstand im ",
+    "ack": false
+  },
+  "0_userdata.0.ScreensaverNotify.Text_suffix": {
+    "common": {
+      "name": "Text_sufix",
+      "desc": "Manuell erzeugt",
+      "role": "state",
+      "type": "string",
+      "read": true,
+      "write": true,
+      "def": ""
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.ScreensaverNotify.Text_suffix",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1758386980586,
+    "val": " über steigt max!!!!",
+    "ack": false
+  },
   "0_userdata.0.Select": {
     "common": {
       "name": "Select",
@@ -7997,7 +8287,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103648355,
-    "val": 0,
+    "val": 12,
     "ack": false
   },
   "0_userdata.0.Temperature_Value.Usericon": {
@@ -8340,7 +8630,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753103432466,
-    "val": 14,
+    "val": 28.5,
     "ack": false
   },
   "0_userdata.0.Thermostat.SetPoint": {

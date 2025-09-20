@@ -467,19 +467,37 @@ class Panel extends import_library.BaseClass {
       this.timeout,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.timeout
     );
+    let val = void 0;
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.headingNotification`);
+    if (state && typeof state.val === "string" && this.screenSaver) {
+      this.screenSaver.headingNotification = state.val;
+      val = state.val;
+    }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.headingNotification`,
-      void 0,
+      val,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.headingNotification
     );
+    val = void 0;
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.textNotification`);
+    if (state && typeof state.val === "string" && this.screenSaver) {
+      this.screenSaver.textNotification = state.val;
+      val = state.val;
+    }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.textNotification`,
-      void 0,
+      val,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.textNotification
     );
+    val = void 0;
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.activateNotification`);
+    if (state && state.val != null && this.screenSaver) {
+      this.screenSaver.customNotification = !!state.val;
+      val = !!state.val;
+    }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.activateNotification`,
-      false,
+      !!val,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
     );
     state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);

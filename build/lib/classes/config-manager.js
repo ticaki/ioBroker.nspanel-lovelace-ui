@@ -3313,6 +3313,18 @@ class ConfigManager extends import_library.BaseClass {
       const res = await Promise.all(tasks);
       return res.filter((r) => !!r);
     };
+    const loadNotifySection = async (items, mode, errorLabel) => {
+      if (!items || items.length === 0) {
+        return [];
+      }
+      const tasks = items.map(
+        (item) => this.getNotifyEntityData(item, mode).catch((err) => {
+          throw new Error(`${errorLabel} - ${String(err)}`);
+        })
+      );
+      const res = await Promise.all(tasks);
+      return res.filter((r) => !!r);
+    };
     const loadElementSectionUndef = async (items, mode, errorLabel) => {
       if (!items || items.length === 0) {
         return [];
@@ -3346,7 +3358,8 @@ class ConfigManager extends import_library.BaseClass {
       loadElementSection(config.bottomScreensaverEntity, "bottom", "bottomScreensaverEntity"),
       loadElementSectionUndef(config.indicatorScreensaverEntity, "indicator", "indicatorScreensaverEntity"),
       loadMrIcon(config.mrIcon1ScreensaverEntity, "mrIcon1ScreensaverEntity"),
-      loadMrIcon(config.mrIcon2ScreensaverEntity, "mrIcon2ScreensaverEntity")
+      loadMrIcon(config.mrIcon2ScreensaverEntity, "mrIcon2ScreensaverEntity"),
+      loadNotifySection(config.notifyScreensaverEntity, "notify", "notifyScreensaverEntity")
     ]);
     for (const arr of blocks) {
       pageItems.push(...arr);
@@ -3955,6 +3968,67 @@ class ConfigManager extends import_library.BaseClass {
     }
     throw new Error("Invalid data");
   }
+  async getNotifyEntityData(entity, mode) {
+    var _a;
+    const result = {
+      modeScr: mode,
+      type: "text",
+      data: { entity1: {} }
+    };
+    if (entity.type === "native") {
+      const temp = structuredClone(entity.native);
+      return temp;
+    } else if (entity.type === "template") {
+      const temp = structuredClone(entity);
+      delete temp.type;
+      return temp;
+    }
+    if (!result.data.entity1) {
+      throw new Error("Invalid data");
+    }
+    result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.Headline || " ", true);
+    if (entity.HeadlinePrefix) {
+      result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix);
+    }
+    if (entity.HeadlineUnit) {
+      result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit);
+    }
+    result.data.entity1.suffix = {
+      type: "const",
+      constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}`
+    };
+    result.data.entity2 = structuredClone(result.data.entity1);
+    if (entity.Text) {
+      result.data.text = {
+        true: {
+          value: await this.getFieldAsDataItemConfig(entity.Text, true),
+          prefix: entity.TextPrefix ? await this.getFieldAsDataItemConfig(entity.TextPrefix) : void 0,
+          suffix: entity.TextSuffix ? await this.getFieldAsDataItemConfig(entity.TextSuffix) : void 0
+        }
+      };
+    }
+    if (entity.HeadlineIcon) {
+      result.data.icon = {
+        true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon) }
+      };
+    }
+    if ("VisibleCondition" in entity && entity.VisibleCondition && result.data.entity1.value) {
+      result.data.enabled = {
+        ...result.data.entity1.value,
+        read: `
+                val = ${typeof ((_a = result.data.entity1.value) == null ? void 0 : _a.read) === "string" ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
+                return ${entity.VisibleCondition};
+                `
+      };
+    } else if ("Enabled" in entity && entity.Enabled != null) {
+      result.data.enabled = await this.getFieldAsDataItemConfig(entity.Enabled ? entity.Enabled : "true", true);
+    } else {
+      throw new Error(
+        `No Enabled or VisibleCondition in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`
+      );
+    }
+    return result;
+  }
   async getEntityData(entity, mode, defaultColors) {
     var _a;
     const result = {
@@ -4019,13 +4093,6 @@ class ConfigManager extends import_library.BaseClass {
         constVal: { local: "de", format: entity.ScreensaverEntityDateFormat }
       };
     }
-    if ("ScreensaverEntityEnabled" in entity) {
-      if (entity.ScreensaverEntityEnabled === false) {
-        result.data.enabled = { type: "const", constVal: false };
-      } else if (typeof entity.ScreensaverEntityEnabled === "string" && await this.existsState(entity.ScreensaverEntityEnabled)) {
-        result.data.enabled = { type: "triggered", dp: entity.ScreensaverEntityEnabled };
-      }
-    }
     let color = void 0;
     if (entity.ScreensaverEntityOnColor) {
       color = await this.getIconColor(entity.ScreensaverEntityOnColor || import_Color.Color.on);
@@ -4045,16 +4112,19 @@ class ConfigManager extends import_library.BaseClass {
         true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) }
       };
     }
-    if ("ScreensaverEntityVisibleCondition" in entity) {
-      if (entity.ScreensaverEntityVisibleCondition && result.data.entity1.value) {
-        result.data.enabled = {
-          ...result.data.entity1.value,
-          read: `
+    if ("ScreensaverEntityVisibleCondition" in entity && entity.ScreensaverEntityVisibleCondition && result.data.entity1.value) {
+      result.data.enabled = {
+        ...result.data.entity1.value,
+        read: `
                 val = ${typeof ((_a = result.data.entity1.value) == null ? void 0 : _a.read) === "string" ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
                 return ${entity.ScreensaverEntityVisibleCondition};
                 `
-        };
-      }
+      };
+    } else if ("ScreensaverEntityEnabled" in entity) {
+      result.data.enabled = await this.getFieldAsDataItemConfig(
+        entity.ScreensaverEntityEnabled ? entity.ScreensaverEntityEnabled : true,
+        true
+      );
     }
     if (dataType === "number" && entity.ScreensaverEntityIconSelect && Array.isArray(entity.ScreensaverEntityIconSelect)) {
       const obj2 = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);

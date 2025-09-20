@@ -1833,6 +1833,9 @@ export const ScreenSaverConst: Record<
         date: {
             maxEntries: { eu: 1 },
         },
+        notify: {
+            maxEntries: { eu: 99 },
+        },
     },
     alternate: {
         left: {
@@ -1858,6 +1861,9 @@ export const ScreenSaverConst: Record<
         },
         date: {
             maxEntries: { eu: 1 },
+        },
+        notify: {
+            maxEntries: { eu: 99 },
         },
     },
     advanced: {
@@ -1885,6 +1891,9 @@ export const ScreenSaverConst: Record<
         date: {
             maxEntries: { eu: 1 },
         },
+        notify: {
+            maxEntries: { eu: 99 },
+        },
     },
     easyview: {
         left: {
@@ -1910,6 +1919,9 @@ export const ScreenSaverConst: Record<
         },
         date: {
             maxEntries: { eu: 1 },
+        },
+        notify: {
+            maxEntries: { eu: 99 },
         },
     },
 };

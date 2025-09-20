@@ -1573,7 +1573,7 @@
         "en": "Sensor Values"
       },
       "alias": {
-        "id": "0_userdata.0.Charts.AussenTemp.ACTUAL"
+        "id": "0_userdata.0.Charts.AussenTemp.Werte"
       },
       "desc": "Sensor Werte [~<time>:<value>]*"
     },
@@ -1588,9 +1588,9 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1752493091248,
-    "val": "0^02:00+60+120+180+240^06:00+300+360+420+480^10:00+540+600+660+720^14:00+780+840+900+960^18:00+1020+1080+1140+1200^22:00+1260+1320+1380~44:167~104:167~164:166~224:166~284:167~344:170~404:174~464:179~524:180~584:189~644:185~704:183~764:193~824:206~884:206~944:194~1004:190~1064:192~1124:190~1184:185~1244:184~1304:182~1364:179~1424:177~1440:176",
-    "ack": true
+    "ts": 1758281399987,
+    "val": "0^12:00+1439^12:~60:133~120:129~180:113~240:121~300:127~360:131~420:137~480:128~540:119~600:105~660:103~720:95~780:71~840:62~900:60~960:60~1020:59~1080:57~1140:56~1200:60~1260:56~1320:61~1380:115~1440:20",
+    "ack": false
   },
   "alias.0.Charts.AussenTemp.SCALE": {
     "common": {
@@ -1617,8 +1617,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493195128,
-    "val": "[56,76,96,116,136]",
-    "ack": true
+    "val": "[\n  50,\n  70,\n  90,\n  110,\n  131\n]",
+    "ack": false
   },
   "alias.0.Charts.Balken": {
     "common": {
@@ -1666,7 +1666,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493091305,
-    "val": "364^19~114~192~331~261~167~169~244^26~186~172~169~181~178~178~92^2~133~158~128~106~97~106~86^9",
+    "val": "64^19~14~92~31~61~67~69~44^26~86~72~69~81~18~78~92^2~33~58~28~16~97~16~86^9",
     "ack": true
   },
   "alias.0.Charts.Balken.SCALE": {
@@ -1695,8 +1695,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752493091357,
-    "val": "[0,91,182,273,364]",
-    "ack": true
+    "val": "[\n  0,\n  25,\n  50,\n  85\n]",
+    "ack": false
   },
   "alias.0.Countdown": {
     "type": "channel",
@@ -2101,8 +2101,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497259590,
-    "val": "14:48",
-    "ack": true
+    "val": "12:25",
+    "ack": false
   },
   "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.DELAY": {
     "common": {
@@ -2125,11 +2125,11 @@
       "owner": "system.user.admin",
       "ownerGroup": "system.group.administrator"
     },
-    "val": true,
+    "val": false,
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497259603,
-    "ack": true
+    "ack": false
   },
   "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.DIRECTION": {
     "common": {
@@ -2155,8 +2155,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497259654,
-    "val": "Blankenfelde (S)",
-    "ack": true
+    "val": "Zepernik",
+    "ack": false
   },
   "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0.VEHICLE": {
     "common": {
@@ -2182,8 +2182,8 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1752497259707,
-    "val": "train",
-    "ack": true
+    "val": "bus",
+    "ack": false
   },
   "alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt1": {
     "type": "channel",
@@ -3966,7 +3966,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113484102,
-    "val": 1,
+    "val": 0,
     "ack": false
   },
   "alias.0.Gate.SET": {
@@ -3992,7 +3992,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753113484062,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "alias.0.Gate.STOP": {
@@ -4280,7 +4280,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169073629,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat1.SET": {
@@ -4307,7 +4307,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169079825,
-    "val": 14,
+    "val": 24,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat1.UNREACH": {
@@ -4383,7 +4383,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169101575,
-    "val": true,
+    "val": false,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat1.WORKING": {
@@ -4453,7 +4453,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169144882,
-    "val": 24,
+    "val": 28,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat2.BOOST": {
@@ -4528,7 +4528,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169168960,
-    "val": 30,
+    "val": 60,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat2.LOWBAT": {
@@ -4605,7 +4605,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169190726,
-    "val": 1,
+    "val": 0,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat2.PARTY": {
@@ -4682,7 +4682,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169211557,
-    "val": 14,
+    "val": 19.3,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat2.UNREACH": {
@@ -5057,7 +5057,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169341338,
-    "val": 14,
+    "val": 24.5,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat3.UNREACH": {
@@ -5302,7 +5302,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169435457,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat4.MAINTAIN": {
@@ -5432,7 +5432,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169468593,
-    "val": 14,
+    "val": 25.5,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat4.UNREACH": {
@@ -5482,7 +5482,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169481520,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Heizkreise.Thermostat4.WINDOWOPEN": {
@@ -5532,7 +5532,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1756169494527,
-    "val": false,
+    "val": true,
     "ack": false
   },
   "alias.0.Hue": {
@@ -5730,7 +5730,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753268226664,
-    "val": 90,
+    "val": 1,
     "ack": false
   },
   "alias.0.Humidity_Value": {
@@ -5779,7 +5779,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753268308958,
-    "val": 0,
+    "val": 1,
     "ack": false
   },
   "alias.0.Info": {
@@ -7371,8 +7371,7 @@
       "write": false,
       "alias": {
         "id": "0_userdata.0.Temperature_Value.Actual"
-      },
-      "unit": "°C"
+      }
     },
     "native": {},
     "type": "state",
@@ -7384,8 +7383,8 @@
     },
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
-    "ts": 1753114563554,
-    "val": 0,
+    "ts": 1756366280298,
+    "val": 12,
     "ack": false
   },
   "alias.0.Thermostat": {
@@ -7660,7 +7659,7 @@
     "from": "system.adapter.admin.0",
     "user": "system.user.admin",
     "ts": 1753114971601,
-    "val": 14,
+    "val": 28.5,
     "ack": false
   },
   "alias.0.Thermostat.UNREACH": {
