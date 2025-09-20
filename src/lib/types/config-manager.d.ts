@@ -828,6 +828,7 @@ declare namespace ScriptConfig {
               Priority: number;
               Headline: string;
               HeadlinePrefix?: string;
+              HeaddlineUnit?: string;
               Text: string;
               TextSuffix?: string;
               TextPrefix?: string;

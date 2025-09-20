@@ -1620,6 +1620,7 @@ declare namespace ScriptConfig {
               Priority: number;
               Headline: string;
               HeadlinePrefix?: string;
+              HeadlineUnit?: string;
               Text: string;
               TextSuffix?: string;
               TextPrefix?: string;

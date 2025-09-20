@@ -3990,6 +3990,9 @@ class ConfigManager extends import_library.BaseClass {
     if (entity.HeadlinePrefix) {
       result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix);
     }
+    if (entity.HeaddlineUnit) {
+      result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeaddlineUnit);
+    }
     result.data.entity1.suffix = {
       type: "const",
       constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}`
