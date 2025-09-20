@@ -1611,87 +1611,74 @@ export const systemPages: PageBaseConfig[] = [
 ];
 export const systemNavigation: NavigationItemConfig[] = [
     {
-        name: '///service', //main ist die erste Seite
+        name: '///service',
         page: '///unlock',
-        left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'alarm1', double: '2' },
+        left: { single: 'main' },
     },
     {
-        name: '///Overview', //main ist die erste Seite
+        name: '///Overview',
         page: '///Overview',
-        right: { double: 'main' }, // Die 4 bezieht sich auf den name: 4
+        right: { double: 'main' },
         optional: 'notifications',
-        //right: { single: 'abfall1', double: 'main' },
     },
     {
-        name: '///Adapter-Info', //main ist die erste Seite
+        name: '///Adapter-Info',
         page: '///Adapter-Info',
-        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Overview' },
     },
     {
-        name: '///AdapterStoppedDetail', //main ist die erste Seite
+        name: '///AdapterStoppedDetail',
         page: '///AdapterStoppedDetail',
-        left: { double: '///Adapter-Info' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Adapter-Info' },
     },
     {
-        name: '///AdapterNotConnectedDetail', //main ist die erste Seite
+        name: '///AdapterNotConnectedDetail',
         page: '///AdapterNotConnectedDetail',
-        left: { double: '///Adapter-Info' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Adapter-Info' },
     },
     {
-        name: '///AdapterUpdate', //main ist die erste Seite
+        name: '///AdapterUpdate',
         page: '///AdapterUpdate',
-        left: { double: '///Adapter-Info' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Adapter-Info' },
     },
     {
-        name: '///ScreensaverOptions', //main ist die erste Seite
+        name: '///ScreensaverOptions',
         page: '///ScreensaverOptions',
-        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Overview' },
     },
     {
-        name: '///ScreensaverBrightness', //main ist die erste Seite
+        name: '///ScreensaverBrightness',
         page: '///ScreensaverBrightness',
-        left: { double: '///ScreensaverOptions' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///ScreensaverOptions' },
     },
     {
-        name: '///ScreensaverLayout', //main ist die erste Seite
+        name: '///ScreensaverLayout',
         page: '///ScreensaverLayout',
-        left: { double: '///ScreensaverOptions' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///ScreensaverOptions' },
     },
     {
-        name: '///RelaisOption', //main ist die erste Seite
+        name: '///RelaisOption',
         page: '///RelaisOption',
-        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Overview' },
     },
     {
-        name: '///DeviceOption', //main ist die erste Seite
+        name: '///DeviceOption',
         page: '///DeviceOption',
-        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Overview' },
     },
     {
-        name: '///NetworkOption', //main ist die erste Seite
+        name: '///NetworkOption',
         page: '///NetworkOption',
-        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Overview' },
     },
     {
-        name: '///SystemOption', //main ist die erste Seite
+        name: '///SystemOption',
         page: '///SystemOption',
-        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
+        left: { double: '///Overview' },
     },
     {
-        name: '///PopupInfo', //main ist die erste Seite
+        name: '///PopupInfo',
         page: '///PopupInfo',
-        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
-        //right: { single: 'abfall1', double: 'main' },
+        left: { double: '///Overview' },
     },
 ];

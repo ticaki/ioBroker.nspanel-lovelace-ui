@@ -1578,115 +1578,74 @@ const systemPages = [
 const systemNavigation = [
   {
     name: "///service",
-    //main ist die erste Seite
     page: "///unlock",
     left: { single: "main" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'alarm1', double: '2' },
   },
   {
     name: "///Overview",
-    //main ist die erste Seite
     page: "///Overview",
     right: { double: "main" },
-    // Die 4 bezieht sich auf den name: 4
     optional: "notifications"
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///Adapter-Info",
-    //main ist die erste Seite
     page: "///Adapter-Info",
     left: { double: "///Overview" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///AdapterStoppedDetail",
-    //main ist die erste Seite
     page: "///AdapterStoppedDetail",
     left: { double: "///Adapter-Info" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///AdapterNotConnectedDetail",
-    //main ist die erste Seite
     page: "///AdapterNotConnectedDetail",
     left: { double: "///Adapter-Info" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///AdapterUpdate",
-    //main ist die erste Seite
     page: "///AdapterUpdate",
     left: { double: "///Adapter-Info" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///ScreensaverOptions",
-    //main ist die erste Seite
     page: "///ScreensaverOptions",
     left: { double: "///Overview" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///ScreensaverBrightness",
-    //main ist die erste Seite
     page: "///ScreensaverBrightness",
     left: { double: "///ScreensaverOptions" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///ScreensaverLayout",
-    //main ist die erste Seite
     page: "///ScreensaverLayout",
     left: { double: "///ScreensaverOptions" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///RelaisOption",
-    //main ist die erste Seite
     page: "///RelaisOption",
     left: { double: "///Overview" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///DeviceOption",
-    //main ist die erste Seite
     page: "///DeviceOption",
     left: { double: "///Overview" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///NetworkOption",
-    //main ist die erste Seite
     page: "///NetworkOption",
     left: { double: "///Overview" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   },
   {
     name: "///SystemOption",
-    //main ist die erste Seite
     page: "///SystemOption",
     left: { double: "///Overview" }
-    // Die 4 bezieht sich auf den name: 4
   },
   {
     name: "///PopupInfo",
-    //main ist die erste Seite
     page: "///PopupInfo",
     left: { double: "///Overview" }
-    // Die 4 bezieht sich auf den name: 4
-    //right: { single: 'abfall1', double: 'main' },
   }
 ];
 // Annotate the CommonJS export names for ESM import in node:
