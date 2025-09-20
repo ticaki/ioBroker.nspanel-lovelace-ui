@@ -2507,6 +2507,7 @@ const textTemplates = {
             type: "state",
             role: "weather.icon.name",
             mode: "auto",
+            regexp: /.\.icon$/,
             dp: "",
             read: `switch (val) {
                                 case 'cloudy':
