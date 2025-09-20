@@ -747,7 +747,7 @@ async function configuration(): Promise<void> {
                 Enabled: '0_userdata.0.ScreensaverNotify.Notify_2',
                 Headline: '0_userdata.0.ScreensaverNotify.Headline',
                 HeadlinePrefix: '0_userdata.0.ScreensaverNotify.Headline_prefix',
-                HeadlineIcon: 'water', //'0_userdata.0.ScreensaverNotify.Headline_icon',
+                HeadlineIcon: '0_userdata.0.ScreensaverNotify.Headline_icon',
                 HeadlineUnit: '0_userdata.0.ScreensaverNotify.Headline_unit',
                 Text: '0_userdata.0.ScreensaverNotify.Text',
                 TextPrefix: '0_userdata.0.ScreensaverNotify.Text_prefix',
