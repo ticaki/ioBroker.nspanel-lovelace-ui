@@ -512,7 +512,7 @@ export class Panel extends BaseClass {
         }
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver.textNotification`,
-            undefined,
+            val,
             definition.genericStateObjects.panel.panels.cmd.screenSaver.textNotification,
         );
         val = undefined;
@@ -524,7 +524,7 @@ export class Panel extends BaseClass {
 
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver.activateNotification`,
-            false,
+            !!val,
             definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification,
         );
 

@@ -486,7 +486,7 @@ class Panel extends import_library.BaseClass {
     }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.textNotification`,
-      void 0,
+      val,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.textNotification
     );
     val = void 0;
@@ -497,7 +497,7 @@ class Panel extends import_library.BaseClass {
     }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.activateNotification`,
-      false,
+      !!val,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
     );
     state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
