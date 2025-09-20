@@ -4701,8 +4701,8 @@ export class ConfigManager extends BaseClass {
         if (entity.HeadlinePrefix) {
             result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix);
         }
-        if (entity.HeaddlineUnit) {
-            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeaddlineUnit);
+        if (entity.HeadlineUnit) {
+            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit);
         }
         result.data.entity1.suffix = {
             type: 'const',
