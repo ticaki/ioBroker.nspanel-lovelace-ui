@@ -1,11 +1,16 @@
 name: Check Script Version
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
     paths:
       - 'script/example_sendTo_script_iobroker.ts'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   check-version:
@@ -64,7 +69,7 @@ jobs:
           
           echo "Comparing versions: Base=$BASE, Current=$CURRENT"
           
-          if [ "$(printf '%s\n%s\n' "$BASE" "$CURRENT" | sort -V | tail -n1)" != "$CURRENT" ]; then
+          if [ "$(printf '%s\n%s\n' "$BASE" "$CURRENT" | sort -V | tail -n1)" != "$CURRENT"$'\n' ]; then
             echo "❌ Version not incremented!"
             echo "The script file has been modified but the version remains the same ($BASE)."
             echo "Please increment the version in the const version = 'x.x.x'; line."
