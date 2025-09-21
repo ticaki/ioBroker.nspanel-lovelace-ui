@@ -200,7 +200,7 @@ export class PageChart extends Page {
         try {
             if (val) {
                 // Neu: bei Sichtbarkeit immer neu prüfen
-                this.checkState = true;
+                this.checkState = false; // Standardmäßig auf false setzen
                 if (!this.adminConfig) {
                     this.log.warn('AdminConfig is not set, cannot check states');
                     this.checkState = false;
@@ -216,16 +216,14 @@ export class PageChart extends Page {
                                 this.log.debug(
                                     `State ${cfg.setStateForValues} for Values exists and has value: ${state.val}`,
                                 );
+                                this.checkState = true; // Nur hier auf true setzen, wenn alles passt
                             } else if (state) {
                                 this.log.warn(`State ${cfg.setStateForValues} for Values exists but has no value`);
-                                this.checkState = false;
                             } else {
                                 this.log.error(`State ${cfg.setStateForValues} for Values does not exist`);
-                                this.checkState = false;
                             }
                         } else {
                             this.log.error('No setStateForValues configured');
-                            this.checkState = false;
                         }
 
                         if (cfg.setStateForTicks != null && cfg.setStateForTicks !== '') {
@@ -234,6 +232,7 @@ export class PageChart extends Page {
                                 this.log.debug(
                                     `State ${cfg.setStateForTicks} for Ticks exists and has value: ${state.val}`,
                                 );
+                                this.checkState = true;
                             } else if (state) {
                                 this.log.warn(`State ${cfg.setStateForTicks} for Ticks exists but has no value`);
                                 this.checkState = false;
@@ -253,6 +252,7 @@ export class PageChart extends Page {
                             );
                             if (alive && alive.val) {
                                 this.log.debug(`Instance ${cfg.selInstance} is alive`);
+                                this.checkState = true;
                             } else {
                                 this.log.warn(`Instance ${cfg.selInstance} is not alive`);
                                 this.checkState = false;
@@ -266,6 +266,7 @@ export class PageChart extends Page {
                             const state = await this.adapter.getForeignStateAsync(cfg.setStateForDB);
                             if (state) {
                                 this.log.debug(`State ${cfg.setStateForDB} for DB exists`);
+                                this.checkState = true;
                             } else {
                                 this.log.warn(`State ${cfg.setStateForDB} for DB does not exist`);
                                 this.checkState = false;
