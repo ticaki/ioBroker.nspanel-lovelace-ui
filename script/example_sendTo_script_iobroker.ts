@@ -1604,13 +1604,13 @@ declare namespace ScriptConfig {
         })
 
         | {type: 'native'; native: any}
-        | {
+        | ({
             type: 'template';
             template: string;
             dpInit: string;
             readOptions?: Record<string, any>;
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-        }
+        } & ({ enabled: string; visibleCondition?: string } | { enabled?: string }))
     );
 
     export type ScreenSaverNotifyElement = { type: ScreenSaverType } & (
@@ -1650,14 +1650,14 @@ declare namespace ScriptConfig {
                 }
           ))
         | { type: 'native'; native: any }
-        | ({
+        | {
               type: 'template';
               template: string;
               dpInit: string;
               enabled?: string;
               visibleCondition?: string;
               modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-          } & ({ enabled: string; visibleCondition?: string } | { enabled?: string }))
+          }
     );
 
     export type WeatherAddDefaultItemsJson = {
