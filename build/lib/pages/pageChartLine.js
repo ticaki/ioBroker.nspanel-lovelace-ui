@@ -61,16 +61,16 @@ class PageChartLine extends import_pageChart.PageChart {
           break;
         }
         case 1: {
-          const numberOfHoursAgo = this.adminConfig.rangeHours;
+          const hoursRangeFromNow = this.adminConfig.rangeHours || 24;
           const stateValue = this.adminConfig.setStateForDB;
           const instance = this.adminConfig.selInstance;
-          const xAxisTicksEveryM = this.adminConfig.maxXAxisTicks * 60;
-          const xAxisLabelEveryM = this.adminConfig.maxXAxisLabels * 60;
+          const xAxisTicksInterval = this.adminConfig.maxXAxisTicks > 0 ? this.adminConfig.maxXAxisTicks * 60 : 60;
+          const xAxisLabelInterval = this.adminConfig.maxXAxisLabels > 0 ? this.adminConfig.maxXAxisLabels * 60 : 120;
           const maxX = 1440;
           const tempScale = [];
           try {
-            const dbDaten = await this.getDataFromDB(stateValue, numberOfHoursAgo, instance);
-            if (dbDaten && Array.isArray(dbDaten)) {
+            const dbDaten = await this.getDataFromDB(stateValue, hoursRangeFromNow, instance);
+            if (dbDaten && Array.isArray(dbDaten) && dbDaten.length > 0) {
               this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
               let ticksAndLabels = "";
               let coordinates = "";
@@ -78,9 +78,9 @@ class PageChartLine extends import_pageChart.PageChart {
               const date = /* @__PURE__ */ new Date();
               date.setMinutes(0, 0, 0);
               const ts = Math.round(date.getTime() / 1e3);
-              const tsYesterday = ts - numberOfHoursAgo * 3600;
-              for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM) {
-                if (i % xAxisLabelEveryM) {
+              const tsYesterday = ts - hoursRangeFromNow * 3600;
+              for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksInterval * 60, i += xAxisTicksInterval) {
+                if (i % xAxisLabelInterval) {
                   ticksAndLabelsList.push(i);
                 } else {
                   const currentDate = new Date(x * 1e3);
@@ -115,6 +115,10 @@ class PageChartLine extends import_pageChart.PageChart {
                 ticksChart.push(String(currentTick));
                 currentTick += intervall;
               }
+            } else {
+              this.log.warn(
+                `No data found for state ${stateValue} in the last ${hoursRangeFromNow} hours`
+              );
             }
           } catch (error) {
             this.log.error(`Error fetching data from DB: ${error}`);
