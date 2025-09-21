@@ -232,7 +232,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       const message = {};
       message.intNameEntity = this.id;
       if ((_a = entry.data) == null ? void 0 : _a.enabled) {
-        const en = await entry.data.enabled.getBoolean();
+        const en = await tools.getEnabled(entry.data.enabled);
         if (en === false) {
           return "";
         }
@@ -956,7 +956,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     if (this.config && this.dataItems) {
       const entry = this.dataItems;
       if ((_a = entry.data) == null ? void 0 : _a.enabled) {
-        return (_b = await entry.data.enabled.getBoolean()) != null ? _b : true;
+        return (_b = await tools.getEnabled(entry.data.enabled)) != null ? _b : true;
       }
     }
     return true;

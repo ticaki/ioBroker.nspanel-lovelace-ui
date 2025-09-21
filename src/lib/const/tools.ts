@@ -690,6 +690,40 @@ export async function getEntryTextOnOff(
     return (await i.getString()) ?? null;
 }
 
+export async function getEnabled(items: Dataitem | undefined | (Dataitem | undefined)[]): Promise<boolean | null> {
+    if (!items) {
+        return null;
+    }
+    if (Array.isArray(items)) {
+        const tasts: Promise<boolean | null>[] = [];
+        for (const item of items) {
+            if (item) {
+                tasts.push(item.getBoolean());
+            }
+        }
+        const results = await Promise.all(tasts);
+        return results.every(r => r);
+    }
+    return await items.getBoolean();
+}
+
+export async function getEnabledNumber(items: Dataitem | undefined | (Dataitem | undefined)[]): Promise<number | null> {
+    if (!items) {
+        return null;
+    }
+    if (Array.isArray(items)) {
+        const tasts: Promise<number | null>[] = [];
+        for (const item of items) {
+            if (item) {
+                tasts.push(item.getNumber());
+            }
+        }
+        const n = await Promise.all(tasts);
+        return n.reduce((a, b) => (a || 0) + (b || 0), 0);
+    }
+    return await items.getNumber();
+}
+
 export async function getValueEntryBoolean(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
 ): Promise<boolean | null> {

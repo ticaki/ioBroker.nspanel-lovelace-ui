@@ -159,7 +159,7 @@ export class Screensaver extends Page {
                 }
 
                 // Overwrite via numeric enabled index
-                const enabledNum = await pageItem.dataItems?.data?.enabled?.getNumber();
+                const enabledNum = await tools.getEnabledNumber(pageItem.dataItems?.data?.enabled);
                 if (enabledNum != null) {
                     if (enabledNum >= 0) {
                         const payload = await pageItem.getPageItemPayload();
@@ -169,7 +169,7 @@ export class Screensaver extends Page {
                 }
 
                 // Skip via boolean enabled=false
-                const enabledBool = await pageItem.dataItems?.data?.enabled?.getBoolean();
+                const enabledBool = await tools.getEnabled(pageItem.dataItems?.data?.enabled);
                 if (enabledBool === false) {
                     return null;
                 }
