@@ -4843,24 +4843,27 @@ export class ConfigManager extends BaseClass {
                 true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) },
             };
         }
-        if (
-            'ScreensaverEntityVisibleCondition' in entity &&
-            entity.ScreensaverEntityVisibleCondition &&
-            result.data.entity1.value
-        ) {
-            result.data.enabled = {
-                ...result.data.entity1.value,
-                read: `
-                val = ${typeof result.data.entity1.value?.read === 'string' ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
-                return ${entity.ScreensaverEntityVisibleCondition};
-                `,
-            };
-        } else if ('ScreensaverEntityEnabled' in entity) {
+        if ('ScreensaverEntityEnabled' in entity) {
             result.data.enabled = await this.getFieldAsDataItemConfig(
                 entity.ScreensaverEntityEnabled ? entity.ScreensaverEntityEnabled : true,
                 true,
             );
+            if (
+                'ScreensaverEntityVisibleCondition' in entity &&
+                entity.ScreensaverEntityVisibleCondition &&
+                typeof entity.ScreensaverEntityVisibleCondition === 'string' &&
+                result.data.enabled
+            ) {
+                result.data.enabled = {
+                    ...result.data.enabled,
+                    read: `
+                val = ${typeof result.data.enabled.read === 'string' ? `(val) => {${result.data.enabled.read}}(val);` : null} ?? val
+                return ${entity.ScreensaverEntityVisibleCondition};
+                `,
+                };
+            }
         }
+
         if (
             dataType === 'number' &&
             entity.ScreensaverEntityIconSelect &&
