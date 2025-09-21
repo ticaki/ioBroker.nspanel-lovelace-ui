@@ -76,20 +76,23 @@ jobs:
           fi
       
       - name: Comment on PR if version not incremented
-        if: failure() && steps.check_changes.outputs.script_changed == 'true'
+        if: ${{ failure() && steps.check_changes.outputs.script_changed == 'true' }}
         uses: actions/github-script@v7
+        env:
+          CURRENT: ${{ steps.current_version.outputs.version }}
+          BASE: ${{ steps.base_version.outputs.base_version }}
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            await github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `## ⚠️ Script Version Not Incremented
 
 The file \`script/example_sendTo_script_iobroker.ts\` has been modified, but the version number has not been incremented.
 
-**Current version:** \`${{ steps.current_version.outputs.version }}\`
-**Base version:** \`${{ steps.base_version.outputs.base_version }}\`
+**Current version:** \`${process.env.CURRENT}\`
+**Base version:** \`${process.env.BASE}\`
 
 Please update the version number in this line:
 \`\`\`typescript
@@ -97,4 +100,4 @@ const version = 'x.x.x';
 \`\`\`
 
 The version should be incremented to reflect the changes made to the script file.`
-            })
+      })
