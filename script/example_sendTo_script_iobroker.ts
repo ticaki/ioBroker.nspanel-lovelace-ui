@@ -1,7 +1,7 @@
 async function configuration (): Promise<void> {
 
     const overrideConfig: Partial<ScriptConfig.Config> = {
-        // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
+        // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht. :)
         // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
         // panelTopic: 'nspanel/ns_panel4',
         weatherEntity: 'pirate-weather.0.',
