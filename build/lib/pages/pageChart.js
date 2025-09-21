@@ -207,8 +207,13 @@ class PageChart extends import_Page.Page {
           if (ds === 0) {
             if (cfg.setStateForValues != null && cfg.setStateForValues !== "") {
               const state = await this.adapter.getForeignStateAsync(cfg.setStateForValues);
-              if (state) {
-                this.log.debug(`State ${cfg.setStateForValues} for Values exists`);
+              if (state && state.val !== null && state.val !== void 0) {
+                this.log.debug(
+                  `State ${cfg.setStateForValues} for Values exists and has value: ${state.val}`
+                );
+              } else if (state) {
+                this.log.debug(`State ${cfg.setStateForValues} for Values exists but has no value`);
+                this.checkState = false;
               } else {
                 this.log.debug(`State ${cfg.setStateForValues} for Values does not exist`);
                 this.checkState = false;
@@ -219,8 +224,13 @@ class PageChart extends import_Page.Page {
             }
             if (cfg.setStateForTicks != null && cfg.setStateForTicks !== "") {
               const state = await this.adapter.getForeignStateAsync(cfg.setStateForTicks);
-              if (state) {
-                this.log.debug(`State ${cfg.setStateForTicks} for Ticks exists`);
+              if (state && state.val !== null && state.val !== void 0) {
+                this.log.debug(
+                  `State ${cfg.setStateForTicks} for Ticks exists and has value: ${state.val}`
+                );
+              } else if (state) {
+                this.log.debug(`State ${cfg.setStateForTicks} for Ticks exists but has no value`);
+                this.checkState = false;
               } else {
                 this.log.debug(`State ${cfg.setStateForTicks} for Ticks does not exist`);
                 this.checkState = false;
