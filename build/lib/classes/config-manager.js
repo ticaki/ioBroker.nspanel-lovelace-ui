@@ -4030,7 +4030,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getEntityData(entity, mode, defaultColors) {
-    var _a;
+    var _a, _b, _c;
     const result = {
       modeScr: mode,
       type: "text",
@@ -4041,6 +4041,31 @@ class ConfigManager extends import_library.BaseClass {
       return temp;
     } else if (entity.type === "template") {
       const temp = structuredClone(entity);
+      if ("enabled" in temp) {
+        if (temp.enabled !== void 0) {
+          if (temp.enabled === false) {
+            throw new Error(
+              `Template ${entity.template} for modeScr: ${entity.modeScr} is hardcoded disabled! This makes no sense!`
+            );
+          }
+          if (typeof temp.enabled === "string" && await this.existsState(temp.enabled)) {
+            temp.data = temp.data || {};
+            temp.data.enabled = await this.getFieldAsDataItemConfig(temp.enabled, true);
+          }
+        }
+        delete temp.enabled;
+      }
+      if ("visibleCondition" in temp) {
+        if (typeof temp.visibleCondition === "string" && ((_a = temp.data) == null ? void 0 : _a.enabled) && temp.visibleCondition) {
+          temp.data.enabled = {
+            ...temp.data.enabled,
+            read: `
+                    val = ${typeof ((_b = temp.data.enabled) == null ? void 0 : _b.read) === "string" ? `(val) => {${temp.data.enabled.read}}(val);` : null} ?? val
+                    return ${temp.visibleCondition};`
+          };
+        }
+        delete temp.visibleCondition;
+      }
       delete temp.type;
       return temp;
     }
@@ -4116,7 +4141,7 @@ class ConfigManager extends import_library.BaseClass {
       result.data.enabled = {
         ...result.data.entity1.value,
         read: `
-                val = ${typeof ((_a = result.data.entity1.value) == null ? void 0 : _a.read) === "string" ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
+                val = ${typeof ((_c = result.data.entity1.value) == null ? void 0 : _c.read) === "string" ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
                 return ${entity.ScreensaverEntityVisibleCondition};
                 `
       };

@@ -4754,15 +4754,40 @@ export class ConfigManager extends BaseClass {
             type: 'text',
             data: { entity1: {} },
         };
-
         if (entity.type === 'native') {
             const temp = structuredClone(entity.native) as typePageItem.PageItemDataItemsOptions;
             return temp;
         } else if (entity.type === 'template') {
             const temp = structuredClone(entity) as unknown as typePageItem.PageItemDataItemsOptions;
+            if ('enabled' in temp) {
+                if (temp.enabled !== undefined) {
+                    if (temp.enabled === false) {
+                        throw new Error(
+                            `Template ${entity.template} for modeScr: ${entity.modeScr} is hardcoded disabled! This makes no sense!`,
+                        );
+                    }
+                    if (typeof temp.enabled === 'string' && (await this.existsState(temp.enabled))) {
+                        temp.data = temp.data || {};
+                        temp.data.enabled = await this.getFieldAsDataItemConfig(temp.enabled, true);
+                    }
+                }
+                delete temp.enabled;
+            }
+            if ('visibleCondition' in temp) {
+                if (typeof temp.visibleCondition === 'string' && temp.data?.enabled && temp.visibleCondition) {
+                    temp.data.enabled = {
+                        ...temp.data.enabled,
+                        read: `
+                    val = ${typeof temp.data.enabled?.read === 'string' ? `(val) => {${temp.data.enabled.read}}(val);` : null} ?? val
+                    return ${temp.visibleCondition};`,
+                    };
+                }
+                delete temp.visibleCondition;
+            }
             delete temp.type;
             return temp;
         }
+
         if (!result.data.entity1) {
             throw new Error('Invalid data');
         }
