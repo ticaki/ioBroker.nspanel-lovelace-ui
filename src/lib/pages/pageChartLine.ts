@@ -53,7 +53,6 @@ export class PageChartLine extends PageChart {
                 }
                 case 1: {
                     // AdapterVersion
-
                     const hoursRangeFromNow = this.adminConfig.rangeHours || 24;
                     const stateValue = this.adminConfig.setStateForDB;
                     const instance = this.adminConfig.selInstance;
@@ -124,7 +123,7 @@ export class PageChartLine extends PageChart {
 
                             this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
 
-                            let currentTick = min;
+                            let currentTick = min - intervall;
                             while (currentTick < max + intervall) {
                                 ticksChart.push(String(currentTick));
                                 currentTick += intervall;
