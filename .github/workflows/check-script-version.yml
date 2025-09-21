@@ -89,15 +89,15 @@ jobs:
               repo: context.repo.repo,
               body: `## ⚠️ Script Version Not Incremented
 
-The file \`script/example_sendTo_script_iobroker.ts\` has been modified, but the version number has not been incremented.
+                The file \`script/example_sendTo_script_iobroker.ts\` has been modified, but the version number has not been incremented.
 
-**Current version:** \`${process.env.CURRENT}\`
-**Base version:** \`${process.env.BASE}\`
+                **Current version:** \`${process.env.CURRENT}\`
+                **Base version:** \`${process.env.BASE}\`
 
-Please update the version number in this line:
-\`\`\`typescript
-const version = 'x.x.x';
-\`\`\`
+                Please update the version number in this line:
+                \`\`\`typescript
+                const version = 'x.x.x';
+                \`\`\`
 
-The version should be incremented to reflect the changes made to the script file.`
-      })
+                The version should be incremented to reflect the changes made to the script file.`
+            });
