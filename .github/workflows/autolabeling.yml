@@ -23,8 +23,8 @@ jobs:
             // --- Mapping: EXAKTE DATEIEN -> Labels ---
             const fileLabelMap = {
               "admin/jsonConfig.json5": ["admin"],
-              "script/example_sendTo_script_iobroker.ts": ["Scriptconfiguration"],
-              "src/lib/classes/config-manager.ts": ["Scriptconfiguration"]
+              "script/example_sendTo_script_iobroker.ts": ["Script Config"],
+              "src/lib/classes/config-manager.ts": ["Script Config"]
             };
 
             // --- Mapping: ORDNERPRÄFIXE -> Labels ---
@@ -32,7 +32,7 @@ jobs:
               "HMI/": ["HMI"],
               "tasmota/berry/": ["Berry Driver"],
               "admin/i18n/": ["Translations"],
-              "src/lib/controller/": ["internal"],
+              "src/lib/controller/": ["Internal"],
               "src/lib/pages/": ["Page"]
             };
 
@@ -42,8 +42,8 @@ jobs:
               HMI: "FBCA04",
               "Berry Driver": "0E8A16",
               Translations: "1D76DB",
-              Scriptconfiguration: "5319E7",
-              internal: "D93F0B",
+              "Script Config": "5319E7",
+              Internal: "D93F0B",
               Page: "C5DEF5"
             };
 
