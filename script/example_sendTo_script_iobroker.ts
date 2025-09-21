@@ -1584,7 +1584,7 @@ declare namespace ScriptConfig {
              */
             ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
         } & ({
-            ScreensaverEntityEnabled?: string | boolean | null;
+            ScreensaverEntityEnabled?: string | null;
         } | {
             /**
              * Optional condition that determines whether a ScreensaverEntity should be visible.
@@ -1600,7 +1600,7 @@ declare namespace ScriptConfig {
              * ScreensaverEntityVisibleCondition: "val.length > 0 && val !== 'OFF'"
              * ```
              */
-            ScreensaverEntityEnabled: string | boolean | null;
+            ScreensaverEntityEnabled: string ;
             ScreensaverEntityVisibleCondition?: string;
         })
 
@@ -1630,7 +1630,7 @@ declare namespace ScriptConfig {
               HeadlineIcon?: string | null;
           } & (
               | {
-                    Enabled?: string | boolean | null | string[];
+                    Enabled?: string | null | string[];
                 }
               | {
                     /**
@@ -1647,7 +1647,7 @@ declare namespace ScriptConfig {
                      * VisibleCondition: "val.length > 0 && val !== 'OFF'"
                      * ```
                      */
-                    Enabled: string | boolean | null | string[];
+                    Enabled: string | string[];
                     VisibleCondition?: string;
                 }
           ))

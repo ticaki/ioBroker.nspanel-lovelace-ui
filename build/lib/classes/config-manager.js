@@ -4023,6 +4023,14 @@ class ConfigManager extends import_library.BaseClass {
                 read: "VisibleCondition" in entity && entity.VisibleCondition ? `return ${entity.VisibleCondition};` : void 0
               });
             }
+          } else {
+            result.data.enabled = result.data.enabled || [];
+            if (Array.isArray(result.data.enabled)) {
+              result.data.enabled.push({
+                type: "const",
+                constVal: false
+              });
+            }
           }
         }
       } else if (typeof entity.Enabled === "string") {
@@ -4034,6 +4042,8 @@ class ConfigManager extends import_library.BaseClass {
               read: `return ${entity.VisibleCondition};`
             };
           }
+        } else {
+          throw new Error(`Enabled state ${entity.Enabled} does not exist!`);
         }
       }
     } else {
@@ -4044,6 +4054,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getEntityData(entity, mode, defaultColors) {
+    var _a, _b;
     const result = {
       modeScr: mode,
       type: "text",
@@ -4074,9 +4085,13 @@ class ConfigManager extends import_library.BaseClass {
               `Template ${entity.template} for modeScr: ${entity.modeScr} is hardcoded disabled! This makes no sense!`
             );
           }
-          if (typeof temp.enabled === "string" && await this.existsState(temp.enabled)) {
-            temp.data = temp.data || {};
-            temp.data.enabled = await this.getFieldAsDataItemConfig(temp.enabled, true);
+          if (typeof temp.enabled === "string") {
+            if (await this.existsState(temp.enabled)) {
+              temp.data = temp.data || {};
+              temp.data.enabled = await this.getFieldAsDataItemConfig(temp.enabled, true);
+            } else {
+              throw new Error(`Enabled state ${temp.enabled} does not exist!`);
+            }
           }
           if ("visibleCondition" in temp) {
             if (typeof temp.visibleCondition === "string" && ((_a = temp.data) == null ? void 0 : _a.enabled) && temp.visibleCondition) {
@@ -4164,18 +4179,28 @@ class ConfigManager extends import_library.BaseClass {
         true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) }
       };
     }
-    if ("ScreensaverEntityEnabled" in entity) {
-      result.data.enabled = await this.getFieldAsDataItemConfig(
-        entity.ScreensaverEntityEnabled ? entity.ScreensaverEntityEnabled : true,
-        true
-      );
-      if ("ScreensaverEntityVisibleCondition" in entity && entity.ScreensaverEntityVisibleCondition && typeof entity.ScreensaverEntityVisibleCondition === "string" && result.data.enabled) {
-        result.data.enabled = {
-          ...result.data.enabled,
-          read: `
+    if ("ScreensaverEntityEnabled" in entity && entity.ScreensaverEntityEnabled != null) {
+      if (!Array.isArray(entity.ScreensaverEntityEnabled)) {
+        if (await this.existsState(entity.ScreensaverEntityEnabled)) {
+          result.data.enabled = await this.getFieldAsDataItemConfig(
+            entity.ScreensaverEntityEnabled ? entity.ScreensaverEntityEnabled : true,
+            true
+          );
+          if ("ScreensaverEntityVisibleCondition" in entity && entity.ScreensaverEntityVisibleCondition && typeof entity.ScreensaverEntityVisibleCondition === "string" && result.data.enabled) {
+            result.data.enabled = {
+              ...result.data.enabled,
+              read: `
                 return ${entity.ScreensaverEntityVisibleCondition};
                 `
-        };
+            };
+          }
+        } else {
+          throw new Error(
+            `ScreensaverEntityEnabled state ${entity.ScreensaverEntityEnabled} does not exist!`
+          );
+        }
+      } else {
+        throw new Error("ScreensaverEntityEnabled must be a string!");
       }
     }
     if (dataType === "number" && entity.ScreensaverEntityIconSelect && Array.isArray(entity.ScreensaverEntityIconSelect)) {
