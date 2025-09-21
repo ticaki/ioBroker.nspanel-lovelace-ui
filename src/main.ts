@@ -1672,7 +1672,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'screensaverNotify': {
                     // sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });
                     if (obj.message?.panel && this.controller?.panels) {
-                        const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
+                        const panel = this.controller.panels.find(a => a.topic === obj.message.topic);
                         if (panel?.screenSaver) {
                             if (typeof obj.message.heading === 'string') {
                                 await panel.statesControler.setInternalState(

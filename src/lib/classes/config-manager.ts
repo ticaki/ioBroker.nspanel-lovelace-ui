@@ -4927,6 +4927,7 @@ export class ConfigManager extends BaseClass {
                 };
             }
         }
+
         if (
             dataType === 'number' &&
             entity.ScreensaverEntityIconSelect &&

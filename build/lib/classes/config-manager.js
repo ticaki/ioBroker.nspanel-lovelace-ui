@@ -4044,7 +4044,6 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getEntityData(entity, mode, defaultColors) {
-    var _a, _b;
     const result = {
       modeScr: mode,
       type: "text",
