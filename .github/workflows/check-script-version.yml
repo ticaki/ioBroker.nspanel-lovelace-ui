@@ -1,0 +1,97 @@
+name: Check Script Version
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check if script file was modified
+        id: check_changes
+        run: |
+          # Get list of changed files in this PR
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          echo "Changed files: $CHANGED_FILES"
+          
+          if echo "$CHANGED_FILES" | grep -q "script/example_sendTo_script_iobroker.ts"; then
+            echo "script_changed=true" >> $GITHUB_OUTPUT
+            echo "✓ Script file was modified"
+          else
+            echo "script_changed=false" >> $GITHUB_OUTPUT
+            echo "✓ Script file was not modified - skipping version check"
+          fi
+      
+      - name: Skip if script not changed
+        if: steps.check_changes.outputs.script_changed == 'false'
+        run: |
+          echo "::notice::Script file was not modified, skipping version check"
+          exit 0
+      
+      - name: Get current version from PR
+        id: current_version
+        if: steps.check_changes.outputs.script_changed == 'true'
+        run: |
+          VERSION=$(grep "const version = '" script/example_sendTo_script_iobroker.ts | sed "s/const version = '//; s/';.*//")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+      
+      - name: Get base version from main branch
+        id: base_version
+        if: steps.check_changes.outputs.script_changed == 'true'
+        run: |
+          git checkout ${{ github.event.pull_request.base.sha }}
+          BASE_VERSION=$(grep "const version = '" script/example_sendTo_script_iobroker.ts | sed "s/const version = '//; s/';.*//")
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "Base version: $BASE_VERSION"
+          git checkout ${{ github.event.pull_request.head.sha }}
+      
+      - name: Compare versions
+        id: version_check
+        if: steps.check_changes.outputs.script_changed == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.version }}"
+          BASE="${{ steps.base_version.outputs.base_version }}"
+          
+          echo "Comparing versions: Base=$BASE, Current=$CURRENT"
+          
+          if [ "$CURRENT" = "$BASE" ]; then
+            echo "❌ Version not incremented!"
+            echo "The script file has been modified but the version remains the same ($BASE)."
+            echo "Please increment the version in the const version = 'x.x.x'; line."
+            echo "version_incremented=false" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ Version incremented from $BASE to $CURRENT"
+            echo "version_incremented=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Comment on PR if version not incremented
+        if: failure() && steps.check_changes.outputs.script_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ⚠️ Script Version Not Incremented
+
+The file \`script/example_sendTo_script_iobroker.ts\` has been modified, but the version number has not been incremented.
+
+**Current version:** \`${{ steps.current_version.outputs.version }}\`
+**Base version:** \`${{ steps.base_version.outputs.base_version }}\`
+
+Please update the version number in this line:
+\`\`\`typescript
+const version = 'x.x.x';
+\`\`\`
+
+The version should be incremented to reflect the changes made to the script file.`
+            })
