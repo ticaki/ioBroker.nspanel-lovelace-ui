@@ -839,7 +839,7 @@ declare namespace ScriptConfig {
               HeadlineIcon?: string | null;
           } & (
               | {
-                    Enabled: string | boolean | null;
+                    Enabled?: string | boolean | null | string[];
                 }
               | {
                     /**
@@ -856,7 +856,8 @@ declare namespace ScriptConfig {
                      * VisibleCondition: "val.length > 0 && val !== 'OFF'"
                      * ```
                      */
-                    VisibleCondition: string;
+                    Enabled: string | boolean | null | string[];
+                    VisibleCondition?: string;
                 }
           ))
         | { type: 'native'; native: any }

@@ -218,7 +218,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     const layout = this.mode;
     const results = await Promise.all(
       this.pageItems.map(async (pageItem, idx) => {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e;
         const place = (_a = pageItem == null ? void 0 : pageItem.config) == null ? void 0 : _a.modeScr;
         if (!place) {
           return null;
@@ -233,7 +233,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         if (max === 0) {
           return null;
         }
-        const enabledNum = await ((_d = (_c = (_b = pageItem.dataItems) == null ? void 0 : _b.data) == null ? void 0 : _c.enabled) == null ? void 0 : _d.getNumber());
+        const enabledNum = await tools.getEnabledNumber((_c = (_b = pageItem.dataItems) == null ? void 0 : _b.data) == null ? void 0 : _c.enabled);
         if (enabledNum != null) {
           if (enabledNum >= 0) {
             const payload2 = await pageItem.getPageItemPayload();
@@ -241,7 +241,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           }
           return null;
         }
-        const enabledBool = await ((_g = (_f = (_e = pageItem.dataItems) == null ? void 0 : _e.data) == null ? void 0 : _f.enabled) == null ? void 0 : _g.getBoolean());
+        const enabledBool = await tools.getEnabled((_e = (_d = pageItem.dataItems) == null ? void 0 : _d.data) == null ? void 0 : _e.enabled);
         if (enabledBool === false) {
           return null;
         }

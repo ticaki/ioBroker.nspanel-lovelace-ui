@@ -261,7 +261,7 @@ export class PageItem extends BaseTriggeredPage {
             const message: Partial<typePageItem.MessageItem> = {};
             message.intNameEntity = this.id;
             if (entry.data?.enabled) {
-                const en = await entry.data.enabled.getBoolean();
+                const en = await tools.getEnabled(entry.data.enabled);
                 if (en === false) {
                     return '';
                 }
@@ -1086,7 +1086,7 @@ export class PageItem extends BaseTriggeredPage {
         if (this.config && this.dataItems) {
             const entry = this.dataItems;
             if (entry.data?.enabled) {
-                return (await entry.data.enabled.getBoolean()) ?? true;
+                return (await tools.getEnabled(entry.data.enabled)) ?? true;
             }
         }
         return true;
