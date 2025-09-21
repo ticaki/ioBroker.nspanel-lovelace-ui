@@ -2,6 +2,7 @@ name: Check Script Version
 
 on:
   pull_request_target:
+    types: [opened]
     branches:
       - main
     paths:
