@@ -4723,16 +4723,35 @@ export class ConfigManager extends BaseClass {
                 true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon) },
             };
         }
-        if ('VisibleCondition' in entity && entity.VisibleCondition && result.data.entity1.value) {
-            result.data.enabled = {
-                ...result.data.entity1.value,
-                read: `
-                val = ${typeof result.data.entity1.value?.read === 'string' ? `(val) => {${result.data.entity1.value.read}}(val);` : null} ?? val
-                return ${entity.VisibleCondition};
-                `,
-            };
-        } else if ('Enabled' in entity && entity.Enabled != null) {
-            result.data.enabled = await this.getFieldAsDataItemConfig(entity.Enabled ? entity.Enabled : 'true', true);
+
+        if ('Enabled' in entity && entity.Enabled != null) {
+            if (Array.isArray(entity.Enabled)) {
+                for (const en of entity.Enabled) {
+                    if (typeof en === 'string' && (await this.existsState(en))) {
+                        result.data.enabled = result.data.enabled || [];
+                        if (Array.isArray(result.data.enabled)) {
+                            result.data.enabled.push({
+                                type: 'triggered',
+                                dp: en,
+                                read:
+                                    'VisibleCondition' in entity && entity.VisibleCondition
+                                        ? `return ${entity.VisibleCondition};`
+                                        : undefined,
+                            });
+                        }
+                    }
+                }
+            } else if (typeof entity.Enabled === 'string') {
+                if (await this.existsState(entity.Enabled)) {
+                    result.data.enabled = await this.getFieldAsDataItemConfig(entity.Enabled, true);
+                    if ('VisibleCondition' in entity && entity.VisibleCondition && result.data.enabled) {
+                        result.data.enabled = {
+                            ...result.data.enabled,
+                            read: `return ${entity.VisibleCondition};`,
+                        };
+                    }
+                }
+            }
         } else {
             throw new Error(
                 `No Enabled or VisibleCondition in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`,
@@ -4754,15 +4773,61 @@ export class ConfigManager extends BaseClass {
             type: 'text',
             data: { entity1: {} },
         };
-
         if (entity.type === 'native') {
             const temp = structuredClone(entity.native) as typePageItem.PageItemDataItemsOptions;
             return temp;
         } else if (entity.type === 'template') {
             const temp = structuredClone(entity) as unknown as typePageItem.PageItemDataItemsOptions;
+
+            if ('enabled' in temp) {
+                if (Array.isArray(temp.enabled)) {
+                    for (const en of temp.enabled) {
+                        if (typeof en === 'string' && (await this.existsState(en))) {
+                            result.data.enabled = result.data.enabled || [];
+                            if (Array.isArray(result.data.enabled)) {
+                                result.data.enabled.push({
+                                    type: 'triggered',
+                                    dp: en,
+                                    read:
+                                        'visibleCondition' in temp &&
+                                        typeof temp.visibleCondition === 'string' &&
+                                        temp.visibleCondition
+                                            ? `return ${temp.visibleCondition};`
+                                            : undefined,
+                                });
+                            }
+                        }
+                    }
+                } else if (temp.enabled !== undefined) {
+                    if (temp.enabled === false) {
+                        throw new Error(
+                            `Template ${entity.template} for modeScr: ${entity.modeScr} is hardcoded disabled! This makes no sense!`,
+                        );
+                    }
+                    if (typeof temp.enabled === 'string' && (await this.existsState(temp.enabled))) {
+                        temp.data = temp.data || {};
+                        temp.data.enabled = await this.getFieldAsDataItemConfig(temp.enabled, true);
+                    }
+
+                    if ('visibleCondition' in temp) {
+                        if (typeof temp.visibleCondition === 'string' && temp.data?.enabled && temp.visibleCondition) {
+                            temp.data.enabled = {
+                                ...temp.data.enabled,
+                                read: `
+                    val = ${!Array.isArray(temp.data.enabled) && typeof temp.data.enabled?.read === 'string' ? `(val) => {${temp.data.enabled.read}}(val);` : null} ?? val
+                    return ${temp.visibleCondition};`,
+                            };
+                        }
+                        delete temp.visibleCondition;
+                    }
+                }
+            }
+            'visibleCondition' in temp && delete temp.visibleCondition;
+            'enabled' in temp && delete temp.enabled;
             delete temp.type;
             return temp;
         }
+
         if (!result.data.entity1) {
             throw new Error('Invalid data');
         }
@@ -4857,7 +4922,6 @@ export class ConfigManager extends BaseClass {
                 result.data.enabled = {
                     ...result.data.enabled,
                     read: `
-                val = ${typeof result.data.enabled.read === 'string' ? `(val) => {${result.data.enabled.read}}(val);` : null} ?? val
                 return ${entity.ScreensaverEntityVisibleCondition};
                 `,
                 };

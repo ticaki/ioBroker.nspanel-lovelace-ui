@@ -27,6 +27,8 @@ __export(tools_exports, {
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
   getDecfromRGBThree: () => getDecfromRGBThree,
+  getEnabled: () => getEnabled,
+  getEnabledNumber: () => getEnabledNumber,
   getEntryColor: () => getEntryColor,
   getEntryTextOnOff: () => getEntryTextOnOff,
   getIconEntryColor: () => getIconEntryColor,
@@ -625,6 +627,38 @@ async function getEntryTextOnOff(i, on, useCommon = false) {
   }
   return (_o = await i.getString()) != null ? _o : null;
 }
+async function getEnabled(items) {
+  if (!items) {
+    return null;
+  }
+  if (Array.isArray(items)) {
+    const tasts = [];
+    for (const item of items) {
+      if (item) {
+        tasts.push(item.getBoolean());
+      }
+    }
+    const results = await Promise.all(tasts);
+    return results.every((r) => r);
+  }
+  return await items.getBoolean();
+}
+async function getEnabledNumber(items) {
+  if (!items) {
+    return null;
+  }
+  if (Array.isArray(items)) {
+    const tasts = [];
+    for (const item of items) {
+      if (item) {
+        tasts.push(item.getNumber());
+      }
+    }
+    const n = await Promise.all(tasts);
+    return n.reduce((a, b) => (a || 0) + (b || 0), 0);
+  }
+  return await items.getNumber();
+}
 async function getValueEntryBoolean(i) {
   if (!i) {
     return null;
@@ -1173,6 +1207,8 @@ var tools_default = formatHMS;
   formatInSelText,
   getDecfromHue,
   getDecfromRGBThree,
+  getEnabled,
+  getEnabledNumber,
   getEntryColor,
   getEntryTextOnOff,
   getIconEntryColor,

@@ -813,12 +813,14 @@ declare namespace ScriptConfig {
                 }
           ))
         | { type: 'native'; native: any }
-        | {
+        | ({
               type: 'template';
               template: string;
               dpInit: string;
+              enabled?: string;
+              visibleCondition?: string;
               modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-          }
+          } & ({ enabled: string; visibleCondition?: string } | { enabled?: string }))
     );
 
     export type ScreenSaverNotifyElement = { type: ScreenSaverType } & (
@@ -837,7 +839,7 @@ declare namespace ScriptConfig {
               HeadlineIcon?: string | null;
           } & (
               | {
-                    Enabled?: string | boolean | null;
+                    Enabled?: string | boolean | null | string[];
                 }
               | {
                     /**
@@ -854,7 +856,7 @@ declare namespace ScriptConfig {
                      * VisibleCondition: "val.length > 0 && val !== 'OFF'"
                      * ```
                      */
-                    Enabled: string | boolean | null;
+                    Enabled: string | boolean | null | string[];
                     VisibleCondition?: string;
                 }
           ))

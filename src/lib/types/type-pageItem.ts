@@ -654,7 +654,7 @@ export type PageItemBase = {
     stop2?: number;
     down2?: number;
     filter?: number; // filter for PageMenu
-    enabled?: boolean;
+    enabled?: boolean[] | boolean; // enable/disable the item
     additionalId?: string; // to differ between multiple same entities
     setTrue: boolean; // if use with entity1 if entity1 is false set setTrue to true
     setFalse: boolean; // if use with entity1 if entity1 is true set setFalse to true
