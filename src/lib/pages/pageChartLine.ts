@@ -100,7 +100,8 @@ export class PageChartLine extends PageChart {
 
                             const list = [];
                             const offSetTime = Math.round(dbDaten[0].ts / 1000);
-                            const counter = Math.round((dbDaten[dbDaten.length - 1].ts / 1000 - offSetTime) / maxX);
+                            const lastTs = Math.round(dbDaten[dbDaten.length - 1].ts / 1000);
+                            const counter = dbDaten.length > 1 ? Math.max((lastTs - offSetTime) / maxX, 1) : 1;
                             for (let i = 0; i < dbDaten.length; i++) {
                                 const time = Math.round((dbDaten[i].ts / 1000 - offSetTime) / counter);
                                 const value = Math.round(dbDaten[i].val * 10);

@@ -93,7 +93,8 @@ class PageChartLine extends import_pageChart.PageChart {
               ticksAndLabels = ticksAndLabelsList.join("+");
               const list = [];
               const offSetTime = Math.round(dbDaten[0].ts / 1e3);
-              const counter = Math.round((dbDaten[dbDaten.length - 1].ts / 1e3 - offSetTime) / maxX);
+              const lastTs = Math.round(dbDaten[dbDaten.length - 1].ts / 1e3);
+              const counter = dbDaten.length > 1 ? Math.max((lastTs - offSetTime) / maxX, 1) : 1;
               for (let i = 0; i < dbDaten.length; i++) {
                 const time = Math.round((dbDaten[i].ts / 1e3 - offSetTime) / counter);
                 const value = Math.round(dbDaten[i].val * 10);
