@@ -212,14 +212,14 @@ class PageChart extends import_Page.Page {
                   `State ${cfg.setStateForValues} for Values exists and has value: ${state.val}`
                 );
               } else if (state) {
-                this.log.debug(`State ${cfg.setStateForValues} for Values exists but has no value`);
+                this.log.warn(`State ${cfg.setStateForValues} for Values exists but has no value`);
                 this.checkState = false;
               } else {
-                this.log.debug(`State ${cfg.setStateForValues} for Values does not exist`);
+                this.log.error(`State ${cfg.setStateForValues} for Values does not exist`);
                 this.checkState = false;
               }
             } else {
-              this.log.debug("No setStateForValues configured");
+              this.log.error("No setStateForValues configured");
               this.checkState = false;
             }
             if (cfg.setStateForTicks != null && cfg.setStateForTicks !== "") {
@@ -229,14 +229,14 @@ class PageChart extends import_Page.Page {
                   `State ${cfg.setStateForTicks} for Ticks exists and has value: ${state.val}`
                 );
               } else if (state) {
-                this.log.debug(`State ${cfg.setStateForTicks} for Ticks exists but has no value`);
+                this.log.warn(`State ${cfg.setStateForTicks} for Ticks exists but has no value`);
                 this.checkState = false;
               } else {
-                this.log.debug(`State ${cfg.setStateForTicks} for Ticks does not exist`);
+                this.log.error(`State ${cfg.setStateForTicks} for Ticks does not exist`);
                 this.checkState = false;
               }
             } else {
-              this.log.debug("No setStateForTicks configured");
+              this.log.error("No setStateForTicks configured");
               this.checkState = false;
             }
           } else if (ds === 1) {
@@ -247,11 +247,11 @@ class PageChart extends import_Page.Page {
               if (alive && alive.val) {
                 this.log.debug(`Instance ${cfg.selInstance} is alive`);
               } else {
-                this.log.debug(`Instance ${cfg.selInstance} is not alive`);
+                this.log.warn(`Instance ${cfg.selInstance} is not alive`);
                 this.checkState = false;
               }
             } else {
-              this.log.debug("No selInstance configured");
+              this.log.error("No selInstance configured");
               this.checkState = false;
             }
             if (cfg.setStateForDB != null && cfg.setStateForDB !== "") {
@@ -259,22 +259,23 @@ class PageChart extends import_Page.Page {
               if (state) {
                 this.log.debug(`State ${cfg.setStateForDB} for DB exists`);
               } else {
-                this.log.debug(`State ${cfg.setStateForDB} for DB does not exist`);
+                this.log.warn(`State ${cfg.setStateForDB} for DB does not exist`);
                 this.checkState = false;
               }
             } else {
-              this.log.debug("No setStateForDB configured");
+              this.log.error("No setStateForDB configured");
               this.checkState = false;
             }
           } else {
-            this.log.debug("Unknown selInstanceDataSource, skipping specific checks");
+            this.log.error("Unknown selInstanceDataSource, skipping specific checks");
             this.checkState = false;
           }
         }
       }
-      await this.update();
     } catch (error) {
       this.log.error(`Error onVisibilityChange: ${error}`);
+    } finally {
+      await this.update();
     }
   }
   async onStateTrigger(_id) {
