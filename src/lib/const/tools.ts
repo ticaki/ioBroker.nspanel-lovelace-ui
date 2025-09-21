@@ -606,7 +606,10 @@ export async function getEntryColor(
  * @returns Resolved display text, or `null` if no meaningful result exists.
  */
 export async function getEntryTextOnOff(
-    i: ChangeTypeOfKeys<typePageItem.TextEntryType | typePageItem.TextEntryType2, Dataitem | undefined> | undefined | Dataitem,
+    i:
+        | ChangeTypeOfKeys<typePageItem.TextEntryType | typePageItem.TextEntryType2, Dataitem | undefined>
+        | undefined
+        | Dataitem,
     on: boolean | number | null,
     useCommon: boolean = false,
 ): Promise<string | null> {
