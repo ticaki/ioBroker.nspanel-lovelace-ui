@@ -2,6 +2,7 @@ name: Check Script Version
 
 on:
   pull_request_target:
+    types: [opened]
     branches:
       - main
     paths:
@@ -9,7 +10,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
   pull-requests: write
 
 jobs:
@@ -88,21 +88,25 @@ jobs:
           BASE: ${{ steps.base_version.outputs.base_version }}
         with:
           script: |
+            const body = [
+              '## ⚠️ Script Version Not Incremented',
+              '',
+              'The file `script/example_sendTo_script_iobroker.ts` has been modified, but the version number has not been incremented.',
+              '',
+              `**Current version:** ${process.env.CURRENT}`,
+              `**Base version:** ${process.env.BASE}`,
+              '',
+              'Please update the version number in this line:',
+              '```typescript',
+              "const version = 'x.x.x';",
+              '```',
+              '',
+              'The version should be incremented to reflect the changes made to the script file.'
+            ].join('\n');
+
             await github.rest.issues.createComment({
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## ⚠️ Script Version Not Incremented
-
-                The file \`script/example_sendTo_script_iobroker.ts\` has been modified, but the version number has not been incremented.
-
-                **Current version:** \`${process.env.CURRENT}\`
-                **Base version:** \`${process.env.BASE}\`
-
-                Please update the version number in this line:
-                \`\`\`typescript
-                const version = 'x.x.x';
-                \`\`\`
-
-                The version should be incremented to reflect the changes made to the script file.`
+              body: body
             });

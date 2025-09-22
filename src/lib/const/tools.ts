@@ -1,29 +1,12 @@
 import { isDataItem, type Dataitem } from '../classes/data-item';
-import type {
-    ColorEntryType,
-    ColorEntryTypeBooleanStandard,
-    IconEntryType,
-    MessageItem,
-    PageItemLightDataItems,
-    ScaledNumberType,
-    TextEntryType,
-    TextEntryType2,
-    TextSizeEntryType,
-    ValueEntryType,
-} from '../types/type-pageItem';
+import type * as typePageItem from '../types/type-pageItem';
 import type { Library } from '../classes/library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';
-import {
-    type IconColorElement,
-    isIconColorScaleElement,
-    isPartialColorScaleElement,
-    isPartialIconSelectScaleElement,
-    isValueDateFormat,
-} from '../types/types';
+import * as types from '../types/types';
 
-export const messageItemDefault: MessageItem = {
+export const messageItemDefault: typePageItem.MessageItem = {
     type: 'input_sel',
     intNameEntity: '',
     icon: '',
@@ -32,7 +15,7 @@ export const messageItemDefault: MessageItem = {
     optionalValue: '',
 };
 export function ifValueEntryIs(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined>,
     type: ioBroker.CommonType,
 ): boolean {
     if (i && i.value && i.value.type) {
@@ -42,7 +25,7 @@ export function ifValueEntryIs(
 }
 
 export async function setValueEntry(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined>,
     value: number | boolean | string,
     sca: boolean = true,
 ): Promise<void> {
@@ -71,7 +54,7 @@ export async function setValueEntry(
     }
 }
 export async function getValueEntryNumber(
-    i: ChangeTypeOfKeys<ValueEntryType | ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ValueEntryType | typePageItem.ScaledNumberType, Dataitem | undefined>,
     s: boolean = true,
     options?: { ignoreDecimal?: boolean },
 ): Promise<number | null> {
@@ -128,7 +111,7 @@ function getScaledNumberRaw(
 }
 
 export async function getScaledNumber(
-    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
 ): Promise<number | null> {
     if (!i) {
         return null;
@@ -154,7 +137,7 @@ export async function getScaledNumber(
 }
 
 export async function getTemperaturColorFromValue(
-    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
     dimmer: number = 100,
 ): Promise<string | null> {
     if (!i) {
@@ -182,7 +165,7 @@ export async function getTemperaturColorFromValue(
 }
 
 export async function getSliderCTFromValue(
-    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
 ): Promise<string | null> {
     if (!i) {
         return null;
@@ -220,7 +203,7 @@ export async function getSliderCTFromValue(
     return null;
 }
 export async function setSliderCTFromValue(
-    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
     value: number,
 ): Promise<void> {
     if (!i || !i.value) {
@@ -261,7 +244,7 @@ export async function setSliderCTFromValue(
 }
 
 export async function setScaledNumber(
-    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
     value: number,
 ): Promise<void> {
     if (!i || (!i.set && !i.value)) {
@@ -283,7 +266,7 @@ export async function setScaledNumber(
 }
 
 export async function getIconEntryValue(
-    i: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<typePageItem.IconEntryType, Dataitem | undefined> | undefined,
     on: boolean | number | null,
     def: string,
     defOff: string | null = null,
@@ -302,7 +285,7 @@ export async function getIconEntryValue(
         const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;
         if (typeof on === 'number' && textFalse !== null) {
             const scale = i.scale && (await i.scale.getObject());
-            if (isPartialColorScaleElement(scale)) {
+            if (types.isPartialColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= on) || (scale.val_max && scale.val_max <= on)) {
                     return text;
                 }
@@ -318,7 +301,7 @@ export async function getIconEntryValue(
     const scaleM = i.scale && (await i.scale.getObject());
 
     if (typeof on === 'boolean') {
-        const scale = isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
+        const scale = types.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
 
         if (scale.valIcon_min === 1 && scale.valIcon_max === 0) {
             on = !on;
@@ -332,7 +315,7 @@ export async function getIconEntryValue(
             );
         }
     } else if (typeof on === 'number') {
-        const scale = isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
+        const scale = types.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
         const swap = scale.valIcon_min > scale.valIcon_max;
         const min = swap ? scale.valIcon_max : scale.valIcon_min;
         const max = swap ? scale.valIcon_min : scale.valIcon_max;
@@ -350,7 +333,7 @@ export async function getIconEntryValue(
 }
 
 export async function getIconEntryColor(
-    i: ChangeTypeOfKeys<ColorEntryTypeBooleanStandard, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<typePageItem.ColorEntryTypeBooleanStandard, Dataitem | undefined> | undefined,
     value: boolean | number | null,
     def: string | RGB | number,
     defOff: string | RGB | null = null,
@@ -377,7 +360,7 @@ export async function getIconEntryColor(
         const color = i.true && i.true.color && (await i.true.color.getRGBDec());
         const scale = i.scale && (await i.scale.getObject());
         if (scale) {
-            if (isIconColorScaleElement(scale)) {
+            if (types.isIconColorScaleElement(scale)) {
                 if (scale.val_min === 1 && scale.val_max === 0) {
                     value = !value;
                 }
@@ -399,7 +382,7 @@ export async function getIconEntryColor(
         let cto = i.true && i.true.color && (await i.true.color.getRGBValue());
         let cfrom = i.false && i.false.color && (await i.false.color.getRGBValue());
         const scale = i.scale && (await i.scale.getObject());
-        if ((!cto || !cfrom) && isIconColorScaleElement(scale)) {
+        if ((!cto || !cfrom) && types.isIconColorScaleElement(scale)) {
             switch (scale.mode) {
                 case 'hue':
                 case 'cie':
@@ -418,7 +401,7 @@ export async function getIconEntryColor(
 
         if (cto && cfrom && scale) {
             let rColor: RGB = cto;
-            if (isIconColorScaleElement(scale)) {
+            if (types.isIconColorScaleElement(scale)) {
                 let swap = false;
                 let vMin = scale.val_min;
                 let vMax = scale.val_max;
@@ -488,7 +471,7 @@ export async function getIconEntryColor(
                     rColor = func(cfrom, cto, factor, { swap });
                 }
                 return String(Color.rgb_dec565(rColor));
-            } else if (isPartialColorScaleElement(scale)) {
+            } else if (types.isPartialColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= value) || (scale.val_max && scale.val_max <= value)) {
                     return String(Color.rgb_dec565(cto));
                 }
@@ -508,7 +491,7 @@ export async function getIconEntryColor(
     return String(Color.rgb_dec565(def));
 }
 
-function getLogFromIconScale(i: IconColorElement, factor: number): number {
+function getLogFromIconScale(i: types.IconColorElement, factor: number): number {
     if (i.log10 !== undefined) {
         if (i.log10 === 'max') {
             factor = factor * (90 / 10) + 1;
@@ -524,7 +507,7 @@ function getLogFromIconScale(i: IconColorElement, factor: number): number {
     return factor;
 }
 export async function GetIconColor(
-    item: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined | RGB,
+    item: ChangeTypeOfKeys<typePageItem.IconEntryType, Dataitem | undefined> | undefined | RGB,
     value: boolean | number | null,
     min: number | null = null,
     max: number | null = null,
@@ -587,7 +570,7 @@ export async function GetIconColor(
 }
 
 export async function getEntryColor(
-    i: ChangeTypeOfKeys<ColorEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<typePageItem.ColorEntryType, Dataitem | undefined> | undefined,
     value: boolean | number,
     def: string | number | RGB,
 ): Promise<string> {
@@ -623,7 +606,10 @@ export async function getEntryColor(
  * @returns Resolved display text, or `null` if no meaningful result exists.
  */
 export async function getEntryTextOnOff(
-    i: ChangeTypeOfKeys<TextEntryType | TextEntryType2, Dataitem | undefined> | undefined | Dataitem,
+    i:
+        | ChangeTypeOfKeys<typePageItem.TextEntryType | typePageItem.TextEntryType2, Dataitem | undefined>
+        | undefined
+        | Dataitem,
     on: boolean | number | null,
     useCommon: boolean = false,
 ): Promise<string | null> {
@@ -725,7 +711,7 @@ export async function getEnabledNumber(items: Dataitem | undefined | (Dataitem |
 }
 
 export async function getValueEntryBoolean(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
 ): Promise<boolean | null> {
     if (!i) {
         return null;
@@ -736,11 +722,11 @@ export async function getValueEntryBoolean(
     }
     return null;
 }
-function isTextSizeEntryType(F: any): F is ChangeTypeOfKeys<TextSizeEntryType, Dataitem | undefined> {
-    return 'textSize' in (F as TextSizeEntryType);
+function isTextSizeEntryType(F: any): F is ChangeTypeOfKeys<typePageItem.TextSizeEntryType, Dataitem | undefined> {
+    return 'textSize' in (F as typePageItem.TextSizeEntryType);
 }
 export async function getValueEntryString(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null = null,
 ): Promise<string | null> {
     if (!i || !i.value) {
@@ -754,7 +740,7 @@ export async function getValueEntryString(
 
     if (nval !== null && nval !== undefined) {
         let res = '';
-        if (isValueDateFormat(format)) {
+        if (types.isValueDateFormat(format)) {
             if (nval < 0) {
                 return null;
             }
@@ -787,7 +773,7 @@ export async function getValueEntryString(
     let res = await i.value.getString();
 
     if (res != null) {
-        if (isValueDateFormat(format)) {
+        if (types.isValueDateFormat(format)) {
             const temp = new Date(res);
             if (isValidDate(temp)) {
                 res = temp.toLocaleString(format.local, format.format);
@@ -899,7 +885,7 @@ export const siPrefixes = [
  * ```
  */
 export async function getValueAutoUnit(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null,
     space: number,
     unit: string | null = null,
@@ -997,7 +983,7 @@ export function getTranslation(library: Library, key1: any, key2?: string): stri
     return result;
 }
 
-export const getRGBfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<RGB | null> => {
+export const getRGBfromRGBThree = async (item: typePageItem.PageItemLightDataItems['data']): Promise<RGB | null> => {
     if (!item) {
         return Color.White;
     }
@@ -1009,14 +995,14 @@ export const getRGBfromRGBThree = async (item: PageItemLightDataItems['data']): 
     }
     return { r: red, g: green, b: blue };
 };
-export const getDecfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
+export const getDecfromRGBThree = async (item: typePageItem.PageItemLightDataItems['data']): Promise<string | null> => {
     const rgb = await getRGBfromRGBThree(item);
     if (!rgb) {
         return null;
     }
     return String(Color.rgb_dec565(rgb));
 };
-export const setRGBThreefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
+export const setRGBThreefromRGB = async (item: typePageItem.PageItemLightDataItems['data'], c: RGB): Promise<void> => {
     if (!item || !item.Red || !item.Green || !item.Blue) {
         return;
     }
@@ -1025,7 +1011,7 @@ export const setRGBThreefromRGB = async (item: PageItemLightDataItems['data'], c
     await item.Blue.setState(c.b);
 };
 
-export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
+export const getDecfromHue = async (item: typePageItem.PageItemLightDataItems['data']): Promise<string | null> => {
     if (!item || !item.hue) {
         return null;
     }
@@ -1041,7 +1027,7 @@ export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promi
     return String(Color.rgb_dec565({ r: arr[0], g: arr[1], b: arr[2] }));
 };
 
-export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
+export const setHuefromRGB = async (item: typePageItem.PageItemLightDataItems['data'], c: RGB): Promise<void> => {
     if (!item || !item.hue || !Color.isRGB(c)) {
         return;
     }
@@ -1101,10 +1087,10 @@ export function formatInSelText(text: string | string[] | null | undefined): str
  * Create a part of the panel messsage for bottom icons. if event === '' u get '~~~~~~'.
  * default for event: input_sel
  *
- * @param msg {Partial<MessageItem>}
+ * @param msg {Partial<typePageItem.MessageItem>}
  * @returns string
  */
-export function getItemMesssage(msg: Partial<MessageItem> | undefined): string {
+export function getItemMesssage(msg: Partial<typePageItem.MessageItem> | undefined): string {
     if (!msg || !msg.intNameEntity || !msg.type) {
         return '~~~~~';
     }

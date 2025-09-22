@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var tools_exports = {};
 __export(tools_exports, {
@@ -68,7 +78,7 @@ module.exports = __toCommonJS(tools_exports);
 var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("./icon_mapping");
-var import_types = require("../types/types");
+var types = __toESM(require("../types/types"));
 const messageItemDefault = {
   type: "input_sel",
   intNameEntity: "",
@@ -295,7 +305,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     const textFalse = i.false && i.false.text && await getValueEntryString(i.false.text) || null;
     if (typeof on === "number" && textFalse !== null) {
       const scale = i.scale && await i.scale.getObject();
-      if ((0, import_types.isPartialColorScaleElement)(scale)) {
+      if (types.isPartialColorScaleElement(scale)) {
         if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on) {
           return text;
         }
@@ -310,7 +320,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
   const scaleM = i.scale && await i.scale.getObject();
   if (typeof on === "boolean") {
-    const scale = (0, import_types.isPartialIconSelectScaleElement)(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
+    const scale = types.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
     if (scale.valIcon_min === 1 && scale.valIcon_max === 0) {
       on = !on;
     }
@@ -323,7 +333,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
       );
     }
   } else if (typeof on === "number") {
-    const scale = (0, import_types.isPartialIconSelectScaleElement)(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
+    const scale = types.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
     const swap = scale.valIcon_min > scale.valIcon_max;
     const min = swap ? scale.valIcon_max : scale.valIcon_min;
     const max = swap ? scale.valIcon_min : scale.valIcon_max;
@@ -361,7 +371,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     const color = i.true && i.true.color && await i.true.color.getRGBDec();
     const scale = i.scale && await i.scale.getObject();
     if (scale) {
-      if ((0, import_types.isIconColorScaleElement)(scale)) {
+      if (types.isIconColorScaleElement(scale)) {
         if (scale.val_min === 1 && scale.val_max === 0) {
           value = !value;
         }
@@ -378,7 +388,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     let cto = i.true && i.true.color && await i.true.color.getRGBValue();
     let cfrom = i.false && i.false.color && await i.false.color.getRGBValue();
     const scale = i.scale && await i.scale.getObject();
-    if ((!cto || !cfrom) && (0, import_types.isIconColorScaleElement)(scale)) {
+    if ((!cto || !cfrom) && types.isIconColorScaleElement(scale)) {
       switch (scale.mode) {
         case "hue":
         case "cie":
@@ -396,7 +406,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     }
     if (cto && cfrom && scale) {
       let rColor = cto;
-      if ((0, import_types.isIconColorScaleElement)(scale)) {
+      if (types.isIconColorScaleElement(scale)) {
         let swap = false;
         let vMin = scale.val_min;
         let vMax = scale.val_max;
@@ -465,7 +475,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           rColor = func(cfrom, cto, factor, { swap });
         }
         return String(import_Color.Color.rgb_dec565(rColor));
-      } else if ((0, import_types.isPartialColorScaleElement)(scale)) {
+      } else if (types.isPartialColorScaleElement(scale)) {
         if (scale.val_min && scale.val_min >= value || scale.val_max && scale.val_max <= value) {
           return String(import_Color.Color.rgb_dec565(cto));
         }
@@ -684,7 +694,7 @@ async function getValueEntryString(i, v = null) {
   const suffix = (_h = await ((_g = i.suffix) == null ? void 0 : _g.getString())) != null ? _h : "";
   if (nval !== null && nval !== void 0) {
     let res2 = "";
-    if ((0, import_types.isValueDateFormat)(format)) {
+    if (types.isValueDateFormat(format)) {
       if (nval < 0) {
         return null;
       }
@@ -715,7 +725,7 @@ async function getValueEntryString(i, v = null) {
   }
   let res = await i.value.getString();
   if (res != null) {
-    if ((0, import_types.isValueDateFormat)(format)) {
+    if (types.isValueDateFormat(format)) {
       const temp = new Date(res);
       if (isValidDate(temp)) {
         res = temp.toLocaleString(format.local, format.format);

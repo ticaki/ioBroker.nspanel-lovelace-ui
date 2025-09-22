@@ -4033,6 +4033,11 @@ class ConfigManager extends import_library.BaseClass {
             }
           }
         }
+        if (!result.data.enabled || !Array.isArray(result.data.enabled) || result.data.enabled.length === 0) {
+          throw new Error(
+            `No valid Enabled states in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`
+          );
+        }
       } else if (typeof entity.Enabled === "string") {
         if (await this.existsState(entity.Enabled)) {
           result.data.enabled = await this.getFieldAsDataItemConfig(entity.Enabled, true);
@@ -4098,8 +4103,8 @@ class ConfigManager extends import_library.BaseClass {
               temp.data.enabled = {
                 ...temp.data.enabled,
                 read: `
-                    val = ${!Array.isArray(temp.data.enabled) && typeof ((_b = temp.data.enabled) == null ? void 0 : _b.read) === "string" ? `(val) => {${temp.data.enabled.read}}(val);` : null} ?? val
-                    return ${temp.visibleCondition};`
+                                    val = ${!Array.isArray(temp.data.enabled) && typeof ((_b = temp.data.enabled) == null ? void 0 : _b.read) === "string" ? `(val) => {${temp.data.enabled.read}}(val);` : null} ?? val
+                                    return ${temp.visibleCondition};`
               };
             }
             delete temp.visibleCondition;
