@@ -82,6 +82,12 @@ export interface ColorThemenInterface {
     gust?: RGB;
     sunrise?: RGB;
     sunset?: RGB;
+    // Neue Media-spezifische Theme-Einträge
+    mediaArtistOn?: RGB;
+    mediaArtistOff?: RGB;
+    mediaTitleOn?: RGB;
+    mediaTitleOff?: RGB;
+    mediaOnOffColor?: RGB;
 }
 
 /**
@@ -159,6 +165,12 @@ class ColorBase {
     static gust: RGB | string = 'default.color.from.start.gust';
     static sunrise: RGB | string = 'default.color.from.start.sunrise';
     static sunset: RGB | string = 'default.color.from.start.sunset';
+    // Neue Media-spezifische Defaults
+    static mediaArtistOn: RGB | string = 'default.color.from.start.mediaArtistOn';
+    static mediaArtistOff: RGB | string = 'default.color.from.start.mediaArtistOff';
+    static mediaTitleOn: RGB | string = 'default.color.from.start.mediaTitleOn';
+    static mediaTitleOff: RGB | string = 'default.color.from.start.mediaTitleOff';
+    static mediaOnOffColor: RGB | string = 'default.color.from.start.mediaOnOffColor';
 }
 
 export class Color extends ColorBase {
@@ -436,7 +448,17 @@ export class Color extends ColorBase {
                     return Color.sunrise;
                 case 'default.color.from.start.sunset':
                     return Color.sunset;
-
+                // Neue Media-spezifische Defaults
+                case 'default.color.from.start.mediaArtistOn':
+                    return Color.mediaArtistOn;
+                case 'default.color.from.start.mediaArtistOff':
+                    return Color.mediaArtistOff;
+                case 'default.color.from.start.mediaTitleOn':
+                    return Color.mediaTitleOn;
+                case 'default.color.from.start.mediaTitleOff':
+                    return Color.mediaTitleOff;
+                case 'default.color.from.start.mediaOnOffColor':
+                    return Color.mediaOnOffColor;
                 default:
                     console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
             }
@@ -510,6 +532,12 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.HMIOn,
         fgForecast: Color.LightGray,
         fgBar: Color.LightGray,
+        // Media-spezifisch
+        mediaArtistOn: Color.White,
+        mediaArtistOff: Color.Gray,
+        mediaTitleOn: Color.Red,
+        mediaTitleOff: Color.Gray,
+        mediaOnOffColor: Color.White,
     };
 
     // tropical
@@ -578,6 +606,12 @@ export class Color extends ColorBase {
         fgBar: Color.Sand,
         solar: Color.Sun,
         temperature: Color.Sunset,
+        // Media-spezifisch
+        mediaArtistOn: Color.Turquoise,
+        mediaArtistOff: Color.Sand,
+        mediaTitleOn: Color.White,
+        mediaTitleOff: Color.LightGray,
+        mediaOnOffColor: Color.Turquoise,
     };
 
     // technical
@@ -647,6 +681,13 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.Cyan,
         fgForecast: Color.BlueLight,
         fgBar: Color.DarkGray,
+
+        // Media-spezifisch
+        mediaArtistOn: Color.TechMint,
+        mediaArtistOff: Color.AshGray,
+        mediaTitleOn: Color.White,
+        mediaTitleOff: Color.DarkGray,
+        mediaOnOffColor: Color.Cyan,
     };
 
     // sunset
@@ -715,8 +756,16 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.Magenta,
         fgForecast: Color.colorSonos,
         fgBar: Color.Off,
+
+        // Media-spezifisch
+        mediaArtistOn: Color.Sunset,
+        mediaArtistOff: Color.Gray,
+        mediaTitleOn: Color.Yellow,
+        mediaTitleOff: Color.Off,
+        mediaOnOffColor: Color.Orange ?? { r: 255, g: 140, b: 0 },
     };
 
+    // volcano
     static volcanoTheme: ColorThemenInterface = {
         good: Color.FlameYellow,
         bad: Color.MagmaRed,
@@ -786,6 +835,12 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.FireGlow,
         fgForecast: Color.FlameYellow, // Forecast-Werte hellgelb für Kontrast
         fgBar: Color.AshGray,
+        // Media-spezifisch
+        mediaArtistOn: Color.LavaCore,
+        mediaArtistOff: Color.AshGray,
+        mediaTitleOn: Color.White,
+        mediaTitleOff: Color.FlameYellow,
+        mediaOnOffColor: Color.FireGlow,
     };
 
     /**
