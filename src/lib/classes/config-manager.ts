@@ -4749,6 +4749,11 @@ export class ConfigManager extends BaseClass {
                         }
                     }
                 }
+                if (!result.data.enabled || !Array.isArray(result.data.enabled) || result.data.enabled.length === 0) {
+                    throw new Error(
+                        `No valid Enabled states in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`,
+                    );
+                }
             } else if (typeof entity.Enabled === 'string') {
                 if (await this.existsState(entity.Enabled)) {
                     result.data.enabled = await this.getFieldAsDataItemConfig(entity.Enabled, true);
@@ -4828,8 +4833,8 @@ export class ConfigManager extends BaseClass {
                             temp.data.enabled = {
                                 ...temp.data.enabled,
                                 read: `
-                    val = ${!Array.isArray(temp.data.enabled) && typeof temp.data.enabled?.read === 'string' ? `(val) => {${temp.data.enabled.read}}(val);` : null} ?? val
-                    return ${temp.visibleCondition};`,
+                                    val = ${!Array.isArray(temp.data.enabled) && typeof temp.data.enabled?.read === 'string' ? `(val) => {${temp.data.enabled.read}}(val);` : null} ?? val
+                                    return ${temp.visibleCondition};`,
                             };
                         }
                         delete temp.visibleCondition;
