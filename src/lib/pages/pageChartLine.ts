@@ -123,7 +123,7 @@ export class PageChartLine extends PageChart {
 
                             this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
 
-                            let currentTick = min - intervall;
+                            let currentTick = min;
                             while (currentTick < max + intervall) {
                                 ticksChart.push(String(currentTick));
                                 currentTick += intervall;

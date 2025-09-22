@@ -111,7 +111,7 @@ class PageChartLine extends import_pageChart.PageChart {
               const min = Math.min(...tempScale);
               const intervall = Math.max(Number(((max - min) / 5).toFixed()), 10);
               this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
-              let currentTick = min - intervall;
+              let currentTick = min;
               while (currentTick < max + intervall) {
                 ticksChart.push(String(currentTick));
                 currentTick += intervall;
