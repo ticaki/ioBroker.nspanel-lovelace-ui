@@ -2427,7 +2427,7 @@ const textTemplates = {
         value: {
           type: "triggered",
           mode: "auto",
-          role: "date.sunrise",
+          role: "date.sunrise.forecast.0",
           dp: "",
           read: `
             if (new Date().getDate() !== new Date(val).getDate()){
@@ -2446,7 +2446,7 @@ const textTemplates = {
         value: {
           type: "triggered",
           mode: "auto",
-          role: "date.sunset",
+          role: "date.sunset.forecast.0",
           dp: "",
           read: `
             if (new Date().getDate() !== new Date(val).getDate()){
@@ -2463,7 +2463,7 @@ const textTemplates = {
         }
       },
       entity3: {
-        value: { type: "triggered", mode: "auto", role: "date.sunrise", dp: "" },
+        value: { type: "triggered", mode: "auto", role: "date.sunrise.forecast.1", dp: "" },
         dateFormat: {
           type: "const",
           constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
@@ -2674,7 +2674,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.temperature_min$/
+          regexp: /\.temperature_min\./
         },
         decimal: {
           type: "const",
@@ -2692,7 +2692,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.temperature_max$/
+          regexp: /\.temperature_max\./
         },
         decimal: {
           type: "const",
@@ -2709,7 +2709,7 @@ const textTemplates = {
           value: {
             type: "state",
             role: "",
-            regexp: /.icon$/,
+            regexp: /.icon\./,
             mode: "auto",
             dp: "",
             /**

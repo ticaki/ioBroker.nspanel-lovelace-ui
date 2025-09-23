@@ -463,7 +463,7 @@ export class PageThermo2 extends PageMenu {
                           ? o.common[configManager.adapter.language || 'en']
                           : o.common.name) ||
                       'HEATING';
-                actual = foundedStates[role].ACTUAL?.dp || '';
+                actual = airCondition ? foundedStates[role].ACTUAL2?.dp || '' : foundedStates[role].ACTUAL?.dp || '';
                 humidity = foundedStates[role].HUMIDITY?.dp || '';
                 set = airCondition ? foundedStates[role].SET2?.dp || '' : foundedStates[role].SET?.dp || '';
                 role = o.common.role;

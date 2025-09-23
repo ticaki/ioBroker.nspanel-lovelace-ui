@@ -2429,7 +2429,7 @@ export const textTemplates: TemplateItems = {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'date.sunrise',
+                    role: 'date.sunrise.forecast.0',
                     dp: '',
                     read: `
             if (new Date().getDate() !== new Date(val).getDate()){
@@ -2448,7 +2448,7 @@ export const textTemplates: TemplateItems = {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'date.sunset',
+                    role: 'date.sunset.forecast.0',
                     dp: '',
                     read: `
             if (new Date().getDate() !== new Date(val).getDate()){
@@ -2465,7 +2465,7 @@ export const textTemplates: TemplateItems = {
                 },
             },
             entity3: {
-                value: { type: 'triggered', mode: 'auto', role: 'date.sunrise', dp: '' },
+                value: { type: 'triggered', mode: 'auto', role: 'date.sunrise.forecast.1', dp: '' },
                 dateFormat: {
                     type: 'const',
                     constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
@@ -2679,7 +2679,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature_min$/,
+                    regexp: /\.temperature_min\./,
                 },
                 decimal: {
                     type: 'const',
@@ -2697,7 +2697,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature_max$/,
+                    regexp: /\.temperature_max\./,
                 },
                 decimal: {
                     type: 'const',
@@ -2714,7 +2714,7 @@ export const textTemplates: TemplateItems = {
                     value: {
                         type: 'state',
                         role: '',
-                        regexp: /.icon$/,
+                        regexp: /.icon\./,
                         mode: 'auto',
                         dp: '',
                         /**
