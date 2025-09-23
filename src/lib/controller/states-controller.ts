@@ -601,11 +601,11 @@ export class StatesControler extends BaseClass {
                 ts: Date.now(),
             };
 
-            // use this to trigger pages
-            await this.onStateChange(id, newState);
-
             // here we trigger the state command
             f && (await f(id, this.triggerDB[id].state));
+
+            // use this to trigger pages
+            await this.onStateChange(id, newState);
 
             return true;
 

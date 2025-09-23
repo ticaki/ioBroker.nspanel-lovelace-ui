@@ -516,8 +516,8 @@ class StatesControler extends import_library.BaseClass {
         ack,
         ts: Date.now()
       };
-      await this.onStateChange(id, newState);
       f && await f(id, this.triggerDB[id].state);
+      await this.onStateChange(id, newState);
       return true;
     } else if (common) {
       if (this.adapter.config.debugLogStates) {
