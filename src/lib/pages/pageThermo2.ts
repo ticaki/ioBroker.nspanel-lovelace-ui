@@ -187,6 +187,7 @@ export class PageThermo2 extends PageMenu {
                     ? this.items.data[this.index]
                     : null
                 : this.items.data;
+            this.log.debug(`Index in ...: ${this.index}`);
             if (data) {
                 message.headline = this.library.getTranslation(
                     (data && data.headline && (await data.headline.getString())) ?? '',
@@ -359,13 +360,17 @@ export class PageThermo2 extends PageMenu {
             }
         }
     }
-    protected async onStateTrigger(): Promise<void> {
+    protected async onStateTrigger(id: string): Promise<void> {
+        if (id.startsWith(`///${this.basePanel.name}/${this.name}/`)) {
+            return;
+        }
         await this.update();
     }
 
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (state?.val) {
             this.index = parseInt(id.split('/').pop() ?? '0');
+            void this.update();
             if (this.config?.card === 'cardThermo2' && this.config?.filterType != null) {
                 this.config.filterType = this.index;
             }
@@ -463,7 +468,7 @@ export class PageThermo2 extends PageMenu {
                           ? o.common[configManager.adapter.language || 'en']
                           : o.common.name) ||
                       'HEATING';
-                actual = airCondition ? foundedStates[role].ACTUAL2?.dp || '' : foundedStates[role].ACTUAL?.dp || '';
+                actual = foundedStates[role].ACTUAL?.dp || '';
                 humidity = foundedStates[role].HUMIDITY?.dp || '';
                 set = airCondition ? foundedStates[role].SET2?.dp || '' : foundedStates[role].SET?.dp || '';
                 role = o.common.role;

@@ -181,6 +181,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     message.navigation = this.getNavigation();
     if (this.items && ((_a = this.config) == null ? void 0 : _a.card) === "cardThermo2") {
       const data = Array.isArray(this.items.data) ? this.items.data[this.index] ? this.items.data[this.index] : null : this.items.data;
+      this.log.debug(`Index in ...: ${this.index}`);
       if (data) {
         message.headline = this.library.getTranslation(
           (_b = data && data.headline && await data.headline.getString()) != null ? _b : ""
@@ -336,13 +337,17 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       }
     }
   }
-  async onStateTrigger() {
+  async onStateTrigger(id) {
+    if (id.startsWith(`///${this.basePanel.name}/${this.name}/`)) {
+      return;
+    }
     await this.update();
   }
   onInternalCommand = async (id, state) => {
     var _a, _b, _c;
     if (state == null ? void 0 : state.val) {
       this.index = parseInt((_a = id.split("/").pop()) != null ? _a : "0");
+      void this.update();
       if (((_b = this.config) == null ? void 0 : _b.card) === "cardThermo2" && ((_c = this.config) == null ? void 0 : _c.filterType) != null) {
         this.config.filterType = this.index;
       }
@@ -353,7 +358,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     return false;
   };
   static async getPage(configManager, page, gridItem, messages) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (page.type !== "cardThermo2" || !gridItem.config || gridItem.config.card !== "cardThermo2") {
       return { gridItem, messages };
     }
@@ -423,21 +428,21 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           continue;
         }
         headline = airCondition ? item.name2 || "COOLING" : item.name || (typeof o.common.name === "object" ? o.common[configManager.adapter.language || "en"] : o.common.name) || "HEATING";
-        actual = airCondition ? ((_a = foundedStates[role].ACTUAL2) == null ? void 0 : _a.dp) || "" : ((_b = foundedStates[role].ACTUAL) == null ? void 0 : _b.dp) || "";
-        humidity = ((_c = foundedStates[role].HUMIDITY) == null ? void 0 : _c.dp) || "";
-        set = airCondition ? ((_d = foundedStates[role].SET2) == null ? void 0 : _d.dp) || "" : ((_e = foundedStates[role].SET) == null ? void 0 : _e.dp) || "";
+        actual = ((_a = foundedStates[role].ACTUAL) == null ? void 0 : _a.dp) || "";
+        humidity = ((_b = foundedStates[role].HUMIDITY) == null ? void 0 : _b.dp) || "";
+        set = airCondition ? ((_c = foundedStates[role].SET2) == null ? void 0 : _c.dp) || "" : ((_d = foundedStates[role].SET) == null ? void 0 : _d.dp) || "";
         role = o.common.role;
         power = foundedStates[role].MODESET;
         if (foundedStates[role].MODE || foundedStates[role].MODESET) {
           mode = foundedStates[role].MODE || foundedStates[role].MODESET;
           if (mode && mode.dp) {
             const o2 = await adapter.getForeignObjectAsync(mode.dp);
-            if ((_f = o2 == null ? void 0 : o2.common) == null ? void 0 : _f.states) {
+            if ((_e = o2 == null ? void 0 : o2.common) == null ? void 0 : _e.states) {
               mode = {
                 ...mode,
                 read: `return ${JSON.stringify(o2.common.states)}[val] || val`
               };
-            } else if (((_g = o.common) == null ? void 0 : _g.type) === "string") {
+            } else if (((_f = o.common) == null ? void 0 : _f.type) === "string") {
               mode = {
                 ...mode
               };
@@ -499,7 +504,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           ];
           if (!item.modeList || !Array.isArray(item.modeList) || item.modeList.length < 1) {
             const o2 = await adapter.getForeignObjectAsync(item.modeId);
-            if ((_h = o2 == null ? void 0 : o2.common) == null ? void 0 : _h.states) {
+            if ((_g = o2 == null ? void 0 : o2.common) == null ? void 0 : _g.states) {
               states = o2.common.states;
             }
           } else {
@@ -617,7 +622,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             const dp = dataItem.dp;
             const o2 = await adapter.getForeignObjectAsync(dp);
             if (o2 == null ? void 0 : o2.common) {
-              let native = (_i = o2.common.native) == null ? void 0 : _i.nspanelIcons;
+              let native = (_h = o2.common.native) == null ? void 0 : _h.nspanelIcons;
               if (native != null && !Array.isArray(native)) {
                 native = void 0;
               }
