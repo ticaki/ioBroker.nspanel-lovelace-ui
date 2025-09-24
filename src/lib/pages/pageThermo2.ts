@@ -173,7 +173,6 @@ export class PageThermo2 extends PageMenu {
         this.items = tempItem as pages.cardThermo2DataItems;
         await super.init();
     }
-    
 
     public async update(): Promise<void> {
         if (!this?.visibility) {
