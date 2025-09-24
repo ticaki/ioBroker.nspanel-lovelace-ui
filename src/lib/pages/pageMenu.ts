@@ -4,7 +4,7 @@ import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray, getPayloadRemoveTilde, getRegExp } from '../const/tools';
 import * as pages from '../types/pages';
-import type { IncomingEvent } from '../types/types';
+import type { IncomingEvent, nsPanelState, nsPanelStateVal } from '../types/types';
 import { handleCardRole } from './data-collection-functions';
 import type { PageItem } from './pageItem';
 
@@ -546,6 +546,9 @@ export class PageMenu extends Page {
             getPayloadArray(message.options),
         );
     }
+    onInternalCommand = async (_id: string, _state: nsPanelState | undefined): Promise<nsPanelStateVal> => {
+        throw new Error('Method not implemented.');
+    };
 
     async delete(): Promise<void> {
         await super.delete();
@@ -561,6 +564,7 @@ export class PageMenu extends Page {
             await this.arrowPageItem.delete();
             this.arrowPageItem = undefined;
         }
+        await this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
         this.tempItems = undefined; // statt [] um Referenzen zu lösen
     }
 }
