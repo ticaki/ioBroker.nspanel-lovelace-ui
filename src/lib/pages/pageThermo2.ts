@@ -584,10 +584,10 @@ export class PageThermo2 extends PageMenu {
                 }
             }
             if (!(await configManager.existsAndWriteableState(set))) {
-                set = '';
                 const msg = `${page.uniqueName} item: ${i} id: ${set} invalid SET datapoint. Not exists or not writeable!`;
                 messages.push(msg);
                 adapter.log.warn(msg);
+                set = '';
                 continue;
             }
             const data: pages.cardThermo2DataItemOptions['data'] = {

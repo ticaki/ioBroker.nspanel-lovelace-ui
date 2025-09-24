@@ -43,12 +43,12 @@ var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
 var import_library = require("./library");
 var import_navigation = require("./navigation");
-var import_tools = require("../const/tools");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_pageMedia = require("../pages/pageMedia");
 var import_type_pageItem = require("../types/type-pageItem");
+var import_tools = require("../const/tools");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   //colorOn: RGB = Color.On;
@@ -1996,8 +1996,7 @@ class ConfigManager extends import_library.BaseClass {
               dpInit: entry.useKey ? expectedId : dpInit,
               role: entry.role,
               enums: "",
-              regexp: new RegExp(`\\.${dp}$`),
-              //getRegExp(`.${dp})`, { endsWith: true }) ?? undefined,
+              regexp: entry.useKey ? new RegExp(`\\.${dp}$`) : void 0,
               triggered: entry.trigger,
               writeable: entry.writeable,
               commonType: entry.type
@@ -2014,8 +2013,7 @@ class ConfigManager extends import_library.BaseClass {
                 dpInit: entry2.useKey ? expectedAltId : dpInit,
                 role: entry2.role,
                 enums: "",
-                regexp: new RegExp(`\\.${alternate}$`),
-                //getRegExp(`.${alternate})`, { endsWith: true }) ?? undefined,
+                regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : void 0,
                 triggered: entry.trigger,
                 writeable: entry2.writeable,
                 commonType: entry.type
