@@ -187,14 +187,13 @@ export class PageThermo2 extends PageMenu {
                     ? this.items.data[this.index]
                     : null
                 : this.items.data;
-            this.log.debug(`Index in ...: ${this.index}`);
             if (data) {
                 message.headline = this.library.getTranslation(
                     (data && data.headline && (await data.headline.getString())) ?? '',
                 );
-                const step = Math.round(((await data.stepValue?.getNumber()) || 0.5) * 10);
-                const min = Math.round(((await data.minValue?.getNumber()) || 15) * 10);
-                const max = Math.round(((await data.maxValue?.getNumber()) || 28) * 10);
+                const step = Math.round(((await data.stepValue?.getNumber()) || 0.5) * 10) || 5;
+                const min = Math.round(((await data.minValue?.getNumber()) || 15) * 10) || 15;
+                const max = Math.round(((await data.maxValue?.getNumber()) || 28) * 10) || 28;
                 let dstTemp = Math.round(((await tools.getValueEntryNumber(data.entity3)) || 0) * 10);
                 dstTemp = Math.min(Math.max(dstTemp, min), max);
                 dstTemp = Math.round((dstTemp - min) / step) * step + min;
@@ -369,17 +368,17 @@ export class PageThermo2 extends PageMenu {
 
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (state?.val) {
-            this.index = parseInt(id.split('/').pop() ?? '0');
-            void this.update();
-            if (this.config?.card === 'cardThermo2' && this.config?.filterType != null) {
-                this.config.filterType = this.index;
+            const index = parseInt(id.split('/').pop() ?? '0');
+            if (index !== this.index) {
+                this.index = index;
+                if (this.config?.card === 'cardThermo2' && this.config?.filterType != null) {
+                    this.config.filterType = this.index;
+                }
+                await this.update();
             }
             //this.adapter.setTimeout(() => this.update, 100);
         }
-        if (id == `///${this.basePanel.name}/${this.name}/${this.index}`) {
-            return true;
-        }
-        return false;
+        return id == `///${this.basePanel.name}/${this.name}/${this.index}`;
     };
     static async getPage(
         configManager: ConfigManager,
@@ -565,14 +564,6 @@ export class PageThermo2 extends PageMenu {
                 }
                 set = item.set;
             }
-            for (const im of [item.minValue, item.maxValue, item.stepValue]) {
-                if (im != null && (typeof im !== 'number' || im < 0)) {
-                    const msg = `${page.uniqueName} item: ${i} val: ${im} invalid - Error in minValue, maxValue or stepValue!`;
-                    messages.push(msg);
-                    adapter.log.warn(msg);
-                    continue;
-                }
-            }
             if (adapter.config.defaultValueCardThermo) {
                 if (item.minValue != null) {
                     item.minValue /= 10;
@@ -584,6 +575,15 @@ export class PageThermo2 extends PageMenu {
                     item.stepValue /= 10;
                 }
             }
+            for (const im of [item.minValue, item.maxValue, item.stepValue]) {
+                if (im != null && (typeof im !== 'number' || Math.round(im * 10) <= 0)) {
+                    const msg = `${page.uniqueName} item: ${i} val: ${im} invalid - Error in minValue, maxValue or stepValue!`;
+                    messages.push(msg);
+                    adapter.log.warn(msg);
+                    continue;
+                }
+            }
+
             const data: pages.cardThermo2DataItemOptions['data'] = {
                 entity3: (await configManager.existsAndWriteableState(set))
                     ? {

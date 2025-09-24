@@ -181,14 +181,13 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     message.navigation = this.getNavigation();
     if (this.items && ((_a = this.config) == null ? void 0 : _a.card) === "cardThermo2") {
       const data = Array.isArray(this.items.data) ? this.items.data[this.index] ? this.items.data[this.index] : null : this.items.data;
-      this.log.debug(`Index in ...: ${this.index}`);
       if (data) {
         message.headline = this.library.getTranslation(
           (_b = data && data.headline && await data.headline.getString()) != null ? _b : ""
         );
-        const step = Math.round((await ((_c = data.stepValue) == null ? void 0 : _c.getNumber()) || 0.5) * 10);
-        const min = Math.round((await ((_d = data.minValue) == null ? void 0 : _d.getNumber()) || 15) * 10);
-        const max = Math.round((await ((_e = data.maxValue) == null ? void 0 : _e.getNumber()) || 28) * 10);
+        const step = Math.round((await ((_c = data.stepValue) == null ? void 0 : _c.getNumber()) || 0.5) * 10) || 5;
+        const min = Math.round((await ((_d = data.minValue) == null ? void 0 : _d.getNumber()) || 15) * 10) || 15;
+        const max = Math.round((await ((_e = data.maxValue) == null ? void 0 : _e.getNumber()) || 28) * 10) || 28;
         let dstTemp = Math.round((await tools.getValueEntryNumber(data.entity3) || 0) * 10);
         dstTemp = Math.min(Math.max(dstTemp, min), max);
         dstTemp = Math.round((dstTemp - min) / step) * step + min;
@@ -346,16 +345,16 @@ class PageThermo2 extends import_pageMenu.PageMenu {
   onInternalCommand = async (id, state) => {
     var _a, _b, _c;
     if (state == null ? void 0 : state.val) {
-      this.index = parseInt((_a = id.split("/").pop()) != null ? _a : "0");
-      void this.update();
-      if (((_b = this.config) == null ? void 0 : _b.card) === "cardThermo2" && ((_c = this.config) == null ? void 0 : _c.filterType) != null) {
-        this.config.filterType = this.index;
+      const index = parseInt((_a = id.split("/").pop()) != null ? _a : "0");
+      if (index !== this.index) {
+        this.index = index;
+        if (((_b = this.config) == null ? void 0 : _b.card) === "cardThermo2" && ((_c = this.config) == null ? void 0 : _c.filterType) != null) {
+          this.config.filterType = this.index;
+        }
+        await this.update();
       }
     }
-    if (id == `///${this.basePanel.name}/${this.name}/${this.index}`) {
-      return true;
-    }
-    return false;
+    return id == `///${this.basePanel.name}/${this.name}/${this.index}`;
   };
   static async getPage(configManager, page, gridItem, messages) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
@@ -515,14 +514,6 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         }
         set = item.set;
       }
-      for (const im of [item.minValue, item.maxValue, item.stepValue]) {
-        if (im != null && (typeof im !== "number" || im < 0)) {
-          const msg = `${page.uniqueName} item: ${i} val: ${im} invalid - Error in minValue, maxValue or stepValue!`;
-          messages.push(msg);
-          adapter.log.warn(msg);
-          continue;
-        }
-      }
       if (adapter.config.defaultValueCardThermo) {
         if (item.minValue != null) {
           item.minValue /= 10;
@@ -532,6 +523,14 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         }
         if (item.stepValue != null) {
           item.stepValue /= 10;
+        }
+      }
+      for (const im of [item.minValue, item.maxValue, item.stepValue]) {
+        if (im != null && (typeof im !== "number" || Math.round(im * 10) <= 0)) {
+          const msg = `${page.uniqueName} item: ${i} val: ${im} invalid - Error in minValue, maxValue or stepValue!`;
+          messages.push(msg);
+          adapter.log.warn(msg);
+          continue;
         }
       }
       const data = {
