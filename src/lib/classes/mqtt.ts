@@ -4,7 +4,7 @@ import { Level } from 'level';
 //@ts-expect-error no types
 import aedesPersistencelevel from 'aedes-persistence-level';
 import * as factory from 'aedes-server-factory';
-import { BaseClass, type AdapterClassDefinition } from './library';
+import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 
 import Aedes, { type Client } from 'aedes';
 import { type Server } from 'net';

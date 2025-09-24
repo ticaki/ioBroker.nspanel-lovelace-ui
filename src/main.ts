@@ -5,7 +5,7 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
-import { Library } from './lib/classes/library';
+import { Library } from './lib/controller/library';
 import 'source-map-support/register';
 // Load your modules here, e.g.:
 // import * as fs from "fs";

@@ -11,7 +11,7 @@ import * as pages from '../types/pages';
 import { exhaustiveCheck } from '../types/pages';
 import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
-import { BaseClass } from './library';
+import { BaseClass } from '../controller/library';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
 import * as fs from 'fs';
 import path from 'path';

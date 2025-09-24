@@ -1,4 +1,4 @@
-import { isDataItem, Dataitem } from '../classes/data-item';
+import { isDataItem, Dataitem } from '../controller/data-item';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import type { ColorEntryType } from '../types/type-pageItem';

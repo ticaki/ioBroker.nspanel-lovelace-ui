@@ -2,7 +2,7 @@ import type { PageInterface } from './PageInterface';
 import type { PageItem } from '../pages/pageItem';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import type { Panel } from '../controller/panel';
-import { BaseClass } from './library';
+import { BaseClass } from '../controller/library';
 import { genericStateObjects } from '../const/definition';
 import type { Controller } from '../controller/controller';
 import type { IClientPublishOptions } from 'mqtt';

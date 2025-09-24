@@ -1,7 +1,7 @@
 import { Color, type RGB } from '../const/Color';
 import { BaseClass } from './library';
-import type { StatesControler } from '../controller/states-controller';
-import type { BaseTriggeredPage } from './baseClassPage';
+import type { StatesControler } from './states-controller';
+import type { BaseTriggeredPage } from '../classes/baseClassPage';
 
 import * as NSPanel from '../types/types';
 
