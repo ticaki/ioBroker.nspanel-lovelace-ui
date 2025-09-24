@@ -22,7 +22,7 @@ __export(baseClassPage_exports, {
   BaseTriggeredPage: () => BaseTriggeredPage
 });
 module.exports = __toCommonJS(baseClassPage_exports);
-var import_library = require("./library");
+var import_library = require("../controller/library");
 var import_definition = require("../const/definition");
 class BaseTriggeredPage extends import_library.BaseClass {
   updateTimeout;

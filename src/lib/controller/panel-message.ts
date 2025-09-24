@@ -1,6 +1,6 @@
 import type { IClientPublishOptions } from 'mqtt';
 import { SendTopicAppendix } from '../const/definition';
-import { BaseClass, type AdapterClassDefinition } from '../classes/library';
+import { BaseClass, type AdapterClassDefinition } from './library';
 import type { MQTTClientClass, callbackMessageType } from '../classes/mqtt';
 import type { Panel } from './panel';
 

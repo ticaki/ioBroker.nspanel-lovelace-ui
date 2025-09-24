@@ -1,4 +1,4 @@
-import type * as dataItem from '../classes/data-item';
+import type * as dataItem from '../controller/data-item';
 import type { RGB } from '../const/Color';
 import type * as pages from './pages';
 import type * as Types from './types';

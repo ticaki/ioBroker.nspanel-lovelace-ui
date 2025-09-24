@@ -1,5 +1,5 @@
 import type { Panel } from '../controller/panel';
-import { BaseClass, type AdapterClassDefinition } from './library';
+import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import type { Page } from './Page';

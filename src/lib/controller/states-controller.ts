@@ -1,7 +1,7 @@
 // BaseClass extends
 
-import { Dataitem } from '../classes/data-item';
-import { BaseClass } from '../classes/library';
+import { Dataitem } from './data-item';
+import { BaseClass } from './library';
 import type { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/types';
 import { getRegExp } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';

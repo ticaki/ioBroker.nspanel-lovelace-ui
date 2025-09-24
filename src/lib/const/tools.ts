@@ -1,6 +1,6 @@
-import { isDataItem, type Dataitem } from '../classes/data-item';
+import { isDataItem, type Dataitem } from '../controller/data-item';
 import type * as typePageItem from '../types/type-pageItem';
-import type { Library } from '../classes/library';
+import type { Library } from '../controller/library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';

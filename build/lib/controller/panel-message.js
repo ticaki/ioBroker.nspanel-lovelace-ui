@@ -22,7 +22,7 @@ __export(panel_message_exports, {
 });
 module.exports = __toCommonJS(panel_message_exports);
 var import_definition = require("../const/definition");
-var import_library = require("../classes/library");
+var import_library = require("./library");
 class PanelSend extends import_library.BaseClass {
   messageDb = [];
   messageDbTasmota = [];

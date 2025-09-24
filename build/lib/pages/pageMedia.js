@@ -32,7 +32,7 @@ __export(pageMedia_exports, {
   getValueFromBoolean: () => getValueFromBoolean
 });
 module.exports = __toCommonJS(pageMedia_exports);
-var import_data_item = require("../classes/data-item");
+var import_data_item = require("../controller/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var types = __toESM(require("../types/types"));

@@ -23,7 +23,7 @@ __export(navigation_exports, {
   isNavigationItemConfigArray: () => isNavigationItemConfigArray
 });
 module.exports = __toCommonJS(navigation_exports);
-var import_library = require("./library");
+var import_library = require("../controller/library");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");

@@ -1,5 +1,5 @@
 import type { Page } from '../classes/Page';
-import type { AdapterClassDefinition } from '../classes/library';
+import type { AdapterClassDefinition } from '../controller/library';
 import { Color } from '../const/Color';
 import { getStringFromStringOrTranslated } from '../const/tools';
 import { exhaustiveCheck, type CardRole, type PageMenuConfig } from '../types/pages';

@@ -1,5 +1,5 @@
 import http from 'http';
-import { BaseClass } from './library';
+import { BaseClass } from '../controller/library';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import fs from 'fs';
 
