@@ -235,10 +235,14 @@ export const stateRoleArray = arrayOfAllStateRole([
     'level.volume.group',
     'media.mode.crossfade',
     'media.station',
+    'date.sunrise,forecast.0',
+    'date.sunset.forecast.0',
     '',
 ]);
 
 export type StateRole =
+    | 'date.sunrise,forecast.0'
+    | 'date.sunset.forecast.0'
     | 'media.station'
     | 'media.mode.crossfade'
     | 'level.volume.group'
@@ -281,7 +285,6 @@ export type StateRole =
     | 'date'
     | 'date.sunrise.forecast.0'
     | 'date.sunrise.forecast.1'
-    | 'date.sunset.forecast.0'
     | 'date.sunset.forecast.1'
     | 'indicator.error'
     | 'indicator.lowbat'

@@ -148,6 +148,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Added screensaver notification system  
+- (ticaki) Fixed cardThermo2 not switching  
+- (ticaki) Implemented hiding of screensaver elements  
+- (ticaki) Adjusted Brightsky templates  
 - (ticaki) made script configuration transfer more robust
 
 ### 0.4.0 (2025-09-13)

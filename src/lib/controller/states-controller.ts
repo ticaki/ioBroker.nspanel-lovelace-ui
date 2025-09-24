@@ -605,6 +605,7 @@ export class StatesControler extends BaseClass {
             await this.onStateChange(id, newState);
 
             // here we trigger the state command
+            // if we change this onStateTrigger change 'ne' not work correcty
             f && (await f(id, this.triggerDB[id].state));
 
             return true;

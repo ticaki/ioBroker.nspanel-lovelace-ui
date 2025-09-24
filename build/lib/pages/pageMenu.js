@@ -474,6 +474,9 @@ class PageMenu extends import_Page.Page {
       (0, import_tools.getPayloadArray)(message.options)
     );
   }
+  onInternalCommand = async (_id, _state) => {
+    throw new Error("Method not implemented.");
+  };
   async delete() {
     await super.delete();
     if (this.doubleClick) {
@@ -488,6 +491,7 @@ class PageMenu extends import_Page.Page {
       await this.arrowPageItem.delete();
       this.arrowPageItem = void 0;
     }
+    await this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
     this.tempItems = void 0;
   }
 }
