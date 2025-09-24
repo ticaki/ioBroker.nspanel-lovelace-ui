@@ -533,8 +533,15 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           continue;
         }
       }
+      if (!await configManager.existsAndWriteableState(set)) {
+        const msg = `${page.uniqueName} item: ${i} id: ${set} invalid SET datapoint. Not exists or not writeable!`;
+        messages.push(msg);
+        adapter.log.warn(msg);
+        set = "";
+        continue;
+      }
       const data = {
-        entity3: await configManager.existsAndWriteableState(set) ? {
+        entity3: set ? {
           value: { type: "triggered", dp: set },
           set: { type: "state", dp: set }
         } : void 0,
