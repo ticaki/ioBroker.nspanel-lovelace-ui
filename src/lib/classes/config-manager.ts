@@ -13,12 +13,14 @@ import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
 import { BaseClass } from './library';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
-import { getVersionAsNumber } from '../const/tools';
+import { getRegExp, getVersionAsNumber } from '../const/tools';
 import * as fs from 'fs';
 import path from 'path';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
 import { isPageItemDataItemsOptions } from '../types/type-pageItem';
+import { commonTools } from '@iobroker/adapter-core';
+import { get } from 'axios';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -2263,7 +2265,7 @@ export class ConfigManager extends BaseClass {
                             dpInit: entry.useKey ? expectedId : dpInit,
                             role: entry.role,
                             enums: '',
-                            regexp: undefined,
+                            regexp: new RegExp(`\\.${dp}$`), //getRegExp(`.${dp})`, { endsWith: true }) ?? undefined,
                             triggered: entry.trigger,
                             writeable: entry.writeable,
                             commonType: entry.type,
@@ -2282,7 +2284,7 @@ export class ConfigManager extends BaseClass {
                                 dpInit: entry2.useKey ? expectedAltId : dpInit,
                                 role: entry2.role,
                                 enums: '',
-                                regexp: undefined,
+                                regexp: new RegExp(`\\.${alternate}$`), //getRegExp(`.${alternate})`, { endsWith: true }) ?? undefined,
                                 triggered: entry.trigger,
                                 writeable: entry2.writeable,
                                 commonType: entry.type,

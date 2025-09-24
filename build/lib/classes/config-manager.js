@@ -1996,7 +1996,8 @@ class ConfigManager extends import_library.BaseClass {
               dpInit: entry.useKey ? expectedId : dpInit,
               role: entry.role,
               enums: "",
-              regexp: void 0,
+              regexp: new RegExp(`\\.${dp}$`),
+              //getRegExp(`.${dp})`, { endsWith: true }) ?? undefined,
               triggered: entry.trigger,
               writeable: entry.writeable,
               commonType: entry.type
@@ -2013,7 +2014,8 @@ class ConfigManager extends import_library.BaseClass {
                 dpInit: entry2.useKey ? expectedAltId : dpInit,
                 role: entry2.role,
                 enums: "",
-                regexp: void 0,
+                regexp: new RegExp(`\\.${alternate}$`),
+                //getRegExp(`.${alternate})`, { endsWith: true }) ?? undefined,
                 triggered: entry.trigger,
                 writeable: entry2.writeable,
                 commonType: entry.type
