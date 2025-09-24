@@ -533,6 +533,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           continue;
         }
       }
+      configManager.log.error(`Check set ${set} ${await configManager.existsState(set)} ${set.endsWith(".")}`);
       if (!await configManager.existsAndWriteableState(set)) {
         set = "";
         const msg = `${page.uniqueName} item: ${i} id: ${set} invalid SET datapoint. Not exists or not writeable!`;
