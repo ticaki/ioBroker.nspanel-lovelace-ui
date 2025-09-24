@@ -31,7 +31,7 @@ __export(controller_exports, {
   Controller: () => Controller
 });
 module.exports = __toCommonJS(controller_exports);
-var Library = __toESM(require("../classes/library"));
+var Library = __toESM(require("./library"));
 var import_states_controller = require("./states-controller");
 var Panel = __toESM(require("./panel"));
 var import_definition = require("../const/definition");

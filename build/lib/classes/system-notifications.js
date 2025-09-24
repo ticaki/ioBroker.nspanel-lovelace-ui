@@ -22,7 +22,7 @@ __export(system_notifications_exports, {
 });
 module.exports = __toCommonJS(system_notifications_exports);
 var import_tools = require("../const/tools");
-var import_library = require("./library");
+var import_library = require("../controller/library");
 class SystemNotifications extends import_library.BaseClass {
   language;
   notifications = [];

@@ -32,7 +32,7 @@ __export(http_server_exports, {
 });
 module.exports = __toCommonJS(http_server_exports);
 var import_http = __toESM(require("http"));
-var import_library = require("./library");
+var import_library = require("../controller/library");
 var import_fs = __toESM(require("fs"));
 class HttpServer extends import_library.BaseClass {
   server;

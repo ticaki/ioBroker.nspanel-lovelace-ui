@@ -75,7 +75,7 @@ __export(tools_exports, {
   siPrefixes: () => siPrefixes
 });
 module.exports = __toCommonJS(tools_exports);
-var import_data_item = require("../classes/data-item");
+var import_data_item = require("../controller/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("./icon_mapping");
 var types = __toESM(require("../types/types"));
