@@ -46,6 +46,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     testCaseConfig: any; // just for testing
     scriptConfigBacklog: any[] = [];
 
+    fetchs: Map<AbortController, ioBroker.Timeout | undefined> = new Map();
+
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -461,6 +463,43 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         await this.setState('info.connection', true, true);
     };
+
+    async fetch(url: string, init?: RequestInit, timeout = 30_000): Promise<unknown> {
+        const controller = new AbortController();
+
+        // 30 seconds timeout
+        const timeoutId = this.setTimeout(() => {
+            // Abort and remove entry to avoid leak
+            try {
+                controller.abort();
+            } catch {
+                // ignore
+            }
+            this.fetchs.delete(controller);
+        }, timeout);
+
+        this.fetchs.set(controller, timeoutId);
+
+        try {
+            const response = await fetch(url, {
+                ...init,
+                method: init?.method ?? 'GET',
+                signal: controller.signal,
+            });
+            if (response.status === 200) {
+                return await response.json();
+            }
+            throw new Error({ status: response.status, statusText: response.statusText } as any);
+        } finally {
+            // always clear timeout and remove the controller
+            const id = this.fetchs.get(controller);
+            if (typeof id !== 'undefined') {
+                this.clearTimeout(id);
+            }
+            this.fetchs.delete(controller);
+        }
+    }
+
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances.
      *
@@ -475,6 +514,18 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (this.timeoutAdmin2) {
                 this.clearTimeout(this.timeoutAdmin2);
             }
+            for (const [controller, timeoutId] of this.fetchs.entries()) {
+                try {
+                    if (timeoutId) {
+                        this.clearTimeout(timeoutId);
+                    }
+                    controller.abort();
+                } catch {
+                    // ignore errors during abort/clear
+                }
+            }
+            this.fetchs.clear();
+
             this.timeoutAdminArray.forEach(a => {
                 if (a) {
                     this.clearTimeout(a);
