@@ -123,11 +123,11 @@ class Color extends ColorBase {
   // original background color
   static Charcoal = { r: 30, g: 30, b: 30 };
   // deep dark panels/cards
-  static DarkGrayBlue = { r: 20, g: 23, b: 40 };
+  static DarkGrayBlue = { r: 10, g: 13, b: 30 };
   // dark bluish UI bars
   static DeepOcean = { r: 0, g: 60, b: 120 };
   // very dark cool header strip
-  static DarkBlue = { r: 0, g: 0, b: 136 };
+  static DarkBlue = { r: 0, g: 0, b: 146 };
   // dark blue accents
   // ——— Grays / Neutrals ———
   static DarkGray = { r: 64, g: 64, b: 64 };
@@ -242,6 +242,8 @@ class Color extends ColorBase {
   // strong link/series
   static TealBlue = { r: 0, g: 20, b: 156 };
   // slightly brighter teal-blue
+  static BrightTealBlue = { r: 50, g: 30, b: 156 };
+  // brighter teal-blue with red tint
   // ——— Violets / Pinks ———
   static Purple = { r: 128, g: 0, b: 128 };
   // category/secondary
@@ -622,7 +624,7 @@ class Color extends ColorBase {
     hail: Color.LightGray,
     lightning: Color.Yellow,
     lightningRainy: Color.MSYellow,
-    pouring: Color.TealBlue,
+    pouring: Color.BrightTealBlue,
     rainy: Color.Blue,
     snowy: Color.White,
     snowyHeavy: Color.LightGray,
