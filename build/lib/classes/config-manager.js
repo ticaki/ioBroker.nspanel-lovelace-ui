@@ -4207,6 +4207,13 @@ class ConfigManager extends import_library.BaseClass {
       } else {
         throw new Error("ScreensaverEntityEnabled must be a string!");
       }
+    } else if ("ScreensaverEntityVisibleCondition" in entity && entity.ScreensaverEntityVisibleCondition && result.data.entity1.value) {
+      result.data.enabled = {
+        ...result.data.entity1.value,
+        read: `
+                return ${entity.ScreensaverEntityVisibleCondition};
+                `
+      };
     }
     if (dataType === "number" && entity.ScreensaverEntityIconSelect && Array.isArray(entity.ScreensaverEntityIconSelect)) {
       const obj2 = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
