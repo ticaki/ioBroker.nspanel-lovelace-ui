@@ -242,6 +242,8 @@ export class Color extends ColorBase {
     static readonly Blue: RGB = { r: 0, g: 0, b: 255 }; // strong link/series
     static readonly TealBlue: RGB = { r: 0, g: 20, b: 156 }; // slightly brighter teal-blue
     static readonly BrightTealBlue: RGB = { r: 50, g: 30, b: 156 }; // brighter teal-blue with red tint
+    static readonly GrayBlue: RGB = { r: 90, g: 90, b: 200 }; // softer gray-blue, ~30% lighter
+    static readonly LightGrayBlue: RGB = { r: 130, g: 130, b: 230 }; // softer gray-blue, ~30% lighter
 
     // ——— Violets / Pinks ———
     static readonly Purple: RGB = { r: 128, g: 0, b: 128 }; // category/secondary
@@ -624,8 +626,8 @@ export class Color extends ColorBase {
         hail: Color.LightGray,
         lightning: Color.Yellow,
         lightningRainy: Color.MSYellow,
-        pouring: Color.BrightTealBlue,
-        rainy: Color.Blue,
+        pouring: Color.GrayBlue,
+        rainy: Color.LightGrayBlue,
         snowy: Color.White,
         snowyHeavy: Color.LightGray,
         snowyRainy: Color.BlueLight,
