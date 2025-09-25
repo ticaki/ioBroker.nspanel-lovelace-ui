@@ -1,5 +1,5 @@
 import { Color, type RGB } from '../const/Color';
-import * as configManagerConst from '../const/config-manager-const';
+import * as configManagerConst from './config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PageQR } from '../pages/pageQR';
@@ -12,12 +12,15 @@ import { exhaustiveCheck } from '../types/pages';
 import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
 import { BaseClass } from '../controller/library';
-import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
+import { isNavigationItemConfigArray, type NavigationItemConfig } from '../classes/navigation';
 import * as fs from 'fs';
 import path from 'path';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
 import { isPageItemDataItemsOptions } from '../types/type-pageItem';
+import { ButtonNavigationDef } from './button-navigation-def';
+
+/// <reference path="./lib/config/config-manager.d.ts" />
 import { getVersionAsNumber } from '../const/tools';
 
 export class ConfigManager extends BaseClass {
@@ -1431,19 +1434,6 @@ export class ConfigManager extends BaseClass {
         item.icon2 = item.icon2 || item.icon;
         switch (role) {
             case 'socket': {
-                let icon: AllIcons | undefined;
-                let icon2: AllIcons | undefined;
-                if (item.role) {
-                    switch (item.role) {
-                        case 'socket': {
-                            icon = 'power-socket-de';
-                            icon2 = 'power-socket-de';
-                            break;
-                        }
-                    }
-                }
-                icon = item.icon || icon || 'power';
-                icon2 = item.icon2 || icon2 || 'power-standby';
                 const tempItem: typePageItem.PageItemDataItemsOptions = {
                     type: 'button',
                     role: 'button',
@@ -1452,30 +1442,38 @@ export class ConfigManager extends BaseClass {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: String(icon),
+                                    constVal: item.icon || String(ButtonNavigationDef[role].iconOn),
                                 },
-                                color: await this.getIconColor(item.onColor, Color.on),
+                                text: {
+                                    ...iconTextDefaults,
+                                    value: foundedStates[role][ButtonNavigationDef[role].stateName],
+                                },
+                                color: await this.getIconColor(item.onColor, ButtonNavigationDef[role].colorOn),
                             },
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: icon2,
+                                    constVal: item.icon2 || item.icon || ButtonNavigationDef[role].iconOff,
                                 },
-                                color: await this.getIconColor(item.offColor, Color.off),
+                                text: {
+                                    ...iconTextDefaults,
+                                    value: foundedStates[role][ButtonNavigationDef[role].stateName],
+                                },
+                                color: await this.getIconColor(item.offColor, ButtonNavigationDef[role].colorOff),
                             },
                             scale: Types.isIconColorScaleElement(item.colorScale)
                                 ? { type: 'const', constVal: item.colorScale }
-                                : undefined,
-                            maxBri: undefined,
-                            minBri: undefined,
+                                : Types.isIconColorScaleElement(ButtonNavigationDef[role].colorScale)
+                                  ? { type: 'const', constVal: ButtonNavigationDef[role].colorScale }
+                                  : undefined,
                         },
                         text1: {
-                            true: { type: 'const', constVal: 'on' },
-                            false: { type: 'const', constVal: 'off' },
+                            true: { type: 'const', constVal: ButtonNavigationDef[role].textOn || '' },
+                            false: { type: 'const', constVal: ButtonNavigationDef[role].textOff || '' },
                         },
                         text: text,
                         entity1: {
-                            value: foundedStates[role].ACTUAL,
+                            value: foundedStates[role][ButtonNavigationDef[role].stateName],
                         },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -1499,12 +1497,20 @@ export class ConfigManager extends BaseClass {
                                     type: 'const',
                                     constVal: item.icon || 'lightbulb',
                                 },
+                                text: {
+                                    ...iconTextDefaults,
+                                    value: foundedStates[role].ACTUAL,
+                                },
                                 color: await this.getIconColor(item.onColor, Color.light),
                             },
                             false: {
                                 value: {
                                     type: 'const',
                                     constVal: item.icon2 || 'lightbulb-outline',
+                                },
+                                text: {
+                                    ...iconTextDefaults,
+                                    value: foundedStates[role].ACTUAL,
                                 },
                                 color: await this.getIconColor(item.offColor, Color.dark),
                             },
@@ -1538,6 +1544,7 @@ export class ConfigManager extends BaseClass {
                                     type: 'const',
                                     constVal: item.icon || 'gesture-tap-button',
                                 },
+
                                 color: await this.getIconColor(item.onColor, Color.activated),
                             },
                             false: {
@@ -2205,9 +2212,6 @@ export class ConfigManager extends BaseClass {
             }
             default:
                 exhaustiveCheck(role);
-
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
         }
         if (!itemConfig) {
             this.log.warn(
@@ -4694,7 +4698,7 @@ export class ConfigManager extends BaseClass {
             delete temp.type;
             return temp;
         }
-        if (!result.data.entity1) {
+        if (!result.data?.entity1) {
             throw new Error('Invalid data');
         }
         result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.Headline || ' ', true);
@@ -4788,6 +4792,9 @@ export class ConfigManager extends BaseClass {
             type: 'text',
             data: { entity1: {} },
         };
+        if (!result.data) {
+            throw new Error('Invalid data');
+        }
         if (entity.type === 'native') {
             const temp = structuredClone(entity.native) as typePageItem.PageItemDataItemsOptions;
             return temp;

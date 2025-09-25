@@ -1,6 +1,6 @@
 import { Color, type RGB } from '../../const/Color';
 import type * as pages from '../../types/pages';
-import type { ConfigManager } from '../../classes/config-manager';
+import type { ConfigManager } from '../../config/config-manager';
 
 export async function getPageSpotify(
     configManager: ConfigManager,

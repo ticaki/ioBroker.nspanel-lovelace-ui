@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { requiredScriptDataPoints } from '../const/config-manager-const';
+import { requiredScriptDataPoints } from '../config/config-manager-const';
 
 import { promises as fsp } from 'fs';
 import * as path from 'path';

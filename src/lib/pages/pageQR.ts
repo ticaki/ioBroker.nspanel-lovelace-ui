@@ -1,4 +1,4 @@
-import type { ConfigManager } from '../classes/config-manager';
+import type { ConfigManager } from '../config/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';

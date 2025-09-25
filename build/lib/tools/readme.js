@@ -33,7 +33,7 @@ __export(readme_exports, {
 });
 module.exports = __toCommonJS(readme_exports);
 var fs = __toESM(require("fs"));
-var import_config_manager_const = require("../const/config-manager-const");
+var import_config_manager_const = require("../config/config-manager-const");
 var import_fs = require("fs");
 var path = __toESM(require("path"));
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");

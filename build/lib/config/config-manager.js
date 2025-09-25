@@ -32,7 +32,7 @@ __export(config_manager_exports, {
 });
 module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
-var configManagerConst = __toESM(require("../const/config-manager-const"));
+var configManagerConst = __toESM(require("./config-manager-const"));
 var import_states_controller = require("../controller/states-controller");
 var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
@@ -42,12 +42,13 @@ var pages = __toESM(require("../types/pages"));
 var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
 var import_library = require("../controller/library");
-var import_navigation = require("./navigation");
+var import_navigation = require("../classes/navigation");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_pageMedia = require("../pages/pageMedia");
 var import_type_pageItem = require("../types/type-pageItem");
+var import_button_navigation_def = require("./button-navigation-def");
 var import_tools = require("../const/tools");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
@@ -1231,19 +1232,6 @@ class ConfigManager extends import_library.BaseClass {
     item.icon2 = item.icon2 || item.icon;
     switch (role) {
       case "socket": {
-        let icon;
-        let icon2;
-        if (item.role) {
-          switch (item.role) {
-            case "socket": {
-              icon = "power-socket-de";
-              icon2 = "power-socket-de";
-              break;
-            }
-          }
-        }
-        icon = item.icon || icon || "power";
-        icon2 = item.icon2 || icon2 || "power-standby";
         const tempItem = {
           type: "button",
           role: "button",
@@ -1252,28 +1240,34 @@ class ConfigManager extends import_library.BaseClass {
               true: {
                 value: {
                   type: "const",
-                  constVal: String(icon)
+                  constVal: item.icon || String(import_button_navigation_def.ButtonNavigationDef[role].iconOn)
                 },
-                color: await this.getIconColor(item.onColor, import_Color.Color.on)
+                text: {
+                  ...iconTextDefaults,
+                  value: foundedStates[role][import_button_navigation_def.ButtonNavigationDef[role].stateName]
+                },
+                color: await this.getIconColor(item.onColor, import_button_navigation_def.ButtonNavigationDef[role].colorOn)
               },
               false: {
                 value: {
                   type: "const",
-                  constVal: icon2
+                  constVal: item.icon2 || item.icon || import_button_navigation_def.ButtonNavigationDef[role].iconOff
                 },
-                color: await this.getIconColor(item.offColor, import_Color.Color.off)
+                text: {
+                  ...iconTextDefaults,
+                  value: foundedStates[role][import_button_navigation_def.ButtonNavigationDef[role].stateName]
+                },
+                color: await this.getIconColor(item.offColor, import_button_navigation_def.ButtonNavigationDef[role].colorOff)
               },
-              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
-              maxBri: void 0,
-              minBri: void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : Types.isIconColorScaleElement(import_button_navigation_def.ButtonNavigationDef[role].colorScale) ? { type: "const", constVal: import_button_navigation_def.ButtonNavigationDef[role].colorScale } : void 0
             },
             text1: {
-              true: { type: "const", constVal: "on" },
-              false: { type: "const", constVal: "off" }
+              true: { type: "const", constVal: import_button_navigation_def.ButtonNavigationDef[role].textOn || "" },
+              false: { type: "const", constVal: import_button_navigation_def.ButtonNavigationDef[role].textOff || "" }
             },
             text,
             entity1: {
-              value: foundedStates[role].ACTUAL
+              value: foundedStates[role][import_button_navigation_def.ButtonNavigationDef[role].stateName]
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1297,12 +1291,20 @@ class ConfigManager extends import_library.BaseClass {
                   type: "const",
                   constVal: item.icon || "lightbulb"
                 },
+                text: {
+                  ...iconTextDefaults,
+                  value: foundedStates[role].ACTUAL
+                },
                 color: await this.getIconColor(item.onColor, import_Color.Color.light)
               },
               false: {
                 value: {
                   type: "const",
                   constVal: item.icon2 || "lightbulb-outline"
+                },
+                text: {
+                  ...iconTextDefaults,
+                  value: foundedStates[role].ACTUAL
                 },
                 color: await this.getIconColor(item.offColor, import_Color.Color.dark)
               },
@@ -1951,7 +1953,6 @@ class ConfigManager extends import_library.BaseClass {
       }
       default:
         (0, import_pages.exhaustiveCheck)(role);
-        throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
     }
     if (!itemConfig) {
       this.log.warn(
@@ -3969,6 +3970,7 @@ class ConfigManager extends import_library.BaseClass {
     throw new Error("Invalid data");
   }
   async getNotifyEntityData(entity, mode) {
+    var _a;
     const result = {
       modeScr: mode,
       type: "text",
@@ -3982,7 +3984,7 @@ class ConfigManager extends import_library.BaseClass {
       delete temp.type;
       return temp;
     }
-    if (!result.data.entity1) {
+    if (!((_a = result.data) == null ? void 0 : _a.entity1)) {
       throw new Error("Invalid data");
     }
     result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.Headline || " ", true);
@@ -4065,6 +4067,9 @@ class ConfigManager extends import_library.BaseClass {
       type: "text",
       data: { entity1: {} }
     };
+    if (!result.data) {
+      throw new Error("Invalid data");
+    }
     if (entity.type === "native") {
       const temp = structuredClone(entity.native);
       return temp;

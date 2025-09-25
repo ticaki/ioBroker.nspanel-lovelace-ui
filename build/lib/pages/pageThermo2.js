@@ -34,7 +34,7 @@ module.exports = __toCommonJS(pageThermo2_exports);
 var tools = __toESM(require("../const/tools"));
 var import_pageMenu = require("./pageMenu");
 var import_Color = require("../const/Color");
-var configManagerConst = __toESM(require("../const/config-manager-const"));
+var configManagerConst = __toESM(require("../config/config-manager-const"));
 const PageThermo2MessageDefault = {
   event: "entityUpd",
   headline: "Page Thermo",
