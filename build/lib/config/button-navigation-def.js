@@ -24,6 +24,7 @@ module.exports = __toCommonJS(button_navigation_def_exports);
 var import_Color = require("../const/Color");
 const ButtonNavigationDef = {
   airCondition: {
+    role: "",
     iconOn: "air-conditioner",
     iconOff: "air-conditioner",
     colorOn: import_Color.Color.hot,
@@ -33,6 +34,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   blind: {
+    role: "",
     iconOn: "window-shutter-open",
     iconOff: "window-shutter",
     colorOn: import_Color.Color.open,
@@ -42,6 +44,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   button: {
+    role: "",
     iconOn: "gesture-tap-button",
     iconOff: "gesture-tap-button",
     colorOn: import_Color.Color.on,
@@ -51,6 +54,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   ct: {
+    role: "ct",
     iconOn: "lightbulb",
     iconOff: "lightbulb-outline",
     colorOn: import_Color.Color.on,
@@ -60,6 +64,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   dimmer: {
+    role: "dimmer",
     iconOn: "lightbulb",
     iconOff: "lightbulb-outline",
     colorOn: import_Color.Color.on,
@@ -69,6 +74,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   door: {
+    role: "",
     iconOn: "door-open",
     iconOff: "door-closed",
     colorOn: import_Color.Color.open,
@@ -78,6 +84,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   gate: {
+    role: "",
     iconOn: "gate-open",
     iconOff: "gate",
     colorOn: import_Color.Color.open,
@@ -87,6 +94,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   hue: {
+    role: "hue",
     iconOn: "lightbulb",
     iconOff: "lightbulb-outline",
     colorOn: import_Color.Color.on,
@@ -96,6 +104,7 @@ const ButtonNavigationDef = {
     stateName: "ON"
   },
   humidity: {
+    role: "",
     iconOn: "water-percent",
     iconOff: "water-percent",
     colorOn: import_Color.Color.on,
@@ -106,6 +115,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   info: {
+    role: "",
     iconOn: "information-outline",
     iconOff: "information-off-outline",
     colorOn: import_Color.Color.info,
@@ -115,6 +125,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   "level.mode.fan": {
+    role: "",
     iconOn: "fan",
     iconOff: "fan-off",
     colorOn: import_Color.Color.on,
@@ -124,6 +135,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   "level.timer": {
+    role: "",
     iconOn: "timer",
     iconOff: "timer-off",
     colorOn: import_Color.Color.on,
@@ -133,6 +145,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   light: {
+    role: "light",
     iconOn: "lightbulb",
     iconOff: "lightbulb-outline",
     colorOn: import_Color.Color.on,
@@ -142,6 +155,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   lock: {
+    role: "light",
     iconOn: "lock-open",
     iconOff: "lock",
     colorOn: import_Color.Color.open,
@@ -151,6 +165,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   media: {
+    role: "iconNotText",
     iconOn: "play",
     iconOff: "pause",
     colorOn: import_Color.Color.on,
@@ -160,6 +175,7 @@ const ButtonNavigationDef = {
     stateName: "STATE"
   },
   motion: {
+    role: "",
     iconOn: "motion",
     iconOff: "motion-outline",
     colorOn: import_Color.Color.attention,
@@ -169,6 +185,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   rgb: {
+    role: "rgbThree",
     iconOn: "lightbulb",
     iconOff: "lightbulb-outline",
     colorOn: import_Color.Color.on,
@@ -178,6 +195,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   rgbSingle: {
+    role: "rgbSingle",
     iconOn: "lightbulb",
     iconOff: "lightbulb-outline",
     colorOn: import_Color.Color.on,
@@ -187,6 +205,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   select: {
+    role: "",
     iconOn: "menu-down",
     iconOff: "menu-down",
     colorOn: import_Color.Color.activated,
@@ -196,6 +215,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   "sensor.alarm.flood": {
+    role: "",
     iconOn: "water-alert-outline",
     iconOff: "water-outline",
     colorOn: import_Color.Color.attention,
@@ -205,6 +225,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   slider: {
+    role: "",
     iconOn: "tune",
     iconOff: "tune",
     colorOn: import_Color.Color.good,
@@ -214,6 +235,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   socket: {
+    role: "socket",
     iconOn: "power-socket-de",
     iconOff: "power-plug-off",
     colorOn: import_Color.Color.on,
@@ -223,6 +245,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   temperature: {
+    role: "",
     iconOn: "thermometer",
     iconOff: "thermometer",
     colorOn: import_Color.Color.hot,
@@ -231,6 +254,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   thermostat: {
+    role: "",
     iconOn: "thermostat",
     iconOff: "thermostat",
     colorOn: import_Color.Color.hot,
@@ -239,6 +263,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   timeTable: {
+    role: "",
     iconOn: "timetable",
     iconOff: "timetable",
     colorOn: import_Color.Color.on,
@@ -248,6 +273,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   "value.humidity": {
+    role: "",
     iconOn: "water-percent",
     iconOff: "water-percent",
     colorOn: import_Color.Color.on,
@@ -256,6 +282,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   "value.temperature": {
+    role: "",
     iconOn: "thermostat",
     iconOff: "thermostat",
     colorOn: import_Color.Color.hot,
@@ -264,6 +291,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   volume: {
+    role: "",
     iconOn: "volume-high",
     iconOff: "volume-mute",
     colorOn: import_Color.Color.on,
@@ -271,6 +299,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   window: {
+    role: "",
     iconOn: "window-open-variant",
     iconOff: "window-closed-variant",
     colorOn: import_Color.Color.open,
@@ -280,6 +309,7 @@ const ButtonNavigationDef = {
     stateName: "ACTUAL"
   },
   warning: {
+    role: "",
     iconOn: "alert-circle-outline",
     iconOff: "alert-circle-outline",
     colorOn: import_Color.Color.attention,

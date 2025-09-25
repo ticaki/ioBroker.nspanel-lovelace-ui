@@ -1,10 +1,12 @@
 import type { RGB } from '../const/Color';
 import { Color } from '../const/Color';
+import type { CardRole, DeviceRole } from '../types/pages';
 import type { mydps } from './config-manager-const';
 
 export const ButtonNavigationDef: Record<
     ScriptConfig.channelRoles,
     {
+        role: DeviceRole | CardRole;
         iconOn: AllIcons;
         iconOff: AllIcons;
         colorOn: string | RGB;
@@ -16,6 +18,7 @@ export const ButtonNavigationDef: Record<
     }
 > = {
     airCondition: {
+        role: '',
         iconOn: 'air-conditioner',
         iconOff: 'air-conditioner',
         colorOn: Color.hot,
@@ -25,6 +28,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     blind: {
+        role: '',
         iconOn: 'window-shutter-open',
         iconOff: 'window-shutter',
         colorOn: Color.open,
@@ -34,6 +38,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     button: {
+        role: '',
         iconOn: 'gesture-tap-button',
         iconOff: 'gesture-tap-button',
         colorOn: Color.on,
@@ -43,6 +48,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     ct: {
+        role: 'ct',
         iconOn: 'lightbulb',
         iconOff: 'lightbulb-outline',
         colorOn: Color.on,
@@ -52,6 +58,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     dimmer: {
+        role: 'dimmer',
         iconOn: 'lightbulb',
         iconOff: 'lightbulb-outline',
         colorOn: Color.on,
@@ -61,6 +68,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     door: {
+        role: '',
         iconOn: 'door-open',
         iconOff: 'door-closed',
         colorOn: Color.open,
@@ -70,6 +78,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     gate: {
+        role: '',
         iconOn: 'gate-open',
         iconOff: 'gate',
         colorOn: Color.open,
@@ -79,6 +88,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     hue: {
+        role: 'hue',
         iconOn: 'lightbulb',
         iconOff: 'lightbulb-outline',
         colorOn: Color.on,
@@ -88,6 +98,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ON',
     },
     humidity: {
+        role: '',
         iconOn: 'water-percent',
         iconOff: 'water-percent',
         colorOn: Color.on,
@@ -98,6 +109,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     info: {
+        role: '',
         iconOn: 'information-outline',
         iconOff: 'information-off-outline',
         colorOn: Color.info,
@@ -107,6 +119,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     'level.mode.fan': {
+        role: '',
         iconOn: 'fan',
         iconOff: 'fan-off',
         colorOn: Color.on,
@@ -116,6 +129,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     'level.timer': {
+        role: '',
         iconOn: 'timer',
         iconOff: 'timer-off',
         colorOn: Color.on,
@@ -125,6 +139,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     light: {
+        role: 'light',
         iconOn: 'lightbulb',
         iconOff: 'lightbulb-outline',
         colorOn: Color.on,
@@ -134,6 +149,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     lock: {
+        role: 'light',
         iconOn: 'lock-open',
         iconOff: 'lock',
         colorOn: Color.open,
@@ -143,6 +159,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     media: {
+        role: 'iconNotText',
         iconOn: 'play',
         iconOff: 'pause',
         colorOn: Color.on,
@@ -152,6 +169,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'STATE',
     },
     motion: {
+        role: '',
         iconOn: 'motion',
         iconOff: 'motion-outline',
         colorOn: Color.attention,
@@ -161,6 +179,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     rgb: {
+        role: 'rgbThree',
         iconOn: 'lightbulb',
         iconOff: 'lightbulb-outline',
         colorOn: Color.on,
@@ -170,6 +189,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     rgbSingle: {
+        role: 'rgbSingle',
         iconOn: 'lightbulb',
         iconOff: 'lightbulb-outline',
         colorOn: Color.on,
@@ -179,6 +199,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     select: {
+        role: '',
         iconOn: 'menu-down',
         iconOff: 'menu-down',
         colorOn: Color.activated,
@@ -188,6 +209,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     'sensor.alarm.flood': {
+        role: '',
         iconOn: 'water-alert-outline',
         iconOff: 'water-outline',
         colorOn: Color.attention,
@@ -197,6 +219,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     slider: {
+        role: '',
         iconOn: 'tune',
         iconOff: 'tune',
         colorOn: Color.good,
@@ -206,6 +229,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     socket: {
+        role: 'socket',
         iconOn: 'power-socket-de',
         iconOff: 'power-plug-off',
         colorOn: Color.on,
@@ -215,6 +239,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     temperature: {
+        role: '',
         iconOn: 'thermometer',
         iconOff: 'thermometer',
         colorOn: Color.hot,
@@ -223,6 +248,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     thermostat: {
+        role: '',
         iconOn: 'thermostat',
         iconOff: 'thermostat',
         colorOn: Color.hot,
@@ -231,6 +257,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     timeTable: {
+        role: '',
         iconOn: 'timetable',
         iconOff: 'timetable',
         colorOn: Color.on,
@@ -240,6 +267,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     'value.humidity': {
+        role: '',
         iconOn: 'water-percent',
         iconOff: 'water-percent',
         colorOn: Color.on,
@@ -248,6 +276,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     'value.temperature': {
+        role: '',
         iconOn: 'thermostat',
         iconOff: 'thermostat',
         colorOn: Color.hot,
@@ -256,6 +285,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     volume: {
+        role: '',
         iconOn: 'volume-high',
         iconOff: 'volume-mute',
         colorOn: Color.on,
@@ -263,6 +293,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     window: {
+        role: '',
         iconOn: 'window-open-variant',
         iconOff: 'window-closed-variant',
         colorOn: Color.open,
@@ -272,6 +303,7 @@ export const ButtonNavigationDef: Record<
         stateName: 'ACTUAL',
     },
     warning: {
+        role: '',
         iconOn: 'alert-circle-outline',
         iconOff: 'alert-circle-outline',
         colorOn: Color.attention,

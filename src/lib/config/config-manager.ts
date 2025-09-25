@@ -1433,10 +1433,35 @@ export class ConfigManager extends BaseClass {
 
         item.icon2 = item.icon2 || item.icon;
         switch (role) {
-            case 'socket': {
+            //case 'cie':
+            case 'airCondition':
+            case 'button':
+            case 'ct':
+            case 'dimmer':
+            case 'door':
+            case 'hue':
+            case 'humidity':
+            case 'level.mode.fan':
+            case 'level.timer':
+            case 'light':
+            case 'lock':
+            case 'motion':
+            case 'rgb':
+            case 'rgbSingle':
+            case 'select':
+            case 'sensor.alarm.flood':
+            case 'slider':
+            case 'socket':
+            case 'temperature':
+            case 'thermostat':
+            case 'value.humidity':
+            case 'value.temperature':
+            case 'warning':
+            case 'window':
+            case undefined: {
                 const tempItem: typePageItem.PageItemDataItemsOptions = {
                     type: 'button',
-                    role: 'button',
+                    role: ButtonNavigationDef[role].role || valueDisplayRole,
                     data: {
                         icon: {
                             true: {
@@ -1481,204 +1506,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = tempItem;
                 break;
             }
-            case 'light':
-            case 'dimmer':
-            case 'hue':
-            case 'rgb':
-            case 'rgbSingle':
-            case 'ct': {
-                const tempItem: typePageItem.PageItemDataItemsOptions = {
-                    type: 'button',
-                    role: role === 'rgb' ? 'rgbThree' : role,
-                    data: {
-                        icon: {
-                            true: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon || 'lightbulb',
-                                },
-                                text: {
-                                    ...iconTextDefaults,
-                                    value: foundedStates[role].ACTUAL,
-                                },
-                                color: await this.getIconColor(item.onColor, Color.light),
-                            },
-                            false: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon2 || 'lightbulb-outline',
-                                },
-                                text: {
-                                    ...iconTextDefaults,
-                                    value: foundedStates[role].ACTUAL,
-                                },
-                                color: await this.getIconColor(item.offColor, Color.dark),
-                            },
-                            scale: Types.isIconColorScaleElement(item.colorScale)
-                                ? { type: 'const', constVal: item.colorScale }
-                                : undefined,
-                            maxBri: undefined,
-                            minBri: undefined,
-                        },
-                        text1: {
-                            true: { type: 'const', constVal: 'on' },
-                            false: { type: 'const', constVal: 'off' },
-                        },
-                        text: text,
-                        entity1: { value: foundedStates[role].ON_ACTUAL },
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                itemConfig = tempItem;
-                break;
-            }
-            case undefined:
-            case 'button': {
-                const tempItem: typePageItem.PageItemDataItemsOptions = {
-                    type: 'button',
-                    role: '',
-                    data: {
-                        icon: {
-                            true: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon || 'gesture-tap-button',
-                                },
 
-                                color: await this.getIconColor(item.onColor, Color.activated),
-                            },
-                            false: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon2 || 'gesture-tap-button',
-                                },
-                                color: await this.getIconColor(item.offColor, Color.deactivated),
-                            },
-                            scale: Types.isIconColorScaleElement(item.colorScale)
-                                ? { type: 'const', constVal: item.colorScale }
-                                : undefined,
-                            maxBri: undefined,
-                            minBri: undefined,
-                        },
-                        text1: {
-                            true: { type: 'const', constVal: 'on' },
-                            false: { type: 'const', constVal: 'off' },
-                        },
-                        text: text,
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                        },
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                itemConfig = tempItem;
-                break;
-            }
-            case 'value.humidity':
-            case 'humidity': {
-                let commonUnit = '';
-                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                    if (o && o.common && o.common.unit) {
-                        commonUnit = o.common.unit;
-                    }
-                }
-
-                itemConfig = {
-                    type: 'button',
-                    dpInit: item.id,
-                    role: valueDisplayRole,
-                    template: 'button.humidity',
-                    data: {
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                            unit:
-                                item.unit || commonUnit
-                                    ? { type: 'const', constVal: item.unit || commonUnit }
-                                    : undefined,
-                        },
-                        icon: {
-                            true: {
-                                value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                                color: await this.getIconColor(item.onColor, Color.cold),
-                                text: {
-                                    ...iconTextDefaults,
-                                    value: foundedStates[role].ACTUAL,
-                                },
-                            },
-                            false: {
-                                value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                                color: await this.getIconColor(item.offColor, Color.hot),
-                                text: {
-                                    ...iconTextDefaults,
-                                    value: foundedStates[role].ACTUAL,
-                                },
-                            },
-                            scale: Types.isIconColorScaleElement(item.colorScale)
-                                ? { type: 'const', constVal: item.colorScale }
-                                : {
-                                      type: 'const',
-                                      constVal: { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' },
-                                  },
-                        },
-                        text: text,
-
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
-            case 'value.temperature':
-            case 'temperature':
-            case 'airCondition':
-            case 'thermostat': {
-                let commonUnit = '';
-                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                    if (o && o.common && o.common.unit) {
-                        commonUnit = o.common.unit;
-                    }
-                }
-                itemConfig = {
-                    type: 'button',
-                    dpInit: item.id,
-                    role: valueDisplayRole,
-                    template: 'button.temperature',
-                    data: {
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                            unit:
-                                item.unit || commonUnit
-                                    ? { type: 'const', constVal: item.unit || commonUnit }
-                                    : undefined,
-                        },
-                        icon: {
-                            true: {
-                                value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                                color: await this.getIconColor(item.onColor, Color.hot),
-                                text: {
-                                    ...iconTextDefaults,
-                                    value: foundedStates[role].ACTUAL,
-                                },
-                            },
-                            false: {
-                                value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                                color: await this.getIconColor(item.offColor, Color.cold),
-                                text: {
-                                    ...iconTextDefaults,
-                                    value: foundedStates[role].ACTUAL,
-                                },
-                            },
-                            scale: Types.isIconColorScaleElement(item.colorScale)
-                                ? { type: 'const', constVal: item.colorScale }
-                                : undefined,
-                        },
-                        text: text,
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
             case 'gate': {
                 let tempMinScale = 100;
                 let tempMaxScale = 0;
@@ -1743,59 +1571,7 @@ export class ConfigManager extends BaseClass {
                 }
                 break;
             }
-            case 'door': {
-                itemConfig = {
-                    template: 'text.door.isOpen',
-                    dpInit: item.id,
-                    type: 'button',
-                    color: {
-                        true: await this.getIconColor(item.onColor, Color.open),
-                        false: await this.getIconColor(item.offColor, Color.close),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    data: {
-                        entity1: { value: foundedStates[role].ACTUAL },
-                        text1: {
-                            true: { type: 'const', constVal: 'opened' },
-                            false: { type: 'const', constVal: 'closed' },
-                        },
-                        text: text,
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
-            case 'window': {
-                itemConfig = {
-                    template: 'text.window.isOpen',
-                    dpInit: item.id,
-                    type: 'button',
-                    color: {
-                        true: await this.getIconColor(item.onColor, Color.open),
-                        false: await this.getIconColor(item.offColor, Color.close),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    data: {
-                        entity1: { value: foundedStates[role].ACTUAL },
-                        text1: {
-                            true: { type: 'const', constVal: 'opened' },
-                            false: { type: 'const', constVal: 'closed' },
-                        },
-                        text: text,
 
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
             case 'media': {
                 itemConfig = {
                     template: undefined,
@@ -1831,33 +1607,7 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
-            case 'motion': {
-                itemConfig = {
-                    template: 'text.motion',
-                    dpInit: item.id,
-                    type: 'button',
-                    color: {
-                        true: await this.getIconColor(item.onColor, Color.attention),
-                        false: await this.getIconColor(item.offColor, Color.deactivated),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    data: {
-                        entity1: { value: foundedStates[role].ACTUAL },
-                        text1: {
-                            true: { type: 'const', constVal: 'motion' },
-                            false: { type: 'const', constVal: 'none' },
-                        },
-                        text: text,
 
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
             case 'volume': {
                 let commonUnit = '';
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
@@ -1924,26 +1674,6 @@ export class ConfigManager extends BaseClass {
                             },
                         },
 
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
-            case 'warning': {
-                itemConfig = {
-                    template: 'text.warning',
-                    dpInit: item.id,
-                    type: 'button',
-                    color: {
-                        true: await this.getIconColor(item.onColor, Color.attention),
-                        false: await this.getIconColor(item.offColor, Color.deactivated),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    data: {
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -2052,160 +1782,6 @@ export class ConfigManager extends BaseClass {
                 break;
             }
 
-            case 'select': {
-                itemConfig = {
-                    type: 'button',
-                    dpInit: item.id,
-                    role: '',
-                    template: 'button.select',
-                    color: {
-                        true: await this.getIconColor(item.onColor, Color.activated),
-                        false: await this.getIconColor(item.offColor, Color.deactivated),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    data: {
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                            //set: foundedStates[role].SET,
-                        },
-                        text: text,
-
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
-            case 'lock': {
-                itemConfig = {
-                    template: 'text.lock',
-                    dpInit: item.id,
-                    type: 'button',
-                    role: '',
-                    color: {
-                        true: await this.getIconColor(item.onColor, Color.open),
-                        false: await this.getIconColor(item.offColor, Color.close),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    data: {
-                        text: text,
-                        entity1: foundedStates[role].ACTUAL
-                            ? { value: foundedStates[role].ACTUAL }
-                            : { value: foundedStates[role].SET },
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
-            case 'slider': {
-                let commonUnit = '';
-                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
-                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-                    if (o && o.common && o.common.unit) {
-                        commonUnit = o.common.unit;
-                    }
-                }
-                itemConfig = {
-                    template: 'button.slider',
-                    dpInit: item.id,
-                    type: 'button',
-                    role: valueDisplayRole,
-                    color: {
-                        true: await this.getIconColor(item.onColor, Color.good),
-                        false: await this.getIconColor(item.offColor, Color.bad),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    data: {
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                            unit:
-                                item.unit || commonUnit
-                                    ? { type: 'const', constVal: item.unit || commonUnit }
-                                    : undefined,
-                        },
-                        text: text,
-
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
-            case 'level.timer': {
-                itemConfig = {
-                    role: 'button',
-                    type: 'button',
-                    dpInit: '',
-
-                    data: {
-                        icon: {
-                            true: {
-                                value: { type: 'const', constVal: item.icon || 'timer' },
-                                color: await this.getIconColor(item.onColor, Color.activated),
-                            },
-                            false: {
-                                value: { type: 'const', constVal: item.icon2 || 'timer' },
-                                color: await this.getIconColor(item.offColor, Color.deactivated),
-                            },
-                            scale: Types.isIconColorScaleElement(item.colorScale)
-                                ? { type: 'const', constVal: item.colorScale }
-                                : undefined,
-                        },
-                        entity1: foundedStates[role].ACTUAL
-                            ? {
-                                  value: foundedStates[role].ACTUAL,
-                              }
-                            : undefined,
-
-                        text: text,
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
-            //case 'cie':
-            case 'sensor.alarm.flood': {
-                throw new Error(
-                    `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`,
-                );
-            }
-            case 'level.mode.fan': {
-                itemConfig = {
-                    type: 'button',
-                    dpInit: item.id,
-                    role: '',
-                    data: {
-                        icon: {
-                            true: {
-                                value: { type: 'const', constVal: item.icon || 'fan' },
-                                color: { type: 'const', constVal: item.onColor || Color.Green },
-                            },
-                            false: {
-                                value: { type: 'const', constVal: item.icon2 || 'fan-off' },
-                                color: { type: 'const', constVal: item.offColor || Color.Red },
-                            },
-                        },
-                        entity1: {
-                            value: foundedStates[role].ACTUAL,
-                            //set: foundedStates[role].SET,
-                        },
-                        text: text,
-
-                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                    },
-                };
-                break;
-            }
             case 'timeTable': {
                 throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
                 break;
