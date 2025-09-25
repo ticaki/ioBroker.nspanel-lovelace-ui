@@ -240,6 +240,8 @@ class Color extends ColorBase {
   // clock main
   static Blue = { r: 0, g: 0, b: 255 };
   // strong link/series
+  static TealBlue = { r: 0, g: 20, b: 156 };
+  // slightly brighter teal-blue
   // ——— Violets / Pinks ———
   static Purple = { r: 128, g: 0, b: 128 };
   // category/secondary
@@ -620,7 +622,7 @@ class Color extends ColorBase {
     hail: Color.LightGray,
     lightning: Color.Yellow,
     lightningRainy: Color.MSYellow,
-    pouring: Color.DarkBlue,
+    pouring: Color.TealBlue,
     rainy: Color.Blue,
     snowy: Color.White,
     snowyHeavy: Color.LightGray,

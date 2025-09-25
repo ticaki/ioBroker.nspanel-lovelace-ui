@@ -240,6 +240,7 @@ export class Color extends ColorBase {
     static readonly TimeAccent: RGB = { r: 160, g: 200, b: 255 }; // time accent
     static readonly TimePrimary: RGB = { r: 220, g: 240, b: 255 }; // clock main
     static readonly Blue: RGB = { r: 0, g: 0, b: 255 }; // strong link/series
+    static readonly TealBlue: RGB = { r: 0, g: 20, b: 156 }; // slightly brighter teal-blue
 
     // ——— Violets / Pinks ———
     static readonly Purple: RGB = { r: 128, g: 0, b: 128 }; // category/secondary
@@ -622,7 +623,7 @@ export class Color extends ColorBase {
         hail: Color.LightGray,
         lightning: Color.Yellow,
         lightningRainy: Color.MSYellow,
-        pouring: Color.DarkBlue,
+        pouring: Color.TealBlue,
         rainy: Color.Blue,
         snowy: Color.White,
         snowyHeavy: Color.LightGray,
