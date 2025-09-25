@@ -13,7 +13,7 @@ import * as MQTT from './lib/classes/mqtt';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
-import { ConfigManager } from './lib/classes/config-manager';
+import { ConfigManager } from './lib/config/config-manager';
 import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import axios from 'axios';

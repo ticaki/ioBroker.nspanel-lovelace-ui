@@ -1,6 +1,6 @@
 import { Color } from '../../const/Color';
 import type * as pages from '../../types/pages';
-import type { ConfigManager } from '../../classes/config-manager';
+import type { ConfigManager } from '../../config/config-manager';
 import * as tools from '../../const/tools';
 
 export async function getPageAlexa(

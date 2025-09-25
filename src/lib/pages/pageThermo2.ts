@@ -3,10 +3,10 @@ import * as tools from '../const/tools';
 import type * as pages from '../types/pages';
 import type * as Types from '../types/types';
 
-import type { ConfigManager } from '../classes/config-manager';
+import type { ConfigManager } from '../config/config-manager';
 import { PageMenu } from './pageMenu';
 import { Color } from '../const/Color';
-import * as configManagerConst from '../const/config-manager-const';
+import * as configManagerConst from '../config/config-manager-const';
 
 const PageThermo2MessageDefault: pages.PageThermo2Message = {
     event: 'entityUpd',

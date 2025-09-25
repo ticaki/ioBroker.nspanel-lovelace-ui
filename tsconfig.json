@@ -35,6 +35,7 @@
         "sourceMap": true,
         "inlineSourceMap": false
     },
-    "include": ["src/**/*.ts"],
+    "files": ["src/lib/types/config-manager.d.ts"],
+    "include": ["src/**/*"],
     "exclude": ["build/**", "node_modules/**", "widgets/**", ".dev-Data/*", "script/*", "doc/*", "testumgebung/*" ]
 }

@@ -6,7 +6,7 @@ import type * as pages from '../types/pages';
 import * as types from '../types/types';
 import { type PageInterface } from '../classes/PageInterface';
 import * as tools from '../const/tools';
-import type { ConfigManager } from '../classes/config-manager';
+import type { ConfigManager } from '../config/config-manager';
 import { PageMenu } from './pageMenu';
 import { isMediaButtonActionType } from '../classes/Page';
 import { getPageSpotify } from './tools/getSpotify';

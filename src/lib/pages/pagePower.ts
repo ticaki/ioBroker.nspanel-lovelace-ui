@@ -15,7 +15,7 @@ import {
 } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent, nsPanelState } from '../types/types';
-import type { ConfigManager } from '../classes/config-manager';
+import type { ConfigManager } from '../config/config-manager';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
     event: 'entityUpd',

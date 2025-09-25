@@ -216,7 +216,8 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemSeparator
     );
 
-export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data' | 'type'> &
+export type PageItemDataItemsOptionsWithOutTemplate =
+    PageItemDataItemsOptionsWithOutTemplatePartial; /*Omit<PageItemUnion, 'template' | 'data' | 'type'> &
     (
         | PageItemButtonDataItemsOptions
         | PageItemShutterDataItemsOptions
@@ -228,7 +229,39 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
         | PageItemFanDataItemsOptions
         | PageItemTimerDataItemsOptions
         | PageItemSeparator
-    ) & { filter?: pages.filterType };
+    );*/
+
+export type PageItemDataItemsOptionsWithOutTemplatePartial = Omit<PageItemUnion, 'template' | 'data' | 'type'> &
+    (
+        | (Omit<PageItemButtonDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemButtonDataItemsOptions['data']>;
+          })
+        | (Omit<PageItemShutterDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemShutterDataItemsOptions['data']>;
+          })
+        | (Omit<PageItemShutter2DataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemShutter2DataItemsOptions['data']>;
+          })
+        | (Omit<PageItemInputSelDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemInputSelDataItemsOptions['data']>;
+          })
+        | (Omit<PageItemLightDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemLightDataItemsOptions['data']>;
+          })
+        | (Omit<PageItemNumberDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemNumberDataItemsOptions['data']>;
+          })
+        | (Omit<PageItemTextDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemTextDataItemsOptions['data']>;
+          })
+        | (Omit<PageItemFanDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemFanDataItemsOptions['data']>;
+          })
+        | (Omit<PageItemTimerDataItemsOptions, 'data'> & {
+              data: pages.ChangeDeepPartial<PageItemTimerDataItemsOptions['data']>;
+          })
+        | PageItemSeparator
+    );
 export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
@@ -240,7 +273,6 @@ export type PageItemDataItemsOptions =
           color?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions; scale?: Types.IconScaleElement };
           icon?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
           iconText?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
-          filter?: pages.filterType;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
               pages.ChangeDeepPartial<
@@ -256,7 +288,7 @@ export type PageItemDataItemsOptions =
                   | PageItemSeparator
               >
       >)
-    | PageItemDataItemsOptionsWithOutTemplate;
+    | PageItemDataItemsOptionsWithOutTemplatePartial;
 
 export function isPageItemDataItemsOptions(obj: any): obj is PageItemDataItemsOptions {
     if (!obj || typeof obj !== 'object') {
