@@ -188,8 +188,8 @@
 ### select
 | Channel role | State ID | common.type | common.role | required | common.write | description |
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |
-| **select** | ~~ACTUAL~~ | number | value.mode.select | X |  |  |
-| " | ~~SET~~ | number | level.mode.select | X | X |  |
+| **select** | ~~ACTUAL~~ | number, string | value.mode.select | X |  |  |
+| " | ~~SET~~ | number, string | level.mode.select | X | X |  |
 
 ### sensor.alarm.flood
 | Channel role | State ID | common.type | common.role | required | common.write | description |
