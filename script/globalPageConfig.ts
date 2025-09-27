@@ -25,7 +25,7 @@ async function configuration (): Promise<void> {
     
 
     const globalPagesConfig: ScriptConfig.globalPagesConfig = {
-        type: 'globalConfig',
+        type: 'globalConfig', //mandatory
 
         
         // global pages
