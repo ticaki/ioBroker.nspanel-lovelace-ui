@@ -64,6 +64,33 @@ export class ConfigManager extends BaseClass {
               })
             | undefined;
     }> {
+        if (!configuration || typeof configuration !== 'object') {
+            this.log.error(`Invalid configuration from Script: ${configuration || 'undefined'}`);
+            return { messages: ['Abort: Invalid configuration'], panelConfig: undefined };
+        }
+        /* handle global config */
+        if (configManagerConst.isGlobalConfig(configuration)) {
+            let panelConfig = { pages: [], navigation: [] } as Omit<
+                Partial<panelConfigPartial>,
+                'pages' | 'navigation'
+            > & {
+                navigation: NavigationItemConfig[];
+                pages: pages.PageBaseConfig[];
+            };
+            let messages: string[] = [];
+            // get all pages from global config
+            const tempConfig = { ...configuration, pages: [] };
+            ({ panelConfig, messages } = await this.getPageConfig(tempConfig as any, panelConfig, messages));
+            const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+            if (obj && !this.dontWrite) {
+                obj.native = obj.native || {};
+                obj.native.globalConfigRaw = configuration;
+                await this.adapter.setForeignObject(this.adapter.namespace, obj);
+            }
+            messages.push(`done`);
+            return { messages: messages.map(a => a.replaceAll('Error: ', '')), panelConfig };
+        }
+
         configuration.advancedOptions = {
             ...(configManagerConst.defaultConfig.advancedOptions || {}),
             ...(configuration.advancedOptions || {}),
@@ -126,6 +153,69 @@ export class ConfigManager extends BaseClass {
         }
 
         // start configuration
+        {
+            const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+            if (obj && obj.native && obj.native.globalConfigRaw) {
+                const globalConfig = obj.native.globalConfigRaw as ScriptConfig.globalPagesConfig;
+                if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
+                    // merge global config for subPages
+                    for (let i = config.subPages.length - 1; i >= 0; i--) {
+                        const page = config.subPages[i] as ScriptConfig.PageTypeGlobal;
+                        if (page && 'globalLink' in page && page.globalLink) {
+                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
+                            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
+                            if (gPage) {
+                                config.subPages[i] = {
+                                    ...gPage,
+                                    prev: page.prev,
+                                    next: page.next,
+                                    home: page.home,
+                                    parent: page.parent,
+                                };
+                                if (page.heading) {
+                                    config.pages[i].heading = page.heading;
+                                }
+                                globalConfig.subPages.splice(gIndex, 1);
+                            } else {
+                                config.subPages.splice(i, 1);
+                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+                                messages.push(msg);
+                                this.log.warn(msg);
+                            }
+                        }
+                    }
+                    // merge global config for pages
+                    for (let i = config.pages.length - 1; i >= 0; i--) {
+                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
+                        if (page && 'globalLink' in page && page.globalLink) {
+                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
+                            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
+                            if (gPage) {
+                                config.pages[i] = {
+                                    ...gPage,
+                                    prev: undefined,
+                                    next: undefined,
+                                    home: undefined,
+                                    parent: undefined,
+                                };
+                                if (page.heading) {
+                                    config.pages[i].heading = page.heading;
+                                }
+                                globalConfig.subPages.splice(gIndex, 1);
+                            } else {
+                                config.pages.splice(i, 1);
+                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+                                messages.push(msg);
+                                this.log.warn(msg);
+                            }
+                        }
+                    }
+                    config.subPages = config.subPages.concat(globalConfig.subPages || []);
+                    config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
+                    config.nativePageItems = (config.nativePageItems || []).concat(globalConfig.nativePageItems || []);
+                }
+            }
+        }
         if (config.advancedOptions && config.advancedOptions.extraConfigLogging) {
             this.extraConfigLogging = true;
             config.advancedOptions.extraConfigLogging = false;
