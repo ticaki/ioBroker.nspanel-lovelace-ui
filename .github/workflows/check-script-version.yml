@@ -17,100 +17,93 @@ jobs:
   check-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR
+      - name: Checkout base repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
+      - name: Fetch PR head ref
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr_head
+
       - name: Check if script file was modified
         id: check_changes
         run: |
-          # Get list of changed files in this PR
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..pr_head)
           echo "Changed files: $CHANGED_FILES"
-          
-          if echo "$CHANGED_FILES" | grep -q "script/example_sendTo_script_iobroker.ts"; then
+
+          if echo "$CHANGED_FILES" | grep -q "^script/example_sendTo_script_iobroker.ts$"; then
             echo "script_changed=true" >> $GITHUB_OUTPUT
             echo "✓ Script file was modified"
           else
             echo "script_changed=false" >> $GITHUB_OUTPUT
             echo "✓ Script file was not modified - skipping version check"
           fi
-      
+
       - name: Skip if script not changed
         if: steps.check_changes.outputs.script_changed == 'false'
         run: |
           echo "::notice::Script file was not modified, skipping version check"
           exit 0
-      
-      - name: Get current version from PR
+
+      - name: Get current version from PR head
         id: current_version
         if: steps.check_changes.outputs.script_changed == 'true'
         run: |
-          VERSION=$(grep "const version = '" script/example_sendTo_script_iobroker.ts | sed "s/const version = '//; s/';.*//")
+          FILE_CONTENT=$(git show pr_head:script/example_sendTo_script_iobroker.ts)
+          VERSION=$(printf "%s" "$FILE_CONTENT" | grep -E "const version = ['\"][0-9]+\.[0-9]+\.[0-9]+['\"]" | sed "s/.*const version = ['\"][^0-9]*//; s/['\"].*//")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $VERSION"
-      
-      - name: Get base version from main branch
+          echo "Current version (PR): $VERSION"
+
+      - name: Get base version from main
         id: base_version
         if: steps.check_changes.outputs.script_changed == 'true'
         run: |
-          git checkout ${{ github.event.pull_request.base.sha }}
-          BASE_VERSION=$(grep "const version = '" script/example_sendTo_script_iobroker.ts | sed "s/const version = '//; s/';.*//")
+          BASE_CONTENT=$(git show ${{ github.event.pull_request.base.sha }}:script/example_sendTo_script_iobroker.ts)
+          BASE_VERSION=$(printf "%s" "$BASE_CONTENT" | grep -E "const version = ['\"][0-9]+\.[0-9]+\.[0-9]+['\"]" | sed "s/.*const version = ['\"][^0-9]*//; s/['\"].*//")
           echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
-          echo "Base version: $BASE_VERSION"
-          git checkout ${{ github.event.pull_request.head.sha }}
-      
+          echo "Base version (main): $BASE_VERSION"
+
       - name: Compare versions
         id: version_check
         if: steps.check_changes.outputs.script_changed == 'true'
         run: |
-          # Keep default (base repo) checkout; we'll fetch the PR head ref explicitly
-
-      - name: Fetch PR head ref
-        run: |
-          # Ensure we have the PR head commit available locally (works for forks as well)
-          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr_head
           CURRENT="${{ steps.current_version.outputs.version }}"
           BASE="${{ steps.base_version.outputs.base_version }}"
 
           echo "Comparing versions: Base=$BASE, Current=$CURRENT"
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..pr_head)
-          # Determine the maximum (latest) version using sort -V
-          MAX=$(printf '%s\n%s\n' "$BASE" "$CURRENT" | sort -V | tail -n1)
 
-          # Fail when:
-          # - versions are equal OR
-          # - current is not the maximum (i.e., not greater than base)
+          MAX=$(printf '%s\n%s\n' "$BASE" "$CURRENT" | sort -V | tail -n1)
+          if [ -z "$CURRENT" ] || [ -z "$BASE" ]; then
+            echo "Version extraction failed (base: '$BASE', current: '$CURRENT')."
+            echo "version_incremented=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
           if [ "$CURRENT" = "$BASE" ] || [ "$MAX" != "$CURRENT" ]; then
             echo "❌ Version not incremented!"
-            echo "The script file has been modified but the version remains the same or is lower (base: $BASE, current: $CURRENT)."
-            echo "Please increment the version in the const version = 'x.x.x'; line."
             echo "version_incremented=false" >> $GITHUB_OUTPUT
             exit 1
           else
             echo "✅ Version incremented from $BASE to $CURRENT"
             echo "version_incremented=true" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Comment on PR if version not incremented
         if: ${{ failure() && steps.check_changes.outputs.script_changed == 'true' }}
         uses: actions/github-script@v7
-          # Read the file content from the fetched PR head ref directly
-          FILE_CONTENT=$(git show pr_head:script/example_sendTo_script_iobroker.ts)
-          VERSION=$(printf "%s" "$FILE_CONTENT" | grep -E "const version = ['\"][0-9]+\.[0-9]+\.[0-9]+['\"]" | sed "s/.*const version = ['\"][^0-9]*//; s/['\"].*//")
-          CURRENT: ${{ steps.current_version.outputs.version }}
-          BASE: ${{ steps.base_version.outputs.base_version }}
         with:
           script: |
+            const current = `${{ toJSON(steps.current_version.outputs.version) }}`;
+            const base = `${{ toJSON(steps.base_version.outputs.base_version) }}`;
             const body = [
               '## ⚠️ Script Version Not Incremented',
               '',
-          # Read the file content from the base commit directly
-          BASE_CONTENT=$(git show ${{ github.event.pull_request.base.sha }}:script/example_sendTo_script_iobroker.ts)
-          BASE_VERSION=$(printf "%s" "$BASE_CONTENT" | grep -E "const version = ['\"][0-9]+\.[0-9]+\.[0-9]+['\"]" | sed "s/.*const version = ['\"][^0-9]*//; s/['\"].*//")
-          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
-          echo "Base version (main): $BASE_VERSION"
+              'The file `script/example_sendTo_script_iobroker.ts` has been modified, but the version number has not been incremented.',
+              '',
+              `**Current version:** ${current}`,
+              `**Base version:** ${base}`,
+              '',
               'Please update the version number in this line:',
               '```typescript',
               "const version = 'x.x.x';",
@@ -123,5 +116,5 @@ jobs:
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body
+              body
             });
