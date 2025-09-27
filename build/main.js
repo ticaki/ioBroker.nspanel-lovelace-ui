@@ -539,6 +539,30 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "ScriptConfigGlobal": {
+          const manager = new import_config_manager.ConfigManager(this);
+          try {
+            let r = { messages: [], panelConfig: void 0 };
+            const config = structuredClone(obj.message.panelTopic);
+            r = await manager.setScriptConfig({ ...obj.message, panelTopic: config });
+            await manager.delete();
+            const result = r.messages;
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, result, obj.callback);
+            }
+          } catch (e) {
+            this.log.error(`Error in script config processing: ${e.message}`);
+            if (obj.callback) {
+              this.sendTo(
+                obj.from,
+                obj.command,
+                `Error in script config processing: ${e.message}`,
+                obj.callback
+              );
+            }
+          }
+          break;
+        }
         case "ScriptConfig": {
           let result = ["something went wrong"];
           if (obj.message) {
