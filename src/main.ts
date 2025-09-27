@@ -1836,8 +1836,82 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         await this.setForeignStateAsync(dp, val, false);
     }
+    async createGlobalConfigurationScript(): Promise<any> {
+        const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
 
+        const folder: ioBroker.ChannelObject = {
+            type: 'channel',
+            _id: scriptPath,
+            common: {
+                name: this.namespace,
+                expert: true,
+            },
+            native: {},
+        };
+        await this.extendForeignObjectAsync(scriptPath, folder);
+
+        // Skript erstellen
+        const scriptId = this.library.cleandp(`${scriptPath}.globalPageConfig`);
+        this.log.debug(`Create/Update script ${scriptId}`);
+        if (fs.existsSync(path.join(__dirname, '../script'))) {
+            let file = fs.readFileSync(path.join(__dirname, '../script/globalPageConfig.ts'), 'utf8');
+            const baseFile = fs.readFileSync(
+                path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'),
+                'utf8',
+            );
+
+            const o = await this.getForeignObjectAsync(scriptId);
+            if (baseFile && file) {
+                file = file.replace(
+                    /await sendToAsync\('nspanel-lovelace-ui\.0', 'ScriptConfigGlobal',/,
+                    `await sendToAsync('${this.namespace}', 'ScriptConfigGlobal',`,
+                );
+                const token = 'stopScript(scriptName, undefined)';
+                if (o) {
+                    const indexFrom = baseFile.indexOf(token);
+                    const indexTo = o.common.source.indexOf(token);
+                    if (indexFrom !== -1 && indexTo !== -1) {
+                        this.log.info(`Update script ${scriptId}`);
+                        file = o.common.source.substring(0, indexTo) + baseFile.substring(indexFrom);
+                    } else {
+                        this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                        return { error: `Update script ${scriptId} something whent wrong!` };
+                    }
+                    this.log.info(`Update global script ${scriptId}`);
+                } else {
+                    const indexFrom = baseFile.indexOf(token);
+                    const indexTo = file.indexOf(token);
+                    if (indexFrom !== -1 && indexTo !== -1) {
+                        this.log.info(`Update script ${scriptId}`);
+                        file = file.substring(0, indexTo) + baseFile.substring(indexFrom);
+                    } else {
+                        this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                        return { error: `Update script ${scriptId} something whent wrong!` };
+                    }
+                    this.log.info(`Create global script ${scriptId}`);
+                }
+                const script: ioBroker.ScriptObject = {
+                    type: 'script',
+                    _id: scriptId,
+                    common: {
+                        name: 'Global page configuration',
+                        engineType: 'TypeScript/ts',
+                        engine: `system.adapter.javascript.0`,
+                        source: file,
+                        debug: false,
+                        verbose: false,
+                        enabled: o?.common.enabled ?? true,
+                    },
+                    native: {},
+                };
+                await this.extendForeignObjectAsync(scriptId, script);
+                return [];
+            }
+        }
+    }
     async createConfigurationScript(panelName: string, panelTopic: string): Promise<any> {
+        await this.createGlobalConfigurationScript();
+
         const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
 
         const folder: ioBroker.ChannelObject = {
