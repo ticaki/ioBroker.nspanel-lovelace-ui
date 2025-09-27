@@ -16,7 +16,7 @@ async function configuration (): Promise<void> {
         //   sunriseSet, forecastDay1, forecastDay2, forecastDay3, forecastDay4, forecastDay5, forecastDay6,
         //   windSpeed, windGust, windDirection, uvIndex, solar
         // Hinweis: Die einzelnen Schlüssel funktionieren nur, wenn der gewählte Wetteranbieter
-        // die entsprechenden Daten liefert und diese im Adapter vorbereitet wurden.
+        // die entsprechenden Daten liefert und diese im Adapter vorbereitet wurden
         "weatherAddDefaultItems": false
 
     }
