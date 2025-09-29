@@ -219,6 +219,15 @@
       "native": {}
     },
     {
+      "_id": "",
+      "type": "meta",
+      "common": {
+        "name": "User files for NSPanel Lovelace UI",
+        "type": "meta.user"
+      },
+      "native": {}
+    },
+    {
       "_id": "keys",
       "type": "meta",
       "common": {
