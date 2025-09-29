@@ -260,7 +260,7 @@ class MQTTServerClass extends import_library.BaseClass {
   test = void 0;
   static async createMQTTServer(adapter, port, username, password, path, testCase = false) {
     let keys = {};
-    if (await adapter.fileExistsAsync(adapter.namespace, "keys/private-key.pem") || await adapter.fileExistsAsync(adapter.namespace, "keys/public-key.pem") || await adapter.fileExistsAsync(adapter.namespace, "keys/certificate.pem")) {
+    if (await adapter.fileExistsAsync(adapter.namespace, "keys/private-key.pem") && await adapter.fileExistsAsync(adapter.namespace, "keys/public-key.pem") && await adapter.fileExistsAsync(adapter.namespace, "keys/certificate.pem")) {
       await adapter.writeFileAsync(
         `${adapter.namespace}.keys`,
         "private-key.pem",
@@ -281,7 +281,7 @@ class MQTTServerClass extends import_library.BaseClass {
       await adapter.delFileAsync(adapter.namespace, "keys/certificate.pem");
       adapter.log.info(`Moved keys to ${adapter.namespace}.keys`);
     }
-    if (!await adapter.fileExistsAsync(`${adapter.namespace}.keys`, "private-key.pem") || !await adapter.fileExistsAsync(`${adapter.namespace}.keys`, "public-key.pem") || !await adapter.fileExistsAsync(`${adapter.namespace}.keys`, "certificate.pem")) {
+    if (!(await adapter.fileExistsAsync(`${adapter.namespace}.keys`, "private-key.pem") && await adapter.fileExistsAsync(`${adapter.namespace}.keys`, "public-key.pem") && await adapter.fileExistsAsync(`${adapter.namespace}.keys`, "certificate.pem"))) {
       adapter.log.info(`Create new keys for MQTT server.`);
       const prekeys = forge.pki.rsa.generateKeyPair(4096);
       keys.privateKey = forge.pki.privateKeyToPem(prekeys.privateKey);

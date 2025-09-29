@@ -291,8 +291,8 @@ export class MQTTServerClass extends BaseClass {
         let keys: Record<string, string> = {};
 
         if (
-            (await adapter.fileExistsAsync(adapter.namespace, 'keys/private-key.pem')) ||
-            (await adapter.fileExistsAsync(adapter.namespace, 'keys/public-key.pem')) ||
+            (await adapter.fileExistsAsync(adapter.namespace, 'keys/private-key.pem')) &&
+            (await adapter.fileExistsAsync(adapter.namespace, 'keys/public-key.pem')) &&
             (await adapter.fileExistsAsync(adapter.namespace, 'keys/certificate.pem'))
         ) {
             await adapter.writeFileAsync(
@@ -316,9 +316,11 @@ export class MQTTServerClass extends BaseClass {
             adapter.log.info(`Moved keys to ${adapter.namespace}.keys`);
         }
         if (
-            !(await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'private-key.pem')) ||
-            !(await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'public-key.pem')) ||
-            !(await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'certificate.pem'))
+            !(
+                (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'private-key.pem')) &&
+                (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'public-key.pem')) &&
+                (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'certificate.pem'))
+            )
         ) {
             adapter.log.info(`Create new keys for MQTT server.`);
             const prekeys = forge.pki.rsa.generateKeyPair(4096);
