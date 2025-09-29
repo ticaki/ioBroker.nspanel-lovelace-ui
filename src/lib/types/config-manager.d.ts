@@ -312,7 +312,7 @@ declare namespace ScriptConfig {
     export type PageLink = {
         heading?: string;
         globalLink: string;
-    } & Pick<PageBaseType, 'prev' | 'next' | 'home' | 'parent'>;
+    } & Partial<Pick<PageBaseType, 'prev' | 'next' | 'home' | 'parent' | 'uniqueName'>>;
 
     export type PageNative = {
         type: undefined;
