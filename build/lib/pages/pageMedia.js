@@ -92,7 +92,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 1800;
   }
   async init() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e;
     if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
       const i = await this.createMainItems(this.config, this.enums, this.dpInit);
       i.ident = (_b = this.config.ident) != null ? _b : "";
@@ -126,13 +126,6 @@ class PageMedia extends import_pageMenu.PageMenu {
               this.coordinator = void 0;
             }
             this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join(".") : "";
-            const v = await ((_f = this.coordinator) == null ? void 0 : _f.getString());
-            if (v) {
-              const ident = this.config.ident ? this.config.ident.split(".").slice(0, 3).concat([v]).join(".") : "";
-              if (ident && ident !== this.currentPlayer) {
-                await this.updateCurrentPlayer(ident, "");
-              }
-            }
           }
           break;
         default:
@@ -236,7 +229,10 @@ class PageMedia extends import_pageMenu.PageMenu {
             )
           );
         }
-        this.pageItems = await this.createPageItems(pi, this.items[index].ident || "");
+        this.pageItems = await this.createPageItems(
+          pi
+          /*,this.items[index].ident || ''*/
+        );
       }
       if (index === 0) {
         if (this.items.length > 1) {
