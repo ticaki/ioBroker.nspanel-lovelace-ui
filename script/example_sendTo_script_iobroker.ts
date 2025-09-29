@@ -1583,9 +1583,7 @@ declare namespace ScriptConfig {
                   ]
              */
             ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
-        } & ({
-            ScreensaverEntityEnabled?: string | null;
-        } | {
+        } & {
             /**
              * Optional condition that determines whether a ScreensaverEntity should be visible.
              *
@@ -1600,9 +1598,9 @@ declare namespace ScriptConfig {
              * ScreensaverEntityVisibleCondition: "val.length > 0 && val !== 'OFF'"
              * ```
              */
-            ScreensaverEntityEnabled: string ;
+            ScreensaverEntityEnabled?: string;
             ScreensaverEntityVisibleCondition?: string;
-        })
+        }
 
         | {type: 'native'; native: any}
         | ({
@@ -1611,28 +1609,28 @@ declare namespace ScriptConfig {
             dpInit: string;
             readOptions?: Record<string, any>;
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-        } & ({ enabled: string; visibleCondition?: string } | { enabled?: string }))
+        } & ({enabled: string; visibleCondition?: string} | {enabled?: string}))
     );
 
-    export type ScreenSaverNotifyElement = { type: ScreenSaverType } & (
+    export type ScreenSaverNotifyElement = {type: ScreenSaverType} & (
         | ({
-              type: 'script';
-              /**
-               * Lower number = higher priority
-               */
-              Priority: number;
-              Headline: string;
-              HeadlinePrefix?: string;
-              HeadlineUnit?: string;
-              Text: string;
-              TextSuffix?: string;
-              TextPrefix?: string;
-              HeadlineIcon?: string | null;
-          } & (
-              | {
+            type: 'script';
+            /**
+             * Lower number = higher priority
+             */
+            Priority: number;
+            Headline: string;
+            HeadlinePrefix?: string;
+            HeadlineUnit?: string;
+            Text: string;
+            TextSuffix?: string;
+            TextPrefix?: string;
+            HeadlineIcon?: string | null;
+        } & (
+                | {
                     Enabled?: string | null | string[];
                 }
-              | {
+                | {
                     /**
                      *  Condition that determines whether a Notify should be visible.
                      *
@@ -1650,16 +1648,16 @@ declare namespace ScriptConfig {
                     Enabled: string | string[];
                     VisibleCondition?: string;
                 }
-          ))
-        | { type: 'native'; native: any }
+            ))
+        | {type: 'native'; native: any}
         | {
-              type: 'template';
-              template: string;
-              dpInit: string;
-              enabled?: string;
-              visibleCondition?: string;
-              modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-          }
+            type: 'template';
+            template: string;
+            dpInit: string;
+            enabled?: string;
+            visibleCondition?: string;
+            modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+        }
     );
 
     export type WeatherAddDefaultItemsJson = {

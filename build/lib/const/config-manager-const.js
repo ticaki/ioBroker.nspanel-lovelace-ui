@@ -685,12 +685,19 @@ const requiredScriptDataPoints = {
     data: {
       ACTUAL: {
         role: ["value.mode.select"],
-        type: "number",
+        type: ["number", "string"],
         required: true,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "SET"
       },
-      SET: { role: "level.mode.select", type: "number", required: true, writeable: true, trigger: true }
+      SET: {
+        role: "level.mode.select",
+        type: ["number", "string"],
+        required: true,
+        writeable: true,
+        trigger: true
+      }
     }
   },
   slider: {
