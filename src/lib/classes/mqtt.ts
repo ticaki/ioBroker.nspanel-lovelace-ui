@@ -296,25 +296,19 @@ export class MQTTServerClass extends BaseClass {
             (await adapter.fileExistsAsync(adapter.namespace, 'keys/certificate.pem'))
         ) {
             try {
-                const privateKey = (await adapter.readFileAsync(adapter.namespace, 'keys/private-key.pem')).file.toString();
-                const publicKey = (await adapter.readFileAsync(adapter.namespace, 'keys/public-key.pem')).file.toString();
-                const certificate = (await adapter.readFileAsync(adapter.namespace, 'keys/certificate.pem')).file.toString();
+                const privateKey = (
+                    await adapter.readFileAsync(adapter.namespace, 'keys/private-key.pem')
+                ).file.toString();
+                const publicKey = (
+                    await adapter.readFileAsync(adapter.namespace, 'keys/public-key.pem')
+                ).file.toString();
+                const certificate = (
+                    await adapter.readFileAsync(adapter.namespace, 'keys/certificate.pem')
+                ).file.toString();
 
-                await adapter.writeFileAsync(
-                    `${adapter.namespace}.keys`,
-                    'private-key.pem',
-                    privateKey,
-                );
-                await adapter.writeFileAsync(
-                    `${adapter.namespace}.keys`,
-                    'public-key.pem',
-                    publicKey,
-                );
-                await adapter.writeFileAsync(
-                    `${adapter.namespace}.keys`,
-                    'certificate.pem',
-                    certificate,
-                );
+                await adapter.writeFileAsync(`${adapter.namespace}.keys`, 'private-key.pem', privateKey);
+                await adapter.writeFileAsync(`${adapter.namespace}.keys`, 'public-key.pem', publicKey);
+                await adapter.writeFileAsync(`${adapter.namespace}.keys`, 'certificate.pem', certificate);
 
                 await adapter.delFileAsync(adapter.namespace, 'keys/private-key.pem');
                 await adapter.delFileAsync(adapter.namespace, 'keys/public-key.pem');
