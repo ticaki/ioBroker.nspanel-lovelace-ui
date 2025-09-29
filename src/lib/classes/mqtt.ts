@@ -295,25 +295,34 @@ export class MQTTServerClass extends BaseClass {
             (await adapter.fileExistsAsync(adapter.namespace, 'keys/public-key.pem')) &&
             (await adapter.fileExistsAsync(adapter.namespace, 'keys/certificate.pem'))
         ) {
-            await adapter.writeFileAsync(
-                `${adapter.namespace}.keys`,
-                'private-key.pem',
-                (await adapter.readFileAsync(adapter.namespace, 'keys/private-key.pem')).file.toString(),
-            );
-            await adapter.writeFileAsync(
-                `${adapter.namespace}.keys`,
-                'public-key.pem',
-                (await adapter.readFileAsync(adapter.namespace, 'keys/public-key.pem')).file.toString(),
-            );
-            await adapter.writeFileAsync(
-                `${adapter.namespace}.keys`,
-                'certificate.pem',
-                (await adapter.readFileAsync(adapter.namespace, 'keys/certificate.pem')).file.toString(),
-            );
-            await adapter.delFileAsync(adapter.namespace, 'keys/private-key.pem');
-            await adapter.delFileAsync(adapter.namespace, 'keys/public-key.pem');
-            await adapter.delFileAsync(adapter.namespace, 'keys/certificate.pem');
-            adapter.log.info(`Moved keys to ${adapter.namespace}.keys`);
+            try {
+                const privateKey = (await adapter.readFileAsync(adapter.namespace, 'keys/private-key.pem')).file.toString();
+                const publicKey = (await adapter.readFileAsync(adapter.namespace, 'keys/public-key.pem')).file.toString();
+                const certificate = (await adapter.readFileAsync(adapter.namespace, 'keys/certificate.pem')).file.toString();
+
+                await adapter.writeFileAsync(
+                    `${adapter.namespace}.keys`,
+                    'private-key.pem',
+                    privateKey,
+                );
+                await adapter.writeFileAsync(
+                    `${adapter.namespace}.keys`,
+                    'public-key.pem',
+                    publicKey,
+                );
+                await adapter.writeFileAsync(
+                    `${adapter.namespace}.keys`,
+                    'certificate.pem',
+                    certificate,
+                );
+
+                await adapter.delFileAsync(adapter.namespace, 'keys/private-key.pem');
+                await adapter.delFileAsync(adapter.namespace, 'keys/public-key.pem');
+                await adapter.delFileAsync(adapter.namespace, 'keys/certificate.pem');
+                adapter.log.info(`Moved keys to ${adapter.namespace}.keys`);
+            } catch (err) {
+                adapter.log.error(`Failed to migrate key files: ${err instanceof Error ? err.message : String(err)}`);
+            }
         }
         if (
             !(
