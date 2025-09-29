@@ -313,7 +313,7 @@ export class MQTTServerClass extends BaseClass {
             await adapter.delFileAsync(adapter.namespace, 'keys/private-key.pem');
             await adapter.delFileAsync(adapter.namespace, 'keys/public-key.pem');
             await adapter.delFileAsync(adapter.namespace, 'keys/certificate.pem');
-            adapter.log.info(`Moved old keys to ${adapter.namespace}.keys`);
+            adapter.log.info(`Moved keys to ${adapter.namespace}.keys`);
         }
         if (
             !(await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'private-key.pem')) ||
