@@ -21,8 +21,8 @@ __export(states_controller_exports, {
   StatesControler: () => StatesControler
 });
 module.exports = __toCommonJS(states_controller_exports);
-var import_data_item = require("../classes/data-item");
-var import_library = require("../classes/library");
+var import_data_item = require("./data-item");
+var import_library = require("./library");
 var import_tools = require("../const/tools");
 class StatesControler extends import_library.BaseClass {
   triggerDB = {};

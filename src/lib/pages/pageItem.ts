@@ -5,7 +5,7 @@ import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import type { PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
-import type { Dataitem } from '../classes/data-item';
+import type { Dataitem } from '../controller/data-item';
 import {
     isCardEntitiesType,
     isCardGridType,

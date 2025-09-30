@@ -21,7 +21,7 @@ __export(templates_exports, {
   Templates: () => Templates
 });
 module.exports = __toCommonJS(templates_exports);
-var import_library = require("./library");
+var import_library = require("../controller/library");
 class Templates extends import_library.BaseClass {
   constructor(adapter) {
     super(adapter, "templates");

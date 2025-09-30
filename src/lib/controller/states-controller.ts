@@ -1,7 +1,7 @@
 // BaseClass extends
 
-import { Dataitem } from '../classes/data-item';
-import { BaseClass } from '../classes/library';
+import { Dataitem } from './data-item';
+import { BaseClass } from './library';
 import type { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/types';
 import { getRegExp } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
@@ -605,6 +605,7 @@ export class StatesControler extends BaseClass {
             await this.onStateChange(id, newState);
 
             // here we trigger the state command
+            // if we change this onStateTrigger change 'ne' not work correcty
             f && (await f(id, this.triggerDB[id].state));
 
             return true;

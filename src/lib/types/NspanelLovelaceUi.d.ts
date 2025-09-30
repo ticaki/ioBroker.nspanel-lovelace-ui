@@ -1,5 +1,5 @@
 import * as utils from '@iobroker/adapter-core';
-import type { Library } from '../classes/library';
+import type { Library } from '../controller/library';
 import type { Controller } from '../controller/controller';
 import type { MQTTClientClass, MQTTServerClass } from '../classes/mqtt';
 

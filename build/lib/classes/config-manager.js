@@ -41,14 +41,14 @@ var import_readme = require("../tools/readme");
 var pages = __toESM(require("../types/pages"));
 var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
-var import_library = require("./library");
+var import_library = require("../controller/library");
 var import_navigation = require("./navigation");
-var import_tools = require("../const/tools");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_pageMedia = require("../pages/pageMedia");
 var import_type_pageItem = require("../types/type-pageItem");
+var import_tools = require("../const/tools");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   //colorOn: RGB = Color.On;
@@ -1996,7 +1996,7 @@ class ConfigManager extends import_library.BaseClass {
               dpInit: entry.useKey ? expectedId : dpInit,
               role: entry.role,
               enums: "",
-              regexp: void 0,
+              regexp: entry.useKey ? new RegExp(`\\.${dp}$`) : void 0,
               triggered: entry.trigger,
               writeable: entry.writeable,
               commonType: entry.type
@@ -2013,7 +2013,7 @@ class ConfigManager extends import_library.BaseClass {
                 dpInit: entry2.useKey ? expectedAltId : dpInit,
                 role: entry2.role,
                 enums: "",
-                regexp: void 0,
+                regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : void 0,
                 triggered: entry.trigger,
                 writeable: entry2.writeable,
                 commonType: entry.type
@@ -4207,6 +4207,13 @@ class ConfigManager extends import_library.BaseClass {
       } else {
         throw new Error("ScreensaverEntityEnabled must be a string!");
       }
+    } else if ("ScreensaverEntityVisibleCondition" in entity && entity.ScreensaverEntityVisibleCondition && result.data.entity1.value) {
+      result.data.enabled = {
+        ...result.data.entity1.value,
+        read: `
+                return ${entity.ScreensaverEntityVisibleCondition};
+                `
+      };
     }
     if (dataType === "number" && entity.ScreensaverEntityIconSelect && Array.isArray(entity.ScreensaverEntityIconSelect)) {
       const obj2 = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);

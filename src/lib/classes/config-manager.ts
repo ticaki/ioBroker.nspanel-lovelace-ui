@@ -11,14 +11,14 @@ import * as pages from '../types/pages';
 import { exhaustiveCheck } from '../types/pages';
 import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
-import { BaseClass } from './library';
+import { BaseClass } from '../controller/library';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
-import { getVersionAsNumber } from '../const/tools';
 import * as fs from 'fs';
 import path from 'path';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
 import { isPageItemDataItemsOptions } from '../types/type-pageItem';
+import { getVersionAsNumber } from '../const/tools';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -2263,7 +2263,7 @@ export class ConfigManager extends BaseClass {
                             dpInit: entry.useKey ? expectedId : dpInit,
                             role: entry.role,
                             enums: '',
-                            regexp: undefined,
+                            regexp: entry.useKey ? new RegExp(`\\.${dp}$`) : undefined,
                             triggered: entry.trigger,
                             writeable: entry.writeable,
                             commonType: entry.type,
@@ -2282,7 +2282,7 @@ export class ConfigManager extends BaseClass {
                                 dpInit: entry2.useKey ? expectedAltId : dpInit,
                                 role: entry2.role,
                                 enums: '',
-                                regexp: undefined,
+                                regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : undefined,
                                 triggered: entry.trigger,
                                 writeable: entry2.writeable,
                                 commonType: entry.type,
@@ -4955,6 +4955,17 @@ export class ConfigManager extends BaseClass {
             } else {
                 throw new Error('ScreensaverEntityEnabled must be a string!');
             }
+        } else if (
+            'ScreensaverEntityVisibleCondition' in entity &&
+            entity.ScreensaverEntityVisibleCondition &&
+            result.data.entity1.value
+        ) {
+            result.data.enabled = {
+                ...result.data.entity1.value,
+                read: `
+                return ${entity.ScreensaverEntityVisibleCondition};
+                `,
+            };
         }
         if (
             dataType === 'number' &&

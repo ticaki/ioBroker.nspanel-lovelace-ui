@@ -1,20 +1,21 @@
-import type { Page } from '../classes/Page';
-import type { AdapterClassDefinition } from '../classes/library';
+import type { AdapterClassDefinition } from '../controller/library';
 import { Color } from '../const/Color';
 import { getStringFromStringOrTranslated } from '../const/tools';
 import { exhaustiveCheck, type CardRole, type PageMenuConfig } from '../types/pages';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
-import type { PageEntities } from './pageEntities';
 import type { PageMedia } from './pageMedia';
+import type { PageEntities } from './pageEntities';
+import type { PageSchedule } from './pageSchedule';
+import type { PageGrid } from './pageGrid';
+import type { PageMenu } from './pageMenu';
 
 /**
  * Handles the role of a card and returns the corresponding page item data options.
  *
  * @param adapter - The adapter instance used to interact with the system.
  * @param cardRole - The role of the card to handle. It can be 'AdapterConnection', 'AdapterStopped', or 'AdapterUpdates'.
- * @param [page] - The page instance, required for 'AdapterUpdates' role.
- * @param _tempArr
- * @param _options
+ * @param page - The page instance that may be used to retrieve additional information.
+ * @param _options - Additional options for the page menu configuration.
  * @returns A promise that resolves to an array of page item data options or null if no data is found.
  * @description
  * This function processes different card roles and retrieves the corresponding data items based on the role.
@@ -39,7 +40,7 @@ import type { PageMedia } from './pageMedia';
 export async function handleCardRole(
     adapter: AdapterClassDefinition,
     cardRole: CardRole | undefined,
-    page?: Page | PageEntities,
+    page?: PageEntities | PageGrid | PageSchedule | PageMenu,
     _options?: PageMenuConfig['options'],
 ): Promise<PageItemDataItemsOptions[] | null> {
     if (!cardRole) {
@@ -196,122 +197,118 @@ export async function handleCardRole(
                 }
             }
             break;
-        case 'SonosSpeaker':
-            {
-                let result: PageItemDataItemsOptions[] | null = null;
-                const _tempArr = _options?.cardRoleList;
-                //const ident = _options?.indentifier ?? '';
-                if (!((!_tempArr || Array.isArray(_tempArr)) && page && page.directParentPage)) {
-                    return null;
-                }
-                /*if (ident || !(typeof ident === 'string')) {
+        case 'SonosSpeaker': {
+            let result: PageItemDataItemsOptions[] | null = null;
+            const _tempArr = _options?.cardRoleList;
+            //const ident = _options?.indentifier ?? '';
+            if (!((!_tempArr || Array.isArray(_tempArr)) && page && page.directParentPage)) {
+                return null;
+            }
+            /*if (ident || !(typeof ident === 'string')) {
                     adapter.log.error(` SonosSpeaker cardRole needs a string dpInit in page.parent.dpInit`);
                     return null;
                 }*/
-                if (
-                    page.directParentPage.card !== 'cardMedia' ||
-                    (page.directParentPage as PageMedia).currentItem == null
-                ) {
-                    break;
-                }
-                const identifier = `${(page.directParentPage as PageMedia).currentItem?.ident}`;
-                const searchPath = identifier.split('.').slice(0, 3).join('.');
-                const view = await adapter.getObjectViewAsync('system', 'channel', {
-                    startkey: `${searchPath}.`,
-                    endkey: `${searchPath}${String.fromCharCode(0xff_fd)}`,
-                });
-                const selects: { name: string; id: string }[] = [];
-                if (view && view.rows && view.rows.length !== 0) {
-                    if (_tempArr && _tempArr.length > 0) {
-                        view.rows
-                            .filter(v =>
-                                _tempArr.includes(getStringFromStringOrTranslated(adapter, v.value.common.name)),
-                            )
-                            .forEach(v => {
-                                selects.push({
-                                    name: getStringFromStringOrTranslated(adapter, v.value.common.name),
-                                    id: v.id,
-                                });
-                            });
-                    } else {
-                        view.rows.forEach(v =>
+            if (
+                page.directParentPage.card !== 'cardMedia' ||
+                (page.directParentPage as PageMedia).currentItem == null
+            ) {
+                break;
+            }
+            const identifier = `${(page.directParentPage as PageMedia).currentItem?.ident}`;
+            const searchPath = identifier.split('.').slice(0, 3).join('.');
+            const view = await adapter.getObjectViewAsync('system', 'channel', {
+                startkey: `${searchPath}.`,
+                endkey: `${searchPath}${String.fromCharCode(0xff_fd)}`,
+            });
+            const selects: { name: string; id: string }[] = [];
+            if (view && view.rows && view.rows.length !== 0) {
+                if (_tempArr && _tempArr.length > 0) {
+                    view.rows
+                        .filter(v => _tempArr.includes(getStringFromStringOrTranslated(adapter, v.value.common.name)))
+                        .forEach(v => {
                             selects.push({
                                 name: getStringFromStringOrTranslated(adapter, v.value.common.name),
                                 id: v.id,
-                            }),
-                        );
-                    }
+                            });
+                        });
+                } else {
+                    view.rows.forEach(v =>
+                        selects.push({
+                            name: getStringFromStringOrTranslated(adapter, v.value.common.name),
+                            id: v.id,
+                        }),
+                    );
                 }
-                let arr =
-                    _tempArr && _tempArr.length > 0
-                        ? selects.filter(t => _tempArr.findIndex(s => s === t.name) !== -1)
-                        : selects;
-                arr = arr.concat((_tempArr ?? []).map(n => ({ name: n, id: `` })));
-                const seen = new Set();
-                arr = arr.filter(item => item && !seen.has(item.name) && seen.add(item.name));
-                arr = arr.sort((a, b) => a.name.localeCompare(b.name));
+            }
+            let arr =
+                _tempArr && _tempArr.length > 0
+                    ? selects.filter(t => _tempArr.findIndex(s => s === t.name) !== -1)
+                    : selects;
+            arr = arr.concat((_tempArr ?? []).map(n => ({ name: n, id: `` })));
+            const seen = new Set();
+            arr = arr.filter(item => item && !seen.has(item.name) && seen.add(item.name));
+            arr = arr.sort((a, b) => a.name.localeCompare(b.name));
 
-                result = [];
-                for (let i = 0; i < arr.length; i++) {
-                    const val = arr[i].name.trim();
-                    const id = arr[i].id.trim();
-                    if (!val) {
-                        continue;
-                    }
-                    result.push({
-                        role: 'volume.mute',
-                        type: 'light',
-                        dpInit: '',
-                        data: {
-                            entity1: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `${identifier}.members`,
-                                    read: `
+            result = [];
+            for (let i = 0; i < arr.length; i++) {
+                const val = arr[i].name.trim();
+                const id = arr[i].id.trim();
+                if (!val) {
+                    continue;
+                }
+                result.push({
+                    role: 'volume.mute',
+                    type: 'light',
+                    dpInit: '',
+                    data: {
+                        entity1: {
+                            value: {
+                                type: 'triggered',
+                                dp: `${identifier}.members`,
+                                read: `
                                             if (typeof val === 'string') {                                                    
                                                 const t = val.split(',').map(s => s.trim());
                                                 return t.includes('${val}');
                                             };
                                             return false;`,
-                                },
-                            },
-                            headline: { type: 'const', constVal: val },
-                            dimmer: {
-                                value: {
-                                    //mode: 'auto',
-                                    type: 'triggered',
-                                    //regexp: /\.volume$/,
-                                    dp: `${id}.volume`,
-                                },
-                                minScale: { type: 'const', constVal: _options?.min ?? 0 },
-                                maxScale: { type: 'const', constVal: _options?.max ?? 100 },
-                            },
-                            icon: {
-                                true: {
-                                    value: { type: 'const', constVal: 'speaker' },
-                                    color: { type: 'const', constVal: Color.on },
-                                },
-                                false: {
-                                    value: { type: 'const', constVal: 'speaker' },
-                                    color: { type: 'const', constVal: Color.off },
-                                },
-                            },
-                            setValue1: {
-                                type: 'state',
-                                dp: `${identifier}.add_to_group`,
-                                write: `if (val) return '${val}'; else return '';`,
-                            },
-                            setValue2: {
-                                type: 'state',
-                                dp: `${identifier}.remove_from_group`,
-                                write: `if (val) return '${val}'; else return '';`,
                             },
                         },
-                    });
-                }
-                return result;
+                        headline: { type: 'const', constVal: val },
+                        dimmer: {
+                            value: {
+                                //mode: 'auto',
+                                type: 'triggered',
+                                //regexp: /\.volume$/,
+                                dp: `${id}.volume`,
+                            },
+                            minScale: { type: 'const', constVal: _options?.min ?? 0 },
+                            maxScale: { type: 'const', constVal: _options?.max ?? 100 },
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'speaker' },
+                                color: { type: 'const', constVal: Color.on },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'speaker' },
+                                color: { type: 'const', constVal: Color.off },
+                            },
+                        },
+                        setValue1: {
+                            type: 'state',
+                            dp: `${identifier}.add_to_group`,
+                            write: `if (val) return '${val}'; else return '';`,
+                        },
+                        setValue2: {
+                            type: 'state',
+                            dp: `${identifier}.remove_from_group`,
+                            write: `if (val) return '${val}'; else return '';`,
+                        },
+                    },
+                });
             }
-            break;
+            return result;
+        }
         default: {
             exhaustiveCheck(cardRole);
             return null;

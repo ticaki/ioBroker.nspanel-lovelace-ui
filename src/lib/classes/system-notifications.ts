@@ -1,6 +1,6 @@
 import { insertLinebreak } from '../const/tools';
 import type { GetNotificationsResponse, HostId, notification } from '../types/system-notifications';
-import { BaseClass, type AdapterClassDefinition } from './library';
+import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 
 export class SystemNotifications extends BaseClass {
     private language: ioBroker.Languages;

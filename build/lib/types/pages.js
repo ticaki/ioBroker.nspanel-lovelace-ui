@@ -235,6 +235,8 @@ const stateRoleArray = arrayOfAllStateRole([
   "level.volume.group",
   "media.mode.crossfade",
   "media.station",
+  "date.sunrise,forecast.0",
+  "date.sunset.forecast.0",
   ""
 ]);
 function isStateRole(F) {

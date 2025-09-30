@@ -1,5 +1,5 @@
 import type * as MQTT from '../classes/mqtt';
-import * as Library from '../classes/library';
+import * as Library from './library';
 import { StatesControler } from './states-controller';
 import * as Panel from './panel';
 import { genericStateObjects } from '../const/definition';

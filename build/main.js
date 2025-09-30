@@ -22,7 +22,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
-var import_library = require("./lib/classes/library");
+var import_library = require("./lib/controller/library");
 var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_controller = require("./lib/controller/controller");
@@ -52,6 +52,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   testCaseConfig;
   // just for testing
   scriptConfigBacklog = [];
+  fetchs = /* @__PURE__ */ new Map();
   constructor(options = {}) {
     super({
       ...options,
@@ -376,6 +377,35 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     await this.setState("info.connection", true, true);
   };
+  async fetch(url, init, timeout = 3e4) {
+    var _a;
+    const controller = new AbortController();
+    const timeoutId = this.setTimeout(() => {
+      try {
+        controller.abort();
+      } catch {
+      }
+      this.fetchs.delete(controller);
+    }, timeout);
+    this.fetchs.set(controller, timeoutId);
+    try {
+      const response = await fetch(url, {
+        ...init,
+        method: (_a = init == null ? void 0 : init.method) != null ? _a : "GET",
+        signal: controller.signal
+      });
+      if (response.status === 200) {
+        return await response.json();
+      }
+      throw new Error({ status: response.status, statusText: response.statusText });
+    } finally {
+      const id = this.fetchs.get(controller);
+      if (typeof id !== "undefined") {
+        this.clearTimeout(id);
+      }
+      this.fetchs.delete(controller);
+    }
+  }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances.
    *
@@ -390,6 +420,16 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (this.timeoutAdmin2) {
         this.clearTimeout(this.timeoutAdmin2);
       }
+      for (const [controller, timeoutId] of this.fetchs.entries()) {
+        try {
+          if (timeoutId) {
+            this.clearTimeout(timeoutId);
+          }
+          controller.abort();
+        } catch {
+        }
+      }
+      this.fetchs.clear();
       this.timeoutAdminArray.forEach((a) => {
         if (a) {
           this.clearTimeout(a);

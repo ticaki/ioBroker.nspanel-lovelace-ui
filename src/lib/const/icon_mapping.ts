@@ -1,4 +1,4 @@
-import type { AdapterClassDefinition } from '../classes/library';
+import type { AdapterClassDefinition } from '../controller/library';
 
 export class Icons {
     static adapter: AdapterClassDefinition | undefined;
