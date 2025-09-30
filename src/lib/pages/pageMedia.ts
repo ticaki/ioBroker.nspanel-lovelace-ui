@@ -122,7 +122,7 @@ export class PageMedia extends PageMenu {
                             this.coordinator = undefined;
                         }
                         this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join('.') : '';
-                        const v = await this.coordinator?.getString();
+                        /*const v = await this.coordinator?.getString();
                         if (v) {
                             const ident = this.config.ident
                                 ? this.config.ident.split('.').slice(0, 3).concat([v]).join('.')
@@ -130,7 +130,7 @@ export class PageMedia extends PageMenu {
                             if (ident && ident !== this.currentPlayer) {
                                 await this.updateCurrentPlayer(ident, '');
                             }
-                        }
+                        }*/
                     }
                     break;
                 default:
@@ -251,7 +251,7 @@ export class PageMedia extends PageMenu {
                         ),
                     );
                 }
-                this.pageItems = await this.createPageItems(pi, this.items[index].ident || '');
+                this.pageItems = await this.createPageItems(pi /*,this.items[index].ident || ''*/);
             }
             // Hack: set Sonos favorites_set to the first favorite to reset the “still playing” behavior.
             if (index === 0) {
