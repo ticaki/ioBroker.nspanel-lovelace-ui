@@ -2,117 +2,30 @@
     "i18n": true,
     "type": "tabs",
     "items": {
-        "general": {
+        "maintain": {
             "type": "panel",
-            "label": "mqttServerSetting",
+            "label": "maintain",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
-                "mqttServer": {
-                    "type": "checkbox",
-                    "label": "mqttServer",
-                    "default": true,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_notifyStaticText": {
+                "_useBetaTFTText": {
                     "type": "staticText",
-                    "text": "notifyMqttServer",
+                    "label": "useBetaVersionText",
+                    "text": "useBetaVersionText",
                     "style": {
                         "color": "red"
                     },
                     "newLine": true,
-                    "hidden": "data.mqttServer",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "_getRandomMqttCredentials": {
-                    "type": "sendTo",
-                    "label": "getRandomMqttCredentials",
-                    "jsonData": "{ \"mqttServer\": \"${data.mqttServer}\" }",
-                    "showProcess": false,
-                    "command": "getRandomMqttCredentials",
-                    "disabled": "data.mqttPort || data.mqttUsername || data.mqttPassword",
-                    "tooltip": "getRandomMqttCredentialsHelp",
-                    "newLine": true,
-                    "useNative": true,
-                    "variant": "contained",
-                    "hidden": "!data.mqttServer",
+                    "hidden": "!data.useBetaTFT",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
                     "xl": 4
                 },
-                "mqttIp": {
-                    "type": "text",
-                    "label": "mqttIp",
-                    "newLine": true,
-                    "disabled": "data.mqttServer",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mqttPort": {
-                    "type": "text",
-                    "label": "mqttPort",
-                    "newLine": false,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mqttUsername": {
-                    "type": "text",
-                    "label": "mqttUser",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mqttPassword": {
-                    "type": "password",
-                    "label": "mqttPassword",
-                    "newLine": false,
-                    "validator": "data.mqttPassword.length > 5",
-                    "visible": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "useTasmotaAdmin": {
-                    "type": "checkbox",
-                    "label": "useTasmotaAdmin",
-                    "default": false,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "tasmotaAdminPassword": {
-                    "type": "password",
-                    "label": "tasmotaAdminPassword",
-                    "newLine": false,
-                    "hidden": "!data.useTasmotaAdmin",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
+                "_headerMaintain": {
+                    "type": "header",
+                    "text": "headerMaintain",
+                    "size": 2
                 },
                 "_openLinkAdapterInsatllation": {
                     "type": "staticLink",
@@ -131,30 +44,215 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "_openLinkAliasTable": {
-                    "type": "staticLink",
-                    "text": "openLinkAliasTable",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md",
-                    "icon": "web",
-                    "button": true,
-                    "style": {
-                        "fontSize": 16,
-                        "color": "red"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_divider": {
-                    "type": "divider",
+                "_RefreshMaintainTable": {
+                    "type": "sendTo",
+                    "label": "RefreshMaintainTable",
+                    "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "showProcess": true,
+                    "command": "refreshMaintainTable",
+                    "variant": "outlined",
+                    "useNative": true,
+                    "onLoaded": true,
                     "newLine": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "_maintainPanels": {
+                    "type": "accordion",
+                    "label": "overviewOfPanels",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "titleAttr": "_Headline",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "type": "text",
+                            "attr": "_id",
+                            "label": "macAdressOfPanel",
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_ip",
+                            "validator": "data.ip",
+                            "default": "",
+                            "label": "ipFromPanel",
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_Headline",
+                            "label": "panelName",
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_name",
+                            "label": "panelName",
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_topic",
+                            "label": "panelTopic",
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_online",
+                            "label": "isOnline",
+                            "hidden": "true",
+                            "readOnly": true,
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_tasmotaVersion",
+                            "label": "vTasmota",
+                            "readOnly": true,
+                            "validator": "!data._tasmotaVersion.endsWith(')')",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_tftVersion",
+                            "label": "vTFT",
+                            "readOnly": true,
+                            "validator": "!data._tftVersion.endsWith(')')",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_ScriptVersion",
+                            "label": "vScript",
+                            "readOnly": true,
+                            "validator": "!data._ScriptVersion.endsWith(')')",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "_tasmotaSendTo",
+                            "type": "sendTo",
+                            "label": "tasmotaUpdate",
+                            "tooltip": "tasmotaUpdateHelp",
+                            "newLine": true,
+                            "jsonData": "{ \"topic\":\"${data._topic}\" }",
+                            "showProcess": true,
+                            "command": "updateTasmota",
+                            "disabled": "return !data._ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data._ip || data._ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._topic || data._topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data._name || !data._online === 'no'",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "variant": "contained",
+                            "confirm": {
+                                "title": "Tasmota Update",
+                                "text": "Update the firmware of the Tasmota NS panel with the latest version.",
+                                "ok": "Update",
+                                "cancel": "Cancel"
+                            }
+                        },
+                        {
+                            "attr": "_tftInstallSendToMQtt",
+                            "type": "sendTo",
+                            "label": "tftInstallSendToMQTT",
+                            "tooltip": "tftInstallSendToMQTTHelp",
+                            "jsonData": "{\"tasmotaIP\": \"${data._ip}\", \"topic\": \"${data._topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data._online}\", \"model\": \"${data._nsPanelModel}\" }",
+                            "showProcess": true,
+                            "command": "tftInstallSendToMQTT",
+                            "disabled": "data._online === 'no' || data._ip === ''",
+                            "variant": "outlined",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "_createScript",
+                            "type": "sendTo",
+                            "label": "createScript",
+                            "jsonData": "{\"name\": \"${data._name}\", \"topic\": \"${data._topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
+                            "showProcess": true,
+                            "command": "createScript",
+                            "tooltip": "createScriptHelp",
+                            "disabled": "!data._name || !data._topic",
+                            "variant": "contained",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "_openTasmotaConsole",
+                            "type": "sendTo",
+                            "label": "openTasmotaConsole",
+                            "jsonData": "{\"ip\": \"${data._ip}\"}",
+                            "openUrl": true,
+                            "command": "openTasmotaConsole",
+                            "disabled": "!data._ip",
+                            "variant": "contained",
+                            "newLine": true,
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        }
+                    ]
                 }
             }
         },
@@ -673,260 +771,6 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 3
-                }
-            }
-        },
-        "maintain": {
-            "type": "panel",
-            "label": "maintain",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
-            "items": {
-                "_useBetaTFTText": {
-                    "type": "staticText",
-                    "label": "useBetaVersionText",
-                    "text": "useBetaVersionText",
-                    "style": {
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "hidden": "!data.useBetaTFT",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_headerMaintain": {
-                    "type": "header",
-                    "text": "headerMaintain",
-                    "size": 2
-                },
-                "_openLinkAdapterInsatllation": {
-                    "type": "staticLink",
-                    "text": "openLinkAdapterInsatllation",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
-                    "icon": "info",
-                    "button": true,
-                    "style": {
-                        "fontSize": 16,
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_RefreshMaintainTable": {
-                    "type": "sendTo",
-                    "label": "RefreshMaintainTable",
-                    "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
-                    "showProcess": true,
-                    "command": "refreshMaintainTable",
-                    "variant": "outlined",
-                    "useNative": true,
-                    "onLoaded": true,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_maintainPanels": {
-                    "type": "accordion",
-                    "label": "overviewOfPanels",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 12,
-                    "xl": 12,
-                    "titleAttr": "_Headline",
-                    "noDelete": true,
-                    "items": [
-                        {
-                            "type": "text",
-                            "attr": "_id",
-                            "label": "macAdressOfPanel",
-                            "readOnly": true,
-                            "hidden": "true",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_ip",
-                            "validator": "data.ip",
-                            "default": "",
-                            "label": "ipFromPanel",
-                            "readOnly": true,
-                            "hidden": "true",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_Headline",
-                            "label": "panelName",
-                            "readOnly": true,
-                            "hidden": "true",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_name",
-                            "label": "panelName",
-                            "readOnly": true,
-                            "hidden": "true",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_topic",
-                            "label": "panelTopic",
-                            "readOnly": true,
-                            "hidden": "true",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_online",
-                            "label": "isOnline",
-                            "hidden": "true",
-                            "readOnly": true,
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_tasmotaVersion",
-                            "label": "vTasmota",
-                            "readOnly": true,
-                            "validator": "!data._tasmotaVersion.endsWith(')')",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_tftVersion",
-                            "label": "vTFT",
-                            "readOnly": true,
-                            "validator": "!data._tftVersion.endsWith(')')",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "type": "text",
-                            "attr": "_ScriptVersion",
-                            "label": "vScript",
-                            "readOnly": true,
-                            "validator": "!data._ScriptVersion.endsWith(')')",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "attr": "_tasmotaSendTo",
-                            "type": "sendTo",
-                            "label": "tasmotaUpdate",
-                            "tooltip": "tasmotaUpdateHelp",
-                            "newLine": true,
-                            "jsonData": "{ \"topic\":\"${data._topic}\" }",
-                            "showProcess": true,
-                            "command": "updateTasmota",
-                            "disabled": "return !data._ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data._ip || data._ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._topic || data._topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data._name || !data._online === 'no'",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "variant": "contained",
-                            "confirm": {
-                                "title": "Tasmota Update",
-                                "text": "Update the firmware of the Tasmota NS panel with the latest version.",
-                                "ok": "Update",
-                                "cancel": "Cancel"
-                            }
-                        },
-                        {
-                            "attr": "_tftInstallSendToMQtt",
-                            "type": "sendTo",
-                            "label": "tftInstallSendToMQTT",
-                            "tooltip": "tftInstallSendToMQTTHelp",
-                            "jsonData": "{\"tasmotaIP\": \"${data._ip}\", \"topic\": \"${data._topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data._online}\", \"model\": \"${data._nsPanelModel}\" }",
-                            "showProcess": true,
-                            "command": "tftInstallSendToMQTT",
-                            "disabled": "data._online === 'no' || data._ip === ''",
-                            "variant": "outlined",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "attr": "_createScript",
-                            "type": "sendTo",
-                            "label": "createScript",
-                            "jsonData": "{\"name\": \"${data._name}\", \"topic\": \"${data._topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
-                            "showProcess": true,
-                            "command": "createScript",
-                            "tooltip": "createScriptHelp",
-                            "disabled": "!data._name || !data._topic",
-                            "variant": "contained",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        },
-                        {
-                            "attr": "_openTasmotaConsole",
-                            "type": "sendTo",
-                            "label": "openTasmotaConsole",
-                            "jsonData": "{\"ip\": \"${data._ip}\"}",
-                            "openUrl": true,
-                            "command": "openTasmotaConsole",
-                            "disabled": "!data._ip",
-                            "variant": "contained",
-                            "newLine": true,
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
-                        }
-                    ]
                 }
             }
         },
@@ -3109,6 +2953,162 @@
                             "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
                         }
                     ]
+                }
+            }
+        },
+        "general": {
+            "type": "panel",
+            "label": "mqttServerSetting",
+            "items": {
+                "mqttServer": {
+                    "type": "checkbox",
+                    "label": "mqttServer",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_notifyStaticText": {
+                    "type": "staticText",
+                    "text": "notifyMqttServer",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "hidden": "data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "_getRandomMqttCredentials": {
+                    "type": "sendTo",
+                    "label": "getRandomMqttCredentials",
+                    "jsonData": "{ \"mqttServer\": \"${data.mqttServer}\" }",
+                    "showProcess": false,
+                    "command": "getRandomMqttCredentials",
+                    "disabled": "data.mqttPort || data.mqttUsername || data.mqttPassword",
+                    "tooltip": "getRandomMqttCredentialsHelp",
+                    "newLine": true,
+                    "useNative": true,
+                    "variant": "contained",
+                    "hidden": "!data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttIp": {
+                    "type": "text",
+                    "label": "mqttIp",
+                    "newLine": true,
+                    "disabled": "data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttPort": {
+                    "type": "text",
+                    "label": "mqttPort",
+                    "newLine": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttUsername": {
+                    "type": "text",
+                    "label": "mqttUser",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttPassword": {
+                    "type": "password",
+                    "label": "mqttPassword",
+                    "newLine": false,
+                    "validator": "data.mqttPassword.length > 5",
+                    "visible": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "useTasmotaAdmin": {
+                    "type": "checkbox",
+                    "label": "useTasmotaAdmin",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaAdminPassword": {
+                    "type": "password",
+                    "label": "tasmotaAdminPassword",
+                    "newLine": false,
+                    "hidden": "!data.useTasmotaAdmin",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_openLinkAdapterInsatllation": {
+                    "type": "staticLink",
+                    "text": "openLinkAdapterInsatllation",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_openLinkAliasTable": {
+                    "type": "staticLink",
+                    "text": "openLinkAliasTable",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md",
+                    "icon": "web",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_divider": {
+                    "type": "divider",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
