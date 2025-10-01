@@ -20,3 +20,4 @@ admin/i18n/flat.txt
 admin/i18n/*/flat.txt
 src/lib/password.ts
 .gitignore
+.commitinfo

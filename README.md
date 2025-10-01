@@ -148,6 +148,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (copilot) Fixed repository checker issues: Updated admin dependency to 7.6.17, added .commitinfo to .gitignore, updated .vscode/settings.json with complete jsonConfig schema definitions
 - (ticaki) Added screensaver notification system  
 - (ticaki) Fixed cardThermo2 not switching  
 - (ticaki) Implemented hiding of screensaver elements  
