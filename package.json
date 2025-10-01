@@ -35,7 +35,7 @@
     "aedes": "^0.51.3",
     "aedes-persistence-level": "^9.1.2",
     "aedes-server-factory": "^0.2.1",
-    "axios": "^1.12.1",
+    "axios": "^1.12.2",
     "colord": "^2.9.3",
     "level": "^10.0.0",
     "mqtt": "^5.14.0",
