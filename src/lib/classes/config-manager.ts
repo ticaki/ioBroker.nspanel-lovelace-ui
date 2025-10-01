@@ -166,12 +166,15 @@ export class ConfigManager extends BaseClass {
                             const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
                             const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
                             if (gPage) {
+                                const existNav =
+                                    page.prev != null || page.parent != null || page.next != null || page.home != null;
+
                                 config.subPages[i] = {
                                     ...gPage,
-                                    prev: page.prev != null ? page.prev : gPage.prev,
-                                    next: page.next != null ? page.next : gPage.next,
-                                    home: page.home != null ? page.home : gPage.home,
-                                    parent: page.parent != null ? page.parent : gPage.parent,
+                                    prev: existNav ? page.prev : gPage.prev,
+                                    parent: existNav ? page.parent : gPage.parent,
+                                    next: existNav ? page.next : gPage.next,
+                                    home: existNav ? page.home : gPage.home,
                                 };
                                 if (page.heading) {
                                     config.subPages[i].heading = page.heading;
