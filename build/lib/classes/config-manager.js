@@ -171,10 +171,10 @@ class ConfigManager extends import_library.BaseClass {
               if (gPage) {
                 config.subPages[i] = {
                   ...gPage,
-                  prev: page.prev,
-                  next: page.next,
-                  home: page.home,
-                  parent: page.parent
+                  prev: page.prev != null ? page.prev : gPage.prev,
+                  next: page.next != null ? page.next : gPage.next,
+                  home: page.home != null ? page.home : gPage.home,
+                  parent: page.parent != null ? page.parent : gPage.parent
                 };
                 if (page.heading) {
                   config.subPages[i].heading = page.heading;
