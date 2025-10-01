@@ -162,6 +162,7 @@ class ConfigManager extends import_library.BaseClass {
       if (obj2 && obj2.native && obj2.native.globalConfigRaw) {
         const globalConfig = obj2.native.globalConfigRaw;
         if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
+          const removeGlobalPageIndexs = /* @__PURE__ */ new Set();
           for (let i = config.subPages.length - 1; i >= 0; i--) {
             const page = config.subPages[i];
             if (page && "globalLink" in page && page.globalLink) {
@@ -176,9 +177,13 @@ class ConfigManager extends import_library.BaseClass {
                   parent: page.parent
                 };
                 if (page.heading) {
-                  config.pages[i].heading = page.heading;
+                  config.subPages[i].heading = page.heading;
                 }
-                globalConfig.subPages.splice(gIndex, 1);
+                if (page.uniqueName != null && config.subPages[i].uniqueName !== page.uniqueName) {
+                  config.subPages[i].uniqueName = page.uniqueName;
+                } else {
+                  removeGlobalPageIndexs.add(gIndex);
+                }
               } else {
                 config.subPages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -203,7 +208,11 @@ class ConfigManager extends import_library.BaseClass {
                 if (page.heading) {
                   config.pages[i].heading = page.heading;
                 }
-                globalConfig.subPages.splice(gIndex, 1);
+                if (page.uniqueName != null && config.pages[i].uniqueName !== page.uniqueName) {
+                  config.pages[i].uniqueName = page.uniqueName;
+                } else {
+                  removeGlobalPageIndexs.add(gIndex);
+                }
               } else {
                 config.pages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -211,6 +220,9 @@ class ConfigManager extends import_library.BaseClass {
                 this.log.warn(msg);
               }
             }
+          }
+          for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
+            globalConfig.subPages.splice(index, 1);
           }
           config.subPages = config.subPages.concat(globalConfig.subPages || []);
           config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
