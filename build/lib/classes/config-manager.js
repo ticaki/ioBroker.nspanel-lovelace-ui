@@ -4038,6 +4038,11 @@ class ConfigManager extends import_library.BaseClass {
             `No valid Enabled states in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`
           );
         }
+      } else if (typeof entity.Enabled === "boolean") {
+        result.data.enabled = {
+          type: "const",
+          constVal: entity.Enabled
+        };
       } else if (typeof entity.Enabled === "string") {
         if (await this.existsState(entity.Enabled)) {
           result.data.enabled = await this.getFieldAsDataItemConfig(entity.Enabled, true);
