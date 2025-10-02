@@ -276,6 +276,23 @@ declare namespace ScriptConfig {
         | 'cardAlarm'
         | 'cardPower'; //| 'cardBurnRec'
 
+    export type PageTypeGlobal =
+        | PageChart
+        | PageEntities
+        | PageSchedule
+        | PageGrid
+        | PageGrid2
+        | PageGrid3
+        | PageThermo
+        | PageThermo2
+        | PageMedia
+        | PageUnlock
+        | PageQR
+        | PageAlarm
+        | PagePower
+        | PageNative
+        | PageLink;
+
     export type PageType =
         | PageChart
         | PageEntities
@@ -291,6 +308,11 @@ declare namespace ScriptConfig {
         | PageAlarm
         | PagePower
         | PageNative;
+
+    export type PageLink = {
+        heading?: string;
+        globalLink: string;
+    } & Partial<Pick<PageBaseType, 'prev' | 'next' | 'home' | 'parent' | 'uniqueName'>>;
 
     export type PageNative = {
         type: undefined;
@@ -689,6 +711,14 @@ declare namespace ScriptConfig {
         brightnessNight: number | undefined;
         timeDay: string | undefined;
         timeNight: string | undefined;
+    };
+
+    export type globalPagesConfig = {
+        version: string;
+        type: 'globalConfig';
+        subPages: PageType[];
+        nativePageItems?: any[];
+        navigation?: NavigationItemConfig[];
     };
 
     export type Config = {
