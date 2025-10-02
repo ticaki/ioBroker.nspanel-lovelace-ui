@@ -33,7 +33,6 @@ Das Global Script definiert die wiederverwendbaren Seiten. Es wird typischerweis
 ```typescript
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
     type: 'globalConfig', // Pflichtfeld
-    version: '4.1.2', // Optional, empfohlen
     
     // Alle globalen Seiten
     subPages: [
@@ -51,7 +50,6 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 #### Wichtige Eigenschaften
 
 - `type: 'globalConfig'` - **Pflichtfeld**: Kennzeichnet dies als Global Config
-- `version` - Optional: Versionsnummer für Nachverfolgung
 - `subPages` - Array mit allen globalen Seitendefinitionen
 - `navigation` - Optional: Gemeinsame Navigationskonfiguration
 - `nativePageItems` - Optional: Gemeinsame native Page Items
@@ -126,7 +124,6 @@ Alle definierten Seiten werden im `subPages` Array zusammengefasst:
 ```typescript
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
     type: 'globalConfig',
-    version: '4.1.2',
     subPages: [
         wohnzimmer,
         mediaPlayer,
@@ -147,7 +144,7 @@ try {
     log(await sendToAsync(
         'nspanel-lovelace-ui.0',
         'ScriptConfigGlobal',
-        { ...globalPagesConfig, version },
+        globalPagesConfig,
         { timeout: 30_000 }
     ));
 } catch (e) {
@@ -200,7 +197,9 @@ const wohnzimmerPage: PageType = {
 
 ### 2. Navigation in Pages
 
-Wenn eine globale Seite in `pages` (Hauptseiten) verwendet wird, werden die Navigationsparameter (`prev`, `next`, `home`, `parent`) **automatisch entfernt**. Die Seite wird in die zirkuläre Navigation der Hauptseiten eingebunden.
+Wenn eine globale Seite in `pages` (Hauptseiten) verwendet wird, wird die Navigation der globalen Seite berücksichtigt, um fehlende referenzierte Seiten automatisch hinzuzufügen. Danach werden die Navigationsparameter (`prev`, `next`, `home`, `parent`) der eingefügten Seiten **entfernt**, und die Seiten werden in die zirkuläre Navigation der Hauptseiten eingebunden.
+
+**Automatisches Hinzufügen von Seiten**: Wenn eine globale Seite `next` oder `prev` auf eine andere globale Seite verweist, die noch nicht in `pages` enthalten ist, wird diese automatisch hinzugefügt. Dies geschieht nur für `next`-Verweise - bei `prev` wird eine Warnung ausgegeben, da dies die Reihenfolge ändern würde.
 
 ```typescript
 const config: ScriptConfig.Config = {
@@ -423,27 +422,30 @@ const config: ScriptConfig.Config = {
 
 ### Navigation und Reihenfolge
 
-1. **Pages Navigation**: Seiten in `pages` werden automatisch zirkulär verlinkt. Die Navigation (`prev`, `next`) aus dem Global Script wird ignoriert.
+1. **Pages Navigation**: 
+   - Die Navigation (`next`, `prev`) aus dem Global Script wird verwendet, um automatisch fehlende referenzierte Seiten zu `pages` hinzuzufügen
+   - Bei `next`-Verweisen wird die referenzierte Seite automatisch nach der aktuellen Seite eingefügt
+   - Bei `prev`-Verweisen erfolgt eine Warnung, da dies die Reihenfolge zufällig ändern würde
+   - Nach dem automatischen Hinzufügen werden die Navigationsparameter entfernt und die Seiten zirkulär verlinkt
 
 2. **SubPages Navigation**: Bei Seiten in `subPages` gilt:
    - Ohne Navigationsparameter: Navigation aus Global Script wird übernommen
    - Mit mindestens einem Navigationsparameter: Alle Navigationsparameter aus Local Script werden verwendet
 
-3. **Automatische Navigation**: Wenn eine globale Seite auf eine andere globale Seite verweist (z.B. `next: 'lichter'`), prüft der Adapter automatisch, ob diese Zielseite auch im Local Script vorhanden ist. Falls nicht, erfolgt eine Warnung.
+3. **Beispiel für automatisches Hinzufügen**: Wenn Sie `{ globalLink: 'wohnzimmer' }` in `pages` haben und die globale Seite `wohnzimmer` hat `next: 'kueche'`, wird `kueche` automatisch zu `pages` hinzugefügt, falls noch nicht vorhanden.
 
-### Versionierung
+### Dokumentation und Nachverfolgung
 
-Es wird empfohlen, eine Version im Global Script anzugeben:
+Für eine bessere Nachverfolgung können Sie Kommentare in Ihrem Global Script verwenden, um Änderungen zu dokumentieren:
 
 ```typescript
+// Version 1.0 - Initial setup
+// Version 1.1 - Added heating page
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
     type: 'globalConfig',
-    version: '1.0.0', // Versionsnummer
     subPages: [...]
 };
 ```
-
-Dies hilft bei der Nachverfolgung von Änderungen und beim Debugging.
 
 ### Fehlervermeidung
 

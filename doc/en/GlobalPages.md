@@ -33,7 +33,6 @@ The Global Script defines the reusable pages. It is typically stored in the file
 ```typescript
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
     type: 'globalConfig', // Required field
-    version: '4.1.2', // Optional, recommended
     
     // All global pages
     subPages: [
@@ -51,7 +50,6 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 #### Important Properties
 
 - `type: 'globalConfig'` - **Required**: Identifies this as a Global Config
-- `version` - Optional: Version number for tracking
 - `subPages` - Array with all global page definitions
 - `navigation` - Optional: Shared navigation configuration
 - `nativePageItems` - Optional: Shared native page items
@@ -126,7 +124,6 @@ All defined pages are collected in the `subPages` array:
 ```typescript
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
     type: 'globalConfig',
-    version: '4.1.2',
     subPages: [
         livingRoom,
         mediaPlayer,
@@ -147,7 +144,7 @@ try {
     log(await sendToAsync(
         'nspanel-lovelace-ui.0',
         'ScriptConfigGlobal',
-        { ...globalPagesConfig, version },
+        globalPagesConfig,
         { timeout: 30_000 }
     ));
 } catch (e) {
@@ -200,7 +197,9 @@ const livingRoomPage: PageType = {
 
 ### 2. Navigation in Pages
 
-When a global page is used in `pages` (main pages), the navigation parameters (`prev`, `next`, `home`, `parent`) are **automatically removed**. The page is integrated into the circular navigation of the main pages.
+When a global page is used in `pages` (main pages), the navigation from the global page is considered to automatically add missing referenced pages. After that, the navigation parameters (`prev`, `next`, `home`, `parent`) of the inserted pages are **removed**, and the pages are integrated into the circular navigation of the main pages.
+
+**Automatic Page Addition**: If a global page has `next` or `prev` pointing to another global page that is not yet in `pages`, it will be automatically added. This only happens for `next` references - for `prev` references, a warning is issued as it would change the order.
 
 ```typescript
 const config: ScriptConfig.Config = {
@@ -423,27 +422,30 @@ const config: ScriptConfig.Config = {
 
 ### Navigation and Order
 
-1. **Pages Navigation**: Pages in `pages` are automatically linked circularly. Navigation (`prev`, `next`) from the Global Script is ignored.
+1. **Pages Navigation**: 
+   - The navigation (`next`, `prev`) from the Global Script is used to automatically add missing referenced pages to `pages`
+   - For `next` references, the referenced page is automatically inserted after the current page
+   - For `prev` references, a warning is issued as it would randomly change the order
+   - After automatic addition, the navigation parameters are removed and pages are circularly linked
 
 2. **SubPages Navigation**: For pages in `subPages`:
    - Without navigation parameters: Navigation from Global Script is inherited
    - With at least one navigation parameter: All navigation parameters from Local Script are used
 
-3. **Automatic Navigation**: When a global page references another global page (e.g., `next: 'lights'`), the adapter automatically checks if this target page is also present in the Local Script. If not, a warning is issued.
+3. **Example of Automatic Addition**: If you have `{ globalLink: 'living_room' }` in `pages` and the global page `living_room` has `next: 'kitchen'`, `kitchen` will be automatically added to `pages` if not already present.
 
-### Versioning
+### Documentation and Tracking
 
-It is recommended to specify a version in the Global Script:
+For better tracking, you can use comments in your Global Script to document changes:
 
 ```typescript
+// Version 1.0 - Initial setup
+// Version 1.1 - Added heating page
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
     type: 'globalConfig',
-    version: '1.0.0', // Version number
     subPages: [...]
 };
 ```
-
-This helps with tracking changes and debugging.
 
 ### Error Prevention
 
