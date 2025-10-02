@@ -4067,7 +4067,8 @@ export class ConfigManager extends BaseClass {
             }
             const tasks = items.map(item =>
                 this.getNotifyEntityData(item, mode).catch(err => {
-                    throw new Error(`${errorLabel} - ${String(err)}`);
+                    this.log.error(`${errorLabel} - ${String(err)}`);
+                    return null;
                 }),
             );
             const res = await Promise.all(tasks);
@@ -4087,7 +4088,8 @@ export class ConfigManager extends BaseClass {
                     return Promise.resolve<typePageItem.PageItemDataItemsOptions | null>(null);
                 }
                 return this.getEntityData(item, mode, config).catch(err => {
-                    throw new Error(`${errorLabel} - ${String(err)}`);
+                    this.log.error(`${errorLabel} - ${String(err)}`);
+                    return null;
                 });
             });
             const res = await Promise.all(tasks);
@@ -4105,7 +4107,10 @@ export class ConfigManager extends BaseClass {
                 const r = await this.getMrEntityData(entity, 'mricon');
                 return [r];
             } catch (err) {
-                throw new Error(`${errorLabel} - ${String(err)}`);
+                {
+                    this.log.error(`${errorLabel} - ${String(err)}`);
+                    return [];
+                }
             }
         };
 
