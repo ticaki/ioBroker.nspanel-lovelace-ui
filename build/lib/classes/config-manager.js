@@ -179,7 +179,12 @@ class ConfigManager extends import_library.BaseClass {
                       (item) => "globalLink" in item && item.globalLink === gPage[tag] || item.uniqueName === gPage[tag]
                     );
                     if (gIndex2 !== -1 && index === -1) {
-                      const msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
+                      let msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. `;
+                      if (tag === "next") {
+                        msg += `Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
+                      } else {
+                        msg += `This is not recommended! Prev navigation will "randomly" change the order of pages! Consider to remove it!`;
+                      }
                       messages.push(msg);
                       config.pages.splice(i + 1, 0, {
                         globalLink: gPage[tag]

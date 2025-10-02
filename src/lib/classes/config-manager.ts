@@ -153,7 +153,9 @@ export class ConfigManager extends BaseClass {
         }
 
         // start configuration
+
         {
+            // merge global config
             const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
             if (obj && obj.native && obj.native.globalConfigRaw) {
                 const globalConfig = obj.native.globalConfigRaw as ScriptConfig.globalPagesConfig;
@@ -178,7 +180,12 @@ export class ConfigManager extends BaseClass {
                                                 item.uniqueName === gPage[tag],
                                         );
                                         if (gIndex !== -1 && index === -1) {
-                                            const msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
+                                            let msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. `;
+                                            if (tag === 'next') {
+                                                msg += `Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
+                                            } else {
+                                                msg += `This is not recommended! Prev navigation will "randomly" change the order of pages! Consider to remove it!`;
+                                            }
                                             messages.push(msg);
                                             (config.pages as ScriptConfig.PageTypeGlobal[]).splice(i + 1, 0, {
                                                 globalLink: gPage[tag],
