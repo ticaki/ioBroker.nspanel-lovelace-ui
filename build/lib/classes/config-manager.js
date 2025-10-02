@@ -3526,8 +3526,6 @@ class ConfigManager extends import_library.BaseClass {
           `Warning: ${blockName}ScreensaverEntity - loaded ${arr.length} of ${expectedCount} configured items`
         );
         this.log.warn(messages[messages.length - 1]);
-      } else if (arr.length > 0) {
-        messages.push(`${blockName}ScreensaverEntity - successfully loaded ${arr.length} items`);
       }
       pageItems.push(...arr);
     }
@@ -3888,7 +3886,6 @@ class ConfigManager extends import_library.BaseClass {
       }
       if (toAdd.length) {
         pageItems = pageItems.concat(toAdd);
-        messages.push(`Added ${toAdd.length} weather items to screensaver`);
       }
     }
     this.log.debug(`Screensaver pageItems count: ${pageItems.length}`);
