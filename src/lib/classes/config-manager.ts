@@ -178,9 +178,9 @@ export class ConfigManager extends BaseClass {
                                                 item.uniqueName === gPage[tag],
                                         );
                                         if (gIndex !== -1 && index === -1) {
-                                            const msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. Remove ${gPage[tag]} from subPages and add to pages at index ${config.pages.length - 1}!`;
+                                            const msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
                                             messages.push(msg);
-                                            (config.pages as ScriptConfig.PageTypeGlobal[]).push({
+                                            (config.pages as ScriptConfig.PageTypeGlobal[]).splice(i + 1, 0, {
                                                 globalLink: gPage[tag],
                                             });
                                         }
@@ -256,6 +256,7 @@ export class ConfigManager extends BaseClass {
                         globalConfig.subPages.splice(index, 1);
                     }
                     config.subPages = config.subPages.concat(globalConfig.subPages || []);
+
                     config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
                     config.nativePageItems = (config.nativePageItems || []).concat(globalConfig.nativePageItems || []);
                 }
