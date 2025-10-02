@@ -159,6 +159,65 @@ export class ConfigManager extends BaseClass {
                 const globalConfig = obj.native.globalConfigRaw as ScriptConfig.globalPagesConfig;
                 if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
                     const removeGlobalPageIndexs: Set<number> = new Set();
+                    // merge global config for pages
+                    for (let i = 0; i < config.pages.length; i++) {
+                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
+                        if (page && 'globalLink' in page && page.globalLink) {
+                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
+                            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
+                            if (gPage) {
+                                for (const t of ['next', 'prev']) {
+                                    const tag = t as 'next' | 'prev';
+                                    if (gPage[tag] != null) {
+                                        const gIndex = globalConfig.subPages.findIndex(
+                                            item => item.uniqueName === gPage[tag],
+                                        );
+                                        const index = config.pages.findIndex(
+                                            item =>
+                                                ('globalLink' in item && item.globalLink === gPage[tag]) ||
+                                                item.uniqueName === gPage[tag],
+                                        );
+                                        if (gIndex !== -1 && index === -1) {
+                                            const msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. Remove ${gPage[tag]} from subPages and add to pages at index ${config.pages.length - 1}!`;
+                                            messages.push(msg);
+                                            (config.pages as ScriptConfig.PageTypeGlobal[]).push({
+                                                globalLink: gPage[tag],
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (let i = config.pages.length - 1; i >= 0; i--) {
+                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
+                        if (page && 'globalLink' in page && page.globalLink) {
+                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
+                            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
+                            if (gPage) {
+                                config.pages[i] = {
+                                    ...gPage,
+                                    prev: undefined,
+                                    next: undefined,
+                                    home: undefined,
+                                    parent: undefined,
+                                };
+                                if (page.heading) {
+                                    config.pages[i].heading = page.heading;
+                                }
+                                if (page.uniqueName != null && config.pages[i].uniqueName !== page.uniqueName) {
+                                    config.pages[i].uniqueName = page.uniqueName;
+                                } else {
+                                    removeGlobalPageIndexs.add(gIndex);
+                                }
+                            } else {
+                                config.pages.splice(i, 1);
+                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+                                messages.push(msg);
+                                this.log.warn(msg);
+                            }
+                        }
+                    }
                     // merge global config for subPages
                     for (let i = config.subPages.length - 1; i >= 0; i--) {
                         const page = config.subPages[i] as ScriptConfig.PageTypeGlobal;
@@ -192,36 +251,7 @@ export class ConfigManager extends BaseClass {
                             }
                         }
                     }
-                    // merge global config for pages
-                    for (let i = config.pages.length - 1; i >= 0; i--) {
-                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
-                        if (page && 'globalLink' in page && page.globalLink) {
-                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
-                            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
-                            if (gPage) {
-                                config.pages[i] = {
-                                    ...gPage,
-                                    prev: undefined,
-                                    next: undefined,
-                                    home: undefined,
-                                    parent: undefined,
-                                };
-                                if (page.heading) {
-                                    config.pages[i].heading = page.heading;
-                                }
-                                if (page.uniqueName != null && config.pages[i].uniqueName !== page.uniqueName) {
-                                    config.pages[i].uniqueName = page.uniqueName;
-                                } else {
-                                    removeGlobalPageIndexs.add(gIndex);
-                                }
-                            } else {
-                                config.pages.splice(i, 1);
-                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                                messages.push(msg);
-                                this.log.warn(msg);
-                            }
-                        }
-                    }
+
                     for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
                         globalConfig.subPages.splice(index, 1);
                     }

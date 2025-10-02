@@ -163,33 +163,30 @@ class ConfigManager extends import_library.BaseClass {
         const globalConfig = obj2.native.globalConfigRaw;
         if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
           const removeGlobalPageIndexs = /* @__PURE__ */ new Set();
-          for (let i = config.subPages.length - 1; i >= 0; i--) {
-            const page = config.subPages[i];
+          for (let i = 0; i < config.pages.length; i++) {
+            const page = config.pages[i];
             if (page && "globalLink" in page && page.globalLink) {
               const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
               const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
               if (gPage) {
-                const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
-                config.subPages[i] = {
-                  ...gPage,
-                  prev: existNav ? page.prev : gPage.prev,
-                  parent: existNav ? page.parent : gPage.parent,
-                  next: existNav ? page.next : gPage.next,
-                  home: existNav ? page.home : gPage.home
-                };
-                if (page.heading) {
-                  config.subPages[i].heading = page.heading;
+                for (const t of ["next", "prev"]) {
+                  const tag = t;
+                  if (gPage[tag] != null) {
+                    const gIndex2 = globalConfig.subPages.findIndex(
+                      (item) => item.uniqueName === gPage[tag]
+                    );
+                    const index = config.pages.findIndex(
+                      (item) => "globalLink" in item && item.globalLink === gPage[tag] || item.uniqueName === gPage[tag]
+                    );
+                    if (gIndex2 !== -1 && index === -1) {
+                      const msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. Remove ${gPage[tag]} from subPages and add to pages at index ${config.pages.length - 1}!`;
+                      messages.push(msg);
+                      config.pages.push({
+                        globalLink: gPage[tag]
+                      });
+                    }
+                  }
                 }
-                if (page.uniqueName != null && config.subPages[i].uniqueName !== page.uniqueName) {
-                  config.subPages[i].uniqueName = page.uniqueName;
-                } else {
-                  removeGlobalPageIndexs.add(gIndex);
-                }
-              } else {
-                config.subPages.splice(i, 1);
-                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                messages.push(msg);
-                this.log.warn(msg);
               }
             }
           }
@@ -216,6 +213,36 @@ class ConfigManager extends import_library.BaseClass {
                 }
               } else {
                 config.pages.splice(i, 1);
+                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+                messages.push(msg);
+                this.log.warn(msg);
+              }
+            }
+          }
+          for (let i = config.subPages.length - 1; i >= 0; i--) {
+            const page = config.subPages[i];
+            if (page && "globalLink" in page && page.globalLink) {
+              const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
+              const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
+              if (gPage) {
+                const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
+                config.subPages[i] = {
+                  ...gPage,
+                  prev: existNav ? page.prev : gPage.prev,
+                  parent: existNav ? page.parent : gPage.parent,
+                  next: existNav ? page.next : gPage.next,
+                  home: existNav ? page.home : gPage.home
+                };
+                if (page.heading) {
+                  config.subPages[i].heading = page.heading;
+                }
+                if (page.uniqueName != null && config.subPages[i].uniqueName !== page.uniqueName) {
+                  config.subPages[i].uniqueName = page.uniqueName;
+                } else {
+                  removeGlobalPageIndexs.add(gIndex);
+                }
+              } else {
+                config.subPages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
                 messages.push(msg);
                 this.log.warn(msg);
