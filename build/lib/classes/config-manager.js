@@ -162,7 +162,7 @@ class ConfigManager extends import_library.BaseClass {
         if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
           return pages2;
         }
-        if (++indexRun > maxRun) {
+        if (indexRun++ > maxRun) {
           this.log.warn(
             `navigationAdjustRun for ${oldUniqueName} to ${newUniqueName} aborted - maxRun ${maxRun} reached!`
           );

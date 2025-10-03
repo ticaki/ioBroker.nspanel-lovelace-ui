@@ -167,7 +167,7 @@ export class ConfigManager extends BaseClass {
                 if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
                     return pages;
                 }
-                if (++indexRun > maxRun) {
+                if (indexRun++ > maxRun) {
                     this.log.warn(
                         `navigationAdjustRun for ${oldUniqueName} to ${newUniqueName} aborted - maxRun ${maxRun} reached!`,
                     );
