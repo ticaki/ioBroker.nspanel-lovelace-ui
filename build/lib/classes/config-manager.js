@@ -158,10 +158,94 @@ class ConfigManager extends import_library.BaseClass {
       );
     }
     {
+      const navigationAdjustRun = (oldUniqueName, newUniqueName, pages2, renamedPages, maxRun = 3, indexRun = 0, runPrefix = "") => {
+        if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
+          return pages2;
+        }
+        if (indexRun++ > maxRun) {
+          this.log.warn(
+            `navigationAdjustRun for ${oldUniqueName} to ${newUniqueName} aborted - maxRun ${maxRun} reached!`
+          );
+          return pages2;
+        }
+        const pageIndex = pages2.findIndex((item) => item.uniqueName === oldUniqueName);
+        if (pageIndex === -1) {
+          return pages2;
+        }
+        let page = pages2[pageIndex];
+        if (!page) {
+          return pages2;
+        }
+        renamedPages[oldUniqueName] = newUniqueName;
+        page = { ...structuredClone(page), uniqueName: newUniqueName };
+        pages2.push(page);
+        if ("items" in page && page.items) {
+          for (let i = 0; i < page.items.length; i++) {
+            const item = page.items[i];
+            if (item && item.navigate && item.targetPage) {
+              const origin = item.targetPage;
+              for (const key in renamedPages) {
+                const value = renamedPages[key];
+                if (origin === value) {
+                  item.targetPage = value;
+                  continue;
+                }
+              }
+              if (renamedPages[item.targetPage]) {
+                item.targetPage = renamedPages[item.targetPage];
+                continue;
+              }
+              const newName = `${runPrefix}_${item.targetPage}_copy_nav_${Math.floor(Math.random() * 1e5)}`;
+              if (pages2.findIndex((it) => it.uniqueName === newName) === -1) {
+                pages2 = navigationAdjustRun(
+                  item.targetPage,
+                  newName,
+                  pages2,
+                  renamedPages,
+                  maxRun,
+                  indexRun,
+                  runPrefix
+                );
+              }
+              item.targetPage = newName;
+            }
+          }
+        }
+        for (const t of ["next", "prev", "home", "parent"]) {
+          const tag = t;
+          if (page[tag] === oldUniqueName) {
+            for (const key in renamedPages) {
+              const value = renamedPages[key];
+              if (page[tag] === value) {
+                continue;
+              }
+            }
+            if (renamedPages[page[tag]]) {
+              page[tag] = renamedPages[page[tag]];
+              continue;
+            }
+            const newName = `${runPrefix}_${page[tag]}_copy_nav_${Math.floor(Math.random() * 1e5)}`;
+            if (pages2.findIndex((it) => it.uniqueName === newName) === -1) {
+              pages2 = navigationAdjustRun(
+                page[tag],
+                newName,
+                pages2,
+                renamedPages,
+                maxRun,
+                indexRun,
+                runPrefix
+              );
+            }
+            page[tag] = newName;
+          }
+        }
+        return pages2;
+      };
       const obj2 = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
       if (obj2 && obj2.native && obj2.native.globalConfigRaw) {
         const globalConfig = obj2.native.globalConfigRaw;
         if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
+          globalConfig.maxNavigationAdjustRuns = globalConfig.maxNavigationAdjustRuns && globalConfig.maxNavigationAdjustRuns > 0 ? globalConfig.maxNavigationAdjustRuns : 3;
           const removeGlobalPageIndexs = /* @__PURE__ */ new Set();
           for (let i = 0; i < config.pages.length; i++) {
             const page = config.pages[i];
@@ -199,8 +283,28 @@ class ConfigManager extends import_library.BaseClass {
             const page = config.pages[i];
             if (page && "globalLink" in page && page.globalLink) {
               const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
-              const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
+              let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
               if (gPage) {
+                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
+                  globalConfig.subPages = navigationAdjustRun(
+                    gPage.uniqueName,
+                    page.uniqueName,
+                    globalConfig.subPages,
+                    {},
+                    globalConfig.maxNavigationAdjustRuns,
+                    0,
+                    page.uniqueName
+                  );
+                  const index = globalConfig.subPages.findIndex(
+                    (p) => p.uniqueName === page.uniqueName
+                  );
+                  if (index !== -1) {
+                    gPage = globalConfig.subPages[index];
+                    gPage.uniqueName = page.uniqueName;
+                  }
+                } else {
+                  removeGlobalPageIndexs.add(gIndex);
+                }
                 config.pages[i] = {
                   ...gPage,
                   prev: void 0,
@@ -210,11 +314,6 @@ class ConfigManager extends import_library.BaseClass {
                 };
                 if (page.heading) {
                   config.pages[i].heading = page.heading;
-                }
-                if (page.uniqueName != null && config.pages[i].uniqueName !== page.uniqueName) {
-                  config.pages[i].uniqueName = page.uniqueName;
-                } else {
-                  removeGlobalPageIndexs.add(gIndex);
                 }
               } else {
                 config.pages.splice(i, 1);
@@ -228,8 +327,28 @@ class ConfigManager extends import_library.BaseClass {
             const page = config.subPages[i];
             if (page && "globalLink" in page && page.globalLink) {
               const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
-              const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
+              let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
               if (gPage) {
+                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
+                  globalConfig.subPages = navigationAdjustRun(
+                    gPage.uniqueName,
+                    page.uniqueName,
+                    globalConfig.subPages,
+                    {},
+                    globalConfig.maxNavigationAdjustRuns,
+                    0,
+                    page.uniqueName
+                  );
+                  const index = globalConfig.subPages.findIndex(
+                    (p) => p.uniqueName === page.uniqueName
+                  );
+                  if (index !== -1) {
+                    gPage = globalConfig.subPages[index];
+                    gPage.uniqueName = page.uniqueName;
+                  }
+                } else {
+                  removeGlobalPageIndexs.add(gIndex);
+                }
                 const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
                 config.subPages[i] = {
                   ...gPage,
@@ -240,11 +359,6 @@ class ConfigManager extends import_library.BaseClass {
                 };
                 if (page.heading) {
                   config.subPages[i].heading = page.heading;
-                }
-                if (page.uniqueName != null && config.subPages[i].uniqueName !== page.uniqueName) {
-                  config.subPages[i].uniqueName = page.uniqueName;
-                } else {
-                  removeGlobalPageIndexs.add(gIndex);
                 }
               } else {
                 config.subPages.splice(i, 1);
