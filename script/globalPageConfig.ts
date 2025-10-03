@@ -18,7 +18,7 @@ async function configuration (): Promise<void> {
 
     const Hauptseite: ScriptConfig.PageType = {
         type: 'cardGrid',
-        uniqueName: 'main',
+        uniqueName: 'global_main',
         heading: 'Die Leere',
         items: []
     };
