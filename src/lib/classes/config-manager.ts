@@ -3672,7 +3672,7 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'select': {
                         item.icon2 = item.icon2 || item.icon;
-                        // Use source of set if valueList is not defined and set has no common.states
+                        // Use source of select.SET if valueList is not defined and SET has no common.states
                         if (!item.modeList && foundedStates[role].SET && foundedStates[role].SET.dp) {
                             const o = await this.adapter.getForeignObjectAsync(foundedStates[role].SET.dp);
                             if (o && o.common && !o.common.states) {
