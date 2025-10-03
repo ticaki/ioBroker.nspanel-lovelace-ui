@@ -247,7 +247,7 @@ class ConfigManager extends import_library.BaseClass {
         if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
           globalConfig.maxNavigationAdjustRuns = globalConfig.maxNavigationAdjustRuns && globalConfig.maxNavigationAdjustRuns > 0 ? globalConfig.maxNavigationAdjustRuns : 3;
           const removeGlobalPageIndexs = /* @__PURE__ */ new Set();
-          for (let i = 0; i < config.pages.length; i++) {
+          for (let i = config.pages.length - 1; i >= 0; i--) {
             const page = config.pages[i];
             if (page && "globalLink" in page && page.globalLink) {
               const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
@@ -279,13 +279,13 @@ class ConfigManager extends import_library.BaseClass {
               }
             }
           }
-          for (let i = 0; i < config.pages.length; i++) {
+          for (let i = config.pages.length - 1; i >= 0; i--) {
             const page = config.pages[i];
             if (page && "globalLink" in page && page.globalLink) {
               const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
               let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
               if (gPage) {
-                if (page.uniqueName != null && config.pages[i].uniqueName !== gPage.uniqueName) {
+                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
                   globalConfig.subPages = navigationAdjustRun(
                     gPage.uniqueName,
                     page.uniqueName,
@@ -350,7 +350,7 @@ class ConfigManager extends import_library.BaseClass {
                   removeGlobalPageIndexs.add(gIndex);
                 }
                 const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
-                config.subPages[i] = {
+                config.pages[i] = {
                   ...gPage,
                   prev: existNav ? page.prev : gPage.prev,
                   parent: existNav ? page.parent : gPage.parent,
@@ -361,7 +361,7 @@ class ConfigManager extends import_library.BaseClass {
                   config.subPages[i].heading = page.heading;
                 }
               } else {
-                config.subPages.splice(i, 1);
+                config.pages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
                 messages.push(msg);
                 this.log.warn(msg);

@@ -260,7 +260,7 @@ export class ConfigManager extends BaseClass {
                             : 3;
                     const removeGlobalPageIndexs: Set<number> = new Set();
                     // merge global config for pages
-                    for (let i = 0; i < config.pages.length; i++) {
+                    for (let i = config.pages.length - 1; i >= 0; i--) {
                         const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
                         if (page && 'globalLink' in page && page.globalLink) {
                             const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
@@ -294,13 +294,13 @@ export class ConfigManager extends BaseClass {
                             }
                         }
                     }
-                    for (let i = 0; i < config.pages.length; i++) {
+                    for (let i = config.pages.length - 1; i >= 0; i--) {
                         const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
                         if (page && 'globalLink' in page && page.globalLink) {
                             const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
                             let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
                             if (gPage) {
-                                if (page.uniqueName != null && config.pages[i].uniqueName !== gPage.uniqueName) {
+                                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
                                     globalConfig.subPages = navigationAdjustRun(
                                         gPage.uniqueName,
                                         page.uniqueName,
@@ -369,7 +369,7 @@ export class ConfigManager extends BaseClass {
                                 const existNav =
                                     page.prev != null || page.parent != null || page.next != null || page.home != null;
 
-                                config.subPages[i] = {
+                                config.pages[i] = {
                                     ...gPage,
                                     prev: existNav ? page.prev : gPage.prev,
                                     parent: existNav ? page.parent : gPage.parent,
@@ -381,7 +381,7 @@ export class ConfigManager extends BaseClass {
                                     config.subPages[i].heading = page.heading;
                                 }
                             } else {
-                                config.subPages.splice(i, 1);
+                                config.pages.splice(i, 1);
                                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
                                 messages.push(msg);
                                 this.log.warn(msg);
