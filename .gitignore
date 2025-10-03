@@ -25,3 +25,8 @@ src/lib/password.ts
 # src-admin build artifacts
 src-admin/node_modules
 src-admin/build
+admin/custom/*.js
+admin/custom/*.map
+admin/custom/*.txt
+admin/custom/*.html
+admin/custom/*.json

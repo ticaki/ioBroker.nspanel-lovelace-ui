@@ -1,10 +1,15 @@
 import React from 'react';
 import { TextField } from '@mui/material';
-import type { ConfigItemText } from '@iobroker/adapter-react-v5/types';
 
 interface CustomTextFieldProps {
     attr: string;
-    schema: ConfigItemText;
+    schema: {
+        label?: string;
+        help?: string;
+        placeholder?: string;
+        disabled?: boolean;
+        [key: string]: any;
+    };
     data: Record<string, any>;
     onChange: (attr: string, value: any) => void;
 }
