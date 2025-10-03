@@ -350,7 +350,7 @@ class ConfigManager extends import_library.BaseClass {
                   removeGlobalPageIndexs.add(gIndex);
                 }
                 const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
-                config.pages[i] = {
+                config.subPages[i] = {
                   ...gPage,
                   prev: existNav ? page.prev : gPage.prev,
                   parent: existNav ? page.parent : gPage.parent,
@@ -361,7 +361,7 @@ class ConfigManager extends import_library.BaseClass {
                   config.subPages[i].heading = page.heading;
                 }
               } else {
-                config.pages.splice(i, 1);
+                config.subPages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
                 messages.push(msg);
                 this.log.warn(msg);
