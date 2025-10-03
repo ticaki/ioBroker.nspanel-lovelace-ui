@@ -165,7 +165,6 @@
             "items": {
                 "_useBetaTFTText": {
                     "type": "staticText",
-                    "label": "useBetaVersionText",
                     "text": "useBetaVersionText",
                     "style": {
                         "color": "red"
@@ -683,7 +682,6 @@
             "items": {
                 "_useBetaTFTText": {
                     "type": "staticText",
-                    "label": "useBetaVersionText",
                     "text": "useBetaVersionText",
                     "style": {
                         "color": "red"
@@ -3198,8 +3196,7 @@
                 },
                 "_changeTagForUpdate": {
                     "type": "staticText",
-                    "label": "goToOtherTabAfterChangeOfNavID",
-                    "text": "",
+                    "text": "goToOtherTabAfterChangeOfNavID",
                     "style": {
                         "color": "red"
                     },
