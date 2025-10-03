@@ -3672,6 +3672,27 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'select': {
                         item.icon2 = item.icon2 || item.icon;
+                        // Use source of select.SET if valueList is not defined and SET has no common.states
+                        if (!item.modeList && foundedStates[role].SET && foundedStates[role].SET.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].SET.dp);
+                            if (o && o.common && !o.common.states) {
+                                const alias = o.common.alias?.id;
+                                if (alias) {
+                                    const aliasObj = await this.adapter.getForeignObjectAsync(alias);
+                                    if (
+                                        aliasObj &&
+                                        aliasObj.type === 'state' &&
+                                        aliasObj.common &&
+                                        aliasObj.common.states
+                                    ) {
+                                        if (foundedStates[role].SET.dp === foundedStates[role].ACTUAL?.dp) {
+                                            foundedStates[role].ACTUAL = { ...foundedStates[role].SET, dp: alias };
+                                        }
+                                        foundedStates[role].SET = { ...foundedStates[role].SET, dp: alias };
+                                    }
+                                }
+                            }
+                        }
 
                         itemConfig = {
                             type: 'input_sel',
