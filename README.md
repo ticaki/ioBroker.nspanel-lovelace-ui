@@ -149,7 +149,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### 0.5.0 (2025-10-03)
 - (tt-tom17) Admin UI: Reworked/reordered settings layout and improved usability
-- (copilot) Fixed repository checker issues: Updated admin dependency to 7.6.17, added .commitinfo to .gitignore, updated .vscode/settings.json with complete jsonConfig schema definitions
+- (ticaki) Added globalPages/globalLink feature with Deep Linking support for reusable page configurations across multiple panels
 - (ticaki) Added screensaver notification system  
 - (ticaki) Fixed cardThermo2 not switching  
 - (ticaki) Implemented hiding of screensaver elements  
