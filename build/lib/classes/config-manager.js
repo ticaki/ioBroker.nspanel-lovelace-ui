@@ -82,6 +82,24 @@ class ConfigManager extends import_library.BaseClass {
    * If any errors occur during the process, they are logged and included in the returned messages..
    */
   async setScriptConfig(configuration) {
+    if (!configuration || typeof configuration !== "object") {
+      this.log.error(`Invalid configuration from Script: ${configuration || "undefined"}`);
+      return { messages: ["Abort: Invalid configuration"], panelConfig: void 0 };
+    }
+    if (configManagerConst.isGlobalConfig(configuration)) {
+      let panelConfig2 = { pages: [], navigation: [] };
+      let messages2 = [];
+      const tempConfig = { ...configuration, pages: [] };
+      ({ panelConfig: panelConfig2, messages: messages2 } = await this.getPageConfig(tempConfig, panelConfig2, messages2));
+      const obj2 = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+      if (obj2 && !this.dontWrite) {
+        obj2.native = obj2.native || {};
+        obj2.native.globalConfigRaw = configuration;
+        await this.adapter.setForeignObject(this.adapter.namespace, obj2);
+      }
+      messages2.push(`done`);
+      return { messages: messages2.map((a) => a.replaceAll("Error: ", "")), panelConfig: panelConfig2 };
+    }
     configuration.advancedOptions = {
       ...configManagerConst.defaultConfig.advancedOptions || {},
       ...configuration.advancedOptions || {}
@@ -138,6 +156,112 @@ class ConfigManager extends import_library.BaseClass {
       messages.push(
         `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is correct!`
       );
+    }
+    {
+      const obj2 = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+      if (obj2 && obj2.native && obj2.native.globalConfigRaw) {
+        const globalConfig = obj2.native.globalConfigRaw;
+        if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
+          const removeGlobalPageIndexs = /* @__PURE__ */ new Set();
+          for (let i = 0; i < config.pages.length; i++) {
+            const page = config.pages[i];
+            if (page && "globalLink" in page && page.globalLink) {
+              const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
+              const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
+              if (gPage) {
+                for (const t of ["next", "prev"]) {
+                  const tag = t;
+                  if (gPage[tag] != null) {
+                    const gIndex2 = globalConfig.subPages.findIndex(
+                      (item) => item.uniqueName === gPage[tag]
+                    );
+                    const index = config.pages.findIndex(
+                      (item) => "globalLink" in item && item.globalLink === gPage[tag] || item.uniqueName === gPage[tag]
+                    );
+                    if (gIndex2 !== -1 && index === -1) {
+                      let msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. `;
+                      if (tag === "next") {
+                        msg += `Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
+                      } else {
+                        msg += `This is not recommended! Prev navigation will "randomly" change the order of pages! Consider to remove it!`;
+                      }
+                      messages.push(msg);
+                      config.pages.splice(i + 1, 0, {
+                        globalLink: gPage[tag]
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+          for (let i = config.pages.length - 1; i >= 0; i--) {
+            const page = config.pages[i];
+            if (page && "globalLink" in page && page.globalLink) {
+              const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
+              const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
+              if (gPage) {
+                config.pages[i] = {
+                  ...gPage,
+                  prev: void 0,
+                  next: void 0,
+                  home: void 0,
+                  parent: void 0
+                };
+                if (page.heading) {
+                  config.pages[i].heading = page.heading;
+                }
+                if (page.uniqueName != null && config.pages[i].uniqueName !== page.uniqueName) {
+                  config.pages[i].uniqueName = page.uniqueName;
+                } else {
+                  removeGlobalPageIndexs.add(gIndex);
+                }
+              } else {
+                config.pages.splice(i, 1);
+                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+                messages.push(msg);
+                this.log.warn(msg);
+              }
+            }
+          }
+          for (let i = config.subPages.length - 1; i >= 0; i--) {
+            const page = config.subPages[i];
+            if (page && "globalLink" in page && page.globalLink) {
+              const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
+              const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
+              if (gPage) {
+                const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
+                config.subPages[i] = {
+                  ...gPage,
+                  prev: existNav ? page.prev : gPage.prev,
+                  parent: existNav ? page.parent : gPage.parent,
+                  next: existNav ? page.next : gPage.next,
+                  home: existNav ? page.home : gPage.home
+                };
+                if (page.heading) {
+                  config.subPages[i].heading = page.heading;
+                }
+                if (page.uniqueName != null && config.subPages[i].uniqueName !== page.uniqueName) {
+                  config.subPages[i].uniqueName = page.uniqueName;
+                } else {
+                  removeGlobalPageIndexs.add(gIndex);
+                }
+              } else {
+                config.subPages.splice(i, 1);
+                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+                messages.push(msg);
+                this.log.warn(msg);
+              }
+            }
+          }
+          for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
+            globalConfig.subPages.splice(index, 1);
+          }
+          config.subPages = config.subPages.concat(globalConfig.subPages || []);
+          config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
+          config.nativePageItems = (config.nativePageItems || []).concat(globalConfig.nativePageItems || []);
+        }
+      }
     }
     if (config.advancedOptions && config.advancedOptions.extraConfigLogging) {
       this.extraConfigLogging = true;
@@ -3307,7 +3431,8 @@ class ConfigManager extends import_library.BaseClass {
       }
       const tasks = items.map(
         (item) => this.getEntityData(item, mode, config).catch((err) => {
-          throw new Error(`${errorLabel} - ${String(err)}`);
+          this.log.error(`${errorLabel} - ${String(err)}`);
+          return null;
         })
       );
       const res = await Promise.all(tasks);
@@ -3319,7 +3444,8 @@ class ConfigManager extends import_library.BaseClass {
       }
       const tasks = items.map(
         (item) => this.getNotifyEntityData(item, mode).catch((err) => {
-          throw new Error(`${errorLabel} - ${String(err)}`);
+          this.log.error(`${errorLabel} - ${String(err)}`);
+          return null;
         })
       );
       const res = await Promise.all(tasks);
@@ -3334,7 +3460,8 @@ class ConfigManager extends import_library.BaseClass {
           return Promise.resolve(null);
         }
         return this.getEntityData(item, mode, config).catch((err) => {
-          throw new Error(`${errorLabel} - ${String(err)}`);
+          this.log.error(`${errorLabel} - ${String(err)}`);
+          return null;
         });
       });
       const res = await Promise.all(tasks);
@@ -3348,7 +3475,10 @@ class ConfigManager extends import_library.BaseClass {
         const r = await this.getMrEntityData(entity, "mricon");
         return [r];
       } catch (err) {
-        throw new Error(`${errorLabel} - ${String(err)}`);
+        {
+          this.log.error(`${errorLabel} - ${String(err)}`);
+          return [];
+        }
       }
     };
     const blocks = await Promise.all([

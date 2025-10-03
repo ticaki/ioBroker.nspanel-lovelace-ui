@@ -24,6 +24,7 @@ __export(config_manager_const_exports, {
   defaultConfig: () => defaultConfig,
   isButton: () => isButton,
   isConfig: () => isConfig,
+  isGlobalConfig: () => isGlobalConfig,
   requiredScriptDataPoints: () => requiredScriptDataPoints
 });
 module.exports = __toCommonJS(config_manager_const_exports);
@@ -51,8 +52,26 @@ function isButton(F) {
   }
   return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button") && F.state && !F.state.endsWith("."));
 }
+function isGlobalConfig(F) {
+  if (F === void 0) {
+    return false;
+  }
+  if (!("type" in F) || F.type !== "globalConfig") {
+    return false;
+  }
+  const requiredFields = ["version", "subPages"];
+  for (const field of requiredFields) {
+    if (F[field] === void 0) {
+      return false;
+    }
+  }
+  return true;
+}
 function isConfig(F, adapter) {
   if (F === void 0) {
+    return false;
+  }
+  if ("type" in F && F.type === "globalConfig") {
     return false;
   }
   const requiredFields = [
@@ -990,6 +1009,7 @@ const requiredScriptDataPoints = {
   defaultConfig,
   isButton,
   isConfig,
+  isGlobalConfig,
   requiredScriptDataPoints
 });
 //# sourceMappingURL=config-manager-const.js.map
