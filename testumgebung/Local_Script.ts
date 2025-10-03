@@ -1,117 +1,21 @@
-
-async function configuration (): Promise<void> {
-
+async function configuration(): Promise<void> {
     const overrideConfig: Partial<ScriptConfig.Config> = {
         // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
         // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
-        // panelTopic: 'nspanel/ns_panel4',
+        panelTopic: 'SmartHome/NSPanel_1',
         weatherEntity: 'pirate-weather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
-
-        // weatherAddDefaultItems:
-        // - true  => alle Standard-Wetterelemente hinzufügen
-        // - false => keine hinzufügen
-        // - { ... } => selektiv per Schlüssel aktivieren:
-        //   sunriseSet, forecastDay1, forecastDay2, forecastDay3, forecastDay4, forecastDay5, forecastDay6,
-        //   windSpeed, windGust, windDirection, uvIndex, solar
-        // Hinweis: Die einzelnen Schlüssel funktionieren nur, wenn der gewählte Wetteranbieter
-        // die entsprechenden Daten liefert und diese im Adapter vorbereitet wurden
-        "weatherAddDefaultItems": false
-
-    }
-
-    /**************************************************************************************
-     **                                                                                  **
-     ** https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation **
-     **                                                                                  **
-     *************************************************************************************/
-
-
-
-    /***********************************************************************
-     **                                                                   **
-     **                       Page Configuration                          **
-     **                                                                   **
-     ***********************************************************************/
-
-
-    // Beispiel Hauptseite / Mainpage
-    // Diese Seite ist die Hauptseite, sie wird immer als erstes angezeigt und hat den uniqueName 'main'.
-    // uniqueName 'main' muß mindestens einmal vorkommen, damit die Navigation funktioniert.
-    const Hauptseite: ScriptConfig.PageGrid = {
-        type: 'cardGrid',
-        uniqueName: 'main',
-        heading: 'Die Leere',
-        items: []
+        weatherAddDefaultItems: true,
     };
 
-    // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
-    // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
-    // wie am Fahrplan Beispiel zu sehen ist.
-
-    /* const fahrplan: any = {
-        heading: 'Fahrplan Script',
-        native: {
-            card: 'cardEntities',
-            dpInit: 'fahrplan.0.0',
-            uniqueID: 'fahrplanrouten',
-            template: 'entities.fahrplan.routes',
-        }
-    }; */
-
-    // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
-
-    /* const qrCode: ScriptConfig.PageQR = {
-        type: 'cardQR',
-        uniqueName: 'qrCode'
-    }; */
-
-    // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
-
-    /* const chartHeizung: ScriptConfig.PageChart = {
-        type: 'cardChart',
-        uniqueName: 'temperatur'
-    }; */
-
-    // Ein Beispiel für eine Gridseite mit verschiedenen Farbskalen
-
-    /* const irgendeinName: ScriptConfig.PageGrid = {
-        type: 'cardGrid',
-        uniqueName: 'main',
-        heading: 'Wohnzimmer',
-        items: [
-            {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
-            {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
-            {id: 'alias.0.Temperatur', name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'}},
-            {id: 'alias.0.Temperatur', name: 'standard log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'min'}},
-            {id: 'alias.0.Temperatur', name: 'hue log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'min'}},
-            {id: 'alias.0.Temperatur', name: 'cie log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'min'}},
-            {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
-            {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
-            {id: 'alias.0.Temperatur', name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'}},
-            {id: 'alias.0.Temperatur', name: 'standard log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'max'}},
-            {id: 'alias.0.Temperatur', name: 'hue log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'max'}},
-            {id: 'alias.0.Temperatur', name: 'cie log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'max'}},
-        ]
-    }; */
-
-    /* const grid1: ScriptConfig.PageGrid = {
-        uniqueName: 'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
-        heading: 'Grid 1',
-        items: [
-            {id: 'alias.0.Licht.lights.Gerät_1'},
-            {id: 'alias.0.Licht.lights.Gerät_2'},
-            {id: '0_userdata.0.Einzelne_Geräte.dimmer'},
-            {id: 'alias.0.NSPanel.allgemein.hue', },
-            {navigate: true, targetPage: 'fahrplanrouten'},
-            {id: 'alias.0.NSPanel.allgemein.shutter'}
-        ],
-        type: 'cardGrid',
-    } */
+    const global: PageType = {
+        heading: 'global',
+        globalLink: 'main'
+    }
 
     const config: ScriptConfig.Config = {
-        panelTopic: 'topic',
+        panelTopic: 'NSPanel_DEV',
         weatherEntity: 'pirate-weather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
@@ -121,20 +25,13 @@ async function configuration (): Promise<void> {
         // Als Gedankenstütze, die Hauptseite muß main heißen!
         //panelName: 'NSPanel', //unique name for the panel
 
-
         // Seiteneinteilung / Page division
         // Hauptseiten / Mainpages
         pages: [
-            Hauptseite
-            //irgendeinName,
-            //grid1,
-            //qrCode,
-            //chartHeizung,
+            global,
         ],
         // Unterseiten / Subpages
-        subPages: [
-            //fahrplan
-        ],
+        subPages: [],
 
         /***********************************************************************
          **                                                                   **
@@ -142,15 +39,15 @@ async function configuration (): Promise<void> {
          **                                                                   **
          ***********************************************************************/
 
-
         favoritScreensaverEntity: [
             {
                 type: 'template',
                 template: 'text.pirate-weather.favorit',
                 dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\./`,
                 modeScr: 'favorit',
-            }
+            },
         ],
+
         alternateScreensaverEntity: [
             // only used with alternate Screensaver
         ],
@@ -159,62 +56,65 @@ async function configuration (): Promise<void> {
             // indicatorScreensaverEntity 1 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Fenster.ACTUAL',
+                ScreensaverEntity: 'alias.0.Status_offene_Fenster.ACTUAL',
+                ScreensaverEntityNaviToPage: 'wifi',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
                 ScreensaverEntityIconOn: 'window-open-variant',
                 ScreensaverEntityIconOff: 'window-closed-variant',
                 ScreensaverEntityText: 'Fenster',
                 ScreensaverEntityUnitText: '%',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
             },
             // indicatorScreensaverEntity 2 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Tuer.ACTUAL',
+                ScreensaverEntity: 'alias.0.Status_offene_Tuer.ACTUAL',
+                ScreensaverEntityButton: '0_userdata.0.example_state_boolean' /*example state boolean*/,
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
                 ScreensaverEntityIconOn: 'door-open',
                 ScreensaverEntityIconOff: 'door-closed',
                 ScreensaverEntityText: 'Tür',
                 ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
             },
             // indicatorScreensaverEntity 3 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_Licht_An.ACTUAL',
+                ScreensaverEntity: 'alias.0.Status_Licht_An.ACTUAL',
+                ScreensaverEntitySwitch: '0_userdata.0.example_state_boolean',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
                 ScreensaverEntityIconOn: 'lightbulb',
                 ScreensaverEntityIconOff: null,
                 ScreensaverEntityText: 'Licht',
                 ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
             },
             // indicatorScreensaverEntity 4 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.Türschloss.ACTUAL',
+                ScreensaverEntity: 'alias.0.Lock.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
                 ScreensaverEntityIconOn: 'lock',
                 ScreensaverEntityIconOff: 'lock-open',
                 ScreensaverEntityText: 'Türschloss',
                 ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1, val_best: 1 },
             },
             // indicatorScreensaverEntity 5 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Auto.Safety.ACTUAL',
+                ScreensaverEntity: 'alias.0.Auto.Safety.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
                 ScreensaverEntityIconOn: 'car-key',
                 ScreensaverEntityIconOff: null,
                 ScreensaverEntityText: 'Auto',
                 ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1, val_best: 1 },
             },
         ],
 
@@ -230,7 +130,7 @@ async function configuration (): Promise<void> {
             /*{
                 type: 'template',
                 template: 'text.hmip.windcombo',
-                dpInit: 'hmip.0.devices.3014G71HA0001XXXXXXXXXX',
+                dpInit: 'hmip.0.devices.3014F711A000185F2999676C',
                 modeScr: 'bottom',
                 //readOptions: {directionOfPanel: 81}
             },*/
@@ -241,9 +141,9 @@ async function configuration (): Promise<void> {
                 ScreensaverEntityDecimalPlaces: 1,
                 ScreensaverEntityIconOn: 'weather-windy',
                 ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: "Wind",
+                ScreensaverEntityText: 'Wind',
                 ScreensaverEntityUnitText: 'm/s',
-                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 120 },
             },
             // bottomScreensaverEntity 3
             {
@@ -255,7 +155,7 @@ async function configuration (): Promise<void> {
                 ScreensaverEntityIconOff: null,
                 ScreensaverEntityText: 'Böen',
                 ScreensaverEntityUnitText: 'm/s',
-                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 120 },
             },
             // bottomScreensaverEntity 4
             {
@@ -274,7 +174,7 @@ async function configuration (): Promise<void> {
                 ScreensaverEntityIconOff: null,
                 ScreensaverEntityText: 'Feuchte',
                 ScreensaverEntityUnitText: '%',
-                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 60}
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 100, val_best: 60 },
             },
             // bottomScreensaverEntity 6 (for Advanced Screensaver)
             {
@@ -282,8 +182,8 @@ async function configuration (): Promise<void> {
                 template: 'text.pirate-weather.uvindex',
                 dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
                 modeScr: 'bottom',
-            }
-            // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
+            },
+            // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400
 
             // Some templates for the screensaver uncomment the lines to use them
             // If u use an other instance for the weather data, change the instance in the following lines
@@ -382,7 +282,6 @@ async function configuration (): Promise<void> {
                 modeScr: 'bottom',
             },
             */
-
 
             /*
             
@@ -487,108 +386,25 @@ async function configuration (): Promise<void> {
                 modeScr: 'bottom',
             },
             */
-
-            /* Bright Sky
-            {
-                type: 'template',
-                template: 'text.brightsky.sunriseset',
-                dpInit: `/^brightsky\\.0\\.daily\\.00.+/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 2 - brightsky.0. Forecast Day 1
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.01/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 3 - brightsky.0. Forecast Day 2
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.02/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 4 - brightsky.0. Forecast Day 3
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.03/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 5 - brightsky.0. Forecast Day 4
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.04/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 6 - brightsky.0. Forecast Day 5
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.05/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 7 - brightsky.0. Forecast Day 6
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.06/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 8 - Windgeschwindigkeit
-            {
-                type: 'template',
-                template: 'text.brightsky.windspeed',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 9 - Böen
-            {
-                template: 'text.brightsky.windgust',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 10 - Windrichtung
-            {
-                type: 'template',
-                template: 'text.brightsky.winddirection',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-            // Bottom 10 - Solar
-            {
-                type: 'template',
-                template: 'text.brightsky.solar',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-            */
         ],
 
         leftScreensaverEntity: [
             // leftScreensaverEntity 1 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL',
+                ScreensaverEntity: 'alias.0.Sensoren.TempPanel.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
                 ScreensaverEntityIconOn: 'thermometer',
                 ScreensaverEntityIconOff: null,
                 ScreensaverEntityText: 'Temperatur',
                 ScreensaverEntityUnitText: '°C',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 35, val_best: 22},
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 35, val_best: 22 },
             },
             // leftScreensaverEntity 2 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.Heizung.WärmeTagesVerbrauch.ACTUAL',
+                ScreensaverEntity: 'alias.0.Sensoren.Waermeverbrauch.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
                 ScreensaverEntityIconOn: 'counter',
@@ -600,10 +416,10 @@ async function configuration (): Promise<void> {
             // leftScreensaverEntity 3 (only Advanced Screensaver)
             {
                 type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Abfall.event1.INFO',
+                ScreensaverEntity: 'alias.0.Abfall.event1.INFO',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityDateFormat: {year: 'numeric', month: '2-digit', day: '2-digit'},
+                ScreensaverEntityDateFormat: { year: 'numeric', month: '2-digit', day: '2-digit' },
                 ScreensaverEntityIconOn: 'trash-can',
                 ScreensaverEntityIconOff: null,
                 ScreensaverEntityText: 'Abfall',
@@ -612,7 +428,47 @@ async function configuration (): Promise<void> {
             },
         ],
 
-        // Status Icon 
+        notifyScreensaverEntity: [
+            {
+                type: 'script',
+                Enabled: '0_userdata.0.ScreensaverNotify.Headline',
+                Headline: '0_userdata.0.ScreensaverNotify.Headline',
+                HeadlinePrefix: '0_userdata.0.ScreensaverNotify.Headline_prefix',
+                HeadlineIcon: '0_userdata.0.ScreensaverNotify.Headline_icon',
+                HeadlineUnit: '0_userdata.0.ScreensaverNotify.Headline_unit',
+                Text: '0_userdata.0.ScreensaverNotify.Text',
+                TextPrefix: '0_userdata.0.ScreensaverNotify.Text_prefix',
+                TextSuffix: '0_userdata.0.ScreensaverNotify.Text_suffix',
+                VisibleCondition: 'parseFloat(val) > 10',
+                Priority: 2,
+            },
+            {
+                type: 'script',
+                Enabled: '0_userdata.0.ScreensaverNotify.Notify_1',
+                Headline: 'testtext',
+                HeadlinePrefix: 'nix zu ',
+                HeadlineIcon: '0_userdata.0.ScreensaverNotify.Headline_icon',
+                HeadlineUnit: '%%%',
+                Text: '0_userdata.0.ScreensaverNotify.Text',
+                TextPrefix: 'Gäste',
+                TextSuffix: '0_userdata.0.ScreensaverNotify.Text_suffix',
+                Priority: 1,
+            },
+            {
+                // sichtbar, wenn Zahl > 9 (überschreibt alle vorherigen)
+                type: 'script',
+                HeadlinePrefix: 'Hohe Zahl: ',
+                Headline: '0_userdata.0.example_state_number',
+                TextPrefix: 'Im Datenpunkt steht die Zahl ',
+                Text: '0_userdata.0.example_state_number',
+                TextSuffix: '. Bis dahin kannst du nicht zählen. Frag deine Mama!',
+                Enabled: '0_userdata.0.example_state_number',
+                VisibleCondition: 'val > 9',
+                Priority: 3,
+            }
+        ],
+
+        // Status Icon
         mrIcon1ScreensaverEntity: {
             type: 'script',
             ScreensaverEntity: 'Relay.1',
@@ -622,7 +478,7 @@ async function configuration (): Promise<void> {
             ScreensaverEntityValueDecimalPlace: 0,
             ScreensaverEntityValueUnit: null,
             ScreensaverEntityOnColor: On,
-            ScreensaverEntityOffColor: HMIOff
+            ScreensaverEntityOffColor: HMIOff,
         },
         mrIcon2ScreensaverEntity: {
             type: 'script',
@@ -633,7 +489,7 @@ async function configuration (): Promise<void> {
             ScreensaverEntityValueDecimalPlace: 0,
             ScreensaverEntityValueUnit: null,
             ScreensaverEntityOnColor: On,
-            ScreensaverEntityOffColor: HMIOff
+            ScreensaverEntityOffColor: HMIOff,
         },
         // ------ DE: Ende der Screensaver Einstellungen --------------------
         // ------ EN: End of screensaver settings ---------------------------
@@ -642,18 +498,18 @@ async function configuration (): Promise<void> {
         //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
         // DE: Konfiguration des linken Schalters des NSPanels
         // EN: Configuration of the left switch of the NSPanel
-        buttonLeft: {
-            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'switch', 'set' - Wenn nicht definiert --> mode: null
-            // EN: Possible values if Rule2 defined: 'page', 'switch', 'set' - If not defined --> mode: null
-            mode: 'page',
-            // DE: Zielpage - Verwendet wenn mode = page
-            // EN: Target page - Used if mode = page
-            page: 'main',
-        },
+        buttonLeft: null, //{
+        // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'toggle', 'set' - Wenn nicht definiert --> mode: null
+        // EN: Possible values if Rule2 defined: 'page', 'toggle', 'set' - If not defined --> mode: null
+        //mode: 'page',
+        // DE: Zielpage - Verwendet wenn mode = page
+        // EN: Target page - Used if mode = page
+        //page: 'main',
+        //},
 
         // DE: Konfiguration des rechten Schalters des NSPanels
         // EN: Configuration of the right switch of the NSPanel
-        buttonRight: null/*{
+        buttonRight: null /*{
             mode: 'toggle',
             page: '0_userdata.0.example',
             
@@ -664,9 +520,7 @@ async function configuration (): Promise<void> {
 
         // DE: WICHTIG !! Parameter nicht ändern  WICHTIG!!
         // EN: IMPORTANT !! Do not change parameters IMPORTANT!!
-
     };
-
 
     /**
      ********************************************************************************

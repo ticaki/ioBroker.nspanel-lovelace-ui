@@ -254,8 +254,6 @@ class Panel extends import_library.BaseClass {
       }
     }
     if (scsFound === 0) {
-      this.log.error("No screensaver found! Stop!");
-      void this.adapter.controller.delete();
       throw new Error("no screensaver found! Stop!");
     }
     const navConfig = {
