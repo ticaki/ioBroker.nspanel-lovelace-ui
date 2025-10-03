@@ -1,25 +1,6 @@
-
+export { };
 async function configuration (): Promise<void> {
 
-    const overrideConfig: Partial<ScriptConfig.Config> = {
-        // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
-        // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
-        // panelTopic: 'nspanel/ns_panel4',
-        weatherEntity: 'pirate-weather.0.',
-        defaultOffColor: Off,
-        defaultOnColor: On,
-
-        // weatherAddDefaultItems:
-        // - true  => alle Standard-Wetterelemente hinzufügen
-        // - false => keine hinzufügen
-        // - { ... } => selektiv per Schlüssel aktivieren:
-        //   sunriseSet, forecastDay1, forecastDay2, forecastDay3, forecastDay4, forecastDay5, forecastDay6,
-        //   windSpeed, windGust, windDirection, uvIndex, solar
-        // Hinweis: Die einzelnen Schlüssel funktionieren nur, wenn der gewählte Wetteranbieter
-        // die entsprechenden Daten liefert und diese im Adapter vorbereitet wurden
-        "weatherAddDefaultItems": false
-
-    }
 
     /**************************************************************************************
      **                                                                                  **
@@ -35,636 +16,361 @@ async function configuration (): Promise<void> {
      **                                                                   **
      ***********************************************************************/
 
-
-    // Beispiel Hauptseite / Mainpage
-    // Diese Seite ist die Hauptseite, sie wird immer als erstes angezeigt und hat den uniqueName 'main'.
-    // uniqueName 'main' muß mindestens einmal vorkommen, damit die Navigation funktioniert.
-    const Hauptseite: ScriptConfig.PageGrid = {
+    const testRole: ScriptConfig.PageGrid ={
         type: 'cardGrid',
+        heading: 'Test Role',
         uniqueName: 'main',
-        heading: 'Die Leere',
-        items: []
+        prev: 'media',
+        next: 'testrole2',
+        scrollPresentation: 'arrow',
+        items: [
+            { id: 'alias.0.Blind'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Blind'},
+            { id: 'alias.0.Blind1'}, // altes Popup / mit zwei Slider (Tilt)
+            { id: 'alias.0.Button'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Button'},
+            { id: 'alias.0.Countdown' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Countdown' },
+            { id: 'alias.0.Door'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Door'},
+            { id: 'alias.0.Gate'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Gate'},
+            { id: 'alias.0.Humidity', useValue: true },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Humidity', useValue: true, unit: '?' },
+            { id: 'alias.0.Humidity_Value' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Humidity_Value' },
+            { id: 'alias.0.Info'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Info'},
+            { id: 'alias.0.Light'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Light'},
+            { id: 'alias.0.Lock'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Lock'},
+            { id: 'alias.0.Motion'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Motion'},
+            { id: 'alias.0.Select'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Select'},
+            //{ id: 'alias.0.Sensor_Alarm_Flood'},
+            //{ navigate: true, targetPage: 'lichttest1', id: 'alias.0.Sensor_Alarm_Flood'},
+            { id: 'alias.0.Slider'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Slider'},
+            { id: 'alias.0.Socket'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Socket'},
+            { id: 'alias.0.Temperatur'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Temperatur'},
+            { id: 'alias.0.Temperatur_Value'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Temperatur_Value'},
+            { id: 'alias.0.Ventilator'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Ventilator'},
+            { id: 'alias.0.Ventilator2'}, // Mode mit States
+            { id: 'alias.0.Volume'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Volume'},
+            { id: 'alias.0.Warning'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Warning'},
+            { id: 'alias.0.Window'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Window'},
+            { id: 'alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0'}
+        ]
     };
+
+    const testRole2: ScriptConfig.PageEntities ={
+        type: 'cardEntities',
+        heading: 'Test Role',
+        uniqueName: 'testrole2',
+        prev:'main',
+        next:'telefon',
+        items: [
+            { id: 'alias.0.Blind'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Blind'},
+            { id: 'alias.0.Blind1'}, // altes Popup / mit zwei Slider (Tilt)
+            { id: 'alias.0.Button'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Button'},
+            { id: 'alias.0.Countdown' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Countdown' },
+            { id: 'alias.0.Door'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Door'},
+            { id: 'alias.0.Gate'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Gate'},
+            { id: 'alias.0.Humidity' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Humidity' },
+            { id: 'alias.0.Humidity_Value' },
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Humidity_Value' },
+            { id: 'alias.0.Info'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Info'},
+            { id: 'alias.0.Light'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Light'},
+            { id: 'alias.0.Lock'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Lock'},
+            { id: 'alias.0.Motion'},
+            { navigate: true, targetPage: 'lichttest1', id: 'alias.0.Motion'},
+            { id: 'alias.0.Select'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Select'},
+            //{ id: 'alias.0.Sensor_Alarm_Flood'},
+            //{ navigate: true, targetPage: 'lichttest1', id: 'alias.0.Sensor_Alarm_Flood'},
+            { id: 'alias.0.Slider'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Slider'},
+            { id: 'alias.0.Socket'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Socket'},
+            { id: 'alias.0.Temperatur'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Temperatur'},
+            { id: 'alias.0.Temperatur_Value'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Temperatur_Value'},
+            { id: 'alias.0.Ventilator'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Ventilator'},
+            { id: 'alias.0.Ventilator2'}, // Mode mit States
+            { id: 'alias.0.Volume'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Volume'},
+            { id: 'alias.0.Warning'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Warning'},
+            { id: 'alias.0.Window'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.Window'},
+            { id: 'alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0'},
+            { navigate: true, targetPage:'lichttest1', id: 'alias.0.FahrplanAnzeiger.Haltestelle0.Abfahrt0'}
+        ]
+    }
 
     // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
     // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
     // wie am Fahrplan Beispiel zu sehen ist.
-
-    /* const fahrplan: any = {
+    const fahrplan: any = {
         heading: 'Fahrplan Script',
+        uniqueName: 'fahrplanrouten',
+        home: 'main',
+        parent: 'main',
         native: {
             card: 'cardEntities',
             dpInit: 'fahrplan.0.0',
             uniqueID: 'fahrplanrouten',
             template: 'entities.fahrplan.routes',
         }
-    }; */
+    };
 
     // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
-
-    /* const qrCode: ScriptConfig.PageQR = {
+    const telefon: ScriptConfig.PageQR = {
         type: 'cardQR',
-        uniqueName: 'qrCode'
-    }; */
+        uniqueName: 'telefone',
+        prev: 'testrole2',
+        next: 'website'
+    };
 
-    // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
+    const website: ScriptConfig.PageQR = {
+        type: 'cardQR',
+        uniqueName: 'website',
+        prev: 'telefon',
+        next: 'wifi'
+    };
 
-    /* const chartHeizung: ScriptConfig.PageChart = {
+    const wifi: ScriptConfig.PageQR = {
+        type: 'cardQR',
+        uniqueName: 'wifi',
+        prev: 'website',
+        next: 'powerpage'
+    };;
+
+    const powerPage: PageType = {
+        type: 'cardPower',
+        uniqueName: 'powerpage',
+        prev: 'wifi',
+        next: 'temperatur'
+    };
+
+    const chartTemperatur: PageType = {
+        type: 'cardLChart',
+        uniqueName: 'temperatur',
+        prev: 'powerpage',
+        next: 'heizung' 
+    };
+
+    const chartHeizung: PageType = {
         type: 'cardChart',
-        uniqueName: 'temperatur'
-    }; */
+        uniqueName: 'heizung',
+        prev: 'temperatur',
+        next: 'wecker'
+    };
 
-    // Ein Beispiel für eine Gridseite mit verschiedenen Farbskalen
-
-    /* const irgendeinName: ScriptConfig.PageGrid = {
-        type: 'cardGrid',
-        uniqueName: 'main',
-        heading: 'Wohnzimmer',
+    const lichttest1: ScriptConfig.PageEntities = {
+        type: 'cardEntities',
+        heading: 'Lichttest',
+        uniqueName: 'lichttest1',
+        parent: 'main',
+        next: 'lichttest2',
         items: [
-            {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
-            {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
-            {id: 'alias.0.Temperatur', name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'}},
-            {id: 'alias.0.Temperatur', name: 'standard log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'min'}},
-            {id: 'alias.0.Temperatur', name: 'hue log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'min'}},
-            {id: 'alias.0.Temperatur', name: 'cie log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'min'}},
-            {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
-            {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
-            {id: 'alias.0.Temperatur', name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'}},
-            {id: 'alias.0.Temperatur', name: 'standard log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'max'}},
-            {id: 'alias.0.Temperatur', name: 'hue log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'max'}},
-            {id: 'alias.0.Temperatur', name: 'cie log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'max'}},
+            { id: 'alias.0.Dimmer', name: 'Dimmer', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.RGB', name: 'RGB', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.RGBSingle', name: 'RGBSingle', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.Hue', name: 'Hue', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.CT', name: 'CT', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            //{id: 'alias.0.CIE', name: 'CIE', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline'},
+
         ]
-    }; */
+    };
 
-    /* const grid1: ScriptConfig.PageGrid = {
-        uniqueName: 'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
-        heading: 'Grid 1',
-        items: [
-            {id: 'alias.0.Licht.lights.Gerät_1'},
-            {id: 'alias.0.Licht.lights.Gerät_2'},
-            {id: '0_userdata.0.Einzelne_Geräte.dimmer'},
-            {id: 'alias.0.NSPanel.allgemein.hue', },
-            {navigate: true, targetPage: 'fahrplanrouten'},
-            {id: 'alias.0.NSPanel.allgemein.shutter'}
-        ],
+    const lichttest2: ScriptConfig.PageGrid = {
         type: 'cardGrid',
-    } */
+        heading: 'Lichttest',
+        uniqueName: 'lichttest2',
+        prev: 'lichttest1',
+        next: 'testrole2',        
+        items: [
+            { id: 'alias.0.Dimmer', name: 'Dimmer', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.RGB', name: 'RGB', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.RGBSingle', name: 'RGBSingle', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.Hue', name: 'Hue', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            { id: 'alias.0.CT', name: 'CT', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline' },
+            //{id: 'alias.0.CIE', name: 'CIE', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline'},
 
-    const config: ScriptConfig.Config = {
-        panelTopic: 'topic',
-        weatherEntity: 'pirate-weather.0.',
-        defaultOffColor: Off,
-        defaultOnColor: On,
-        defaultBackgroundColor: HMIDark,
-        weatherAddDefaultItems: false,
+        ]
+    };
 
-        // Als Gedankenstütze, die Hauptseite muß main heißen!
-        //panelName: 'NSPanel', //unique name for the panel
-
-
-        // Seiteneinteilung / Page division
-        // Hauptseiten / Mainpages
-        pages: [
-            Hauptseite
-            //irgendeinName,
-            //grid1,
-            //qrCode,
-            //chartHeizung,
-        ],
-        // Unterseiten / Subpages
-        subPages: [
-            //fahrplan
-        ],
-
-        /***********************************************************************
-         **                                                                   **
-         **                    Screensaver Configuration                      **
-         **                                                                   **
-         ***********************************************************************/
-
-
-        favoritScreensaverEntity: [
-            {
-                type: 'template',
-                template: 'text.pirate-weather.favorit',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\./`,
-                modeScr: 'favorit',
-            }
-        ],
-        alternateScreensaverEntity: [
-            // only used with alternate Screensaver
-        ],
-
-        indicatorScreensaverEntity: [
-            // indicatorScreensaverEntity 1 (only Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Fenster.ACTUAL',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityIconOn: 'window-open-variant',
-                ScreensaverEntityIconOff: 'window-closed-variant',
-                ScreensaverEntityText: 'Fenster',
-                ScreensaverEntityUnitText: '%',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
-            },
-            // indicatorScreensaverEntity 2 (only Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Tuer.ACTUAL',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityIconOn: 'door-open',
-                ScreensaverEntityIconOff: 'door-closed',
-                ScreensaverEntityText: 'Tür',
-                ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
-            },
-            // indicatorScreensaverEntity 3 (only Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_Licht_An.ACTUAL',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityIconOn: 'lightbulb',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Licht',
-                ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
-            },
-            // indicatorScreensaverEntity 4 (only Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.Türschloss.ACTUAL',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityIconOn: 'lock',
-                ScreensaverEntityIconOff: 'lock-open',
-                ScreensaverEntityText: 'Türschloss',
-                ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
-            },
-            // indicatorScreensaverEntity 5 (only Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Auto.Safety.ACTUAL',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityIconOn: 'car-key',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Auto',
-                ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
-            },
-        ],
-
-        bottomScreensaverEntity: [
-            // bottomScreensaverEntity 1
-            {
-                type: 'template',
-                template: 'text.pirate-weather.sunriseset',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
-                modeScr: 'bottom',
-            },
-            // bottomScreensaverEntity 2
+    const wecker: ScriptConfig.PageGrid = {
+        type: 'cardGrid',
+        uniqueName: 'wecker',
+        heading: 'Wecker',
+        prev: 'heizung',
+        next: 'abfallseite',        
+        hiddenByTrigger: true,
+        items: [
+            { id: 'alias.0.Countdown', icon: 'timer', name: 'Timer' },
+            //{ id: 'alias.0.AlarmTime', name: 'Wecker' },
+            //{ id: 'alias.0.Uhrzeit', icon: 'clock-plus-outline', name: 'Kaffemaschine', onColor: White, autoCreateALias: true },
             /*{
-                type: 'template',
-                template: 'text.hmip.windcombo',
-                dpInit: 'hmip.0.devices.3014G71HA0001XXXXXXXXXX',
-                modeScr: 'bottom',
-                //readOptions: {directionOfPanel: 81}
+                id: 'alias.0.testButton',
+                offColor: MenuLowInd,
+                onColor: MenuLowInd,
+                name: 'Radio',
+                icon: 'radio',
+                modeList: ['Aus', 'Bayern 1', 'Bayern 3', 'Antenne Bayern', 'Schlagerparadies', 'BR Schlager', 'Unser Radio'],
             },*/
-            {
-                type: 'script',
-                ScreensaverEntity: 'pirate-weather.0.weather.currently.windSpeed',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 1,
-                ScreensaverEntityIconOn: 'weather-windy',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: "Wind",
-                ScreensaverEntityUnitText: 'm/s',
-                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
-            },
-            // bottomScreensaverEntity 3
-            {
-                type: 'script',
-                ScreensaverEntity: 'pirate-weather.0.weather.currently.windGust',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 1,
-                ScreensaverEntityIconOn: 'weather-tornado',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Böen',
-                ScreensaverEntityUnitText: 'm/s',
-                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
-            },
-            // bottomScreensaverEntity 4
-            {
-                type: 'template',
-                template: 'text.pirate-weather.winddirection',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
-                modeScr: 'bottom',
-            },
-            // bottomScreensaverEntity 5 (Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'pirate-weather.0.weather.currently.humidity',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityIconOn: 'water-percent',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Feuchte',
-                ScreensaverEntityUnitText: '%',
-                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 60}
-            },
-            // bottomScreensaverEntity 6 (for Advanced Screensaver)
-            {
-                type: 'template',
-                template: 'text.pirate-weather.uvindex',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
-                modeScr: 'bottom',
-            }
-            // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
-
-            // Some templates for the screensaver uncomment the lines to use them
-            // If u use an other instance for the weather data, change the instance in the following lines
-            // If you want to have them all, set weatherAddDefaultItems=true in the config and leave the following lines as they are!
-
-            // zum nutzen der Vorlagen für den Bildschirmschoner die Zeilen auskommentieren, um sie zu verwenden
-            // Wenn du eine andere Instanz für die Wetterdaten verwendest, ändere die Instanz in den folgenden Zeilen
-            // Wenn du sie alle haben willst, setze weatherAddDefaultItems=true in der Konfiguration ganz oben und lass die folgenden Zeilen so wie sie sind!
-
-            /*
-
-            OPENWEATHERMAP
-
-            // Bottom 1 - sunrise/set
-            {
-                type: 'template',
-                template: 'text.openweathermap.favorit',
-                dpInit: `/^openweathermap\\.0.+/`,
-                modeScr: 'favorit',
-            },
-            // Bottom 2 -  Forecast Day 1
-            {
-                type: 'template',
-                template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.0.+?day0/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 3 - Forecast Day 2
-            {
-                type: 'template',
-                template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.0.+?day1/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 4 - Forecast Day 3
-            {
-                type: 'template',
-                template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.0.+?day2/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 5 - Forecast Day 4
-            {
-                type: 'template',
-                template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.0.+?day3/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 6 - Forecast Day 5
-            {
-                type: 'template',
-                template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.0.+?day4/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 7 -  Forecast Day 6
-            {
-                type: 'template',
-                template: 'text.openweathermap.bot2values',
-                dpInit: `/^openweathermap\\.0.+?day5/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 8 - Windgeschwindigkeit
-            {
-                type: 'template',
-                template: 'text.openweathermap.windspeed',
-                dpInit: `/^openweathermap\\.0./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 9 - Böen
-            {
-                type: 'template',
-                template: 'text.openweathermap.windgust',
-                dpInit: `/^openweathermap\\.0./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 10 - Windrichtung
-            {
-                type: 'template',
-                template: 'text.openweathermap.winddirection',
-                dpInit: `/^openweathermap\\.0./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 11 - UV-Index
-            {
-                type: 'template',
-                template: 'text.accuweather.uvindex',
-                dpInit: `/^accuweather\\.0./`,
-                modeScr: 'bottom',
-            },
-            */
-
-
-            /*
-            
-            PIRATE-WEATHER
-
-            // Bottom 1 - sunrise/set
-            {
-                type: 'template',
-                template: 'text.pirate-weather.sunriseset',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 2 -  Forecast Day 1
-            {
-                type: 'template',
-                template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.01/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 3 - Forecast Day 2
-            {
-                type: 'template',
-                template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.02/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 4 - Forecast Day 3
-            {
-                type: 'template',
-                template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.03/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 5 - Forecast Day 4
-            {
-                type: 'template',
-                template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.04/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 6 - Forecast Day 5
-            {
-                type: 'template',
-                template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.05/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 7 -  Forecast Day 6
-            {
-                type: 'template',
-                template: 'text.pirate-weather.bot2values',
-                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.06/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 8 - Windgeschwindigkeit
-            {
-                type: 'template',
-                template: 'text.pirate-weather.windspeed',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 9 - Böen
-            {
-                type: 'template',
-                template: 'text.pirate-weather.windgust',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 10 - Windrichtung
-            {
-                type: 'template',
-                template: 'text.pirate-weather.winddirection',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 11 - UV-Index
-            {
-                type: 'template',
-                template: 'text.pirate-weather.uvindex',
-                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
-                modeScr: 'bottom',
-            },
-            // hier kann man dann eine Stundenübersicht erzeugen durch anpassen der 02 bzw. 04
-            // die sind nicht in addDefaultWeather enthalten.
-            {
-                type: 'template',
-                template: 'text.pirate-weather.hourlyweather',
-                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.02/`,
-                modeScr: 'bottom',
-            },
-            {
-                type: 'template',
-                template: 'text.pirate-weather.hourlyweather',
-                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.04/`,
-                modeScr: 'bottom',
-            },
-            */
-
-            /* Bright Sky
-            {
-                type: 'template',
-                template: 'text.brightsky.sunriseset',
-                dpInit: `/^brightsky\\.0\\.daily\\.00.+/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 2 - brightsky.0. Forecast Day 1
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.01/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 3 - brightsky.0. Forecast Day 2
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.02/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 4 - brightsky.0. Forecast Day 3
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.03/`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 5 - brightsky.0. Forecast Day 4
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.04/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 6 - brightsky.0. Forecast Day 5
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.05/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 7 - brightsky.0. Forecast Day 6
-            {
-                type: 'template',
-                template: 'text.brightsky.bot2values',
-                dpInit: `/^brightsky\\.0\\.daily\\.06/`,
-                modeScr: 'bottom',
-            },
-            // Bottom 8 - Windgeschwindigkeit
-            {
-                type: 'template',
-                template: 'text.brightsky.windspeed',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 9 - Böen
-            {
-                template: 'text.brightsky.windgust',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-
-            // Bottom 10 - Windrichtung
-            {
-                type: 'template',
-                template: 'text.brightsky.winddirection',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-            // Bottom 10 - Solar
-            {
-                type: 'template',
-                template: 'text.brightsky.solar',
-                dpInit: `/^brightsky\\.0\\.current./`,
-                modeScr: 'bottom',
-            },
-            */
         ],
+    };
 
-        leftScreensaverEntity: [
-            // leftScreensaverEntity 1 (only Advanced Screensaver)
+    const abfallseite: any = {
+        heading: 'Müllkalender',
+        prev: 'wecker',
+        next: 'thermo1',
+        native: {
+            card: 'cardEntities',
+            dpInit: '0_userdata.0.Abfallkalender',
+            uniqueID: 'abfallseite',
+            template: 'entities.waste-calendar',
+        },
+    };    
+
+    // cardThermo2 config
+    const bad: ScriptConfig.PageThermo2 = {
+        type: 'cardThermo2',
+        uniqueName: 'thermo1',
+        heading: 'Bad',
+        prev: 'abfallseite',
+        next: 'heizkreise',
+        thermoItems: [
             {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 1,
-                ScreensaverEntityIconOn: 'thermometer',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Temperatur',
-                ScreensaverEntityUnitText: '°C',
-                ScreensaverEntityIconColor: {val_min: 0, val_max: 35, val_best: 22},
-            },
-            // leftScreensaverEntity 2 (only Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.Heizung.WärmeTagesVerbrauch.ACTUAL',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 1,
-                ScreensaverEntityIconOn: 'counter',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Wärme',
-                ScreensaverEntityUnitText: ' kWh',
-                ScreensaverEntityIconColor: MSYellow, //{'val_min': 0, 'val_max': 5000}
-            },
-            // leftScreensaverEntity 3 (only Advanced Screensaver)
-            {
-                type: 'script',
-                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Abfall.event1.INFO',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityDateFormat: {year: 'numeric', month: '2-digit', day: '2-digit'},
-                ScreensaverEntityIconOn: 'trash-can',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Abfall',
-                ScreensaverEntityUnitText: '',
-                ScreensaverEntityIconColor: '0_userdata.0.Abfallkalender.1.color',
+                id: 'alias.0.Thermostat',
+                minValue: 10,
+                maxValue: 30,
+                stepValue: 0.5,
+                name: 'Bad',
             },
         ],
+        items:[],
+    };
 
-        // Status Icon 
-        mrIcon1ScreensaverEntity: {
-            type: 'script',
-            ScreensaverEntity: 'Relay.1',
-            ScreensaverEntityIconOn: 'lightbulb',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityValue: null,
-            ScreensaverEntityValueDecimalPlace: 0,
-            ScreensaverEntityValueUnit: null,
-            ScreensaverEntityOnColor: On,
-            ScreensaverEntityOffColor: HMIOff
+    // cardThermo2 config mit Heizkreisen
+    const heizkreise: ScriptConfig.PageThermo2 = {
+        type: 'cardThermo2',
+        uniqueName: 'heizkreise',
+        heading: 'egal',
+        prev: 'thermo1',
+        next: 'klimaanlage',
+        scrollPresentation: 'auto',
+        scrollAutoTiming: 5,
+        thermoItems: [
+            {
+                id: 'alias.0.Heizkreise.Thermostat1',
+                name: 'HK1',
+            },
+            {
+                id: 'alias.0.Heizkreise.Thermostat2',
+                name: 'HK2',
+            },
+            {
+                id: 'alias.0.Heizkreise.Thermostat3',
+                name: 'HK3',
+            },
+            {
+                id: 'alias.0.Heizkreise.Thermostat4',
+                name: 'HK4',
+            },
+        ],
+        items:[],
+    };
+
+    const klima: ScriptConfig.PageThermo = {
+        type: 'cardThermo',
+        uniqueName: 'klimaanlage',
+        heading: 'Test Klimaanlage',
+        prev: 'heizkreise',
+        next: 'media',
+        items: [
+            {
+                id: 'alias.0.Aircondition',
+                minValue: 50, // Anpassen an die minimal Mögliche Temperatur (aktuell 5°)
+                maxValue: 250, // Anpassen an die maximal mögliche Temperatur (aktuell 25°)
+                stepValue: 5,
+                popupThermoMode1: ['Vertical Swing', 'Highest', 'High', 'Low', 'Lowest'],
+                popupThermoMode2: ['Quiet', 'low', 'medium', 'high', 'auto'],
+                popUpThermoName: ['Swing Mode', 'Fan Mode'],
+                setThermoAlias: ['Mode1', 'Mode2'],
+            },
+        ],
+    };
+
+    const pageMediaTest1: PageType = {
+        type: 'cardMedia',
+        uniqueName: 'media',
+        heading: 'main',
+        prev: 'klimaanlage',
+        next: 'main',
+        alwaysOnDisplay: true,
+        media: {
+            id: 'sonos.0.root.192_168_178_209',
+            speakerList: ['Familienzimmer', 'Mobil', 'Schlafzimmer'],
+            playList: ['Anime Best'],
+            volumePresets: ['leise?2'],
+            minValue: 0,
+            maxValue: 25,
+
         },
-        mrIcon2ScreensaverEntity: {
-            type: 'script',
-            ScreensaverEntity: 'Relay.2',
-            ScreensaverEntityIconOn: 'lightbulb',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityValue: null,
-            ScreensaverEntityValueDecimalPlace: 0,
-            ScreensaverEntityValueUnit: null,
-            ScreensaverEntityOnColor: On,
-            ScreensaverEntityOffColor: HMIOff
-        },
-        // ------ DE: Ende der Screensaver Einstellungen --------------------
-        // ------ EN: End of screensaver settings ---------------------------
+        items: [
+        ],
+        scrollPresentation: 'arrow'
+    };
+    
 
-        //-------DE: Anfang Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
-        //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
-        // DE: Konfiguration des linken Schalters des NSPanels
-        // EN: Configuration of the left switch of the NSPanel
-        buttonLeft: {
-            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'switch', 'set' - Wenn nicht definiert --> mode: null
-            // EN: Possible values if Rule2 defined: 'page', 'switch', 'set' - If not defined --> mode: null
-            mode: 'page',
-            // DE: Zielpage - Verwendet wenn mode = page
-            // EN: Target page - Used if mode = page
-            page: 'main',
-        },
+    const globalPagesConfig: ScriptConfig.globalPagesConfig = {
+        type: 'globalConfig', //mandatory
 
-        // DE: Konfiguration des rechten Schalters des NSPanels
-        // EN: Configuration of the right switch of the NSPanel
-        buttonRight: null/*{
-            mode: 'toggle',
-            page: '0_userdata.0.example',
-            
-        }*/,
-
-        //--------- DE: Ende - Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
-        //--------- EN: End - settings for hardware button if they are used in software (Rule2) ------------------------------
-
-        // DE: WICHTIG !! Parameter nicht ändern  WICHTIG!!
-        // EN: IMPORTANT !! Do not change parameters IMPORTANT!!
-
+        
+        // global pages
+        subPages: [
+            testRole,
+            testRole2,
+            fahrplan,
+            website,
+            telefon,
+            wifi,
+            powerPage,
+            lichttest1,
+            lichttest2,
+            chartHeizung,
+            chartTemperatur,
+            wecker,
+            abfallseite,
+            bad,
+            heizkreise,
+            klima,
+            pageMediaTest1
+        ],
     };
 
 
@@ -688,7 +394,7 @@ async function configuration (): Promise<void> {
      ********************************************************************************
      */
     try {
-        log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', Object.assign({...config, version}, overrideConfig), {timeout: 30_000}));
+        log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfigGlobal', {...globalPagesConfig, version}, {timeout: 30_000}));
     } catch (e) {
         log(`Error in sendTo ScriptConfig: ${e}! This usually means that the adapter is not working!`, 'error');
     }

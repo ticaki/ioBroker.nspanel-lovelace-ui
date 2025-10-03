@@ -1,0 +1,176 @@
+name: sanitize-pr-body
+
+on:
+  pull_request_target:
+    types: [edited, ready_for_review, closed]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  clean-pr-body:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Replace "Fixes owner/repo#123" with "Related issue"
+        uses: actions/github-script@v6
+        with:
+          script: |
+            /**
+             * Replace phrases like "Fixes owner/repo#123" with "Related issue: owner/repo#123".
+             * Trigger on every PR edit event.
+             */
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner, repo, pull_number: prNumber
+            });
+
+            const body = pr.body || "";
+
+            // Replace patterns like: Fixes ticaki/ioBroker.brightsky#45 with Related issue: ticaki/ioBroker.brightsky#45
+            // Matches: word "Fixes" (case-insensitive), whitespace, owner/repo (alphanum, _, ., -), '#' and digits
+            const cleaned = body
+              .replace(/\bFixes\s+([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+#\d+)\b/gi, "Related issue: $1")
+              .replace(/\n{3,}/g, "\n\n")
+              .trim();
+
+            if (cleaned !== body) {
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: prNumber,
+                body: cleaned
+              });
+              core.info(`PR #${prNumber} body updated.`);
+            } else {
+              core.info("No changes required to PR body.");
+            }
+
+  label-fixed-issues:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add "fixed" label to linked issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            /**
+             * When a PR is merged, add the "fixed" label to all linked issues.
+             * Create the label if it doesn't exist.
+             */
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner, repo, pull_number: prNumber
+            });
+
+            const body = pr.body || "";
+
+            // Find all issue references in the format owner/repo#number or #number
+            const issueRefs = [];
+
+            // Match "Related issue: owner/repo#123" or "Fixes owner/repo#123" (in case of direct merges)
+            const fullRefMatches = body.matchAll(/(?:Related issue:|Fixes)\s+([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)#(\d+)/gi);
+            for (const match of fullRefMatches) {
+              issueRefs.push({ owner: match[1], repo: match[2], issue_number: parseInt(match[3]) });
+            }
+
+            // Match simple "#123" references (same repo)
+            const simpleRefMatches = body.matchAll(/#(\d+)\b/g);
+            for (const match of simpleRefMatches) {
+              // Check if the referenced number is an actual issue in this repo
+              try {
+                await github.rest.issues.get({
+                  owner,
+                  repo,
+                  issue_number: parseInt(match[1])
+                });
+                issueRefs.push({ owner, repo, issue_number: parseInt(match[1]) });
+              } catch (error) {
+                // Not an issue, skip
+                core.info(`Reference #${match[1]} is not a valid issue in ${owner}/${repo}, skipping.`);
+              }
+            }
+
+            if (issueRefs.length === 0) {
+              core.info("No linked issues found in PR body.");
+              return;
+            }
+
+            // Ensure the "resolved" label exists
+            let labelExists = false;
+            try {
+              await github.rest.issues.getLabel({
+                owner,
+                repo,
+                name: 'resolved'
+              });
+              labelExists = true;
+              core.info("Label 'resolved' already exists.");
+            } catch (error) {
+              if (error.status === 404) {
+                core.info("Label 'resolved' does not exist. Creating it...");
+                try {
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: 'resolved',
+                    color: '28a745', // Friendly green color
+                    description: 'Issue has been resolved in a merged PR'
+                  });
+                  core.info("Label 'resolved' created successfully.");
+                  labelExists = true;
+                } catch (createError) {
+                  core.error(`Failed to create label: ${createError.message}`);
+                }
+              } else {
+                core.error(`Error checking label: ${error.message}`);
+              }
+            }
+
+            if (!labelExists) {
+              core.error("Cannot add label 'resolved' because it doesn't exist and couldn't be created.");
+              return;
+            }
+
+            // Add the "resolved" label to each linked issue
+            for (const issueRef of issueRefs) {
+              try {
+                // Check if this is an issue in the same repo or a different repo
+                if (issueRef.owner === owner && issueRef.repo === repo) {
+                  // Check if it's actually an issue (not a PR)
+                  try {
+                    const { data: issue } = await github.rest.issues.get({
+                      owner: issueRef.owner,
+                      repo: issueRef.repo,
+                      issue_number: issueRef.issue_number
+                    });
+
+                    if (!issue.pull_request) {
+                      // It's an issue, add the label
+                      await github.rest.issues.addLabels({
+                        owner: issueRef.owner,
+                        repo: issueRef.repo,
+                        issue_number: issueRef.issue_number,
+                        labels: ['resolved']
+                      });
+                      core.info(`Added "resolved" label to issue #${issueRef.issue_number}`);
+                    } else {
+                      core.info(`#${issueRef.issue_number} is a PR, not an issue. Skipping.`);
+                    }
+                  } catch (getError) {
+                    core.warning(`Could not access issue #${issueRef.issue_number}: ${getError.message}`);
+                  }
+                } else {
+                  core.info(`Issue ${issueRef.owner}/${issueRef.repo}#${issueRef.issue_number} is in a different repo. Cannot add label across repos.`);
+                }
+              } catch (error) {
+                core.error(`Failed to add label to issue #${issueRef.issue_number}: ${error.message}`);
+              }
+            }

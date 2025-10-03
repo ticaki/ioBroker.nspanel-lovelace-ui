@@ -32,16 +32,28 @@ export function isButton(F: any): F is ConfigButtonFunction {
     );
 }
 
-/**
- * Wenn ein State angelegt wird muss gleich ein Namen für das der Device und das Device selbst angegeben werden.
- * Die Seite auf der das Device angezeigt wird, sollte in einem Pick oder wie das heißt angegeben werden,
- * Ich denke nicht das ich dort schon bekannte Seiten angeben kann, die anzeigbaren DAten im Custom sind
- * statisch und das pick hat kein sendto. Die Seiten müsste man jedoch nur einmal in einem State für ein Device angeben.
- * Also brauche ich an der stelle ein sendToSelect das manuelle eingaben erlaubt. mal testen
- */
+export function isGlobalConfig(F: any): F is ScriptConfig.globalPagesConfig {
+    if (F === undefined) {
+        return false;
+    }
+    if (!('type' in F) || F.type !== 'globalConfig') {
+        return false;
+    }
+
+    const requiredFields: (keyof ScriptConfig.globalPagesConfig)[] = ['version', 'subPages'];
+    for (const field of requiredFields) {
+        if (F[field] === undefined) {
+            return false;
+        }
+    }
+    return true;
+}
 
 export function isConfig(F: any, adapter: NspanelLovelaceUi): F is ScriptConfig.Config {
     if (F === undefined) {
+        return false;
+    }
+    if ('type' in F && F.type === 'globalConfig') {
         return false;
     }
     const requiredFields: (keyof ScriptConfig.Config)[] = [
