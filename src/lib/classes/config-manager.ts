@@ -260,7 +260,7 @@ export class ConfigManager extends BaseClass {
                             : 3;
                     const removeGlobalPageIndexs: Set<number> = new Set();
                     // merge global config for pages
-                    for (let i = config.pages.length - 1; i >= 0; i--) {
+                    for (let i = 0; i < config.pages.length; i++) {
                         const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
                         if (page && 'globalLink' in page && page.globalLink) {
                             const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
@@ -340,7 +340,7 @@ export class ConfigManager extends BaseClass {
                     }
 
                     // merge global config for subPages
-                    for (let i = 0; i < config.pages.length; i++) {
+                    for (let i = config.subPages.length - 1; i >= 0; i--) {
                         const page = config.subPages[i] as ScriptConfig.PageTypeGlobal;
                         if (page && 'globalLink' in page && page.globalLink) {
                             const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);

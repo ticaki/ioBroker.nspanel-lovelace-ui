@@ -247,7 +247,7 @@ class ConfigManager extends import_library.BaseClass {
         if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
           globalConfig.maxNavigationAdjustRuns = globalConfig.maxNavigationAdjustRuns && globalConfig.maxNavigationAdjustRuns > 0 ? globalConfig.maxNavigationAdjustRuns : 3;
           const removeGlobalPageIndexs = /* @__PURE__ */ new Set();
-          for (let i = config.pages.length - 1; i >= 0; i--) {
+          for (let i = 0; i < config.pages.length; i++) {
             const page = config.pages[i];
             if (page && "globalLink" in page && page.globalLink) {
               const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
@@ -323,7 +323,7 @@ class ConfigManager extends import_library.BaseClass {
               }
             }
           }
-          for (let i = 0; i < config.pages.length; i++) {
+          for (let i = config.subPages.length - 1; i >= 0; i--) {
             const page = config.subPages[i];
             if (page && "globalLink" in page && page.globalLink) {
               const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
