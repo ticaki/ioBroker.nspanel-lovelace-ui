@@ -24,11 +24,15 @@ Global Pages sind Seitendefinitionen, die in einem separaten **Global Script** g
 
 ## Global Script einrichten
 
-### 1. Global Script erstellen
+### 1. Global Script verwenden
 
-Das Global Script definiert die wiederverwendbaren Seiten. Es wird typischerweise in der Datei `Global_Script.ts` gespeichert.
+Der Adapter erstellt bei der Installation automatisch ein Global Script (`globalPageConfig.ts`). Dieses Script enthält bereits alle notwendigen Strukturen und muss nur mit Ihren Seitendefinitionen gefüllt werden.
+
+**Hinweis**: Das Script wird im JavaScript-Adapter-Ordner gespeichert und ist sofort einsatzbereit. Sie müssen es nur bearbeiten und ausführen.
 
 #### Grundstruktur
+
+Die Konfiguration im Global Script hat folgende Struktur:
 
 ```typescript
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
@@ -139,28 +143,19 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 };
 ```
 
-### 4. Global Config an Adapter senden
+### 4. Script ausführen
 
-Am Ende des Global Scripts wird die Konfiguration an den Adapter gesendet:
+Nach der Konfiguration der Seiten müssen Sie das Global Script ausführen. Die Übertragung der Konfiguration an den Adapter erfolgt automatisch - der dafür notwendige Code ist bereits im Script enthalten und muss nicht manuell erstellt werden.
 
-```typescript
-try {
-    log(await sendToAsync(
-        'nspanel-lovelace-ui.0',
-        'ScriptConfigGlobal',
-        globalPagesConfig,
-        { timeout: 30_000 }
-    ));
-} catch (e) {
-    log(`Error in sendTo ScriptConfig: ${e}! This usually means that the adapter is not working!`, 'error');
-}
-```
-
-**Wichtig**: Das Global Script muss nur einmal ausgeführt werden und speichert die Konfiguration im Adapter. Änderungen erfordern ein erneutes Ausführen des Scripts.
+**Wichtig**: Das Global Script muss nach jeder Änderung erneut ausgeführt werden, um die Konfiguration zu aktualisieren.
 
 ## Local Script konfigurieren
 
-### 1. Seiten mit globalLink referenzieren
+### 1. Local Script verwenden
+
+Der Adapter erstellt bei der Installation automatisch ein Local Script für jedes Panel. Der Scriptname basiert auf dem Panelnamen, den Sie bei der Einrichtung gewählt haben. Dieses Script muss nur mit Ihren panelspezifischen Konfigurationen gefüllt werden.
+
+### 2. Seiten mit globalLink referenzieren
 
 Im Local Script (Panel-spezifische Konfiguration) werden globale Seiten über `globalLink` eingebunden.
 
@@ -333,10 +328,9 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
         lichterSeite
     ]
 };
-
-// An Adapter senden
-await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfigGlobal', globalPagesConfig);
 ```
+
+Nach der Konfiguration das Global Script ausführen, um die Änderungen zu übertragen.
 
 #### Local_Script_Panel1.ts (Wohnzimmer)
 
@@ -352,9 +346,9 @@ const config: ScriptConfig.Config = {
     
     subPages: []
 };
-
-await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', config);
 ```
+
+Nach der Konfiguration das Local Script ausführen, um die Änderungen zu übertragen.
 
 #### Local_Script_Panel2.ts (Küche)
 
@@ -370,9 +364,9 @@ const config: ScriptConfig.Config = {
     
     subPages: []
 };
-
-await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', config);
 ```
+
+Nach der Konfiguration das Local Script ausführen, um die Änderungen zu übertragen.
 
 ### Beispiel 2: Unterschiedliche Seitenauswahl pro Panel
 
@@ -579,7 +573,9 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 
 2. **Local Scripts aktualisieren**: Nach Änderungen im Global Script müssen die Local Scripts nicht neu ausgeführt werden - sie verwenden automatisch die aktuelle globale Konfiguration.
 
-3. **Panel-spezifische Überschreibungen**: Nutzen Sie `heading` und Navigation-Überschreibungen sparsam, um die Wartbarkeit zu erhalten.
+3. **Script-Updates**: Die Type-Definitionen in den Scripts werden bei Updates automatisch aktualisiert, um die Wartungsfreundlichkeit zu gewährleisten.
+
+4. **Panel-spezifische Überschreibungen**: Nutzen Sie `heading` und Navigation-Überschreibungen sparsam, um die Wartbarkeit zu erhalten.
 
 ## Fehlerbehebung
 

@@ -24,11 +24,15 @@ Global Pages are page definitions that are stored in a separate **Global Script*
 
 ## Setting up the Global Script
 
-### 1. Create Global Script
+### 1. Use Global Script
 
-The Global Script defines the reusable pages. It is typically stored in the file `Global_Script.ts`.
+The adapter automatically creates a Global Script (`globalPageConfig.ts`) during installation. This script already contains all necessary structures and only needs to be filled with your page definitions.
+
+**Note**: The script is stored in the JavaScript adapter folder and is ready to use immediately. You only need to edit and execute it.
 
 #### Basic Structure
+
+The configuration in the Global Script has the following structure:
 
 ```typescript
 const globalPagesConfig: ScriptConfig.globalPagesConfig = {
@@ -139,28 +143,19 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 };
 ```
 
-### 4. Send Global Config to Adapter
+### 4. Execute Script
 
-At the end of the Global Script, the configuration is sent to the adapter:
+After configuring the pages, you need to execute the Global Script. The transfer of the configuration to the adapter happens automatically - the necessary code for this is already included in the script and does not need to be created manually.
 
-```typescript
-try {
-    log(await sendToAsync(
-        'nspanel-lovelace-ui.0',
-        'ScriptConfigGlobal',
-        globalPagesConfig,
-        { timeout: 30_000 }
-    ));
-} catch (e) {
-    log(`Error in sendTo ScriptConfig: ${e}! This usually means that the adapter is not working!`, 'error');
-}
-```
-
-**Important**: The Global Script only needs to be executed once and stores the configuration in the adapter. Changes require re-executing the script.
+**Important**: The Global Script must be executed again after each change to update the configuration.
 
 ## Configure Local Script
 
-### 1. Reference Pages with globalLink
+### 1. Use Local Script
+
+The adapter automatically creates a Local Script for each panel during installation. The script name is based on the panel name you chose during setup. This script only needs to be filled with your panel-specific configurations.
+
+### 2. Reference Pages with globalLink
 
 In the Local Script (panel-specific configuration), global pages are included via `globalLink`.
 
@@ -333,10 +328,9 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
         lightsPage
     ]
 };
-
-// Send to adapter
-await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfigGlobal', globalPagesConfig);
 ```
+
+After configuration, execute the Global Script to transfer the changes.
 
 #### Local_Script_Panel1.ts (Living Room)
 
@@ -352,9 +346,9 @@ const config: ScriptConfig.Config = {
     
     subPages: []
 };
-
-await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', config);
 ```
+
+After configuration, execute the Local Script to transfer the changes.
 
 #### Local_Script_Panel2.ts (Kitchen)
 
@@ -370,9 +364,9 @@ const config: ScriptConfig.Config = {
     
     subPages: []
 };
-
-await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', config);
 ```
+
+After configuration, execute the Local Script to transfer the changes.
 
 ### Example 2: Different Page Selection per Panel
 
@@ -579,7 +573,9 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 
 2. **Update Local Scripts**: After changes in the Global Script, the Local Scripts do not need to be re-executed - they automatically use the current global configuration.
 
-3. **Panel-specific Overrides**: Use `heading` and navigation overrides sparingly to maintain maintainability.
+3. **Script Updates**: Type definitions in the scripts are automatically updated during adapter updates to ensure maintainability.
+
+4. **Panel-specific Overrides**: Use `heading` and navigation overrides sparingly to maintain maintainability.
 
 ## Troubleshooting
 
