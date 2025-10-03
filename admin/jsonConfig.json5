@@ -3411,6 +3411,26 @@
                     "lg": 4,
                     "xl": 4
                 },
+                // Example of how to use custom React components:
+                // Uncomment the following section to use the custom text field component
+                // First, build the custom components with: npm run build:admin
+                /*
+                "_customComponentExample": {
+                    "type": "custom",
+                    "url": "custom/customComponents.js",
+                    "name": "admin/custom.CustomTextField",
+                    "attr": "customTextExample",
+                    "label": "Custom Text Field Example",
+                    "help": "This is an example custom component built with React",
+                    "placeholder": "Enter custom text here",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                */
                 "logUnknownTokens": {
                     "type": "checkbox",
                     "label": "logUnknownTokens",

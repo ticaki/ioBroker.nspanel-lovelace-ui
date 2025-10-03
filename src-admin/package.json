@@ -1,0 +1,29 @@
+{
+  "name": "nspanel-lovelace-ui-admin",
+  "version": "0.5.0",
+  "private": true,
+  "dependencies": {
+    "@iobroker/adapter-react-v5": "^7.5.6",
+    "@mui/material": "^5.16.7",
+    "@mui/icons-material": "^5.16.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "@iobroker/build-tools": "^2.2.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "craco build",
+    "watch": "craco start"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

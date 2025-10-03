@@ -21,3 +21,7 @@ admin/i18n/*/flat.txt
 src/lib/password.ts
 .gitignore
 .commitinfo
+
+# src-admin build artifacts
+src-admin/node_modules
+src-admin/build
