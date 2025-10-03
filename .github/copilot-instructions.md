@@ -203,8 +203,7 @@
 - For every fix/feature, add a **short bullet point** to the `README.md` under the `## Changelog` section.
   - Use the existing format with `### **WORK IN PROGRESS**` and `- (author) ...`.
   - Author format: `- (ticaki)`, `- (copilot)`, `- (tt-tom17)`, etc.
-  - **Important**: The author should be the person who commissioned or requested the work, not necessarily who implemented it. For example, if ticaki requests a feature from copilot, use `- (ticaki)`.
-  - Focus on the feature/fix itself, not on documentation about it (unless the change IS documentation).
+  - **Important**: The author should be the person who commissioned the work or is responsible for it. For example, if ticaki is responsible for a function requested by copilot, use `- (ticaki)`.
 - **IMPORTANT**: Any generated code or changes must note if something contradicts the [NSPanel Wiki](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki) or modifies existing documented behavior.
 
 ## Documentation References
