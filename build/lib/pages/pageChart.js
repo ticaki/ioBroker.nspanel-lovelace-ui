@@ -197,53 +197,86 @@ class PageChart extends import_Page.Page {
   async onVisibilityChange(val) {
     try {
       if (val) {
-        if (this.adminConfig) {
-          if (this.adminConfig.setStateForValues != "" && this.adminConfig.setStateForValues != null) {
-            const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
-            if (state && state.val) {
-              this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
-            } else {
-              this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
-              this.checkState = false;
-            }
-          }
-          if (this.adminConfig.selInstanceDataSource !== void 0) {
-            if (this.adminConfig.selInstanceDataSource === 1) {
-              if (this.adminConfig.selInstance != null && this.adminConfig.selInstance !== "") {
-                const state = await this.adapter.getForeignStateAsync(
-                  `system.adapter.${this.adminConfig.selInstance}.alive`
-                );
-                if (state && state.val) {
-                  this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
-                } else {
-                  this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
-                  this.checkState = false;
-                }
-              }
-            } else if (this.adminConfig.selInstanceDataSource === 0) {
-              if (this.adminConfig.setStateForTicks == "" || this.adminConfig.setStateForTicks == null) {
-                const state = await this.adapter.getForeignStateAsync(
-                  this.adminConfig.setStateForTicks
-                );
-                if (state && state.val) {
-                  this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
-                } else {
-                  this.log.debug(
-                    `State ${this.adminConfig.setStateForTicks} for ticks is not exists`
-                  );
-                  this.checkState = false;
-                }
-              }
-            }
-          }
-        } else {
+        this.checkState = false;
+        if (!this.adminConfig) {
           this.log.warn("AdminConfig is not set, cannot check states");
           this.checkState = false;
+        } else {
+          const cfg = this.adminConfig;
+          const ds = cfg.selInstanceDataSource;
+          if (ds === 0) {
+            if (cfg.setStateForValues != null && cfg.setStateForValues !== "") {
+              const state = await this.adapter.getForeignStateAsync(cfg.setStateForValues);
+              if (state && state.val !== null && state.val !== void 0) {
+                this.log.debug(
+                  `State ${cfg.setStateForValues} for Values exists and has value: ${state.val}`
+                );
+                this.checkState = true;
+              } else if (state) {
+                this.log.warn(`State ${cfg.setStateForValues} for Values exists but has no value`);
+              } else {
+                this.log.error(`State ${cfg.setStateForValues} for Values does not exist`);
+              }
+            } else {
+              this.log.error("No setStateForValues configured");
+            }
+            if (cfg.setStateForTicks != null && cfg.setStateForTicks !== "") {
+              const state = await this.adapter.getForeignStateAsync(cfg.setStateForTicks);
+              if (state && state.val !== null && state.val !== void 0) {
+                this.log.debug(
+                  `State ${cfg.setStateForTicks} for Ticks exists and has value: ${state.val}`
+                );
+                this.checkState = true;
+              } else if (state) {
+                this.log.warn(`State ${cfg.setStateForTicks} for Ticks exists but has no value`);
+                this.checkState = false;
+              } else {
+                this.log.error(`State ${cfg.setStateForTicks} for Ticks does not exist`);
+                this.checkState = false;
+              }
+            } else {
+              this.log.error("No setStateForTicks configured");
+              this.checkState = false;
+            }
+          } else if (ds === 1) {
+            if (cfg.selInstance != null && cfg.selInstance !== "") {
+              const alive = await this.adapter.getForeignStateAsync(
+                `system.adapter.${cfg.selInstance}.alive`
+              );
+              if (alive && alive.val) {
+                this.log.debug(`Instance ${cfg.selInstance} is alive`);
+                this.checkState = true;
+              } else {
+                this.log.warn(`Instance ${cfg.selInstance} is not alive`);
+                this.checkState = false;
+              }
+            } else {
+              this.log.error("No selInstance configured");
+              this.checkState = false;
+            }
+            if (cfg.setStateForDB != null && cfg.setStateForDB !== "") {
+              const state = await this.adapter.getForeignStateAsync(cfg.setStateForDB);
+              if (state) {
+                this.log.debug(`State ${cfg.setStateForDB} for DB exists`);
+                this.checkState = true;
+              } else {
+                this.log.warn(`State ${cfg.setStateForDB} for DB does not exist`);
+                this.checkState = false;
+              }
+            } else {
+              this.log.error("No setStateForDB configured");
+              this.checkState = false;
+            }
+          } else {
+            this.log.error("Unknown selInstanceDataSource, skipping specific checks");
+            this.checkState = false;
+          }
         }
       }
-      await this.update();
     } catch (error) {
       this.log.error(`Error onVisibilityChange: ${error}`);
+    } finally {
+      await this.update();
     }
   }
   async onStateTrigger(_id) {
