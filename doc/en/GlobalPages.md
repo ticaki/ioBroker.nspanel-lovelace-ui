@@ -43,7 +43,10 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
     navigation?: NavigationItemConfig[],
     
     // Optional: Native Page Items
-    nativePageItems?: any[]
+    nativePageItems?: any[],
+    
+    // Optional: Maximum number of navigation adjustments for deep linking (default: 3)
+    maxNavigationAdjustRuns?: number
 };
 ```
 
@@ -53,6 +56,7 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 - `subPages` - Array with all global page definitions
 - `navigation` - Optional: Shared navigation configuration
 - `nativePageItems` - Optional: Shared native page items
+- `maxNavigationAdjustRuns` - Optional: Maximum number of iterations for deep linking when overriding uniqueName (default: 3)
 
 ### 2. Define Global Pages
 
@@ -183,9 +187,9 @@ const livingRoomPage: PageType = {
 };
 ```
 
-#### With Optional uniqueName
+#### With Optional uniqueName (Deep Linking)
 
-You can also assign your own `uniqueName`:
+You can also assign your own `uniqueName`. In this case, the adapter automatically creates copies of all referenced pages and adjusts the navigation to create an isolated page hierarchy:
 
 ```typescript
 const livingRoomPage: PageType = {
@@ -194,6 +198,10 @@ const livingRoomPage: PageType = {
     globalLink: 'living_room'
 };
 ```
+
+**Deep Linking**: When you specify your own `uniqueName` that differs from the `uniqueName` of the global page, the global page is copied with this new name. Additionally, all pages that this page references (via `next`, `prev`, `home`, `parent`, or `navigate` items) are also copied and renamed. This allows you to use the same global page multiple times with different names and isolated navigation paths.
+
+**Example**: If the global page `living_room` references `kitchen` and you set `uniqueName: 'lr_panel1'`, `kitchen` will also be copied (e.g., as `lr_panel1_kitchen_copy_nav_12345`), and the navigation will be automatically adjusted.
 
 ### 2. Navigation in Pages
 
@@ -250,6 +258,40 @@ const config: ScriptConfig.Config = {
 **Navigation Behavior in subPages**:
 - If **at least one** navigation parameter (`prev`, `next`, `home`, or `parent`) is specified, **all four** parameters from the Local Script are used (even if they are `undefined`)
 - If **no** navigation parameter is specified, the navigation from the Global Script is inherited
+
+### 4. Deep Linking with uniqueName
+
+When you specify your own `uniqueName` in a Local Script for a global page that differs from the original `uniqueName` of the global page, this activates the **Deep Linking** feature:
+
+1. **Automatic Copying**: The global page is copied with the new `uniqueName`
+2. **Recursive Navigation**: All pages that this page references are also copied and renamed
+3. **Isolated Hierarchy**: An isolated page hierarchy is created that is independent of other uses of the same global pages
+
+**Use Case**: Use this when you want to use the same global page multiple times on a panel but with different navigation paths.
+
+**Example**:
+```typescript
+// Global Script: Page with navigation
+const details: ScriptConfig.PageGrid = {
+    type: 'cardGrid',
+    uniqueName: 'details',
+    heading: 'Details',
+    next: 'settings',
+    items: [...]
+};
+
+// Local Script: Multiple uses with Deep Linking
+const config: ScriptConfig.Config = {
+    pages: [
+        { globalLink: 'main' },
+        { globalLink: 'details', uniqueName: 'details_variant_a' }, // Creates copies
+        { globalLink: 'details', uniqueName: 'details_variant_b' }  // Separate copies
+    ],
+    subPages: []
+};
+```
+
+**Configuring Recursion Depth**: You can control the maximum number of iterations with `maxNavigationAdjustRuns` in the Global Script (default: 3).
 
 ## Practical Examples
 
@@ -418,6 +460,76 @@ const config: ScriptConfig.Config = {
 };
 ```
 
+### Example 4: Deep Linking - Multiple Uses with Custom Names
+
+You can use the same global page multiple times by assigning each a unique `uniqueName`. The adapter will automatically create isolated copies with adjusted navigation.
+
+#### Global_Script.ts
+
+```typescript
+const roomControl: ScriptConfig.PageGrid = {
+    type: 'cardGrid',
+    uniqueName: 'room_control',
+    heading: 'Room Control',
+    next: 'room_settings',
+    items: [
+        { id: 'alias.0.Room.Light' },
+        { id: 'alias.0.Room.Temperature' }
+    ]
+};
+
+const roomSettings: ScriptConfig.PageGrid = {
+    type: 'cardGrid',
+    uniqueName: 'room_settings',
+    heading: 'Room Settings',
+    prev: 'room_control',
+    items: [
+        { id: 'alias.0.Room.Config' }
+    ]
+};
+
+const globalPagesConfig: ScriptConfig.globalPagesConfig = {
+    type: 'globalConfig',
+    subPages: [
+        roomControl,
+        roomSettings
+    ],
+    maxNavigationAdjustRuns: 5 // Increased recursion depth for complex hierarchies
+};
+```
+
+#### Local_Script.ts
+
+```typescript
+const config: ScriptConfig.Config = {
+    panelTopic: 'NSPanel_MultiRoom',
+    
+    pages: [
+        { globalLink: 'main' },
+        
+        // First instance for living room
+        { 
+            globalLink: 'room_control', 
+            uniqueName: 'living_room_control',
+            heading: 'Living Room'
+        },
+        // Automatically copied: room_settings → living_room_control_room_settings_copy_nav_xxxxx
+        
+        // Second instance for bedroom
+        { 
+            globalLink: 'room_control', 
+            uniqueName: 'bedroom_control',
+            heading: 'Bedroom'
+        }
+        // Automatically copied: room_settings → bedroom_control_room_settings_copy_nav_xxxxx
+    ],
+    
+    subPages: []
+};
+```
+
+In this example, two isolated copies of the `room_control` page are created, each with its own navigation to the automatically copied `room_settings` pages.
+
 ## Important Notes and Best Practices
 
 ### Navigation and Order
@@ -456,6 +568,10 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 3. **Global Script First**: The Global Script must be executed before Local Scripts can access it.
 
 4. **Keep Navigation Consistent**: Ensure that navigation references point to existing pages.
+
+5. **Deep Linking Recursion Depth**: For complex page hierarchies, you can increase `maxNavigationAdjustRuns` to support deeper navigation chains. Default value is 3.
+
+6. **uniqueName Override**: When you assign your own `uniqueName`, copies are automatically created. Use this consciously and only when necessary.
 
 ### Maintenance and Updates
 
@@ -500,7 +616,9 @@ The Global Pages feature provides a powerful way to reuse page configurations:
 - **Global Script**: Define all shared pages once with `uniqueName`
 - **Local Script**: Reference pages via `globalLink`
 - **Flexibility**: Override `heading` and navigation as needed
+- **Deep Linking**: Multiple uses of the same page with custom `uniqueName` and isolated navigation
+- **Automatic Navigation**: Missing referenced pages are automatically added
 - **Maintainability**: Central changes affect all panels
 - **Combinable**: Global and local pages can be mixed
 
-This architecture enables you to create a consistent user experience across multiple NSPanels while still allowing panel-specific customizations.
+This architecture enables you to create a consistent user experience across multiple NSPanels while still allowing panel-specific customizations and even multiple uses of the same pages with different navigation paths.
