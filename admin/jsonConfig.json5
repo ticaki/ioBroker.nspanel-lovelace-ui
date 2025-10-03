@@ -261,6 +261,26 @@
             "label": "globalSetting",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
             "items": {
+                "_headeruseBetaTFT": {
+                    "type": "header",
+                    "text": "headeruseBetaTFT",
+                    "size": 3
+                },
+                "useBetaTFT": {
+                    "type": "checkbox",
+                    "label": "useBetaVersion",
+                    "default": false,
+                    "newLine": true,
+                    "expertMode": true,
+                    "style": {
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_headerColorTheme": {
                     "type": "header",
                     "text": "headerColorTheme",
@@ -2736,21 +2756,6 @@
                         "text": "Reset NSPanel configuration on the external device to factory defaults(Wifi not touched).",
                         "ok": "Reset",
                         "cancel": "Cancel"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "useBetaTFT": {
-                    "type": "checkbox",
-                    "label": "useBetaVersion",
-                    "default": false,
-                    "newLine": true,
-                    "expertMode": true,
-                    "style": {
-                        "color": "red"
                     },
                     "xs": 12,
                     "sm": 12,
