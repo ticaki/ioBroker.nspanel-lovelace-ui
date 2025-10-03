@@ -719,6 +719,7 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         nativePageItems?: any[];
         navigation?: NavigationItemConfig[];
+        maxNavigationAdjustRuns?: number;
     };
 
     export type Config = {
