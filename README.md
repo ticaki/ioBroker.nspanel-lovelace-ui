@@ -147,6 +147,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
 ### 0.5.0 (2025-10-03)
 - (tt-tom17) Admin UI: Reworked/reordered settings layout and improved usability
 - (ticaki) Added globalPages/globalLink feature with Deep Linking support for reusable page configurations across multiple panels
