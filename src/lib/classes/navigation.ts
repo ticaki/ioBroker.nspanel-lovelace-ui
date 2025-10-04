@@ -305,7 +305,7 @@ export class Navigation extends BaseClass {
                 void this.setPageByIndex(index, d);
             }
             // erster Klick und check obs ein Ziel für den 1. und 2. Klick gibt.
-        } else if (!single && i && i[d] && i[d].double !== undefined && i && i[d] && i[d].single !== undefined) {
+        } else if (!single && i && i[d] && i[d].double !== undefined && i[d].single !== undefined) {
             this.doubleClickTimeout = this.adapter.setTimeout(
                 (...arg: any): void => {
                     this.go(arg[0], arg[1]);
