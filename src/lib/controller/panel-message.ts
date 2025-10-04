@@ -134,7 +134,7 @@ export class PanelSend extends BaseClass {
         if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
             this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
         }
-        if (this.losingMessageCount++ > 3) {
+        if (this.losingMessageCount++ > 5) {
             if (this.panel) {
                 if (this.adapter.config.additionalLog) {
                     this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
