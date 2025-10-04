@@ -85,7 +85,6 @@ class StatesControler extends import_library.BaseClass {
     }
     this.blockedSubscriptions = [];
     for (const id of removeIds) {
-      await this.adapter.unsubscribeForeignStatesAsync(id);
       delete this.triggerDB[id];
     }
     while (this.blockedSubscriptions && this.blockedSubscriptions.length > 0) {
@@ -94,7 +93,6 @@ class StatesControler extends import_library.BaseClass {
           continue;
         }
         const id = this.blockedSubscriptions[idx];
-        await this.adapter.subscribeForeignStatesAsync(id);
         this.blockedSubscriptions.splice(idx, 1);
       }
     }
@@ -174,7 +172,6 @@ class StatesControler extends import_library.BaseClass {
           this.blockedSubscriptions.push(id);
         }
       } else {
-        await this.adapter.subscribeForeignStatesAsync(id);
       }
       if (this.adapter.config.debugLogStates) {
         this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
@@ -214,7 +211,6 @@ class StatesControler extends import_library.BaseClass {
       }
       if (!entry.subscribed.some((a) => a)) {
         entry.subscribed[index] = true;
-        await this.adapter.subscribeForeignStatesAsync(id);
         const state = await this.adapter.getForeignStateAsync(id);
         if (state) {
           entry.state = state;
@@ -259,7 +255,6 @@ class StatesControler extends import_library.BaseClass {
             this.blockedSubscriptions.splice(idx, 1);
           }
         }
-        await this.adapter.unsubscribeForeignStatesAsync(id);
       }
     }
   }
@@ -283,8 +278,6 @@ class StatesControler extends import_library.BaseClass {
    * @returns nsPanelState or null
    */
   async getState(id, internal = false) {
-    let timespan = this.timespan;
-    timespan = 10;
     if (this.triggerDB[id] !== void 0 && (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))) {
       let state = null;
       const f = this.triggerDB[id].f;
@@ -297,30 +290,30 @@ class StatesControler extends import_library.BaseClass {
         state = this.triggerDB[id].state;
       }
       return state;
-    } else if (this.stateDB[id] && timespan) {
-      if (Date.now() - timespan - this.stateDB[id].ts < 0) {
-        return this.stateDB[id].state;
-      }
+    } else if (this.stateDB[id]) {
+      return this.stateDB[id].state;
     }
     if (id.includes("/")) {
       internal = true;
     }
     if (!internal) {
-      const state = await this.adapter.getForeignStateAsync(id);
-      if (state != null) {
-        if (!this.stateDB[id]) {
-          const obj = await this.getObjectAsync(id);
-          if (!obj || !obj.common || obj.type !== "state") {
-            throw new Error(`Got invalid object for ${id}`);
+      try {
+        const state = await this.adapter.getForeignStateAsync(id);
+        if (state != null) {
+          if (!this.stateDB[id]) {
+            const obj = await this.getObjectAsync(id);
+            if (!obj || !obj.common || obj.type !== "state") {
+              throw new Error(`Got invalid object for ${id}`);
+            }
+            this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
           }
-          this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
-        } else {
-          this.stateDB[id].state = state;
-          this.stateDB[id].ts = Date.now();
+          return state;
         }
-        return state;
-      }
-      if (state === null) {
+        if (state === null) {
+          return null;
+        }
+      } catch (e) {
+        this.log.error(`Error 1005: ${typeof e === "string" ? e.replaceAll("Error: ", "") : e}`);
         return null;
       }
     }
@@ -432,6 +425,9 @@ class StatesControler extends import_library.BaseClass {
       } else {
         this.log.debug(`Ignore trigger from state ${dp} ack is false!`);
       }
+    } else if (this.stateDB[dp]) {
+      this.stateDB[dp].state = state;
+      this.stateDB[dp].ts = state.ts;
     }
     const v = state.val;
     const isPrimitive = v === null || v === void 0 || typeof v !== "object";
