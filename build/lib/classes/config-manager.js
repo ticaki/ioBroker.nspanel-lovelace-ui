@@ -3656,10 +3656,9 @@ class ConfigManager extends import_library.BaseClass {
       const blockName = blockNames[i];
       const expectedCount = Object.values(countBefore)[i];
       if (arr.length < expectedCount) {
-        messages.push(
-          `Warning: ${blockName}ScreensaverEntity - loaded ${arr.length} of ${expectedCount} configured items`
-        );
-        this.log.warn(messages[messages.length - 1]);
+        const msg = `Warning: ${blockName}ScreensaverEntity - loaded ${arr.length} of ${expectedCount} configured items`;
+        messages.push(msg);
+        this.log.warn(msg);
       }
       pageItems.push(...arr);
     }
