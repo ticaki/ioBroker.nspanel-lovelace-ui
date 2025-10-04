@@ -402,7 +402,9 @@ class ConfigManager extends import_library.BaseClass {
       panelConfig.name = `NSPanel-${config.panelTopic}`;
     }
     try {
-      const screensaver = await this.getScreensaverConfig(config);
+      const result = await this.getScreensaverConfig(config, messages);
+      const screensaver = result.configArray;
+      messages = result.messages;
       if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3") && config.advancedOptions) {
         screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
         screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
@@ -2286,7 +2288,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -3142,6 +3144,21 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "select": {
             item.icon2 = item.icon2 || item.icon;
+            if (!item.modeList && foundedStates[role].SET && foundedStates[role].SET.dp) {
+              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].SET.dp);
+              if (o && o.common && !o.common.states) {
+                const alias = (_r = o.common.alias) == null ? void 0 : _r.id;
+                if (alias) {
+                  const aliasObj = await this.adapter.getForeignObjectAsync(alias);
+                  if (aliasObj && aliasObj.type === "state" && aliasObj.common && aliasObj.common.states) {
+                    if (foundedStates[role].SET.dp === ((_s = foundedStates[role].ACTUAL) == null ? void 0 : _s.dp)) {
+                      foundedStates[role].ACTUAL = { ...foundedStates[role].SET, dp: alias };
+                    }
+                    foundedStates[role].SET = { ...foundedStates[role].SET, dp: alias };
+                  }
+                }
+              }
+            }
             itemConfig = {
               type: "input_sel",
               dpInit: item.id,
@@ -3375,9 +3392,9 @@ class ConfigManager extends import_library.BaseClass {
           case "level.mode.fan": {
             let states;
             let keys;
-            if ((_r = foundedStates[role].MODE) == null ? void 0 : _r.dp) {
+            if ((_t = foundedStates[role].MODE) == null ? void 0 : _t.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_s = o == null ? void 0 : o.common) == null ? void 0 : _s.states) {
+              if ((_u = o == null ? void 0 : o.common) == null ? void 0 : _u.states) {
                 states = Object.values(o.common.states).map(String);
                 keys = Object.keys(o.common.states).map(String);
               }
@@ -3428,7 +3445,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "media": {
             const offIcon = item.icon2 || item.icon;
-            let id = ((_t = foundedStates[role].STATE) == null ? void 0 : _t.dp) || item.id;
+            let id = ((_v = foundedStates[role].STATE) == null ? void 0 : _v.dp) || item.id;
             let defaultColorOn = import_Color.Color.on;
             let defaultColorOff = import_Color.Color.off;
             let defaultIconOn = "pause";
@@ -3439,7 +3456,7 @@ class ConfigManager extends import_library.BaseClass {
             }
             if (!item.asControl) {
               const o = await this.adapter.getForeignObjectAsync(id);
-              if (!o || !((_u = o.common.alias) == null ? void 0 : _u.id)) {
+              if (!o || !((_w = o.common.alias) == null ? void 0 : _w.id)) {
                 throw new Error(`DP: ${item.id} - media STATE ${id} has no alias!`);
               }
               id = o.common.alias.id;
@@ -3537,7 +3554,8 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { itemConfig: void 0, messages };
   }
-  async getScreensaverConfig(config) {
+  async getScreensaverConfig(config, messages = []) {
+    var _a, _b, _c, _d, _e, _f;
     let pageItems = [];
     const loadElementSection = async (items, mode, errorLabel) => {
       if (!items || items.length === 0) {
@@ -3545,7 +3563,9 @@ class ConfigManager extends import_library.BaseClass {
       }
       const tasks = items.map(
         (item) => this.getEntityData(item, mode, config).catch((err) => {
-          this.log.error(`${errorLabel} - ${String(err)}`);
+          const msg = `${errorLabel} - ${String(err)}`;
+          messages.push(msg);
+          this.log.error(msg);
           return null;
         })
       );
@@ -3558,7 +3578,9 @@ class ConfigManager extends import_library.BaseClass {
       }
       const tasks = items.map(
         (item) => this.getNotifyEntityData(item, mode).catch((err) => {
-          this.log.error(`${errorLabel} - ${String(err)}`);
+          const msg = `${errorLabel} - ${String(err)}`;
+          messages.push(msg);
+          this.log.error(msg);
           return null;
         })
       );
@@ -3574,7 +3596,9 @@ class ConfigManager extends import_library.BaseClass {
           return Promise.resolve(null);
         }
         return this.getEntityData(item, mode, config).catch((err) => {
-          this.log.error(`${errorLabel} - ${String(err)}`);
+          const msg = `${errorLabel} - ${String(err)}`;
+          messages.push(msg);
+          this.log.error(msg);
           return null;
         });
       });
@@ -3590,10 +3614,22 @@ class ConfigManager extends import_library.BaseClass {
         return [r];
       } catch (err) {
         {
-          this.log.error(`${errorLabel} - ${String(err)}`);
+          const msg = `${errorLabel} - ${String(err)}`;
+          messages.push(msg);
+          this.log.error(msg);
           return [];
         }
       }
+    };
+    const countBefore = {
+      favorit: ((_a = config.favoritScreensaverEntity) == null ? void 0 : _a.length) || 0,
+      alternate: ((_b = config.alternateScreensaverEntity) == null ? void 0 : _b.length) || 0,
+      left: ((_c = config.leftScreensaverEntity) == null ? void 0 : _c.length) || 0,
+      bottom: ((_d = config.bottomScreensaverEntity) == null ? void 0 : _d.length) || 0,
+      indicator: ((_e = config.indicatorScreensaverEntity) == null ? void 0 : _e.length) || 0,
+      mrIcon1: config.mrIcon1ScreensaverEntity ? 1 : 0,
+      mrIcon2: config.mrIcon2ScreensaverEntity ? 1 : 0,
+      notify: ((_f = config.notifyScreensaverEntity) == null ? void 0 : _f.length) || 0
     };
     const blocks = await Promise.all([
       loadElementSection(config.favoritScreensaverEntity, "favorit", "favoritScreensaverEntity"),
@@ -3605,7 +3641,26 @@ class ConfigManager extends import_library.BaseClass {
       loadMrIcon(config.mrIcon2ScreensaverEntity, "mrIcon2ScreensaverEntity"),
       loadNotifySection(config.notifyScreensaverEntity, "notify", "notifyScreensaverEntity")
     ]);
-    for (const arr of blocks) {
+    const blockNames = [
+      "favorit",
+      "alternate",
+      "left",
+      "bottom",
+      "indicator",
+      "mrIcon1",
+      "mrIcon2",
+      "notify"
+    ];
+    for (let i = 0; i < blocks.length; i++) {
+      const arr = blocks[i];
+      const blockName = blockNames[i];
+      const expectedCount = Object.values(countBefore)[i];
+      if (arr.length < expectedCount) {
+        messages.push(
+          `Warning: ${blockName}ScreensaverEntity - loaded ${arr.length} of ${expectedCount} configured items`
+        );
+        this.log.warn(messages[messages.length - 1]);
+      }
       pageItems.push(...arr);
     }
     if (this.adapter.config.weatherEntity) {
@@ -3955,6 +4010,13 @@ class ConfigManager extends import_library.BaseClass {
             });
           }
         }
+      } else {
+        const adapterPrefix = config.weatherEntity.split(".")[0];
+        if (adapterPrefix !== "accuweather" && adapterPrefix !== "openweathermap" && adapterPrefix !== "pirate-weather" && adapterPrefix !== "brightsky") {
+          const msg = `Weather adapter '${adapterPrefix}' is not supported. Supported adapters: accuweather, openweathermap, pirate-weather, brightsky`;
+          messages.push(msg);
+          this.log.warn(msg);
+        }
       }
       if (toAdd.length) {
         pageItems = pageItems.concat(toAdd);
@@ -4027,7 +4089,7 @@ class ConfigManager extends import_library.BaseClass {
       }
     ]);
     pageItems = pageItems.concat(config.nativePageItems || []);
-    return {
+    const configArray = {
       dpInit: "",
       alwaysOn: "none",
       uniqueID: "scr",
@@ -4043,6 +4105,7 @@ class ConfigManager extends import_library.BaseClass {
       },
       pageItems
     };
+    return { configArray, messages };
   }
   /**
    * Checks if the required datapoints for a given role and item are present and valid.

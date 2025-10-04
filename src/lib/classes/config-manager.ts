@@ -437,7 +437,9 @@ export class ConfigManager extends BaseClass {
 
         // Screensaver configuration
         try {
-            const screensaver = await this.getScreensaverConfig(config);
+            const result = await this.getScreensaverConfig(config, messages);
+            const screensaver = result.configArray;
+            messages = result.messages;
             if (
                 screensaver &&
                 screensaver.config &&
@@ -3672,6 +3674,27 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'select': {
                         item.icon2 = item.icon2 || item.icon;
+                        // Use source of select.SET if valueList is not defined and SET has no common.states
+                        if (!item.modeList && foundedStates[role].SET && foundedStates[role].SET.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].SET.dp);
+                            if (o && o.common && !o.common.states) {
+                                const alias = o.common.alias?.id;
+                                if (alias) {
+                                    const aliasObj = await this.adapter.getForeignObjectAsync(alias);
+                                    if (
+                                        aliasObj &&
+                                        aliasObj.type === 'state' &&
+                                        aliasObj.common &&
+                                        aliasObj.common.states
+                                    ) {
+                                        if (foundedStates[role].SET.dp === foundedStates[role].ACTUAL?.dp) {
+                                            foundedStates[role].ACTUAL = { ...foundedStates[role].SET, dp: alias };
+                                        }
+                                        foundedStates[role].SET = { ...foundedStates[role].SET, dp: alias };
+                                    }
+                                }
+                            }
+                        }
 
                         itemConfig = {
                             type: 'input_sel',
@@ -4205,7 +4228,10 @@ export class ConfigManager extends BaseClass {
         return { itemConfig: undefined, messages };
     }
 
-    async getScreensaverConfig(config: ScriptConfig.Config): Promise<pages.PageBaseConfig> {
+    async getScreensaverConfig(
+        config: ScriptConfig.Config,
+        messages: string[] = [],
+    ): Promise<{ configArray: pages.PageBaseConfig; messages: string[] }> {
         let pageItems: typePageItem.PageItemDataItemsOptions[] = [];
 
         const loadElementSection = async (
@@ -4218,7 +4244,9 @@ export class ConfigManager extends BaseClass {
             }
             const tasks = items.map(item =>
                 this.getEntityData(item, mode, config).catch(err => {
-                    this.log.error(`${errorLabel} - ${String(err)}`);
+                    const msg = `${errorLabel} - ${String(err)}`;
+                    messages.push(msg);
+                    this.log.error(msg);
                     return null;
                 }),
             );
@@ -4235,7 +4263,9 @@ export class ConfigManager extends BaseClass {
             }
             const tasks = items.map(item =>
                 this.getNotifyEntityData(item, mode).catch(err => {
-                    this.log.error(`${errorLabel} - ${String(err)}`);
+                    const msg = `${errorLabel} - ${String(err)}`;
+                    messages.push(msg);
+                    this.log.error(msg);
                     return null;
                 }),
             );
@@ -4256,7 +4286,9 @@ export class ConfigManager extends BaseClass {
                     return Promise.resolve<typePageItem.PageItemDataItemsOptions | null>(null);
                 }
                 return this.getEntityData(item, mode, config).catch(err => {
-                    this.log.error(`${errorLabel} - ${String(err)}`);
+                    const msg = `${errorLabel} - ${String(err)}`;
+                    messages.push(msg);
+                    this.log.error(msg);
                     return null;
                 });
             });
@@ -4276,13 +4308,26 @@ export class ConfigManager extends BaseClass {
                 return [r];
             } catch (err) {
                 {
-                    this.log.error(`${errorLabel} - ${String(err)}`);
+                    const msg = `${errorLabel} - ${String(err)}`;
+                    messages.push(msg);
+                    this.log.error(msg);
                     return [];
                 }
             }
         };
 
         // Abschnitte parallel laden
+        const countBefore = {
+            favorit: config.favoritScreensaverEntity?.length || 0,
+            alternate: config.alternateScreensaverEntity?.length || 0,
+            left: config.leftScreensaverEntity?.length || 0,
+            bottom: config.bottomScreensaverEntity?.length || 0,
+            indicator: config.indicatorScreensaverEntity?.length || 0,
+            mrIcon1: config.mrIcon1ScreensaverEntity ? 1 : 0,
+            mrIcon2: config.mrIcon2ScreensaverEntity ? 1 : 0,
+            notify: config.notifyScreensaverEntity?.length || 0,
+        };
+
         const blocks = await Promise.all<typePageItem.PageItemDataItemsOptions[]>([
             loadElementSection(config.favoritScreensaverEntity, 'favorit', 'favoritScreensaverEntity'),
             loadElementSection(config.alternateScreensaverEntity, 'alternate', 'alternateScreensaverEntity'),
@@ -4295,7 +4340,25 @@ export class ConfigManager extends BaseClass {
         ]);
 
         // In fixer Block-Reihenfolge zusammenführen
-        for (const arr of blocks) {
+        const blockNames = [
+            'favorit',
+            'alternate',
+            'left',
+            'bottom',
+            'indicator',
+            'mrIcon1',
+            'mrIcon2',
+            'notify',
+        ] as const;
+        for (let i = 0; i < blocks.length; i++) {
+            const arr = blocks[i];
+            const blockName = blockNames[i];
+            const expectedCount = Object.values(countBefore)[i];
+            if (arr.length < expectedCount) {
+                const msg = `Warning: ${blockName}ScreensaverEntity - loaded ${arr.length} of ${expectedCount} configured items`;
+                messages.push(msg);
+                this.log.warn(msg);
+            }
             pageItems.push(...arr);
         }
         // if weatherEntity is set, add alot weather data to screensaver :)
@@ -4656,6 +4719,19 @@ export class ConfigManager extends BaseClass {
                         });
                     }
                 }
+            } else {
+                // Check for unsupported weather adapter
+                const adapterPrefix = config.weatherEntity.split('.')[0];
+                if (
+                    adapterPrefix !== 'accuweather' &&
+                    adapterPrefix !== 'openweathermap' &&
+                    adapterPrefix !== 'pirate-weather' &&
+                    adapterPrefix !== 'brightsky'
+                ) {
+                    const msg = `Weather adapter '${adapterPrefix}' is not supported. Supported adapters: accuweather, openweathermap, pirate-weather, brightsky`;
+                    messages.push(msg);
+                    this.log.warn(msg);
+                }
             }
             if (toAdd.length) {
                 pageItems = pageItems.concat(toAdd);
@@ -4733,7 +4809,7 @@ export class ConfigManager extends BaseClass {
         ]);
         pageItems = pageItems.concat(config.nativePageItems || []);
 
-        return {
+        const configArray: pages.PageBaseConfig = {
             dpInit: '',
             alwaysOn: 'none',
             uniqueID: 'scr',
@@ -4748,7 +4824,9 @@ export class ConfigManager extends BaseClass {
                 screensaverSwipe: false,
             },
             pageItems: pageItems,
-        };
+        } as pages.PageBaseConfig;
+
+        return { configArray, messages };
     }
 
     /**
