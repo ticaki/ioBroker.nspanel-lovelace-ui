@@ -33,7 +33,6 @@ class SystemNotifications extends import_library.BaseClass {
     this.language = this.adapter.library.getLocalLanguage();
   }
   async init() {
-    await this.adapter.subscribeForeignStatesAsync("system.host.*.notifications.*");
     const obj = await this.adapter.getObjectAsync(`${this.adapter.namespace}.panels`);
     if (obj) {
       this.notifications = obj.native && obj.native.SystemNotifications || [];
@@ -78,7 +77,7 @@ class SystemNotifications extends import_library.BaseClass {
    * @param _state The state object holding the new value and meta information of the state
    */
   async onStateChange(id, _state) {
-    if (id.startsWith("system.host")) {
+    if (id.startsWith("system.host") && id.includes(".notifications.")) {
       const hostName = id.split(".")[2];
       this.log.info(`Changes to the notifications on "${hostName}" detected.`);
       await this.handleIobrokerNotifications([`system.host.${hostName}`]);
