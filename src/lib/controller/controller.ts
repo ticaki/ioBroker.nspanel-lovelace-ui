@@ -8,7 +8,7 @@ import { getInternalDefaults } from '../const/tools';
 import axios from 'axios';
 import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
-// eslint-disable-next-line no-duplicate-imports
+
 import { Color } from '../const/Color';
 
 axios.defaults.timeout = 15_000;
@@ -512,10 +512,12 @@ export class Controller extends Library.BaseClass {
                     const kTemp = keyNoPrefix.length
                         ? keyNoPrefix.charAt(0).toLowerCase() + keyNoPrefix.slice(1)
                         : keyNoPrefix;
-                    const colHex = v.startsWith('#') ? v : `#${v}`;
+                    const colHex = Color.isHex(v) ? v : `#${v}`;
                     const colRgb = Color.ConvertHexToRgb(colHex);
-                    if (this.validRGB(colRgb.r, colRgb.g, colRgb.b) && kTemp in result) {
-                        result[kTemp as keyof ColorThemenInterface] = colRgb;
+                    if (Color.isRGB(colRgb) && kTemp in result) {
+                        result[kTemp as keyof typeof result] = colRgb;
+                    } else {
+                        this.log.debug(`Color property ${k} with value ${v} is not valid and will be ignored.`);
                     }
                 }
             }
@@ -530,8 +532,5 @@ export class Controller extends Library.BaseClass {
         merge(cfg.colorCardMedia);
 
         return result;
-    }
-    private validRGB(r: number, g: number, b: number): boolean {
-        return [r, g, b].every(v => Number.isInteger(v) && v >= 0 && v <= 255);
     }
 }

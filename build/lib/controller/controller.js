@@ -475,10 +475,12 @@ class Controller extends Library.BaseClass {
         if (typeof v === "string" && v.trim() !== "" && /^col[A-Z]/.test(k)) {
           const keyNoPrefix = k.replace(/^col/, "");
           const kTemp = keyNoPrefix.length ? keyNoPrefix.charAt(0).toLowerCase() + keyNoPrefix.slice(1) : keyNoPrefix;
-          const colHex = v.startsWith("#") ? v : `#${v}`;
+          const colHex = import_Color.Color.isHex(v) ? v : `#${v}`;
           const colRgb = import_Color.Color.ConvertHexToRgb(colHex);
-          if (this.validRGB(colRgb.r, colRgb.g, colRgb.b) && kTemp in result) {
+          if (import_Color.Color.isRGB(colRgb) && kTemp in result) {
             result[kTemp] = colRgb;
+          } else {
+            this.log.debug(`Color property ${k} with value ${v} is not valid and will be ignored.`);
           }
         }
       }
@@ -491,9 +493,6 @@ class Controller extends Library.BaseClass {
     merge(cfg.colorScreensaver);
     merge(cfg.colorCardMedia);
     return result;
-  }
-  validRGB(r, g, b) {
-    return [r, g, b].every((v) => Number.isInteger(v) && v >= 0 && v <= 255);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

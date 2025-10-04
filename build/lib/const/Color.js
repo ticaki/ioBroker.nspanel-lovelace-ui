@@ -1187,6 +1187,9 @@ class Color extends ColorBase {
   static isRGB(F) {
     return typeof F == "object" && "r" in F && "b" in F && "g" in F;
   }
+  static isHex(F) {
+    return typeof F == "string" && F.startsWith("#") && F.length == 7;
+  }
   static isScriptRGB(F) {
     return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
   }

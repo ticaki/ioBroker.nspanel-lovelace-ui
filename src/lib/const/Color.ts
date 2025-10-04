@@ -14,6 +14,8 @@ export type RGB = {
     b: number;
 };
 
+export type hex = `#${string}`;
+
 interface MixedOptions {
     swap?: boolean;
 }
@@ -1242,6 +1244,10 @@ export class Color extends ColorBase {
     }
     static isRGB(F: any): F is RGB {
         return typeof F == 'object' && 'r' in F && 'b' in F && 'g' in F;
+    }
+
+    static isHex(F: any): F is hex {
+        return typeof F == 'string' && F.startsWith('#') && F.length == 7;
     }
 
     static isScriptRGB(F: any): F is ScriptConfig.RGB {
