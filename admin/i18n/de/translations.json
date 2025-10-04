@@ -172,7 +172,7 @@
     "RefreshMaintainTable": "Tabelle aktualisieren",
     "timezone": "Zeitzone",
     "openLinkToTasmota": "Tasmota WebUI öffnen",
-    "resetTasmota": "Tasmota zurücksetzen",
+    "resetTasmota": "Tasmota MQTT zurücksetzen",
     "vScript": "Skriptversion",
     "vTFT": "TFT-Version",
     "vTasmota": "Tasmota-Version",
