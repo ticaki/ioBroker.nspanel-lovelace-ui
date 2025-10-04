@@ -343,6 +343,7 @@ class Panel extends import_library.BaseClass {
     this.log.debug(`Panel ${this.name} is initialised!`);
     await this.controller.mqttClient.subscribe(`${this.topic}/tele/#`, this.onMessage);
     await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
+    this.log.info(`Setting panel to offline until first message!`);
     this.isOnline = false;
     const channelObj = this.library.cloneObject(
       definition.genericStateObjects.panel.panels._channel
@@ -754,6 +755,7 @@ class Panel extends import_library.BaseClass {
           return;
         }
         if ("Flashing" in msg) {
+          this.log.info(`Going offline for flashing!`);
           this.isOnline = false;
           this.flashing = msg.Flashing.complete < 99;
           this.log.info(`Flashing: ${msg.Flashing.complete}%`);
@@ -1196,6 +1198,7 @@ class Panel extends import_library.BaseClass {
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
     }
+    this.log.info("Goint offline because delete panel!");
     this.isOnline = false;
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
@@ -1596,7 +1599,7 @@ class Panel extends import_library.BaseClass {
         }
         case "cmd/TasmotaRestart": {
           this.sendToTasmota(`${this.topic}/cmnd/Restart`, "1");
-          this.log.info("Restart Tasmota!");
+          this.log.info("Going offline because of Tasmota restart!");
           this.isOnline = false;
           break;
         }

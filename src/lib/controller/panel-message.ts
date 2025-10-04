@@ -83,6 +83,12 @@ export class PanelSend extends BaseClass {
                     }
 
                     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
+                } else {
+                    if (this.adapter.config.additionalLog) {
+                        this.log.debug(
+                            `1: ${!(ackForType && msg.CustomSend === 'renderCurrentPage')} 2: ${!(!ackForType && msg.CustomSend === 'Done')} msg: ${msg.CustomSend}`,
+                        );
+                    }
                 }
             }
         } catch (err: any) {
@@ -130,6 +136,9 @@ export class PanelSend extends BaseClass {
         }
         if (this.losingMessageCount++ > 3) {
             if (this.panel) {
+                if (this.adapter.config.additionalLog) {
+                    this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
+                }
                 this.panel.isOnline = false;
             }
         }
