@@ -9,7 +9,6 @@
             "items": {
                 "_useBetaTFTText": {
                     "type": "staticText",
-                    "label": "useBetaVersionText",
                     "text": "useBetaVersionText",
                     "style": {
                         "color": "red"
@@ -2772,7 +2771,6 @@
             "items": {
                 "_useBetaTFTText": {
                     "type": "staticText",
-                    "label": "useBetaVersionText",
                     "text": "useBetaVersionText",
                     "style": {
                         "color": "red"
