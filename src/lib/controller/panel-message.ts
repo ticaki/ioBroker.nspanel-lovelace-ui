@@ -142,7 +142,7 @@ export class PanelSend extends BaseClass {
                 this.panel.isOnline = false;
             }
         }
-        this.losingDelay = this.losingDelay + 1000;
+        this.losingDelay = this.losingDelay + 2000;
 
         if (this.unload) {
             return;

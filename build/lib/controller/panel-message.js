@@ -135,7 +135,7 @@ class PanelSend extends import_library.BaseClass {
         this.panel.isOnline = false;
       }
     }
-    this.losingDelay = this.losingDelay + 1e3;
+    this.losingDelay = this.losingDelay + 2e3;
     if (this.unload) {
       return;
     }
