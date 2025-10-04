@@ -89,7 +89,7 @@ class PanelSend extends import_library.BaseClass {
           this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
         } else {
           if (this.adapter.config.additionalLog) {
-            this.log.debug(
+            this.log.info(
               `1: ${!(ackForType && msg.CustomSend === "renderCurrentPage")} 2: ${!(!ackForType && msg.CustomSend === "Done")} msg: ${msg.CustomSend}`
             );
           }
