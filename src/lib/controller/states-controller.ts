@@ -108,7 +108,7 @@ export class StatesControler extends BaseClass {
                 if (idx >= this.blockedSubscriptions.length) {
                     continue;
                 }
-                const id = this.blockedSubscriptions[idx];
+                //const id = this.blockedSubscriptions[idx];
                 //await this.adapter.subscribeForeignStatesAsync(id);
                 this.blockedSubscriptions.splice(idx, 1);
             }

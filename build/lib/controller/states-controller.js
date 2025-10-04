@@ -92,7 +92,6 @@ class StatesControler extends import_library.BaseClass {
         if (idx >= this.blockedSubscriptions.length) {
           continue;
         }
-        const id = this.blockedSubscriptions[idx];
         this.blockedSubscriptions.splice(idx, 1);
       }
     }
