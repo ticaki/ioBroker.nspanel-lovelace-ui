@@ -18,6 +18,8 @@ Es gibt in dem Script drei Bereiche:
          **                                                                   **
          ***********************************************************************/
 ```
+
+**Hinweis zu Global Pages**: Für mehrere NSPanels können Sie Seiten zentral definieren und wiederverwenden. Siehe die detaillierte Dokumentation: [Global Pages & Global Link](GlobalPages)
   
 - Codebereich  
 Änderungen im Codebereich sind vom User nicht nötig. Sollten für das Script Updates zur Verfügung stehen, können diese über die [Maintain Seite](Maintain) des Admin eingespielt werden.
