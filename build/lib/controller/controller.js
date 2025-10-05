@@ -384,6 +384,16 @@ class Controller extends Library.BaseClass {
     }
     return false;
   };
+  async setGlobalNotificationDismiss(id) {
+    if (!id) {
+      return;
+    }
+    for (const panel of this.panels) {
+      if (panel.screenSaver) {
+        await panel.screenSaver.setGlobalNotificationDismiss(id);
+      }
+    }
+  }
   async delete() {
     await super.delete();
     if (this.minuteLoopTimeout) {

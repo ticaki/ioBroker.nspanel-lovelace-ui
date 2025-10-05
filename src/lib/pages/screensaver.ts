@@ -27,6 +27,7 @@ export class Screensaver extends Page {
     public textNotification: string = '';
     public customNotification: boolean = false;
     private activeNotification: boolean = false;
+    private activeNotifyId: string = '';
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (
@@ -159,17 +160,21 @@ export class Screensaver extends Page {
                 }
 
                 // Overwrite via numeric enabled index
-                const enabledNum = await tools.getEnabledNumber(pageItem.dataItems?.data?.enabled);
-                if (enabledNum != null) {
-                    if (enabledNum >= 0) {
-                        const payload = await pageItem.getPageItemPayload();
-                        return { kind: 'overwrite', place, enabledIndex: enabledNum, payload };
+                if (place !== 'notify') {
+                    const enabledNum = await tools.getEnabledNumber(pageItem.dataItems?.data?.enabled);
+                    if (enabledNum != null) {
+                        if (enabledNum >= 0) {
+                            const payload = await pageItem.getPageItemPayload();
+                            if (payload !== '') {
+                                return { kind: 'overwrite', place, enabledIndex: enabledNum, payload };
+                            }
+                        }
+                        return null;
                     }
-                    return null;
                 }
 
                 // Skip via boolean enabled=false
-                const enabledBool = await tools.getEnabled(pageItem.dataItems?.data?.enabled);
+                const enabledBool = await pageItem.isEnabled();
                 if (enabledBool === false) {
                     return null;
                 }
@@ -243,7 +248,7 @@ export class Screensaver extends Page {
                 } else {
                     const arr = msg.split('~');
                     arr[0] = '';
-                    if (place !== 'indicator') {
+                    if (place !== 'indicator' && place !== 'notify') {
                         arr[1] = '';
                     }
                     message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
@@ -537,7 +542,8 @@ export class Screensaver extends Page {
                 const text = n[4];
                 const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
                 const heading = `${n[2]} ${s[0]}`.trim();
-                return { heading, text, prio };
+                const id = n[1];
+                return { heading, text, prio, id };
             })
             .sort((a, b) => (a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1));
 
@@ -547,11 +553,56 @@ export class Screensaver extends Page {
             const heading = notifyList[0].heading;
             const text = notifyList[0].text;
             if (heading !== '' || text !== '') {
+                this.activeNotifyId = notifyList[0].id;
                 this.#sendNotify(true, heading, text);
             }
         } else if (this.activeNotification) {
+            this.activeNotifyId = '';
             this.#sendNotify(false);
         }
+    }
+
+    async setGlobalNotificationDismiss(id: string): Promise<void> {
+        if (!id) {
+            return;
+        }
+        for (const item of this.pageItems || []) {
+            if (item && item.config?.role === 'isDismissiblePerEvent') {
+                const gId = item.getGlobalDismissibleID();
+                if (gId === id) {
+                    item.setDismissiblePerEvent();
+                }
+            }
+        }
+        await this.HandleNotification();
+    }
+
+    async deactivateNotify(): Promise<boolean> {
+        if (this.activeNotifyId) {
+            const id = this.activeNotifyId.split('?')[1];
+            if (id && !isNaN(parseInt(id, 10))) {
+                const item = this.pageItems?.[parseInt(id, 10)];
+                if (item && item.config?.role === 'isDismissiblePerEvent') {
+                    item.setDismissiblePerEvent();
+                    const id = item.getGlobalDismissibleID();
+                    if (id) {
+                        await this.controller.setGlobalNotificationDismiss(id);
+                    }
+                }
+            }
+            this.activeNotifyId = '';
+            await this.HandleNotification();
+            return true;
+        }
+        return false;
+    }
+
+    async onScreensaverTap(): Promise<boolean> {
+        const result = await this.deactivateNotify();
+        if (result) {
+            return true;
+        }
+        return false;
     }
 
     async onButtonEvent(event: Types.IncomingEvent): Promise<void> {

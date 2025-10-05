@@ -1375,6 +1375,9 @@ class Panel extends import_library.BaseClass {
               }
             }
           }
+          if (await this.screenSaver.onScreensaverTap()) {
+            break;
+          }
           if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
             this.navigation.resetPosition();
             await this.navigation.setCurrentPage();
