@@ -148,6 +148,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+- (copilot) Dokumentation der Farb-Theme Keys hinzugefügt (`doc/de/colorTheme.md`, englische Version `doc/en/colorTheme.md`)
+
 ### 0.5.0 (2025-10-03)
 - (tt-tom17) Admin UI: Reworked/reordered settings layout and improved usability
 - (ticaki) Added globalPages/globalLink feature with Deep Linking support for reusable page configurations across multiple panels

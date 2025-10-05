@@ -46,6 +46,7 @@
 - [Developer News (Latest)](Developer-News-(Latest))
 - [Developer Readme](Developer-Readme)
 - [Alias Table](ALIAS)
+ - [Color Themes](colorTheme)
   
 **FAQ**  
 
