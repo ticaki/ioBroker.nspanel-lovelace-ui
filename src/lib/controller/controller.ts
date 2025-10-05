@@ -8,7 +8,6 @@ import { getInternalDefaults } from '../const/tools';
 import axios from 'axios';
 import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
-
 import { Color } from '../const/Color';
 
 axios.defaults.timeout = 15_000;
@@ -512,10 +511,11 @@ export class Controller extends Library.BaseClass {
                     const kTemp = keyNoPrefix.length
                         ? keyNoPrefix.charAt(0).toLowerCase() + keyNoPrefix.slice(1)
                         : keyNoPrefix;
-                    const colHex = Color.isHex(v) ? v : `#${v}`;
-                    const colRgb = Color.ConvertHexToRgb(colHex);
-                    if (Color.isRGB(colRgb) && kTemp in result) {
-                        result[kTemp as keyof typeof result] = colRgb;
+                    if (Color.isHex(v)) {
+                        const colRgb = Color.ConvertHexToRgb(v);
+                        if (Color.isRGB(colRgb) && kTemp in result) {
+                            result[kTemp as keyof typeof result] = colRgb;
+                        }
                     } else {
                         this.log.debug(`Color property ${k} with value ${v} is not valid and will be ignored.`);
                     }
