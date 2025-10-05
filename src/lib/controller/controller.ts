@@ -7,6 +7,7 @@ import { SystemNotifications } from '../classes/system-notifications';
 import { getInternalDefaults } from '../const/tools';
 import axios from 'axios';
 import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
+import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
 
 axios.defaults.timeout = 15_000;
@@ -48,6 +49,13 @@ export class Controller extends Library.BaseClass {
             case 4:
                 Color.setTheme(Color.volcanoTheme);
                 break;
+            case 5: {
+                // Benutzerdefiniertes Theme: Basis = Default + Overrides
+                const custom = this.buildCustomColorTheme();
+                Color.setTheme(custom);
+                this.adapter.log.debug(`Custom ColorTheme angewendet: ${JSON.stringify(custom)}`);
+                break;
+            }
             case 0:
             default:
                 Color.setTheme(Color.defaultTheme);
@@ -482,5 +490,57 @@ export class Controller extends Library.BaseClass {
         } catch {
             // do nothing
         }
+    }
+
+    /**
+     * Baut ein zusammengefasstes Farb-Objekt aus allen Color-Accordion Arrays.
+     * Nimmt Color.defaultTheme als Basis und überschreibt nur definierte Werte.
+     */
+    private buildCustomColorTheme(): ColorThemenInterface {
+        const cfg = this.adapter.config as unknown as {
+            colorStates?: any[];
+            colorNavigation?: any[];
+            colorWeatherIcon?: any[];
+            colorDisplay?: any[];
+            colorWeatherForecast?: any[];
+            colorScreensaver?: any[];
+            colorCardMedia?: any[];
+        };
+
+        // Start with a full copy of the default theme
+        const result: ColorThemenInterface = { ...Color.defaultTheme };
+
+        const merge = (arr?: Array<Record<string, string>>): void => {
+            if (!Array.isArray(arr) || !arr[0]) {
+                return;
+            }
+            for (const [k, v] of Object.entries(arr[0])) {
+                if (typeof v === 'string' && v.trim() !== '' && /^col[A-Z]/.test(k)) {
+                    // entferne col-Präfix und schreibe den ersten Buchstaben klein (colGood -> good)
+                    const keyNoPrefix = k.replace(/^col/, '');
+                    const kTemp = keyNoPrefix.length
+                        ? keyNoPrefix.charAt(0).toLowerCase() + keyNoPrefix.slice(1)
+                        : keyNoPrefix;
+                    if (Color.isHex(v)) {
+                        const colRgb = Color.ConvertHexToRgb(v);
+                        if (Color.isRGB(colRgb) && kTemp in result) {
+                            result[kTemp as keyof typeof result] = colRgb;
+                        }
+                    } else {
+                        this.log.debug(`Color property ${k} with value ${v} is not valid and will be ignored.`);
+                    }
+                }
+            }
+        };
+
+        merge(cfg.colorStates);
+        merge(cfg.colorNavigation);
+        merge(cfg.colorWeatherIcon);
+        merge(cfg.colorDisplay);
+        merge(cfg.colorWeatherForecast);
+        merge(cfg.colorScreensaver);
+        merge(cfg.colorCardMedia);
+
+        return result;
     }
 }
