@@ -584,9 +584,9 @@ export class Screensaver extends Page {
                 const item = this.pageItems?.[parseInt(id, 10)];
                 if (item && item.config?.role === 'isDismissiblePerEvent') {
                     item.setDismissiblePerEvent();
-                    const id = item.getGlobalDismissibleID();
-                    if (id) {
-                        await this.controller.setGlobalNotificationDismiss(id);
+                    const globalId = item.getGlobalDismissibleID();
+                    if (globalId) {
+                        await this.controller.setGlobalNotificationDismiss(globalId);
                     }
                 }
             }
