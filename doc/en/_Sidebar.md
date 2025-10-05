@@ -1,9 +1,11 @@
-# [Adapter - Home](Home)
-## TFT Release (current)
-[Firmware Releases](../HMI)  
+![Panel eu_us mit logo](<../Pictures/Panel eu_us mit logo.png>)  
+![SOnOFFLogo](../Pictures/SOnOffLogo.png)   
+# [Adapter - Home](Home)  
+## TFT Release: v5.0.0  
+[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  Link funktioniert -> logo falsch
 ---
 ## Adapter Version  
-[npm](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/releases)
+[![npm](https://img.shields.io/npm/v/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/releases) ![Number of Installations](https://iobroker.live/badges/nspanel-lovelace-ui-installed.svg)
 
 **Introduction**  
 - *(Overview pending)*  
