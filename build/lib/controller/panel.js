@@ -1194,7 +1194,6 @@ class Panel extends import_library.BaseClass {
     var _a;
     await super.delete();
     this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
-    !this.adapter.unload && await this.adapter.delay(10);
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
     }
