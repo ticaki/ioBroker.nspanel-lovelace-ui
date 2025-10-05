@@ -1645,8 +1645,33 @@ declare namespace ScriptConfig {
             TextPrefix?: string;
             HeadlineIcon?: string | null;
             isDismissiblePerEvent?: boolean;
+            /**
+             * Assign a global dismissible ID to this notification.
+             * 
+             * Notifications (panels) with the same `dismissibleIDGlobal` will be dismissed together:
+             * dismissing one will propagate the dismissal to all others sharing the same ID.
+             *
+             * Example:
+             * ```ts
+             * const notify1: ScreenSaverNotifyElement = {
+             *   type: 'script',
+             *   Priority: 1,
+             *   Headline: 'Alert 1',
+             *   Text: 'This is alert 1',
+             *   dismissibleIDGlobal: 'shared-alert'
+             * };
+             * 
+             * const notify2: ScreenSaverNotifyElement = {
+             *   type: 'script',
+             *   Priority: 2,
+             *   Headline: 'Alert 2',
+             *   Text: 'This is alert 2',
+             *   dismissibleIDGlobal: 'shared-alert'
+             * };
+             * // Dismissing either notify1 or notify2 will dismiss both, since they share the same dismissibleIDGlobal.
+             * ```
+             */
             dismissibleIDGlobal?: string;
-        } & (
                 | {
                     Enabled?: string | null | string[];
                 }
