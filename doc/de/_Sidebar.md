@@ -26,6 +26,7 @@
 **Konfiguratiosscript**
 - [Einleitung](ScriptConfig) iA
 - [Grundlagen Seitenerstellung](ScriptConfig#seiten-konfiguration)  
+- [Global Pages & Global Link](GlobalPages)
 - [PageItems erstellen](ScriptConfig#pageitems) iA  
 - [Screensaver](ScriptConfig#screensaver) iA  
 
