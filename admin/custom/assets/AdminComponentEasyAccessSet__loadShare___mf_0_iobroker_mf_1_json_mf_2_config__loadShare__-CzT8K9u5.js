@@ -1,0 +1,1 @@
+import{A as e,a as _}from"./AdminComponentEasyAccessSet__mf_v__runtimeInit__mf_v__-DmMtQNcK.js";const{loadShare:n}=_,{initPromise:s}=e,r=s.then(o=>n("@iobroker/json-config",{customShareInfo:{shareConfig:{singleton:!0,strictVersion:!1,requiredVersion:"*"}}})),t=await r.then(o=>o());var a=t;export{a as A};

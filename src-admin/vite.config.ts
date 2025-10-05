@@ -28,6 +28,7 @@ const config = {
     build: {
         target: 'chrome89',
         outDir: './build',
+        chunkSizeWarningLimit: 4000,
     },
 };
 

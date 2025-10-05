@@ -3591,6 +3591,13 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "myCustomAttribute": {
+      "type": "custom",
+      "i18n": true,
+      "url": "custom/customComponents.js",
+      "name": "AdminComponentTemplateSet/Components/ExampleComponent",
+      "bundlerType": "module"
+    },
                 "logUnknownTokens": {
                     "type": "checkbox",
                     "label": "logUnknownTokens",

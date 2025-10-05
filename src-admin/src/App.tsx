@@ -13,7 +13,7 @@ import {
     type GenericAppState,
 } from '@iobroker/adapter-react-v5';
 
-import ExampleComponent from './ExampleComponent';
+import ExampleComponent from './ExampleComponent2';
 
 import enLocal from './i18n/en.json';
 import deLocal from './i18n/de.json';
