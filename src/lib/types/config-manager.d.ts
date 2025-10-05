@@ -864,6 +864,8 @@ declare namespace ScriptConfig {
               TextSuffix?: string;
               TextPrefix?: string;
               HeadlineIcon?: string | null;
+              isDismissiblePerEvent?: boolean;
+              dismissibleIDGlobal?: string;
           } & (
               | {
                     Enabled?: string | null | string[];

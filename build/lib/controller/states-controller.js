@@ -385,7 +385,13 @@ class StatesControler extends import_library.BaseClass {
         this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
       }
       entry.ts = Date.now();
-      const oldState = { val: entry.state.val, ack: entry.state.ack };
+      const oldState = {
+        val: entry.state.val,
+        ack: entry.state.ack,
+        from: entry.state.from,
+        ts: entry.state.ts,
+        lc: entry.state.lc
+      };
       entry.state = state;
       const isSystemOrAlias = dp.startsWith("0_userdata.0") || dp.startsWith("alias.0");
       const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
@@ -394,12 +400,15 @@ class StatesControler extends import_library.BaseClass {
         const changes = entry.change || [];
         const subscribed = entry.subscribed || [];
         const allowed = entry.triggerAllowed || [];
+        const hasValChange = oldState.val !== state.val;
         for (let i = 0; i < to.length; i++) {
           const target = to[i];
-          const hasChange = oldState.val !== state.val || oldState.ack !== state.ack || changes[i] === "ts";
+          const hasChange = hasValChange || oldState.ack !== state.ack || changes[i] === "ts";
           if (!hasChange) {
             this.log.debug(`Ignore trigger from state ${dp} no change!`);
             continue;
+          } else if (!target.unload) {
+            await target.onStateChange(dp, { old: oldState, new: state });
           }
           const notSubscribedOrNotAllowed = !target.neverDeactivateTrigger && !subscribed[i] || !allowed[i];
           if (notSubscribedOrNotAllowed) {

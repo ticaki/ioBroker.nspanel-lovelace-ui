@@ -392,6 +392,16 @@ export class Controller extends Library.BaseClass {
         return false;
     };
 
+    async setGlobalNotificationDismiss(id: string): Promise<void> {
+        if (!id) {
+            return;
+        }
+        for (const panel of this.panels) {
+            if (panel.screenSaver) {
+                await panel.screenSaver.setGlobalNotificationDismiss(id);
+            }
+        }
+    }
     async delete(): Promise<void> {
         await super.delete();
         if (this.minuteLoopTimeout) {

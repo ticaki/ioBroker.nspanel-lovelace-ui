@@ -70,6 +70,9 @@ class BaseTriggeredPage extends import_library.BaseClass {
   }
   async reset() {
   }
+  async onStateChange(_dp, _state) {
+    return;
+  }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
     var _a, _b;
     if (this.unload || this.adapter.unload) {

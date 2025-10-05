@@ -6,7 +6,7 @@ import { BaseClass } from '../controller/library';
 import { genericStateObjects } from '../const/definition';
 import type { Controller } from '../controller/controller';
 import type { IClientPublishOptions } from 'mqtt';
-import type { AlwaysOnMode } from '../types/types';
+import type { AlwaysOnMode, nsPanelState } from '../types/types';
 
 /**
  * Basisklasse für alles das auf Statestriggern soll - also jede card / popup
@@ -71,6 +71,16 @@ export class BaseTriggeredPage extends BaseClass {
         return this.adapter.controller!;
     }
     async reset(): Promise<void> {}
+
+    async onStateChange(
+        _dp: string,
+        _state: {
+            old: nsPanelState;
+            new: nsPanelState;
+        },
+    ): Promise<void> {
+        return;
+    }
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseTriggeredPage): Promise<boolean> => {
         if (this.unload || this.adapter.unload) {

@@ -87,6 +87,12 @@ class PanelSend extends import_library.BaseClass {
             }
           }
           this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
+        } else {
+          if (this.adapter.config.additionalLog) {
+            this.log.info(
+              `1: ${!(ackForType && msg.CustomSend === "renderCurrentPage")} 2: ${!(!ackForType && msg.CustomSend === "Done")} msg: ${msg.CustomSend}`
+            );
+          }
         }
       }
     } catch (err) {
@@ -121,12 +127,15 @@ class PanelSend extends import_library.BaseClass {
     if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
       this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
     }
-    if (this.losingMessageCount++ > 3) {
+    if (this.losingMessageCount++ > 5) {
       if (this.panel) {
+        if (this.adapter.config.additionalLog) {
+          this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
+        }
         this.panel.isOnline = false;
       }
     }
-    this.losingDelay = this.losingDelay + 1e3;
+    this.losingDelay = this.losingDelay + 2e3;
     if (this.unload) {
       return;
     }

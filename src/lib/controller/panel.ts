@@ -354,6 +354,7 @@ export class Panel extends BaseClass {
         this.log.debug(`Panel ${this.name} is initialised!`);
         await this.controller.mqttClient.subscribe(`${this.topic}/tele/#`, this.onMessage);
         await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
+        this.log.info(`Setting panel to offline until first message!`);
         this.isOnline = false;
         const channelObj = this.library.cloneObject(
             definition.genericStateObjects.panel.panels._channel,
@@ -823,6 +824,7 @@ export class Panel extends BaseClass {
                     return;
                 }
                 if ('Flashing' in msg) {
+                    this.log.info(`Going offline for flashing!`);
                     this.isOnline = false;
                     this.flashing = msg.Flashing.complete < 99;
                     this.log.info(`Flashing: ${msg.Flashing.complete}%`);
@@ -1314,11 +1316,11 @@ export class Panel extends BaseClass {
     async delete(): Promise<void> {
         await super.delete();
         this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
-        !this.adapter.unload && (await this.adapter.delay(10));
 
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
         }
+        this.log.info('Goint offline because delete panel!');
         this.isOnline = false;
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
@@ -1510,6 +1512,9 @@ export class Panel extends BaseClass {
                                 break;
                             }
                         }
+                    }
+                    if (await this.screenSaver.onScreensaverTap()) {
+                        break;
                     }
                     if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
                         this.navigation.resetPosition();
@@ -1741,7 +1746,7 @@ export class Panel extends BaseClass {
                 }
                 case 'cmd/TasmotaRestart': {
                     this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
-                    this.log.info('Restart Tasmota!');
+                    this.log.info('Going offline because of Tasmota restart!');
                     this.isOnline = false;
                     break;
                 }

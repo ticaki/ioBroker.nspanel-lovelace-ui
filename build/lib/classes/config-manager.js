@@ -4277,6 +4277,7 @@ class ConfigManager extends import_library.BaseClass {
   async getNotifyEntityData(entity, mode) {
     const result = {
       modeScr: mode,
+      role: "",
       type: "text",
       data: { entity1: {} }
     };
@@ -4361,6 +4362,12 @@ class ConfigManager extends import_library.BaseClass {
       throw new Error(
         `No Enabled or VisibleCondition in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`
       );
+    }
+    if (entity.isDismissiblePerEvent) {
+      result.role = "isDismissiblePerEvent";
+      if (entity.dismissibleIDGlobal) {
+        result.dismissibleIDGlobal = entity.dismissibleIDGlobal;
+      }
     }
     return result;
   }

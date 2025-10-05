@@ -445,7 +445,13 @@ export class StatesControler extends BaseClass {
 
             // Update triggerDB entry
             entry.ts = Date.now();
-            const oldState = { val: entry.state.val, ack: entry.state.ack };
+            const oldState: nsPanelState = {
+                val: entry.state.val,
+                ack: entry.state.ack,
+                from: entry.state.from,
+                ts: entry.state.ts,
+                lc: entry.state.lc,
+            };
             entry.state = state;
 
             const isSystemOrAlias = dp.startsWith('0_userdata.0') || dp.startsWith('alias.0');
@@ -456,16 +462,18 @@ export class StatesControler extends BaseClass {
                 const changes = entry.change || []; // Änderungsregeln je Empfänger
                 const subscribed = entry.subscribed || [];
                 const allowed = entry.triggerAllowed || [];
-
+                const hasValChange = oldState.val !== state.val;
                 for (let i = 0; i < to.length; i++) {
                     const target = to[i];
 
                     // Nur reagieren, wenn sich etwas geändert hat (val, ack oder "ts")
-                    const hasChange = oldState.val !== state.val || oldState.ack !== state.ack || changes[i] === 'ts';
+                    const hasChange = hasValChange || oldState.ack !== state.ack || changes[i] === 'ts';
 
                     if (!hasChange) {
                         this.log.debug(`Ignore trigger from state ${dp} no change!`);
                         continue;
+                    } else if (!target.unload) {
+                        await target.onStateChange(dp, { old: oldState, new: state });
                     }
 
                     // Prüfen ob trigger erlaubt und abonniert
