@@ -1316,7 +1316,6 @@ export class Panel extends BaseClass {
     async delete(): Promise<void> {
         await super.delete();
         this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
-        !this.adapter.unload && (await this.adapter.delay(10));
 
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
@@ -1513,6 +1512,9 @@ export class Panel extends BaseClass {
                                 break;
                             }
                         }
+                    }
+                    if (await this.screenSaver.onScreensaverTap()) {
+                        break;
                     }
                     if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
                         this.navigation.resetPosition();

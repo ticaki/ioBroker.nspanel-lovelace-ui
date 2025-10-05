@@ -5040,6 +5040,7 @@ export class ConfigManager extends BaseClass {
     ): Promise<typePageItem.PageItemDataItemsOptions> {
         const result: typePageItem.PageItemDataItemsOptions = {
             modeScr: mode,
+            role: '',
             type: 'text',
             data: { entity1: {} },
         };
@@ -5128,6 +5129,12 @@ export class ConfigManager extends BaseClass {
             throw new Error(
                 `No Enabled or VisibleCondition in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`,
             );
+        }
+        if (entity.isDismissiblePerEvent) {
+            result.role = 'isDismissiblePerEvent';
+            if (entity.dismissibleIDGlobal) {
+                result.dismissibleIDGlobal = entity.dismissibleIDGlobal;
+            }
         }
         return result;
     }
