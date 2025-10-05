@@ -611,9 +611,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                             );
                             if (index !== -1) {
                               const name = this.controller.panels[index].friendlyName || config.name || config.topic;
-                              await this.controller.removePanel(
-                                this.controller.panels[index]
-                              );
+                              try {
+                                await this.controller.removePanel(
+                                  this.controller.panels[index]
+                                );
+                              } catch (e) {
+                                throw new Error(`Error remove panel: ${e.message}`);
+                              }
                               if (this.unload) {
                                 if (obj2.callback) {
                                   this.sendTo(
