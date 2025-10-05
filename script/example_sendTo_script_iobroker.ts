@@ -696,7 +696,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.13.1';
+const version = '0.13.2';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1644,6 +1644,34 @@ declare namespace ScriptConfig {
             TextSuffix?: string;
             TextPrefix?: string;
             HeadlineIcon?: string | null;
+            isDismissiblePerEvent?: boolean;
+            /**
+             * Assign a global dismissible ID to this notification.
+             * 
+             * Notifications (panels) with the same `dismissibleIDGlobal` will be dismissed together:
+             * dismissing one will propagate the dismissal to all others sharing the same ID.
+             *
+             * Example:
+             * ```ts
+             * const notify1: ScreenSaverNotifyElement = {
+             *   type: 'script',
+             *   Priority: 1,
+             *   Headline: 'Alert 1',
+             *   Text: 'This is alert 1',
+             *   dismissibleIDGlobal: 'shared-alert'
+             * };
+             * 
+             * const notify2: ScreenSaverNotifyElement = {
+             *   type: 'script',
+             *   Priority: 2,
+             *   Headline: 'Alert 2',
+             *   Text: 'This is alert 2',
+             *   dismissibleIDGlobal: 'shared-alert'
+             * };
+             * // Dismissing either notify1 or notify2 will dismiss both, since they share the same dismissibleIDGlobal.
+             * ```
+             */
+            dismissibleIDGlobal?: string;
         } & (
                 | {
                     Enabled?: string | null | string[];

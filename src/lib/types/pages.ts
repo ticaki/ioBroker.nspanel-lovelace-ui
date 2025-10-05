@@ -372,6 +372,7 @@ export type DeviceRole =
     | 'writeTargetByValue'
     /* selectGrid erzeugt im parent ein GridPage mit den items aus entity3 das muß dort auch zerstört werden */
     | 'selectGrid'
+    | 'isDismissiblePerEvent'
     | 'repeatValue'
     | 'spotify-playlist'
     | 'spotify-tracklist'
