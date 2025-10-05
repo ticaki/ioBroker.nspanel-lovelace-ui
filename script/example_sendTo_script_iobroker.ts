@@ -1672,6 +1672,7 @@ declare namespace ScriptConfig {
              * ```
              */
             dismissibleIDGlobal?: string;
+        } & (
                 | {
                     Enabled?: string | null | string[];
                 }

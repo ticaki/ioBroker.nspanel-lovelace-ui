@@ -497,9 +497,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         const item = (_a = this.pageItems) == null ? void 0 : _a[parseInt(id, 10)];
         if (item && ((_b = item.config) == null ? void 0 : _b.role) === "isDismissiblePerEvent") {
           item.setDismissiblePerEvent();
-          const id2 = item.getGlobalDismissibleID();
-          if (id2) {
-            await this.controller.setGlobalNotificationDismiss(id2);
+          const globalId = item.getGlobalDismissibleID();
+          if (globalId) {
+            await this.controller.setGlobalNotificationDismiss(globalId);
           }
         }
       }
