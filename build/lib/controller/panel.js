@@ -120,7 +120,8 @@ class Panel extends import_library.BaseClass {
       firmwareUpdate: 100,
       berryDriverVersion: 0,
       berryDriverVersionOnline: 0,
-      currentPage: ""
+      currentPage: "",
+      scriptVersion: "unknown"
     },
     tasmota: {
       firmwareversion: "",
@@ -213,6 +214,7 @@ class Panel extends import_library.BaseClass {
     if (typeof this.panelSend.addMessageTasmota === "function") {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     }
+    this.info.nspanel.scriptVersion = options.scriptVersion || "unknown";
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
     this.statesControler = options.controller.statesControler;

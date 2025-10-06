@@ -673,6 +673,18 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
+                    scriptVersion: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.scriptVersion',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
                 },
                 isOnline: {
                     _id: '',

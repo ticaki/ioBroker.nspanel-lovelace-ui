@@ -897,6 +897,7 @@ export type PanelInfo = {
         onlineVersion: string;
         firmwareUpdate: number;
         currentPage: string;
+        scriptVersion: string;
         berryDriverVersion: number;
         berryDriverVersionOnline: number;
     };
