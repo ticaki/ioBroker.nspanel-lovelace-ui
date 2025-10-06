@@ -30,7 +30,8 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
   - [indicatorScreensaverEntity](#indicatorscreensaverentity)
   - [leftScreensaverEntity](#leftscreensaverentity)
   - [alternateScreensaverEntity](#alternatescreensaverentity)
-  - [mrIcon1/2ScreensaverEntity](#mricon1screensaverentity--mricon2screensaverentity)
+  - [mrIcon1/2ScreensaverEntity](#mricon1screensaverentity-und-mricon2screensaverentity)
+  - [Screensaver-Notifications](#screensaver-notifications)
 
 </td>
 <td width="50%">
@@ -72,7 +73,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 1 Advanced Mode Standard  
   
-<img alt='screensaverAdv' src='../Pictures/screensaver/screensaverAdv.png'>  
+<img alt='screensaverAdv' src='./Pictures/screensaver/screensaverAdv.png'>  
 
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen (meist Wetter)
 - **Left-Bereich** (3 Elemente): Linker Bereich für detaillierte Informationen
@@ -82,7 +83,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 2 Alternate Mode  
   
-<img alt='screensaverAlt' src='../Pictures/screensaver/screensaverAlt.png'>  
+<img alt='screensaverAlt' src='./Pictures/screensaver/screensaverAlt.png'>  
     
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen
 - **Alternate-Bereich** (1 Element): Alternative Ansicht für den Hauptbereich
@@ -91,7 +92,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 3 Standard Mode  
   
-<img alt='screensaverStd' src='../Pictures/screensaver/screensaverStd.png'>  
+<img alt='screensaverStd' src='./Pictures/screensaver/screensaverStd.png'>  
     
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
 - **Bottom-Bereich** (4 Elemente): Erweiterte untere Informationsleiste
@@ -99,7 +100,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 4. Easy View Mode  
   
-<img alt='screensaverEsay' src='../Pictures/screensaver/screensaverEasy.png' width='70%'>  
+<img alt='screensaverEsay' src='./Pictures/screensaver/screensaverEasy.png' width='70%'>  
   
 - **Bottom-Bereich** (3 Elemente): Extra große Schrift für bessere Lesbarkeit
 - **Keine Icons oder Texte**: Vereinfachte Darstellung ohne komplexe Elemente
@@ -107,57 +108,6 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 - **Update Info**: dieses Symbol ist auf allen Screensavern zu sehen, wenn es ein Update vom TFT, Berry oder Adapter gibt.  
 
 ## Bereiche im Detail
-
-## MR-Icons (Relay-Symbole)
-
-Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen Bereich des Screensavers zur Visualisierung von Status-Informationen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar.
-
-### Eigenschaften der MR-Icons:
-- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
-- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden
-- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
-- **Flexible Anbindung**: Können mit beliebigen ioBroker-States verbunden werden (nicht nur NSPanel-Relays)
-- **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
-- **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
-- **Detach-Funktion**: Icons können vollständig unabhängig von den Hardware-Tasten konfiguriert werden
-
-### Funktionsweise:
-- **Anzeige**: Die Icons im oberen Displaybereich zeigen nur den aktuellen Status der verknüpften States
-- **Hardware-Tasten**: Die Tasten unterhalb des Displays sind separate Steuerelemente
-- **Konfiguration**: Die Icon-Konfiguration betrifft nur die visuelle Darstellung, nicht die Tastenfunktion
-
-### MR-Icon Bereiche:
-- **mrIcon1ScreensaverEntity**: Linkes Relay-Symbol
-- **mrIcon2ScreensaverEntity**: Rechtes Relay-Symbol
-
-### Beispiel-Konfiguration für MR-Icons:
-
-```typescript
-// Direkte Relay-Steuerung
-mrIcon1ScreensaverEntity: {
-    type: 'script',
-    ScreensaverEntity: 'Relay.1',
-    ScreensaverEntityIconOn: 'lightbulb-on',
-    ScreensaverEntityIconOff: 'lightbulb-off',
-    ScreensaverEntityText: 'Licht',
-    ScreensaverEntityIconColor: {
-        val_min: 0,
-        val_max: 1,
-        val_best: 1
-    }
-}
-
-// Externe Geräte-Steuerung mit Statuswert
-mrIcon2ScreensaverEntity: {
-    type: 'script',
-    ScreensaverEntity: 'hue.0.Wohnzimmer.Lampe.on',
-    ScreensaverEntityValue: 'hue.0.Wohnzimmer.Lampe.level',
-    ScreensaverEntityIconOn: 'ceiling-light',
-    ScreensaverEntityIconOff: 'ceiling-light-outline',
-    ScreensaverEntityText: 'Dimmer',
-    ScreensaverEntityUnitText: '%'
-}
-```
 
 ## Wisch-Gesten (Swipe)
 
@@ -416,30 +366,165 @@ leftScreensaverEntity: [
 
 **Typ**: Objekt (nicht Array)
 
-**Beispiele**:
+### Beispiel-Konfiguration für MR-Icons:
 
 ```typescript
+// Direkte Relay-Verküpfung
 mrIcon1ScreensaverEntity: {
     type: 'script',
     ScreensaverEntity: 'Relay.1',
-    ScreensaverEntityIconOn: 'lightbulb',
-    ScreensaverEntityIconOff: 'lightbulb-outline',
-    ScreensaverEntityOnColor: On,      // Empfohlene gelbe An-Farbe (siehe Abschnitt [Farbkonstanten](#farbkonstanten) für Definition)
-    ScreensaverEntityOffColor: HMIOff  // Blaue Aus-Farbe
-},
+    ScreensaverEntityIconOn: 'lightbulb-on',
+    ScreensaverEntityIconOff: 'lightbulb-off',
+    ScreensaverEntityText: 'Licht',
+    ScreensaverEntityIconColor: {
+        val_min: 0,
+        val_max: 1,
+        val_best: 1
+    }
+}
 
+// Externe Geräte-Steuerung mit Statuswert
 mrIcon2ScreensaverEntity: {
     type: 'script',
-    ScreensaverEntity: 'alias.0.Beleuchtung.Flur',
+    ScreensaverEntity: 'hue.0.Wohnzimmer.Lampe.on',
+    ScreensaverEntityValue: 'hue.0.Wohnzimmer.Lampe.level',
     ScreensaverEntityIconOn: 'ceiling-light',
-    ScreensaverEntityValue: 'alias.0.Beleuchtung.Flur.Helligkeit',
-    ScreensaverEntityValueUnit: '%',
-    ScreensaverEntityValueDecimalPlace: 0,
-    ScreensaverEntityOnColor: Yellow,  // Gelbe Farbe für helle Beleuchtung
-    ScreensaverEntityOffColor: HMIOff  // Standard Aus-Farbe
+    ScreensaverEntityIconOff: 'ceiling-light-outline',
+    ScreensaverEntityText: 'Dimmer',
+    ScreensaverEntityUnitText: '%'
 }
 ```
 
+
+Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen / unteren Bereich des Screensavers zur Visualisierung von Status-Informationen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar. Zum ausblenden muss das jeweilige Icon auf null gesetzt werden.  
+```typescript
+mrIcon1ScreensaverEntity: null
+```  
+    
+
+### Eigenschaften der MR-Icons:
+- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
+- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden, dazu hier mehr
+- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
+- **Flexible Anbindung**: Können mit beliebigen ioBroker-States verbunden werden (nicht nur NSPanel-Relays)
+- **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
+- **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
+- **Detach-Funktion**: Icons können vollständig unabhängig von den Hardware-Tasten konfiguriert werden
+
+### Funktionsweise:
+- **Anzeige**: Die Icons zeigen nur den aktuellen Status der verknüpften States
+- **Hardware-Tasten**: Die Tasten unterhalb des Displays sind separate Steuerelemente
+- **Konfiguration**: Die Icon-Konfiguration betrifft nur die visuelle Darstellung, nicht die Tastenfunktion
+
+### MR-Icon Bereiche:
+- **mrIcon1ScreensaverEntity**: Linkes Symbol
+- **mrIcon2ScreensaverEntity**: Rechtes Symbol
+---
+
+
+## Screensaver-Notifications
+
+### Überblick
+Es gibt verschiedene Möglichkeiten, auf dem Screensaver eine Überschrift mit Text anzuzeigen.  
+Die folgenden beiden Varianten sind **gleichwertig** und überschreiben sich gegenseitig.  
+Zusätzlich überschreiben sie auch die weiter unten beschriebene neue Möglichkeit.
+
+[Beispielfoto unten](#beispielanzeige)
+
+---
+
+#### Variante 1: Über Datenpunkte
+
+**Verwendete Datenpunkte:**
+
+```ts
+.cmd.screenSaver.headingNotification
+.cmd.screenSaver.textNotification
+.cmd.screenSaver.activateNotification
+```
+
+- `heading`: Überschrift  
+- `text`: Text darunter  
+- `activate`: Anzeige ein- oder ausschalten  
+
+Die Notification wird so lange eingeblendet, wie `activate = true` ist.
+
+---
+
+#### Variante 2: Über den Skriptadapter
+
+Notifications können auch per `sendTo()` an den Screensaver gesendet werden.  
+Wichtig: Der Parameter **panel** wurde in **topic** umbenannt (Breaking Change).
+
+```ts
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', {
+    topic: 'nspanel/ns_panel6', // vorher 'panel'
+    heading: 'Testüberschrift',
+    text: 'Testtext Testtext Testtext Testtext',
+    enabled: false,
+})
+```
+
+- `enabled` entspricht `activate`:  
+  - `true` → Anzeige aktiv  
+  - `false` → Anzeige deaktiviert  
+
+---
+
+### Neue Möglichkeit: Mehrere Notifications mit Bedingungen
+
+Neu hinzugekommen ist die Option, mehrere Notifications zu definieren und diese abhängig von Bedingungen anzuzeigen.  
+Dazu wird im Skript ein Array angelegt:
+
+```ts
+notifyScreensaverEntity: [],
+```
+
+##### Beispiel
+
+```ts
+notifyScreensaverEntity: [
+    { // sichtbar, wenn State true ist (überschreibt vorherige)
+        type: 'script',
+        Enabled: '0_userdata.0.NotityficationTest',
+        Headline: 'test2',
+        Text: 'text2',
+        Priority: 2
+    },
+    { // sichtbar, wenn Zahl > 9 (überschreibt alle vorherigen)
+        type: 'script',
+        HeadlinePrefix: 'Hohe Zahl: ',
+        Headline: '0_userdata.0.number',
+        TextPrefix: 'Im Datenpunkt steht die Zahl ',
+        Text: '0_userdata.0.number',
+        TextSuffix: '. Bis dahin kannst du nicht zählen. Frag deine Mama!',
+        Enabled: '0_userdata.0.number',
+        VisibleCondition: 'val > 9',
+        Priority: 1
+    }
+],
+```
+
+---
+
+### Hinweise
+
+- Alle Eigenschaften wie **Headline** und **Text** können Datenpunkte sein.  
+- **Enabled**: Datenpunkt, der auf `true` oder `false` geprüft wird. Es können auch mehrere Datenpunkte als Array [string,string,...] angegeben werden. 
+- **VisibleCondition**: Ermöglicht direkte Bedingungen, ohne extra Alias erstellen zu müssen.  
+- **HeadlineIcon**: Fügt ein Icon vor dem Headline-Text ein und kann als Datenpunkt übergeben werden.
+
+---
+
+#### Beispielanzeige
+
+So sieht es aus, wenn die Zahl **10** ist:  
+  
+ <img alt='screensaverNotify' src='./Pictures/screensaver/screensaverNotify.png' width='50%'>  
+ 
+ ---
+
+  
 ## Script-Konfiguration Parameter
 
 ### Basis-Parameter
