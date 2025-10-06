@@ -1,1 +1,0 @@
-import{Y as n,e as o}from"./createTheme-DnPx3HDY.js";import{A as s}from"./AdminComponentEasyAccessSet__loadShare__react__loadShare__-DMvcyZmI.js";function r(e){return Object.keys(e).length===0}function a(e=null){const t=s.useContext(n);return!t||r(t)?e:t}const m=o();function h(e=m){return a(e)}export{a,h as u};

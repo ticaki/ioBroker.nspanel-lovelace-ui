@@ -1,28 +1,83 @@
 import icons from './icons.json';
-import { Grid, Typography, Box, useTheme } from '@mui/material';
+import { Grid, Typography, Box, useTheme, TextField, InputAdornment, IconButton } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
+import React, { useRef, useState, useEffect } from 'react';
 interface Icon {
     name: string;
     base64: string;
 }
 
 const typedIcons = icons as Icon[];
+
 const IconOverview: React.FC = () => {
     const theme = useTheme();
+    const [filter, setFilter] = useState('');
+    const [showFilter, setShowFilter] = useState(false);
+    const filterRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent): void => {
+            // Cmd+F (Mac) oder Ctrl+F (Win/Linux)
+            if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+                e.preventDefault();
+                setShowFilter(true);
+                setTimeout(() => filterRef.current?.focus(), 0);
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, []);
+
+    const filteredIcons = filter
+        ? typedIcons.filter(icon => icon.name.toLowerCase().includes(filter.toLowerCase()))
+        : typedIcons;
+
     return (
         <Box sx={{ width: '100%', overflowX: 'auto', p: 2 }}>
+            {(showFilter || filter) && (
+                <TextField
+                    inputRef={filterRef}
+                    value={filter}
+                    onChange={e => setFilter(e.target.value)}
+                    label="Icons filtern"
+                    variant="outlined"
+                    size="small"
+                    sx={{ mb: 2, width: 300 }}
+                    InputProps={{
+                        endAdornment: filter ? (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                        setFilter('');
+                                        setShowFilter(false);
+                                    }}
+                                >
+                                    <ClearIcon />
+                                </IconButton>
+                            </InputAdornment>
+                        ) : null,
+                    }}
+                    onBlur={() => {
+                        if (!filter) {
+                            setShowFilter(false);
+                        }
+                    }}
+                />
+            )}
             <Grid
                 container
                 spacing={2}
             >
-                {typedIcons.map(icon => (
+                {filteredIcons.map(icon => (
                     <Grid
                         key={icon.name}
                         item
-                        xs={4} // 3 Icons pro Zeile auf sehr kleinen Displays
-                        sm={3} // 4 Icons pro Zeile auf kleinen Displays
-                        md={2} // 6 Icons pro Zeile auf mittleren Displays
-                        lg={1} // ca. 20 Icons pro Zeile auf FullHD
-                        xl={1} // noch mehr auf sehr großen Displays
+                        xs={4}
+                        sm={3}
+                        md={2}
+                        lg={1}
+                        xl={1}
                         sx={{ minWidth: 80, maxWidth: 120, flexBasis: 0 }}
                     >
                         <Box
@@ -48,8 +103,15 @@ const IconOverview: React.FC = () => {
                             <Typography
                                 variant="caption"
                                 align="center"
-                                noWrap
-                                sx={{ maxWidth: 80 }}
+                                sx={{
+                                    maxWidth: 104,
+                                    maxHeight: 36,
+                                    overflow: 'hidden',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    whiteSpace: 'normal',
+                                }}
                             >
                                 {icon.name}
                             </Typography>
