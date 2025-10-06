@@ -486,7 +486,7 @@ notifyScreensaverEntity: [],
 notifyScreensaverEntity: [
     { // sichtbar, wenn State true ist (überschreibt vorherige)
         type: 'script',
-        Enabled: '0_userdata.0.NotityficationTest',
+        Enabled: '0_userdata.0.NotificationTest',
         Headline: 'test2',
         Text: 'text2',
         Priority: 2
