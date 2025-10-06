@@ -1687,17 +1687,20 @@
                             "height": 50
                         },
                         {
-                            "attr": "power1_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power1_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "solar-power-variant",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "solar-power-variant"
+                            //"label": "test"
                         },
                         {
                             "attr": "power1_state",
