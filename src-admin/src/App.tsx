@@ -13,7 +13,7 @@ import {
     type GenericAppState,
 } from '@iobroker/adapter-react-v5';
 
-import ExampleComponent from './ExampleComponent';
+import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
 
 import enLocal from './i18n/en.json';
@@ -91,7 +91,7 @@ class App extends GenericApp<GenericAppProps, AppState> {
                 <ThemeProvider theme={this.state.theme}>
                     <Box sx={styles.app}>
                         <div style={styles.item}>
-                            <ExampleComponent
+                            <IconSelect
                                 oContext={{
                                     adapterName: 'nspanel-lovelace-ui',
                                     socket: this.socket,
@@ -116,7 +116,7 @@ class App extends GenericApp<GenericAppProps, AppState> {
                                 schema={{
                                     url: '',
                                     i18n: true,
-                                    name: 'AdminComponentEasyAccessSet/Components/ExampleComponent',
+                                    name: 'AdminComponentEasyAccessSet/Components/IconSelect',
                                     type: 'custom',
                                 }}
                                 onChange={data => this.setState({ data: data as Record<string, any> })}

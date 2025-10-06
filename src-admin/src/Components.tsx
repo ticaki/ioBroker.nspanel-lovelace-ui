@@ -1,4 +1,4 @@
-import ExampleComponent from './ExampleComponent';
+import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
 
-export default { ExampleComponent, IconOverview };
+export default { IconSelect, IconOverview };

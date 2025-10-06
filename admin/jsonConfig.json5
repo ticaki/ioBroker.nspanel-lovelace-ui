@@ -4275,8 +4275,14 @@
                     "type": "custom",
                     "i18n": true,
                     "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/ExampleComponent",
-                    "bundlerType": "module"
+                    "name": "AdminComponentTemplateSet/Components/IconSelect",
+                    "bundlerType": "module",
+                    "xs": 12,
+                    "sm": 10,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                    //"label": "test"
                 },
                 "logUnknownTokens": {
                     "type": "checkbox",

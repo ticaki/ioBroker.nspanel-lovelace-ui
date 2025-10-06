@@ -1,5 +1,5 @@
 import icons from './icons.json';
-import { Grid, Typography, Box, useTheme, TextField, InputAdornment, IconButton } from '@mui/material';
+import { Grid, Typography, Box, useTheme, TextField, InputAdornment, IconButton, Snackbar, Alert } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import React, { useRef, useState, useEffect } from 'react';
 interface Icon {
@@ -14,6 +14,7 @@ const IconOverview: React.FC = () => {
     const [filter, setFilter] = useState('');
     const [showFilter, setShowFilter] = useState(false);
     const filterRef = useRef<HTMLInputElement>(null);
+    const [snackbar, setSnackbar] = useState<{ open: boolean; label: string }>({ open: false, label: '' });
 
     useEffect(() => {
         const handler = (e: KeyboardEvent): void => {
@@ -58,11 +59,6 @@ const IconOverview: React.FC = () => {
                             </InputAdornment>
                         ) : null,
                     }}
-                    onBlur={() => {
-                        if (!filter) {
-                            setShowFilter(false);
-                        }
-                    }}
                 />
             )}
             <Grid
@@ -84,6 +80,12 @@ const IconOverview: React.FC = () => {
                             display="flex"
                             flexDirection="column"
                             alignItems="center"
+                            sx={{ cursor: 'pointer' }}
+                            onClick={() => {
+                                void navigator.clipboard.writeText(icon.name);
+                                setSnackbar({ open: true, label: icon.name });
+                            }}
+                            title={`Klicken zum Kopieren: ${icon.name}`}
                         >
                             <span
                                 style={{
@@ -119,6 +121,20 @@ const IconOverview: React.FC = () => {
                     </Grid>
                 ))}
             </Grid>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={1500}
+                onClose={() => setSnackbar({ open: false, label: '' })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    severity="success"
+                    sx={{ width: '100%' }}
+                    onClose={() => setSnackbar({ open: false, label: '' })}
+                >
+                    {snackbar.label} copied
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };
