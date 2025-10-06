@@ -19,19 +19,19 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
             test: '',
             iconValue: typeof savedValue === 'string' ? savedValue : null,
             icons: Array.isArray(icons) ? icons : [],
-        };
+            inputValue: '',
+        } as IconSelectState & { inputValue: string };
     }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Debug: Props ausgeben
-
-        console.log('IconSelect props:', this.props);
+        // console.log('IconSelect props:', this.props);
         const icons = this.state.icons;
         const theme = this.props.theme;
-        const inputValue = this.state.iconValue || '';
+        const inputValue = (this.state as any).inputValue || '';
         const filteredIcons =
             inputValue.length < 2
-                ? icons.slice(0, 50)
+                ? icons.filter(icon => icon.name.toLowerCase().includes(inputValue.toLowerCase())).slice(0, 50)
                 : icons.filter(icon => icon.name.toLowerCase().includes(inputValue.toLowerCase()));
 
         return (
@@ -48,8 +48,12 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                             options={filteredIcons}
                             getOptionLabel={option => option.name}
                             value={icons.find(opt => opt.name === this.state.iconValue) || null}
+                            inputValue={inputValue}
+                            onInputChange={(_, newInputValue) => {
+                                this.setState({ ...(this.state as any), inputValue: newInputValue });
+                            }}
                             onChange={(_, newValue) => {
-                                this.setState({ iconValue: newValue ? newValue.name : null });
+                                this.setState({ ...(this.state as any), iconValue: newValue ? newValue.name : null });
                                 void this.onChange(this.props.attr!, newValue ? newValue.name : '');
                             }}
                             renderOption={(props, option) => (
@@ -80,7 +84,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                                     <TextField
                                         {...params}
                                         label={this.getText(
-                                            this.props.schema.label || this.props.attr || 'Symbol auswählen',
+                                            this.props.schema.label || this.props.attr || 'Symbol auswÃ¤hlen',
                                         )}
                                         InputProps={{
                                             ...params.InputProps,
