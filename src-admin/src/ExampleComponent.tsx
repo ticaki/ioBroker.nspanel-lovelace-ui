@@ -17,10 +17,11 @@ const styles: Record<string, React.CSSProperties> = {
 class ExampleComponent extends ConfigGeneric<ConfigGenericProps & { theme?: any }, ExampleComponentState> {
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
+        const savedValue = ConfigGeneric.getValue(props.data, props.attr!);
         this.state = {
             ...this.state,
             test: '',
-            iconValue: null,
+            iconValue: typeof savedValue === 'string' ? savedValue : null,
             icons: Array.isArray(icons) ? icons : [],
         };
     }
