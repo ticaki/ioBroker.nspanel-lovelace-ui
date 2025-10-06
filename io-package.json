@@ -194,89 +194,102 @@
     "tasmotaAdminPassword": "",
     "useBetaTFT": false,
     "shutterClosedIsZero": false,
-
-    "colorStates": [{
-      "colGood": "#00ff00",
-      "colBad": "#ff0000",
-      "colTrue": "#00ff00",
-      "colFalse": "#ff0000",
-      "colActivated": "#ffff00",
-      "colDeactivated": "#808080",
-      "colAttention": "#00ffff",
-      "colInfo": "#ffffff",
-      "colOption1": "#ffff00",
-      "colOption2": "#ffcc00",
-      "colOption3": "#ff0000",
-      "colOption4": "#00ff00",
-      "colOpen": "#ff0000",
-      "colClose": "#00ff00",
-      "colHot": "#ff0000",
-      "colCold": "#0000ff",
-      "colOn": "#00ff00",
-      "colOff": "#ff0000",
-      "colLight": "#ffffff",
-      "colDark": "#808080",
-      "colWarning": "#ffa500",
-      "colSuccess": "#00ff00",
-      "colNeutral": "#808080",
-      "colHighlight": "#00c8ff",
-      "colDisabled": "#404040"
-    }],
-    "colorNavigation": [{
-      "colNavLeft": "#ffffff",
-      "colNavRight": "#ffffff",
-      "colNavDownLeft": "#ffffff",
-      "colNavDownRight": "#ffffff",
-      "colNavDown": "#ffffff",
-      "colNavHome": "#ffffff",
-      "colNavParent": "#ffffff"
-    }],
-    "colorWeatherIcon": [{
-      "colSunny": "#ffff00",
-      "colPartlyCloudy": "#999999",
-      "colCloudy": "#555555",
-      "colFog": "#aaaaaa",
-      "colHail": "#d0d0d0",
-      "colLightning": "#ffff33",
-      "colLightningRainy": "#cccc66",
-      "colPouring": "#3333ff",
-      "colRainy": "#6666ff",
-      "colSnowy": "#cccccc",
-      "colSnowyHeavy": "#bbbbbb",
-      "colSnowyRainy": "#9999ff",
-      "colWindy": "#999999",
-      "colTornado": "#ff3232",
-      "colClearNight": "#666666",
-      "colExceptional": "#ff3232"
-    }],
-    "colorDisplay": [{
-      "colForeground": "#ffffff",
-      "colBackground": "#101010"
-    }],
-    "colorWeatherForecast": [{
-      "colSolar": "#00ff00",
-      "colTemperature": "#ff0000",
-      "colGust": "#0000ff",
-      "colSunrise": "#ffff00",
-      "colSunset": "#ff9900"
-    }],
-    "colorScreensaver": [{
-      "colFgTime": "#ffffff",
-      "colFgTimeAmPm": "#ffcc00",
-      "colFgDate": "#c0c0c0",
-      "colFgMain": "#ffffff",
-      "colFgMainAlt": "#ffcc00",
-      "colFgTimeAdd": "#00c8ff",
-      "colFgForecast": "#c0c0c0",
-      "colFgBar": "#c0c0c0"
-    }],
-    "colorCardMedia": [{
-      "colMediaArtistOn": "#ffff00",
-      "colMediaArtistOff": "#808080",
-      "colMediaTitleOn": "#ffff00",
-      "colMediaTitleOff": "#808080",
-      "colMediaOnOffColor": "#ffffff"
-    }]
+    "colorStates": [
+      {
+        "colGood": "#00ff00",
+        "colBad": "#ff0000",
+        "colTrue": "#00ff00",
+        "colFalse": "#ff0000",
+        "colActivated": "#ffff00",
+        "colDeactivated": "#808080",
+        "colAttention": "#00ffff",
+        "colInfo": "#ffffff",
+        "colOption1": "#ffff00",
+        "colOption2": "#ffcc00",
+        "colOption3": "#ff0000",
+        "colOption4": "#00ff00",
+        "colOpen": "#ff0000",
+        "colClose": "#00ff00",
+        "colHot": "#ff0000",
+        "colCold": "#0000ff",
+        "colOn": "#00ff00",
+        "colOff": "#ff0000",
+        "colLight": "#ffffff",
+        "colDark": "#808080",
+        "colWarning": "#ffa500",
+        "colSuccess": "#00ff00",
+        "colNeutral": "#808080",
+        "colHighlight": "#00c8ff",
+        "colDisabled": "#404040"
+      }
+    ],
+    "colorNavigation": [
+      {
+        "colNavLeft": "#ffffff",
+        "colNavRight": "#ffffff",
+        "colNavDownLeft": "#ffffff",
+        "colNavDownRight": "#ffffff",
+        "colNavDown": "#ffffff",
+        "colNavHome": "#ffffff",
+        "colNavParent": "#ffffff"
+      }
+    ],
+    "colorWeatherIcon": [
+      {
+        "colSunny": "#ffff00",
+        "colPartlyCloudy": "#999999",
+        "colCloudy": "#555555",
+        "colFog": "#aaaaaa",
+        "colHail": "#d0d0d0",
+        "colLightning": "#ffff33",
+        "colLightningRainy": "#cccc66",
+        "colPouring": "#3333ff",
+        "colRainy": "#6666ff",
+        "colSnowy": "#cccccc",
+        "colSnowyHeavy": "#bbbbbb",
+        "colSnowyRainy": "#9999ff",
+        "colWindy": "#999999",
+        "colTornado": "#ff3232",
+        "colClearNight": "#666666",
+        "colExceptional": "#ff3232"
+      }
+    ],
+    "colorDisplay": [
+      {
+        "colForeground": "#ffffff",
+        "colBackground": "#101010"
+      }
+    ],
+    "colorWeatherForecast": [
+      {
+        "colSolar": "#00ff00",
+        "colTemperature": "#ff0000",
+        "colGust": "#0000ff",
+        "colSunrise": "#ffff00",
+        "colSunset": "#ff9900"
+      }
+    ],
+    "colorScreensaver": [
+      {
+        "colFgTime": "#ffffff",
+        "colFgTimeAmPm": "#ffcc00",
+        "colFgDate": "#c0c0c0",
+        "colFgMain": "#ffffff",
+        "colFgMainAlt": "#ffcc00",
+        "colFgTimeAdd": "#00c8ff",
+        "colFgForecast": "#c0c0c0",
+        "colFgBar": "#c0c0c0"
+      }
+    ],
+    "colorCardMedia": [
+      {
+        "colMediaArtistOn": "#ffff00",
+        "colMediaArtistOff": "#808080",
+        "colMediaTitleOn": "#ffff00",
+        "colMediaTitleOff": "#808080",
+        "colMediaOnOffColor": "#ffffff"
+      }
+    ]
   },
   "objects": [],
   "instanceObjects": [

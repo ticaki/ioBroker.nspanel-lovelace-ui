@@ -13,7 +13,8 @@ import {
     type GenericAppState,
 } from '@iobroker/adapter-react-v5';
 
-import ExampleComponent from './ExampleComponent2';
+import ExampleComponent from './ExampleComponent';
+import IconOverview from './IconOverview';
 
 import enLocal from './i18n/en.json';
 import deLocal from './i18n/de.json';
@@ -92,7 +93,7 @@ class App extends GenericApp<GenericAppProps, AppState> {
                         <div style={styles.item}>
                             <ExampleComponent
                                 oContext={{
-                                    adapterName: 'telegram',
+                                    adapterName: 'nspanel-lovelace-ui',
                                     socket: this.socket,
                                     instance: 0,
                                     themeType: this.state.theme.palette.mode,
@@ -120,6 +121,9 @@ class App extends GenericApp<GenericAppProps, AppState> {
                                 }}
                                 onChange={data => this.setState({ data: data as Record<string, any> })}
                             />
+                        </div>
+                        <div style={styles.item}>
+                            <IconOverview />
                         </div>
                     </Box>
                 </ThemeProvider>
