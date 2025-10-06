@@ -45,6 +45,7 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     pages: PageConfigAll[];
     navigation: NavigationConfig['navigationConfig'];
     updated: boolean;
+    scriptVersion?: string;
 }
 
 const DefaultOptions = {
@@ -121,6 +122,7 @@ export class Panel extends BaseClass {
             berryDriverVersion: 0,
             berryDriverVersionOnline: 0,
             currentPage: '',
+            scriptVersion: 'unknown',
         },
         tasmota: {
             firmwareversion: '',
@@ -213,6 +215,7 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessageTasmota === 'function') {
             this.sendToTasmota = this.panelSend.addMessageTasmota;
         }
+        this.info.nspanel.scriptVersion = options.scriptVersion || 'unknown';
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
         this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
         // remove unused pages except screensaver - pages must be in navigation
