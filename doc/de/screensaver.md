@@ -404,7 +404,7 @@ mrIcon1ScreensaverEntity: null
 
 ### Eigenschaften der MR-Icons:
 - **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
-- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden, dazu hier mehr
+- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden, [weitere Infos hier](ScriptConfig#hardwarebutton-config)  
 - **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
 - **Flexible Anbindung**: Können mit beliebigen ioBroker-States verbunden werden (nicht nur NSPanel-Relays)
 - **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
