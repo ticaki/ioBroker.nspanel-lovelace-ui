@@ -1893,6 +1893,7 @@ export class PageItem extends BaseTriggeredPage {
         return this.parent ? `${this.parent.name}.${this.id}` : this.id;
     }
     async delete(): Promise<void> {
+        this.unload = true;
         if (this.parent.basePanel != null && this.parent.basePanel.persistentPageItems != null) {
             if (this.parent.basePanel.persistentPageItems[this.id]) {
                 if (!this.parent.basePanel.unload) {
@@ -1902,11 +1903,11 @@ export class PageItem extends BaseTriggeredPage {
                 delete this.parent.basePanel.persistentPageItems[this.id];
             }
         }
-        await super.delete();
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
-        await this.controller.statesControler.deletePageLoop();
+        this.controller.statesControler.deletePageLoop();
+        await super.delete();
     }
 
     async onCommand(action: string, value: string): Promise<boolean> {

@@ -388,7 +388,7 @@ class Page extends import_baseClassPage.BaseClassPage {
     }
   }
   async delete() {
-    await super.delete();
+    this.unload = true;
     if (this.directChildPage) {
       await this.directChildPage.delete();
       this.directChildPage = void 0;
@@ -404,6 +404,7 @@ class Page extends import_baseClassPage.BaseClassPage {
     }
     this.pageItems = [];
     this.pageItemConfig = [];
+    await super.delete();
   }
 }
 function isMediaButtonActionType(F) {

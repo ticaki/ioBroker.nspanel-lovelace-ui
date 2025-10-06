@@ -42,7 +42,7 @@ class StatesControler extends import_library.BaseClass {
     super(adapter, name || "StatesDB");
     this.timespan = timespan;
     this.deletePageInterval = this.adapter.setInterval(async () => {
-      void this.deletePageLoop();
+      this.deletePageLoop();
     }, 18e4);
     this.intervalObjectDatabase = this.adapter.setInterval(() => {
       if (this.unload || this.adapter.unload) {
@@ -51,7 +51,7 @@ class StatesControler extends import_library.BaseClass {
       this.objectDatabase = {};
     }, 18e4);
   }
-  deletePageLoop = async (f) => {
+  deletePageLoop = (f) => {
     var _a, _b, _c, _d, _e;
     const removeIds = [];
     for (const id of Object.keys(this.triggerDB)) {

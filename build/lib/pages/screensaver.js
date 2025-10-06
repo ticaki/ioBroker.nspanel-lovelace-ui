@@ -482,7 +482,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     for (const item of this.pageItems || []) {
       if (item && ((_a = item.config) == null ? void 0 : _a.role) === "isDismissiblePerEvent") {
         const gId = item.getGlobalDismissibleID();
-        if (gId === id) {
+        if (gId === id && await item.isEnabled()) {
           item.setDismissiblePerEvent();
         }
       }

@@ -183,13 +183,13 @@ export class BaseTriggeredPage extends BaseClass {
         }
     }
     async delete(): Promise<void> {
-        await super.delete();
+        this.unload = true;
         await this.setVisibility(false);
-        this.parent = undefined;
         if (this.alwaysOnState) {
             this.adapter.clearTimeout(this.alwaysOnState);
         }
         this.stopTriggerTimeout();
+        await super.delete();
     }
     getVisibility = (): boolean => {
         return this.visibility;

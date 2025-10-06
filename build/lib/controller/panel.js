@@ -1190,7 +1190,7 @@ class Panel extends import_library.BaseClass {
   }
   async delete() {
     var _a;
-    await super.delete();
+    this.unload = true;
     this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
@@ -1215,11 +1215,12 @@ class Panel extends import_library.BaseClass {
     }
     await this.panelSend.delete();
     this.controller.mqttClient.removeByFunction(this.onMessage);
-    await this.statesControler.deletePageLoop(this.onInternalCommand);
+    this.statesControler.deletePageLoop(this.onInternalCommand);
     this.persistentPageItems = {};
     this.pages = [];
     this._activePage = void 0;
     this.data = {};
+    await super.delete();
   }
   getPagebyUniqueID(uniqueID) {
     var _a;

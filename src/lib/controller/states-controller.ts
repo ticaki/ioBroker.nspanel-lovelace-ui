@@ -50,7 +50,7 @@ export class StatesControler extends BaseClass {
         super(adapter, name || 'StatesDB');
         this.timespan = timespan;
         this.deletePageInterval = this.adapter.setInterval(async () => {
-            void this.deletePageLoop();
+            this.deletePageLoop();
         }, 180_000);
         this.intervalObjectDatabase = this.adapter.setInterval(() => {
             if (this.unload || this.adapter.unload) {
@@ -59,7 +59,7 @@ export class StatesControler extends BaseClass {
             this.objectDatabase = {};
         }, 180_000);
     }
-    deletePageLoop = async (f?: getInternalFunctionType): Promise<void> => {
+    deletePageLoop = (f?: getInternalFunctionType): void => {
         const removeIds: string[] = [];
 
         for (const id of Object.keys(this.triggerDB)) {

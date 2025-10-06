@@ -569,7 +569,7 @@ export class Screensaver extends Page {
         for (const item of this.pageItems || []) {
             if (item && item.config?.role === 'isDismissiblePerEvent') {
                 const gId = item.getGlobalDismissibleID();
-                if (gId === id) {
+                if (gId === id && (await item.isEnabled())) {
                     item.setDismissiblePerEvent();
                 }
             }

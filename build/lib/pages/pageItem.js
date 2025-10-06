@@ -1635,6 +1635,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return this.parent ? `${this.parent.name}.${this.id}` : this.id;
   }
   async delete() {
+    this.unload = true;
     if (this.parent.basePanel != null && this.parent.basePanel.persistentPageItems != null) {
       if (this.parent.basePanel.persistentPageItems[this.id]) {
         if (!this.parent.basePanel.unload) {
@@ -1643,11 +1644,11 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         delete this.parent.basePanel.persistentPageItems[this.id];
       }
     }
-    await super.delete();
     this.visibility = false;
     this.unload = true;
     await this.controller.statesControler.deactivateTrigger(this);
-    await this.controller.statesControler.deletePageLoop();
+    this.controller.statesControler.deletePageLoop();
+    await super.delete();
   }
   async onCommand(action, value) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G;

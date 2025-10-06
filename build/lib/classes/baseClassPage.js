@@ -163,13 +163,13 @@ class BaseTriggeredPage extends import_library.BaseClass {
     }
   }
   async delete() {
-    await super.delete();
+    this.unload = true;
     await this.setVisibility(false);
-    this.parent = void 0;
     if (this.alwaysOnState) {
       this.adapter.clearTimeout(this.alwaysOnState);
     }
     this.stopTriggerTimeout();
+    await super.delete();
   }
   getVisibility = () => {
     return this.visibility;

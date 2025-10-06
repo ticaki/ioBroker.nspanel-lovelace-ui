@@ -1314,7 +1314,7 @@ export class Panel extends BaseClass {
     }
 
     async delete(): Promise<void> {
-        await super.delete();
+        this.unload = true;
         this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
 
         if (this.blockStartup) {
@@ -1340,11 +1340,12 @@ export class Panel extends BaseClass {
         }
         await this.panelSend.delete();
         this.controller.mqttClient.removeByFunction(this.onMessage);
-        await this.statesControler.deletePageLoop(this.onInternalCommand);
+        this.statesControler.deletePageLoop(this.onInternalCommand);
         this.persistentPageItems = {};
         this.pages = [];
         this._activePage = undefined;
         this.data = {};
+        await super.delete();
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {

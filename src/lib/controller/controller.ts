@@ -411,7 +411,7 @@ export class Controller extends Library.BaseClass {
         }
     }
     async delete(): Promise<void> {
-        await super.delete();
+        this.unload = true;
         if (this.minuteLoopTimeout) {
             this.adapter.clearTimeout(this.minuteLoopTimeout);
         }
@@ -436,6 +436,7 @@ export class Controller extends Library.BaseClass {
         await Promise.all(tasks);
         this.panels = [];
         this.dataCache = {};
+        await super.delete();
     }
 
     async notificationToPanel(): Promise<void> {
