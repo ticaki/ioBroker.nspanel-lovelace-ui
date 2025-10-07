@@ -521,12 +521,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             variant="body1"
                             color="text.secondary"
                         >
-                            <Typography
-                                variant="body1"
-                                color="text.secondary"
-                            >
-                                {I18n.t('No_data')}
-                            </Typography>
+                            {I18n.t('No_data')}
                         </Typography>
                     </Box>
                 ) : (
