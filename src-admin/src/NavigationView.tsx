@@ -18,6 +18,8 @@ interface FlowEdge {
     id: string;
     source: string;
     target: string;
+    sourceHandle?: string;
+    targetHandle?: string;
     label: string;
     style: { strokeWidth: number; strokeDasharray?: string; stroke?: string };
     data?: { isTarget: boolean; navType?: string };
@@ -80,22 +82,61 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
         type: 'custom',
         draggable: true,
     }));
-    const navTypes: (keyof NavigationMapEntry)[] = ['prev', 'next', 'home', 'parent'];
     const edges: FlowEdge[] = [];
     for (const entry of navigationMap) {
-        for (const navType of navTypes) {
-            const to = entry[navType];
-            if (to && typeof to === 'string') {
-                edges.push({
-                    id: `nav-${entry.page}-${to}-${navType}`,
-                    source: entry.page,
-                    target: to,
-                    label: '',
-                    style: { strokeWidth: 2, stroke: edgeColors[navType] },
-                    data: { isTarget: false, navType },
-                });
-            }
+        // next: von a1.next zu a2.prev
+        if (entry.next && typeof entry.next === 'string') {
+            edges.push({
+                id: `nav-${entry.page}-${entry.next}-next`,
+                source: entry.page,
+                target: entry.next,
+                sourceHandle: 'next',
+                targetHandle: 'prev',
+                label: '',
+                style: { strokeWidth: 2, stroke: edgeColors.next },
+                data: { isTarget: false, navType: 'next' },
+            } as any);
         }
+        // prev: von a1.prev zu a2.next
+        if (entry.prev && typeof entry.prev === 'string') {
+            edges.push({
+                id: `nav-${entry.page}-${entry.prev}-prev`,
+                source: entry.page,
+                target: entry.prev,
+                sourceHandle: 'prev',
+                targetHandle: 'next',
+                label: '',
+                style: { strokeWidth: 2, stroke: edgeColors.prev },
+                data: { isTarget: false, navType: 'prev' },
+            } as any);
+        }
+        // home: von a1.home (links oben) zu a2 (rechts oben)
+        if (entry.home && typeof entry.home === 'string') {
+            edges.push({
+                id: `nav-${entry.page}-${entry.home}-home`,
+                source: entry.page,
+                target: entry.home,
+                sourceHandle: 'homeTopLeft',
+                targetHandle: 'homeTopRight',
+                label: '',
+                style: { strokeWidth: 2, stroke: edgeColors.home },
+                data: { isTarget: false, navType: 'home' },
+            } as any);
+        }
+        // parent: von a1.parent (links unten) zu a2 (rechts unten)
+        if (entry.parent && typeof entry.parent === 'string') {
+            edges.push({
+                id: `nav-${entry.page}-${entry.parent}-parent`,
+                source: entry.page,
+                target: entry.parent,
+                sourceHandle: 'parentBottomLeft',
+                targetHandle: 'parentBottomRight',
+                label: '',
+                style: { strokeWidth: 2, stroke: edgeColors.parent },
+                data: { isTarget: false, navType: 'parent' },
+            } as any);
+        }
+        // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links
         if (Array.isArray(entry.targetPages)) {
             for (const target of entry.targetPages) {
                 if (target && typeof target === 'string') {
@@ -103,10 +144,12 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                         id: `target-${entry.page}-${target}`,
                         source: entry.page,
                         target: target,
+                        sourceHandle: 'targetRight',
+                        targetHandle: 'targetLeft',
                         label: '',
                         style: { strokeWidth: 1, strokeDasharray: '4 2', stroke: edgeColors.target },
                         data: { isTarget: true, navType: 'target' },
-                    });
+                    } as any);
                 }
             }
         }
@@ -312,27 +355,26 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 onEdgesChange={this.onEdgesChange}
                                 nodeTypes={{
                                     custom: ({ id, data }: any) => {
-                                        // Finde alle Edges, die zu/von diesem Node gehen
+                                        // Handles für alle Typen, an den gewünschten Positionen
+                                        // prev: oben, next: unten, home: rechts oben, parent: rechts unten, targetRight: rechts Mitte, targetLeft: links Mitte
+                                        // Wir zeigen einen Handle nur, wenn eine Verbindung existiert
                                         const handleTypes: Record<string, boolean> = {
                                             prev: false,
                                             next: false,
-                                            home: false,
-                                            parent: false,
+                                            homeTopLeft: false,
+                                            homeTopRight: false,
+                                            parentBottomLeft: false,
+                                            parentBottomRight: false,
+                                            targetRight: false,
+                                            targetLeft: false,
                                         };
+                                        // Suche alle Edges, die zu/von diesem Node gehen und markiere die benötigten Handles
                                         for (const edge of edges) {
-                                            if (
-                                                edge.source === id &&
-                                                edge.data?.navType &&
-                                                handleTypes[edge.data.navType] !== undefined
-                                            ) {
-                                                handleTypes[edge.data.navType] = true;
+                                            if (edge.source === id && edge.sourceHandle) {
+                                                handleTypes[edge.sourceHandle] = true;
                                             }
-                                            if (
-                                                edge.target === id &&
-                                                edge.data?.navType &&
-                                                handleTypes[edge.data.navType] !== undefined
-                                            ) {
-                                                handleTypes[edge.data.navType] = true;
+                                            if (edge.target === id && edge.targetHandle) {
+                                                handleTypes[edge.targetHandle] = true;
                                             }
                                         }
                                         return (
@@ -344,73 +386,94 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                     background: '#868686ff',
                                                     minWidth: 80,
                                                     textAlign: 'center',
+                                                    position: 'relative',
                                                 }}
                                                 style={{ cursor: 'move' }}
                                             >
-                                                {/* Handles für prev/next/home/parent, wenn eine Verbindung existiert */}
+                                                {/* prev: oben */}
                                                 {handleTypes.prev && (
-                                                    <>
-                                                        <Handle
-                                                            type="target"
-                                                            position={Position.Top}
-                                                            id="prev"
-                                                            style={{ background: '#1976d2' }}
-                                                        />
-                                                        <Handle
-                                                            type="source"
-                                                            position={Position.Top}
-                                                            id="prev"
-                                                            style={{ background: '#1976d2' }}
-                                                        />
-                                                    </>
+                                                    <Handle
+                                                        type="target"
+                                                        position={Position.Top}
+                                                        id="prev"
+                                                        style={{ background: '#1976d2' }}
+                                                    />
+                                                )}
+                                                {handleTypes.prev && (
+                                                    <Handle
+                                                        type="source"
+                                                        position={Position.Top}
+                                                        id="prev"
+                                                        style={{ background: '#1976d2' }}
+                                                    />
+                                                )}
+                                                {/* next: unten */}
+                                                {handleTypes.next && (
+                                                    <Handle
+                                                        type="target"
+                                                        position={Position.Bottom}
+                                                        id="next"
+                                                        style={{ background: '#388e3c' }}
+                                                    />
                                                 )}
                                                 {handleTypes.next && (
-                                                    <>
-                                                        <Handle
-                                                            type="target"
-                                                            position={Position.Bottom}
-                                                            id="next"
-                                                            style={{ background: '#388e3c' }}
-                                                        />
-                                                        <Handle
-                                                            type="source"
-                                                            position={Position.Bottom}
-                                                            id="next"
-                                                            style={{ background: '#388e3c' }}
-                                                        />
-                                                    </>
+                                                    <Handle
+                                                        type="source"
+                                                        position={Position.Bottom}
+                                                        id="next"
+                                                        style={{ background: '#388e3c' }}
+                                                    />
                                                 )}
-                                                {handleTypes.home && (
-                                                    <>
-                                                        <Handle
-                                                            type="target"
-                                                            position={Position.Left}
-                                                            id="home"
-                                                            style={{ background: '#fbc02d' }}
-                                                        />
-                                                        <Handle
-                                                            type="source"
-                                                            position={Position.Left}
-                                                            id="home"
-                                                            style={{ background: '#fbc02d' }}
-                                                        />
-                                                    </>
+                                                {/* home: links oben (source), rechts oben (target) */}
+                                                {handleTypes.homeTopLeft && (
+                                                    <Handle
+                                                        type="source"
+                                                        position={Position.Left}
+                                                        id="homeTopLeft"
+                                                        style={{ background: '#fbc02d', top: 12 }}
+                                                    />
                                                 )}
-                                                {handleTypes.parent && (
-                                                    <>
-                                                        <Handle
-                                                            type="target"
-                                                            position={Position.Left}
-                                                            id="parent"
-                                                            style={{ background: '#d32f2f', top: 40 }}
-                                                        />
-                                                        <Handle
-                                                            type="source"
-                                                            position={Position.Left}
-                                                            id="parent"
-                                                            style={{ background: '#d32f2f', top: 40 }}
-                                                        />
-                                                    </>
+                                                {handleTypes.homeTopRight && (
+                                                    <Handle
+                                                        type="target"
+                                                        position={Position.Right}
+                                                        id="homeTopRight"
+                                                        style={{ background: '#fbc02d', top: 12 }}
+                                                    />
+                                                )}
+                                                {/* parent: links unten (source), rechts unten (target) */}
+                                                {handleTypes.parentBottomLeft && (
+                                                    <Handle
+                                                        type="source"
+                                                        position={Position.Left}
+                                                        id="parentBottomLeft"
+                                                        style={{ background: '#d32f2f', bottom: 12 }}
+                                                    />
+                                                )}
+                                                {handleTypes.parentBottomRight && (
+                                                    <Handle
+                                                        type="target"
+                                                        position={Position.Right}
+                                                        id="parentBottomRight"
+                                                        style={{ background: '#d32f2f', bottom: 12 }}
+                                                    />
+                                                )}
+                                                {/* targetPages: rechts Mitte (source), links Mitte (target) */}
+                                                {handleTypes.targetRight && (
+                                                    <Handle
+                                                        type="source"
+                                                        position={Position.Right}
+                                                        id="targetRight"
+                                                        style={{ background: '#888', top: '50%' }}
+                                                    />
+                                                )}
+                                                {handleTypes.targetLeft && (
+                                                    <Handle
+                                                        type="target"
+                                                        position={Position.Left}
+                                                        id="targetLeft"
+                                                        style={{ background: '#888', top: '50%' }}
+                                                    />
                                                 )}
                                                 <Typography
                                                     variant="body2"
