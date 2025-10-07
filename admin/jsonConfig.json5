@@ -4294,6 +4294,15 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "_myCustomAttribute": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/NavigationView",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
                 }
             }
         },

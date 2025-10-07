@@ -27,6 +27,17 @@ import { testScriptConfig } from './lib/const/test';
 //import fs from 'fs';
 axios.defaults.timeout = 15_000;
 
+type NavigationMapEntry = {
+    page: string;
+    next?: string;
+    prev?: string;
+    home?: string;
+    parent?: string;
+    targetPages?: string[];
+    label?: string;
+};
+type NavigationMap = NavigationMapEntry[];
+
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
     mqttClient: MQTT.MQTTClientClass | undefined;
@@ -581,7 +592,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
-        if (typeof obj === 'object' && obj.message) {
+        if (typeof obj === 'object' && obj.message !== undefined && obj.command) {
             this.log.debug(JSON.stringify(obj));
             if (obj.command === 'tftInstallSendToMQTT') {
                 if (obj.message.online === 'no') {
@@ -590,6 +601,39 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
+                case 'getPanelNavigation': {
+                    let nav: { panelName: string; navigationMap: NavigationMap }[] = [];
+                    const o = await this.getForeignObjectAsync(this.namespace);
+                    if (o?.native?.scriptConfig) {
+                        for (const d of o.native.scriptConfig) {
+                            if (d && d.navigation && Array.isArray(d.navigation) && d.navigation.length > 0) {
+                                const map = d.navigation.map((a: any) => {
+                                    return a != null
+                                        ? {
+                                              label: a.name,
+                                              page: a.page,
+                                              prev: a.left?.single,
+                                              parent: a.left?.double,
+                                              next: a.right?.single,
+                                              home: a.right?.double,
+                                              targetPages: undefined,
+                                          }
+                                        : null;
+                                });
+                                nav = nav.filter(b => b);
+                                nav.push({ panelName: d.topic, navigationMap: map });
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: nav }, obj.callback);
+                    }
+
+                    break;
+                }
                 case 'getWeatherEntity': {
                     const adapterObj = await this.getObjectViewAsync('system', 'instance', {
                         startkey: 'system.adapter.',

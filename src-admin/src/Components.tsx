@@ -1,4 +1,5 @@
 import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
+import NavigationView from './NavigationView';
 
-export default { IconSelect, IconOverview };
+export default { NavigationView, IconSelect, IconOverview };
