@@ -4294,7 +4294,14 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
+                }           
+            }
+        },
+        "NavigationFlow": {
+            "type": "panel",
+            "label": "Navigation Flow",
+            "expertMode": true,
+            "items": {
                 "_myCustomAttribute": {
                     "type": "custom",
                     "i18n": true,

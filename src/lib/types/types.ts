@@ -112,6 +112,26 @@ export type TemplateIdent =
     | 'text.accuweather.favorit'
     | 'text.alias.fahrplan.departure';
 
+export type NavigationMapEntry = {
+    page: string;
+    next?: string;
+    prev?: string;
+    home?: string;
+    parent?: string;
+    targetPages?: string[];
+    label?: string;
+    position?: { x: number; y: number } | null;
+};
+type NavigationMap = NavigationMapEntry[];
+
+export type NavigationPositionsMap = { name: string; position: { x: number; y: number } };
+
+export type PanelListEntry = {
+    panelName: string; // technisch eindeutig
+    friendlyName: string; // für Anzeige
+    navigationMap: NavigationMap;
+};
+
 export function isEventMethod(F: string): F is EventMethod {
     switch (F as EventMethod) {
         case 'startup':

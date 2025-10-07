@@ -1,3 +1,8 @@
 {
-    "iconOverview": "Icon Overview2"
+    "iconOverview": "Icon Übersicht",
+    "Panel_Navigation": "Panel-Navigation",
+    "refresh": "Aktualisieren",
+    "Adapter_online": "Adapter online",
+    "Adapter_offline": "Adapter offline",
+    "No_data": "Keine Daten – Adapter möglicherweise offline oder kein Panel konfiguriert."
 }

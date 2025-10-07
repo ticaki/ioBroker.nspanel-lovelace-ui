@@ -1,1 +1,8 @@
-{}
+{
+	"Panel_Navigation": "Panel Navigation",
+	"refresh": "Refresh",
+	"Adapter_online": "Adapter online",
+	"Adapter_offline": "Adapter offline",
+	"No_data": "No data - Adapter might be offline or no panel configured."
+}
+

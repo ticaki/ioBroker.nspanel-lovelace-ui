@@ -1358,6 +1358,12 @@ export class Panel extends BaseClass {
         const index = this.pages.findIndex(a => a && a.name && a.name === uniqueID);
         return this.pages[index] ?? null;
     }
+    getPageIndexbyUniqueID(uniqueID: string): number {
+        if (!uniqueID) {
+            return -1;
+        }
+        return this.pages.findIndex(a => a && a.name && a.name === uniqueID);
+    }
 
     async writeInfo(): Promise<void> {
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
@@ -2023,6 +2029,96 @@ export class Panel extends BaseClass {
             );
         }
     }
+    saveNavigationMap = async (map: Types.NavigationPositionsMap[]): Promise<void> => {
+        if (!Array.isArray(map)) {
+            this.log.error('Navigation map is not an array!');
+            return;
+        }
+        const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+        if (!o) {
+            this.log.error(`Panel object not found: panels.${this.name}`);
+            return;
+        }
+        if (!o.native) {
+            o.native = {};
+        }
+        o.native.navigationMap = map;
+        await this.adapter.setObject(`panels.${this.name}`, o);
+    };
+
+    async getNavigationArrayForFlow(): Promise<Types.PanelListEntry> {
+        const res: Types.PanelListEntry = {
+            panelName: this.name,
+            friendlyName: this.friendlyName,
+            navigationMap: [],
+        };
+        const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+        let navMapFromConfig: Types.NavigationPositionsMap[] | undefined = undefined;
+        if (o?.native && o.native.navigationMap && Array.isArray(o.native.navigationMap)) {
+            navMapFromConfig = o.native.navigationMap;
+        }
+        const db = this.navigation.getDatabase();
+        for (const nav of db) {
+            if (!nav || !nav.page) {
+                continue;
+            }
+            const pPos = nav.page ? navMapFromConfig?.find(a => a.name === nav.page.name) : undefined;
+            let next: string | undefined = undefined;
+            let prev: string | undefined = undefined;
+            let home: string | undefined = undefined;
+            let parent: string | undefined = undefined;
+            if (typeof nav.right.single === 'number') {
+                const n = db[nav.right.single];
+                next = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.left.single === 'number') {
+                const n = db[nav.left.single];
+                prev = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.right.double === 'number') {
+                const n = db[nav.right.double];
+                home = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.left.double === 'number') {
+                const n = db[nav.left.double];
+                parent = n != null && n.page ? n.page.name : undefined;
+            }
+
+            const navMap: Types.NavigationMapEntry = {
+                label: nav.page ? nav.page.name : '',
+                page: nav.page ? nav.page.name : '',
+                next,
+                prev,
+                home,
+                parent,
+                position: pPos ? pPos.position : undefined,
+            };
+            const targetPages = [];
+            if (nav.page.pageItemConfig) {
+                for (const item of nav.page.pageItemConfig) {
+                    if (item && item.data && 'setNavi' in item.data) {
+                        const n = item.data.setNavi;
+                        if (n && n.type === 'const' && typeof n.constVal === 'string') {
+                            targetPages.push(n.constVal);
+                        }
+                    }
+                }
+            }
+            if (nav.page.config?.data && 'setNavi' in nav.page.config.data) {
+                const n = nav.page.config.data.setNavi;
+                if (n && n.type === 'const' && typeof n.constVal === 'string') {
+                    targetPages.push(n.constVal);
+                }
+            }
+            if (targetPages.length) {
+                navMap.targetPages = targetPages;
+            }
+            res.navigationMap.push(navMap);
+        }
+
+        return res;
+    }
+
     static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
         if ('template' in config && config.template) {
             const template = cardTemplates[config.template];
