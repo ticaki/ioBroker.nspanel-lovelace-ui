@@ -552,7 +552,6 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         <div className="reactflow-container">
                             <ReactFlow
                                 nodes={nodes}
-                                //edges={edges}
                                 fitView
                                 nodesDraggable={true}
                                 onNodesChange={this.onNodesChange}
