@@ -525,9 +525,8 @@ notifyScreensaverEntity: [
 Mit dem Parameter `isDismissiblePerEvent` kann gesteuert werden, dass eine Notification automatisch ausgeblendet wird, wenn der zugehörige **Enabled**-State wieder auf `false` wechselt.
 
 **Verhalten:**
-- Wenn `isDismissiblePerEvent: true` gesetzt ist, wird die Notification **nicht** automatisch erneut angezeigt, wenn der Enabled-State wieder auf `true` wechselt
-- Die Notification bleibt "dismissed" (ausgeblendet), bis der Benutzer sie manuell durch Tippen auf den Screensaver bestätigt
-- Nach der manuellen Bestätigung wird die Notification bei erneutem Auftreten des Events wieder angezeigt
+- Wenn `isDismissiblePerEvent: true` gesetzt ist, wird die Notification **nicht** automatisch erneut angezeigt, wenn der Enabled-State  auf `true` bleibt
+- Die Notification bleibt "dismissed" (ausgeblendet), bis der State erneut auf true geht.
 
 **Anwendungsfall:** 
 Ideal für ereignisbasierte Benachrichtigungen (z.B. Türklingel, Bewegungsmelder), die nur einmal angezeigt werden sollen, bis der Benutzer sie zur Kenntnis genommen hat.
