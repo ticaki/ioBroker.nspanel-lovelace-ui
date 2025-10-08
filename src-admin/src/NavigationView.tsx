@@ -55,9 +55,22 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
-import { Select, MenuItem, Box, Button, Typography, CircularProgress } from '@mui/material';
+import {
+    Select,
+    MenuItem,
+    Box,
+    Button,
+    Typography,
+    CircularProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+} from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
 import { useTheme } from '@mui/material/styles';
+import { hierarchy, tree } from 'd3-hierarchy';
 import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/adapter-react-v5';
@@ -130,9 +143,10 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
         };
     });
     const edges: FlowEdge[] = [];
+    const pages = new Set(navigationMap.map(e => e.page));
     for (const entry of navigationMap) {
         // next: von a1.next zu a2.prev
-        if (entry.next && typeof entry.next === 'string') {
+        if (entry.next && typeof entry.next === 'string' && pages.has(entry.next)) {
             edges.push({
                 id: `nav-${entry.page}-${entry.next}-next`,
                 source: entry.page,
@@ -146,7 +160,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
             } as any);
         }
         // prev: von a1.prev zu a2.next
-        if (entry.prev && typeof entry.prev === 'string') {
+        if (entry.prev && typeof entry.prev === 'string' && pages.has(entry.prev)) {
             edges.push({
                 id: `nav-${entry.page}-${entry.prev}-prev`,
                 source: entry.page,
@@ -160,7 +174,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
             } as any);
         }
         // home: von a1.home (links oben) zu a2 (rechts oben)
-        if (entry.home && typeof entry.home === 'string') {
+        if (entry.home && typeof entry.home === 'string' && pages.has(entry.home)) {
             edges.push({
                 id: `nav-${entry.page}-${entry.home}-home`,
                 source: entry.page,
@@ -168,13 +182,13 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 sourceHandle: 'homeTopLeft',
                 targetHandle: 'homeTopRight',
                 label: '',
-                style: { strokeWidth: 2, stroke: edgeColors.home },
+                style: { strokeWidth: 2, strokeDasharray: '8 8', stroke: edgeColors.home },
                 data: { isTarget: false, navType: 'home' },
                 className: 'edge-home',
             } as any);
         }
         // parent: von a1.parent (links unten) zu a2 (rechts unten)
-        if (entry.parent && typeof entry.parent === 'string') {
+        if (entry.parent && typeof entry.parent === 'string' && pages.has(entry.parent)) {
             edges.push({
                 id: `nav-${entry.page}-${entry.parent}-parent`,
                 source: entry.page,
@@ -190,7 +204,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
         // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links
         if (Array.isArray(entry.targetPages)) {
             for (const target of entry.targetPages) {
-                if (target && typeof target === 'string') {
+                if (target && typeof target === 'string' && pages.has(target)) {
                     edges.push({
                         id: `target-${entry.page}-${target}`,
                         source: entry.page,
@@ -209,6 +223,236 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
     return { nodes, edges };
 }
 
+// Compute a simple automatic layout: find the 'main' node (page === 'main' or first entry)
+// Build trunk along prev/next links (both directions) and then place branches for other nodes.
+function computeAutoLayout(navigationMap: NavigationMap): Record<string, { x: number; y: number }> {
+    // Build lookup
+    const mapById = new Map<string, NavigationMapEntry>();
+    for (const e of navigationMap) {
+        mapById.set(e.page, e);
+    }
+
+    // Determine trunk (main + prev/next chain)
+    const main = navigationMap.find(e => e.page === 'main') || navigationMap[0];
+    const trunk: string[] = [];
+    if (main) {
+        let cur: string | undefined | null = main.page;
+        while (cur) {
+            trunk.unshift(cur);
+            const ent = mapById.get(cur);
+            const prev = ent && typeof ent.prev === 'string' ? ent.prev : undefined;
+            if (prev && !trunk.includes(prev)) {
+                cur = prev;
+            } else {
+                break;
+            }
+        }
+        cur = main.page;
+        while (cur) {
+            const ent = mapById.get(cur);
+            const next = ent && typeof ent.next === 'string' ? ent.next : undefined;
+            if (next && !trunk.includes(next)) {
+                trunk.push(next);
+                cur = next;
+            } else {
+                break;
+            }
+        }
+    }
+
+    // Build a pseudo-root tree where trunk nodes are direct children of root (vertical stack)
+    const root: any = { id: '__root', children: [] };
+    const nodeMap: Record<string, any> = {};
+    // create node objects for all pages
+    for (const entry of navigationMap) {
+        nodeMap[entry.page] = { id: entry.page, children: [] };
+    }
+
+    // trunk as children of root in order
+    for (const id of trunk) {
+        const nm = nodeMap[id];
+        if (nm) {
+            root.children.push(nm);
+        }
+    }
+
+    // attach non-trunk nodes to the nearest trunk node by BFS following prev/next (ignore home/parent)
+    const findAttach = (pageId: string): string => {
+        const seen = new Set<string>();
+        const q: string[] = [pageId];
+        while (q.length) {
+            const p = q.shift() as string;
+            if (trunk.includes(p)) {
+                return p;
+            }
+            if (seen.has(p)) {
+                continue;
+            }
+            seen.add(p);
+            const ent = mapById.get(p);
+            if (!ent) {
+                continue;
+            }
+            if (ent.prev && typeof ent.prev === 'string') {
+                q.push(ent.prev);
+            }
+            if (ent.next && typeof ent.next === 'string') {
+                q.push(ent.next);
+            }
+        }
+        return trunk[0] || pageId;
+    };
+
+    // Attach nodes using BFS expansion:
+    // 1) trunk nodes are direct children of root
+    // 2) For each node we process, attach its targetPages. For each target attached,
+    //    collect the full prev->...->next chain and attach that chain as children of the current node
+    //    (this prevents targets from creating their own extra level when they are sequences).
+    // 3) Continue BFS until no more nodes can be attached. Remaining nodes are attached via findAttach fallback.
+    const assigned = new Set<string>();
+
+    // mark trunk nodes as assigned and children of root (already pushed above)
+    for (const id of trunk) {
+        assigned.add(id);
+        // nodeMap[id] already pushed into root.children above
+    }
+
+    // helper: collect full prev->...->next chain starting from startId
+    const collectChain = (startId: string): string[] => {
+        // find left-most by following prev
+        let left = startId;
+        const seenLocal = new Set<string>();
+        while (true) {
+            if (seenLocal.has(left)) {
+                break;
+            }
+            seenLocal.add(left);
+            const ent = mapById.get(left);
+            const p = ent && typeof ent.prev === 'string' ? ent.prev : undefined;
+            if (!p || p === left) {
+                break;
+            }
+            left = p;
+        }
+        // now walk forward via next collecting nodes
+        const chain: string[] = [];
+        let cur = left;
+        seenLocal.clear();
+        while (cur && !seenLocal.has(cur)) {
+            seenLocal.add(cur);
+            chain.push(cur);
+            const ent = mapById.get(cur);
+            const nx = ent && typeof ent.next === 'string' ? ent.next : undefined;
+            if (!nx || nx === cur) {
+                break;
+            }
+            cur = nx;
+        }
+        return chain;
+    };
+
+    // BFS queue seeded with trunk nodes
+    const queue: string[] = [...trunk];
+    while (queue.length) {
+        const parentId = queue.shift() as string;
+        if (!parentId) {
+            continue;
+        }
+        const parentEnt = mapById.get(parentId);
+        if (!parentEnt) {
+            continue;
+        }
+
+        // process targets of this parent
+        if (Array.isArray(parentEnt.targetPages) && parentEnt.targetPages.length) {
+            for (const t of parentEnt.targetPages) {
+                if (!t || assigned.has(t)) {
+                    continue;
+                }
+                // collect the whole prev/next chain for this target and attach under parentId
+                const chain = collectChain(t);
+                // Attach chain nested: first element as child of parentId, next as child of first, etc.
+                let prevNode = parentId;
+                for (const cid of chain) {
+                    if (assigned.has(cid)) {
+                        prevNode = cid;
+                        continue;
+                    }
+                    const parentObj = nodeMap[prevNode];
+                    const childObj = nodeMap[cid];
+                    if (!parentObj || !childObj) {
+                        // missing referenced node: skip
+                        continue;
+                    }
+                    // avoid duplicate attachments
+                    if (!parentObj.children.includes(childObj)) {
+                        parentObj.children.push(childObj);
+                    }
+                    assigned.add(cid);
+                    // enqueue the newly attached node so its targets get processed as well
+                    queue.push(cid);
+                    prevNode = cid;
+                }
+            }
+        }
+        // additionally, ensure that if this parent has direct prev/next siblings that are not trunk
+        // they should not be attached here (prev/next are handled when collecting chains for targets)
+    }
+
+    // Fallback: attach any remaining unassigned nodes by resolving via prev/next to nearest trunk
+    // First try: if a node has a parent and is unassigned, attach it under its parent
+    for (const entry of navigationMap) {
+        if (assigned.has(entry.page)) {
+            continue;
+        }
+        if (!entry.prev && !entry.next && (!entry.targetPages || !entry.targetPages.length) && entry.parent) {
+            const parentId = entry.parent;
+            const parentObj = nodeMap[parentId];
+            const childObj = nodeMap[entry.page];
+            if (parentObj && childObj && !parentObj.children.includes(childObj)) {
+                parentObj.children.push(childObj);
+                assigned.add(entry.page);
+                // also enqueue so its targets (if any) get processed later
+                queue.push(entry.page);
+            }
+        }
+    }
+
+    // Final fallback: attach any still-unassigned nodes by resolving via prev/next to nearest trunk
+    for (const entry of navigationMap) {
+        if (assigned.has(entry.page)) {
+            continue;
+        }
+        const attachTo = findAttach(entry.page);
+        if (nodeMap[attachTo] && nodeMap[entry.page] && !nodeMap[attachTo].children.includes(nodeMap[entry.page])) {
+            nodeMap[attachTo].children.push(nodeMap[entry.page]);
+        }
+        assigned.add(entry.page);
+    }
+
+    // layout via d3.tree (vertical tree) then rotate coords for left->right
+    const rootNode = hierarchy(root);
+    // nodeSize: [verticalSpacing, horizontalSpacing]
+    // verticalSpacing halved to show nodes closer together
+    const layout = tree<any>().nodeSize([70, 220]);
+    layout(rootNode);
+
+    const positions: Record<string, { x: number; y: number }> = {};
+    // find min/max of the vertical layout coordinate (d.x) so we can invert the axis
+    const allX = rootNode.descendants().map(d => d.x ?? 0);
+    const maxX = allX.length ? Math.max(...allX) : 0;
+    // map coordinates: keep horizontal (d.y) as x, but invert vertical so root/main is at top
+    rootNode.descendants().forEach(d => {
+        const id = d.data.id as string;
+        if (!id || id === '__root') {
+            return;
+        }
+        // x = horizontal distance (depth), y = inverted vertical position so tree grows downward
+        positions[id] = { x: Math.round(d.y ?? 0), y: Math.round(maxX - (d.x ?? 0)) };
+    });
+    return positions;
+}
+
 interface NavigationViewInternalState extends NavigationViewState {
     nodes: FlowNode[];
     edges: FlowEdge[];
@@ -217,6 +461,7 @@ interface NavigationViewInternalState extends NavigationViewState {
     infoPanelOpen?: boolean;
     infoData?: Record<string, any> | null;
     infoNodeId?: string | undefined;
+    confirmAutoLayoutOpen?: boolean;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
@@ -315,6 +560,45 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         this.onNodeClick = this.onNodeClick.bind(this);
         this.onPaneClick = this.onPaneClick.bind(this);
         this.saveNavigation = this.saveNavigation.bind(this);
+        this.openConfirmAutoLayout = this.openConfirmAutoLayout.bind(this);
+        this.closeConfirmAutoLayout = this.closeConfirmAutoLayout.bind(this);
+        this.confirmAutoLayout = this.confirmAutoLayout.bind(this);
+    }
+
+    openConfirmAutoLayout(): void {
+        this.setState({ confirmAutoLayoutOpen: true });
+    }
+
+    closeConfirmAutoLayout(): void {
+        this.setState({ confirmAutoLayoutOpen: false });
+    }
+
+    confirmAutoLayout(): void {
+        // delete existing positions from navigationMap entries then run autolayout
+        const nav = this.state.navigationMap;
+        if (!nav) {
+            this.setState({ confirmAutoLayoutOpen: false });
+            return;
+        }
+        // remove position field from entries (works on local copy)
+        const cleaned = nav.map(
+            e =>
+                ({
+                    ...e,
+                    position: undefined,
+                }) as NavigationMapEntry,
+        );
+        // compute positions and apply
+        const positions = computeAutoLayout(cleaned as NavigationMap);
+        const newNodes: FlowNode[] = cleaned.map(entry => ({
+            id: entry.page,
+            data: { label: entry.label || entry.page, entry },
+            position: positions[entry.page] ?? { x: 0, y: 0 },
+            type: 'custom',
+            draggable: true,
+        }));
+        const flow = mapNavigationMapToFlow(cleaned as NavigationMap);
+        this.setState({ nodes: newNodes, edges: flow.edges, dirty: true, confirmAutoLayoutOpen: false } as any);
     }
 
     onNodeClick(_event: any, node: any): void {
@@ -494,11 +778,14 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
 
     render(): string | React.ReactElement | null {
         const { alive, loading, panelList, selectedPanel, nodes, edges, noData } = this.state;
+        // remove dangling edges that reference missing nodes (safety for stale state)
+        const nodeIds = new Set(nodes.map(n => n.id));
+        const safeEdges = (edges || []).filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
         // Legende für die Kantenarten
         const legend = [
             { label: 'prev', color: '#1976d2', dash: false },
             { label: 'next', color: '#1976d2', dash: false },
-            { label: 'home', color: '#fbc02d', dash: false },
+            { label: 'home', color: '#fbc02d', dash: true },
             { label: 'parent', color: '#d32f2f', dash: false },
             { label: 'target', color: '#43a047', dash: true },
         ];
@@ -513,6 +800,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         disabled={loading}
                     >
                         {I18n.t('refresh')}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={this.openConfirmAutoLayout}
+                        disabled={loading || !this.state.navigationMap}
+                    >
+                        {I18n.t('auto_layout')}
                     </Button>
                     <Typography
                         variant="body2"
@@ -532,12 +826,14 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             <span
                                 className="legend-span"
                                 style={{
-                                    background: item.color,
-                                    borderBottom: item.dash ? '2px dashed #888' : undefined,
-                                    backgroundImage: item.dash
-                                        ? 'repeating-linear-gradient(90deg,#888 0 4px,transparent 4px 8px)'
-                                        : undefined,
+                                    // For solid items show the color; for dashed items show a colored dash-pattern
+                                    background: item.dash ? 'transparent' : item.color,
                                     backgroundColor: item.dash ? 'transparent' : item.color,
+                                    // choose dash length: home uses 8/8, others (e.g. target) use 4/4 to match edges
+                                    backgroundImage: item.dash
+                                        ? `repeating-linear-gradient(90deg, ${item.color} 0 ${item.label === 'home' ? 8 : 4}px, transparent ${item.label === 'home' ? 8 : 4}px ${item.label === 'home' ? 16 : 8}px)`
+                                        : undefined,
+                                    borderBottom: item.dash ? `2px dashed ${item.color}` : undefined,
                                 }}
                             />
                             <Typography variant="body2">{item.label}</Typography>
@@ -670,6 +966,41 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                     </marker>
                                 </defs>
                             </svg>
+                            <Dialog
+                                open={!!this.state.confirmAutoLayoutOpen}
+                                onClose={this.closeConfirmAutoLayout}
+                                aria-labelledby="auto-layout-confirm-title"
+                                aria-describedby="auto-layout-confirm-description"
+                                maxWidth="sm"
+                                fullWidth
+                            >
+                                <DialogTitle id="auto-layout-confirm-title">
+                                    {I18n.t('auto_layout_confirm_title')}
+                                </DialogTitle>
+                                <DialogContent>
+                                    <DialogContentText id="auto-layout-confirm-description">
+                                        {I18n.t('auto_layout_confirm_text')}
+                                    </DialogContentText>
+                                </DialogContent>
+                                <DialogActions sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        fullWidth
+                                        onClick={this.closeConfirmAutoLayout}
+                                    >
+                                        {I18n.t('auto_layout_confirm_cancel')}
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        fullWidth
+                                        onClick={this.confirmAutoLayout}
+                                    >
+                                        {I18n.t('auto_layout_confirm_reorder')}
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
                             <ReactFlow
                                 nodes={nodes}
                                 fitView
@@ -679,7 +1010,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 onPaneClick={this.onPaneClick}
                                 onEdgesChange={this.onEdgesChange}
                                 edgeTypes={{ custom: CustomEdge }}
-                                edges={edges.map(e => ({ ...e, type: 'custom' }))}
+                                edges={safeEdges.map(e => ({ ...e, type: 'custom' }))}
                                 nodeTypes={{
                                     custom: ({ id, data }: any) => {
                                         const handleTypes: Record<string, boolean> = {
@@ -839,6 +1170,33 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 )}
             </Box>
         );
+    }
+
+    // Compute automatic tree layout: trunk is main and nodes connected via prev/next
+    handleAutoLayout(): void {
+        const nav = this.state.navigationMap;
+        if (!nav) {
+            return;
+        }
+        const positions = computeAutoLayout(nav);
+        // rebuild nodes based on navigationMap to ensure ids/entries align with positions
+        const currentById: Record<string, FlowNode> = {};
+        for (const n of this.state.nodes) {
+            currentById[n.id] = n;
+        }
+        const newNodes: FlowNode[] = nav.map(entry => {
+            const existing = currentById[entry.page];
+            const pos = positions[entry.page] ?? existing?.position ?? { x: 0, y: 0 };
+            return {
+                id: entry.page,
+                data: { label: entry.label || entry.page, entry },
+                position: pos,
+                type: existing?.type ?? 'custom',
+                draggable: existing?.draggable ?? true,
+            };
+        });
+        const flow = mapNavigationMapToFlow(nav);
+        this.setState({ nodes: newNodes, edges: flow.edges, dirty: true } as any);
     }
 }
 

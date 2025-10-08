@@ -1,6 +1,11 @@
 {
 	"Panel_Navigation": "Panel Navigation",
 	"refresh": "Refresh",
+	"auto_layout": "Auto layout",
+	"auto_layout_confirm_title": "Reorder navigation?",
+	"auto_layout_confirm_text": "Auto-layout will overwrite saved node positions. Cancel to keep current positions or Reorder to apply automatic layout.",
+	"auto_layout_confirm_cancel": "Cancel — keep order",
+	"auto_layout_confirm_reorder": "Reorder — apply layout",
 	"Adapter_online": "Adapter online",
 	"Adapter_offline": "Adapter offline",
 	"No_data": "No data - Adapter might be offline or no panel configured."
