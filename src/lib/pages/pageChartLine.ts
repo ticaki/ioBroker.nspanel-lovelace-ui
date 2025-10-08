@@ -117,16 +117,26 @@ export class PageChartLine extends PageChart {
                             this.log.debug(`Coordinates: ${coordinates}`);
 
                             // create ticks
-                            const max = Math.max(...tempScale);
-                            const min = Math.min(...tempScale);
-                            const intervall = Math.max(Number(((max - min) / 5).toFixed()), 10);
+                            if (tempScale.length > 0) {
+                                // Round min down to nearest 10 and max up to nearest 10
+                                const rawMax = Math.max(...tempScale);
+                                const rawMin = Math.min(...tempScale);
+                                const roundedMin = Math.floor(rawMin / 10) * 10;
+                                const roundedMax = Math.ceil(rawMax / 10) * 10;
 
-                            this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
+                                // ensure at least a minimal span to avoid zero intervall
+                                const span = Math.max(roundedMax - roundedMin, 10);
+                                const intervall = Math.max(Number((span / 5).toFixed()), 10);
 
-                            let currentTick = min;
-                            while (currentTick < max + intervall) {
-                                ticksChart.push(String(currentTick));
-                                currentTick += intervall;
+                                this.log.debug(
+                                    `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) Intervall: ${intervall}`,
+                                );
+
+                                let currentTick = roundedMin - intervall * 2;
+                                while (currentTick < roundedMax + intervall) {
+                                    ticksChart.push(String(currentTick));
+                                    currentTick += intervall;
+                                }
                             }
                         } else {
                             this.log.warn(
