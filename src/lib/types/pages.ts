@@ -706,7 +706,7 @@ export type cardChartDataItems = {
     data: ChangeTypeOfKeys<PageChartConfig, dataItem.Dataitem | undefined>;
 };
 
-type PageAlarmPowerConfig = {
+type PageAlarmConfig = {
     alarmType?: string; //alarm unlock
     headline: string;
     entity1: typePageItem.ValueEntryType;
@@ -721,11 +721,11 @@ type PageAlarmPowerConfig = {
 };
 export type cardAlarmDataItemOptions = {
     card: 'cardAlarm';
-    data: ChangeTypeOfKeys<PageAlarmPowerConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageAlarmConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardAlarmDataItems = {
     card: 'cardAlarm';
-    data: ChangeTypeOfKeys<PageAlarmPowerConfig, dataItem.Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageAlarmConfig, dataItem.Dataitem | undefined>;
 };
 
 type PageQRBaseConfig = {
