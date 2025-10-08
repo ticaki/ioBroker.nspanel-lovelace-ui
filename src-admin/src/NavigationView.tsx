@@ -419,22 +419,58 @@ function computeAutoLayout(navigationMap: NavigationMap): Record<string, { x: nu
     }
 
     // Final fallback: attach any still-unassigned nodes by resolving via prev/next to nearest trunk
+    // but attach full prev/next chains nested so they render as vertical stacks
     for (const entry of navigationMap) {
         if (assigned.has(entry.page)) {
             continue;
         }
         const attachTo = findAttach(entry.page);
-        if (nodeMap[attachTo] && nodeMap[entry.page] && !nodeMap[attachTo].children.includes(nodeMap[entry.page])) {
-            nodeMap[attachTo].children.push(nodeMap[entry.page]);
+        if (!nodeMap[attachTo]) {
+            // fallback to root if something went wrong
+            continue;
         }
-        assigned.add(entry.page);
+        // collect whole prev->...->next chain for this entry and attach nested
+        const chain = collectChain(entry.page);
+        let prevNode = attachTo;
+        for (const cid of chain) {
+            if (assigned.has(cid)) {
+                prevNode = cid;
+                continue;
+            }
+            const parentObj = nodeMap[prevNode];
+            const childObj = nodeMap[cid];
+            if (!parentObj || !childObj) {
+                prevNode = cid;
+                assigned.add(cid);
+                continue;
+            }
+            if (!parentObj.children.includes(childObj)) {
+                parentObj.children.push(childObj);
+            }
+            assigned.add(cid);
+            // enqueue to process its targets later
+            queue.push(cid);
+            prevNode = cid;
+        }
     }
 
     // layout via d3.tree (vertical tree) then rotate coords for left->right
     const rootNode = hierarchy(root);
     // nodeSize: [verticalSpacing, horizontalSpacing]
     // verticalSpacing halved to show nodes closer together
-    const layout = tree<any>().nodeSize([70, 220]);
+    // estimate horizontal spacing from label widths so nodes don't overlap horizontally
+    const charWidth = 8; // approx px per character (monospace-ish estimate)
+    const paddingHor = 40; // left+right padding per node
+    let maxLabelLen = 1;
+    for (const e of navigationMap) {
+        const label = e.label || e.page || '';
+        maxLabelLen = Math.max(maxLabelLen, String(label).length);
+    }
+    const estNodeWidth = Math.round(maxLabelLen * charWidth + paddingHor);
+    const minH = 140;
+    const maxH = 400;
+    const horizSpacing = Math.min(maxH, Math.max(minH, estNodeWidth));
+    const layout = tree<any>().nodeSize([70, horizSpacing]);
     layout(rootNode);
 
     const positions: Record<string, { x: number; y: number }> = {};
@@ -1002,6 +1038,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 </DialogActions>
                             </Dialog>
                             <ReactFlow
+                                key={selectedPanel || 'navigation-flow'}
                                 nodes={nodes}
                                 fitView
                                 nodesDraggable={true}
