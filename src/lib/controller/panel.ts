@@ -1,3 +1,9 @@
+import type {
+    NavigationMapEntry,
+    NavigationPositionsMap,
+    PageMenuConfigInfo,
+    PanelListEntry,
+} from '../types/navigation';
 import { PanelSend } from './panel-message';
 
 import { Screensaver } from '../pages/screensaver';
@@ -1358,6 +1364,12 @@ export class Panel extends BaseClass {
         const index = this.pages.findIndex(a => a && a.name && a.name === uniqueID);
         return this.pages[index] ?? null;
     }
+    getPageIndexbyUniqueID(uniqueID: string): number {
+        if (!uniqueID) {
+            return -1;
+        }
+        return this.pages.findIndex(a => a && a.name && a.name === uniqueID);
+    }
 
     async writeInfo(): Promise<void> {
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
@@ -2023,6 +2035,121 @@ export class Panel extends BaseClass {
             );
         }
     }
+    saveNavigationMap = async (map: NavigationPositionsMap[]): Promise<void> => {
+        if (!Array.isArray(map)) {
+            this.log.error('Navigation map is not an array!');
+            return;
+        }
+        const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+        if (!o) {
+            this.log.error(`Panel object not found: panels.${this.name}`);
+            return;
+        }
+        if (!o.native) {
+            o.native = {};
+        }
+        o.native.navigationMap = map;
+        await this.adapter.setObject(`panels.${this.name}`, o);
+    };
+
+    async getNavigationArrayForFlow(): Promise<PanelListEntry> {
+        const res: PanelListEntry = {
+            panelName: this.name,
+            friendlyName: this.friendlyName,
+            navigationMap: [],
+        };
+        const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+        let navMapFromConfig: NavigationPositionsMap[] | undefined = undefined;
+        if (o?.native && o.native.navigationMap && Array.isArray(o.native.navigationMap)) {
+            navMapFromConfig = o.native.navigationMap;
+        }
+        const db = this.navigation.getDatabase();
+        for (const nav of db) {
+            if (!nav || !nav.page) {
+                continue;
+            }
+            const pPos = nav.page ? navMapFromConfig?.find(a => a.name === nav.page.name) : undefined;
+            let next: string | undefined = undefined;
+            let prev: string | undefined = undefined;
+            let home: string | undefined = undefined;
+            let parent: string | undefined = undefined;
+            if (typeof nav.right.single === 'number') {
+                const n = db[nav.right.single];
+                next = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.left.single === 'number') {
+                const n = db[nav.left.single];
+                prev = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.right.double === 'number') {
+                const n = db[nav.right.double];
+                home = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.left.double === 'number') {
+                const n = db[nav.left.double];
+                parent = n != null && n.page ? n.page.name : undefined;
+            }
+            let pageInfo: PageMenuConfigInfo = { card: 'unknown', alwaysOn: 'none' };
+            if (pages.isPageMenuConfig(nav.page.config)) {
+                pageInfo = {
+                    ...pageInfo,
+                    card: nav.page.card,
+                    alwaysOn: nav.page.alwaysOn,
+                    scrollPresentation: nav.page.config.scrollPresentation,
+                    scrollType: nav.page.config.scrollType,
+                    scrollAutoTiming:
+                        nav.page.config.scrollPresentation === 'auto' ? nav.page.config.scrollAutoTiming : undefined,
+                } as PageMenuConfigInfo;
+                if (nav.page.pageItemConfig) {
+                    const count = nav.page.pageItemConfig.length;
+                    if (count > 0) {
+                        pageInfo.pageItemCount = count;
+                    }
+                }
+            } else {
+                pageInfo = {
+                    ...pageInfo,
+                    card: nav.page.card,
+                    alwaysOn: nav.page.alwaysOn,
+                } as PageMenuConfigInfo;
+            }
+
+            const navMap: NavigationMapEntry = {
+                label: nav.page ? nav.page.name : '',
+                page: nav.page ? nav.page.name : '',
+                next,
+                prev,
+                home,
+                parent,
+                position: pPos ? pPos.position : undefined,
+                pageInfo,
+            };
+            const targetPages = [];
+            if (nav.page.pageItemConfig) {
+                for (const item of nav.page.pageItemConfig) {
+                    if (item && item.data && 'setNavi' in item.data) {
+                        const n = item.data.setNavi;
+                        if (n && n.type === 'const' && typeof n.constVal === 'string') {
+                            targetPages.push(n.constVal);
+                        }
+                    }
+                }
+            }
+            if (nav.page.config?.data && 'setNavi' in nav.page.config.data) {
+                const n = nav.page.config.data.setNavi;
+                if (n && n.type === 'const' && typeof n.constVal === 'string') {
+                    targetPages.push(n.constVal);
+                }
+            }
+            if (targetPages.length) {
+                navMap.targetPages = targetPages;
+            }
+            res.navigationMap.push(navMap);
+        }
+
+        return res;
+    }
+
     static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
         if ('template' in config && config.template) {
             const template = cardTemplates[config.template];

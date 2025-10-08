@@ -4294,6 +4294,22 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                }           
+            }
+        },
+        "NavigationFlow": {
+            "type": "panel",
+            "label": "Navigation Flow",
+            "expertMode": true,
+            "items": {
+                "_myCustomAttribute": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/NavigationView",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
                 }
             }
         },
@@ -4311,6 +4327,16 @@
                     "md": 12,
                     "lg": 12,
                     "xl": 12
+                },
+                "_staticTextIcon": {
+                    "type": "staticText",
+                    "label": "use Strg+f (Win/Linux) or Cmd+f (Mac) to filter for icons",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
                 },
                 "_iconGrid": {
                     "type": "custom",

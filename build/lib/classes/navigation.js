@@ -202,6 +202,9 @@ class Navigation extends import_library.BaseClass {
       }
     }
   }
+  getDatabase() {
+    return this.database;
+  }
   async setTargetPageByName(n) {
     const index = this.navigationConfig.findIndex((a) => a && a.name === n);
     if (index !== -1) {

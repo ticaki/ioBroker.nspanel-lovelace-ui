@@ -237,6 +237,9 @@ export class Navigation extends BaseClass {
             }
         }
     }
+    getDatabase(): NavigationItem[] {
+        return this.database;
+    }
 
     async setTargetPageByName(n: string): Promise<void> {
         const index = this.navigationConfig.findIndex(a => a && a.name === n);
