@@ -8,7 +8,7 @@
     "auto_layout_confirm_cancel": "Abbrechen — Reihenfolge behalten",
     "auto_layout_confirm_reorder": "Neuordnen — Layout anwenden",
     "unlock_delete_confirm_title": "Element löschen?",
-    "unlock_delete_confirm_text": "Möchten Sie dieses Element wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "unlock_delete_confirm_text": "Möchten Sie dieses Element wirklich löschen?",
     "unlock_select_item": "Eintrag auswählen",
     "unlock_select_description": "Wählen Sie links ein Element aus der Liste, um dessen Einstellungen zu bearbeiten.",
     "unlock_headline": "Überschrift",

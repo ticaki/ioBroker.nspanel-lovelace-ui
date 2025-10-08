@@ -7,7 +7,7 @@
 	"auto_layout_confirm_cancel": "Cancel — keep order",
 	"auto_layout_confirm_reorder": "Reorder — apply layout",
 	"unlock_delete_confirm_title": "Delete item?",
-	"unlock_delete_confirm_text": "Do you really want to delete this item. This action cannot be undone",
+	"unlock_delete_confirm_text": "Do you really want to delete this item?",
 	"unlock_select_item": "Select an item",
 	"unlock_select_description": "Select an item from the list on the left to edit its configuration.",
 	"unlock_headline": "Headline",
