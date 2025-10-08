@@ -1933,6 +1933,29 @@ ${this.info.tasmota.onlineVersion}`;
         const n = db[nav.left.double];
         parent = n != null && n.page ? n.page.name : void 0;
       }
+      let pageInfo = { card: "unknown", alwaysOn: "none" };
+      if (pages.isPageMenuConfig(nav.page.config)) {
+        pageInfo = {
+          ...pageInfo,
+          card: nav.page.card,
+          alwaysOn: nav.page.alwaysOn,
+          scrollPresentation: nav.page.config.scrollPresentation,
+          scrollType: nav.page.config.scrollType,
+          scrollAutoTiming: nav.page.config.scrollPresentation === "auto" ? nav.page.config.scrollAutoTiming : void 0
+        };
+        if (nav.page.pageItemConfig) {
+          const count = nav.page.pageItemConfig.length;
+          if (count > 0) {
+            pageInfo.pageItemCount = count;
+          }
+        }
+      } else {
+        pageInfo = {
+          ...pageInfo,
+          card: nav.page.card,
+          alwaysOn: nav.page.alwaysOn
+        };
+      }
       const navMap = {
         label: nav.page ? nav.page.name : "",
         page: nav.page ? nav.page.name : "",
@@ -1940,7 +1963,8 @@ ${this.info.tasmota.onlineVersion}`;
         prev,
         home,
         parent,
-        position: pPos ? pPos.position : void 0
+        position: pPos ? pPos.position : void 0,
+        pageInfo
       };
       const targetPages = [];
       if (nav.page.pageItemConfig) {

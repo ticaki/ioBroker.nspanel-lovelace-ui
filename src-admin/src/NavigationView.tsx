@@ -1,9 +1,14 @@
 // Konstanten für Adapter-Kommunikation
 import './NavigationView.css';
+import type {
+    NavigationMapEntry,
+    NavigationMap,
+    PanelListEntry,
+    NavigationSavePayload,
+} from '../../src/lib/types/navigation';
+import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from '../../src/lib/types/navigation';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
-const SENDTO_COMMAND = 'getPanelNavigation';
-const SAVE_PANEL_NAVIGATION_COMMAND = 'savePanelNavigation';
 // Typ für das Rückgabeobjekt der mapNavigationMapToFlow-Funktion
 interface FlowData {
     nodes: FlowNode[];
@@ -12,7 +17,7 @@ interface FlowData {
 // Typen für React Flow Nodes und Edges
 interface FlowNode {
     id: string;
-    data: { label: string };
+    data: { label: string; entry?: NavigationMapEntry };
     position: { x: number; y: number };
     type?: string;
     draggable?: boolean;
@@ -29,11 +34,6 @@ interface FlowEdge {
     data?: { isTarget: boolean; navType?: string };
 }
 // State-Interface für die NavigationView-Klasse
-interface PanelListEntry {
-    panelName: string; // technisch eindeutig
-    friendlyName: string; // für Anzeige
-    navigationMap: NavigationMap;
-}
 interface NavigationViewState extends ConfigGenericState {
     alive: boolean;
     loading: boolean;
@@ -42,7 +42,7 @@ interface NavigationViewState extends ConfigGenericState {
     navigationMap: NavigationMap | null;
     noData?: boolean;
 }
-import React from 'react';
+// React import consolidated below with hooks
 import type { EdgeProps } from 'reactflow';
 import ReactFlow, {
     Background,
@@ -51,34 +51,18 @@ import ReactFlow, {
     Position,
     applyNodeChanges,
     applyEdgeChanges,
-    BaseEdge,
     getBezierPath,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
 import { Select, MenuItem, Box, Button, Typography, CircularProgress } from '@mui/material';
+import NodePageInfoPanel from './components/NodePageInfoPanel';
+import { useTheme } from '@mui/material/styles';
+import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/adapter-react-v5';
 // Typdefinitionen für panelConfig (vereinfachte Annahme)
-// Neue Struktur: NavigationMap
-// {
-//   main: { next: 'settings', prev: undefined, home: undefined, parent: undefined, targetPages: ['media'] },
-//   settings: { ... },
-//   ...
-// }
-
-type NavigationMapEntry = {
-    page: string;
-    next?: string;
-    prev?: string;
-    home?: string;
-    parent?: string;
-    targetPages?: string[];
-    label?: string;
-    position?: { x: number; y: number } | null;
-};
-type NavigationMap = NavigationMapEntry[];
-
+// Siehe zentrale Typen in src/lib/types/navigation.ts
 type NavigationPanelConfig = {
     panelName: string;
     friendlyName: string;
@@ -87,13 +71,27 @@ type NavigationPanelConfig = {
 
 function CustomEdge(props: EdgeProps): React.ReactElement {
     const [edgePath] = getBezierPath(props);
-    // Tooltip-Text zusammenbauen
+    const navType = String(props.data?.navType ?? '');
+    const isTarget = !!props.data?.isTarget;
+    const markerId = navType || (isTarget ? 'target' : 'default');
+
     const tooltip = `${props.data?.navType ?? ''}: ${props.source} → ${props.target}`;
+
+    // stroke is passed via style on the FlowEdge (mapNavigationMapToFlow)
+    const stroke = props.style?.stroke ?? 'var(--edge-color, #1976d2)';
+    const dash = props.style?.strokeDasharray;
+
     return (
         <>
-            <BaseEdge
-                {...props}
-                path={edgePath}
+            <path
+                id={props.id}
+                d={edgePath}
+                strokeWidth={props.style?.strokeWidth ?? 2}
+                fill="none"
+                strokeDasharray={dash}
+                markerEnd={`url(#arrow-${markerId})`}
+                className="react-flow__edge-path custom-edge-path"
+                style={{ stroke }}
             />
             <title>{tooltip}</title>
         </>
@@ -103,11 +101,13 @@ function CustomEdge(props: EdgeProps): React.ReactElement {
 // Hilfsfunktion für die Umwandlung der NavigationMap in React Flow Nodes/Edges
 function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
     const edgeColors: Record<string, string> = {
-        prev: '#1976d2', // blau
-        next: '#1976d2', // auch blau
-        home: '#fbc02d', // gelb
-        parent: '#d32f2f', // rot
-        target: '#43a047', // grün für targetPages
+        // Fallback-Werte, CSS-Variablen werden in der UI gesetzt
+        // next/prev erhalten eigene Variablen, fallen aber auf --edge-color zurück
+        prev: 'var(--edge-prev, var(--edge-color, #1976d2))',
+        next: 'var(--edge-next, var(--edge-color, #1976d2))',
+        home: 'var(--edge-home, #fbc02d)', // gelb
+        parent: 'var(--edge-parent, #d32f2f)', // rot
+        target: 'var(--edge-target, #43a047)', // grün für targetPages
     };
     const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry, idx: number) => {
         let position: { x: number; y: number };
@@ -142,6 +142,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 label: '',
                 style: { strokeWidth: 2, stroke: edgeColors.next },
                 data: { isTarget: false, navType: 'next' },
+                className: 'edge-next',
             } as any);
         }
         // prev: von a1.prev zu a2.next
@@ -155,6 +156,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 label: '',
                 style: { strokeWidth: 2, stroke: edgeColors.prev },
                 data: { isTarget: false, navType: 'prev' },
+                className: 'edge-prev',
             } as any);
         }
         // home: von a1.home (links oben) zu a2 (rechts oben)
@@ -168,6 +170,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 label: '',
                 style: { strokeWidth: 2, stroke: edgeColors.home },
                 data: { isTarget: false, navType: 'home' },
+                className: 'edge-home',
             } as any);
         }
         // parent: von a1.parent (links unten) zu a2 (rechts unten)
@@ -181,6 +184,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 label: '',
                 style: { strokeWidth: 2, stroke: edgeColors.parent },
                 data: { isTarget: false, navType: 'parent' },
+                className: 'edge-parent',
             } as any);
         }
         // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links
@@ -196,6 +200,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                         label: '',
                         style: { strokeWidth: 2, strokeDasharray: '4 4', stroke: edgeColors.target },
                         data: { isTarget: true, navType: 'target' },
+                        className: 'edge-target',
                     } as any);
                 }
             }
@@ -209,6 +214,9 @@ interface NavigationViewInternalState extends NavigationViewState {
     edges: FlowEdge[];
     dirty?: boolean;
     noData?: boolean;
+    infoPanelOpen?: boolean;
+    infoData?: Record<string, any> | null;
+    infoNodeId?: string | undefined;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
@@ -220,7 +228,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         if (!selectedPanel || !nodes.length || !dirty || !alive) {
             return;
         }
-        const payload = {
+        const payload: NavigationSavePayload = {
             panelName: selectedPanel,
             pages: nodes.map(n => ({ name: n.id, position: n.position })),
         };
@@ -264,7 +272,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             // console.log('[NavigationView] Speichern übersprungen: Adapter offline');
             return;
         }
-        const payload = {
+        const payload: NavigationSavePayload = {
             panelName: selectedPanel,
             pages: nodes.map(n => ({ name: n.id, position: n.position })),
         };
@@ -295,13 +303,27 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             nodes: [],
             edges: [],
             dirty: false,
+            infoPanelOpen: false,
+            infoData: null,
+            infoNodeId: undefined,
         };
         this.checkAlive = this.checkAlive.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
         this.handlePanelChange = this.handlePanelChange.bind(this);
         this.onNodesChange = this.onNodesChange.bind(this);
         this.onEdgesChange = this.onEdgesChange.bind(this);
+        this.onNodeClick = this.onNodeClick.bind(this);
+        this.onPaneClick = this.onPaneClick.bind(this);
         this.saveNavigation = this.saveNavigation.bind(this);
+    }
+
+    onNodeClick(_event: any, node: any): void {
+        const pageInfo = node?.data?.entry?.pageInfo ?? null;
+        this.setState({ infoPanelOpen: true, infoData: pageInfo, infoNodeId: node.id });
+    }
+
+    onPaneClick(): void {
+        this.setState({ infoPanelOpen: false, infoData: null, infoNodeId: undefined });
     }
 
     componentDidMount(): void {
@@ -364,7 +386,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             }
         }, 3000);
         void this.props.oContext.socket
-            .sendTo(`${ADAPTER_NAME}.${instance}`, SENDTO_COMMAND, null)
+            .sendTo(`${ADAPTER_NAME}.${instance}`, SENDTO_GET_PANEL_NAVIGATION_COMMAND, null)
             .then((res: { result?: NavigationPanelConfig[] }) => {
                 didRespond = true;
                 clearTimeout(timeout);
@@ -435,10 +457,21 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
 
     onNodesChange(changes: any[]): void {
         if (changes.some(change => change.type === 'position')) {
-            this.setState(state => ({
-                nodes: applyNodeChanges(changes, state.nodes) as FlowNode[],
-                dirty: true,
-            }));
+            // Show info panel for the moved node(s) (use first position change)
+            const posChange = changes.find(c => c.type === 'position');
+            const movedId = posChange?.id;
+            this.setState(state => {
+                const newNodes = applyNodeChanges(changes, state.nodes) as FlowNode[];
+                const moved = newNodes.find(n => n.id === movedId);
+                const pageInfo = moved?.data?.entry?.pageInfo ?? null;
+                return {
+                    nodes: newNodes,
+                    dirty: true,
+                    infoPanelOpen: true,
+                    infoData: pageInfo,
+                    infoNodeId: movedId,
+                } as any;
+            });
         } else {
             this.setState(state => ({
                 nodes: applyNodeChanges(changes, state.nodes) as FlowNode[],
@@ -545,19 +578,110 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             </Select>
                         </Box>
                         <div className="reactflow-container">
+                            {/* Global SVG defs for edge arrow markers (rendered once) */}
+                            <svg
+                                style={{ position: 'absolute', width: 0, height: 0, overflow: 'visible' }}
+                                aria-hidden="true"
+                            >
+                                <defs>
+                                    <marker
+                                        id="arrow-default"
+                                        markerWidth="8"
+                                        markerHeight="8"
+                                        refX="8"
+                                        refY="4"
+                                        orient="auto"
+                                        markerUnits="strokeWidth"
+                                    >
+                                        <path
+                                            d="M0,0 L8,4 L0,8 z"
+                                            fill="var(--edge-color, #1976d2)"
+                                        />
+                                    </marker>
+                                    <marker
+                                        id="arrow-target"
+                                        markerWidth="10"
+                                        markerHeight="10"
+                                        refX="10"
+                                        refY="5"
+                                        orient="auto"
+                                        markerUnits="strokeWidth"
+                                    >
+                                        <path
+                                            d="M0,0 L10,5 L0,10 z"
+                                            fill="var(--edge-target, #43a047)"
+                                        />
+                                    </marker>
+                                    <marker
+                                        id="arrow-next"
+                                        markerWidth="8"
+                                        markerHeight="8"
+                                        refX="8"
+                                        refY="4"
+                                        orient="auto"
+                                        markerUnits="strokeWidth"
+                                    >
+                                        <path
+                                            d="M0,0 L8,4 L0,8 z"
+                                            fill="var(--edge-next, #1976d2)"
+                                        />
+                                    </marker>
+                                    <marker
+                                        id="arrow-prev"
+                                        markerWidth="8"
+                                        markerHeight="8"
+                                        refX="8"
+                                        refY="4"
+                                        orient="auto"
+                                        markerUnits="strokeWidth"
+                                    >
+                                        <path
+                                            d="M0,0 L8,4 L0,8 z"
+                                            fill="var(--edge-prev, #1976d2)"
+                                        />
+                                    </marker>
+                                    <marker
+                                        id="arrow-home"
+                                        markerWidth="8"
+                                        markerHeight="8"
+                                        refX="8"
+                                        refY="4"
+                                        orient="auto"
+                                        markerUnits="strokeWidth"
+                                    >
+                                        <path
+                                            d="M0,0 L8,4 L0,8 z"
+                                            fill="var(--edge-home, #fbc02d)"
+                                        />
+                                    </marker>
+                                    <marker
+                                        id="arrow-parent"
+                                        markerWidth="8"
+                                        markerHeight="8"
+                                        refX="8"
+                                        refY="4"
+                                        orient="auto"
+                                        markerUnits="strokeWidth"
+                                    >
+                                        <path
+                                            d="M0,0 L8,4 L0,8 z"
+                                            fill="var(--edge-parent, #d32f2f)"
+                                        />
+                                    </marker>
+                                </defs>
+                            </svg>
                             <ReactFlow
                                 nodes={nodes}
                                 fitView
                                 nodesDraggable={true}
                                 onNodesChange={this.onNodesChange}
+                                onNodeClick={this.onNodeClick}
+                                onPaneClick={this.onPaneClick}
                                 onEdgesChange={this.onEdgesChange}
                                 edgeTypes={{ custom: CustomEdge }}
                                 edges={edges.map(e => ({ ...e, type: 'custom' }))}
                                 nodeTypes={{
                                     custom: ({ id, data }: any) => {
-                                        // Handles für alle Typen, an den gewünschten Positionen
-                                        // prev: oben, next: unten, home: rechts oben, parent: rechts unten, targetRight: rechts Mitte, targetLeft: links Mitte
-                                        // Wir zeigen einen Handle nur, wenn eine Verbindung existiert
                                         const handleTypes: Record<string, boolean> = {
                                             prev: false,
                                             next: false,
@@ -568,7 +692,6 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                             targetRight: false,
                                             targetLeft: false,
                                         };
-                                        // Suche alle Edges, die zu/von diesem Node gehen und markiere die benötigten Handles
                                         for (const edge of edges) {
                                             if (edge.source === id && edge.sourceHandle) {
                                                 handleTypes[edge.sourceHandle] = true;
@@ -577,6 +700,29 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                 handleTypes[edge.targetHandle] = true;
                                             }
                                         }
+                                        // Fallback-Title (native) für pageInfo bauen
+                                        let _pageInfoTooltip: string | undefined;
+                                        const pageInfo = data.entry?.pageInfo;
+                                        if (pageInfo && typeof pageInfo === 'object') {
+                                            const entries = Object.entries(pageInfo).filter(
+                                                ([_key, value]) =>
+                                                    typeof value === 'string' || typeof value === 'number',
+                                            );
+                                            if (entries.length) {
+                                                _pageInfoTooltip = entries
+                                                    .map(
+                                                        ([key, value]) =>
+                                                            `${I18n.t(key)}: ${
+                                                                typeof value === 'string'
+                                                                    ? I18n.t(value)
+                                                                    : String(value)
+                                                            }`,
+                                                    )
+                                                    .join('\n');
+                                            }
+                                        }
+                                        // kept for later use by external scripts; avoid unused-variable lint
+                                        void _pageInfoTooltip;
                                         return (
                                             <Box className="node-box">
                                                 {/* prev: oben */}
@@ -671,6 +817,8 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                 <Typography
                                                     variant="body2"
                                                     color="text.primary"
+                                                    className="node-label"
+                                                    sx={{ position: 'relative', zIndex: 2, cursor: 'move' }}
                                                 >
                                                     {data.label}
                                                 </Typography>
@@ -682,6 +830,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 <Controls />
                                 <Background gap={16} />
                             </ReactFlow>
+                            <NodePageInfoPanel
+                                open={!!this.state.infoPanelOpen}
+                                data={this.state.infoData}
+                            />
                         </div>
                     </>
                 )}
@@ -690,4 +842,32 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 }
 
-export default NavigationView;
+// Optional: ThemeVarsProvider — setzt CSS-Variablen aus dem aktuellen MUI-Theme
+export function ThemeVarsProvider({ children }: { children: React.ReactNode }): React.ReactElement {
+    const theme = useTheme();
+    useEffect(() => {
+        const root = document.documentElement;
+        // Node Hintergrund/Text
+        root.style.setProperty('--node-bg', theme.palette.background.paper || '#fff');
+        root.style.setProperty('--node-text', theme.palette.text.primary || '#000');
+        // Kantenfarben (Primärfarbe als Default für Kanten)
+        root.style.setProperty('--edge-color', theme.palette.primary.main || '#1976d2');
+        // next/prev sollen KEINE Theme-Farben verwenden — feste Farben
+        root.style.setProperty('--edge-next', '#1976d2');
+        root.style.setProperty('--edge-prev', '#1976d2');
+        root.style.setProperty('--edge-home', '#fbc02d');
+        root.style.setProperty('--edge-parent', '#d32f2f');
+        root.style.setProperty('--edge-target', '#43a047');
+    }, [theme]);
+    return <>{children}</>;
+}
+
+export default function WrappedNavigationView(props: ConfigGenericProps): React.ReactElement {
+    return (
+        <ThemeVarsProvider>
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore allow passing through ConfigGenericProps to class component */}
+            <NavigationView {...(props as any)} />
+        </ThemeVarsProvider>
+    );
+}

@@ -1,3 +1,9 @@
+import type {
+    NavigationMapEntry,
+    NavigationPositionsMap,
+    PageMenuConfigInfo,
+    PanelListEntry,
+} from '../types/navigation';
 import { PanelSend } from './panel-message';
 
 import { Screensaver } from '../pages/screensaver';
@@ -2029,7 +2035,7 @@ export class Panel extends BaseClass {
             );
         }
     }
-    saveNavigationMap = async (map: Types.NavigationPositionsMap[]): Promise<void> => {
+    saveNavigationMap = async (map: NavigationPositionsMap[]): Promise<void> => {
         if (!Array.isArray(map)) {
             this.log.error('Navigation map is not an array!');
             return;
@@ -2046,14 +2052,14 @@ export class Panel extends BaseClass {
         await this.adapter.setObject(`panels.${this.name}`, o);
     };
 
-    async getNavigationArrayForFlow(): Promise<Types.PanelListEntry> {
-        const res: Types.PanelListEntry = {
+    async getNavigationArrayForFlow(): Promise<PanelListEntry> {
+        const res: PanelListEntry = {
             panelName: this.name,
             friendlyName: this.friendlyName,
             navigationMap: [],
         };
         const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
-        let navMapFromConfig: Types.NavigationPositionsMap[] | undefined = undefined;
+        let navMapFromConfig: NavigationPositionsMap[] | undefined = undefined;
         if (o?.native && o.native.navigationMap && Array.isArray(o.native.navigationMap)) {
             navMapFromConfig = o.native.navigationMap;
         }
@@ -2083,8 +2089,32 @@ export class Panel extends BaseClass {
                 const n = db[nav.left.double];
                 parent = n != null && n.page ? n.page.name : undefined;
             }
+            let pageInfo: PageMenuConfigInfo = { card: 'unknown', alwaysOn: 'none' };
+            if (pages.isPageMenuConfig(nav.page.config)) {
+                pageInfo = {
+                    ...pageInfo,
+                    card: nav.page.card,
+                    alwaysOn: nav.page.alwaysOn,
+                    scrollPresentation: nav.page.config.scrollPresentation,
+                    scrollType: nav.page.config.scrollType,
+                    scrollAutoTiming:
+                        nav.page.config.scrollPresentation === 'auto' ? nav.page.config.scrollAutoTiming : undefined,
+                } as PageMenuConfigInfo;
+                if (nav.page.pageItemConfig) {
+                    const count = nav.page.pageItemConfig.length;
+                    if (count > 0) {
+                        pageInfo.pageItemCount = count;
+                    }
+                }
+            } else {
+                pageInfo = {
+                    ...pageInfo,
+                    card: nav.page.card,
+                    alwaysOn: nav.page.alwaysOn,
+                } as PageMenuConfigInfo;
+            }
 
-            const navMap: Types.NavigationMapEntry = {
+            const navMap: NavigationMapEntry = {
                 label: nav.page ? nav.page.name : '',
                 page: nav.page ? nav.page.name : '',
                 next,
@@ -2092,6 +2122,7 @@ export class Panel extends BaseClass {
                 home,
                 parent,
                 position: pPos ? pPos.position : undefined,
+                pageInfo,
             };
             const targetPages = [];
             if (nav.page.pageItemConfig) {

@@ -12,15 +12,33 @@
   height: 800px;
 }
 
+/* Custom edge styling */
+.custom-edge-path {
+  transition: stroke 150ms, stroke-width 120ms;
+}
+.custom-edge-path:hover {
+  stroke-width: 3 !important;
+}
+.edge-target .react-flow__edge-path,
+.edge-target .custom-edge-path {
+  stroke-dasharray: 4 4;
+}
+
 .node-box {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background: #868686ff;
+  background: var(--node-bg, #868686ff);
   min-width: 80px;
   text-align: center;
   position: relative;
   cursor: move;
+}
+
+/* Label in der Node: zeigt bewegbaren Cursor */
+.node-box .node-label {
+  cursor: move;
+  color: var(--node-text, inherit);
 }
 
 /* Handles: Farben und Positionen werden weiterhin per class gesteuert */

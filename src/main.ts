@@ -1,3 +1,4 @@
+import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from './lib/types/navigation';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
@@ -24,7 +25,7 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
-import type { PanelListEntry } from './lib/types/types';
+import type { NavigationSavePayload, PanelListEntry } from './lib/types/navigation';
 //import fs from 'fs';
 axios.defaults.timeout = 15_000;
 
@@ -591,11 +592,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
-                case 'savePanelNavigation': {
+                case SAVE_PANEL_NAVIGATION_COMMAND: {
                     if (obj.message && this.controller?.panels) {
-                        const panel = this.controller.panels.find(a => a.name === obj.message.panelName);
+                        const data = obj.message as NavigationSavePayload;
+                        const panel = this.controller.panels.find(a => a.name === data.panelName);
                         if (panel) {
-                            await panel.saveNavigationMap(obj.message.pages);
+                            await panel.saveNavigationMap(data.pages);
                         }
                     }
                     if (obj.callback) {
@@ -603,7 +605,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
-                case 'getPanelNavigation': {
+                case SENDTO_GET_PANEL_NAVIGATION_COMMAND: {
                     const nav: PanelListEntry[] = [];
 
                     if (this.controller?.panels) {
