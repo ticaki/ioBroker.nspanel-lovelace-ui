@@ -642,6 +642,18 @@ const genericStateObjects = {
               write: false
             },
             native: {}
+          },
+          scriptVersion: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.scriptVersion",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
           }
         },
         isOnline: {

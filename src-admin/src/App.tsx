@@ -15,6 +15,7 @@ import {
 
 import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
+import NavigationView from './NavigationView';
 
 import enLocal from './i18n/en.json';
 import deLocal from './i18n/de.json';
@@ -124,6 +125,38 @@ class App extends GenericApp<GenericAppProps, AppState> {
                         </div>
                         <div style={styles.item}>
                             <IconOverview />
+                        </div>
+                        <div style={styles.item}>
+                            <NavigationView
+                                oContext={{
+                                    adapterName: 'nspanel-lovelace-ui',
+                                    socket: this.socket,
+                                    instance: 0,
+                                    themeType: this.state.theme.palette.mode,
+                                    isFloatComma: true,
+                                    dateFormat: '',
+                                    forceUpdate: () => {},
+                                    systemConfig: {} as ioBroker.SystemConfigCommon,
+                                    theme: this.state.theme,
+                                    _themeName: this.state.themeName,
+                                    onCommandRunning: (_commandRunning: boolean): void => {},
+                                }}
+                                alive
+                                changed={JSON.stringify(this.state.originalData) !== JSON.stringify(this.state.data)}
+                                themeName={this.state.theme.palette.mode}
+                                common={{} as ioBroker.InstanceCommon}
+                                attr="myCustomAttribute"
+                                data={this.state.data}
+                                originalData={this.state.originalData}
+                                onError={() => {}}
+                                schema={{
+                                    url: '',
+                                    i18n: true,
+                                    name: 'AdminComponentEasyAccessSet/Components/NavigationView',
+                                    type: 'custom',
+                                }}
+                                onChange={data => this.setState({ data: data as Record<string, any> })}
+                            />
                         </div>
                     </Box>
                 </ThemeProvider>

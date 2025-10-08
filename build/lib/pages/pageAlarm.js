@@ -120,7 +120,7 @@ class PageAlarm extends import_Page.Page {
     this.alarmType = (_c = ((_b = (_a = this.items) == null ? void 0 : _a.data) == null ? void 0 : _b.alarmType) && await this.items.data.alarmType.getString()) != null ? _c : "alarm";
     {
       await this.library.writedp(
-        `panels.${this.name}.alarm`,
+        `panels.${this.basePanel.name}.alarm`,
         void 0,
         import_definition.genericStateObjects.panel.panels.alarm._channel
       );

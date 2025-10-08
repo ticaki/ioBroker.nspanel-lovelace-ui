@@ -70,7 +70,7 @@ export class ConfigManager extends BaseClass {
         }
         /* handle global config */
         if (configManagerConst.isGlobalConfig(configuration)) {
-            let panelConfig = { pages: [], navigation: [] } as Omit<
+            let panelConfig = { pages: [], navigation: [], scriptVersion: '' } as Omit<
                 Partial<panelConfigPartial>,
                 'pages' | 'navigation'
             > & {
@@ -410,7 +410,7 @@ export class ConfigManager extends BaseClass {
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBaseConfig[];
-        } = { pages: [], navigation: [] };
+        } = { pages: [], navigation: [], scriptVersion: config.version };
 
         if (!config.panelTopic) {
             this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);

@@ -1,3 +1,4 @@
+import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from './lib/types/navigation';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
@@ -24,6 +25,7 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
+import type { NavigationSavePayload, PanelListEntry } from './lib/types/navigation';
 //import fs from 'fs';
 axios.defaults.timeout = 15_000;
 
@@ -581,7 +583,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
-        if (typeof obj === 'object' && obj.message) {
+        if (typeof obj === 'object' && obj.message !== undefined && obj.command) {
             this.log.debug(JSON.stringify(obj));
             if (obj.command === 'tftInstallSendToMQTT') {
                 if (obj.message.online === 'no') {
@@ -590,6 +592,38 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
+                case SAVE_PANEL_NAVIGATION_COMMAND: {
+                    if (obj.message && this.controller?.panels) {
+                        const data = obj.message as NavigationSavePayload;
+                        const panel = this.controller.panels.find(a => a.name === data.panelName);
+                        if (panel) {
+                            await panel.saveNavigationMap(data.pages);
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
+                case SENDTO_GET_PANEL_NAVIGATION_COMMAND: {
+                    const nav: PanelListEntry[] = [];
+
+                    if (this.controller?.panels) {
+                        for (const p of this.controller.panels) {
+                            if (p) {
+                                nav.push(await p.getNavigationArrayForFlow());
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: nav }, obj.callback);
+                    }
+
+                    break;
+                }
                 case 'getWeatherEntity': {
                     const adapterObj = await this.getObjectViewAsync('system', 'instance', {
                         startkey: 'system.adapter.',

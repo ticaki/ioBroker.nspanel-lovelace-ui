@@ -571,7 +571,7 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 
 1. **Zentrale Änderungen**: Änderungen im Global Script erfordern nur ein erneutes Ausführen des Global Scripts.
 
-2. **Local Scripts aktualisieren**: Nach Änderungen im Global Script müssen die Local Scripts nicht neu ausgeführt werden - sie verwenden automatisch die aktuelle globale Konfiguration.
+2. **Local Scripts aktualisieren**: Nach Änderungen im Global Script müssen die Local Scripts neu ausgeführt werden
 
 3. **Script-Updates**: Die Type-Definitionen in den Scripts werden bei Updates automatisch aktualisiert, um die Wartungsfreundlichkeit zu gewährleisten.
 
