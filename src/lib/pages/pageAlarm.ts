@@ -108,7 +108,7 @@ export class PageAlarm extends Page {
             this.useStates = true;
         } else */ {
             await this.library.writedp(
-                `panels.${this.name}.alarm`,
+                `panels.${this.basePanel.name}.alarm`,
                 undefined,
                 genericStateObjects.panel.panels.alarm._channel,
             );
