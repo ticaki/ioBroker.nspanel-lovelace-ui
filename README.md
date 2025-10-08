@@ -149,7 +149,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 
 ### **WORK IN PROGRESS**
-- (copilot) Dokumentation der Farb-Theme Keys hinzugefügt (`doc/de/colorTheme.md`, englische Version `doc/en/colorTheme.md`)
+- (copilot) Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)
+- (copilot) Chart scale: rounded to nearest tens
+- (copilot) PagePower: improved icon selection in admin
 
 ### 0.5.0 (2025-10-03)
 - (tt-tom17) Admin UI: Reworked/reordered settings layout and improved usability
