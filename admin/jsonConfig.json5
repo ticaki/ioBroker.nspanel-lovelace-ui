@@ -1674,30 +1674,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power1_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power1_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power1_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power1_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power1_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "solar-power-variant",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "solar-power-variant"
                         },
                         {
                             "attr": "power1_state",
@@ -1894,30 +1883,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power2_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power2_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power2_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power2_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power2_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "transmission-tower",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "transmission-tower"
                         },
                         {
                             "attr": "power2_state",
@@ -2112,30 +2090,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power3_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power3_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power3_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power3_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power3_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "car-electric-outline",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "car-electric-outline"
                         },
                         {
                             "attr": "power3_state",
@@ -2330,30 +2297,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power4_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power4_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power4_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power4_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power4_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "washing-machine",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "washing-machine"
                         },
                         {
                             "attr": "power4_state",
@@ -2548,30 +2504,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power5_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power5_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power5_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power5_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power5_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "tumble-dryer",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "tumble-dryer"
                         },
                         {
                             "attr": "power5_state",
@@ -2766,30 +2711,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power6_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power6_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power6_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power6_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power6_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "shape",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "shape"
                         },
                         {
                             "attr": "power6_state",
