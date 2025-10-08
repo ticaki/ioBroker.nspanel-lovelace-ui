@@ -459,19 +459,29 @@ class PageMedia extends import_pageMenu.PageMenu {
       }
     }
     if (item.data.title) {
-      const v = await tools.getIconEntryColor(item.data.title, isPlaying, import_Color.Color.Red, import_Color.Color.Gray);
+      const v = await tools.getIconEntryColor(
+        item.data.title,
+        isPlaying,
+        import_Color.Color.mediaTitleOn,
+        import_Color.Color.mediaTitleOff
+      );
       if (v !== null) {
         message.titelColor = v;
       }
     }
     if (item.data.artist) {
-      const v = await tools.getIconEntryColor(item.data.artist, isPlaying, import_Color.Color.White, import_Color.Color.Gray);
+      const v = await tools.getIconEntryColor(
+        item.data.artist,
+        isPlaying,
+        import_Color.Color.mediaArtistOn,
+        import_Color.Color.mediaArtistOff
+      );
       if (v !== null) {
         message.artistColor = v;
       }
     }
     if (item.data.onOffColor) {
-      const v = await tools.getIconEntryColor(item.data.onOffColor, isPlaying, import_Color.Color.White);
+      const v = await tools.getIconEntryColor(item.data.onOffColor, isPlaying, import_Color.Color.mediaOnOffColor);
       message.onoffbuttonColor = v !== null ? v : "disable";
     }
     if (item.logoItem) {

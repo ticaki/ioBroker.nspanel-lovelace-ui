@@ -425,7 +425,8 @@ export class Page extends BaseClassPage {
         }
     }
     async delete(): Promise<void> {
-        await super.delete();
+        this.unload = true;
+
         if (this.directChildPage) {
             await this.directChildPage.delete();
             this.directChildPage = undefined;
@@ -441,6 +442,7 @@ export class Page extends BaseClassPage {
         }
         this.pageItems = [];
         this.pageItemConfig = [];
+        await super.delete();
     }
 }
 

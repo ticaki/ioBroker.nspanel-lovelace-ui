@@ -172,7 +172,7 @@
     "RefreshMaintainTable": "Refresh table",
     "timezone": "Timezone",
     "openLinkToTasmota": "Open Tasmota WebUI",
-    "resetTasmota": "Factory reset Tasmota",
+    "resetTasmota": "Factory MQTT reset Tasmota",
     "vScript": "Script version",
     "vTFT": "TFT-Version",
     "vTasmota": "Tasmota-Version",
@@ -224,7 +224,7 @@
     "hiddenByTrigger": "Hide page",
     "headerShutter": "Shutter control",
     "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange.",
-    "mqttServerSetting": "MQTT server settings", 
+    "mqttServerSetting": "MQTT server settings",
     "OFF": "Off",
     "AUTO": "Auto",
     "COOL": "Cool",
@@ -250,5 +250,6 @@
     "trackList": "Track list",
     "media.seek": "Playback position",
     "favoriteList": "Favorites list",
-    "crossfade": "Crossfade"
+    "crossfade": "Crossfade",
+    "iconOverview": "Icon overview"
 }

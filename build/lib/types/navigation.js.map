@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/types/navigation.ts"],
+  "sourcesContent": ["// Typ f\u00FCr pageInfo bei PageMenuConfig (siehe Panel)\nexport interface PageMenuConfigInfo {\n    card: string;\n    alwaysOn?: string;\n    scrollPresentation?: string;\n    scrollType?: string;\n    scrollAutoTiming?: number;\n    pageItemCount?: number;\n}\n// Zentrale Kommandos f\u00FCr Navigation-API\nexport const SENDTO_GET_PANEL_NAVIGATION_COMMAND = 'getPanelNavigation';\nexport const SAVE_PANEL_NAVIGATION_COMMAND = 'savePanelNavigation';\nexport interface NavigationSavePayload {\n    panelName: string;\n    pages: NavigationPositionsMap[];\n}\nexport type NavigationPositionsMap = { name: string; position: { x: number; y: number } };\n// Gemeinsame Typen f\u00FCr Navigation (Panel + Admin UI)\n\nexport interface NavigationMapEntry {\n    page: string;\n    next?: string;\n    prev?: string;\n    home?: string;\n    parent?: string;\n    targetPages?: string[];\n    label?: string;\n    position?: { x: number; y: number } | null;\n    pageInfo?: PageMenuConfigInfo;\n}\n\nexport type NavigationMap = NavigationMapEntry[];\n\nexport interface PanelListEntry {\n    panelName: string;\n    friendlyName: string;\n    navigationMap: NavigationMap;\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAUO,MAAM,sCAAsC;AAC5C,MAAM,gCAAgC;",
+  "names": []
+}

@@ -228,7 +228,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
         | PageItemFanDataItemsOptions
         | PageItemTimerDataItemsOptions
         | PageItemSeparator
-    ) & { filter?: pages.filterType };
+    ) & { filter?: pages.filterType; dismissibleIDGlobal?: string };
 export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
@@ -241,6 +241,7 @@ export type PageItemDataItemsOptions =
           icon?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
           iconText?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
           filter?: pages.filterType;
+          dismissibleIDGlobal?: string;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
               pages.ChangeDeepPartial<

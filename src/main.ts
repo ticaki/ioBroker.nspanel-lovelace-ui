@@ -1,3 +1,4 @@
+import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from './lib/types/navigation';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
@@ -24,6 +25,7 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
+import type { NavigationSavePayload, PanelListEntry } from './lib/types/navigation';
 //import fs from 'fs';
 axios.defaults.timeout = 15_000;
 
@@ -414,6 +416,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.log.error(`Error: ${e}`);
                 }
             }
+            await this.subscribeForeignStatesAsync('*');
+
             if (counter === 0) {
                 return;
             }
@@ -579,7 +583,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
-        if (typeof obj === 'object' && obj.message) {
+        if (typeof obj === 'object' && obj.message !== undefined && obj.command) {
             this.log.debug(JSON.stringify(obj));
             if (obj.command === 'tftInstallSendToMQTT') {
                 if (obj.message.online === 'no') {
@@ -588,6 +592,38 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
+                case SAVE_PANEL_NAVIGATION_COMMAND: {
+                    if (obj.message && this.controller?.panels) {
+                        const data = obj.message as NavigationSavePayload;
+                        const panel = this.controller.panels.find(a => a.name === data.panelName);
+                        if (panel) {
+                            await panel.saveNavigationMap(data.pages);
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
+                case SENDTO_GET_PANEL_NAVIGATION_COMMAND: {
+                    const nav: PanelListEntry[] = [];
+
+                    if (this.controller?.panels) {
+                        for (const p of this.controller.panels) {
+                            if (p) {
+                                nav.push(await p.getNavigationArrayForFlow());
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: nav }, obj.callback);
+                    }
+
+                    break;
+                }
                 case 'getWeatherEntity': {
                     const adapterObj = await this.getObjectViewAsync('system', 'instance', {
                         startkey: 'system.adapter.',
@@ -698,116 +734,112 @@ class NspanelLovelaceUi extends utils.Adapter {
                         while (this.scriptConfigBacklog[0] != null) {
                             const manager = new ConfigManager(this);
                             const obj = this.scriptConfigBacklog[0];
-                            try {
-                                let r: {
-                                    messages: string[];
-                                    panelConfig:
-                                        | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
-                                              navigation: NavigationItemConfig[];
-                                              pages: pages.PageBaseConfig[];
-                                          })
-                                        | undefined;
-                                } = { messages: [], panelConfig: undefined };
-                                if (obj.message.panelTopic && Array.isArray(obj.message.panelTopic)) {
-                                    const topics = JSON.parse(JSON.stringify(obj.message.panelTopic));
-                                    for (const a of topics) {
-                                        r = await manager.setScriptConfig({ ...obj.message, panelTopic: a });
-                                    }
-                                } else {
-                                    r = await manager.setScriptConfig(obj.message);
+                            //try {
+                            let r: {
+                                messages: string[];
+                                panelConfig:
+                                    | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+                                          navigation: NavigationItemConfig[];
+                                          pages: pages.PageBaseConfig[];
+                                      })
+                                    | undefined;
+                            } = { messages: [], panelConfig: undefined };
+                            if (obj.message.panelTopic && Array.isArray(obj.message.panelTopic)) {
+                                const topics = JSON.parse(JSON.stringify(obj.message.panelTopic));
+                                for (const a of topics) {
+                                    r = await manager.setScriptConfig({ ...obj.message, panelTopic: a });
                                 }
-                                //this.log.debug(`ScriptConfig result ${JSON.stringify(r.panelConfig)}`);
-                                if (this.config.testCase) {
-                                    this.testCaseConfig = [r.panelConfig];
-                                } else {
-                                    let reloaded = false;
-                                    try {
-                                        if (r.panelConfig) {
-                                            const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
-                                            if (arr && arr.length > 0) {
-                                                const config = arr[0];
-                                                if (this.controller && config) {
-                                                    const topic = config.topic;
+                            } else {
+                                r = await manager.setScriptConfig(obj.message);
+                            }
+                            //this.log.debug(`ScriptConfig result ${JSON.stringify(r.panelConfig)}`);
+                            if (this.config.testCase) {
+                                this.testCaseConfig = [r.panelConfig];
+                            } else {
+                                let reloaded = false;
+                                //try {
+                                if (r.panelConfig) {
+                                    const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
+                                    if (arr && arr.length > 0) {
+                                        const config = arr[0];
+                                        if (this.controller && config) {
+                                            const topic = config.topic;
 
-                                                    if (topic) {
-                                                        const index = this.controller.panels.findIndex(
-                                                            a => a.topic === topic,
-                                                        );
-                                                        if (index !== -1) {
-                                                            const name =
-                                                                this.controller.panels[index].friendlyName ||
-                                                                config.name ||
-                                                                config.topic;
-                                                            await this.controller.removePanel(
-                                                                this.controller.panels[index],
-                                                            );
-                                                            if (this.unload) {
-                                                                if (obj.callback) {
-                                                                    this.sendTo(
-                                                                        obj.from,
-                                                                        obj.command,
-                                                                        'Adapter is stopping',
-                                                                        obj.callback,
-                                                                    );
-                                                                }
-                                                                return;
-                                                            }
-                                                            await this.delay(1500);
-                                                            if (this.unload) {
-                                                                if (obj.callback) {
-                                                                    this.sendTo(
-                                                                        obj.from,
-                                                                        obj.command,
-                                                                        'Adapter is stopping',
-                                                                        obj.callback,
-                                                                    );
-                                                                }
-                                                                return;
-                                                            }
-                                                            await this.controller.addPanel(config);
-
-                                                            const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
-                                                            this.log.info(msg);
-                                                            r.messages.push(msg);
-                                                            reloaded = true;
-                                                        } else {
-                                                            r.messages.push(
-                                                                `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`,
+                                            if (topic) {
+                                                const index = this.controller.panels.findIndex(a => a.topic === topic);
+                                                if (index !== -1) {
+                                                    const name =
+                                                        this.controller.panels[index].friendlyName ||
+                                                        config.name ||
+                                                        config.topic;
+                                                    await this.controller.removePanel(this.controller.panels[index]);
+                                                    if (this.unload) {
+                                                        if (obj.callback) {
+                                                            this.sendTo(
+                                                                obj.from,
+                                                                obj.command,
+                                                                'Adapter is stopping',
+                                                                obj.callback,
                                                             );
                                                         }
-                                                    } else {
-                                                        r.messages.push(
-                                                            `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`,
-                                                        );
+                                                        return;
                                                     }
+                                                    await this.delay(1500);
+                                                    if (this.unload) {
+                                                        if (obj.callback) {
+                                                            this.sendTo(
+                                                                obj.from,
+                                                                obj.command,
+                                                                'Adapter is stopping',
+                                                                obj.callback,
+                                                            );
+                                                        }
+                                                        return;
+                                                    }
+                                                    await this.controller.addPanel(config);
+
+                                                    const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
+                                                    this.log.info(msg);
+                                                    r.messages.push(msg);
+                                                    reloaded = true;
                                                 } else {
                                                     r.messages.push(
-                                                        this.controller
-                                                            ? `Controller not exist.  Configuration saved. Adapter restart required!`
-                                                            : `Config not exist. `,
+                                                        `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`,
                                                     );
                                                 }
                                             } else {
-                                                r.messages.push(`No config found after conversion`);
+                                                r.messages.push(
+                                                    `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`,
+                                                );
                                             }
                                         } else {
-                                            r.messages.push(`Please send more as 0, '', false, null or undefined!`);
+                                            r.messages.push(
+                                                this.controller
+                                                    ? `Controller not exist.  Configuration saved. Adapter restart required!`
+                                                    : `Config not exist. `,
+                                            );
                                         }
-                                    } catch (e: any) {
+                                    } else {
+                                        r.messages.push(`No config found after conversion`);
+                                    }
+                                } else {
+                                    r.messages.push(`Please send more as 0, '', false, null or undefined!`);
+                                }
+                                /*} catch (e: any) {
                                         this.log.error(`Error in configuration: ${e.message}`);
-                                    }
-                                    if (!reloaded) {
-                                        const msg = `❌ Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
-                                        this.log.info(msg);
-                                        r.messages.push(msg);
-                                    }
+                                    }*/
+                                if (!reloaded) {
+                                    const msg = `❌ Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
+                                    this.log.info(msg);
+                                    r.messages.push(msg);
                                 }
-                                await manager.delete();
-                                result = r.messages;
-                                if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, result, obj.callback);
-                                }
-                            } catch (e: any) {
+                            }
+                            await manager.delete();
+                            result = r.messages;
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, result, obj.callback);
+                            }
+                            /*} catch (e: any) {
                                 this.log.error(`Error in script config processing: ${e.message}`);
                                 if (obj.callback) {
                                     this.sendTo(
@@ -817,7 +849,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         obj.callback,
                                     );
                                 }
-                            }
+                            }*/
                             this.scriptConfigBacklog.shift();
                             if (this.scriptConfigBacklog.length > 0) {
                                 await this.delay(1000);

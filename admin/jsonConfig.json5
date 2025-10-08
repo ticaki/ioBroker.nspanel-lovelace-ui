@@ -2,680 +2,6 @@
     "i18n": true,
     "type": "tabs",
     "items": {
-        "general": {
-            "type": "panel",
-            "label": "mqttServerSetting",
-            "items": {
-                "mqttServer": {
-                    "type": "checkbox",
-                    "label": "mqttServer",
-                    "default": true,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_notifyStaticText": {
-                    "type": "staticText",
-                    "text": "notifyMqttServer",
-                    "style": {
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "hidden": "data.mqttServer",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "_getRandomMqttCredentials": {
-                    "type": "sendTo",
-                    "label": "getRandomMqttCredentials",
-                    "jsonData": "{ \"mqttServer\": \"${data.mqttServer}\" }",
-                    "showProcess": false,
-                    "command": "getRandomMqttCredentials",
-                    "disabled": "data.mqttPort || data.mqttUsername || data.mqttPassword",
-                    "tooltip": "getRandomMqttCredentialsHelp",
-                    "newLine": true,
-                    "useNative": true,
-                    "variant": "contained",
-                    "hidden": "!data.mqttServer",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mqttIp": {
-                    "type": "text",
-                    "label": "mqttIp",
-                    "newLine": true,
-                    "disabled": "data.mqttServer",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mqttPort": {
-                    "type": "text",
-                    "label": "mqttPort",
-                    "newLine": false,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mqttUsername": {
-                    "type": "text",
-                    "label": "mqttUser",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "mqttPassword": {
-                    "type": "password",
-                    "label": "mqttPassword",
-                    "newLine": false,
-                    "validator": "data.mqttPassword.length > 5",
-                    "visible": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "useTasmotaAdmin": {
-                    "type": "checkbox",
-                    "label": "useTasmotaAdmin",
-                    "default": false,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "tasmotaAdminPassword": {
-                    "type": "password",
-                    "label": "tasmotaAdminPassword",
-                    "newLine": false,
-                    "hidden": "!data.useTasmotaAdmin",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_openLinkAdapterInsatllation": {
-                    "type": "staticLink",
-                    "text": "openLinkAdapterInsatllation",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
-                    "icon": "info",
-                    "button": true,
-                    "style": {
-                        "fontSize": 16,
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_openLinkAliasTable": {
-                    "type": "staticLink",
-                    "text": "openLinkAliasTable",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md",
-                    "icon": "web",
-                    "button": true,
-                    "style": {
-                        "fontSize": 16,
-                        "color": "red"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_divider": {
-                    "type": "divider",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                }
-            }
-        },
-        "overview": {
-            "type": "panel",
-            "label": "nsPanelSettings",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
-            "items": {
-                "_useBetaTFTText": {
-                    "type": "staticText",
-                    "label": "useBetaVersionText",
-                    "text": "useBetaVersionText",
-                    "style": {
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "hidden": "!data.useBetaTFT",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_header3": {
-                    "type": "header",
-                    "text": "nsPanelInitLabel",
-                    "size": 3,
-                    "newLine": true
-                },
-                "internalServerIp": {
-                    "type": "ip",
-                    "label": "internalServerIp",
-                    "noInternal": true,
-                    "listenOnAllPorts": false,
-                    "onlyIp4": true,
-                    "validator": "data.internalServerIp && (data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )",
-                    "hidden": "!data.mqttServer",
-                    "default": "",
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 4,
-                    "lg": 3,
-                    "xl": 2
-                },
-                "_tasmotaIP": {
-                    "type": "text",
-                    "label": "ipFromPanel",
-                    "validator": "typeof data._tasmotaIP === 'string' && data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
-                    "validatorErrorText": "mustBeIp",
-                    "default": "",
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 4,
-                    "lg": 3,
-                    "xl": 2
-                },
-                "_tasmotaName": {
-                    "type": "text",
-                    "label": "panelName",
-                    "validator": "",
-                    "default": "",
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 4,
-                    "lg": 3,
-                    "xl": 2
-                },
-                "_tasmotaTopic": {
-                    "type": "text",
-                    "label": "panelTopic",
-                    "validator": "data._tasmotaTopic && data._tasmotaTopic.length > 3 && data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
-                    "default": "",
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 4,
-                    "lg": 3,
-                    "xl": 2
-                },
-                "nsPanelModel": {
-                    "type": "select",
-                    "label": "nsPanelModel",
-                    "validator": "data.nsPanelModel != null",
-                    "default": "",
-                    "options": [
-                        {
-                            "label": "eu-Version",
-                            "value": ""
-                        },
-                        {
-                            "label": "us-l-Version",
-                            "value": "us-l"
-                        },
-                        {
-                            "label": "us-p-Version",
-                            "value": "us-p"
-                        }
-                    ],
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 4,
-                    "lg": 3,
-                    "xl": 2
-                },
-                "timezone": {
-                    "type": "selectSendTo",
-                    "command": "getTimeZones",
-                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
-                    "label": "timezone",
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 4,
-                    "lg": 3,
-                    "xl": 2
-                },
-                "_nsPanelInit": {
-                    "type": "sendTo",
-                    "label": "nsPanelInit",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
-                    "showProcess": true,
-                    "command": "nsPanelInit",
-                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
-                    "hidden": "data.panels && data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) !== -1",
-                    "newLine": true,
-                    "variant": "contained",
-                    "useNative": true,
-                    "confirm": {
-                        "title": "nsPanelInit",
-                        "text": "NSPanel_configuration_text",
-                        "ok": "Start",
-                        "cancel": "Cancel"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_nsPanelUpdate": {
-                    "type": "sendTo",
-                    "label": "nsPanelUpdate",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
-                    "showProcess": true,
-                    "command": "nsPanelInit",
-                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
-                    "hidden": "!data.panels || data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) === -1",
-                    "newLine": true,
-                    "variant": "contained",
-                    "useNative": true,
-                    "confirm": {
-                        "title": "nsPanelUpdate",
-                        "text": "NSPanel_configuration_update_text",
-                        "ok": "Start",
-                        "cancel": "Cancel"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "panels": {
-                    "type": "table",
-                    "label": "overviewOfPanels",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 12,
-                    "xl": 12,
-                    "uniqueColumns": [
-                        "name",
-                        "topic",
-                        "ip"
-                    ],
-                    "items": [
-                        {
-                            "type": "text",
-                            "attr": "id",
-                            "label": "macAdressOfPanel",
-                            "validator": "data.id",
-                            "validatorNoSaveOnError": true,
-                            "readOnly": true
-                        },
-                        {
-                            "type": "text",
-                            "attr": "ip",
-                            "validator": "data.ip",
-                            "default": "",
-                            "label": "ipFromPanel",
-                            "readOnly": true
-                        },
-                        {
-                            "type": "text",
-                            "attr": "name",
-                            "label": "panelName",
-                            "readOnly": true,
-                            "validatorErrorText": "mustBeUnique"
-                        },
-                        {
-                            "type": "text",
-                            "attr": "topic",
-                            "label": "panelTopic",
-                            "readOnly": true,
-                            "validatorErrorText": "mustBeUnique"
-                        }
-                    ]
-                },
-                "_openLinkAdapterInsatllation": {
-                    "type": "staticLink",
-                    "text": "openLinkAdapterInsatllation",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
-                    "icon": "info",
-                    "button": true,
-                    "style": {
-                        "fontSize": 16,
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_header2": {
-                    "type": "header",
-                    "label": "tasmotaDeviceTools",
-                    "text": "tasmotaDeviceTools",
-                    "size": 3,
-                    "newLine": true
-                },
-                "_selectIpForTools": {
-                    "type": "autocompleteSendTo",
-                    "command": "getTasmotaDevices",
-                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
-                    "label": "ipFromPanel",
-                    "freeSolo": true,
-                    "newLine": true,
-                    "validator": "typeof data._selectIpForTools === 'string' && data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
-                    "validatorErrorText": "mustBeIp",
-                    "default": "",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_tasmotaRestartSendTo": {
-                    "type": "sendTo",
-                    "label": "Restart",
-                    "jsonData": "{ \"tasmotaIP\": \"${data._selectIpForTools}\"}",
-                    "showProcess": true,
-                    "command": "tasmotaRestartSendTo",
-                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
-                    "variant": "outlined",
-                    "confirm": {
-                        "title": "Tasmota restart",
-                        "text": "Restart the Tasmota NS panel.",
-                        "ok": "Restart",
-                        "cancel": "Cancel"
-                    },
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_openLinkToTasmota": {
-                    "type": "sendTo",
-                    "label": "openLinkToTasmota",
-                    "jsonData": "{\"ip\": \"${data._selectIpForTools}\"}",
-                    "openUrl": true,
-                    "command": "openLinkToTasmota",
-                    "disabled": "!data._selectIpForTools",
-                    "variant": "outlined",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_berryInstallSendTo": {
-                    "type": "sendTo",
-                    "label": "berryInstallSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\"}",
-                    "showProcess": true,
-                    "command": "berryInstallSendTo",
-                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
-                    "variant": "contained",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_tftInstallSendTo": {
-                    "type": "sendTo",
-                    "label": "tftInstallSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
-                    "showProcess": true,
-                    "command": "tftInstallSendTo",
-                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
-                    "variant": "contained",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_header": {
-                    "type": "header",
-                    "size": 5,
-                    "text": "Expert Mode",
-                    "expertMode": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_resetTasmota": {
-                    "type": "sendTo",
-                    "label": "resetTasmota",
-                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\"}",
-                    "openUrl": true,
-                    "command": "resetTasmota",
-                    "disabled": "!data._selectIpForTools",
-                    "variant": "contained",
-                    "expertMode": true,
-                    "confirm": {
-                        "title": "NSPanel Reset!!!",
-                        "text": "Reset NSPanel configuration on the external device to factory defaults(Wifi not touched).",
-                        "ok": "Reset",
-                        "cancel": "Cancel"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "useBetaTFT": {
-                    "type": "checkbox",
-                    "label": "useBetaVersion",
-                    "default": false,
-                    "newLine": true,
-                    "expertMode": true,
-                    "style": {
-                        "color": "red"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_headerColorTheme": {
-                    "type": "header",
-                    "text": "headerColorTheme",
-                    "size": 3
-                },
-                "colorTheme": {
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 2,
-                    "lg": 1,
-                    "xl": 1,
-                    "type": "select",
-                    "label": "colorTheme",
-                    "default": 0,
-                    "options": [
-                        {
-                            "label": "default",
-                            "value": 0
-                        },
-                        {
-                            "label": "technical",
-                            "value": 2
-                        },
-                        {
-                            "label": "tropical",
-                            "value": 1
-                        },
-                        {
-                            "label": "sunset",
-                            "value": 3
-                        },
-                        {
-                            "label": "volcano",
-                            "value": 4
-                        }
-                    ]
-                },
-                "_headerweatherEntity": {
-                    "type": "header",
-                    "text": "headerweatherEntity",
-                    "size": 3
-                },
-                "weatherEntity": {
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 4,
-                    "lg": 2,
-                    "xl": 2,
-                    "type": "selectSendTo",
-                    "label": "weatherEntityLabel",
-                    "default": "",
-                    "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
-                    "command": "getWeatherEntity"
-                },
-                "_headerDateFormat": {
-                    "type": "header",
-                    "text": "headerDateFormat",
-                    "size": 3
-                },
-                "weekdayFormat": {
-                    "type": "checkbox",
-                    "label": "longWeekdayName",
-                    "default": false,
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 3,
-                    "lg": 2,
-                    "xl": 2
-                },
-                "monthFormat": {
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 2,
-                    "lg": 1,
-                    "xl": 1,
-                    "type": "select",
-                    "label": "MonthFormat",
-                    "default": 0,
-                    "options": [
-                        {
-                            "label": "long",
-                            "value": 0
-                        },
-                        {
-                            "label": "short",
-                            "value": 1
-                        },
-                        {
-                            "label": "numeric",
-                            "value": 2
-                        }
-                    ]
-                },
-                "yearFormat": {
-                    "type": "checkbox",
-                    "label": "longYear",
-                    "default": false,
-                    "xs": 12,
-                    "sm": 6,
-                    "md": 3,
-                    "lg": 2,
-                    "xl": 2
-                },
-                "_headerShutter": {
-                    "type": "header",
-                    "text": "headerShutter",
-                    "size": 3
-                },
-                "shutterClosedIsZero": {
-                    "type": "checkbox",
-                    "label": "shutterClosedIsZero",
-                    "default": true,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_headerCardThermo": {
-                    "type": "header",
-                    "text": "headerCardThermo",
-                    "size": 3
-                },
-                "defaultValueCardThermo": {
-                    "type": "checkbox",
-                    "label": "defaultValueCardThermo",
-                    "help": "defaultValueCardThermoHint",
-                    "default": true,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "doubleClickTime": {
-                    "type": "number",
-                    "label": "doubleClickTime",
-                    "default": 350,
-                    "min": 1,
-                    "max": 2000,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "pw1": {
-                    "type": "password",
-                    "label": "Service-Pin (numbers only)",
-                    "newLine": true,
-                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
-                    "validatorNoSaveOnError": true,
-                    "validatorErrorText": "mustBeNumber",
-                    "xs": 12,
-                    "sm": 8,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 3
-                }
-            }
-        },
         "maintain": {
             "type": "panel",
             "label": "maintain",
@@ -887,7 +213,7 @@
                             "showProcess": true,
                             "command": "tftInstallSendToMQTT",
                             "disabled": "data._online === 'no' || data._ip === ''",
-                            "variant": "outlined",
+                            "variant": "contained",
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
@@ -925,6 +251,1055 @@
                             "md": 6,
                             "lg": 4,
                             "xl": 4
+                        }
+                    ]
+                }
+            }
+        },
+        "globalSetting": {
+            "type": "panel",
+            "label": "globalSetting",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "items": {
+                "_headeruseBetaTFT": {
+                    "type": "header",
+                    "text": "headeruseBetaTFT",
+                    "size": 3
+                },
+                "useBetaTFT": {
+                    "type": "checkbox",
+                    "label": "useBetaVersion",
+                    "default": false,
+                    "newLine": true,
+                    "expertMode": true,
+                    "style": {
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_headerColorTheme": {
+                    "type": "header",
+                    "text": "headerColorTheme",
+                    "size": 3
+                },
+                "colorTheme": {
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 2,
+                    "lg": 1,
+                    "xl": 1,
+                    "type": "select",
+                    "label": "colorTheme",
+                    "default": 0,
+                    "options": [
+                        {
+                            "label": "default",
+                            "value": 0
+                        },
+                        {
+                            "label": "technical",
+                            "value": 2
+                        },
+                        {
+                            "label": "tropical",
+                            "value": 1
+                        },
+                        {
+                            "label": "sunset",
+                            "value": 3
+                        },
+                        {
+                            "label": "volcano",
+                            "value": 4
+                        },
+                        {
+                            "label": "userColors",
+                            "value": 5
+                        }
+                    ]
+                },
+                "_headerweatherEntity": {
+                    "type": "header",
+                    "text": "headerweatherEntity",
+                    "size": 3
+                },
+                "weatherEntity": {
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2,
+                    "type": "selectSendTo",
+                    "label": "weatherEntityLabel",
+                    "default": "",
+                    "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "command": "getWeatherEntity"
+                },
+                "_headerDateFormat": {
+                    "type": "header",
+                    "text": "headerDateFormat",
+                    "size": 3
+                },
+                "weekdayFormat": {
+                    "type": "checkbox",
+                    "label": "longWeekdayName",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "monthFormat": {
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 2,
+                    "lg": 1,
+                    "xl": 1,
+                    "type": "select",
+                    "label": "MonthFormat",
+                    "default": 0,
+                    "options": [
+                        {
+                            "label": "long",
+                            "value": 0
+                        },
+                        {
+                            "label": "short",
+                            "value": 1
+                        },
+                        {
+                            "label": "numeric",
+                            "value": 2
+                        }
+                    ]
+                },
+                "yearFormat": {
+                    "type": "checkbox",
+                    "label": "longYear",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "_headerShutter": {
+                    "type": "header",
+                    "text": "headerShutter",
+                    "size": 3
+                },
+                "shutterClosedIsZero": {
+                    "type": "checkbox",
+                    "label": "shutterClosedIsZero",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_headerCardThermo": {
+                    "type": "header",
+                    "text": "headerCardThermo",
+                    "size": 3
+                },
+                "defaultValueCardThermo": {
+                    "type": "checkbox",
+                    "label": "defaultValueCardThermo",
+                    "help": "defaultValueCardThermoHint",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "doubleClickTime": {
+                    "type": "number",
+                    "label": "doubleClickTime",
+                    "default": 350,
+                    "min": 1,
+                    "max": 2000,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "pw1": {
+                    "type": "password",
+                    "label": "Service-Pin (numbers only)",
+                    "newLine": true,
+                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
+                    "validatorNoSaveOnError": true,
+                    "validatorErrorText": "mustBeNumber",
+                    "xs": 12,
+                    "sm": 8,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                }
+            }
+        },
+        "colorThemen": {
+            "type": "panel",
+            "label": "colorTheme",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || data.colorTheme !== 5",
+            "items": {
+                "_openLinkWikiColorThemes": {
+                    "type": "staticLink",
+                    "text": "openLinkWikiColorThemes",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/ColorThemes",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "colorStates": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "States",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colGood",
+                            "type": "color",
+                            "label": "good",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colBad",
+                            "type": "color",
+                            "label": "bad",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colTrue",
+                            "type": "color",
+                            "label": "true",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFalse",
+                            "type": "color",
+                            "label": "false",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colActivated",
+                            "type": "color",
+                            "label": "activated",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colDeactivated",
+                            "type": "color",
+                            "label": "deactivated",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colAttention",
+                            "type": "color",
+                            "label": "attention",
+                            "default": "#00ffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colInfo",
+                            "type": "color",
+                            "label": "info",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption1",
+                            "type": "color",
+                            "label": "option1",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption2",
+                            "type": "color",
+                            "label": "option2",
+                            "default": "#ffcc00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption3",
+                            "type": "color",
+                            "label": "option3",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption4",
+                            "type": "color",
+                            "label": "option4",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOpen",
+                            "type": "color",
+                            "label": "open",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colClose",
+                            "type": "color",
+                            "label": "close",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colHot",
+                            "type": "color",
+                            "label": "hot",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colCold",
+                            "type": "color",
+                            "label": "cold",
+                            "default": "#0000ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOn",
+                            "type": "color",
+                            "label": "on",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOff",
+                            "type": "color",
+                            "label": "off",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colLight",
+                            "type": "color",
+                            "label": "light",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colDark",
+                            "type": "color",
+                            "label": "dark",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colWarning",
+                            "type": "color",
+                            "label": "warning",
+                            "default": "#ffa500",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSuccess",
+                            "type": "color",
+                            "label": "success",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNeutral",
+                            "type": "color",
+                            "label": "neutral",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colHighlight",
+                            "type": "color",
+                            "label": "highlight",
+                            "default": "#00c8ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colDisabled",
+                            "type": "color",
+                            "label": "disabled",
+                            "default": "#404040",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorNavigation": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "Navigation",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colNavLeft",
+                            "type": "color",
+                            "label": "navLeft",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavRight",
+                            "type": "color",
+                            "label": "navRight",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavDownLeft",
+                            "type": "color",
+                            "label": "navDownLeft",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavDownRight",
+                            "type": "color",
+                            "label": "navDownRight",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavDown",
+                            "type": "color",
+                            "label": "navDown",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavHome",
+                            "type": "color",
+                            "label": "navHome",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavParent",
+                            "type": "color",
+                            "label": "navParent",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorWeatherIcon": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "WeatherIcon",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colSunny",
+                            "type": "color",
+                            "label": "sunny",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colPartlyCloudy",
+                            "type": "color",
+                            "label": "partlyCloudy",
+                            "default": "#999999",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colCloudy",
+                            "type": "color",
+                            "label": "cloudy",
+                            "default": "#555555",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFog",
+                            "type": "color",
+                            "label": "fog",
+                            "default": "#aaaaaa",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colHail",
+                            "type": "color",
+                            "label": "hail",
+                            "default": "#d0d0d0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colLightning",
+                            "type": "color",
+                            "label": "lightning",
+                            "default": "#ffff33",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colLightningRainy",
+                            "type": "color",
+                            "label": "lightningRainy",
+                            "default": "#cccc66",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colPouring",
+                            "type": "color",
+                            "label": "pouring",
+                            "default": "#3333ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colRainy",
+                            "type": "color",
+                            "label": "rainy",
+                            "default": "#6666ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSnowy",
+                            "type": "color",
+                            "label": "snowy",
+                            "default": "#cccccc",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSnowyHeavy",
+                            "type": "color",
+                            "label": "snowyHeavy",
+                            "default": "#bbbbbb",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSnowyRainy",
+                            "type": "color",
+                            "label": "snowyRainy",
+                            "default": "#9999ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colWindy",
+                            "type": "color",
+                            "label": "windy",
+                            "default": "#999999",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colTornado",
+                            "type": "color",
+                            "label": "tornado",
+                            "default": "#ff3232",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colClearNight",
+                            "type": "color",
+                            "label": "clearNight",
+                            "default": "#666666",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colExceptional",
+                            "type": "color",
+                            "label": "exceptional",
+                            "default": "#ff3232",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorDisplay": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "Display",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colForeground",
+                            "type": "color",
+                            "label": "foreground",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colBackground",
+                            "type": "color",
+                            "label": "background",
+                            "default": "#101010",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorWeatherForecast": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "WeatherForecast",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colSolar",
+                            "type": "color",
+                            "label": "solar",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colTemperature",
+                            "type": "color",
+                            "label": "temperature",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colGust",
+                            "type": "color",
+                            "label": "gust",
+                            "default": "#0000ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSunrise",
+                            "type": "color",
+                            "label": "sunrise",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSunset",
+                            "type": "color",
+                            "label": "sunset",
+                            "default": "#ff9900",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorScreensaver": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "Screensaver",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colFgTime",
+                            "type": "color",
+                            "label": "fgTime",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgTimeAmPm",
+                            "type": "color",
+                            "label": "fgTimeAmPm",
+                            "default": "#ffcc00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgDate",
+                            "type": "color",
+                            "label": "fgDate",
+                            "default": "#c0c0c0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgMain",
+                            "type": "color",
+                            "label": "fgMain",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgMainAlt",
+                            "type": "color",
+                            "label": "fgMainAlt",
+                            "default": "#ffcc00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgTimeAdd",
+                            "type": "color",
+                            "label": "fgTimeAdd",
+                            "default": "#00c8ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgForecast",
+                            "type": "color",
+                            "label": "fgForecast",
+                            "default": "#c0c0c0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgBar",
+                            "type": "color",
+                            "label": "fgBar",
+                            "default": "#c0c0c0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorCardMedia": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "cardMedia",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colMediaArtistOn",
+                            "type": "color",
+                            "label": "mediaArtistOn",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaArtistOff",
+                            "type": "color",
+                            "label": "mediaArtistOff",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaTitleOn",
+                            "type": "color",
+                            "label": "mediaTitleOn",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaTitleOff",
+                            "type": "color",
+                            "label": "mediaTitleOff",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaOnOffColor",
+                            "type": "color",
+                            "label": "mediaOnOffColor",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
                         }
                     ]
                 }
@@ -3112,6 +3487,522 @@
                 }
             }
         },
+        "tasmotaTools": {
+            "type": "panel",
+            "label": "tasmotaTools",
+            "expertMode": true,
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "items": {
+                "_openLinkWikiTasmotaTools": {
+                    "type": "staticLink",
+                    "text": "openLinkWikiTasmotaTools",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Tasmota-Tools",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    }
+                },
+                "_header2": {
+                    "type": "header",
+                    "label": "tasmotaDeviceTools",
+                    "text": "tasmotaDeviceTools",
+                    "size": 3,
+                    "newLine": true
+                },
+                "_selectIpForTools": {
+                    "type": "autocompleteSendTo",
+                    "command": "getTasmotaDevices",
+                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
+                    "label": "ipFromPanel",
+                    "freeSolo": true,
+                    "newLine": true,
+                    "validator": "typeof data._selectIpForTools === 'string' && data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
+                    "validatorErrorText": "mustBeIp",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_tasmotaRestartSendTo": {
+                    "type": "sendTo",
+                    "label": "Restart",
+                    "jsonData": "{ \"tasmotaIP\": \"${data._selectIpForTools}\"}",
+                    "showProcess": true,
+                    "command": "tasmotaRestartSendTo",
+                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                    "variant": "outlined",
+                    "confirm": {
+                        "title": "Tasmota restart",
+                        "text": "Restart the Tasmota NS panel.",
+                        "ok": "Restart",
+                        "cancel": "Cancel"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_openLinkToTasmota": {
+                    "type": "sendTo",
+                    "label": "openLinkToTasmota",
+                    "jsonData": "{\"ip\": \"${data._selectIpForTools}\"}",
+                    "openUrl": true,
+                    "command": "openLinkToTasmota",
+                    "disabled": "!data._selectIpForTools",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_berryInstallSendTo": {
+                    "type": "sendTo",
+                    "label": "berryInstallSendTo",
+                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\"}",
+                    "showProcess": true,
+                    "command": "berryInstallSendTo",
+                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                    "variant": "contained",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_tftInstallSendTo": {
+                    "type": "sendTo",
+                    "label": "tftInstallSendTo",
+                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
+                    "showProcess": true,
+                    "command": "tftInstallSendTo",
+                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                    "variant": "contained",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_header": {
+                    "type": "header",
+                    "size": 5,
+                    "text": "Expert Mode",
+                    "expertMode": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_resetTasmota": {
+                    "type": "sendTo",
+                    "label": "resetTasmota",
+                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\"}",
+                    "openUrl": true,
+                    "command": "resetTasmota",
+                    "disabled": "!data._selectIpForTools",
+                    "variant": "contained",
+                    "expertMode": true,
+                    "confirm": {
+                        "title": "NSPanel Reset!!!",
+                        "text": "Reset NSPanel configuration on the external device to factory defaults(Wifi not touched).",
+                        "ok": "Reset",
+                        "cancel": "Cancel"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                }
+            }
+        },
+        "overview": {
+            "type": "panel",
+            "label": "nsPanelSettings",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "items": {
+                "_useBetaTFTText": {
+                    "type": "staticText",
+                    "label": "useBetaVersionText",
+                    "text": "useBetaVersionText",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "hidden": "!data.useBetaTFT",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_header3": {
+                    "type": "header",
+                    "text": "nsPanelInitLabel",
+                    "size": 3,
+                    "newLine": true
+                },
+                "internalServerIp": {
+                    "type": "ip",
+                    "label": "internalServerIp",
+                    "noInternal": true,
+                    "listenOnAllPorts": false,
+                    "onlyIp4": true,
+                    "validator": "data.internalServerIp && (data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )",
+                    "hidden": "!data.mqttServer",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_tasmotaIP": {
+                    "type": "text",
+                    "label": "ipFromPanel",
+                    "validator": "typeof data._tasmotaIP === 'string' && data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
+                    "validatorErrorText": "mustBeIp",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_tasmotaName": {
+                    "type": "text",
+                    "label": "panelName",
+                    "validator": "",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_tasmotaTopic": {
+                    "type": "text",
+                    "label": "panelTopic",
+                    "validator": "data._tasmotaTopic && data._tasmotaTopic.length > 3 && data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "nsPanelModel": {
+                    "type": "select",
+                    "label": "nsPanelModel",
+                    "validator": "data.nsPanelModel != null",
+                    "default": "",
+                    "options": [
+                        {
+                            "label": "eu-Version",
+                            "value": ""
+                        },
+                        {
+                            "label": "us-l-Version",
+                            "value": "us-l"
+                        },
+                        {
+                            "label": "us-p-Version",
+                            "value": "us-p"
+                        }
+                    ],
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "timezone": {
+                    "type": "selectSendTo",
+                    "command": "getTimeZones",
+                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
+                    "label": "timezone",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_nsPanelInit": {
+                    "type": "sendTo",
+                    "label": "nsPanelInit",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
+                    "showProcess": true,
+                    "command": "nsPanelInit",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
+                    "hidden": "data.panels && data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) !== -1",
+                    "newLine": true,
+                    "variant": "contained",
+                    "useNative": true,
+                    "confirm": {
+                        "title": "nsPanelInit",
+                        "text": "NSPanel_configuration_text",
+                        "ok": "Start",
+                        "cancel": "Cancel"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_nsPanelUpdate": {
+                    "type": "sendTo",
+                    "label": "nsPanelUpdate",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
+                    "showProcess": true,
+                    "command": "nsPanelInit",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
+                    "hidden": "!data.panels || data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) === -1",
+                    "newLine": true,
+                    "variant": "contained",
+                    "useNative": true,
+                    "confirm": {
+                        "title": "nsPanelUpdate",
+                        "text": "NSPanel_configuration_update_text",
+                        "ok": "Start",
+                        "cancel": "Cancel"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "panels": {
+                    "type": "table",
+                    "label": "overviewOfPanels",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "uniqueColumns": [
+                        "name",
+                        "topic",
+                        "ip"
+                    ],
+                    "items": [
+                        {
+                            "type": "text",
+                            "attr": "id",
+                            "label": "macAdressOfPanel",
+                            "validator": "data.id",
+                            "validatorNoSaveOnError": true,
+                            "readOnly": true
+                        },
+                        {
+                            "type": "text",
+                            "attr": "ip",
+                            "validator": "data.ip",
+                            "default": "",
+                            "label": "ipFromPanel",
+                            "readOnly": true
+                        },
+                        {
+                            "type": "text",
+                            "attr": "name",
+                            "label": "panelName",
+                            "readOnly": true,
+                            "validatorErrorText": "mustBeUnique"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "topic",
+                            "label": "panelTopic",
+                            "readOnly": true,
+                            "validatorErrorText": "mustBeUnique"
+                        }
+                    ]
+                },
+                "_openLinkAdapterInsatllation": {
+                    "type": "staticLink",
+                    "text": "openLinkAdapterInsatllation",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                }
+            }
+        },
+        "general": {
+            "type": "panel",
+            "label": "mqttServerSetting",
+            "items": {
+                "mqttServer": {
+                    "type": "checkbox",
+                    "label": "mqttServer",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_notifyStaticText": {
+                    "type": "staticText",
+                    "text": "notifyMqttServer",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "hidden": "data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "_getRandomMqttCredentials": {
+                    "type": "sendTo",
+                    "label": "getRandomMqttCredentials",
+                    "jsonData": "{ \"mqttServer\": \"${data.mqttServer}\" }",
+                    "showProcess": false,
+                    "command": "getRandomMqttCredentials",
+                    "disabled": "data.mqttPort || data.mqttUsername || data.mqttPassword",
+                    "tooltip": "getRandomMqttCredentialsHelp",
+                    "newLine": true,
+                    "useNative": true,
+                    "variant": "contained",
+                    "hidden": "!data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttIp": {
+                    "type": "text",
+                    "label": "mqttIp",
+                    "newLine": true,
+                    "disabled": "data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttPort": {
+                    "type": "text",
+                    "label": "mqttPort",
+                    "newLine": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttUsername": {
+                    "type": "text",
+                    "label": "mqttUser",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "mqttPassword": {
+                    "type": "password",
+                    "label": "mqttPassword",
+                    "newLine": false,
+                    "validator": "data.mqttPassword.length > 5",
+                    "visible": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "useTasmotaAdmin": {
+                    "type": "checkbox",
+                    "label": "useTasmotaAdmin",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaAdminPassword": {
+                    "type": "password",
+                    "label": "tasmotaAdminPassword",
+                    "newLine": false,
+                    "hidden": "!data.useTasmotaAdmin",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_openLinkAdapterInsatllation": {
+                    "type": "staticLink",
+                    "text": "openLinkAdapterInsatllation",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_openLinkAliasTable": {
+                    "type": "staticLink",
+                    "text": "openLinkAliasTable",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md",
+                    "icon": "web",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_divider": {
+                    "type": "divider",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                }
+            }
+        },
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
@@ -3380,6 +4271,19 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "myCustomAttribute": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/IconSelect",
+                    "bundlerType": "module",
+                    "xs": 12,
+                    "sm": 10,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                    //"label": "test"
+                },
                 "logUnknownTokens": {
                     "type": "checkbox",
                     "label": "logUnknownTokens",
@@ -3390,6 +4294,56 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                }           
+            }
+        },
+        "NavigationFlow": {
+            "type": "panel",
+            "label": "Navigation Flow",
+            "expertMode": true,
+            "items": {
+                "_myCustomAttribute": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/NavigationView",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
+        "iconOverview": {
+            "type": "panel",
+            "label": "iconOverview",
+            "items": {
+                "_header": {
+                    "type": "header",
+                    "size": 3,
+                    "text": "iconOverview",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "_staticTextIcon": {
+                    "type": "staticText",
+                    "label": "use Strg+f (Win/Linux) or Cmd+f (Mac) to filter for icons",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                },
+                "_iconGrid": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/IconOverview",
+                    "bundlerType": "module"
                 }
             }
         }

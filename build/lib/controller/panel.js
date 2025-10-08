@@ -120,7 +120,8 @@ class Panel extends import_library.BaseClass {
       firmwareUpdate: 100,
       berryDriverVersion: 0,
       berryDriverVersionOnline: 0,
-      currentPage: ""
+      currentPage: "",
+      scriptVersion: "unknown"
     },
     tasmota: {
       firmwareversion: "",
@@ -213,6 +214,7 @@ class Panel extends import_library.BaseClass {
     if (typeof this.panelSend.addMessageTasmota === "function") {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     }
+    this.info.nspanel.scriptVersion = options.scriptVersion || "unknown";
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
     this.statesControler = options.controller.statesControler;
@@ -343,6 +345,7 @@ class Panel extends import_library.BaseClass {
     this.log.debug(`Panel ${this.name} is initialised!`);
     await this.controller.mqttClient.subscribe(`${this.topic}/tele/#`, this.onMessage);
     await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
+    this.log.info(`Setting panel to offline until first message!`);
     this.isOnline = false;
     const channelObj = this.library.cloneObject(
       definition.genericStateObjects.panel.panels._channel
@@ -527,8 +530,6 @@ class Panel extends import_library.BaseClass {
       }
     }
     this.navigation.init();
-    this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
-    this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
     if (this.adapter.config.debugLogPages) {
       this.log.debug(`Panel ${this.name} is initialised!`);
     }
@@ -754,6 +755,7 @@ class Panel extends import_library.BaseClass {
           return;
         }
         if ("Flashing" in msg) {
+          this.log.info(`Going offline for flashing!`);
           this.isOnline = false;
           this.flashing = msg.Flashing.complete < 99;
           this.log.info(`Flashing: ${msg.Flashing.complete}%`);
@@ -1190,12 +1192,12 @@ class Panel extends import_library.BaseClass {
   }
   async delete() {
     var _a;
-    await super.delete();
+    this.unload = true;
     this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
-    !this.adapter.unload && await this.adapter.delay(10);
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
     }
+    this.log.info("Goint offline because delete panel!");
     this.isOnline = false;
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
@@ -1215,11 +1217,12 @@ class Panel extends import_library.BaseClass {
     }
     await this.panelSend.delete();
     this.controller.mqttClient.removeByFunction(this.onMessage);
-    await this.statesControler.deletePageLoop(this.onInternalCommand);
+    this.statesControler.deletePageLoop(this.onInternalCommand);
     this.persistentPageItems = {};
     this.pages = [];
     this._activePage = void 0;
     this.data = {};
+    await super.delete();
   }
   getPagebyUniqueID(uniqueID) {
     var _a;
@@ -1228,6 +1231,12 @@ class Panel extends import_library.BaseClass {
     }
     const index = this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
     return (_a = this.pages[index]) != null ? _a : null;
+  }
+  getPageIndexbyUniqueID(uniqueID) {
+    if (!uniqueID) {
+      return -1;
+    }
+    return this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
   }
   async writeInfo() {
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
@@ -1374,6 +1383,9 @@ class Panel extends import_library.BaseClass {
                 break;
               }
             }
+          }
+          if (await this.screenSaver.onScreensaverTap()) {
+            break;
           }
           if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
             this.navigation.resetPosition();
@@ -1596,7 +1608,7 @@ class Panel extends import_library.BaseClass {
         }
         case "cmd/TasmotaRestart": {
           this.sendToTasmota(`${this.topic}/cmnd/Restart`, "1");
-          this.log.info("Restart Tasmota!");
+          this.log.info("Going offline because of Tasmota restart!");
           this.isOnline = false;
           break;
         }
@@ -1866,6 +1878,117 @@ ${this.info.tasmota.onlineVersion}`;
         definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     }
+  }
+  saveNavigationMap = async (map) => {
+    if (!Array.isArray(map)) {
+      this.log.error("Navigation map is not an array!");
+      return;
+    }
+    const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+    if (!o) {
+      this.log.error(`Panel object not found: panels.${this.name}`);
+      return;
+    }
+    if (!o.native) {
+      o.native = {};
+    }
+    o.native.navigationMap = map;
+    await this.adapter.setObject(`panels.${this.name}`, o);
+  };
+  async getNavigationArrayForFlow() {
+    var _a;
+    const res = {
+      panelName: this.name,
+      friendlyName: this.friendlyName,
+      navigationMap: []
+    };
+    const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+    let navMapFromConfig = void 0;
+    if ((o == null ? void 0 : o.native) && o.native.navigationMap && Array.isArray(o.native.navigationMap)) {
+      navMapFromConfig = o.native.navigationMap;
+    }
+    const db = this.navigation.getDatabase();
+    for (const nav of db) {
+      if (!nav || !nav.page) {
+        continue;
+      }
+      const pPos = nav.page ? navMapFromConfig == null ? void 0 : navMapFromConfig.find((a) => a.name === nav.page.name) : void 0;
+      let next = void 0;
+      let prev = void 0;
+      let home = void 0;
+      let parent = void 0;
+      if (typeof nav.right.single === "number") {
+        const n = db[nav.right.single];
+        next = n != null && n.page ? n.page.name : void 0;
+      }
+      if (typeof nav.left.single === "number") {
+        const n = db[nav.left.single];
+        prev = n != null && n.page ? n.page.name : void 0;
+      }
+      if (typeof nav.right.double === "number") {
+        const n = db[nav.right.double];
+        home = n != null && n.page ? n.page.name : void 0;
+      }
+      if (typeof nav.left.double === "number") {
+        const n = db[nav.left.double];
+        parent = n != null && n.page ? n.page.name : void 0;
+      }
+      let pageInfo = { card: "unknown", alwaysOn: "none" };
+      if (pages.isPageMenuConfig(nav.page.config)) {
+        pageInfo = {
+          ...pageInfo,
+          card: nav.page.card,
+          alwaysOn: nav.page.alwaysOn,
+          scrollPresentation: nav.page.config.scrollPresentation,
+          scrollType: nav.page.config.scrollType,
+          scrollAutoTiming: nav.page.config.scrollPresentation === "auto" ? nav.page.config.scrollAutoTiming : void 0
+        };
+        if (nav.page.pageItemConfig) {
+          const count = nav.page.pageItemConfig.length;
+          if (count > 0) {
+            pageInfo.pageItemCount = count;
+          }
+        }
+      } else {
+        pageInfo = {
+          ...pageInfo,
+          card: nav.page.card,
+          alwaysOn: nav.page.alwaysOn
+        };
+      }
+      const navMap = {
+        label: nav.page ? nav.page.name : "",
+        page: nav.page ? nav.page.name : "",
+        next,
+        prev,
+        home,
+        parent,
+        position: pPos ? pPos.position : void 0,
+        pageInfo
+      };
+      const targetPages = [];
+      if (nav.page.pageItemConfig) {
+        for (const item of nav.page.pageItemConfig) {
+          if (item && item.data && "setNavi" in item.data) {
+            const n = item.data.setNavi;
+            if (n && n.type === "const" && typeof n.constVal === "string") {
+              targetPages.push(n.constVal);
+            }
+          }
+        }
+      }
+      if (((_a = nav.page.config) == null ? void 0 : _a.data) && "setNavi" in nav.page.config.data) {
+        const n = nav.page.config.data.setNavi;
+        if (n && n.type === "const" && typeof n.constVal === "string") {
+          targetPages.push(n.constVal);
+        }
+      }
+      if (targetPages.length) {
+        navMap.targetPages = targetPages;
+      }
+      res.navigationMap.push(navMap);
+    }
+    return res;
   }
   static getPage(config, that) {
     if ("template" in config && config.template) {

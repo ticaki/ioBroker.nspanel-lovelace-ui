@@ -1,0 +1,13 @@
+{
+    "iconOverview": "Icon Übersicht",
+    "Panel_Navigation": "Panel-Navigation",
+    "refresh": "Aktualisieren",
+    "auto_layout": "Auto-Layout",
+    "auto_layout_confirm_title": "Neu anordnen?",
+    "auto_layout_confirm_text": "Auto-Layout überschreibt gespeicherte Positionen der Knoten. 'Abbrechen' behält die aktuelle Reihenfolge, 'Neuordnen' wendet das automatische Layout an.",
+    "auto_layout_confirm_cancel": "Abbrechen — Reihenfolge behalten",
+    "auto_layout_confirm_reorder": "Neuordnen — Layout anwenden",
+    "Adapter_online": "Adapter online",
+    "Adapter_offline": "Adapter offline",
+    "No_data": "Keine Daten – Adapter möglicherweise offline oder kein Panel konfiguriert."
+}

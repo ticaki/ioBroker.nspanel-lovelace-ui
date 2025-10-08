@@ -167,6 +167,96 @@ declare global {
             debugLogMqtt: boolean;
             debugLogStates: boolean;
             debugLogPages: boolean;
+
+            // Color Themes (jede Accordion-Gruppe = Array mit genau einem Objekt)
+            colorStates: {
+                colGood: string;
+                colBad: string;
+                colTrue: string;
+                colFalse: string;
+                colActivated: string;
+                colDeactivated: string;
+                colAttention: string;
+                colInfo: string;
+                colOption1: string;
+                colOption2: string;
+                colOption3: string;
+                colOption4: string;
+                colOpen: string;
+                colClose: string;
+                colHot: string;
+                colCold: string;
+                colOn: string;
+                colOff: string;
+                colLight: string;
+                colDark: string;
+                colWarning: string;
+                colSuccess: string;
+                colNeutral: string;
+                colHighlight: string;
+                colDisabled: string;
+            }[];
+
+            colorNavigation: {
+                colNavLeft: string;
+                colNavRight: string;
+                colNavDownLeft: string;
+                colNavDownRight: string;
+                colNavDown: string;
+                colNavHome: string;
+                colNavParent: string;
+            }[];
+
+            colorWeatherIcon: {
+                colSunny: string;
+                colPartlyCloudy: string;
+                colCloudy: string;
+                colFog: string;
+                colHail: string;
+                colLightning: string;
+                colLightningRainy: string;
+                colPouring: string;
+                colRainy: string;
+                colSnowy: string;
+                colSnowyHeavy: string;
+                colSnowyRainy: string;
+                colWindy: string;
+                colTornado: string;
+                colClearNight: string;
+                colExceptional: string;
+            }[];
+
+            colorDisplay: {
+                colForeground: string;
+                colBackground: string;
+            }[];
+
+            colorWeatherForecast: {
+                colSolar: string;
+                colTemperature: string;
+                colGust: string;
+                colSunrise: string;
+                colSunset: string;
+            }[];
+
+            colorScreensaver: {
+                colFgTime: string;
+                colFgTimeAmPm: string;
+                colFgDate: string;
+                colFgMain: string;
+                colFgMainAlt: string;
+                colFgTimeAdd: string;
+                colFgForecast: string;
+                colFgBar: string;
+            }[];
+
+            colorCardMedia: {
+                colMediaArtistOn: string;
+                colMediaArtistOff: string;
+                colMediaTitleOn: string;
+                colMediaTitleOff: string;
+                colMediaOnOffColor: string;
+            }[];
         }
     }
 }

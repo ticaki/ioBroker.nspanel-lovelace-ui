@@ -202,6 +202,9 @@ class Navigation extends import_library.BaseClass {
       }
     }
   }
+  getDatabase() {
+    return this.database;
+  }
   async setTargetPageByName(n) {
     const index = this.navigationConfig.findIndex((a) => a && a.name === n);
     if (index !== -1) {
@@ -266,7 +269,7 @@ class Navigation extends import_library.BaseClass {
         const index = i[d].double;
         void this.setPageByIndex(index, d);
       }
-    } else if (!single && i && i[d] && i[d].double) {
+    } else if (!single && i && i[d] && i[d].double !== void 0 && i[d].single !== void 0) {
       this.doubleClickTimeout = this.adapter.setTimeout(
         (...arg) => {
           this.go(arg[0], arg[1]);

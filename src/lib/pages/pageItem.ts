@@ -3,7 +3,7 @@ import type { Page } from '../classes/Page';
 import type { PageInterface, PageItemInterface } from '../classes/PageInterface';
 import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
-import type { PopupType } from '../types/types';
+import type { nsPanelState, PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../controller/data-item';
 import {
@@ -260,11 +260,8 @@ export class PageItem extends BaseTriggeredPage {
             const entry = this.dataItems;
             const message: Partial<typePageItem.MessageItem> = {};
             message.intNameEntity = this.id;
-            if (entry.data?.enabled) {
-                const en = await tools.getEnabled(entry.data.enabled);
-                if (en === false) {
-                    return '';
-                }
+            if (!(await this.isEnabled())) {
+                return '';
             }
             switch (entry.type) {
                 case 'light':
@@ -1086,10 +1083,59 @@ export class PageItem extends BaseTriggeredPage {
         if (this.config && this.dataItems) {
             const entry = this.dataItems;
             if (entry.data?.enabled) {
-                return (await tools.getEnabled(entry.data.enabled)) ?? true;
+                if (this.config?.role === 'isDismissiblePerEvent') {
+                    if (this.tempData?.isDismissiblePerEvent) {
+                        return false;
+                    }
+                }
+                const val = await tools.getEnabled(entry.data.enabled);
+                return val ?? true;
             }
         }
         return true;
+    }
+    async onStateChange(_dp: string, _state: { old: nsPanelState; new: nsPanelState }): Promise<void> {
+        if (_state.old.val !== _state.new.val) {
+            if (this.config?.role === 'isDismissiblePerEvent') {
+                if (this.dataItems?.data?.enabled) {
+                    if (Array.isArray(this.dataItems.data.enabled)) {
+                        let found = false;
+                        for (const en of this.dataItems.data.enabled) {
+                            if (en && 'dp' in en.options && en.options.dp === _dp) {
+                                found = true;
+                            }
+                        }
+                        if (found) {
+                            const val = await tools.getEnabled(this.dataItems.data.enabled);
+                            if (!val) {
+                                this.tempData = { ...this.tempData, isDismissiblePerEvent: false };
+                            }
+                        }
+                    } else {
+                        const en = this.dataItems.data.enabled;
+                        if ('dp' in en.options && en.options.dp === _dp) {
+                            const val = await tools.getEnabled(en);
+                            if (!val) {
+                                this.tempData = { ...this.tempData, isDismissiblePerEvent: false };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    getGlobalDismissibleID(): string | null {
+        if (this.config?.role === 'isDismissiblePerEvent') {
+            return this.config?.dismissibleIDGlobal || null;
+        }
+        return null;
+    }
+
+    setDismissiblePerEvent(): void {
+        if (this.config?.role === 'isDismissiblePerEvent') {
+            this.tempData = { ...this.tempData, isDismissiblePerEvent: true };
+        }
     }
 
     async GeneratePopup(mode: PopupType): Promise<string | null> {
@@ -1847,6 +1893,7 @@ export class PageItem extends BaseTriggeredPage {
         return this.parent ? `${this.parent.name}.${this.id}` : this.id;
     }
     async delete(): Promise<void> {
+        this.unload = true;
         if (this.parent.basePanel != null && this.parent.basePanel.persistentPageItems != null) {
             if (this.parent.basePanel.persistentPageItems[this.id]) {
                 if (!this.parent.basePanel.unload) {
@@ -1856,11 +1903,11 @@ export class PageItem extends BaseTriggeredPage {
                 delete this.parent.basePanel.persistentPageItems[this.id];
             }
         }
-        await super.delete();
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
-        await this.controller.statesControler.deletePageLoop();
+        this.controller.statesControler.deletePageLoop();
+        await super.delete();
     }
 
     async onCommand(action: string, value: string): Promise<boolean> {

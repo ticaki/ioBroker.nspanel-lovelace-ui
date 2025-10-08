@@ -35,7 +35,7 @@ module.exports = __toCommonJS(Color_exports);
 var import_colord = require("colord");
 var import_names = __toESM(require("colord/plugins/names"));
 var import_mix = __toESM(require("colord/plugins/mix"));
-var _a, _b;
+var _a, _b, _c;
 (0, import_colord.extend)([import_names.default, import_mix.default]);
 function test(k) {
   return Color[k];
@@ -107,6 +107,12 @@ class ColorBase {
   static gust = "default.color.from.start.gust";
   static sunrise = "default.color.from.start.sunrise";
   static sunset = "default.color.from.start.sunset";
+  // Neue Media-spezifische Defaults
+  static mediaArtistOn = "default.color.from.start.mediaArtistOn";
+  static mediaArtistOff = "default.color.from.start.mediaArtistOff";
+  static mediaTitleOn = "default.color.from.start.mediaTitleOn";
+  static mediaTitleOff = "default.color.from.start.mediaTitleOff";
+  static mediaOnOffColor = "default.color.from.start.mediaOnOffColor";
 }
 class Color extends ColorBase {
   // ——— Extra dark additions (neu) ———
@@ -446,6 +452,17 @@ class Color extends ColorBase {
           return Color.sunrise;
         case "default.color.from.start.sunset":
           return Color.sunset;
+        // Neue Media-spezifische Defaults
+        case "default.color.from.start.mediaArtistOn":
+          return Color.mediaArtistOn;
+        case "default.color.from.start.mediaArtistOff":
+          return Color.mediaArtistOff;
+        case "default.color.from.start.mediaTitleOn":
+          return Color.mediaTitleOn;
+        case "default.color.from.start.mediaTitleOff":
+          return Color.mediaTitleOff;
+        case "default.color.from.start.mediaOnOffColor":
+          return Color.mediaOnOffColor;
         default:
           console.warn(`Color.getColorFromDefault: unknown default color ${s}`);
       }
@@ -480,13 +497,13 @@ class Color extends ColorBase {
     background: Color.HMIDark,
     highlight: Color.HMIOn,
     disabled: Color.HMIOff,
-    navLeft: Color.HMIOn,
-    navRight: Color.HMIOn,
-    navDownLeft: Color.On,
-    navDownRight: Color.On,
-    navDown: Color.Off,
-    navHome: Color.Yellow,
-    navParent: Color.Gray,
+    navLeft: Color.White,
+    navRight: Color.White,
+    navDownLeft: Color.White,
+    navDownRight: Color.White,
+    navDown: Color.White,
+    navHome: Color.White,
+    navParent: Color.White,
     sunny: Color.swSunny,
     partlyCloudy: Color.swPartlycloudy,
     cloudy: Color.swCloudy,
@@ -517,7 +534,13 @@ class Color extends ColorBase {
     fgMainAlt: Color.MSYellow,
     fgTimeAdd: Color.HMIOn,
     fgForecast: Color.LightGray,
-    fgBar: Color.LightGray
+    fgBar: Color.LightGray,
+    // Media-spezifisch
+    mediaArtistOn: Color.Yellow,
+    mediaArtistOff: Color.Gray,
+    mediaTitleOn: Color.Yellow,
+    mediaTitleOff: Color.Gray,
+    mediaOnOffColor: Color.White
   };
   // tropical
   static topicalTheme = {
@@ -584,7 +607,13 @@ class Color extends ColorBase {
     fgForecast: Color.Sand,
     fgBar: Color.Sand,
     solar: Color.Sun,
-    temperature: Color.Sunset
+    temperature: Color.Sunset,
+    // Media-spezifisch
+    mediaArtistOn: Color.Turquoise,
+    mediaArtistOff: Color.Sand,
+    mediaTitleOn: Color.White,
+    mediaTitleOff: Color.LightGray,
+    mediaOnOffColor: Color.Turquoise
   };
   // technical
   static technicalTheme = {
@@ -651,7 +680,13 @@ class Color extends ColorBase {
     fgMainAlt: Color.Cyan,
     fgTimeAdd: Color.Cyan,
     fgForecast: Color.BlueLight,
-    fgBar: Color.DarkGray
+    fgBar: Color.DarkGray,
+    // Media-spezifisch
+    mediaArtistOn: Color.TechMint,
+    mediaArtistOff: Color.AshGray,
+    mediaTitleOn: Color.White,
+    mediaTitleOff: Color.DarkGray,
+    mediaOnOffColor: Color.Cyan
   };
   // sunset
   static sunsetTheme = {
@@ -718,8 +753,15 @@ class Color extends ColorBase {
     fgMainAlt: Color.Magenta,
     fgTimeAdd: Color.Magenta,
     fgForecast: Color.colorSonos,
-    fgBar: Color.Off
+    fgBar: Color.Off,
+    // Media-spezifisch
+    mediaArtistOn: Color.Sunset,
+    mediaArtistOff: Color.Gray,
+    mediaTitleOn: Color.Yellow,
+    mediaTitleOff: Color.Off,
+    mediaOnOffColor: (_c = Color.Orange) != null ? _c : { r: 255, g: 140, b: 0 }
   };
+  // volcano
   static volcanoTheme = {
     good: Color.FlameYellow,
     bad: Color.MagmaRed,
@@ -790,7 +832,13 @@ class Color extends ColorBase {
     fgTimeAdd: Color.FireGlow,
     fgForecast: Color.FlameYellow,
     // Forecast-Werte hellgelb für Kontrast
-    fgBar: Color.AshGray
+    fgBar: Color.AshGray,
+    // Media-spezifisch
+    mediaArtistOn: Color.LavaCore,
+    mediaArtistOff: Color.AshGray,
+    mediaTitleOn: Color.White,
+    mediaTitleOff: Color.FlameYellow,
+    mediaOnOffColor: Color.FireGlow
   };
   /**
    * set color theme...
@@ -1138,6 +1186,9 @@ class Color extends ColorBase {
   }
   static isRGB(F) {
     return typeof F == "object" && "r" in F && "b" in F && "g" in F;
+  }
+  static isHex(F) {
+    return typeof F == "string" && F.startsWith("#") && F.length == 7;
   }
   static isScriptRGB(F) {
     return typeof F == "object" && "red" in F && "blue" in F && "green" in F;

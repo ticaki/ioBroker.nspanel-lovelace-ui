@@ -719,6 +719,7 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         nativePageItems?: any[];
         navigation?: NavigationItemConfig[];
+        maxNavigationAdjustRuns?: number;
     };
 
     export type Config = {
@@ -863,6 +864,8 @@ declare namespace ScriptConfig {
               TextSuffix?: string;
               TextPrefix?: string;
               HeadlineIcon?: string | null;
+              isDismissiblePerEvent?: boolean;
+              dismissibleIDGlobal?: string;
           } & (
               | {
                     Enabled?: string | null | string[];

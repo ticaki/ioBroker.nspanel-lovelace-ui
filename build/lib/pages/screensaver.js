@@ -88,6 +88,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "textNotification", "");
     __publicField(this, "customNotification", false);
     __publicField(this, "activeNotification", false);
+    __publicField(this, "activeNotifyId", "");
     __publicField(this, "rotationLoop", async () => {
       if (!this.visibility) {
         return;
@@ -218,7 +219,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     const layout = this.mode;
     const results = await Promise.all(
       this.pageItems.map(async (pageItem, idx) => {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c;
         const place = (_a = pageItem == null ? void 0 : pageItem.config) == null ? void 0 : _a.modeScr;
         if (!place) {
           return null;
@@ -233,15 +234,19 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         if (max === 0) {
           return null;
         }
-        const enabledNum = await tools.getEnabledNumber((_c = (_b = pageItem.dataItems) == null ? void 0 : _b.data) == null ? void 0 : _c.enabled);
-        if (enabledNum != null) {
-          if (enabledNum >= 0) {
-            const payload2 = await pageItem.getPageItemPayload();
-            return { kind: "overwrite", place, enabledIndex: enabledNum, payload: payload2 };
+        if (place !== "notify") {
+          const enabledNum = await tools.getEnabledNumber((_c = (_b = pageItem.dataItems) == null ? void 0 : _b.data) == null ? void 0 : _c.enabled);
+          if (enabledNum != null) {
+            if (enabledNum >= 0) {
+              const payload2 = await pageItem.getPageItemPayload();
+              if (payload2 !== "") {
+                return { kind: "overwrite", place, enabledIndex: enabledNum, payload: payload2 };
+              }
+            }
+            return null;
           }
-          return null;
         }
-        const enabledBool = await tools.getEnabled((_e = (_d = pageItem.dataItems) == null ? void 0 : _d.data) == null ? void 0 : _e.enabled);
+        const enabledBool = await pageItem.isEnabled();
         if (enabledBool === false) {
           return null;
         }
@@ -300,7 +305,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         } else {
           const arr = msg.split("~");
           arr[0] = "";
-          if (place !== "indicator") {
+          if (place !== "indicator" && place !== "notify") {
             arr[1] = "";
           }
           message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
@@ -452,7 +457,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const text = n[4];
       const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
       const heading = `${n[2]} ${s[0]}`.trim();
-      return { heading, text, prio };
+      const id = n[1];
+      return { heading, text, prio, id };
     }).sort((a, b) => a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1);
     if (this.customNotification === true) {
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, this.customNotification, this.headingNotification, this.textNotification);
@@ -460,11 +466,55 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const heading = notifyList[0].heading;
       const text = notifyList[0].text;
       if (heading !== "" || text !== "") {
+        this.activeNotifyId = notifyList[0].id;
         __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text);
       }
     } else if (this.activeNotification) {
+      this.activeNotifyId = "";
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, false);
     }
+  }
+  async setGlobalNotificationDismiss(id) {
+    var _a;
+    if (!id) {
+      return;
+    }
+    for (const item of this.pageItems || []) {
+      if (item && ((_a = item.config) == null ? void 0 : _a.role) === "isDismissiblePerEvent") {
+        const gId = item.getGlobalDismissibleID();
+        if (gId === id && await item.isEnabled()) {
+          item.setDismissiblePerEvent();
+        }
+      }
+    }
+    await this.HandleNotification();
+  }
+  async deactivateNotify() {
+    var _a, _b;
+    if (this.activeNotifyId) {
+      const id = this.activeNotifyId.split("?")[1];
+      if (id && !isNaN(parseInt(id, 10))) {
+        const item = (_a = this.pageItems) == null ? void 0 : _a[parseInt(id, 10)];
+        if (item && ((_b = item.config) == null ? void 0 : _b.role) === "isDismissiblePerEvent") {
+          item.setDismissiblePerEvent();
+          const globalId = item.getGlobalDismissibleID();
+          if (globalId) {
+            await this.controller.setGlobalNotificationDismiss(globalId);
+          }
+        }
+      }
+      this.activeNotifyId = "";
+      await this.HandleNotification();
+      return true;
+    }
+    return false;
+  }
+  async onScreensaverTap() {
+    const result = await this.deactivateNotify();
+    if (result) {
+      return true;
+    }
+    return false;
   }
   async onButtonEvent(event) {
     if (event.page && event.id && this.pageItems && this.pageItems[event.id]) {
