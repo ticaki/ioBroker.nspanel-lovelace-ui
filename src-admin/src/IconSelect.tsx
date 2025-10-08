@@ -84,7 +84,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                                     <TextField
                                         {...params}
                                         label={this.getText(
-                                            this.props.schema.label || this.props.attr || 'Symbol auswÃ¤hlen',
+                                            this.props.schema.label || this.props.attr || 'Symbol auswählen',
                                         )}
                                         InputProps={{
                                             ...params.InputProps,
