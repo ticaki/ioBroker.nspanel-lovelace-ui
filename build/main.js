@@ -21,7 +21,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
-var import_navigation = require("./lib/types/navigation");
+var import_adminShareConfig = require("./lib/types/adminShareConfig");
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/controller/library");
 var import_register = require("source-map-support/register");
@@ -491,7 +491,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
       switch (obj.command) {
-        case import_navigation.SAVE_PANEL_NAVIGATION_COMMAND: {
+        case import_adminShareConfig.SAVE_PANEL_NAVIGATION_COMMAND: {
           if (obj.message && ((_a = this.controller) == null ? void 0 : _a.panels)) {
             const data = obj.message;
             const panel = this.controller.panels.find((a) => a.name === data.panelName);
@@ -504,7 +504,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
-        case import_navigation.SENDTO_GET_PANEL_NAVIGATION_COMMAND: {
+        case import_adminShareConfig.SENDTO_GET_PANEL_NAVIGATION_COMMAND: {
           const nav = [];
           if ((_b = this.controller) == null ? void 0 : _b.panels) {
             for (const p of this.controller.panels) {

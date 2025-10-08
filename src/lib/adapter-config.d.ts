@@ -13,8 +13,8 @@ declare global {
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             timezone: string;
             useBetaTFT: boolean;
-            weekdayFormat:boolean;
-            monthFormat:number;
+            weekdayFormat: boolean;
+            monthFormat: number;
             yearFormat: boolean;
             shutterClosedIsZero: boolean;
             defaultValueCardThermo: boolean;
@@ -27,7 +27,7 @@ declare global {
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
             doubleClickTime: number;
-            
+
             // tasmota Admin
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
@@ -150,7 +150,7 @@ declare global {
                 hiddenByTrigger: boolean,
                 chart_color: string,
                 selChartType: 'cardChart' | 'cardLChart',
-                selInstanceDataSource: 0| 1,
+                selInstanceDataSource: 0 | 1,
                 selInstance: string,
                 setStateForTicks: string,
                 setStateForValues: string,
@@ -256,6 +256,19 @@ declare global {
                 colMediaTitleOn: string;
                 colMediaTitleOff: string;
                 colMediaOnOffColor: string;
+            }[];
+
+            pageUnlockConfig: {
+                alarmType?: string; // e.g. 'alarm' | 'unlock'
+                headline: string;
+                button1: string;
+                button2: string;
+                button3: string;
+                button4: string;
+                pin: number;
+                approved?: boolean;
+                setNavi?: string;
+                uniqueName: string;
             }[];
         }
     }

@@ -16,24 +16,9 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { withTheme } from '@mui/styles';
-import ConfirmDialog from './ConfirmDialog';
+import ConfirmDialog from './components/ConfirmDialog';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-
-// Type definitions for entries that this page will provide to the admin via attributes
-export type UnlockEntry = {
-    alarmType?: string; // e.g. 'alarm' | 'unlock'
-    headline: string;
-    button1: string;
-    button2: string;
-    button3: string;
-    button4: string;
-    pin: number;
-    approved?: boolean;
-    setNavi?: string;
-    uniqueName: string;
-};
-
-export type UnlockEntries = UnlockEntry[];
+import type { UnlockEntry, UnlockEntries } from '../../src/lib/types/adminShareConfig';
 
 interface UnlockPageState extends ConfigGenericState {
     entries: UnlockEntries;
@@ -138,10 +123,17 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                 }}
                                 sx={{ flex: 1 }}
                             />
+                            {
+                                // disable add when empty or name already exists
+                            }
                             <Button
                                 size="small"
                                 variant="contained"
                                 onClick={doAdd}
+                                disabled={(() => {
+                                    const nameTrim = (local.newName || '').trim();
+                                    return !nameTrim || uniqueNames.includes(nameTrim);
+                                })()}
                             >
                                 +
                             </Button>

@@ -5,8 +5,11 @@ import type {
     NavigationMap,
     PanelListEntry,
     NavigationSavePayload,
-} from '../../src/lib/types/navigation';
-import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from '../../src/lib/types/navigation';
+} from '../../src/lib/types/adminShareConfig';
+import {
+    SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+    SAVE_PANEL_NAVIGATION_COMMAND,
+} from '../../src/lib/types/adminShareConfig';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Typ für das Rückgabeobjekt der mapNavigationMapToFlow-Funktion

@@ -16,12 +16,12 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var navigation_exports = {};
-__export(navigation_exports, {
+var adminShareConfig_exports = {};
+__export(adminShareConfig_exports, {
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND
 });
-module.exports = __toCommonJS(navigation_exports);
+module.exports = __toCommonJS(adminShareConfig_exports);
 const SENDTO_GET_PANEL_NAVIGATION_COMMAND = "getPanelNavigation";
 const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
 // Annotate the CommonJS export names for ESM import in node:
@@ -29,4 +29,4 @@ const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
   SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND
 });
-//# sourceMappingURL=navigation.js.map
+//# sourceMappingURL=adminShareConfig.js.map

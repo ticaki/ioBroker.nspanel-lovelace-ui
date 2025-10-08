@@ -1,4 +1,4 @@
-import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from './lib/types/navigation';
+import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
@@ -25,7 +25,7 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
-import type { NavigationSavePayload, PanelListEntry } from './lib/types/navigation';
+import type { NavigationSavePayload, PanelListEntry } from './lib/types/adminShareConfig';
 //import fs from 'fs';
 axios.defaults.timeout = 15_000;
 

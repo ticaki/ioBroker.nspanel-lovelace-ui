@@ -36,3 +36,19 @@ export interface PanelListEntry {
     friendlyName: string;
     navigationMap: NavigationMap;
 }
+
+// Shared types for admin UI (typo: file name uses 'Shard')
+export type UnlockEntry = {
+    alarmType?: string; // e.g. 'alarm' | 'unlock'
+    headline: string;
+    button1: string;
+    button2: string;
+    button3: string;
+    button4: string;
+    pin: number;
+    approved?: boolean;
+    setNavi?: string;
+    uniqueName: string;
+};
+
+export type UnlockEntries = UnlockEntry[];

@@ -3,7 +3,7 @@ import type {
     NavigationPositionsMap,
     PageMenuConfigInfo,
     PanelListEntry,
-} from '../types/navigation';
+} from '../types/adminShareConfig';
 import { PanelSend } from './panel-message';
 
 import { Screensaver } from '../pages/screensaver';
