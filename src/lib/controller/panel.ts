@@ -2226,7 +2226,7 @@ export class Panel extends BaseClass {
                 position: pPos ? pPos.position : undefined,
                 pageInfo,
             };
-            const targetPages = [];
+            let targetPages: string[] = [];
             if (nav.page.pageItemConfig) {
                 for (const item of nav.page.pageItemConfig) {
                     if (item && item.data && 'setNavi' in item.data) {
@@ -2244,6 +2244,7 @@ export class Panel extends BaseClass {
                 }
             }
             if (targetPages.length) {
+                targetPages = Array.from(new Set(targetPages));
                 navMap.targetPages = targetPages;
             }
             res.navigationMap.push(navMap);

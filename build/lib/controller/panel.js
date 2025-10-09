@@ -2067,7 +2067,7 @@ ${this.info.tasmota.onlineVersion}`;
         position: pPos ? pPos.position : void 0,
         pageInfo
       };
-      const targetPages = [];
+      let targetPages = [];
       if (nav.page.pageItemConfig) {
         for (const item of nav.page.pageItemConfig) {
           if (item && item.data && "setNavi" in item.data) {
@@ -2085,6 +2085,7 @@ ${this.info.tasmota.onlineVersion}`;
         }
       }
       if (targetPages.length) {
+        targetPages = Array.from(new Set(targetPages));
         navMap.targetPages = targetPages;
       }
       res.navigationMap.push(navMap);
