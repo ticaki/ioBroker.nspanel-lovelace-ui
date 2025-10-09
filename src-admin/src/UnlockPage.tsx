@@ -30,6 +30,7 @@ interface UnlockPageState extends ConfigGenericState {
     confirmDeleteOpen?: boolean;
     confirmDeleteName?: string | null;
     pagesList?: string[];
+    alive?: boolean;
 }
 
 interface LocalUIState {
@@ -40,6 +41,8 @@ interface LocalUIState {
 
 class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, UnlockPageState> {
     private _local: LocalUIState | null = null;
+    private aliveTimeout?: NodeJS.Timeout;
+
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
         const saved = ConfigGeneric.getValue(props.data, props.attr!);
@@ -48,13 +51,34 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
             entries: Array.isArray(saved) ? (saved as UnlockEntries) : [],
             confirmDeleteOpen: false,
             confirmDeleteName: null,
+            alive: false,
         } as UnlockPageState;
     }
 
+    checkAlive(): void {
+        const instance = this.props.oContext.instance ?? '0';
+        const socket = this.props.oContext.socket;
+        if (socket && typeof socket.getState === 'function') {
+            void socket.getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`).then(state => {
+                this.setState({ alive: !!state?.val } as UnlockPageState);
+                this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+            });
+        } else {
+            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.aliveTimeout) {
+            clearTimeout(this.aliveTimeout);
+        }
+    }
+
     async componentDidMount(): Promise<void> {
+        this.checkAlive();
         // preload pages list for setNavi select
         const pages: string[] = [];
-        if (this.props.oContext && this.props.oContext.socket) {
+        if (this.props.oContext && this.props.oContext.socket && this.state.alive) {
             const instance = this.props.oContext.instance ?? '0';
             const target = `${ADAPTER_NAME}.${instance}`;
             try {

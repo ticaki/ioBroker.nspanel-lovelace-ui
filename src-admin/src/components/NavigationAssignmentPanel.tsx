@@ -45,6 +45,7 @@ type State = {
     assignments: NavigationAssignmentList;
     // pages per panelTopic
     pagesMap: Record<string, string[]>;
+    alive?: boolean;
 };
 
 /**
@@ -58,6 +59,8 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         widthPercent: 30,
     } as Props;
 
+    private aliveTimeout?: NodeJS.Timeout;
+
     constructor(props: Props) {
         super(props);
         this.state = {
@@ -66,10 +69,35 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             added: [],
             assignments: props.currentAssignments || [],
             pagesMap: {},
+            alive: false,
         };
     }
 
+    checkAlive(): void {
+        if (!this.props.oContext || !this.props.oContext.socket) {
+            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+            return;
+        }
+        const instance = this.props.oContext.instance ?? '0';
+        const socket = this.props.oContext.socket;
+        if (socket && typeof socket.getState === 'function') {
+            void socket.getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`).then((state: any) => {
+                this.setState({ alive: !!state?.val });
+                this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+            });
+        } else {
+            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.aliveTimeout) {
+            clearTimeout(this.aliveTimeout);
+        }
+    }
+
     async componentDidMount(): Promise<void> {
+        this.checkAlive();
         // load panels but do not auto-select anything so select stays on '—'
         await this.loadPanels(false);
         // initialize from incoming props once panels are available
@@ -113,7 +141,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             let list: PanelInfo[] = [];
             if (this.props.fetchPanels) {
                 list = await this.props.fetchPanels();
-            } else if (this.props.oContext && this.props.oContext.socket) {
+            } else if (this.props.oContext && this.props.oContext.socket && this.state.alive) {
                 const instance = this.props.oContext.instance ?? '0';
                 const target = `${ADAPTER_NAME}.${instance}`;
                 try {
@@ -206,7 +234,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                 return;
             }
             let list: string[] = [];
-            if (this.props.oContext && this.props.oContext.socket) {
+            if (this.props.oContext && this.props.oContext.socket && this.state.alive) {
                 const instance = this.props.oContext.instance ?? '0';
                 const target = `${ADAPTER_NAME}.${instance}`;
                 const payload = { panelTopic: topic };
@@ -229,9 +257,12 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                 console.warn('[NavigationAssignmentPanel] no oContext.socket available to sendTo');
             }
 
-            const next = { ...(this.state.pagesMap || {}) };
-            next[topic] = list;
-            this.setState({ pagesMap: next });
+            // Only cache non-empty results; empty arrays indicate invalid/missing data
+            if (list.length > 0) {
+                const next = { ...(this.state.pagesMap || {}) };
+                next[topic] = list;
+                this.setState({ pagesMap: next });
+            }
         } catch {
             // ignore
         }
@@ -454,12 +485,23 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 displayEmpty
                                 aria-label="prev"
                                 value={this.getNavValue(this.state.selectedAddedTopic, 'prev')}
+                                onOpen={() => {
+                                    if (this.state.selectedAddedTopic) {
+                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                    }
+                                }}
                                 onChange={e =>
                                     this.setNavigationForSelected({ prev: String(e.target.value) || undefined })
                                 }
                                 sx={{ width: '100%' }}
                             >
-                                <MenuItem value="">{<em>—</em>}</MenuItem>
+                                <MenuItem value="">
+                                    {this.state.selectedAddedTopic ? (
+                                        <em>—</em>
+                                    ) : (
+                                        <em>{I18n.t('select_panel_first')}</em>
+                                    )}
+                                </MenuItem>
                                 {pages
                                     .filter((p: string) => p !== this.props.uniqueName)
                                     .map((p: string) => (
@@ -489,12 +531,23 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 displayEmpty
                                 aria-label="next"
                                 value={this.getNavValue(this.state.selectedAddedTopic, 'next')}
+                                onOpen={() => {
+                                    if (this.state.selectedAddedTopic) {
+                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                    }
+                                }}
                                 onChange={e =>
                                     this.setNavigationForSelected({ next: String(e.target.value) || undefined })
                                 }
                                 sx={{ width: '100%' }}
                             >
-                                <MenuItem value="">{<em>—</em>}</MenuItem>
+                                <MenuItem value="">
+                                    {this.state.selectedAddedTopic ? (
+                                        <em>—</em>
+                                    ) : (
+                                        <em>{I18n.t('select_panel_first')}</em>
+                                    )}
+                                </MenuItem>
                                 {pages
                                     .filter((p: string) => p !== this.props.uniqueName && !p.startsWith('///'))
                                     .map((p: string) => (
@@ -521,6 +574,11 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 displayEmpty
                                 aria-label="home"
                                 value={this.getNavValue(this.state.selectedAddedTopic, 'home')}
+                                onOpen={() => {
+                                    if (this.state.selectedAddedTopic) {
+                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                    }
+                                }}
                                 onChange={e =>
                                     this.setNavigationForSelected({ home: String(e.target.value) || undefined })
                                 }
@@ -553,6 +611,11 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 displayEmpty
                                 aria-label="parent"
                                 value={this.getNavValue(this.state.selectedAddedTopic, 'parent')}
+                                onOpen={() => {
+                                    if (this.state.selectedAddedTopic) {
+                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                    }
+                                }}
                                 onChange={e =>
                                     this.setNavigationForSelected({ parent: String(e.target.value) || undefined })
                                 }
@@ -572,6 +635,30 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                             </Select>
                         </Box>
                     </Box>
+
+                    {/* Notice when no next/prev is selected */}
+                    {(() => {
+                        if (!this.state.selectedAddedTopic) {
+                            return null;
+                        }
+                        const nextValue = this.getNavValue(this.state.selectedAddedTopic, 'next');
+                        const prevValue = this.getNavValue(this.state.selectedAddedTopic, 'prev');
+                        if (!nextValue && !prevValue) {
+                            return (
+                                <>
+                                    <Divider sx={{ my: 2 }} />
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ fontStyle: 'italic', lineHeight: 1.4 }}
+                                    >
+                                        {I18n.t('nav_target_only_notice')}
+                                    </Typography>
+                                </>
+                            );
+                        }
+                        return null;
+                    })()}
 
                     {/* children area removed as requested (was rendered below the parent select) */}
                 </Box>
