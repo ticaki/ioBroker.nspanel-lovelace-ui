@@ -5,6 +5,8 @@ import {
     Typography,
     Button,
     TextField,
+    Select,
+    MenuItem,
     RadioGroup,
     FormControlLabel,
     Radio,
@@ -15,15 +17,19 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
+import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import type { UnlockEntry, UnlockEntries } from '../../src/lib/types/adminShareConfig';
+import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
 
 interface UnlockPageState extends ConfigGenericState {
     entries: UnlockEntries;
     confirmDeleteOpen?: boolean;
     confirmDeleteName?: string | null;
+    pagesList?: string[];
 }
 
 class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, UnlockPageState> {
@@ -36,6 +42,48 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
             confirmDeleteOpen: false,
             confirmDeleteName: null,
         } as UnlockPageState;
+    }
+
+    async componentDidMount(): Promise<void> {
+        // preload pages list for setNavi select
+        const pages: string[] = [];
+        if (this.props.oContext && this.props.oContext.socket) {
+            const instance = this.props.oContext.instance ?? '0';
+            const target = `${ADAPTER_NAME}.${instance}`;
+            try {
+                const rawPanels = await this.props.oContext.socket.sendTo(target, 'getPanels', null);
+                let panels: { panelTopic: string }[] = [];
+                if (Array.isArray(rawPanels)) {
+                    panels = rawPanels;
+                } else if (rawPanels && Array.isArray(rawPanels.result)) {
+                    panels = rawPanels.result;
+                }
+
+                for (const p of panels) {
+                    try {
+                        const rawPages = await this.props.oContext.socket.sendTo(target, 'getPagesForPanel', {
+                            panelTopic: p.panelTopic,
+                        });
+                        let list: string[] = [];
+                        if (Array.isArray(rawPages)) {
+                            list = rawPages;
+                        } else if (rawPages && Array.isArray(rawPages.result)) {
+                            list = rawPages.result;
+                        }
+                        for (const name of list) {
+                            pages.push(name);
+                        }
+                    } catch {
+                        // ignore per-panel errors
+                    }
+                }
+            } catch {
+                // ignore
+            }
+        }
+
+        // remove duplicates and set state
+        this.setState({ pagesList: Array.from(new Set(pages)) } as UnlockPageState);
     }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
@@ -213,108 +261,117 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                     ariaDescId="unlock-delete-confirm-description"
                 />
 
-                {/* right area: 80% width with subtle divider */}
-                <Box sx={{ width: '80%', pl: 2, borderLeft: '1px solid', borderColor: 'divider' }}>
-                    <Paper
-                        sx={{ height: '100%', p: 2 }}
-                        elevation={1}
-                    >
-                        {!local.selected ? (
-                            // nothing selected: show only hint
-                            <Box>
-                                <Typography variant="h6">{this.getText('unlock_select_item')}</Typography>
-                                <Box sx={{ mt: 2 }}>
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-                                        {this.getText('unlock_select_description')}
-                                    </Typography>
+                {/* right area: main content + optional collapsible side panel */}
+                <Box
+                    sx={{
+                        width: '80%',
+                        pl: 2,
+                        display: 'flex',
+                        gap: 1,
+                        position: 'relative',
+                    }}
+                >
+                    <Box sx={{ width: '70%', borderLeft: '1px solid', borderColor: 'divider' }}>
+                        <Paper
+                            sx={{ height: '100%', p: 2 }}
+                            elevation={1}
+                        >
+                            {!local.selected ? (
+                                // nothing selected: show only hint
+                                <Box>
+                                    <Typography variant="h6">{this.getText('unlock_select_item')}</Typography>
+                                    <Box sx={{ mt: 2 }}>
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+                                            {this.getText('unlock_select_description')}
+                                        </Typography>
+                                    </Box>
                                 </Box>
-                            </Box>
-                        ) : (
-                            // item selected: show config (hide the helper description)
-                            <Box>
-                                {/* editable headline */}
-                                {(() => {
-                                    const sel = local.selected;
-                                    const ent = entries.find(e => e.uniqueName === sel);
-                                    if (!ent) {
-                                        return null;
-                                    }
+                            ) : (
+                                // item selected: show config (hide the helper description)
+                                <Box>
+                                    {/* editable headline */}
+                                    {(() => {
+                                        const sel = local.selected;
+                                        const ent = entries.find(e => e.uniqueName === sel);
+                                        if (!ent) {
+                                            return null;
+                                        }
 
-                                    return (
-                                        <>
-                                            {/* Radio for Alarm vs Unlock (placed above Headline) */}
-                                            <Box sx={{ mb: 1 }}>
-                                                <FormControl component="fieldset">
+                                        return (
+                                            <>
+                                                {/* UniqueName display (distinct from headline datapoint) */}
+                                                <Box
+                                                    sx={{
+                                                        mb: 1,
+                                                        p: 1,
+                                                        borderRadius: 1,
+                                                        backgroundColor: 'action.hover',
+                                                    }}
+                                                >
                                                     <Typography
                                                         variant="subtitle2"
-                                                        sx={{ mb: 1 }}
+                                                        sx={{ mb: 0.5 }}
                                                     >
-                                                        {this.getText('unlock_type')}
+                                                        {this.getText('unlock_unique_label')}
                                                     </Typography>
-                                                    <RadioGroup
-                                                        row
-                                                        value={ent?.alarmType || ''}
-                                                        onChange={(_e, val) => {
-                                                            const updated = entries.map(it =>
-                                                                it.uniqueName === sel ? { ...it, alarmType: val } : it,
-                                                            );
-                                                            this.setState({ entries: updated } as UnlockPageState);
-                                                            void this.onChange(this.props.attr!, updated);
-                                                        }}
+                                                    <Typography
+                                                        variant="h6"
+                                                        sx={{ fontWeight: 600 }}
                                                     >
-                                                        <FormControlLabel
-                                                            value="alarm"
-                                                            control={<Radio />}
-                                                            label={this.getText('unlock_alarm')}
-                                                        />
-                                                        <FormControlLabel
-                                                            value="unlock"
-                                                            control={<Radio />}
-                                                            label={this.getText('unlock_unlock')}
-                                                        />
-                                                    </RadioGroup>
-                                                </FormControl>
-                                            </Box>
+                                                        {sel}
+                                                    </Typography>
+                                                </Box>
 
-                                            <TextField
-                                                fullWidth
-                                                variant="standard"
-                                                label={this.getText('unlock_headline')}
-                                                value={ent.headline ?? ''}
-                                                onChange={e => {
-                                                    const v = e.target.value;
-                                                    const updated = entries.map(it =>
-                                                        it.uniqueName === sel ? { ...it, headline: v } : it,
-                                                    );
-                                                    this.setState({ entries: updated } as UnlockPageState);
-                                                    void this.onChange(this.props.attr!, updated);
-                                                }}
-                                                InputProps={{
-                                                    disableUnderline: true,
-                                                    sx: { backgroundColor: 'transparent', px: 1 },
-                                                }}
-                                                sx={{ mb: 2 }}
-                                            />
+                                                {/* Radio for Alarm vs Unlock (placed above Headline) */}
+                                                <Box sx={{ mb: 1 }}>
+                                                    <FormControl component="fieldset">
+                                                        <Typography
+                                                            variant="subtitle2"
+                                                            sx={{ mb: 1 }}
+                                                        >
+                                                            {this.getText('unlock_type')}
+                                                        </Typography>
+                                                        <RadioGroup
+                                                            row
+                                                            value={ent?.alarmType || ''}
+                                                            onChange={(_e, val) => {
+                                                                const updated = entries.map(it =>
+                                                                    it.uniqueName === sel
+                                                                        ? { ...it, alarmType: val }
+                                                                        : it,
+                                                                );
+                                                                this.setState({ entries: updated } as UnlockPageState);
+                                                                void this.onChange(this.props.attr!, updated);
+                                                            }}
+                                                        >
+                                                            <FormControlLabel
+                                                                value="alarm"
+                                                                control={<Radio />}
+                                                                label={this.getText('unlock_alarm')}
+                                                            />
+                                                            <FormControlLabel
+                                                                value="unlock"
+                                                                control={<Radio />}
+                                                                label={this.getText('unlock_unlock')}
+                                                            />
+                                                        </RadioGroup>
+                                                    </FormControl>
+                                                </Box>
 
-                                            {/* PIN field with show/hide */}
-                                            <Box sx={{ mt: 2 }}>
                                                 <TextField
+                                                    fullWidth
                                                     variant="standard"
-                                                    label={this.getText('unlock_pin')}
-                                                    type={local.showPin ? 'text' : 'password'}
-                                                    value={
-                                                        ent.pin !== undefined && ent.pin !== null ? String(ent.pin) : ''
-                                                    }
+                                                    type="text"
+                                                    autoComplete="off"
+                                                    label={this.getText('unlock_headline')}
+                                                    value={ent.headline ?? ''}
                                                     onChange={e => {
-                                                        const raw = e.target.value;
-                                                        // keep only digits
-                                                        const digits = raw.replace(/[^0-9]/g, '');
-                                                        const n = digits ? parseInt(digits, 10) : 0;
+                                                        const v = e.target.value;
                                                         const updated = entries.map(it =>
-                                                            it.uniqueName === sel ? { ...it, pin: n } : it,
+                                                            it.uniqueName === sel ? { ...it, headline: v } : it,
                                                         );
                                                         this.setState({ entries: updated } as UnlockPageState);
                                                         void this.onChange(this.props.attr!, updated);
@@ -322,63 +379,203 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                     InputProps={{
                                                         disableUnderline: true,
                                                         sx: { backgroundColor: 'transparent', px: 1 },
-                                                        endAdornment: (
-                                                            <InputAdornment position="end">
-                                                                <IconButton
-                                                                    aria-label={local.showPin ? 'hide-pin' : 'show-pin'}
-                                                                    onClick={() => {
-                                                                        local.showPin = !local.showPin;
-                                                                        this.setState({} as UnlockPageState);
-                                                                    }}
-                                                                    edge="end"
-                                                                    size="small"
-                                                                >
-                                                                    {local.showPin ? (
-                                                                        <VisibilityOff fontSize="small" />
-                                                                    ) : (
-                                                                        <Visibility fontSize="small" />
-                                                                    )}
-                                                                </IconButton>
-                                                            </InputAdornment>
-                                                        ),
                                                     }}
+                                                    sx={{ mb: 2 }}
                                                 />
-                                            </Box>
 
-                                            {/* alarm-specific controls */}
-                                            {ent.alarmType === 'alarm' && (
+                                                {/* PIN field with show/hide */}
                                                 <Box sx={{ mt: 2 }}>
-                                                    {/* Buttons 1..4 with small label above each */}
-                                                    <Box
-                                                        sx={{
-                                                            display: 'grid',
-                                                            gridTemplateColumns: '1fr',
-                                                            gap: 2,
+                                                    <TextField
+                                                        variant="standard"
+                                                        label={this.getText('unlock_pin')}
+                                                        type={local.showPin ? 'text' : 'password'}
+                                                        value={
+                                                            ent.pin !== undefined && ent.pin !== null
+                                                                ? String(ent.pin)
+                                                                : ''
+                                                        }
+                                                        onChange={e => {
+                                                            const raw = e.target.value;
+                                                            // keep only digits
+                                                            const digits = raw.replace(/[^0-9]/g, '');
+                                                            const n = digits ? parseInt(digits, 10) : 0;
+                                                            const updated = entries.map(it =>
+                                                                it.uniqueName === sel ? { ...it, pin: n } : it,
+                                                            );
+                                                            this.setState({ entries: updated } as UnlockPageState);
+                                                            void this.onChange(this.props.attr!, updated);
                                                         }}
-                                                    >
-                                                        {[1, 2, 3, 4].map(i => {
-                                                            const key = `button${i}` as const;
-                                                            return (
-                                                                <Box key={i}>
-                                                                    <Typography
-                                                                        variant="caption"
-                                                                        color="text.secondary"
-                                                                        sx={{ mb: 0.5 }}
+                                                        InputProps={{
+                                                            disableUnderline: true,
+                                                            sx: { backgroundColor: 'transparent', px: 1 },
+                                                            endAdornment: (
+                                                                <InputAdornment position="end">
+                                                                    <IconButton
+                                                                        aria-label={
+                                                                            local.showPin ? 'hide-pin' : 'show-pin'
+                                                                        }
+                                                                        onClick={() => {
+                                                                            local.showPin = !local.showPin;
+                                                                            this.setState({} as UnlockPageState);
+                                                                        }}
+                                                                        edge="end"
+                                                                        size="small"
                                                                     >
-                                                                        {this.getText(`unlock_button${i}_label`)}
-                                                                    </Typography>
-                                                                    <TextField
-                                                                        fullWidth
-                                                                        variant="standard"
-                                                                        placeholder={this.getText(
-                                                                            `unlock_button${i}_placeholder`,
+                                                                        {local.showPin ? (
+                                                                            <VisibilityOff fontSize="small" />
+                                                                        ) : (
+                                                                            <Visibility fontSize="small" />
                                                                         )}
-                                                                        value={(ent as any)[key] ?? ''}
-                                                                        onChange={e => {
-                                                                            const v = e.target.value;
+                                                                    </IconButton>
+                                                                </InputAdornment>
+                                                            ),
+                                                        }}
+                                                    />
+                                                </Box>
+
+                                                {/* common fields for both alarm and unlock types */}
+                                                <Box sx={{ mt: 2 }}>
+                                                    {/* hidden checkbox */}
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Checkbox
+                                                                checked={!!ent.hidden}
+                                                                onChange={(_e, checked) => {
+                                                                    const updated = entries.map(it =>
+                                                                        it.uniqueName === sel
+                                                                            ? { ...it, hidden: checked }
+                                                                            : it,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as UnlockPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                            />
+                                                        }
+                                                        label={this.getText('unlock_hidden')}
+                                                    />
+
+                                                    {/* alwaysOn radio group */}
+                                                    <Box sx={{ mt: 2 }}>
+                                                        <FormControl component="fieldset">
+                                                            <Typography
+                                                                variant="subtitle2"
+                                                                sx={{ mb: 1 }}
+                                                            >
+                                                                {this.getText('unlock_alwaysOn')}
+                                                            </Typography>
+                                                            <RadioGroup
+                                                                row
+                                                                value={ent?.alwaysOn || 'none'}
+                                                                onChange={(_e, val) => {
+                                                                    const updated = entries.map(it =>
+                                                                        it.uniqueName === sel
+                                                                            ? {
+                                                                                  ...it,
+                                                                                  alwaysOn: val as
+                                                                                      | 'none'
+                                                                                      | 'always'
+                                                                                      | 'ignore',
+                                                                              }
+                                                                            : it,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as UnlockPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                            >
+                                                                <FormControlLabel
+                                                                    value="none"
+                                                                    control={<Radio />}
+                                                                    label={this.getText('unlock_alwaysOn_none')}
+                                                                />
+                                                                <FormControlLabel
+                                                                    value="always"
+                                                                    control={<Radio />}
+                                                                    label={this.getText('unlock_alwaysOn_always')}
+                                                                />
+                                                                <FormControlLabel
+                                                                    value="ignore"
+                                                                    control={<Radio />}
+                                                                    label={this.getText('unlock_alwaysOn_ignore')}
+                                                                />
+                                                            </RadioGroup>
+                                                        </FormControl>
+                                                    </Box>
+                                                </Box>
+
+                                                {/* alarm-specific controls */}
+                                                {ent.alarmType === 'alarm' && (
+                                                    <Box sx={{ mt: 2 }}>
+                                                        {/* Buttons 1..4 with small label above each */}
+                                                        <Box
+                                                            sx={{
+                                                                display: 'grid',
+                                                                gridTemplateColumns: '1fr',
+                                                                gap: 2,
+                                                            }}
+                                                        >
+                                                            {[1, 2, 3, 4].map(i => {
+                                                                const key = `button${i}` as const;
+                                                                return (
+                                                                    <Box key={i}>
+                                                                        <Typography
+                                                                            variant="caption"
+                                                                            color="text.secondary"
+                                                                            sx={{ mb: 0.5 }}
+                                                                        >
+                                                                            {this.getText(`unlock_button${i}_label`)}
+                                                                        </Typography>
+                                                                        <TextField
+                                                                            fullWidth
+                                                                            variant="standard"
+                                                                            placeholder={this.getText(
+                                                                                `unlock_button${i}_placeholder`,
+                                                                            )}
+                                                                            value={(ent as any)[key] ?? ''}
+                                                                            onChange={e => {
+                                                                                const v = e.target.value;
+                                                                                const updated = entries.map(it =>
+                                                                                    it.uniqueName === sel
+                                                                                        ? { ...it, [key]: v }
+                                                                                        : it,
+                                                                                );
+                                                                                this.setState({
+                                                                                    entries: updated,
+                                                                                } as UnlockPageState);
+                                                                                void this.onChange(
+                                                                                    this.props.attr!,
+                                                                                    updated,
+                                                                                );
+                                                                            }}
+                                                                            InputProps={{
+                                                                                disableUnderline: true,
+                                                                                sx: {
+                                                                                    backgroundColor: 'transparent',
+                                                                                    px: 1,
+                                                                                    '& input::placeholder': {
+                                                                                        color: 'text.disabled',
+                                                                                    },
+                                                                                },
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                );
+                                                            })}
+                                                        </Box>
+
+                                                        {/* approved checkbox */}
+                                                        <Box sx={{ mt: 1 }}>
+                                                            <FormControlLabel
+                                                                control={
+                                                                    <Checkbox
+                                                                        checked={!!ent.approved}
+                                                                        onChange={(_e, checked) => {
                                                                             const updated = entries.map(it =>
                                                                                 it.uniqueName === sel
-                                                                                    ? { ...it, [key]: v }
+                                                                                    ? { ...it, approved: checked }
                                                                                     : it,
                                                                             );
                                                                             this.setState({
@@ -389,83 +586,121 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                                                 updated,
                                                                             );
                                                                         }}
-                                                                        InputProps={{
-                                                                            disableUnderline: true,
-                                                                            sx: {
-                                                                                backgroundColor: 'transparent',
-                                                                                px: 1,
-                                                                                '& input::placeholder': {
-                                                                                    color: 'text.disabled',
-                                                                                },
-                                                                            },
-                                                                        }}
                                                                     />
-                                                                </Box>
-                                                            );
-                                                        })}
+                                                                }
+                                                                label={this.getText('unlock_approved')}
+                                                            />
+                                                        </Box>
                                                     </Box>
+                                                )}
 
-                                                    {/* approved checkbox */}
-                                                    <Box sx={{ mt: 1 }}>
-                                                        <FormControlLabel
-                                                            control={
-                                                                <Checkbox
-                                                                    checked={!!ent.approved}
-                                                                    onChange={(_e, checked) => {
-                                                                        const updated = entries.map(it =>
-                                                                            it.uniqueName === sel
-                                                                                ? { ...it, approved: checked }
-                                                                                : it,
-                                                                        );
-                                                                        this.setState({
-                                                                            entries: updated,
-                                                                        } as UnlockPageState);
-                                                                        void this.onChange(this.props.attr!, updated);
-                                                                    }}
-                                                                />
-                                                            }
-                                                            label={this.getText('unlock_approved')}
-                                                        />
+                                                {/* unlock-specific: optional setNavi page name */}
+                                                {ent.alarmType === 'unlock' && (
+                                                    <Box sx={{ mt: 2 }}>
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                            sx={{ mb: 0.5 }}
+                                                        >
+                                                            {this.getText('unlock_setnavi_hint')}
+                                                        </Typography>
+                                                        <Select
+                                                            fullWidth
+                                                            variant="standard"
+                                                            displayEmpty
+                                                            value={ent.setNavi ?? ''}
+                                                            onChange={e => {
+                                                                const v = String((e.target as HTMLInputElement).value);
+                                                                const updated = entries.map(it =>
+                                                                    it.uniqueName === sel ? { ...it, setNavi: v } : it,
+                                                                );
+                                                                this.setState({ entries: updated } as UnlockPageState);
+                                                                void this.onChange(this.props.attr!, updated);
+                                                            }}
+                                                            sx={{ backgroundColor: 'transparent', px: 1 }}
+                                                        >
+                                                            <MenuItem value="">
+                                                                <em>{this.getText('unlock_setnavi_placeholder')}</em>
+                                                            </MenuItem>
+                                                            {(this.state.pagesList || [])
+                                                                .filter(
+                                                                    (p: any) =>
+                                                                        typeof p === 'string' &&
+                                                                        !p.startsWith('///') &&
+                                                                        p !== sel,
+                                                                )
+                                                                .map(p => (
+                                                                    <MenuItem
+                                                                        key={p}
+                                                                        value={p}
+                                                                    >
+                                                                        {p}
+                                                                    </MenuItem>
+                                                                ))}
+                                                            {/* if current value is not in pagesList, keep it selectable */}
+                                                            {ent.setNavi &&
+                                                                ent.setNavi !== sel &&
+                                                                !(this.state.pagesList || []).includes(ent.setNavi) && (
+                                                                    <MenuItem
+                                                                        key={`custom-${ent.setNavi}`}
+                                                                        value={ent.setNavi}
+                                                                    >
+                                                                        {ent.setNavi}
+                                                                    </MenuItem>
+                                                                )}
+                                                        </Select>
                                                     </Box>
-                                                </Box>
-                                            )}
+                                                )}
+                                            </>
+                                        );
+                                    })()}
+                                </Box>
+                            )}
+                        </Paper>
+                    </Box>
 
-                                            {/* unlock-specific: optional setNavi page name */}
-                                            {ent.alarmType === 'unlock' && (
-                                                <Box sx={{ mt: 2 }}>
-                                                    <Typography
-                                                        variant="caption"
-                                                        color="text.secondary"
-                                                        sx={{ mb: 0.5 }}
-                                                    >
-                                                        {this.getText('unlock_setnavi_hint')}
-                                                    </Typography>
-                                                    <TextField
-                                                        fullWidth
-                                                        variant="standard"
-                                                        placeholder={this.getText('unlock_setnavi_placeholder')}
-                                                        value={ent.setNavi ?? ''}
-                                                        onChange={e => {
-                                                            const v = e.target.value;
-                                                            const updated = entries.map(it =>
-                                                                it.uniqueName === sel ? { ...it, setNavi: v } : it,
-                                                            );
-                                                            this.setState({ entries: updated } as UnlockPageState);
-                                                            void this.onChange(this.props.attr!, updated);
-                                                        }}
-                                                        InputProps={{
-                                                            disableUnderline: true,
-                                                            sx: { backgroundColor: 'transparent', px: 1 },
-                                                        }}
-                                                    />
-                                                </Box>
-                                            )}
-                                        </>
-                                    );
-                                })()}
+                    {/* navigation assignment right panel (30%) */}
+                    <NavigationAssignmentPanel
+                        widthPercent={30}
+                        uniqueName={local.selected}
+                        currentAssignments={
+                            entries.find(e => e.uniqueName === local.selected)?.navigationAssignment || []
+                        }
+                        // provide admin socket/context so the panel can call sendTo
+                        oContext={this.props.oContext}
+                        onAssign={(uniqueName, assignments) => {
+                            const updated = entries.map(it =>
+                                it.uniqueName === uniqueName ? { ...it, navigationAssignment: assignments } : it,
+                            );
+                            this.setState({ entries: updated } as UnlockPageState);
+                            void this.onChange(this.props.attr!, updated);
+                        }}
+                    >
+                        <Paper
+                            sx={{ height: '100%', p: 2, backgroundColor: 'transparent' }}
+                            elevation={0}
+                        >
+                            <Box>
+                                <Typography
+                                    variant="subtitle2"
+                                    sx={{ mb: 1 }}
+                                >
+                                    {this.getText('unlock_unique_label')}
+                                </Typography>
+                                <Typography
+                                    variant="body1"
+                                    sx={{ fontWeight: 600 }}
+                                >
+                                    {local.selected || this.getText('unlock_select_item')}
+                                </Typography>
+                                <InfoOutlined
+                                    fontSize="small"
+                                    color="action"
+                                    sx={{ mt: 1 }}
+                                />
                             </Box>
-                        )}
-                    </Paper>
+                        </Paper>
+                    </NavigationAssignmentPanel>
                 </Box>
             </Box>
         );

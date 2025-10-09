@@ -10,6 +10,19 @@ export interface PageMenuConfigInfo {
 // Zentrale Kommandos für Navigation-API
 export const SENDTO_GET_PANEL_NAVIGATION_COMMAND = 'getPanelNavigation';
 export const SAVE_PANEL_NAVIGATION_COMMAND = 'savePanelNavigation';
+// SendTo command to request the list of available panels from the adapter
+export const SENDTO_GET_PANELS_COMMAND = 'getPanels';
+// SendTo command to request the list of pages for a given panel
+export const SENDTO_GET_PAGES_COMMAND = 'getPagesForPanel';
+// Central adapter name constant for admin <-> adapter sendTo calls
+export const ADAPTER_NAME = 'nspanel-lovelace-ui';
+// Expected response when asking the adapter for panels
+export type PanelInfo = {
+    friendlyName: string;
+    panelTopic: string;
+};
+
+export type PanelsResponse = PanelInfo[];
 export interface NavigationSavePayload {
     panelName: string;
     pages: NavigationPositionsMap[];
@@ -48,7 +61,25 @@ export type UnlockEntry = {
     pin: number;
     approved?: boolean;
     setNavi?: string;
+    hidden?: boolean;
+    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+    navigationAssignment?: NavigationAssignmentList;
     uniqueName: string;
 };
 
 export type UnlockEntries = UnlockEntry[];
+
+// Rückgabewert-Typ für das Navigation Assignment Panel
+export type NavigationAssignment = {
+    topic: string;
+
+    active: boolean;
+    navigation?: {
+        next?: string;
+        prev?: string;
+        home?: string;
+        parent?: string;
+    };
+};
+
+export type NavigationAssignmentList = NavigationAssignment[];

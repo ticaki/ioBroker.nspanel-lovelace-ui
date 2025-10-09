@@ -1,4 +1,9 @@
-import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from './lib/types/adminShareConfig';
+import {
+    SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+    SAVE_PANEL_NAVIGATION_COMMAND,
+    SENDTO_GET_PAGES_COMMAND,
+    SENDTO_GET_PANELS_COMMAND,
+} from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
@@ -25,7 +30,7 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
-import type { NavigationSavePayload, PanelListEntry } from './lib/types/adminShareConfig';
+import type { NavigationSavePayload, PanelListEntry, PanelInfo } from './lib/types/adminShareConfig';
 //import fs from 'fs';
 axios.defaults.timeout = 15_000;
 
@@ -592,6 +597,41 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
+                case SENDTO_GET_PAGES_COMMAND: {
+                    const names: string[] = [];
+                    if (obj?.message?.panelTopic && this.controller?.panels) {
+                        const panel = this.controller.panels.find(a => a.topic === obj.message.panelTopic);
+                        if (panel) {
+                            const db = panel.navigation.getDatabase();
+
+                            if (db) {
+                                for (const p of db) {
+                                    if (p?.page) {
+                                        names.push(p.page.name);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: names }, obj.callback);
+                    }
+                    break;
+                }
+                case SENDTO_GET_PANELS_COMMAND: {
+                    const names: PanelInfo[] = [];
+                    if (this.controller?.panels) {
+                        for (const p of this.controller.panels) {
+                            if (p) {
+                                names.push({ panelTopic: p.topic, friendlyName: p.friendlyName || p.name });
+                            }
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: names }, obj.callback);
+                    }
+                    break;
+                }
                 case SAVE_PANEL_NAVIGATION_COMMAND: {
                     if (obj.message && this.controller?.panels) {
                         const data = obj.message as NavigationSavePayload;

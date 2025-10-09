@@ -269,6 +269,17 @@ declare global {
                 approved?: boolean;
                 setNavi?: string;
                 uniqueName: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                navigationAssignment?: {
+                    topic: string;
+                    navigation?: {
+                        next?: string;
+                        prev?: string;
+                        home?: string;
+                        parent?: string;
+                    };
+                }[];
             }[];
         }
     }

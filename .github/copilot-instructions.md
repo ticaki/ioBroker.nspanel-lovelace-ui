@@ -7,6 +7,7 @@
 - Config UI: `/admin/` (JSON config), translations in `/admin/i18n/`.
 - Metadata: `io-package.json` (states/objects/common), `package.json` (deps/scripts).
 - Integration: MQTT communication with Tasmota firmware, external script configuration via OnMessage handler.
+- Communication: Keep messages concise; the maintainer prefers short, direct instructions and wants to avoid long explanatory text.
 
 ## NSPanel Hardware & Firmware Context
 - Hardware: Sonoff NSPanel - wall switch with 3.5" touchscreen, 2 relays, temperature/brightness sensors.

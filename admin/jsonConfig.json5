@@ -4316,7 +4316,6 @@
         "pageUnlock": {
             "type": "panel",
             "label": "PageUnlock",
-            "expertMode": true,
             "items": {
                 "pageUnlockConfig": {
                     "type": "custom",
