@@ -42,6 +42,7 @@
 	"Adapter_offline": "Adapter offline",
 	"No_data": "No data - Adapter might be offline or no panel configured.",
 	"select_panel_first": "Select panel",
-	"nav_target_only_notice": "Without next and prev this page can only be reached via { navigate: 'true', targetPage: 'abc'}"
+	"nav_target_only_notice": "Without next and prev this page can only be reached via { navigate: 'true', targetPage: 'abc'}",
+	"documentation": "Documentation"
 }
 

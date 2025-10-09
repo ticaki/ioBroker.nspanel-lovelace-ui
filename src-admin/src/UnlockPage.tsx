@@ -14,6 +14,7 @@ import {
     Checkbox,
     IconButton,
     InputAdornment,
+    Divider,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -289,6 +290,34 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                         >
                             -
                         </Button>
+                    </Box>
+                    <Divider sx={{ my: 1 }} />
+                    {/* Documentation link */}
+                    <Box sx={{ mb: 2 }}>
+                        <a
+                            href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/pageUnlock"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                textDecoration: 'none',
+                                color: 'inherit',
+                                fontSize: '0.875rem',
+                            }}
+                        >
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: 'primary.main',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                        opacity: 0.8,
+                                    },
+                                }}
+                            >
+                                {this.getText('documentation')}
+                            </Typography>
+                        </a>
                     </Box>
                 </Box>
                 <ConfirmDialog
