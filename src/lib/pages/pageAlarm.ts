@@ -38,7 +38,7 @@ const alarmStates: pages.AlarmStates[] = ['disarmed', 'armed', 'arming', 'pendin
  *
  * Note: The Page lifecycle follows the base Page class contract. Important
  * public methods that are invoked by the Page controller are documented below
- * (init, update, onStateTrigger, onButtonEvent).
+ * (init, update, onButtonEvent).
  */
 export class PageAlarm extends Page {
     private step: number = 1;
