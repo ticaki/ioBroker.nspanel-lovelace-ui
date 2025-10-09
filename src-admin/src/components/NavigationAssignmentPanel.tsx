@@ -321,6 +321,19 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                         transition: 'width 240ms ease',
                     }}
                 >
+                    {/* Panel navigation header */}
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            mb: 1,
+                            fontWeight: 600,
+                            color: 'primary.main',
+                            fontSize: '1rem',
+                        }}
+                    >
+                        {I18n.t('navigation_panel')}
+                    </Typography>
+
                     {/* controls: select + add button */}
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
                         <Select

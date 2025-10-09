@@ -29,6 +29,8 @@
 	"unlock_alwaysOn_none": "Default timeout",
 	"unlock_alwaysOn_always": "Never activate",
 	"unlock_alwaysOn_ignore": "Inherit from previous page",
+	"navigation_panel": "Navigation/Panel",
+	"pages": "Pages",
 	"unlock_type": "Type",
 	"nav_next_tooltip": "If Next points to a page whose Prev points to a different page, this page will be inserted and the next and prev of the other pages adjusted accordingly. In conflicts, prev has priority.",
 	"nav_prev_tooltip": "If Prev points to a page whose Next points to a different page, this page will be inserted and the next and prev of the other pages adjusted accordingly. In conflicts, prev has priority.",

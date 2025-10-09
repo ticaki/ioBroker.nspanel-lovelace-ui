@@ -30,6 +30,8 @@
     "unlock_alwaysOn_none": "Standard-Timeout",
     "unlock_alwaysOn_always": "Niemals einschalten",
     "unlock_alwaysOn_ignore": "Von vorheriger Seite übernehmen",
+    "navigation_panel": "Navigation/Panel",
+    "pages": "Seiten",
     "nav_next_tooltip": "Wenn 'Next' auf eine Seite zeigt, deren 'Prev' auf eine andere Seite verweist, wird diese Seite eingeschoben und die next und prev der anderen Seiten entsprechend angepasst. Bei Konflikten hat 'prev' vorrang.",
     "nav_prev_tooltip": "Wenn 'Prev' auf eine Seite zeigt, deren 'Next' auf eine andere Seite verweist, wird diese Seite eingeschoben und die next und prev der anderen Seiten entsprechend angepasst. Bei Konflikten hat 'prev' vorrang.",
     "unlock_type": "Typ",

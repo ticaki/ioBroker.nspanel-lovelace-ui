@@ -158,6 +158,19 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
             <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', p: 1 }}>
                 {/* left sidebar: 20% width */}
                 <Box sx={{ width: '20%', pr: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {/* Pages header */}
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            mb: 1,
+                            fontWeight: 600,
+                            color: 'primary.main',
+                            fontSize: '1rem',
+                        }}
+                    >
+                        {this.getText('pages')}
+                    </Typography>
+
                     <Paper
                         sx={{ p: 1, backgroundColor: 'transparent' }}
                         elevation={0}
