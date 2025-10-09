@@ -112,10 +112,16 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             const found = this.state.available.find(p => p.panelTopic === a.topic);
             return found || ({ panelTopic: a.topic, friendlyName: a.topic } as PanelInfo);
         });
+
+        // Keep current selectedAddedTopic if it's still in the new assignments, otherwise pick first
+        const currentSelected = this.state.selectedAddedTopic;
+        const stillExists = addedPanels.find(p => p.panelTopic === currentSelected);
+        const newSelected = stillExists ? currentSelected : addedPanels[0]?.panelTopic;
+
         this.setState({
             assignments: nextAssignments,
             added: addedPanels,
-            selectedAddedTopic: addedPanels[0]?.panelTopic,
+            selectedAddedTopic: newSelected,
             selectedTopic: '',
         });
         // preload pages for all topics so selects have options immediately
@@ -308,14 +314,23 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             return '';
         }
         const a = this.state.assignments.find(x => x.topic === topic);
-        if (!a || !a.navigation) {
+
+        // Return navigation value if it exists, regardless of active status
+        if (!a || !(a as any).navigation) {
             return '';
         }
-        return a.navigation[field] ?? '';
+        return (a as any).navigation[field] ?? '';
     };
 
     togglePanel = (): void => {
+        const wasCollapsed = this.state.isCollapsed;
+
         this.setState(prevState => ({ isCollapsed: !prevState.isCollapsed }));
+
+        // If expanding, re-apply assignments to ensure data is fresh
+        if (wasCollapsed) {
+            this.applyAssignmentsFromProps(this.props.currentAssignments || []);
+        }
     };
 
     render(): React.ReactNode {
