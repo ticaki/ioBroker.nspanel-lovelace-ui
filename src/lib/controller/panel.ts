@@ -3,7 +3,7 @@ import type {
     NavigationPositionsMap,
     PageMenuConfigInfo,
     PanelListEntry,
-} from '../types/navigation';
+} from '../types/adminShareConfig';
 import { PanelSend } from './panel-message';
 
 import { Screensaver } from '../pages/screensaver';
@@ -19,7 +19,7 @@ import { PageMedia } from '../pages/pageMedia';
 import type { IClientPublishOptions } from 'mqtt';
 import type { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
-import { Navigation, type NavigationConfig } from '../classes/navigation';
+import { type NavigationItemConfig, Navigation, type NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import type { PageItem } from '../pages/pageItem';
@@ -227,7 +227,109 @@ export class Panel extends BaseClass {
         // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
+        const unlocks = this.adapter.config.pageUnlockConfig || [];
+        for (const unlock of unlocks) {
+            if (unlock.navigationAssignment) {
+                const navAssign = unlock.navigationAssignment.find(a => a.topic === this.topic);
+                if (navAssign) {
+                    const newUnlock: pages.PageBaseConfig = {
+                        uniqueID: unlock.uniqueName,
+                        hidden: !!unlock.hidden,
+                        alwaysOn: unlock.alwaysOn || 'none',
+                        template: undefined,
+                        dpInit: '',
+                        config: {
+                            card: 'cardAlarm',
 
+                            data: {
+                                alarmType: { type: 'const', constVal: unlock.alarmType || 'unlock' },
+                                headline: { type: 'const', constVal: unlock.headline || 'Unlock' },
+                                button1: unlock.button1 ? { type: 'const', constVal: unlock.button1 } : undefined,
+                                button2: unlock.button2 ? { type: 'const', constVal: unlock.button2 } : undefined,
+                                button3: unlock.button3 ? { type: 'const', constVal: unlock.button3 } : undefined,
+                                button4: unlock.button4 ? { type: 'const', constVal: unlock.button4 } : undefined,
+                                pin: unlock.pin != null ? { type: 'const', constVal: String(unlock.pin) } : undefined,
+                                approved: { type: 'const', constVal: !!unlock.approved },
+                                setNavi: unlock.setNavi ? { type: 'const', constVal: unlock.setNavi } : undefined,
+                            },
+                        },
+                        pageItems: [],
+                    };
+                    if (options.pages.find(a => a.uniqueID === newUnlock.uniqueID)) {
+                        this.log.warn(`Page with name ${newUnlock.uniqueID} already exists, skipping!`);
+                        continue;
+                    }
+                    options.pages.push(newUnlock);
+                    const navigation = navAssign.navigation;
+                    if (!navigation) {
+                        continue;
+                    }
+                    const navigationEntry: NavigationItemConfig = {
+                        name: newUnlock.uniqueID,
+                        page: newUnlock.uniqueID,
+                        right: {
+                            single: undefined,
+                            double: undefined,
+                        },
+                        left: {
+                            single: undefined,
+                            double: undefined,
+                        },
+                    };
+                    let overrwriteNext = false;
+                    if (navigation.prev) {
+                        navigationEntry.left!.single = navigation.prev;
+                        let index = options.navigation.findIndex(b => b && b.name === navigation.prev);
+                        if (index !== -1 && options.navigation[index]) {
+                            const oldNext = options.navigation[index]!.right?.single;
+
+                            if (oldNext && oldNext !== newUnlock.uniqueID) {
+                                overrwriteNext = true;
+                                options.navigation[index]!.right = options.navigation[index]!.right || {};
+                                options.navigation[index]!.right!.single = newUnlock.uniqueID;
+                                navigationEntry.right!.single = oldNext;
+                                index = options.navigation.findIndex(b => b && b.name === oldNext);
+                                if (index !== -1 && options.navigation[index]) {
+                                    options.navigation[index]!.left = options.navigation[index]!.left || {};
+                                    options.navigation[index]!.left!.single = newUnlock.uniqueID;
+                                }
+                            } else if (!oldNext && options.navigation[index]) {
+                                options.navigation[index]!.right = { single: newUnlock.uniqueID };
+                            }
+                        }
+                    }
+                    if (!overrwriteNext) {
+                        if (navigation.next) {
+                            navigationEntry.right!.single = navigation.next;
+                            let index = options.navigation.findIndex(b => b && b.name === navigation.next);
+                            if (index !== -1 && options.navigation[index]) {
+                                const oldPrev = options.navigation[index]!.left?.single;
+                                if (oldPrev && oldPrev !== newUnlock.uniqueID) {
+                                    overrwriteNext = true;
+                                    options.navigation[index]!.left = options.navigation[index]!.left || {};
+                                    options.navigation[index]!.left!.single = newUnlock.uniqueID;
+                                    navigationEntry.left!.single = oldPrev;
+                                    index = options.navigation.findIndex(b => b && b.name === oldPrev);
+                                    if (index !== -1 && options.navigation[index]) {
+                                        options.navigation[index]!.right = options.navigation[index]!.right || {};
+                                        options.navigation[index]!.right!.single = newUnlock.uniqueID;
+                                    }
+                                } else if (!oldPrev && options.navigation[index]) {
+                                    options.navigation[index]!.left = { single: newUnlock.uniqueID };
+                                }
+                            }
+                        }
+                    }
+                    if (navigation.home) {
+                        navigationEntry.left!.double = navigation.home;
+                    }
+                    if (navigation.parent) {
+                        navigationEntry.right!.double = navigation.parent;
+                    }
+                    options.navigation.push(navigationEntry);
+                }
+            }
+        }
         options.pages = options.pages.filter(b => {
             if (
                 b.config?.card === 'screensaver' ||

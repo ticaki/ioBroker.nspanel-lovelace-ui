@@ -150,6 +150,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 
 ### **WORK IN PROGRESS**
 - (tt-tom17) Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)
+- (ticaki) Admin: Added Unlock/Alarm editor to admin UI (headline, PIN, buttons, setNavi, duplicate-name check)
 - (tt-tom17) Chart scale: rounded to nearest tens
 - (tt-tom17) PagePower: improved icon selection in admin
 - (ticaki) German documentation for screensaver notification features `isDismissiblePerEvent` and `dismissibleIDGlobal` added to `doc/de/screensaver.md`

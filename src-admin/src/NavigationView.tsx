@@ -5,8 +5,11 @@ import type {
     NavigationMap,
     PanelListEntry,
     NavigationSavePayload,
-} from '../../src/lib/types/navigation';
-import { SENDTO_GET_PANEL_NAVIGATION_COMMAND, SAVE_PANEL_NAVIGATION_COMMAND } from '../../src/lib/types/navigation';
+} from '../../src/lib/types/adminShareConfig';
+import {
+    SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+    SAVE_PANEL_NAVIGATION_COMMAND,
+} from '../../src/lib/types/adminShareConfig';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Typ für das Rückgabeobjekt der mapNavigationMapToFlow-Funktion
@@ -55,20 +58,9 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
-import {
-    Select,
-    MenuItem,
-    Box,
-    Button,
-    Typography,
-    CircularProgress,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-} from '@mui/material';
+import { Select, MenuItem, Box, Button, Typography, CircularProgress } from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
+import ConfirmDialog from './components/ConfirmDialog';
 import { useTheme } from '@mui/material/styles';
 import { hierarchy, tree } from 'd3-hierarchy';
 import React, { useEffect } from 'react';
@@ -1002,41 +994,17 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                     </marker>
                                 </defs>
                             </svg>
-                            <Dialog
+                            <ConfirmDialog
                                 open={!!this.state.confirmAutoLayoutOpen}
                                 onClose={this.closeConfirmAutoLayout}
-                                aria-labelledby="auto-layout-confirm-title"
-                                aria-describedby="auto-layout-confirm-description"
-                                maxWidth="sm"
-                                fullWidth
-                            >
-                                <DialogTitle id="auto-layout-confirm-title">
-                                    {I18n.t('auto_layout_confirm_title')}
-                                </DialogTitle>
-                                <DialogContent>
-                                    <DialogContentText id="auto-layout-confirm-description">
-                                        {I18n.t('auto_layout_confirm_text')}
-                                    </DialogContentText>
-                                </DialogContent>
-                                <DialogActions sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
-                                    <Button
-                                        variant="contained"
-                                        color="success"
-                                        fullWidth
-                                        onClick={this.closeConfirmAutoLayout}
-                                    >
-                                        {I18n.t('auto_layout_confirm_cancel')}
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        fullWidth
-                                        onClick={this.confirmAutoLayout}
-                                    >
-                                        {I18n.t('auto_layout_confirm_reorder')}
-                                    </Button>
-                                </DialogActions>
-                            </Dialog>
+                                onConfirm={this.confirmAutoLayout}
+                                title={I18n.t('auto_layout_confirm_title')}
+                                description={I18n.t('auto_layout_confirm_text')}
+                                cancelText={I18n.t('auto_layout_confirm_cancel')}
+                                confirmText={I18n.t('auto_layout_confirm_reorder')}
+                                ariaTitleId="auto-layout-confirm-title"
+                                ariaDescId="auto-layout-confirm-description"
+                            />
                             <ReactFlow
                                 key={selectedPanel || 'navigation-flow'}
                                 nodes={nodes}

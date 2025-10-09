@@ -4247,6 +4247,21 @@
                 }
             }
         },
+        "pageUnlock": {
+            "type": "panel",
+            "label": "PageUnlock",
+            "items": {
+                "pageUnlockConfig": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/UnlockPage",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
         "iconOverview": {
             "type": "panel",
             "label": "iconOverview",
