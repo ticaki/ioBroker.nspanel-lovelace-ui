@@ -14,6 +14,7 @@ export const SAVE_PANEL_NAVIGATION_COMMAND = 'savePanelNavigation';
 export const SENDTO_GET_PANELS_COMMAND = 'getPanels';
 // SendTo command to request the list of pages for a given panel
 export const SENDTO_GET_PAGES_COMMAND = 'getPagesForPanel';
+export const SENDTO_GET_PAGES_All_COMMAND = 'getAllPages';
 // Central adapter name constant for admin <-> adapter sendTo calls
 export const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Expected response when asking the adapter for panels

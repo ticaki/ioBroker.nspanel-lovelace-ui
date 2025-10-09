@@ -20,7 +20,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
-import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
+import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import type { UnlockEntry, UnlockEntries } from '../../src/lib/types/adminShareConfig';
 import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
@@ -58,31 +58,15 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
             const instance = this.props.oContext.instance ?? '0';
             const target = `${ADAPTER_NAME}.${instance}`;
             try {
-                const rawPanels = await this.props.oContext.socket.sendTo(target, 'getPanels', null);
-                let panels: { panelTopic: string }[] = [];
-                if (Array.isArray(rawPanels)) {
-                    panels = rawPanels;
-                } else if (rawPanels && Array.isArray(rawPanels.result)) {
-                    panels = rawPanels.result;
+                const rawPages = await this.props.oContext.socket.sendTo(target, SENDTO_GET_PAGES_All_COMMAND, null);
+                let list: string[] = [];
+                if (Array.isArray(rawPages)) {
+                    list = rawPages;
+                } else if (rawPages && Array.isArray(rawPages.result)) {
+                    list = rawPages.result;
                 }
-
-                for (const p of panels) {
-                    try {
-                        const rawPages = await this.props.oContext.socket.sendTo(target, 'getPagesForPanel', {
-                            panelTopic: p.panelTopic,
-                        });
-                        let list: string[] = [];
-                        if (Array.isArray(rawPages)) {
-                            list = rawPages;
-                        } else if (rawPages && Array.isArray(rawPages.result)) {
-                            list = rawPages.result;
-                        }
-                        for (const name of list) {
-                            pages.push(name);
-                        }
-                    } catch {
-                        // ignore per-panel errors
-                    }
+                for (const name of list) {
+                    pages.push(name);
                 }
             } catch {
                 // ignore
@@ -178,6 +162,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <TextField
                                 aria-label="new-name"
+                                label={this.getText('new_page')}
                                 value={local.newName}
                                 onChange={e => {
                                     local.newName = e.target.value;
@@ -186,10 +171,26 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                 variant="standard"
                                 placeholder={this.getText('New item')}
                                 InputProps={{
-                                    disableUnderline: true,
                                     sx: { backgroundColor: 'transparent', px: 1 },
                                 }}
-                                sx={{ flex: 1 }}
+                                sx={{
+                                    flex: 1,
+                                    '& .MuiInput-underline:before': {
+                                        borderBottomColor: 'primary.main',
+                                    },
+                                    '& .MuiInput-underline:hover:before': {
+                                        borderBottomColor: 'primary.main',
+                                    },
+                                    '& .MuiInput-underline:after': {
+                                        borderBottomColor: 'primary.main',
+                                    },
+                                    '& .MuiInputLabel-root': {
+                                        color: 'primary.main',
+                                    },
+                                    '& .MuiInputLabel-root.Mui-focused': {
+                                        color: 'primary.main',
+                                    },
+                                }}
                             />
                             {
                                 // disable add when empty or name already exists

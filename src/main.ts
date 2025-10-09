@@ -3,6 +3,7 @@ import {
     SAVE_PANEL_NAVIGATION_COMMAND,
     SENDTO_GET_PAGES_COMMAND,
     SENDTO_GET_PANELS_COMMAND,
+    SENDTO_GET_PAGES_All_COMMAND,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -599,19 +600,44 @@ class NspanelLovelaceUi extends utils.Adapter {
             switch (obj.command) {
                 case SENDTO_GET_PAGES_COMMAND: {
                     const names: string[] = [];
-                    if (obj?.message?.panelTopic && this.controller?.panels) {
-                        const panel = this.controller.panels.find(a => a.topic === obj.message.panelTopic);
-                        if (panel) {
-                            const db = panel.navigation.getDatabase();
+                    if (obj?.message?.panelTopic) {
+                        if (this.controller?.panels) {
+                            const panel = this.controller.panels.find(a => a.topic === obj.message.panelTopic);
+                            if (panel) {
+                                const db = panel.navigation.getDatabase();
 
-                            if (db) {
-                                for (const p of db) {
-                                    if (p?.page) {
-                                        names.push(p.page.name);
+                                if (db) {
+                                    for (const p of db) {
+                                        if (p?.page) {
+                                            names.push(p.page.name);
+                                        }
                                     }
                                 }
                             }
                         }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: names }, obj.callback);
+                    }
+                    break;
+                }
+                case SENDTO_GET_PAGES_All_COMMAND: {
+                    let names: string[] = [];
+                    if (this.controller?.panels) {
+                        for (const panel of this.controller.panels) {
+                            if (panel) {
+                                const db = panel.navigation.getDatabase();
+
+                                if (db) {
+                                    for (const p of db) {
+                                        if (p?.page) {
+                                            names.push(p.page.name);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        names = Array.from(new Set(names));
                     }
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { result: names }, obj.callback);
