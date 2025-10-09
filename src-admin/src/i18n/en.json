@@ -44,5 +44,6 @@
 	"select_panel_first": "Select panel",
 	"nav_target_only_notice": "Without next and prev this page can only be reached via { navigate: 'true', targetPage: 'abc'}",
 	"documentation": "Documentation"
+	,"touch_hint_buttons": "For operating buttons from other flows a double tap is required"
 }
 

@@ -45,4 +45,5 @@
     "select_panel_first": "Panel auswählen",
     "nav_target_only_notice": "Ohne next und prev ist diese Seite nur über { navigate: 'true', targetPage: 'abc'} zu erreichen",
     "documentation": "Dokumentation"
+    ,"touch_hint_buttons": "Zum Bedienen Flow fremder buttons ist ein doppelter Tip erforderlich"
 }

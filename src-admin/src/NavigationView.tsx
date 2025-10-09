@@ -86,6 +86,29 @@ function CustomEdge(props: EdgeProps): React.ReactElement {
     const stroke = props.style?.stroke ?? 'var(--edge-color, #1976d2)';
     const dash = props.style?.strokeDasharray;
 
+    // Touch event handler für Edge-Tooltips (nur Touch, kein Click/Hover)
+    const handleTouchStart = (event: React.TouchEvent): void => {
+        // Nur bei Touch-Geräten Tooltip anzeigen
+        if (event.touches.length === 1) {
+            const tooltipDiv = document.createElement('div');
+            tooltipDiv.className = 'edge-tooltip-mobile';
+            tooltipDiv.textContent = tooltip;
+
+            const touch = event.touches[0];
+            tooltipDiv.style.left = `${touch.clientX - 50}px`;
+            tooltipDiv.style.top = `${touch.clientY - 30}px`;
+
+            document.body.appendChild(tooltipDiv);
+
+            // Tooltip nach 1.5 Sekunden entfernen
+            setTimeout(() => {
+                if (tooltipDiv.parentNode) {
+                    tooltipDiv.parentNode.removeChild(tooltipDiv);
+                }
+            }, 1500);
+        }
+    };
+
     return (
         <>
             <path
@@ -97,6 +120,7 @@ function CustomEdge(props: EdgeProps): React.ReactElement {
                 markerEnd={`url(#arrow-${markerId})`}
                 className="react-flow__edge-path custom-edge-path"
                 style={{ stroke }}
+                onTouchStart={handleTouchStart}
             />
             <title>{tooltip}</title>
         </>
@@ -490,6 +514,7 @@ interface NavigationViewInternalState extends NavigationViewState {
     infoData?: Record<string, any> | null;
     infoNodeId?: string | undefined;
     confirmAutoLayoutOpen?: boolean;
+    isTouchDevice?: boolean;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
@@ -651,6 +676,15 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         // Autosave beim Tabwechsel oder Schließen
         window.addEventListener('beforeunload', this.handleBeforeUnload);
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
+        // detect touch devices for a small UI hint
+        try {
+            const isTouch =
+                typeof window !== 'undefined' &&
+                ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0));
+            this.setState({ isTouchDevice: !!isTouch });
+        } catch {
+            // ignore
+        }
     }
 
     componentWillUnmount(): void {
@@ -883,23 +917,33 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     </Box>
                 ) : (
                     <>
-                        <Box sx={{ mb: 2, minWidth: 200 }}>
-                            <Select
-                                value={selectedPanel}
-                                onChange={this.handlePanelChange}
-                                displayEmpty
-                                fullWidth
-                                size="small"
-                            >
-                                {panelList.map(panel => (
-                                    <MenuItem
-                                        key={panel.panelName}
-                                        value={panel.panelName}
-                                    >
-                                        {panel.friendlyName}
-                                    </MenuItem>
-                                ))}
-                            </Select>
+                        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ minWidth: 200, flex: '0 0 240px' }}>
+                                <Select
+                                    value={selectedPanel}
+                                    onChange={this.handlePanelChange}
+                                    displayEmpty
+                                    fullWidth
+                                    size="small"
+                                >
+                                    {panelList.map(panel => (
+                                        <MenuItem
+                                            key={panel.panelName}
+                                            value={panel.panelName}
+                                        >
+                                            {panel.friendlyName}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </Box>
+                            {this.state.isTouchDevice ? (
+                                <Typography
+                                    variant="body2"
+                                    sx={{ color: 'success.main', whiteSpace: 'nowrap' }}
+                                >
+                                    {I18n.t('touch_hint_buttons')}
+                                </Typography>
+                            ) : null}
                         </Box>
                         <div className="reactflow-container">
                             {/* Global SVG defs for edge arrow markers (rendered once) */}
