@@ -696,7 +696,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.13.2';
+const version = '0.13.3';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1645,6 +1645,7 @@ declare namespace ScriptConfig {
             TextPrefix?: string;
             HeadlineIcon?: string | null;
             isDismissiblePerEvent?: boolean;
+            buzzer?: boolean | string;
             /**
              * Assign a global dismissible ID to this notification.
              * 

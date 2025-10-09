@@ -456,9 +456,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const s = n[5].split("<sp!it>");
       const text = n[4];
       const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
+      const buzzer = s[2];
       const heading = `${n[2]} ${s[0]}`.trim();
       const id = n[1];
-      return { heading, text, prio, id };
+      return { heading, text, prio, id, buzzer };
     }).sort((a, b) => a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1);
     if (this.customNotification === true) {
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, this.customNotification, this.headingNotification, this.textNotification);
@@ -466,6 +467,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const heading = notifyList[0].heading;
       const text = notifyList[0].text;
       if (heading !== "" || text !== "") {
+        if (this.activeNotifyId != notifyList[0].id && notifyList[0].buzzer) {
+          this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
+        }
         this.activeNotifyId = notifyList[0].id;
         __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text);
       }

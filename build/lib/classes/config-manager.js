@@ -4301,7 +4301,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     result.data.entity1.suffix = {
       type: "const",
-      constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}`
+      constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}<sp!it>${entity.buzzer ? entity.buzzer === true ? "1,2,3,0xF54" : entity.buzzer : ""}`
     };
     result.data.entity2 = structuredClone(result.data.entity1);
     if (entity.Text) {
