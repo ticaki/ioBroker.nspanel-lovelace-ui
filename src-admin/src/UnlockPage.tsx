@@ -338,14 +338,14 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                 {/* right area: main content + optional collapsible side panel */}
                 <Box
                     sx={{
-                        width: '80%',
+                        width: '90%',
                         pl: 2,
                         display: 'flex',
                         gap: 1,
                         position: 'relative',
                     }}
                 >
-                    <Box sx={{ width: '70%', borderLeft: '1px solid', borderColor: 'divider' }}>
+                    <Box sx={{ width: '95%', borderLeft: '1px solid', borderColor: 'divider' }}>
                         <Paper
                             sx={{ height: '100%', p: 2 }}
                             elevation={1}
@@ -385,18 +385,39 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                         backgroundColor: 'action.hover',
                                                     }}
                                                 >
-                                                    <Typography
-                                                        variant="subtitle2"
-                                                        sx={{ mb: 0.5 }}
-                                                    >
-                                                        {this.getText('unlock_unique_label')}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="h6"
-                                                        sx={{ fontWeight: 600 }}
-                                                    >
-                                                        {sel}
-                                                    </Typography>
+                                                    <TextField
+                                                        fullWidth
+                                                        variant="standard"
+                                                        type="text"
+                                                        label={this.getText('unlock_unique_label')}
+                                                        value={sel}
+                                                        onChange={e => {
+                                                            const newUniqueName = e.target.value;
+                                                            if (!newUniqueName.trim()) {
+                                                                return;
+                                                            }
+
+                                                            // Update the entry with new uniqueName
+                                                            const updated = entries.map(it =>
+                                                                it.uniqueName === sel
+                                                                    ? { ...it, uniqueName: newUniqueName }
+                                                                    : it,
+                                                            );
+                                                            this.setState({ entries: updated } as UnlockPageState);
+                                                            void this.onChange(this.props.attr!, updated);
+
+                                                            // Update local selected to the new name
+                                                            local.selected = newUniqueName;
+                                                        }}
+                                                        InputProps={{
+                                                            sx: {
+                                                                backgroundColor: 'transparent',
+                                                                px: 1,
+                                                                fontWeight: 600,
+                                                                width: '50%',
+                                                            },
+                                                        }}
+                                                    />
                                                 </Box>
 
                                                 {/* Radio for Alarm vs Unlock (placed above Headline) */}
@@ -451,8 +472,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                         void this.onChange(this.props.attr!, updated);
                                                     }}
                                                     InputProps={{
-                                                        disableUnderline: true,
-                                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
                                                     }}
                                                     sx={{ mb: 2 }}
                                                 />
@@ -480,7 +500,6 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                             void this.onChange(this.props.attr!, updated);
                                                         }}
                                                         InputProps={{
-                                                            disableUnderline: true,
                                                             sx: { backgroundColor: 'transparent', px: 1 },
                                                             endAdornment: (
                                                                 <InputAdornment position="end">
@@ -679,7 +698,6 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                             {this.getText('unlock_setnavi_hint')}
                                                         </Typography>
                                                         <Select
-                                                            fullWidth
                                                             variant="standard"
                                                             displayEmpty
                                                             value={ent.setNavi ?? ''}
@@ -691,7 +709,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                                 this.setState({ entries: updated } as UnlockPageState);
                                                                 void this.onChange(this.props.attr!, updated);
                                                             }}
-                                                            sx={{ backgroundColor: 'transparent', px: 1 }}
+                                                            sx={{ backgroundColor: 'transparent', px: 1, width: '60%' }}
                                                         >
                                                             <MenuItem value="">
                                                                 <em>{this.getText('unlock_setnavi_placeholder')}</em>

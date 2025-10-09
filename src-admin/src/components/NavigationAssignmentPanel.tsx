@@ -46,6 +46,8 @@ type State = {
     // pages per panelTopic
     pagesMap: Record<string, string[]>;
     alive?: boolean;
+    // toggle state for collapsible panel
+    isCollapsed?: boolean;
 };
 
 /**
@@ -70,6 +72,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             assignments: props.currentAssignments || [],
             pagesMap: {},
             alive: false,
+            isCollapsed: true, // start collapsed
         };
     }
 
@@ -311,8 +314,13 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         return a.navigation[field] ?? '';
     };
 
+    togglePanel = (): void => {
+        this.setState(prevState => ({ isCollapsed: !prevState.isCollapsed }));
+    };
+
     render(): React.ReactNode {
         const { widthPercent } = this.props;
+        const { isCollapsed } = this.state;
         const pages: string[] = this.state.selectedAddedTopic
             ? (this.state.pagesMap[this.state.selectedAddedTopic] ?? [])
             : [];
@@ -325,11 +333,12 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                     right: 0,
                     top: 0,
                     height: '100%',
-                    // always reserve the percentage width within the parent; inner content collapses
-                    width: `${widthPercent}%`,
+                    // width based on collapsed state
+                    width: isCollapsed ? '10px' : `${widthPercent}%`,
                     transition: 'width 240ms ease',
-                    backgroundColor: 'transparent',
+                    backgroundColor: 'background.default',
                     borderLeft: '2px solid',
+                    borderTop: '2px solid',
                     borderColor: 'secondary.main',
                     // allow handle to be visible outside when collapsed
                     overflow: 'visible',
@@ -338,7 +347,40 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                     zIndex: 20,
                 }}
             >
-                {/* handle removed - panel is always visible */}
+                {/* Toggle Handle */}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        left: '-20px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '20px',
+                        height: '60px',
+                        backgroundColor: 'secondary.main',
+                        borderRadius: '4px 0 0 4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 21,
+                        '&:hover': {
+                            backgroundColor: 'secondary.dark',
+                        },
+                    }}
+                    onClick={this.togglePanel}
+                >
+                    <Typography
+                        sx={{
+                            color: 'secondary.contrastText',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            transform: 'rotate(-90deg)',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {isCollapsed ? '⏶' : '⏷'}
+                    </Typography>
+                </Box>
 
                 <Box
                     sx={{
@@ -346,8 +388,8 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        // content always visible
-                        width: '100%',
+                        // content only visible when expanded
+                        width: isCollapsed ? '0%' : '100%',
                         overflow: 'hidden',
                         transition: 'width 240ms ease',
                     }}
