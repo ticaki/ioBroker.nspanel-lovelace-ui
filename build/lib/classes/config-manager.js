@@ -87,7 +87,7 @@ class ConfigManager extends import_library.BaseClass {
       return { messages: ["Abort: Invalid configuration"], panelConfig: void 0 };
     }
     if (configManagerConst.isGlobalConfig(configuration)) {
-      let panelConfig2 = { pages: [], navigation: [] };
+      let panelConfig2 = { pages: [], navigation: [], scriptVersion: "" };
       let messages2 = [];
       const tempConfig = { ...configuration, pages: [] };
       ({ panelConfig: panelConfig2, messages: messages2 } = await this.getPageConfig(tempConfig, panelConfig2, messages2));
@@ -384,7 +384,7 @@ class ConfigManager extends import_library.BaseClass {
     config.subPages = config.subPages.filter(
       (item) => config.pages.findIndex((item2) => item.uniqueName === item2.uniqueName) === -1
     );
-    let panelConfig = { pages: [], navigation: [] };
+    let panelConfig = { pages: [], navigation: [], scriptVersion: config.version };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
       messages.push("Required field panelTopic is missing");
@@ -3656,10 +3656,9 @@ class ConfigManager extends import_library.BaseClass {
       const blockName = blockNames[i];
       const expectedCount = Object.values(countBefore)[i];
       if (arr.length < expectedCount) {
-        messages.push(
-          `Warning: ${blockName}ScreensaverEntity - loaded ${arr.length} of ${expectedCount} configured items`
-        );
-        this.log.warn(messages[messages.length - 1]);
+        const msg = `Warning: ${blockName}ScreensaverEntity - loaded ${arr.length} of ${expectedCount} configured items`;
+        messages.push(msg);
+        this.log.warn(msg);
       }
       pageItems.push(...arr);
     }
@@ -4278,6 +4277,7 @@ class ConfigManager extends import_library.BaseClass {
   async getNotifyEntityData(entity, mode) {
     const result = {
       modeScr: mode,
+      role: "",
       type: "text",
       data: { entity1: {} }
     };
@@ -4301,7 +4301,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     result.data.entity1.suffix = {
       type: "const",
-      constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}`
+      constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}<sp!it>${entity.buzzer ? entity.buzzer === true ? "1,2,3,0xF54" : entity.buzzer : ""}`
     };
     result.data.entity2 = structuredClone(result.data.entity1);
     if (entity.Text) {
@@ -4362,6 +4362,12 @@ class ConfigManager extends import_library.BaseClass {
       throw new Error(
         `No Enabled or VisibleCondition in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`
       );
+    }
+    if (entity.isDismissiblePerEvent) {
+      result.role = "isDismissiblePerEvent";
+      if (entity.dismissibleIDGlobal) {
+        result.dismissibleIDGlobal = entity.dismissibleIDGlobal;
+      }
     }
     return result;
   }

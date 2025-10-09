@@ -21,6 +21,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var import_adminShareConfig = require("./lib/types/adminShareConfig");
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/controller/library");
 var import_register = require("source-map-support/register");
@@ -337,6 +338,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.log.error(`Error: ${e}`);
         }
       }
+      await this.subscribeForeignStatesAsync("*");
       if (counter === 0) {
         return;
       }
@@ -479,8 +481,8 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F;
-    if (typeof obj === "object" && obj.message) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L;
+    if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
         if (obj.message.online === "no") {
@@ -489,6 +491,93 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
       switch (obj.command) {
+        case import_adminShareConfig.SENDTO_GET_PAGES_COMMAND: {
+          const names = [];
+          if ((_a = obj == null ? void 0 : obj.message) == null ? void 0 : _a.panelTopic) {
+            if ((_b = this.controller) == null ? void 0 : _b.panels) {
+              const panel = this.controller.panels.find((a) => a.topic === obj.message.panelTopic);
+              if (panel) {
+                const db = panel.navigation.getDatabase();
+                if (db) {
+                  for (const p of db) {
+                    if (p == null ? void 0 : p.page) {
+                      names.push(p.page.name);
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { result: names }, obj.callback);
+          }
+          break;
+        }
+        case import_adminShareConfig.SENDTO_GET_PAGES_All_COMMAND: {
+          let names = [];
+          if ((_c = this.controller) == null ? void 0 : _c.panels) {
+            for (const panel of this.controller.panels) {
+              if (panel) {
+                const db = panel.navigation.getDatabase();
+                if (db) {
+                  for (const p of db) {
+                    if (p == null ? void 0 : p.page) {
+                      names.push(p.page.name);
+                    }
+                  }
+                }
+              }
+            }
+            names = Array.from(new Set(names));
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { result: names }, obj.callback);
+          }
+          break;
+        }
+        case import_adminShareConfig.SENDTO_GET_PANELS_COMMAND: {
+          const names = [];
+          if ((_d = this.controller) == null ? void 0 : _d.panels) {
+            for (const p of this.controller.panels) {
+              if (p) {
+                names.push({ panelTopic: p.topic, friendlyName: p.friendlyName || p.name });
+              }
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { result: names }, obj.callback);
+          }
+          break;
+        }
+        case import_adminShareConfig.SAVE_PANEL_NAVIGATION_COMMAND: {
+          if (obj.message && ((_e = this.controller) == null ? void 0 : _e.panels)) {
+            const data = obj.message;
+            const panel = this.controller.panels.find((a) => a.name === data.panelName);
+            if (panel) {
+              await panel.saveNavigationMap(data.pages);
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, [], obj.callback);
+          }
+          break;
+        }
+        case import_adminShareConfig.SENDTO_GET_PANEL_NAVIGATION_COMMAND: {
+          const nav = [];
+          if ((_f = this.controller) == null ? void 0 : _f.panels) {
+            for (const p of this.controller.panels) {
+              if (p) {
+                nav.push(await p.getNavigationArrayForFlow());
+              }
+            }
+          } else {
+            break;
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { result: nav }, obj.callback);
+          }
+          break;
+        }
         case "getWeatherEntity": {
           const adapterObj = await this.getObjectViewAsync("system", "instance", {
             startkey: "system.adapter.",
@@ -584,109 +673,89 @@ class NspanelLovelaceUi extends utils.Adapter {
             while (this.scriptConfigBacklog[0] != null) {
               const manager = new import_config_manager.ConfigManager(this);
               const obj2 = this.scriptConfigBacklog[0];
-              try {
-                let r = { messages: [], panelConfig: void 0 };
-                if (obj2.message.panelTopic && Array.isArray(obj2.message.panelTopic)) {
-                  const topics = JSON.parse(JSON.stringify(obj2.message.panelTopic));
-                  for (const a of topics) {
-                    r = await manager.setScriptConfig({ ...obj2.message, panelTopic: a });
-                  }
-                } else {
-                  r = await manager.setScriptConfig(obj2.message);
+              let r = { messages: [], panelConfig: void 0 };
+              if (obj2.message.panelTopic && Array.isArray(obj2.message.panelTopic)) {
+                const topics = JSON.parse(JSON.stringify(obj2.message.panelTopic));
+                for (const a of topics) {
+                  r = await manager.setScriptConfig({ ...obj2.message, panelTopic: a });
                 }
-                if (this.config.testCase) {
-                  this.testCaseConfig = [r.panelConfig];
-                } else {
-                  let reloaded = false;
-                  try {
-                    if (r.panelConfig) {
-                      const arr = await import_config_manager.ConfigManager.getConfig(this, [r.panelConfig]);
-                      if (arr && arr.length > 0) {
-                        const config = arr[0];
-                        if (this.controller && config) {
-                          const topic = config.topic;
-                          if (topic) {
-                            const index = this.controller.panels.findIndex(
-                              (a) => a.topic === topic
-                            );
-                            if (index !== -1) {
-                              const name = this.controller.panels[index].friendlyName || config.name || config.topic;
-                              await this.controller.removePanel(
-                                this.controller.panels[index]
-                              );
-                              if (this.unload) {
-                                if (obj2.callback) {
-                                  this.sendTo(
-                                    obj2.from,
-                                    obj2.command,
-                                    "Adapter is stopping",
-                                    obj2.callback
-                                  );
-                                }
-                                return;
-                              }
-                              await this.delay(1500);
-                              if (this.unload) {
-                                if (obj2.callback) {
-                                  this.sendTo(
-                                    obj2.from,
-                                    obj2.command,
-                                    "Adapter is stopping",
-                                    obj2.callback
-                                  );
-                                }
-                                return;
-                              }
-                              await this.controller.addPanel(config);
-                              const msg = `\u2705 Panel "${name}" reloaded with updated configuration.`;
-                              this.log.info(msg);
-                              r.messages.push(msg);
-                              reloaded = true;
-                            } else {
-                              r.messages.push(
-                                `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`
+              } else {
+                r = await manager.setScriptConfig(obj2.message);
+              }
+              if (this.config.testCase) {
+                this.testCaseConfig = [r.panelConfig];
+              } else {
+                let reloaded = false;
+                if (r.panelConfig) {
+                  const arr = await import_config_manager.ConfigManager.getConfig(this, [r.panelConfig]);
+                  if (arr && arr.length > 0) {
+                    const config = arr[0];
+                    if (this.controller && config) {
+                      const topic = config.topic;
+                      if (topic) {
+                        const index = this.controller.panels.findIndex((a) => a.topic === topic);
+                        if (index !== -1) {
+                          const name = this.controller.panels[index].friendlyName || config.name || config.topic;
+                          await this.controller.removePanel(this.controller.panels[index]);
+                          if (this.unload) {
+                            if (obj2.callback) {
+                              this.sendTo(
+                                obj2.from,
+                                obj2.command,
+                                "Adapter is stopping",
+                                obj2.callback
                               );
                             }
-                          } else {
-                            r.messages.push(
-                              `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`
-                            );
+                            return;
                           }
+                          await this.delay(1500);
+                          if (this.unload) {
+                            if (obj2.callback) {
+                              this.sendTo(
+                                obj2.from,
+                                obj2.command,
+                                "Adapter is stopping",
+                                obj2.callback
+                              );
+                            }
+                            return;
+                          }
+                          await this.controller.addPanel(config);
+                          const msg = `\u2705 Panel "${name}" reloaded with updated configuration.`;
+                          this.log.info(msg);
+                          r.messages.push(msg);
+                          reloaded = true;
                         } else {
                           r.messages.push(
-                            this.controller ? `Controller not exist.  Configuration saved. Adapter restart required!` : `Config not exist. `
+                            `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`
                           );
                         }
                       } else {
-                        r.messages.push(`No config found after conversion`);
+                        r.messages.push(
+                          `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`
+                        );
                       }
                     } else {
-                      r.messages.push(`Please send more as 0, '', false, null or undefined!`);
+                      r.messages.push(
+                        this.controller ? `Controller not exist.  Configuration saved. Adapter restart required!` : `Config not exist. `
+                      );
                     }
-                  } catch (e) {
-                    this.log.error(`Error in configuration: ${e.message}`);
+                  } else {
+                    r.messages.push(`No config found after conversion`);
                   }
-                  if (!reloaded) {
-                    const msg = `\u274C Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
-                    this.log.info(msg);
-                    r.messages.push(msg);
-                  }
+                } else {
+                  r.messages.push(`Please send more as 0, '', false, null or undefined!`);
                 }
-                await manager.delete();
-                result = r.messages;
-                if (obj2.callback) {
-                  this.sendTo(obj2.from, obj2.command, result, obj2.callback);
+                if (!reloaded) {
+                  const msg = `\u274C Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
+                  this.log.info(msg);
+                  r.messages.push(msg);
                 }
-              } catch (e) {
-                this.log.error(`Error in script config processing: ${e.message}`);
-                if (obj2.callback) {
-                  this.sendTo(
-                    obj2.from,
-                    obj2.command,
-                    `Error in script config processing: ${e.message}`,
-                    obj2.callback
-                  );
-                }
+              }
+              await manager.delete();
+              result = r.messages;
+              if (obj2.callback) {
+                this.sendTo(obj2.from, obj2.command, result, obj2.callback);
               }
               this.scriptConfigBacklog.shift();
               if (this.scriptConfigBacklog.length > 0) {
@@ -786,7 +855,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   break;
                 }
                 const config = this.config;
-                const panels = (_a = config.panels) != null ? _a : [];
+                const panels = (_g = config.panels) != null ? _g : [];
                 const index = panels.findIndex((a) => a.topic === obj.message.tasmotaTopic);
                 const item = index === -1 ? { name: "", ip: "", topic: "", id: "", model: "" } : panels[index];
                 const ipIndex = panels.findIndex((a) => a.ip === obj.message.tasmotaIP);
@@ -1012,7 +1081,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                if ((_b = this.controller) == null ? void 0 : _b.panels) {
+                if ((_h = this.controller) == null ? void 0 : _h.panels) {
                   const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
                   if (index !== -1) {
                     const panel = this.controller.panels[index];
@@ -1080,7 +1149,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "selectPanel": {
-          if (this.mainConfiguration && ((_c = obj.message) == null ? void 0 : _c.id)) {
+          if (this.mainConfiguration && ((_i = obj.message) == null ? void 0 : _i.id)) {
             let msg = [];
             switch (obj.message.id) {
               case "panel": {
@@ -1133,7 +1202,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "_loadNavigationOverview": {
-          if (this.mainConfiguration && ((_d = obj.message) == null ? void 0 : _d.panel)) {
+          if (this.mainConfiguration && ((_j = obj.message) == null ? void 0 : _j.panel)) {
             let msg = [];
             let useNavigation = false;
             let configFrom = "";
@@ -1141,7 +1210,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (index !== -1) {
               let nav = [];
               const o = await this.getForeignObjectAsync(this.namespace);
-              if (((_e = o == null ? void 0 : o.native) == null ? void 0 : _e.navigation) && o.native.navigation[obj.message.panel]) {
+              if (((_k = o == null ? void 0 : o.native) == null ? void 0 : _k.navigation) && o.native.navigation[obj.message.panel]) {
                 nav = o.native.navigation[obj.message.panel].data;
                 useNavigation = o.native.navigation[obj.message.panel].useNavigation;
                 configFrom = "Adminconfiguration";
@@ -1184,7 +1253,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "_saveNavigationOverview": {
-          if (((_f = obj.message) == null ? void 0 : _f.table) && ((_g = obj.message) == null ? void 0 : _g.panel) && this.mainConfiguration) {
+          if (((_l = obj.message) == null ? void 0 : _l.table) && ((_m = obj.message) == null ? void 0 : _m.panel) && this.mainConfiguration) {
             const o = await this.getForeignObjectAsync(this.namespace);
             if (o && o.native) {
               const index = this.mainConfiguration.findIndex((a) => a.topic === obj.message.panel);
@@ -1200,7 +1269,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                 );
                 result = result.filter((a) => a);
-                o.native.navigation = (_h = o.native.navigation) != null ? _h : {};
+                o.native.navigation = (_n = o.native.navigation) != null ? _n : {};
                 o.native.navigation[obj.message.panel] = {
                   useNavigation: obj.message.useNavigation === "true",
                   data: result
@@ -1219,7 +1288,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "_clearNavigationOverview": {
-          if (((_i = obj.message) == null ? void 0 : _i.table) && ((_j = obj.message) == null ? void 0 : _j.panel) && this.mainConfiguration) {
+          if (((_o = obj.message) == null ? void 0 : _o.table) && ((_p = obj.message) == null ? void 0 : _p.panel) && this.mainConfiguration) {
             const o = await this.getForeignObjectAsync(this.namespace);
             if (o && o.native && o.native.navigation && o.native.navigation[obj.message.panel]) {
               o.native.navigation[obj.message.panel] = void 0;
@@ -1315,7 +1384,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
             }
           }
-          if ((_k = this.controller) == null ? void 0 : _k.panels) {
+          if ((_q = this.controller) == null ? void 0 : _q.panels) {
             const updateText = this.library.getTranslation("updateAvailable");
             const checkText = this.library.getTranslation("check!");
             const temp = [];
@@ -1330,7 +1399,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp2 = (_m = (_l = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _l[1]) != null ? _m : "";
+                const temp2 = (_s = (_r = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _r[1]) != null ? _s : "";
                 if (temp2 !== version) {
                   check = true;
                   sv = `${temp2} (${updateText}: v${version})`;
@@ -1339,13 +1408,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
               }
               if (a.info) {
-                if ((_n = a.info.tasmota) == null ? void 0 : _n.firmwareversion) {
+                if ((_t = a.info.tasmota) == null ? void 0 : _t.firmwareversion) {
                   const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     tv = `${temp2[1]}`;
                   }
                 }
-                if (((_o = a.info.tasmota) == null ? void 0 : _o.onlineVersion) && tv) {
+                if (((_u = a.info.tasmota) == null ? void 0 : _u.onlineVersion) && tv) {
                   const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1] && temp2[1] !== tv) {
                     tv += ` (${updateText})`;
@@ -1353,13 +1422,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                 }
                 tv = tv ? `v${tv}` : "";
-                if ((_p = a.info.nspanel) == null ? void 0 : _p.displayVersion) {
+                if ((_v = a.info.nspanel) == null ? void 0 : _v.displayVersion) {
                   const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     nv = `${temp2[1]}`;
                   }
                 }
-                if (((_q = a.info.nspanel) == null ? void 0 : _q.onlineVersion) && nv) {
+                if (((_w = a.info.nspanel) == null ? void 0 : _w.onlineVersion) && nv) {
                   const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1] && temp2[1] !== nv) {
                     if (nv === "0.0.0") {
@@ -1377,14 +1446,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _check: check,
                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? "online" : "offline"}`}`})`,
                 _name: a.friendlyName,
-                _ip: ((_t = (_s = (_r = a.info) == null ? void 0 : _r.tasmota) == null ? void 0 : _s.net) == null ? void 0 : _t.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
+                _ip: ((_z = (_y = (_x = a.info) == null ? void 0 : _x.tasmota) == null ? void 0 : _y.net) == null ? void 0 : _z.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
                 _online: a.isOnline ? "yes" : "no",
                 _topic: a.topic,
-                _id: ((_w = (_v = (_u = a.info) == null ? void 0 : _u.tasmota) == null ? void 0 : _v.net) == null ? void 0 : _w.Mac) ? a.info.tasmota.net.Mac : "",
+                _id: ((_C = (_B = (_A = a.info) == null ? void 0 : _A.tasmota) == null ? void 0 : _B.net) == null ? void 0 : _C.Mac) ? a.info.tasmota.net.Mac : "",
                 _tftVersion: nv ? nv : "???",
                 _tasmotaVersion: tv ? tv : "???",
                 _ScriptVersion: sv ? `v${sv}` : "???",
-                _nsPanelModel: ((_y = (_x = a.info) == null ? void 0 : _x.nspanel) == null ? void 0 : _y.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
+                _nsPanelModel: ((_E = (_D = a.info) == null ? void 0 : _D.nspanel) == null ? void 0 : _E.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
               });
             }
             result = result.concat(temp);
@@ -1402,7 +1471,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp3 = (_A = (_z = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _z[1]) != null ? _A : "";
+                const temp3 = (_G = (_F = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _F[1]) != null ? _G : "";
                 if (temp3 !== version) {
                   sv = temp3 ? temp3 : version;
                 }
@@ -1470,7 +1539,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           let language = this.library.getLocalLanguage();
           language = language === "zh-cn" ? "en" : language;
           const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-          if ((_B = this.controller) == null ? void 0 : _B.panels) {
+          if ((_H = this.controller) == null ? void 0 : _H.panels) {
             const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
             if (index !== -1) {
               const panel = this.controller.panels[index];
@@ -1518,7 +1587,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "screensaverNotify": {
-          if (((_C = obj.message) == null ? void 0 : _C.panel) && ((_D = this.controller) == null ? void 0 : _D.panels)) {
+          if (((_I = obj.message) == null ? void 0 : _I.panel) && ((_J = this.controller) == null ? void 0 : _J.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.topic);
             if (panel == null ? void 0 : panel.screenSaver) {
               if (typeof obj.message.heading === "string") {
@@ -1554,7 +1623,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "buzzer": {
-          if (((_E = obj.message) == null ? void 0 : _E.panel) && ((_F = this.controller) == null ? void 0 : _F.panels)) {
+          if (((_K = obj.message) == null ? void 0 : _K.panel) && ((_L = this.controller) == null ? void 0 : _L.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(

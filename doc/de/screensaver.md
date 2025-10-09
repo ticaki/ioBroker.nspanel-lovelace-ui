@@ -30,7 +30,10 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
   - [indicatorScreensaverEntity](#indicatorscreensaverentity)
   - [leftScreensaverEntity](#leftscreensaverentity)
   - [alternateScreensaverEntity](#alternatescreensaverentity)
-  - [mrIcon1/2ScreensaverEntity](#mricon1screensaverentity--mricon2screensaverentity)
+  - [mrIcon1/2ScreensaverEntity](#mricon1screensaverentity-und-mricon2screensaverentity)
+  - [Screensaver-Notifications](#screensaver-notifications)
+    - [isDismissiblePerEvent](#isdismissibleperevent)
+    - [dismissibleIDGlobal](#dismissibleidglobal)
 
 </td>
 <td width="50%">
@@ -72,7 +75,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 1 Advanced Mode Standard  
   
-<img alt='screensaverAdv' src='../Pictures/screensaver/screensaverAdv.png'>  
+<img alt='screensaverAdv' src='./Pictures/screensaver/screensaverAdv.png'>  
 
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen (meist Wetter)
 - **Left-Bereich** (3 Elemente): Linker Bereich für detaillierte Informationen
@@ -82,7 +85,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 2 Alternate Mode  
   
-<img alt='screensaverAlt' src='../Pictures/screensaver/screensaverAlt.png'>  
+<img alt='screensaverAlt' src='./Pictures/screensaver/screensaverAlt.png'>  
     
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen
 - **Alternate-Bereich** (1 Element): Alternative Ansicht für den Hauptbereich
@@ -91,7 +94,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 3 Standard Mode  
   
-<img alt='screensaverStd' src='../Pictures/screensaver/screensaverStd.png'>  
+<img alt='screensaverStd' src='./Pictures/screensaver/screensaverStd.png'>  
     
 - **Favorit-Bereich** (1 Element): Hauptbereich für wichtige Informationen  
 - **Bottom-Bereich** (4 Elemente): Erweiterte untere Informationsleiste
@@ -99,7 +102,7 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 
 ## 4. Easy View Mode  
   
-<img alt='screensaverEsay' src='../Pictures/screensaver/screensaverEasy.png' width='70%'>  
+<img alt='screensaverEsay' src='./Pictures/screensaver/screensaverEasy.png' width='70%'>  
   
 - **Bottom-Bereich** (3 Elemente): Extra große Schrift für bessere Lesbarkeit
 - **Keine Icons oder Texte**: Vereinfachte Darstellung ohne komplexe Elemente
@@ -107,57 +110,6 @@ Der Screensaver hat verschiedene Modi mit unterschiedlichen Layouts:
 - **Update Info**: dieses Symbol ist auf allen Screensavern zu sehen, wenn es ein Update vom TFT, Berry oder Adapter gibt.  
 
 ## Bereiche im Detail
-
-## MR-Icons (Relay-Symbole)
-
-Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen Bereich des Screensavers zur Visualisierung von Status-Informationen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar.
-
-### Eigenschaften der MR-Icons:
-- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
-- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden
-- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
-- **Flexible Anbindung**: Können mit beliebigen ioBroker-States verbunden werden (nicht nur NSPanel-Relays)
-- **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
-- **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
-- **Detach-Funktion**: Icons können vollständig unabhängig von den Hardware-Tasten konfiguriert werden
-
-### Funktionsweise:
-- **Anzeige**: Die Icons im oberen Displaybereich zeigen nur den aktuellen Status der verknüpften States
-- **Hardware-Tasten**: Die Tasten unterhalb des Displays sind separate Steuerelemente
-- **Konfiguration**: Die Icon-Konfiguration betrifft nur die visuelle Darstellung, nicht die Tastenfunktion
-
-### MR-Icon Bereiche:
-- **mrIcon1ScreensaverEntity**: Linkes Relay-Symbol
-- **mrIcon2ScreensaverEntity**: Rechtes Relay-Symbol
-
-### Beispiel-Konfiguration für MR-Icons:
-
-```typescript
-// Direkte Relay-Steuerung
-mrIcon1ScreensaverEntity: {
-    type: 'script',
-    ScreensaverEntity: 'Relay.1',
-    ScreensaverEntityIconOn: 'lightbulb-on',
-    ScreensaverEntityIconOff: 'lightbulb-off',
-    ScreensaverEntityText: 'Licht',
-    ScreensaverEntityIconColor: {
-        val_min: 0,
-        val_max: 1,
-        val_best: 1
-    }
-}
-
-// Externe Geräte-Steuerung mit Statuswert
-mrIcon2ScreensaverEntity: {
-    type: 'script',
-    ScreensaverEntity: 'hue.0.Wohnzimmer.Lampe.on',
-    ScreensaverEntityValue: 'hue.0.Wohnzimmer.Lampe.level',
-    ScreensaverEntityIconOn: 'ceiling-light',
-    ScreensaverEntityIconOff: 'ceiling-light-outline',
-    ScreensaverEntityText: 'Dimmer',
-    ScreensaverEntityUnitText: '%'
-}
-```
 
 ## Wisch-Gesten (Swipe)
 
@@ -416,30 +368,288 @@ leftScreensaverEntity: [
 
 **Typ**: Objekt (nicht Array)
 
-**Beispiele**:
+### Beispiel-Konfiguration für MR-Icons:
 
 ```typescript
+// Direkte Relay-Verküpfung
 mrIcon1ScreensaverEntity: {
     type: 'script',
     ScreensaverEntity: 'Relay.1',
-    ScreensaverEntityIconOn: 'lightbulb',
-    ScreensaverEntityIconOff: 'lightbulb-outline',
-    ScreensaverEntityOnColor: On,      // Empfohlene gelbe An-Farbe (siehe Abschnitt [Farbkonstanten](#farbkonstanten) für Definition)
-    ScreensaverEntityOffColor: HMIOff  // Blaue Aus-Farbe
-},
+    ScreensaverEntityIconOn: 'lightbulb-on',
+    ScreensaverEntityIconOff: 'lightbulb-off',
+    ScreensaverEntityText: 'Licht',
+    ScreensaverEntityIconColor: {
+        val_min: 0,
+        val_max: 1,
+        val_best: 1
+    }
+}
 
+// Externe Geräte-Steuerung mit Statuswert
 mrIcon2ScreensaverEntity: {
     type: 'script',
-    ScreensaverEntity: 'alias.0.Beleuchtung.Flur',
+    ScreensaverEntity: 'hue.0.Wohnzimmer.Lampe.on',
+    ScreensaverEntityValue: 'hue.0.Wohnzimmer.Lampe.level',
     ScreensaverEntityIconOn: 'ceiling-light',
-    ScreensaverEntityValue: 'alias.0.Beleuchtung.Flur.Helligkeit',
-    ScreensaverEntityValueUnit: '%',
-    ScreensaverEntityValueDecimalPlace: 0,
-    ScreensaverEntityOnColor: Yellow,  // Gelbe Farbe für helle Beleuchtung
-    ScreensaverEntityOffColor: HMIOff  // Standard Aus-Farbe
+    ScreensaverEntityIconOff: 'ceiling-light-outline',
+    ScreensaverEntityText: 'Dimmer',
+    ScreensaverEntityUnitText: '%'
 }
 ```
 
+
+Die MR-Icons sind **ausschließlich Anzeigeelemente** im oberen / unteren Bereich des Screensavers zur Visualisierung von Status-Informationen. Sie sind in allen Screensaver-Modi außer Easy View verfügbar. Zum ausblenden muss das jeweilige Icon auf null gesetzt werden.  
+```typescript
+mrIcon1ScreensaverEntity: null
+```  
+    
+
+### Eigenschaften der MR-Icons:
+- **Reine Statusanzeige**: Icons zeigen nur den aktuellen Zustand an und haben **keine steuernde Funktion**
+- **Hardware-Tasten**: Die physischen Tasten unterhalb des Displays können unabhängig konfiguriert werden, [weitere Infos hier](ScriptConfig#hardwarebutton-config)  
+- **Visueller Status**: Farbwechsel basierend auf Ein/Aus-Zustand der verknüpften States
+- **Flexible Anbindung**: Können mit beliebigen ioBroker-States verbunden werden (nicht nur NSPanel-Relays)
+- **Konfigurierbare Icons**: Verschiedene Symbole je nach Anwendung (Licht, Steckdose, etc.)
+- **Erweiterte Darstellung**: Zusätzlicher Wert für Statusanzeigen möglich
+- **Detach-Funktion**: Icons können vollständig unabhängig von den Hardware-Tasten konfiguriert werden
+
+### Funktionsweise:
+- **Anzeige**: Die Icons zeigen nur den aktuellen Status der verknüpften States
+- **Hardware-Tasten**: Die Tasten unterhalb des Displays sind separate Steuerelemente
+- **Konfiguration**: Die Icon-Konfiguration betrifft nur die visuelle Darstellung, nicht die Tastenfunktion
+
+### MR-Icon Bereiche:
+- **mrIcon1ScreensaverEntity**: Linkes Symbol
+- **mrIcon2ScreensaverEntity**: Rechtes Symbol
+---
+
+
+## Screensaver-Notifications
+
+### Überblick
+Es gibt verschiedene Möglichkeiten, auf dem Screensaver eine Überschrift mit Text anzuzeigen.  
+Die folgenden beiden Varianten sind **gleichwertig** und überschreiben sich gegenseitig.  
+Zusätzlich überschreiben sie auch die weiter unten beschriebene neue Möglichkeit.
+
+[Beispielfoto unten](#beispielanzeige)
+
+---
+
+#### Variante 1: Über Datenpunkte
+
+**Verwendete Datenpunkte:**
+
+```ts
+.cmd.screenSaver.headingNotification
+.cmd.screenSaver.textNotification
+.cmd.screenSaver.activateNotification
+```
+
+- `heading`: Überschrift  
+- `text`: Text darunter  
+- `activate`: Anzeige ein- oder ausschalten  
+
+Die Notification wird so lange eingeblendet, wie `activate = true` ist.
+
+---
+
+#### Variante 2: Über den Skriptadapter
+
+Notifications können auch per `sendTo()` an den Screensaver gesendet werden.  
+Wichtig: Der Parameter **panel** wurde in **topic** umbenannt (Breaking Change).
+
+```ts
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', {
+    topic: 'nspanel/ns_panel6', // vorher 'panel'
+    heading: 'Testüberschrift',
+    text: 'Testtext Testtext Testtext Testtext',
+    enabled: false,
+})
+```
+
+- `enabled` entspricht `activate`:  
+  - `true` → Anzeige aktiv  
+  - `false` → Anzeige deaktiviert  
+
+---
+
+### Neue Möglichkeit: Mehrere Notifications mit Bedingungen
+
+Neu hinzugekommen ist die Option, mehrere Notifications zu definieren und diese abhängig von Bedingungen anzuzeigen.  
+Dazu wird im Skript ein Array angelegt:
+
+```ts
+notifyScreensaverEntity: [],
+```
+
+##### Beispiel
+
+```ts
+notifyScreensaverEntity: [
+    { // sichtbar, wenn State true ist (überschreibt vorherige)
+        type: 'script',
+        Enabled: '0_userdata.0.NotificationTest',
+        Headline: 'test2',
+        Text: 'text2',
+        Priority: 2
+    },
+    { // sichtbar, wenn Zahl > 9 (überschreibt alle vorherigen)
+        type: 'script',
+        HeadlinePrefix: 'Hohe Zahl: ',
+        Headline: '0_userdata.0.number',
+        TextPrefix: 'Im Datenpunkt steht die Zahl ',
+        Text: '0_userdata.0.number',
+        TextSuffix: '. Bis dahin kannst du nicht zählen. Frag deine Mama!',
+        Enabled: '0_userdata.0.number',
+        VisibleCondition: 'val > 9',
+        Priority: 1
+    }
+],
+```
+
+---
+
+### Hinweise
+
+- Alle Eigenschaften wie **Headline** und **Text** können Datenpunkte sein.  
+- **Enabled**: Datenpunkt, der auf `true` oder `false` geprüft wird. Es können auch mehrere Datenpunkte als Array [string,string,...] angegeben werden. 
+- **VisibleCondition**: Ermöglicht direkte Bedingungen, ohne extra Alias erstellen zu müssen.  
+- **HeadlineIcon**: Fügt ein Icon vor dem Headline-Text ein und kann als Datenpunkt übergeben werden.
+
+---
+
+### Erweiterte Notification-Steuerung
+
+#### isDismissiblePerEvent
+
+Mit dem Parameter `isDismissiblePerEvent` kann gesteuert werden, dass eine Notification automatisch ausgeblendet wird, wenn der zugehörige **Enabled**-State wieder auf `false` wechselt.
+
+**Verhalten:**
+- Wenn `isDismissiblePerEvent: true` gesetzt ist, wird die Notification **nicht** automatisch erneut angezeigt, wenn der Enabled-State  auf `true` bleibt
+- Die Notification bleibt "dismissed" (ausgeblendet), bis der State erneut auf true geht.
+
+**Anwendungsfall:** 
+Ideal für ereignisbasierte Benachrichtigungen (z.B. Türklingel, Bewegungsmelder), die nur einmal angezeigt werden sollen, bis der Benutzer sie zur Kenntnis genommen hat.
+
+**Beispiel:**
+
+```ts
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Bewegung erkannt',
+        Text: 'Im Flur wurde Bewegung erkannt',
+        Enabled: 'zigbee.0.Bewegungsmelder.Flur.occupancy',
+        isDismissiblePerEvent: true  // Notification wird nur einmal pro Event angezeigt
+    }
+]
+```
+
+**Ablauf:**
+1. Bewegungsmelder wird aktiv → Notification erscheint
+2. Benutzer tippt auf Screensaver → Notification wird ausgeblendet
+3. Bewegungsmelder wird wieder inaktiv → Notification bleibt ausgeblendet
+4. Bewegungsmelder wird erneut aktiv → Notification erscheint wieder
+
+---
+
+#### dismissibleIDGlobal
+
+Mit dem Parameter `dismissibleIDGlobal` können mehrere Notifications **über verschiedene NSPanels hinweg** gemeinsam gesteuert werden. Wenn eine Notification mit einer bestimmten `dismissibleIDGlobal`-ID auf einem Panel ausgeblendet wird, werden automatisch **alle** Notifications mit der gleichen ID auf **allen** Panels ausgeblendet.
+
+**Verhalten:**
+- Alle Notifications mit der gleichen `dismissibleIDGlobal`-ID werden als zusammengehörig behandelt
+- Beim Ausblenden einer Notification werden alle anderen mit gleicher ID ebenfalls ausgeblendet
+- Funktioniert panel-übergreifend in der gesamten Installation
+- Erfordert die Verwendung von `isDismissiblePerEvent: true`
+
+**Anwendungsfall:**
+Ideal für zentrale Warnungen oder Benachrichtigungen, die auf mehreren Panels gleichzeitig angezeigt werden sollen (z.B. Feueralarm, Türklingel, Sicherheitswarnung).
+
+**Beispiel:**
+
+```ts
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Türklingel',
+        Text: 'Es klingelt an der Haustür',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-alert'  // Gleiche ID auf allen Panels verwenden
+    }
+]
+```
+
+**Multi-Panel-Szenario:**
+
+```ts
+// Panel 1 (Wohnzimmer)
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Haustür',
+        Text: 'Es klingelt!',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-notification'
+    }
+]
+
+// Panel 2 (Küche) - Andere Nachricht, aber gleiche ID
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Klingel',
+        Text: 'Jemand an der Tür',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-notification'  // Gleiche ID!
+    }
+]
+
+// Panel 3 (Flur) - Wieder andere Nachricht, aber gleiche ID
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Besuch',
+        Text: 'Türklingel wurde betätigt',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-notification'  // Gleiche ID!
+    }
+]
+```
+
+**Ablauf im Multi-Panel-Szenario:**
+1. Es klingelt → Alle 3 Panels zeigen ihre jeweilige Notification
+2. Benutzer tippt auf **einem beliebigen** Panel auf den Screensaver
+3. **Alle** Notifications auf **allen** Panels werden automatisch ausgeblendet
+4. Türklingel wird inaktiv → Notifications bleiben ausgeblendet
+5. Es klingelt erneut → Alle Notifications erscheinen wieder auf allen Panels
+
+**Wichtige Hinweise:**
+- `dismissibleIDGlobal` funktioniert nur in Kombination mit `isDismissiblePerEvent: true`
+- Die ID kann ein beliebiger String sein (z.B. `'alarm-fire'`, `'doorbell'`, `'window-open'`)
+- Verwenden Sie aussagekräftige IDs, um verschiedene Notification-Gruppen zu unterscheiden
+- Notifications ohne `dismissibleIDGlobal` werden nur lokal auf dem jeweiligen Panel gesteuert
+
+---
+
+#### Beispielanzeige
+
+So sieht es aus, wenn die Zahl **10** ist:  
+  
+ <img alt='screensaverNotify' src='./Pictures/screensaver/screensaverNotify.png' width='50%'>  
+ 
+ ---
+
+  
 ## Script-Konfiguration Parameter
 
 ### Basis-Parameter

@@ -74,6 +74,15 @@ class PageAlarm extends import_Page.Page {
       );
     }
   }
+  /**
+   * Get the current alarm status.
+   *
+   * Reads the persisted status from the configured states (if state
+   * management is enabled) and maps numeric indices to the corresponding
+   * AlarmStates value.
+   *
+   * @returns Promise resolving to the current alarm status
+   */
   async getStatus() {
     if (this.useStates) {
       const state = this.library.readdb(`panels.${this.basePanel.name}.alarm.${this.name}.status`);
@@ -85,6 +94,12 @@ class PageAlarm extends import_Page.Page {
     }
     return this.status;
   }
+  /**
+   * Set the current alarm status and persist it when using states.
+   *
+   * @param value - new alarm status to set
+   * @returns Promise that resolves when the status has been persisted
+   */
   async setStatus(value) {
     this.status = value;
     if (this.useStates) {
@@ -105,6 +120,16 @@ class PageAlarm extends import_Page.Page {
     this.minUpdateInterval = 500;
     this.neverDeactivateTrigger = true;
   }
+  /**
+   * Initialize the alarm page.
+   *
+   * This method prepares dataitems, default channels and initial runtime
+   * values (pin, alarmType, status). It is called during the Page
+   * initialization sequence and may perform asynchronous calls to the
+   * StatesController and adapter library.
+   *
+   * @returns Promise that resolves when initialization is complete
+   */
   async init() {
     var _a, _b, _c, _d;
     const config = structuredClone(this.config);
@@ -120,7 +145,7 @@ class PageAlarm extends import_Page.Page {
     this.alarmType = (_c = ((_b = (_a = this.items) == null ? void 0 : _a.data) == null ? void 0 : _b.alarmType) && await this.items.data.alarmType.getString()) != null ? _c : "alarm";
     {
       await this.library.writedp(
-        `panels.${this.name}.alarm`,
+        `panels.${this.basePanel.name}.alarm`,
         void 0,
         import_definition.genericStateObjects.panel.panels.alarm._channel
       );
@@ -148,8 +173,13 @@ class PageAlarm extends import_Page.Page {
     }
   }
   /**
+   * Build the current message payload and send it to the panel.
    *
-   * @returns
+   * The message is assembled from the configured dataitems and the
+   * internal alarm status. If the page is not visible or incorrectly
+   * configured the update is skipped.
+   *
+   * @returns Promise that resolves after the message was sent (or skipped)
    */
   async update() {
     var _a, _b, _c, _d, _e;
@@ -288,10 +318,15 @@ class PageAlarm extends import_Page.Page {
     }
   }
   /**
-   *a
+   * Handle a button event coming from the panel.
    *
-   * @param _event
-   * @returns
+   * The incoming event contains the action code (A1/A2/A3/A4/D1/U1/...) and
+   * an optional value (for example a numeric PIN). This method validates
+   * the PIN (when configured), updates the internal status machine and
+   * triggers the configured mode/state writes.
+   *
+   * @param _event - event payload from the touch panel
+   * @returns Promise that resolves after the event has been handled
    */
   async onButtonEvent(_event) {
     var _a;

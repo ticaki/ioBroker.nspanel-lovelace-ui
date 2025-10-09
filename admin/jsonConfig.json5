@@ -254,7 +254,7 @@
                     ]
                 }
             }
-        },           
+        },
         "globalSetting": {
             "type": "panel",
             "label": "globalSetting",
@@ -314,6 +314,10 @@
                         {
                             "label": "volcano",
                             "value": 4
+                        },
+                        {
+                            "label": "userColors",
+                            "value": 5
                         }
                     ]
                 },
@@ -441,6 +445,862 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 3
+                }
+            }
+        },
+        "colorThemen": {
+            "type": "panel",
+            "label": "colorTheme",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || data.colorTheme !== 5",
+            "items": {
+                "_openLinkWikiColorThemes": {
+                    "type": "staticLink",
+                    "text": "openLinkWikiColorThemes",
+                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/ColorThemes",
+                    "icon": "info",
+                    "button": true,
+                    "style": {
+                        "fontSize": 16,
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "colorStates": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "States",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colGood",
+                            "type": "color",
+                            "label": "good",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colBad",
+                            "type": "color",
+                            "label": "bad",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colTrue",
+                            "type": "color",
+                            "label": "true",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFalse",
+                            "type": "color",
+                            "label": "false",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colActivated",
+                            "type": "color",
+                            "label": "activated",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colDeactivated",
+                            "type": "color",
+                            "label": "deactivated",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colAttention",
+                            "type": "color",
+                            "label": "attention",
+                            "default": "#00ffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colInfo",
+                            "type": "color",
+                            "label": "info",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption1",
+                            "type": "color",
+                            "label": "option1",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption2",
+                            "type": "color",
+                            "label": "option2",
+                            "default": "#ffcc00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption3",
+                            "type": "color",
+                            "label": "option3",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOption4",
+                            "type": "color",
+                            "label": "option4",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOpen",
+                            "type": "color",
+                            "label": "open",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colClose",
+                            "type": "color",
+                            "label": "close",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colHot",
+                            "type": "color",
+                            "label": "hot",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colCold",
+                            "type": "color",
+                            "label": "cold",
+                            "default": "#0000ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOn",
+                            "type": "color",
+                            "label": "on",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colOff",
+                            "type": "color",
+                            "label": "off",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colLight",
+                            "type": "color",
+                            "label": "light",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colDark",
+                            "type": "color",
+                            "label": "dark",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colWarning",
+                            "type": "color",
+                            "label": "warning",
+                            "default": "#ffa500",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSuccess",
+                            "type": "color",
+                            "label": "success",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNeutral",
+                            "type": "color",
+                            "label": "neutral",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colHighlight",
+                            "type": "color",
+                            "label": "highlight",
+                            "default": "#00c8ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colDisabled",
+                            "type": "color",
+                            "label": "disabled",
+                            "default": "#404040",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorNavigation": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "Navigation",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colNavLeft",
+                            "type": "color",
+                            "label": "navLeft",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavRight",
+                            "type": "color",
+                            "label": "navRight",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavDownLeft",
+                            "type": "color",
+                            "label": "navDownLeft",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavDownRight",
+                            "type": "color",
+                            "label": "navDownRight",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavDown",
+                            "type": "color",
+                            "label": "navDown",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavHome",
+                            "type": "color",
+                            "label": "navHome",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colNavParent",
+                            "type": "color",
+                            "label": "navParent",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorWeatherIcon": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "WeatherIcon",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colSunny",
+                            "type": "color",
+                            "label": "sunny",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colPartlyCloudy",
+                            "type": "color",
+                            "label": "partlyCloudy",
+                            "default": "#999999",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colCloudy",
+                            "type": "color",
+                            "label": "cloudy",
+                            "default": "#555555",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFog",
+                            "type": "color",
+                            "label": "fog",
+                            "default": "#aaaaaa",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colHail",
+                            "type": "color",
+                            "label": "hail",
+                            "default": "#d0d0d0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colLightning",
+                            "type": "color",
+                            "label": "lightning",
+                            "default": "#ffff33",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colLightningRainy",
+                            "type": "color",
+                            "label": "lightningRainy",
+                            "default": "#cccc66",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colPouring",
+                            "type": "color",
+                            "label": "pouring",
+                            "default": "#3333ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colRainy",
+                            "type": "color",
+                            "label": "rainy",
+                            "default": "#6666ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSnowy",
+                            "type": "color",
+                            "label": "snowy",
+                            "default": "#cccccc",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSnowyHeavy",
+                            "type": "color",
+                            "label": "snowyHeavy",
+                            "default": "#bbbbbb",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSnowyRainy",
+                            "type": "color",
+                            "label": "snowyRainy",
+                            "default": "#9999ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colWindy",
+                            "type": "color",
+                            "label": "windy",
+                            "default": "#999999",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colTornado",
+                            "type": "color",
+                            "label": "tornado",
+                            "default": "#ff3232",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colClearNight",
+                            "type": "color",
+                            "label": "clearNight",
+                            "default": "#666666",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colExceptional",
+                            "type": "color",
+                            "label": "exceptional",
+                            "default": "#ff3232",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorDisplay": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "Display",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colForeground",
+                            "type": "color",
+                            "label": "foreground",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colBackground",
+                            "type": "color",
+                            "label": "background",
+                            "default": "#101010",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorWeatherForecast": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "WeatherForecast",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colSolar",
+                            "type": "color",
+                            "label": "solar",
+                            "default": "#00ff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colTemperature",
+                            "type": "color",
+                            "label": "temperature",
+                            "default": "#ff0000",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colGust",
+                            "type": "color",
+                            "label": "gust",
+                            "default": "#0000ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSunrise",
+                            "type": "color",
+                            "label": "sunrise",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colSunset",
+                            "type": "color",
+                            "label": "sunset",
+                            "default": "#ff9900",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorScreensaver": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "Screensaver",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colFgTime",
+                            "type": "color",
+                            "label": "fgTime",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgTimeAmPm",
+                            "type": "color",
+                            "label": "fgTimeAmPm",
+                            "default": "#ffcc00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgDate",
+                            "type": "color",
+                            "label": "fgDate",
+                            "default": "#c0c0c0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgMain",
+                            "type": "color",
+                            "label": "fgMain",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgMainAlt",
+                            "type": "color",
+                            "label": "fgMainAlt",
+                            "default": "#ffcc00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgTimeAdd",
+                            "type": "color",
+                            "label": "fgTimeAdd",
+                            "default": "#00c8ff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgForecast",
+                            "type": "color",
+                            "label": "fgForecast",
+                            "default": "#c0c0c0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgBar",
+                            "type": "color",
+                            "label": "fgBar",
+                            "default": "#c0c0c0",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
+                },
+                "colorCardMedia": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "type": "accordion",
+                    "label": "cardMedia",
+                    "noDelete": true,
+                    "items": [
+                        {
+                            "attr": "colMediaArtistOn",
+                            "type": "color",
+                            "label": "mediaArtistOn",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaArtistOff",
+                            "type": "color",
+                            "label": "mediaArtistOff",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaTitleOn",
+                            "type": "color",
+                            "label": "mediaTitleOn",
+                            "default": "#ffff00",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaTitleOff",
+                            "type": "color",
+                            "label": "mediaTitleOff",
+                            "default": "#808080",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colMediaOnOffColor",
+                            "type": "color",
+                            "label": "mediaOnOffColor",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        }
+                    ]
                 }
             }
         },
@@ -813,30 +1673,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power1_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power1_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power1_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power1_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power1_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "solar-power-variant",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "solar-power-variant"
                         },
                         {
                             "attr": "power1_state",
@@ -1033,30 +1882,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power2_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power2_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power2_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power2_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power2_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "transmission-tower",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "transmission-tower"
                         },
                         {
                             "attr": "power2_state",
@@ -1251,30 +2089,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power3_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power3_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power3_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power3_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power3_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "car-electric-outline",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "car-electric-outline"
                         },
                         {
                             "attr": "power3_state",
@@ -1469,30 +2296,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power4_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power4_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power4_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power4_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power4_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "washing-machine",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "washing-machine"
                         },
                         {
                             "attr": "power4_state",
@@ -1687,30 +2503,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power5_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power5_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power5_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power5_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power5_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "tumble-dryer",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "tumble-dryer"
                         },
                         {
                             "attr": "power5_state",
@@ -1905,30 +2710,19 @@
                             "size": 3
                         },
                         {
-                            "attr": "power6_showIcon",
-                            "type": "imageSendTo",
-                            "label": "showIcon",
-                            "jsonData": "{\"icon\": \"${data.power6_icon}\"}",
-                            "command": "getIconBase64",
-                            "alsoDependsOn": [
-                                "power6_icon"
-                            ],
-                            "newLine": false,
-                            "width": 50,
-                            "height": 50
-                        },
-                        {
-                            "attr": "power6_icon",
-                            "xs": 8,
-                            "sm": 8,
-                            "md": 8,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "autocompleteSendTo",
+                            "attr": "power6_icon",                         
+                            "type": "custom",
+                            "i18n": true,
+                            "url": "custom/customComponents.js",
+                            "name": "AdminComponentTemplateSet/Components/IconSelect",
+                            "bundlerType": "module",
+                            "xs": 12,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3,
                             "label": "icon",
-                            "default": "shape",
-                            "command": "getIcons",
-                            "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
+                            "default": "shape"
                         },
                         {
                             "attr": "power6_state",
@@ -2984,7 +3778,7 @@
                     "xl": 4
                 }
             }
-        }, 
+        },
         "general": {
             "type": "panel",
             "label": "mqttServerSetting",
@@ -3408,6 +4202,19 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "myCustomAttribute": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/IconSelect",
+                    "bundlerType": "module",
+                    "xs": 12,
+                    "sm": 10,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                    //"label": "test"
+                },
                 "logUnknownTokens": {
                     "type": "checkbox",
                     "label": "logUnknownTokens",
@@ -3418,6 +4225,71 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                }           
+            }
+        },
+        "NavigationFlow": {
+            "type": "panel",
+            "label": "Navigation Flow",
+            "expertMode": true,
+            "items": {
+                "_myCustomAttribute": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/NavigationView",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
+        "pageUnlock": {
+            "type": "panel",
+            "label": "PageUnlock",
+            "items": {
+                "pageUnlockConfig": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/UnlockPage",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
+        "iconOverview": {
+            "type": "panel",
+            "label": "iconOverview",
+            "items": {
+                "_header": {
+                    "type": "header",
+                    "size": 3,
+                    "text": "iconOverview",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "_staticTextIcon": {
+                    "type": "staticText",
+                    "label": "use Strg+f (Win/Linux) or Cmd+f (Mac) to filter for icons",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                },
+                "_iconGrid": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/IconOverview",
+                    "bundlerType": "module"
                 }
             }
         }

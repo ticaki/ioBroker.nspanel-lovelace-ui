@@ -50,7 +50,7 @@ export class StatesControler extends BaseClass {
         super(adapter, name || 'StatesDB');
         this.timespan = timespan;
         this.deletePageInterval = this.adapter.setInterval(async () => {
-            void this.deletePageLoop();
+            this.deletePageLoop();
         }, 180_000);
         this.intervalObjectDatabase = this.adapter.setInterval(() => {
             if (this.unload || this.adapter.unload) {
@@ -59,7 +59,7 @@ export class StatesControler extends BaseClass {
             this.objectDatabase = {};
         }, 180_000);
     }
-    deletePageLoop = async (f?: getInternalFunctionType): Promise<void> => {
+    deletePageLoop = (f?: getInternalFunctionType): void => {
         const removeIds: string[] = [];
 
         for (const id of Object.keys(this.triggerDB)) {
@@ -100,7 +100,7 @@ export class StatesControler extends BaseClass {
         }
         this.blockedSubscriptions = [];
         for (const id of removeIds) {
-            await this.adapter.unsubscribeForeignStatesAsync(id);
+            //await this.adapter.unsubscribeForeignStatesAsync(id);
             delete this.triggerDB[id];
         }
         while (this.blockedSubscriptions && this.blockedSubscriptions.length > 0) {
@@ -108,8 +108,8 @@ export class StatesControler extends BaseClass {
                 if (idx >= this.blockedSubscriptions.length) {
                     continue;
                 }
-                const id = this.blockedSubscriptions[idx];
-                await this.adapter.subscribeForeignStatesAsync(id);
+                //const id = this.blockedSubscriptions[idx];
+                //await this.adapter.subscribeForeignStatesAsync(id);
                 this.blockedSubscriptions.splice(idx, 1);
             }
         }
@@ -205,7 +205,7 @@ export class StatesControler extends BaseClass {
                     this.blockedSubscriptions.push(id);
                 }
             } else {
-                await this.adapter.subscribeForeignStatesAsync(id);
+                //await this.adapter.subscribeForeignStatesAsync(id);
             }
             if (this.adapter.config.debugLogStates) {
                 this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
@@ -251,7 +251,7 @@ export class StatesControler extends BaseClass {
             }
             if (!entry.subscribed.some(a => a)) {
                 entry.subscribed[index] = true;
-                await this.adapter.subscribeForeignStatesAsync(id);
+                //await this.adapter.subscribeForeignStatesAsync(id);
                 const state = await this.adapter.getForeignStateAsync(id);
                 if (state) {
                     entry.state = state;
@@ -299,7 +299,7 @@ export class StatesControler extends BaseClass {
                     }
                 }
 
-                await this.adapter.unsubscribeForeignStatesAsync(id);
+                //await this.adapter.unsubscribeForeignStatesAsync(id);
             }
         }
     }
@@ -323,8 +323,6 @@ export class StatesControler extends BaseClass {
      * @returns nsPanelState or null
      */
     async getState(id: string, internal: boolean = false): Promise<nsPanelState | null> {
-        let timespan = this.timespan;
-        timespan = 10;
         if (
             this.triggerDB[id] !== undefined &&
             (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some(a => a))
@@ -340,30 +338,30 @@ export class StatesControler extends BaseClass {
                 state = this.triggerDB[id].state;
             }
             return state;
-        } else if (this.stateDB[id] && timespan) {
-            if (Date.now() - timespan - this.stateDB[id].ts < 0) {
-                return this.stateDB[id].state;
-            }
+        } else if (this.stateDB[id]) {
+            return this.stateDB[id].state;
         }
         if (id.includes('/')) {
             internal = true;
         }
         if (!internal) {
-            const state = await this.adapter.getForeignStateAsync(id);
-            if (state != null) {
-                if (!this.stateDB[id]) {
-                    const obj = await this.getObjectAsync(id);
-                    if (!obj || !obj.common || obj.type !== 'state') {
-                        throw new Error(`Got invalid object for ${id}`);
+            try {
+                const state = await this.adapter.getForeignStateAsync(id);
+                if (state != null) {
+                    if (!this.stateDB[id]) {
+                        const obj = await this.getObjectAsync(id);
+                        if (!obj || !obj.common || obj.type !== 'state') {
+                            throw new Error(`Got invalid object for ${id}`);
+                        }
+                        this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
                     }
-                    this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
-                } else {
-                    this.stateDB[id].state = state;
-                    this.stateDB[id].ts = Date.now();
+                    return state;
                 }
-                return state;
-            }
-            if (state === null) {
+                if (state === null) {
+                    return null;
+                }
+            } catch (e: any) {
+                this.log.error(`Error 1005: ${typeof e === 'string' ? e.replaceAll('Error: ', '') : e}`);
                 return null;
             }
         }
@@ -447,7 +445,13 @@ export class StatesControler extends BaseClass {
 
             // Update triggerDB entry
             entry.ts = Date.now();
-            const oldState = { val: entry.state.val, ack: entry.state.ack };
+            const oldState: nsPanelState = {
+                val: entry.state.val,
+                ack: entry.state.ack,
+                from: entry.state.from,
+                ts: entry.state.ts,
+                lc: entry.state.lc,
+            };
             entry.state = state;
 
             const isSystemOrAlias = dp.startsWith('0_userdata.0') || dp.startsWith('alias.0');
@@ -458,16 +462,18 @@ export class StatesControler extends BaseClass {
                 const changes = entry.change || []; // Änderungsregeln je Empfänger
                 const subscribed = entry.subscribed || [];
                 const allowed = entry.triggerAllowed || [];
-
+                const hasValChange = oldState.val !== state.val;
                 for (let i = 0; i < to.length; i++) {
                     const target = to[i];
 
                     // Nur reagieren, wenn sich etwas geändert hat (val, ack oder "ts")
-                    const hasChange = oldState.val !== state.val || oldState.ack !== state.ack || changes[i] === 'ts';
+                    const hasChange = hasValChange || oldState.ack !== state.ack || changes[i] === 'ts';
 
                     if (!hasChange) {
                         this.log.debug(`Ignore trigger from state ${dp} no change!`);
                         continue;
+                    } else if (!target.unload) {
+                        await target.onStateChange(dp, { old: oldState, new: state });
                     }
 
                     // Prüfen ob trigger erlaubt und abonniert
@@ -499,6 +505,9 @@ export class StatesControler extends BaseClass {
             } else {
                 this.log.debug(`Ignore trigger from state ${dp} ack is false!`);
             }
+        } else if (this.stateDB[dp]) {
+            this.stateDB[dp].state = state as ioBroker.State;
+            this.stateDB[dp].ts = state.ts;
         }
 
         // --- Primitive-Update-Pfad (nur Nicht-Objekte) -----------------------------

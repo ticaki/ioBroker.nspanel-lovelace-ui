@@ -28,7 +28,17 @@ const PageAlarmMessageDefault: pages.PageAlarmMessage = {
 const alarmStates: pages.AlarmStates[] = ['disarmed', 'armed', 'arming', 'pending', 'triggered'];
 
 /**
- * untested
+ * Page implementation for alarm/unlock card behaviour.
+ *
+ * This class is responsible for managing the alarm card state machine
+ * (armed / disarmed / arming / pending / triggered) and for building
+ * the payload that will be sent to the panel. It also reacts to configured
+ * data items (approved, pin, etc.) and handles button actions coming from
+ * the touch panel.
+ *
+ * Note: The Page lifecycle follows the base Page class contract. Important
+ * public methods that are invoked by the Page controller are documented below
+ * (init, update, onButtonEvent).
  */
 export class PageAlarm extends Page {
     private step: number = 1;
@@ -50,6 +60,15 @@ export class PageAlarm extends Page {
         }
     }
 
+    /**
+     * Get the current alarm status.
+     *
+     * Reads the persisted status from the configured states (if state
+     * management is enabled) and maps numeric indices to the corresponding
+     * AlarmStates value.
+     *
+     * @returns Promise resolving to the current alarm status
+     */
     async getStatus(): Promise<pages.AlarmStates> {
         if (this.useStates) {
             const state = this.library.readdb(`panels.${this.basePanel.name}.alarm.${this.name}.status`);
@@ -62,6 +81,12 @@ export class PageAlarm extends Page {
         return this.status;
     }
 
+    /**
+     * Set the current alarm status and persist it when using states.
+     *
+     * @param value - new alarm status to set
+     * @returns Promise that resolves when the status has been persisted
+     */
     async setStatus(value: pages.AlarmStates): Promise<void> {
         this.status = value;
         if (this.useStates) {
@@ -84,6 +109,16 @@ export class PageAlarm extends Page {
         this.neverDeactivateTrigger = true;
     }
 
+    /**
+     * Initialize the alarm page.
+     *
+     * This method prepares dataitems, default channels and initial runtime
+     * values (pin, alarmType, status). It is called during the Page
+     * initialization sequence and may perform asynchronous calls to the
+     * StatesController and adapter library.
+     *
+     * @returns Promise that resolves when initialization is complete
+     */
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
@@ -108,7 +143,7 @@ export class PageAlarm extends Page {
             this.useStates = true;
         } else */ {
             await this.library.writedp(
-                `panels.${this.name}.alarm`,
+                `panels.${this.basePanel.name}.alarm`,
                 undefined,
                 genericStateObjects.panel.panels.alarm._channel,
             );
@@ -138,8 +173,13 @@ export class PageAlarm extends Page {
     }
 
     /**
+     * Build the current message payload and send it to the panel.
      *
-     * @returns
+     * The message is assembled from the configured dataitems and the
+     * internal alarm status. If the page is not visible or incorrectly
+     * configured the update is skipped.
+     *
+     * @returns Promise that resolves after the message was sent (or skipped)
      */
     public async update(): Promise<void> {
         if (!this.visibility) {
@@ -293,10 +333,15 @@ export class PageAlarm extends Page {
         }
     }
     /**
-     *a
+     * Handle a button event coming from the panel.
      *
-     * @param _event
-     * @returns
+     * The incoming event contains the action code (A1/A2/A3/A4/D1/U1/...) and
+     * an optional value (for example a numeric PIN). This method validates
+     * the PIN (when configured), updates the internal status machine and
+     * triggers the configured mode/state writes.
+     *
+     * @param _event - event payload from the touch panel
+     * @returns Promise that resolves after the event has been handled
      */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const button = _event.action;

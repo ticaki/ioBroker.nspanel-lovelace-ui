@@ -1,3 +1,9 @@
+import type {
+    NavigationMapEntry,
+    NavigationPositionsMap,
+    PageMenuConfigInfo,
+    PanelListEntry,
+} from '../types/adminShareConfig';
 import { PanelSend } from './panel-message';
 
 import { Screensaver } from '../pages/screensaver';
@@ -13,7 +19,7 @@ import { PageMedia } from '../pages/pageMedia';
 import type { IClientPublishOptions } from 'mqtt';
 import type { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
-import { Navigation, type NavigationConfig } from '../classes/navigation';
+import { type NavigationItemConfig, Navigation, type NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import type { PageItem } from '../pages/pageItem';
@@ -45,6 +51,7 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     pages: PageConfigAll[];
     navigation: NavigationConfig['navigationConfig'];
     updated: boolean;
+    scriptVersion?: string;
 }
 
 const DefaultOptions = {
@@ -121,6 +128,7 @@ export class Panel extends BaseClass {
             berryDriverVersion: 0,
             berryDriverVersionOnline: 0,
             currentPage: '',
+            scriptVersion: 'unknown',
         },
         tasmota: {
             firmwareversion: '',
@@ -213,12 +221,115 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessageTasmota === 'function') {
             this.sendToTasmota = this.panelSend.addMessageTasmota;
         }
+        this.info.nspanel.scriptVersion = options.scriptVersion || 'unknown';
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
         this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
         // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
+        const unlocks = this.adapter.config.pageUnlockConfig || [];
+        for (const unlock of unlocks) {
+            if (unlock.navigationAssignment) {
+                const navAssign = unlock.navigationAssignment.find(a => a.topic === this.topic);
+                if (navAssign) {
+                    const newUnlock: pages.PageBaseConfig = {
+                        uniqueID: unlock.uniqueName,
+                        hidden: !!unlock.hidden,
+                        alwaysOn: unlock.alwaysOn || 'none',
+                        template: undefined,
+                        dpInit: '',
+                        config: {
+                            card: 'cardAlarm',
 
+                            data: {
+                                alarmType: { type: 'const', constVal: unlock.alarmType || 'unlock' },
+                                headline: { type: 'const', constVal: unlock.headline || 'Unlock' },
+                                button1: unlock.button1 ? { type: 'const', constVal: unlock.button1 } : undefined,
+                                button2: unlock.button2 ? { type: 'const', constVal: unlock.button2 } : undefined,
+                                button3: unlock.button3 ? { type: 'const', constVal: unlock.button3 } : undefined,
+                                button4: unlock.button4 ? { type: 'const', constVal: unlock.button4 } : undefined,
+                                pin: unlock.pin != null ? { type: 'const', constVal: String(unlock.pin) } : undefined,
+                                approved: { type: 'const', constVal: !!unlock.approved },
+                                setNavi: unlock.setNavi ? { type: 'const', constVal: unlock.setNavi } : undefined,
+                            },
+                        },
+                        pageItems: [],
+                    };
+                    if (options.pages.find(a => a.uniqueID === newUnlock.uniqueID)) {
+                        this.log.warn(`Page with name ${newUnlock.uniqueID} already exists, skipping!`);
+                        continue;
+                    }
+                    options.pages.push(newUnlock);
+                    const navigation = navAssign.navigation;
+                    if (!navigation) {
+                        continue;
+                    }
+                    const navigationEntry: NavigationItemConfig = {
+                        name: newUnlock.uniqueID,
+                        page: newUnlock.uniqueID,
+                        right: {
+                            single: undefined,
+                            double: undefined,
+                        },
+                        left: {
+                            single: undefined,
+                            double: undefined,
+                        },
+                    };
+                    let overrwriteNext = false;
+                    if (navigation.prev) {
+                        navigationEntry.left!.single = navigation.prev;
+                        let index = options.navigation.findIndex(b => b && b.name === navigation.prev);
+                        if (index !== -1 && options.navigation[index]) {
+                            const oldNext = options.navigation[index]!.right?.single;
+
+                            if (oldNext && oldNext !== newUnlock.uniqueID) {
+                                overrwriteNext = true;
+                                options.navigation[index]!.right = options.navigation[index]!.right || {};
+                                options.navigation[index]!.right!.single = newUnlock.uniqueID;
+                                navigationEntry.right!.single = oldNext;
+                                index = options.navigation.findIndex(b => b && b.name === oldNext);
+                                if (index !== -1 && options.navigation[index]) {
+                                    options.navigation[index]!.left = options.navigation[index]!.left || {};
+                                    options.navigation[index]!.left!.single = newUnlock.uniqueID;
+                                }
+                            } else if (!oldNext && options.navigation[index]) {
+                                options.navigation[index]!.right = { single: newUnlock.uniqueID };
+                            }
+                        }
+                    }
+                    if (!overrwriteNext) {
+                        if (navigation.next) {
+                            navigationEntry.right!.single = navigation.next;
+                            let index = options.navigation.findIndex(b => b && b.name === navigation.next);
+                            if (index !== -1 && options.navigation[index]) {
+                                const oldPrev = options.navigation[index]!.left?.single;
+                                if (oldPrev && oldPrev !== newUnlock.uniqueID) {
+                                    overrwriteNext = true;
+                                    options.navigation[index]!.left = options.navigation[index]!.left || {};
+                                    options.navigation[index]!.left!.single = newUnlock.uniqueID;
+                                    navigationEntry.left!.single = oldPrev;
+                                    index = options.navigation.findIndex(b => b && b.name === oldPrev);
+                                    if (index !== -1 && options.navigation[index]) {
+                                        options.navigation[index]!.right = options.navigation[index]!.right || {};
+                                        options.navigation[index]!.right!.single = newUnlock.uniqueID;
+                                    }
+                                } else if (!oldPrev && options.navigation[index]) {
+                                    options.navigation[index]!.left = { single: newUnlock.uniqueID };
+                                }
+                            }
+                        }
+                    }
+                    if (navigation.home) {
+                        navigationEntry.left!.double = navigation.home;
+                    }
+                    if (navigation.parent) {
+                        navigationEntry.right!.double = navigation.parent;
+                    }
+                    options.navigation.push(navigationEntry);
+                }
+            }
+        }
         options.pages = options.pages.filter(b => {
             if (
                 b.config?.card === 'screensaver' ||
@@ -354,6 +465,7 @@ export class Panel extends BaseClass {
         this.log.debug(`Panel ${this.name} is initialised!`);
         await this.controller.mqttClient.subscribe(`${this.topic}/tele/#`, this.onMessage);
         await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
+        this.log.info(`Setting panel to offline until first message!`);
         this.isOnline = false;
         const channelObj = this.library.cloneObject(
             definition.genericStateObjects.panel.panels._channel,
@@ -558,8 +670,8 @@ export class Panel extends BaseClass {
 
         this.navigation.init();
 
-        this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
-        this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
+        //this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+        //this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
         if (this.adapter.config.debugLogPages) {
             this.log.debug(`Panel ${this.name} is initialised!`);
         }
@@ -823,6 +935,7 @@ export class Panel extends BaseClass {
                     return;
                 }
                 if ('Flashing' in msg) {
+                    this.log.info(`Going offline for flashing!`);
                     this.isOnline = false;
                     this.flashing = msg.Flashing.complete < 99;
                     this.log.info(`Flashing: ${msg.Flashing.complete}%`);
@@ -1312,13 +1425,13 @@ export class Panel extends BaseClass {
     }
 
     async delete(): Promise<void> {
-        await super.delete();
+        this.unload = true;
         this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
-        !this.adapter.unload && (await this.adapter.delay(10));
 
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
         }
+        this.log.info('Goint offline because delete panel!');
         this.isOnline = false;
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
@@ -1338,11 +1451,12 @@ export class Panel extends BaseClass {
         }
         await this.panelSend.delete();
         this.controller.mqttClient.removeByFunction(this.onMessage);
-        await this.statesControler.deletePageLoop(this.onInternalCommand);
+        this.statesControler.deletePageLoop(this.onInternalCommand);
         this.persistentPageItems = {};
         this.pages = [];
         this._activePage = undefined;
         this.data = {};
+        await super.delete();
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {
@@ -1351,6 +1465,12 @@ export class Panel extends BaseClass {
         }
         const index = this.pages.findIndex(a => a && a.name && a.name === uniqueID);
         return this.pages[index] ?? null;
+    }
+    getPageIndexbyUniqueID(uniqueID: string): number {
+        if (!uniqueID) {
+            return -1;
+        }
+        return this.pages.findIndex(a => a && a.name && a.name === uniqueID);
     }
 
     async writeInfo(): Promise<void> {
@@ -1510,6 +1630,9 @@ export class Panel extends BaseClass {
                                 break;
                             }
                         }
+                    }
+                    if (await this.screenSaver.onScreensaverTap()) {
+                        break;
                     }
                     if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
                         this.navigation.resetPosition();
@@ -1741,7 +1864,7 @@ export class Panel extends BaseClass {
                 }
                 case 'cmd/TasmotaRestart': {
                     this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
-                    this.log.info('Restart Tasmota!');
+                    this.log.info('Going offline because of Tasmota restart!');
                     this.isOnline = false;
                     break;
                 }
@@ -2014,6 +2137,121 @@ export class Panel extends BaseClass {
             );
         }
     }
+    saveNavigationMap = async (map: NavigationPositionsMap[]): Promise<void> => {
+        if (!Array.isArray(map)) {
+            this.log.error('Navigation map is not an array!');
+            return;
+        }
+        const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+        if (!o) {
+            this.log.error(`Panel object not found: panels.${this.name}`);
+            return;
+        }
+        if (!o.native) {
+            o.native = {};
+        }
+        o.native.navigationMap = map;
+        await this.adapter.setObject(`panels.${this.name}`, o);
+    };
+
+    async getNavigationArrayForFlow(): Promise<PanelListEntry> {
+        const res: PanelListEntry = {
+            panelName: this.name,
+            friendlyName: this.friendlyName,
+            navigationMap: [],
+        };
+        const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
+        let navMapFromConfig: NavigationPositionsMap[] | undefined = undefined;
+        if (o?.native && o.native.navigationMap && Array.isArray(o.native.navigationMap)) {
+            navMapFromConfig = o.native.navigationMap;
+        }
+        const db = this.navigation.getDatabase();
+        for (const nav of db) {
+            if (!nav || !nav.page) {
+                continue;
+            }
+            const pPos = nav.page ? navMapFromConfig?.find(a => a.name === nav.page.name) : undefined;
+            let next: string | undefined = undefined;
+            let prev: string | undefined = undefined;
+            let home: string | undefined = undefined;
+            let parent: string | undefined = undefined;
+            if (typeof nav.right.single === 'number') {
+                const n = db[nav.right.single];
+                next = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.left.single === 'number') {
+                const n = db[nav.left.single];
+                prev = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.right.double === 'number') {
+                const n = db[nav.right.double];
+                home = n != null && n.page ? n.page.name : undefined;
+            }
+            if (typeof nav.left.double === 'number') {
+                const n = db[nav.left.double];
+                parent = n != null && n.page ? n.page.name : undefined;
+            }
+            let pageInfo: PageMenuConfigInfo = { card: 'unknown', alwaysOn: 'none' };
+            if (pages.isPageMenuConfig(nav.page.config)) {
+                pageInfo = {
+                    ...pageInfo,
+                    card: nav.page.card,
+                    alwaysOn: nav.page.alwaysOn,
+                    scrollPresentation: nav.page.config.scrollPresentation,
+                    scrollType: nav.page.config.scrollType,
+                    scrollAutoTiming:
+                        nav.page.config.scrollPresentation === 'auto' ? nav.page.config.scrollAutoTiming : undefined,
+                } as PageMenuConfigInfo;
+                if (nav.page.pageItemConfig) {
+                    const count = nav.page.pageItemConfig.length;
+                    if (count > 0) {
+                        pageInfo.pageItemCount = count;
+                    }
+                }
+            } else {
+                pageInfo = {
+                    ...pageInfo,
+                    card: nav.page.card,
+                    alwaysOn: nav.page.alwaysOn,
+                } as PageMenuConfigInfo;
+            }
+
+            const navMap: NavigationMapEntry = {
+                label: nav.page ? nav.page.name : '',
+                page: nav.page ? nav.page.name : '',
+                next,
+                prev,
+                home,
+                parent,
+                position: pPos ? pPos.position : undefined,
+                pageInfo,
+            };
+            const targetPages = [];
+            if (nav.page.pageItemConfig) {
+                for (const item of nav.page.pageItemConfig) {
+                    if (item && item.data && 'setNavi' in item.data) {
+                        const n = item.data.setNavi;
+                        if (n && n.type === 'const' && typeof n.constVal === 'string') {
+                            targetPages.push(n.constVal);
+                        }
+                    }
+                }
+            }
+            if (nav.page.config?.data && 'setNavi' in nav.page.config.data) {
+                const n = nav.page.config.data.setNavi;
+                if (n && n.type === 'const' && typeof n.constVal === 'string') {
+                    targetPages.push(n.constVal);
+                }
+            }
+            if (targetPages.length) {
+                navMap.targetPages = targetPages;
+            }
+            res.navigationMap.push(navMap);
+        }
+
+        return res;
+    }
+
     static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
         if ('template' in config && config.template) {
             const template = cardTemplates[config.template];

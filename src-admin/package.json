@@ -1,0 +1,52 @@
+{
+    "name": "iobroker-admin-component-easy-access",
+    "private": true,
+    "version": "1.0.1",
+    "type": "module",
+    "scripts": {
+        "start": "vite --port 4173",
+        "lint": "eslint -c eslint.config.mjs",
+        "build": "tsc && vite build && npm run copy:custom",
+        "copy:custom": "rm -rf ../admin/custom/* && cp -r ./build/* ../admin/custom/ && cp -r ./src/i18n ../admin/custom/"
+    },
+    "devDependencies": {
+        "@iobroker/adapter-react-v5": "^7.7.3",
+        "@iobroker/build-tools": "^2.0.15",
+        "@iobroker/eslint-config": "^2.0.1",
+        "@iobroker/json-config": "^7.6.3",
+        "@module-federation/runtime": "^0.11.1",
+        "@module-federation/vite": "^1.2.6",
+        "@mui/icons-material": "^6.4.8",
+        "@mui/material": "^6.4.8",
+        "@mui/styles": "^6.5.0",
+        "@originjs/vite-plugin-federation": "^1.4.0",
+        "@types/dagre": "^0.7.53",
+        "@types/node": "^22.13.10",
+        "@types/react": "^18.3.19",
+        "@types/react-dom": "^18.3.5",
+        "@vitejs/plugin-react": "^4.3.4",
+        "dagre": "^0.8.5",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "reactflow": "^11.11.4",
+        "vite": "^7.1.9",
+        "vite-plugin-commonjs": "^0.10.4",
+        "vite-tsconfig-paths": "^5.1.4"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "dependencies": {
+        "d3-hierarchy": "^3.1.2",
+        "react-flow": "^1.0.3"
+    }
+}

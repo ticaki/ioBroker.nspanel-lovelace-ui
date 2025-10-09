@@ -539,19 +539,29 @@ export class PageMedia extends PageMenu {
         // Colors (title, artist, onOff)
         // ---------------------
         if (item.data.title) {
-            const v = await tools.getIconEntryColor(item.data.title, isPlaying, Color.Red, Color.Gray);
+            const v = await tools.getIconEntryColor(
+                item.data.title,
+                isPlaying,
+                Color.mediaTitleOn,
+                Color.mediaTitleOff,
+            );
             if (v !== null) {
                 message.titelColor = v;
             }
         }
         if (item.data.artist) {
-            const v = await tools.getIconEntryColor(item.data.artist, isPlaying, Color.White, Color.Gray);
+            const v = await tools.getIconEntryColor(
+                item.data.artist,
+                isPlaying,
+                Color.mediaArtistOn,
+                Color.mediaArtistOff,
+            );
             if (v !== null) {
                 message.artistColor = v;
             }
         }
         if (item.data.onOffColor) {
-            const v = await tools.getIconEntryColor(item.data.onOffColor, isPlaying, Color.White);
+            const v = await tools.getIconEntryColor(item.data.onOffColor, isPlaying, Color.mediaOnOffColor);
             message.onoffbuttonColor = v !== null ? v : 'disable';
         }
 

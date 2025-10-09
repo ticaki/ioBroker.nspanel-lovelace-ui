@@ -7,6 +7,7 @@
 - Config UI: `/admin/` (JSON config), translations in `/admin/i18n/`.
 - Metadata: `io-package.json` (states/objects/common), `package.json` (deps/scripts).
 - Integration: MQTT communication with Tasmota firmware, external script configuration via OnMessage handler.
+- Communication: Keep messages concise; the maintainer prefers short, direct instructions and wants to avoid long explanatory text.
 
 ## NSPanel Hardware & Firmware Context
 - Hardware: Sonoff NSPanel - wall switch with 3.5" touchscreen, 2 relays, temperature/brightness sensors.
@@ -203,6 +204,7 @@
 - For every fix/feature, add a **short bullet point** to the `README.md` under the `## Changelog` section.
   - Use the existing format with `### **WORK IN PROGRESS**` and `- (author) ...`.
   - Author format: `- (ticaki)`, `- (copilot)`, `- (tt-tom17)`, etc.
+  - **Important**: The author should be the person who commissioned the work or is responsible for it. For example, if ticaki is responsible for a function requested by copilot, use `- (ticaki)`.
 - **IMPORTANT**: Any generated code or changes must note if something contradicts the [NSPanel Wiki](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki) or modifies existing documented behavior.
 
 ## Documentation References

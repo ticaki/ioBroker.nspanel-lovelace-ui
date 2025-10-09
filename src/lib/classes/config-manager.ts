@@ -70,7 +70,7 @@ export class ConfigManager extends BaseClass {
         }
         /* handle global config */
         if (configManagerConst.isGlobalConfig(configuration)) {
-            let panelConfig = { pages: [], navigation: [] } as Omit<
+            let panelConfig = { pages: [], navigation: [], scriptVersion: '' } as Omit<
                 Partial<panelConfigPartial>,
                 'pages' | 'navigation'
             > & {
@@ -410,7 +410,7 @@ export class ConfigManager extends BaseClass {
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBaseConfig[];
-        } = { pages: [], navigation: [] };
+        } = { pages: [], navigation: [], scriptVersion: config.version };
 
         if (!config.panelTopic) {
             this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
@@ -5040,6 +5040,7 @@ export class ConfigManager extends BaseClass {
     ): Promise<typePageItem.PageItemDataItemsOptions> {
         const result: typePageItem.PageItemDataItemsOptions = {
             modeScr: mode,
+            role: '',
             type: 'text',
             data: { entity1: {} },
         };
@@ -5063,7 +5064,7 @@ export class ConfigManager extends BaseClass {
         }
         result.data.entity1.suffix = {
             type: 'const',
-            constVal: `<sp!it>${typeof entity.Priority === 'number' ? entity.Priority : 99}`,
+            constVal: `<sp!it>${typeof entity.Priority === 'number' ? entity.Priority : 99}<sp!it>${entity.buzzer ? (entity.buzzer === true ? '1,2,3,0xF54' : entity.buzzer) : ''}`,
         };
         result.data.entity2 = structuredClone(result.data.entity1);
         if (entity.Text) {
@@ -5128,6 +5129,12 @@ export class ConfigManager extends BaseClass {
             throw new Error(
                 `No Enabled or VisibleCondition in Notify element with Headline ${entity.Headline} and Text ${entity.Text}`,
             );
+        }
+        if (entity.isDismissiblePerEvent) {
+            result.role = 'isDismissiblePerEvent';
+            if (entity.dismissibleIDGlobal) {
+                result.dismissibleIDGlobal = entity.dismissibleIDGlobal;
+            }
         }
         return result;
     }

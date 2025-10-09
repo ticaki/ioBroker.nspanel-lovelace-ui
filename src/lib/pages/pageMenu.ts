@@ -551,7 +551,7 @@ export class PageMenu extends Page {
     };
 
     async delete(): Promise<void> {
-        await super.delete();
+        this.unload = true;
         if (this.doubleClick) {
             this.adapter.clearTimeout(this.doubleClick);
             this.doubleClick = undefined;
@@ -564,7 +564,8 @@ export class PageMenu extends Page {
             await this.arrowPageItem.delete();
             this.arrowPageItem = undefined;
         }
-        await this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
+        this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
         this.tempItems = undefined; // statt [] um Referenzen zu lösen
+        await super.delete();
     }
 }

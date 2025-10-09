@@ -13,8 +13,8 @@ declare global {
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             timezone: string;
             useBetaTFT: boolean;
-            weekdayFormat:boolean;
-            monthFormat:number;
+            weekdayFormat: boolean;
+            monthFormat: number;
             yearFormat: boolean;
             shutterClosedIsZero: boolean;
             defaultValueCardThermo: boolean;
@@ -27,7 +27,7 @@ declare global {
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
             doubleClickTime: number;
-            
+
             // tasmota Admin
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
@@ -150,7 +150,7 @@ declare global {
                 hiddenByTrigger: boolean,
                 chart_color: string,
                 selChartType: 'cardChart' | 'cardLChart',
-                selInstanceDataSource: 0| 1,
+                selInstanceDataSource: 0 | 1,
                 selInstance: string,
                 setStateForTicks: string,
                 setStateForValues: string,
@@ -167,6 +167,120 @@ declare global {
             debugLogMqtt: boolean;
             debugLogStates: boolean;
             debugLogPages: boolean;
+
+            // Color Themes (jede Accordion-Gruppe = Array mit genau einem Objekt)
+            colorStates: {
+                colGood: string;
+                colBad: string;
+                colTrue: string;
+                colFalse: string;
+                colActivated: string;
+                colDeactivated: string;
+                colAttention: string;
+                colInfo: string;
+                colOption1: string;
+                colOption2: string;
+                colOption3: string;
+                colOption4: string;
+                colOpen: string;
+                colClose: string;
+                colHot: string;
+                colCold: string;
+                colOn: string;
+                colOff: string;
+                colLight: string;
+                colDark: string;
+                colWarning: string;
+                colSuccess: string;
+                colNeutral: string;
+                colHighlight: string;
+                colDisabled: string;
+            }[];
+
+            colorNavigation: {
+                colNavLeft: string;
+                colNavRight: string;
+                colNavDownLeft: string;
+                colNavDownRight: string;
+                colNavDown: string;
+                colNavHome: string;
+                colNavParent: string;
+            }[];
+
+            colorWeatherIcon: {
+                colSunny: string;
+                colPartlyCloudy: string;
+                colCloudy: string;
+                colFog: string;
+                colHail: string;
+                colLightning: string;
+                colLightningRainy: string;
+                colPouring: string;
+                colRainy: string;
+                colSnowy: string;
+                colSnowyHeavy: string;
+                colSnowyRainy: string;
+                colWindy: string;
+                colTornado: string;
+                colClearNight: string;
+                colExceptional: string;
+            }[];
+
+            colorDisplay: {
+                colForeground: string;
+                colBackground: string;
+            }[];
+
+            colorWeatherForecast: {
+                colSolar: string;
+                colTemperature: string;
+                colGust: string;
+                colSunrise: string;
+                colSunset: string;
+            }[];
+
+            colorScreensaver: {
+                colFgTime: string;
+                colFgTimeAmPm: string;
+                colFgDate: string;
+                colFgMain: string;
+                colFgMainAlt: string;
+                colFgTimeAdd: string;
+                colFgForecast: string;
+                colFgBar: string;
+            }[];
+
+            colorCardMedia: {
+                colMediaArtistOn: string;
+                colMediaArtistOff: string;
+                colMediaTitleOn: string;
+                colMediaTitleOff: string;
+                colMediaOnOffColor: string;
+            }[];
+
+            pageUnlockConfig: {
+                alarmType?: string; // e.g. 'alarm' | 'unlock'
+                headline: string;
+                button1: string;
+                button2: string;
+                button3: string;
+                button4: string;
+                pin: number;
+                approved?: boolean;
+                setNavi?: string;
+                uniqueName: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                navigationAssignment?: {
+                    topic: string;
+                    navigation?: {
+                        next?: string;
+                        prev?: string;
+                        home?: string;
+                        parent?: string;
+                    };
+                }[];
+            }[];
         }
     }
 }

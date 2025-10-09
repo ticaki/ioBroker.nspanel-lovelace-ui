@@ -237,6 +237,9 @@ export class Navigation extends BaseClass {
             }
         }
     }
+    getDatabase(): NavigationItem[] {
+        return this.database;
+    }
 
     async setTargetPageByName(n: string): Promise<void> {
         const index = this.navigationConfig.findIndex(a => a && a.name === n);
@@ -304,8 +307,8 @@ export class Navigation extends BaseClass {
                 const index = i[d].double;
                 void this.setPageByIndex(index, d);
             }
-            // erster Klick und check obs ein Ziel für den 2. Klick gibt.
-        } else if (!single && i && i[d] && i[d].double) {
+            // erster Klick und check obs ein Ziel für den 1. und 2. Klick gibt.
+        } else if (!single && i && i[d] && i[d].double !== undefined && i[d].single !== undefined) {
             this.doubleClickTimeout = this.adapter.setTimeout(
                 (...arg: any): void => {
                     this.go(arg[0], arg[1]);

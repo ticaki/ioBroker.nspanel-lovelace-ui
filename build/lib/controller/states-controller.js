@@ -42,7 +42,7 @@ class StatesControler extends import_library.BaseClass {
     super(adapter, name || "StatesDB");
     this.timespan = timespan;
     this.deletePageInterval = this.adapter.setInterval(async () => {
-      void this.deletePageLoop();
+      this.deletePageLoop();
     }, 18e4);
     this.intervalObjectDatabase = this.adapter.setInterval(() => {
       if (this.unload || this.adapter.unload) {
@@ -51,7 +51,7 @@ class StatesControler extends import_library.BaseClass {
       this.objectDatabase = {};
     }, 18e4);
   }
-  deletePageLoop = async (f) => {
+  deletePageLoop = (f) => {
     var _a, _b, _c, _d, _e;
     const removeIds = [];
     for (const id of Object.keys(this.triggerDB)) {
@@ -85,7 +85,6 @@ class StatesControler extends import_library.BaseClass {
     }
     this.blockedSubscriptions = [];
     for (const id of removeIds) {
-      await this.adapter.unsubscribeForeignStatesAsync(id);
       delete this.triggerDB[id];
     }
     while (this.blockedSubscriptions && this.blockedSubscriptions.length > 0) {
@@ -93,8 +92,6 @@ class StatesControler extends import_library.BaseClass {
         if (idx >= this.blockedSubscriptions.length) {
           continue;
         }
-        const id = this.blockedSubscriptions[idx];
-        await this.adapter.subscribeForeignStatesAsync(id);
         this.blockedSubscriptions.splice(idx, 1);
       }
     }
@@ -174,7 +171,6 @@ class StatesControler extends import_library.BaseClass {
           this.blockedSubscriptions.push(id);
         }
       } else {
-        await this.adapter.subscribeForeignStatesAsync(id);
       }
       if (this.adapter.config.debugLogStates) {
         this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
@@ -214,7 +210,6 @@ class StatesControler extends import_library.BaseClass {
       }
       if (!entry.subscribed.some((a) => a)) {
         entry.subscribed[index] = true;
-        await this.adapter.subscribeForeignStatesAsync(id);
         const state = await this.adapter.getForeignStateAsync(id);
         if (state) {
           entry.state = state;
@@ -259,7 +254,6 @@ class StatesControler extends import_library.BaseClass {
             this.blockedSubscriptions.splice(idx, 1);
           }
         }
-        await this.adapter.unsubscribeForeignStatesAsync(id);
       }
     }
   }
@@ -283,8 +277,6 @@ class StatesControler extends import_library.BaseClass {
    * @returns nsPanelState or null
    */
   async getState(id, internal = false) {
-    let timespan = this.timespan;
-    timespan = 10;
     if (this.triggerDB[id] !== void 0 && (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))) {
       let state = null;
       const f = this.triggerDB[id].f;
@@ -297,30 +289,30 @@ class StatesControler extends import_library.BaseClass {
         state = this.triggerDB[id].state;
       }
       return state;
-    } else if (this.stateDB[id] && timespan) {
-      if (Date.now() - timespan - this.stateDB[id].ts < 0) {
-        return this.stateDB[id].state;
-      }
+    } else if (this.stateDB[id]) {
+      return this.stateDB[id].state;
     }
     if (id.includes("/")) {
       internal = true;
     }
     if (!internal) {
-      const state = await this.adapter.getForeignStateAsync(id);
-      if (state != null) {
-        if (!this.stateDB[id]) {
-          const obj = await this.getObjectAsync(id);
-          if (!obj || !obj.common || obj.type !== "state") {
-            throw new Error(`Got invalid object for ${id}`);
+      try {
+        const state = await this.adapter.getForeignStateAsync(id);
+        if (state != null) {
+          if (!this.stateDB[id]) {
+            const obj = await this.getObjectAsync(id);
+            if (!obj || !obj.common || obj.type !== "state") {
+              throw new Error(`Got invalid object for ${id}`);
+            }
+            this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
           }
-          this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
-        } else {
-          this.stateDB[id].state = state;
-          this.stateDB[id].ts = Date.now();
+          return state;
         }
-        return state;
-      }
-      if (state === null) {
+        if (state === null) {
+          return null;
+        }
+      } catch (e) {
+        this.log.error(`Error 1005: ${typeof e === "string" ? e.replaceAll("Error: ", "") : e}`);
         return null;
       }
     }
@@ -393,7 +385,13 @@ class StatesControler extends import_library.BaseClass {
         this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
       }
       entry.ts = Date.now();
-      const oldState = { val: entry.state.val, ack: entry.state.ack };
+      const oldState = {
+        val: entry.state.val,
+        ack: entry.state.ack,
+        from: entry.state.from,
+        ts: entry.state.ts,
+        lc: entry.state.lc
+      };
       entry.state = state;
       const isSystemOrAlias = dp.startsWith("0_userdata.0") || dp.startsWith("alias.0");
       const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
@@ -402,12 +400,15 @@ class StatesControler extends import_library.BaseClass {
         const changes = entry.change || [];
         const subscribed = entry.subscribed || [];
         const allowed = entry.triggerAllowed || [];
+        const hasValChange = oldState.val !== state.val;
         for (let i = 0; i < to.length; i++) {
           const target = to[i];
-          const hasChange = oldState.val !== state.val || oldState.ack !== state.ack || changes[i] === "ts";
+          const hasChange = hasValChange || oldState.ack !== state.ack || changes[i] === "ts";
           if (!hasChange) {
             this.log.debug(`Ignore trigger from state ${dp} no change!`);
             continue;
+          } else if (!target.unload) {
+            await target.onStateChange(dp, { old: oldState, new: state });
           }
           const notSubscribedOrNotAllowed = !target.neverDeactivateTrigger && !subscribed[i] || !allowed[i];
           if (notSubscribedOrNotAllowed) {
@@ -432,6 +433,9 @@ class StatesControler extends import_library.BaseClass {
       } else {
         this.log.debug(`Ignore trigger from state ${dp} ack is false!`);
       }
+    } else if (this.stateDB[dp]) {
+      this.stateDB[dp].state = state;
+      this.stateDB[dp].ts = state.ts;
     }
     const v = state.val;
     const isPrimitive = v === null || v === void 0 || typeof v !== "object";

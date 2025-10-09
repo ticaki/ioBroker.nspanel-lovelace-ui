@@ -69,6 +69,12 @@ class Controller extends Library.BaseClass {
       case 4:
         import_Color.Color.setTheme(import_Color.Color.volcanoTheme);
         break;
+      case 5: {
+        const custom = this.buildCustomColorTheme();
+        import_Color.Color.setTheme(custom);
+        this.adapter.log.debug(`Custom ColorTheme angewendet: ${JSON.stringify(custom)}`);
+        break;
+      }
       case 0:
       default:
         import_Color.Color.setTheme(import_Color.Color.defaultTheme);
@@ -384,8 +390,18 @@ class Controller extends Library.BaseClass {
     }
     return false;
   };
+  async setGlobalNotificationDismiss(id) {
+    if (!id) {
+      return;
+    }
+    for (const panel of this.panels) {
+      if (panel.screenSaver) {
+        await panel.screenSaver.setGlobalNotificationDismiss(id);
+      }
+    }
+  }
   async delete() {
-    await super.delete();
+    this.unload = true;
     if (this.minuteLoopTimeout) {
       this.adapter.clearTimeout(this.minuteLoopTimeout);
     }
@@ -410,6 +426,7 @@ class Controller extends Library.BaseClass {
     await Promise.all(tasks);
     this.panels = [];
     this.dataCache = {};
+    await super.delete();
   }
   async notificationToPanel() {
     if (!this.panels) {
@@ -453,6 +470,41 @@ class Controller extends Library.BaseClass {
       }
     } catch {
     }
+  }
+  /**
+   * Baut ein zusammengefasstes Farb-Objekt aus allen Color-Accordion Arrays.
+   * Nimmt Color.defaultTheme als Basis und überschreibt nur definierte Werte.
+   */
+  buildCustomColorTheme() {
+    const cfg = this.adapter.config;
+    const result = { ...import_Color.Color.defaultTheme };
+    const merge = (arr) => {
+      if (!Array.isArray(arr) || !arr[0]) {
+        return;
+      }
+      for (const [k, v] of Object.entries(arr[0])) {
+        if (typeof v === "string" && v.trim() !== "" && /^col[A-Z]/.test(k)) {
+          const keyNoPrefix = k.replace(/^col/, "");
+          const kTemp = keyNoPrefix.length ? keyNoPrefix.charAt(0).toLowerCase() + keyNoPrefix.slice(1) : keyNoPrefix;
+          if (import_Color.Color.isHex(v)) {
+            const colRgb = import_Color.Color.ConvertHexToRgb(v);
+            if (import_Color.Color.isRGB(colRgb) && kTemp in result) {
+              result[kTemp] = colRgb;
+            }
+          } else {
+            this.log.debug(`Color property ${k} with value ${v} is not valid and will be ignored.`);
+          }
+        }
+      }
+    };
+    merge(cfg.colorStates);
+    merge(cfg.colorNavigation);
+    merge(cfg.colorWeatherIcon);
+    merge(cfg.colorDisplay);
+    merge(cfg.colorWeatherForecast);
+    merge(cfg.colorScreensaver);
+    merge(cfg.colorCardMedia);
+    return result;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
