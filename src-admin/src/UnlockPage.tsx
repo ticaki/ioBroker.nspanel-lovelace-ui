@@ -32,7 +32,14 @@ interface UnlockPageState extends ConfigGenericState {
     pagesList?: string[];
 }
 
+interface LocalUIState {
+    newName: string;
+    selected: string;
+    showPin: boolean;
+}
+
 class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, UnlockPageState> {
+    private _local: LocalUIState | null = null;
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
         const saved = ConfigGeneric.getValue(props.data, props.attr!);
@@ -92,10 +99,10 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
 
         // local UI state for new name + selected
         // we keep them in component instance to avoid changing global state signature
-        if (!(this as any)._local) {
-            (this as any)._local = { newName: '', selected: uniqueNames[0] || '', showPin: false };
+        if (!this._local) {
+            this._local = { newName: '', selected: uniqueNames[0] || '', showPin: false };
         }
-        const local = (this as any)._local as { newName: string; selected: string; showPin: boolean };
+        const local = this._local;
 
         const doAdd = (): void => {
             const name = (local.newName || '').trim();

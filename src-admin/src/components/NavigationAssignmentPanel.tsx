@@ -117,13 +117,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                 const instance = this.props.oContext.instance ?? '0';
                 const target = `${ADAPTER_NAME}.${instance}`;
                 try {
-                    console.debug('[NavigationAssignmentPanel] sendTo ->', {
-                        target,
-                        cmd: SENDTO_GET_PANELS_COMMAND,
-                        payload: null,
-                    });
                     const raw = await this.props.oContext.socket.sendTo(target, SENDTO_GET_PANELS_COMMAND, null);
-                    console.debug('[NavigationAssignmentPanel] sendTo raw response ->', raw);
                     if (Array.isArray(raw)) {
                         list = raw as PanelInfo[];
                     } else if (raw && Array.isArray(raw.result)) {
@@ -217,13 +211,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                 const target = `${ADAPTER_NAME}.${instance}`;
                 const payload = { panelTopic: topic };
                 try {
-                    console.debug('[NavigationAssignmentPanel] sendTo ->', {
-                        target,
-                        cmd: SENDTO_GET_PAGES_COMMAND,
-                        payload,
-                    });
                     const raw = await this.props.oContext.socket.sendTo(target, SENDTO_GET_PAGES_COMMAND, payload);
-                    console.debug('[NavigationAssignmentPanel] sendTo raw response ->', raw);
                     if (Array.isArray(raw)) {
                         list = raw as string[];
                     } else if (raw && Array.isArray(raw.result)) {
