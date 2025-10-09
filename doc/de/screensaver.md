@@ -32,6 +32,8 @@ Der Screensaver ist die Ansicht, die auf dem NSPanel angezeigt wird, wenn es nic
   - [alternateScreensaverEntity](#alternatescreensaverentity)
   - [mrIcon1/2ScreensaverEntity](#mricon1screensaverentity-und-mricon2screensaverentity)
   - [Screensaver-Notifications](#screensaver-notifications)
+    - [isDismissiblePerEvent](#isdismissibleperevent)
+    - [dismissibleIDGlobal](#dismissibleidglobal)
 
 </td>
 <td width="50%">
@@ -513,6 +515,129 @@ notifyScreensaverEntity: [
 - **Enabled**: Datenpunkt, der auf `true` oder `false` geprüft wird. Es können auch mehrere Datenpunkte als Array [string,string,...] angegeben werden. 
 - **VisibleCondition**: Ermöglicht direkte Bedingungen, ohne extra Alias erstellen zu müssen.  
 - **HeadlineIcon**: Fügt ein Icon vor dem Headline-Text ein und kann als Datenpunkt übergeben werden.
+
+---
+
+### Erweiterte Notification-Steuerung
+
+#### isDismissiblePerEvent
+
+Mit dem Parameter `isDismissiblePerEvent` kann gesteuert werden, dass eine Notification automatisch ausgeblendet wird, wenn der zugehörige **Enabled**-State wieder auf `false` wechselt.
+
+**Verhalten:**
+- Wenn `isDismissiblePerEvent: true` gesetzt ist, wird die Notification **nicht** automatisch erneut angezeigt, wenn der Enabled-State  auf `true` bleibt
+- Die Notification bleibt "dismissed" (ausgeblendet), bis der State erneut auf true geht.
+
+**Anwendungsfall:** 
+Ideal für ereignisbasierte Benachrichtigungen (z.B. Türklingel, Bewegungsmelder), die nur einmal angezeigt werden sollen, bis der Benutzer sie zur Kenntnis genommen hat.
+
+**Beispiel:**
+
+```ts
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Bewegung erkannt',
+        Text: 'Im Flur wurde Bewegung erkannt',
+        Enabled: 'zigbee.0.Bewegungsmelder.Flur.occupancy',
+        isDismissiblePerEvent: true  // Notification wird nur einmal pro Event angezeigt
+    }
+]
+```
+
+**Ablauf:**
+1. Bewegungsmelder wird aktiv → Notification erscheint
+2. Benutzer tippt auf Screensaver → Notification wird ausgeblendet
+3. Bewegungsmelder wird wieder inaktiv → Notification bleibt ausgeblendet
+4. Bewegungsmelder wird erneut aktiv → Notification erscheint wieder
+
+---
+
+#### dismissibleIDGlobal
+
+Mit dem Parameter `dismissibleIDGlobal` können mehrere Notifications **über verschiedene NSPanels hinweg** gemeinsam gesteuert werden. Wenn eine Notification mit einer bestimmten `dismissibleIDGlobal`-ID auf einem Panel ausgeblendet wird, werden automatisch **alle** Notifications mit der gleichen ID auf **allen** Panels ausgeblendet.
+
+**Verhalten:**
+- Alle Notifications mit der gleichen `dismissibleIDGlobal`-ID werden als zusammengehörig behandelt
+- Beim Ausblenden einer Notification werden alle anderen mit gleicher ID ebenfalls ausgeblendet
+- Funktioniert panel-übergreifend in der gesamten Installation
+- Erfordert die Verwendung von `isDismissiblePerEvent: true`
+
+**Anwendungsfall:**
+Ideal für zentrale Warnungen oder Benachrichtigungen, die auf mehreren Panels gleichzeitig angezeigt werden sollen (z.B. Feueralarm, Türklingel, Sicherheitswarnung).
+
+**Beispiel:**
+
+```ts
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Türklingel',
+        Text: 'Es klingelt an der Haustür',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-alert'  // Gleiche ID auf allen Panels verwenden
+    }
+]
+```
+
+**Multi-Panel-Szenario:**
+
+```ts
+// Panel 1 (Wohnzimmer)
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Haustür',
+        Text: 'Es klingelt!',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-notification'
+    }
+]
+
+// Panel 2 (Küche) - Andere Nachricht, aber gleiche ID
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Klingel',
+        Text: 'Jemand an der Tür',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-notification'  // Gleiche ID!
+    }
+]
+
+// Panel 3 (Flur) - Wieder andere Nachricht, aber gleiche ID
+notifyScreensaverEntity: [
+    {
+        type: 'script',
+        Priority: 1,
+        Headline: 'Besuch',
+        Text: 'Türklingel wurde betätigt',
+        Enabled: 'zigbee.0.Tuerklingel.state',
+        isDismissiblePerEvent: true,
+        dismissibleIDGlobal: 'doorbell-notification'  // Gleiche ID!
+    }
+]
+```
+
+**Ablauf im Multi-Panel-Szenario:**
+1. Es klingelt → Alle 3 Panels zeigen ihre jeweilige Notification
+2. Benutzer tippt auf **einem beliebigen** Panel auf den Screensaver
+3. **Alle** Notifications auf **allen** Panels werden automatisch ausgeblendet
+4. Türklingel wird inaktiv → Notifications bleiben ausgeblendet
+5. Es klingelt erneut → Alle Notifications erscheinen wieder auf allen Panels
+
+**Wichtige Hinweise:**
+- `dismissibleIDGlobal` funktioniert nur in Kombination mit `isDismissiblePerEvent: true`
+- Die ID kann ein beliebiger String sein (z.B. `'alarm-fire'`, `'doorbell'`, `'window-open'`)
+- Verwenden Sie aussagekräftige IDs, um verschiedene Notification-Gruppen zu unterscheiden
+- Notifications ohne `dismissibleIDGlobal` werden nur lokal auf dem jeweiligen Panel gesteuert
 
 ---
 
