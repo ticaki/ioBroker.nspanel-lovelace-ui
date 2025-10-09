@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "news": {
+      "0.6.0": {
+        "en": "Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)\nAdmin: Added Unlock/Alarm editor to admin UI (headline, PIN, buttons, setNavi, duplicate-name check) - first admin only config for a page\nAdmin: Added navigation flow editor to admin UI (expert mode must be enabled)\nChart scale: rounded to nearest tens\nPagePower: improved icon selection in admin\nGerman documentation for screensaver notification features `isDismissiblePerEvent` and `dismissibleIDGlobal` added to `doc/de/screensaver.md`",
+        "de": "Farbschema-Schlüssel dokumentiert (`doc/de/colorTheme.md`, englische Version `doc/en/colorTheme.md`)\nAdmin: Unlock/Alarm-Editor zur Admin-Oberfläche hinzugefügt (Überschrift, PIN, Buttons, setNavi, Prüfung auf doppelte Namen) – erste Admin-only-Konfiguration für eine Seite\nAdmin: Navigationsfluss-Editor zur Admin-Oberfläche hinzugefügt (Expertenmodus muss aktiviert sein)\nDiagrammskalierung: auf nächste Zehner gerundet\nPagePower: verbesserte Symbolauswahl in der Admin-Oberfläche\nDeutsche Dokumentation der Screensaver-Benachrichtigungsfunktionen `isDismissiblePerEvent` und `dismissibleIDGlobal` zu `doc/de/screensaver.md` hinzugefügt",
+        "ru": "Задокументированные ключи цветовой темы ('doc/de/colorTheme.md', английская версия 'doc/en/colorTheme.md')\nAdmin: Добавлен редактор Unlock/Alarm для администратора UI (заголовок, PIN-код, кнопки, setNavi, проверка имени дубликата) - первый администратор только конфигурирует страницу\nAdmin: Добавлен редактор навигационного потока для управления пользовательским интерфейсом (должен быть включен экспертный режим)\nШкала диаграммы: округленная до ближайших десятков\nPagePower: улучшенный выбор значков в админ\nНемецкая документация для уведомлений заставки содержит «isDismissiblePerEvent» и «dismissibleIDGlobal», добавленные к «doc/de/screensaver.md»",
+        "pt": "Teclas de tema de cores documentadas (`doc/de/colorTheme.md`, versão em inglês `doc/en/colorTheme.md`)\nAdmin.: Adicionado Unlock/Alarm editor para administrar UI (linha principal, PIN, botões, setNavi, verificação de nome duplicado) - primeiro admin apenas config para uma página\nAdmin: Adicionado editor de fluxo de navegação para administrar UI (modo expert deve ser ativado)\nEscala do gráfico: arredondada às dezenas mais próximas\nPagePower: seleção de ícones melhorada no administrador\nDocumentação alemã para recursos de notificação de screensaver `isDismissiblePerEvent` e `dismissibleIDGlobal` adicionada a `doc/de/screensaver.md`",
+        "nl": "Kleur thema toetsen gedocumenteerd (\nAdmin: Unlock/Alarm editor toegevoegd aan admin UI (headline, PIN, knoppen, setNavi, duplicate-name check) - eerste admin alleen config voor een pagina\nAdmin: Navigatiestroom-editor toegevoegd aan admin UI (expert-modus moet worden ingeschakeld)\nGrafiekschaal: afgerond tot dichtsbijzijnde tientallen\nPagePower: verbeterde pictogram selectie in admin\nDuitse documentatie voor screensaver notificatie features ",
+        "fr": "Clés de thème couleur documentées (`doc/de/colorTheme.md`, version anglaise `doc/en/colorTheme.md`)\nAdmin: Ajout de l'éditeur Unlock/Alarm à l'interface utilisateur d'administration (headline, PIN, boutons, setNavi, duplicata check) - première configuration uniquement pour une page\nAdmin: Ajout de l'éditeur de flux de navigation à l'interface utilisateur admin (le mode expert doit être activé)\nÉchelle du graphique : arrondie aux dizaines les plus proches\nPagePower : sélection d'icônes améliorée dans admin\nLa documentation allemande pour les fonctions de notification screensaver `is DismissiblePerEvent` et `dismissibleIDGlobal` est ajoutée à `doc/de/screensaver.md`",
+        "it": "Tasti a tema a colori documentati (`doc/de/colorTheme.md`, versione inglese `doc/en/colorTheme.md`)\nAdmin: Aggiunta l'editor Sblocca/Allarma per amministrare UI (headline, PIN, pulsanti, setNavi, duplicato-name check) - primo amministratore solo configurazione per una pagina\nAdmin: Aggiunta l'editor di flusso di navigazione per admin UI (modalità esperta deve essere abilitata)\nScala del grafico: arrotondata alle decine più vicine\nPagePower: migliore selezione icona in admin\nDocumentazione tedesca per le funzioni di notifica screensaver `isDismitPerEvent` e `dismissibileIDGlobal` aggiunto a `doc/de/screensaver.md`",
+        "es": "Claves de tema de color documentadas (`doc/de/colorTheme.md`, versión en inglés `doc/en/colorTheme.md`)\nAdmin: Añadido Desbloquear/Alarm editor a admin UI (cabeza, PIN, botones, setNavi, duplicate-name check) - primero admin sólo config for a page\nAdmin: editor de flujo de navegación añadido a admin UI (modo de salida debe ser habilitado)\nEscala de carga: redondeado a los diez más cercanos\nPagePower: mejor selección de iconos en admin\nDocumentación alemana para la notificación de salvapantallas características `isDismissiblePerEvent ' y `dismissibleIDGlobal ' agregado a `doc/de/screensaver.md`",
+        "pl": "Klucze motywu kolorów udokumentowane ('doc / de / colorTheme.md', wersja angielska 'doc / en / colorTheme.md')\nAdmin: Dodano edytor odblokowywania / alarmu do interfejsu administratora (nagłówek, PIN, przyciski, setNavi, duplikat - sprawdzanie nazwy) - pierwszy administrator tylko config dla strony\nAdmin: Dodano edytor przepływu nawigacji do interfejsu administratora (musi być włączony tryb ekspertów)\nSkala wykresu: zaokrąglona do najbliższych dziesiątek\nPagePower: ulepszony wybór ikon w admin\nNiemiecka dokumentacja dotycząca funkcji powiadamiania o wygaszaczu ekranu \"isDismissiblePerEvent\" i \"dimissibleIDGlobal\" dodana do 'doc / de / screensaver.md'",
+        "uk": "Кольорові ключі задокументовані (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)\nАдміністратор: Додано Unlock/Alarm редактор для адміністратора UI (головна лінія, PIN, кнопки, setNavi, дублікати-ім'я check) - перший адміністратор тільки config для сторінки\nАдміністратор: Доданий редактор потоку навігаторів для адміністратора UI (режим розширення повинен бути включений)\nГрафік масштабу: закруглені до найближчих десятків\nPagePower: Покращений вибір ікони в адмін\n`isDismissiblePerEvent` і `dismissibleIDGlobal` додано до `doc/de/screensaver.md`",
+        "zh-cn": "已记录的颜色主题密钥(`doc/de/colorTheme.md',英文版`doc/en/colorTheme.md')\n管理员: 添加到管理员UI( 标题、 PIN、 按钮、 设置Navi、 重复名检查) - 第一个只配置页面的管理员\n管理员: 添加到管理员 UI 的导航流程编辑器( 必须启用专家模式)\n图表比例:四舍五入到最近的几十\nPagePower: 管理员中改进的图标选择\n用于屏幕保护器通知功能的德国文件 \" IsissiblePerEvent \" 和 \" DiissibleID Global \" 添加到 \" doc/de/screensaver.md \" 中"
+      },
       "0.5.0": {
         "en": "Admin UI: Reworked/reordered settings layout and improved usability\nAdded screensaver notification system  \nFixed cardThermo2 not switching  \nImplemented hiding of screensaver elements  \nAdjusted Brightsky templates  \nmade script configuration transfer more robust",
         "de": "Admin UI: Einstellungen-Layout überarbeitet/neu angeordnet und Benutzerfreundlichkeit verbessert\nBildschirmschoner-Benachrichtigungssystem hinzugefügt\nFehler bei cardThermo2 behoben (wurde nicht umgeschaltet)\nAusblenden von Bildschirmschoner-Elementen implementiert\nBrightsky-Vorlagen angepasst\nSkriptkonfigurationsübertragung robuster gemacht",
@@ -80,19 +93,6 @@
         "pl": "poprawiony PageQR\nBREAKING: alias def zmienił\nzmiana obsługi zestawu aktualnego\npopup Dodano wentylator",
         "uk": "покращений PageQR\nБРЕАКІНГ: псевдонім змінився\nзмінено фактичне обслуговування\nмастурбація Вентилятор додано",
         "zh-cn": "已改进的页面QR\n破解:别名更改\n已更改实际处理\n弹出 风扇加了"
-      },
-      "0.2.1": {
-        "en": "Modified script version comparison",
-        "de": "Modifizierter Skript-Versionsvergleich",
-        "ru": "Сравнение модифицированной версии сценария",
-        "pt": "Comparação de versão de script modificada",
-        "nl": "Vergelijking van de gewijzigde scriptversie",
-        "fr": "Comparaison des versions de script modifiées",
-        "it": "Confronto della versione di script modificato",
-        "es": "Comparación de versión de script modificada",
-        "pl": "Zmodyfikowane porównanie wersji skryptu",
-        "uk": "Змінено порівняння версії скриптів",
-        "zh-cn": "修改后的脚本版本比较"
       }
     },
     "titleLang": {
