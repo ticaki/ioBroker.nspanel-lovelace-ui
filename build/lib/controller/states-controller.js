@@ -393,7 +393,7 @@ class StatesControler extends import_library.BaseClass {
         lc: entry.state.lc
       };
       entry.state = state;
-      const isSystemOrAlias = dp.startsWith("0_userdata.0") || dp.startsWith("alias.0") || dp.startsWith(this.adapter.namespace);
+      const isSystemOrAlias = dp.startsWith("0_userdata.0") || dp.startsWith("alias.0") || !state.ack && dp.startsWith(this.adapter.namespace);
       const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
       if (mayTrigger) {
         const to = entry.to;
@@ -442,7 +442,7 @@ class StatesControler extends import_library.BaseClass {
     if (!isPrimitive) {
       return;
     }
-    if (dp.startsWith(this.adapter.namespace)) {
+    if (!state.ack && dp.startsWith(this.adapter.namespace)) {
       const id = dp.replace(`${this.adapter.namespace}.`, "");
       const libState = this.library.readdb(id);
       if (libState) {

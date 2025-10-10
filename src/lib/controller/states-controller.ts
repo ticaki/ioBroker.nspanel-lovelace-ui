@@ -455,7 +455,9 @@ export class StatesControler extends BaseClass {
             entry.state = state;
 
             const isSystemOrAlias =
-                dp.startsWith('0_userdata.0') || dp.startsWith('alias.0') || dp.startsWith(this.adapter.namespace);
+                dp.startsWith('0_userdata.0') ||
+                dp.startsWith('alias.0') ||
+                (!state.ack && dp.startsWith(this.adapter.namespace));
             const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
 
             if (mayTrigger) {
@@ -519,7 +521,7 @@ export class StatesControler extends BaseClass {
         }
 
         // Eigene States (im Adapter-Namespace) updaten
-        if (dp.startsWith(this.adapter.namespace)) {
+        if (!state.ack && dp.startsWith(this.adapter.namespace)) {
             const id = dp.replace(`${this.adapter.namespace}.`, '');
             const libState = this.library.readdb(id);
 
