@@ -31,7 +31,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
         const inputValue = this.state.iconValue || '';
         const filteredIcons =
             inputValue.length < 2
-                ? icons.slice(0, 50)
+                ? icons.filter(icon => icon.name.toLowerCase().includes(inputValue.toLowerCase())).slice(0, 200)
                 : icons.filter(icon => icon.name.toLowerCase().includes(inputValue.toLowerCase()));
 
         return (
