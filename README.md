@@ -148,12 +148,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) Admin: NavigationAssignmentPanel professionelle Loading-Lösung — Ladespinner, 2s-Timeout, Retry-Logik statt primitiver Fallback-Liste 
-- (ticaki) Admin: NavigationAssignmentPanel Fallback-Pages bei Adapter-Offline — Navigation-Selects zeigen Standard-Seiten wenn Adapter nicht verfügbar
-- (ticaki) Admin: NavigationAssignmentPanel Race Condition behoben — Navigation-Selects zeigen nun auch nach Seitenreload korrekt Werte statt leerem Feld
-- (ticaki) Admin: Fix NavigationAssignmentPanel Select-Werte beim Page-Reload — Navigation-Selects zeigen jetzt korrekt "—" wenn keine Werte gesetzt sind
-- (ticaki) TypeScript: Zentrale Card-Type-Definition in adminShareConfig.ts — alle Card-Typen nutzen jetzt Extract von AdminCardTypes um zirkuläre Imports zu vermeiden
-- (ticaki) Admin: NavigationAssignmentPanel TypeScript-Verbesserungen — entfernt as any Casts und verbessert Typisierung, berücksichtigt Entfernung des active-Feldes aus NavigationAssignment
+- (ticaki) IconSelect fixed
 - (ticaki) Admin: Added responsive layout for Admin PageUnlock (mobile devices)
 
 ### 0.6.0 (2025-10-09)
