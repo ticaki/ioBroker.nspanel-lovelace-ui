@@ -148,7 +148,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) Admin: Added responsive layout for Admin PageUnlock (mobile devices) 
+- (ticaki) Admin: Added responsive layout for Admin PageUnlock (mobile devices)
 
 ### 0.6.0 (2025-10-09)
 - (tt-tom17) Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)
