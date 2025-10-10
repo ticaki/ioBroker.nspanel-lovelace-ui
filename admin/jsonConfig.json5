@@ -262,6 +262,7 @@
             "items": {
                 "_headeruseBetaTFT": {
                     "type": "header",
+                    "expertMode": true,
                     "text": "headeruseBetaTFT",
                     "size": 3
                 },

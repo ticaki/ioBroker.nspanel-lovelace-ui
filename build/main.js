@@ -759,7 +759,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               }
               this.scriptConfigBacklog.shift();
               if (this.scriptConfigBacklog.length > 0) {
-                await this.delay(1e3);
+                await this.delay(3e3);
               }
             }
             break;

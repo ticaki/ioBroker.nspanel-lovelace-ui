@@ -72,7 +72,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             assignments: props.currentAssignments || [],
             pagesMap: {},
             alive: false,
-            isCollapsed: true, // start collapsed
+            isCollapsed: false, // mobile: always expanded, desktop: start collapsed
         };
     }
 
@@ -343,28 +343,55 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         return (
             <Box
                 sx={{
-                    // position absolute inside parent container (parent must be relative)
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    height: '100%',
-                    // width based on collapsed state
-                    width: isCollapsed ? '10px' : `${widthPercent}%`,
-                    transition: 'width 240ms ease',
+                    // Responsive positioning: absolute on desktop, static on mobile
+                    position: { xs: 'static', md: 'absolute' },
+                    right: { xs: 'auto', md: 0 },
+                    top: { xs: 'auto', md: 0 },
+                    height: { xs: 'auto', md: '100%' },
+
+                    // Responsive width: full width on mobile, percentage on desktop
+                    width: {
+                        xs: '100%', // mobile: full width
+                        md: isCollapsed ? '10px' : `${widthPercent}%`, // desktop: collapsible
+                    },
+
+                    // Mobile: min height when collapsed, auto when expanded
+                    minHeight: {
+                        xs: isCollapsed ? '50px' : 'auto',
+                        md: 'auto',
+                    },
+
+                    transition: 'width 240ms ease, min-height 240ms ease',
                     backgroundColor: 'background.default',
-                    borderLeft: '2px solid',
-                    borderTop: '2px solid',
+
+                    // Mobile: border on all sides, desktop: only left and top
+                    border: {
+                        xs: '2px solid',
+                        md: 'none',
+                    },
+                    borderLeft: { xs: 'none', md: '2px solid' },
+                    borderTop: { xs: 'none', md: '2px solid' },
                     borderColor: 'secondary.main',
-                    // allow handle to be visible outside when collapsed
-                    overflow: 'visible',
+
+                    // Mobile: rounded corners, desktop: no rounding
+                    borderRadius: { xs: 1, md: 0 },
+
+                    // Mobile: normal overflow, desktop: visible for handle
+                    overflow: { xs: 'hidden', md: 'visible' },
+
                     display: 'flex',
                     flexDirection: 'column',
                     zIndex: 20,
+
+                    // Mobile: margin top for spacing
+                    mt: { xs: 2, md: 0 },
                 }}
             >
-                {/* Toggle Handle */}
+                {/* Toggle Handle - only visible on desktop */}
                 <Box
                     sx={{
+                        // Hide handle on mobile, show on desktop
+                        display: { xs: 'none', md: 'flex' },
                         position: 'absolute',
                         left: '-20px',
                         top: '50%',
@@ -373,7 +400,6 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                         height: '60px',
                         backgroundColor: 'secondary.main',
                         borderRadius: '4px 0 0 4px',
-                        display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
@@ -397,19 +423,41 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                     </Typography>
                 </Box>
 
+                {/* Mobile toggle button - only visible on mobile */}
+                <Box
+                    sx={{
+                        // Show only on mobile
+                        display: { xs: 'flex', md: 'none' },
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: 1,
+                        backgroundColor: 'secondary.main',
+                        color: 'secondary.contrastText',
+                        borderRadius: '4px 4px 0 0',
+                    }}
+                >
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 600 }}
+                    >
+                        {I18n.t('navigation_panel')}
+                    </Typography>
+                </Box>
+
                 <Box
                     sx={{
                         p: 1,
                         height: '100%',
-                        display: 'flex',
+                        // Mobile: always show, desktop: hide when collapsed
+                        display: { xs: 'flex', md: isCollapsed ? 'none' : 'flex' },
                         flexDirection: 'column',
-                        // content only visible when expanded
-                        width: isCollapsed ? '0%' : '100%',
+                        // Mobile: normal layout, desktop: width animation
+                        width: { xs: '100%', md: isCollapsed ? '0%' : '100%' },
                         overflow: 'hidden',
-                        transition: 'width 240ms ease',
+                        transition: { xs: 'none', md: 'width 240ms ease' },
                     }}
                 >
-                    {/* Panel navigation header */}
+                    {/* Panel navigation header - hide on mobile when collapsed */}
                     <Typography
                         variant="h6"
                         sx={{
@@ -417,6 +465,8 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                             fontWeight: 600,
                             color: 'primary.main',
                             fontSize: '1rem',
+                            // Hide on mobile (title is in mobile toggle button)
+                            display: { xs: 'none', md: 'block' },
                         }}
                     >
                         {I18n.t('navigation_panel')}
@@ -467,14 +517,8 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                         </Button>
                     </Box>
 
-                    {/* growing list of added items (min 3 rows, then scroll) */}
+                    {/* growing list of added items */}
                     {(() => {
-                        const rowHeight = 40;
-                        const minRows = 1;
-                        // desired rows: at least minRows, otherwise number of panels + 1
-                        const desiredRows = Math.max(minRows, (this.state.added.length || 0) + 1);
-                        const desiredH = desiredRows * rowHeight;
-
                         return (
                             <Box>
                                 {this.state.added.length === 0 ? (
@@ -482,11 +526,10 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                         variant="body2"
                                         color="text.secondary"
                                     >
-                                        No panels added
-                                        <br />
+                                        {I18n.t('No panels added')}
                                     </Typography>
                                 ) : (
-                                    <div style={{ height: desiredH, overflow: 'auto' }}>
+                                    <div style={{ overflow: 'auto' }}>
                                         <List dense>
                                             {this.state.added.map(a => (
                                                 <ListItem

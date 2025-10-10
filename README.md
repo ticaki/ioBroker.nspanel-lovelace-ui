@@ -147,6 +147,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Admin: Added responsive layout for Admin PageUnlock (mobile devices) 
+
 ### 0.6.0 (2025-10-09)
 - (tt-tom17) Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)
 - (ticaki) Admin: Added Unlock/Alarm editor to admin UI (headline, PIN, buttons, setNavi, duplicate-name check) - first admin only config for a page

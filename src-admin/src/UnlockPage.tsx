@@ -164,9 +164,24 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
         };
 
         return (
-            <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', p: 1 }}>
-                {/* left sidebar: 20% width */}
-                <Box sx={{ width: '20%', pr: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box
+                sx={{
+                    height: 'calc(100vh - 64px)',
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    p: 1,
+                }}
+            >
+                {/* left sidebar: 20% width on desktop, full width on mobile */}
+                <Box
+                    sx={{
+                        width: { xs: '100%', md: '20%' },
+                        pr: { xs: 0, md: 1 },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                    }}
+                >
                     {/* Pages header */}
                     <Typography
                         variant="h6"
@@ -235,17 +250,9 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                     </Paper>
 
                     {(() => {
-                        // dynamic list height: min 3 rows, each ~40px, capped at 80% of viewport (minus header)
-                        const rowHeight = 40;
-                        const minRows = 3;
-                        const rows = Math.max(minRows, uniqueNames.length || 0);
-                        const available = (typeof window !== 'undefined' ? window.innerHeight : 800) - 64; // parent calc height
-                        const maxListH = Math.floor(available * 0.8);
-                        const desiredH = Math.min(rows * rowHeight, maxListH);
-
                         return (
                             <Paper
-                                sx={{ height: desiredH, overflow: 'auto', p: 1, backgroundColor: 'transparent' }}
+                                sx={{ overflow: 'auto', p: 1, backgroundColor: 'transparent' }}
                                 elevation={0}
                             >
                                 {uniqueNames.length === 0 ? (
@@ -338,14 +345,22 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                 {/* right area: main content + optional collapsible side panel */}
                 <Box
                     sx={{
-                        width: '90%',
-                        pl: 2,
+                        width: { xs: '100%', md: '90%' },
+                        pl: { xs: 0, md: 2 },
+                        mt: { xs: 2, md: 0 },
                         display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
                         gap: 1,
                         position: 'relative',
                     }}
                 >
-                    <Box sx={{ width: '95%', borderLeft: '1px solid', borderColor: 'divider' }}>
+                    <Box
+                        sx={{
+                            width: { xs: '100%', md: '95%' },
+                            borderLeft: { xs: 'none', md: '1px solid' },
+                            borderColor: 'divider',
+                        }}
+                    >
                         <Paper
                             sx={{ height: '100%', p: 2 }}
                             elevation={1}
