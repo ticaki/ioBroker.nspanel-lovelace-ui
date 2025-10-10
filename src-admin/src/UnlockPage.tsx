@@ -43,7 +43,6 @@ interface LocalUIState {
 
 class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, UnlockPageState> {
     private _local: LocalUIState | null = null;
-    private aliveTimeout?: NodeJS.Timeout;
     private pagesRetryTimeout?: NodeJS.Timeout;
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
@@ -59,47 +58,74 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
         } as UnlockPageState;
     }
 
-    checkAlive(): void {
-        const instance = this.props.oContext.instance ?? '0';
-        const socket = this.props.oContext.socket;
-        if (socket && typeof socket.getState === 'function') {
-            void socket.getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`).then(state => {
-                const wasAlive = this.state.alive;
-                const isAlive = !!state?.val;
-
-                this.setState({ alive: isAlive } as UnlockPageState);
-
-                // If adapter just became alive and we don't have pages loaded, retry loading
-                if (!wasAlive && isAlive && (!this.state.pagesList || this.state.pagesList.length === 0)) {
-                    void this.loadPagesList();
-                }
-
-                this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
-            });
-        } else {
-            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
-        }
-    }
-
     componentWillUnmount(): void {
-        if (this.aliveTimeout) {
-            clearTimeout(this.aliveTimeout);
-        }
         if (this.pagesRetryTimeout) {
             clearTimeout(this.pagesRetryTimeout);
         }
+        // Unsubscribe from alive state changes
+        const instance = this.props.oContext.instance ?? '0';
+        this.props.oContext.socket.unsubscribeState(
+            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+            this.onAliveChanged,
+        );
     }
 
     async componentDidMount(): Promise<void> {
         super.componentDidMount();
-        this.checkAlive();
-        await this.loadPagesList();
+
+        // Get initial alive state and subscribe to changes
+        const instance = this.props.oContext.instance ?? '0';
+        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            this.setState({ alive: isAlive } as UnlockPageState);
+
+            // Subscribe to alive state changes
+            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+
+            // If adapter is alive, start loading pages
+            if (isAlive) {
+                await this.loadPagesList();
+            }
+        } catch (error) {
+            console.error('[UnlockPage] Failed to get alive state or subscribe:', error);
+            this.setState({ alive: false } as UnlockPageState);
+        }
     }
 
+    // Callback for alive state changes
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const wasAlive = this.state.alive;
+        const isAlive = state ? !!state.val : false;
+
+        if (wasAlive !== isAlive) {
+            this.setState({ alive: isAlive } as UnlockPageState);
+
+            // If adapter just became alive and we don't have pages loaded, start loading
+            if (!wasAlive && isAlive && (!this.state.pagesList || this.state.pagesList.length === 0)) {
+                void this.loadPagesList();
+            }
+
+            // If adapter went offline, clear any pending retry timeout
+            if (wasAlive && !isAlive && this.pagesRetryTimeout) {
+                clearTimeout(this.pagesRetryTimeout);
+                this.pagesRetryTimeout = undefined;
+            }
+        }
+    };
+
     private async loadPagesList(): Promise<void> {
+        // Don't try to load if adapter is not alive
+        if (!this.state.alive) {
+            console.log('[UnlockPage] Adapter not alive, skipping pages load');
+            return;
+        }
+
         // preload pages list for setNavi select
         const pages: string[] = [];
-        if (this.props.oContext && this.props.oContext.socket && this.state.alive) {
+        if (this.props.oContext && this.props.oContext.socket) {
             const instance = this.props.oContext.instance ?? '0';
             const target = `${ADAPTER_NAME}.${instance}`;
             try {
@@ -131,9 +157,14 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                         clearTimeout(this.pagesRetryTimeout);
                     }
 
-                    // Schedule retry in 3 seconds
+                    // Schedule retry in 3 seconds, but only if adapter is still alive
                     this.pagesRetryTimeout = setTimeout(() => {
-                        void this.loadPagesList();
+                        // Double-check adapter is still alive before retrying
+                        if (this.state.alive) {
+                            void this.loadPagesList();
+                        } else {
+                            console.log('[UnlockPage] Adapter went offline, cancelling pages retry');
+                        }
                     }, retryDelay);
 
                     return; // Don't update pagesList yet, wait for retry
@@ -149,7 +180,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                     }
                 }
             } catch (error) {
-                // On error, also retry in 3 seconds
+                // On error, also retry in 3 seconds, but only if adapter is still alive
                 const currentRetryCount = this.state.pagesRetryCount || 0;
                 const retryDelay = 3000;
 
@@ -164,30 +195,18 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                 }
 
                 this.pagesRetryTimeout = setTimeout(() => {
-                    void this.loadPagesList();
+                    // Double-check adapter is still alive before retrying
+                    if (this.state.alive) {
+                        void this.loadPagesList();
+                    } else {
+                        console.log('[UnlockPage] Adapter went offline, cancelling pages retry after error');
+                    }
                 }, retryDelay);
 
                 return;
             }
         } else {
-            // If adapter not alive, retry in 3 seconds
-            const currentRetryCount = this.state.pagesRetryCount || 0;
-            const retryDelay = 3000;
-
-            console.log(
-                `[UnlockPage] Adapter not alive or socket not available, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1})`,
-            );
-
-            this.setState({ pagesRetryCount: currentRetryCount + 1 } as UnlockPageState);
-
-            if (this.pagesRetryTimeout) {
-                clearTimeout(this.pagesRetryTimeout);
-            }
-
-            this.pagesRetryTimeout = setTimeout(() => {
-                void this.loadPagesList();
-            }, retryDelay);
-
+            console.log('[UnlockPage] No socket available for sendTo');
             return;
         }
 

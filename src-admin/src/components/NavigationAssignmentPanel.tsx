@@ -84,8 +84,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         widthPercent: 30,
     } as NavigationAssignmentPanelProps;
 
-    private aliveTimeout?: NodeJS.Timeout;
-
     constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
         super(props);
         this.state = {
@@ -104,49 +102,59 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         };
     }
 
-    checkAlive(): void {
-        if (!this.props.oContext || !this.props.oContext.socket) {
-            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
-            return;
-        }
-        const instance = this.props.oContext.instance ?? '0';
-        const socket = this.props.oContext.socket;
-        if (socket && typeof socket.getState === 'function') {
-            void socket
-                .getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`)
-                .then((state: { val?: boolean } | null) => {
-                    const wasAlive = this.state.alive;
-                    const isAlive = !!state?.val;
-
-                    this.setState({ alive: isAlive });
-
-                    // If adapter just became alive and we have assignments but no pages loaded,
-                    // trigger loading of pages for all assigned panels
-                    if (!wasAlive && isAlive && this.state.assignments.length > 0) {
-                        this.retryLoadingPagesForAssignments();
-                    }
-
-                    this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
-                });
-        } else {
-            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
-        }
-    }
-
     componentWillUnmount(): void {
-        if (this.aliveTimeout) {
-            clearTimeout(this.aliveTimeout);
+        // Unsubscribe from alive state changes
+        if (this.props.oContext && this.props.oContext.socket) {
+            const instance = this.props.oContext.instance ?? '0';
+            this.props.oContext.socket.unsubscribeState(
+                `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+                this.onAliveChanged,
+            );
         }
     }
 
     async componentDidMount(): Promise<void> {
         super.componentDidMount();
-        this.checkAlive();
+
+        // Get initial alive state and subscribe to changes
+        if (this.props.oContext && this.props.oContext.socket) {
+            const instance = this.props.oContext.instance ?? '0';
+            const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+
+            try {
+                const state = await this.props.oContext.socket.getState(aliveStateId);
+                const isAlive = !!state?.val;
+                this.setState({ alive: isAlive });
+
+                // Subscribe to alive state changes
+                await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+            } catch (error) {
+                console.error('[NavigationAssignmentPanel] Failed to get alive state or subscribe:', error);
+                this.setState({ alive: false });
+            }
+        }
+
         // load panels but do not auto-select anything so select stays on '—'
         await this.loadPanels(false);
         // initialize from incoming props once panels are available
         await this.applyAssignmentsFromProps(this.props.currentAssignments || []);
     }
+
+    // Callback for alive state changes
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const wasAlive = this.state.alive;
+        const isAlive = state ? !!state.val : false;
+
+        if (wasAlive !== isAlive) {
+            this.setState({ alive: isAlive });
+
+            // If adapter just became alive and we have assignments but no pages loaded,
+            // trigger loading of pages for all assigned panels
+            if (!wasAlive && isAlive && this.state.assignments.length > 0) {
+                this.retryLoadingPagesForAssignments();
+            }
+        }
+    };
 
     private async applyAssignmentsFromProps(nextAssignments: NavigationAssignmentList): Promise<void> {
         const addedPanels = (nextAssignments || []).map(a => {
@@ -296,6 +304,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             return;
         }
 
+        // Don't try to load if adapter is not alive
+        if (!this.state.alive) {
+            console.log(`[NavigationAssignmentPanel] Adapter not alive, skipping pages load for ${topic}`);
+            return;
+        }
+
         const now = Date.now();
         const lastLoad = this.state.lastLoadTime[topic] || 0;
         const isCurrentlyLoading = this.state.isLoading[topic];
@@ -317,8 +331,8 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             let list: string[] = [];
             let success = false;
 
-            // Try to load from adapter with timeout
-            if (this.props.oContext?.socket && this.state.alive) {
+            // Try to load from adapter with timeout (only if alive)
+            if (this.props.oContext?.socket) {
                 const instance = this.props.oContext.instance ?? '0';
                 const target = `${ADAPTER_NAME}.${instance}`;
                 const payload = { panelTopic: topic };
