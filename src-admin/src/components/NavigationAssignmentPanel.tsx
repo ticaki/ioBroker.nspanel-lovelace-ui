@@ -13,6 +13,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
+import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/adapter-react-v5';
 import type {
     PanelInfo,
@@ -25,7 +26,7 @@ import {
     ADAPTER_NAME,
 } from '../../../src/lib/types/adminShareConfig';
 
-type Props = React.PropsWithChildren<{
+type NavigationAssignmentPanelProps = {
     widthPercent?: number; // percent of container width
     // optional admin context to perform sendTo
     oContext?: any;
@@ -38,9 +39,9 @@ type Props = React.PropsWithChildren<{
     // called when assignments change: (uniqueName, assignments)
     onAssign?: (uniqueName: string, assignments: NavigationAssignmentList) => void;
     // optional tooltip texts for next/prev
-}>;
+};
 
-type State = {
+interface NavigationAssignmentPanelState extends ConfigGenericState {
     available: PanelInfo[];
     selectedTopic: string;
     added: PanelInfo[];
@@ -50,6 +51,7 @@ type State = {
     assignments: NavigationAssignmentList;
     // pages per panelTopic
     pagesMap: Record<string, string[]>;
+    alive?: boolean;
     // toggle state for collapsible panel
     isCollapsed?: boolean;
     // loading states per topic
@@ -58,7 +60,15 @@ type State = {
     lastLoadTime: Record<string, number>;
     // focus tracking per topic for optimization
     focusReceived: Record<string, boolean>;
-};
+    // retry tracking for empty results
+    retryCount: Record<string, number>;
+}
+/**
+ * Reusable navigation assignment side panel (class-based)
+ * - transparent background
+ * - 2px border using theme secondary color
+ * - user toggleable via handle
+ */
 
 /**
  * Reusable navigation assignment side panel (class-based)
@@ -66,25 +76,31 @@ type State = {
  * - 2px border using theme secondary color
  * - user toggleable via handle
  */
-class NavigationAssignmentPanel extends React.Component<Props, State> {
+class NavigationAssignmentPanel extends ConfigGeneric<
+    ConfigGenericProps & NavigationAssignmentPanelProps,
+    NavigationAssignmentPanelState
+> {
     static defaultProps = {
         widthPercent: 30,
-    } as Props;
+    } as NavigationAssignmentPanelProps;
 
     private aliveTimeout?: NodeJS.Timeout;
 
-    constructor(props: Props) {
+    constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
         super(props);
         this.state = {
+            ...this.state,
             available: [],
             selectedTopic: '',
             added: [],
             assignments: props.currentAssignments || [],
             pagesMap: {},
-            isCollapsed: false, // mobile: always expanded, desktop: start collapsed
+            alive: false,
+            isCollapsed: false,
             isLoading: {},
             lastLoadTime: {},
             focusReceived: {},
+            retryCount: {},
         };
     }
 
@@ -93,8 +109,28 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
             return;
         }
-        // No need for alive checking - just use oContext directly
-        this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+        const instance = this.props.oContext.instance ?? '0';
+        const socket = this.props.oContext.socket;
+        if (socket && typeof socket.getState === 'function') {
+            void socket
+                .getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`)
+                .then((state: { val?: boolean } | null) => {
+                    const wasAlive = this.state.alive;
+                    const isAlive = !!state?.val;
+
+                    this.setState({ alive: isAlive });
+
+                    // If adapter just became alive and we have assignments but no pages loaded,
+                    // trigger loading of pages for all assigned panels
+                    if (!wasAlive && isAlive && this.state.assignments.length > 0) {
+                        this.retryLoadingPagesForAssignments();
+                    }
+
+                    this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+                });
+        } else {
+            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
+        }
     }
 
     componentWillUnmount(): void {
@@ -104,6 +140,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
     }
 
     async componentDidMount(): Promise<void> {
+        super.componentDidMount();
         this.checkAlive();
         // load panels but do not auto-select anything so select stays on '—'
         await this.loadPanels(false);
@@ -135,7 +172,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         await Promise.all(loadPromises);
     }
 
-    componentDidUpdate(prevProps: Props): void {
+    componentDidUpdate(prevProps: NavigationAssignmentPanelProps): void {
         // if the selected uniqueName changed, update internal assignments state
         if (prevProps.uniqueName !== this.props.uniqueName) {
             const nextAssignments = this.props.currentAssignments || [];
@@ -246,6 +283,14 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         void this.loadPagesForPanel(topic, true);
     };
 
+    private retryLoadingPagesForAssignments(): void {
+        // Retry loading pages for all assigned panels
+        const topics = this.state.assignments.map(a => a.topic);
+        for (const topic of topics) {
+            void this.loadPagesForPanel(topic, true);
+        }
+    }
+
     async loadPagesForPanel(topic: string, forceReload = false): Promise<void> {
         if (!topic) {
             return;
@@ -259,14 +304,6 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
 
         // Skip if already loading or recently loaded (unless forced)
         if (isCurrentlyLoading || (!needsReload && hasBeenLoaded)) {
-            console.log('[NavigationAssignmentPanel] Skipping loadPagesForPanel', {
-                topic,
-                isCurrentlyLoading,
-                hasBeenLoaded,
-                needsReload,
-                forceReload,
-                timeSinceLastLoad: now - lastLoad,
-            });
             return;
         }
 
@@ -277,16 +314,11 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         }));
 
         try {
-            console.log('[NavigationAssignmentPanel] Starting loadPagesForPanel', {
-                topic,
-                hasSocket: !!this.props.oContext?.socket,
-            });
-
             let list: string[] = [];
             let success = false;
 
             // Try to load from adapter with timeout
-            if (this.props.oContext?.socket) {
+            if (this.props.oContext?.socket && this.state.alive) {
                 const instance = this.props.oContext.instance ?? '0';
                 const target = `${ADAPTER_NAME}.${instance}`;
                 const payload = { panelTopic: topic };
@@ -319,10 +351,47 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                 }
             }
 
+            // Check if we got an empty array - might mean adapter not ready yet
+            if (success && list.length === 0) {
+                const currentRetryCount = this.state.retryCount[topic] || 0;
+                const maxRetries = 3;
+                const retryDelay = 2000; // 2 seconds
+
+                if (currentRetryCount < maxRetries) {
+                    console.log(
+                        `[NavigationAssignmentPanel] Got empty array for ${topic}, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1}/${maxRetries})`,
+                    );
+
+                    // Update retry count
+                    this.setState(prev => ({
+                        retryCount: { ...prev.retryCount, [topic]: currentRetryCount + 1 },
+                    }));
+
+                    // Retry after delay
+                    setTimeout(() => {
+                        this.setState(prev => ({
+                            isLoading: { ...prev.isLoading, [topic]: false },
+                        }));
+                        void this.loadPagesForPanel(topic, true);
+                    }, retryDelay);
+
+                    return; // Don't update state yet, wait for retry
+                }
+
+                console.log(`[NavigationAssignmentPanel] Max retries reached for ${topic}, accepting empty result`);
+                // Reset retry count for future attempts
+                this.setState(prev => ({
+                    retryCount: { ...prev.retryCount, [topic]: 0 },
+                }));
+            } else if (success && list.length > 0) {
+                // Reset retry count on successful result with data
+                this.setState(prev => ({
+                    retryCount: { ...prev.retryCount, [topic]: 0 },
+                }));
+            }
+
             // If sendTo failed or timed out, retry logic for critical scenarios
             if (!success && !this.props.oContext?.socket) {
-                console.log('[NavigationAssignmentPanel] Retrying in 1 second due to no socket...');
-
                 // Retry after 1 second delay
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -345,13 +414,6 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                 pagesMap: { ...prev.pagesMap, [topic]: list },
                 isLoading: { ...prev.isLoading, [topic]: false },
             }));
-
-            console.log('[NavigationAssignmentPanel] loadPagesForPanel completed', {
-                topic,
-                success,
-                pagesCount: list.length,
-                pages: list,
-            });
         } catch (error) {
             console.error('[NavigationAssignmentPanel] loadPagesForPanel error', { topic, error });
 
@@ -409,20 +471,12 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         }
     };
 
-    render(): React.ReactNode {
+    renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const { widthPercent } = this.props;
         const { isCollapsed } = this.state;
         const pages: string[] = this.state.selectedAddedTopic
             ? (this.state.pagesMap[this.state.selectedAddedTopic] ?? [])
             : [];
-
-        // Debug information
-        console.log('[NavigationAssignmentPanel] Render state:', {
-            selectedAddedTopic: this.state.selectedAddedTopic,
-            assignments: this.state.assignments,
-            pages: pages,
-            pagesMap: this.state.pagesMap,
-        });
 
         return (
             <Box
@@ -566,6 +620,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 void this.loadPanels();
                             }}
                             onChange={e => this.setState({ selectedTopic: String(e.target.value) })}
+                            disabled={!this.state.alive}
                             sx={{
                                 flex: 1,
                                 backgroundColor: 'transparent',
@@ -595,7 +650,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                             variant="contained"
                             sx={{ minWidth: 32, padding: '4px 8px' }}
                             onClick={this.doAddSelected}
-                            disabled={!this.state.selectedTopic}
+                            disabled={!this.state.selectedTopic || !this.state.alive}
                         >
                             +
                         </Button>
@@ -679,9 +734,10 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 }
                                 sx={{ width: '100%' }}
                                 disabled={
-                                    this.state.selectedAddedTopic
+                                    !this.state.alive ||
+                                    (this.state.selectedAddedTopic
                                         ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false
+                                        : false)
                                 }
                                 endAdornment={
                                     this.state.selectedAddedTopic &&
@@ -738,9 +794,10 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 }
                                 sx={{ width: '100%' }}
                                 disabled={
-                                    this.state.selectedAddedTopic
+                                    !this.state.alive ||
+                                    (this.state.selectedAddedTopic
                                         ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false
+                                        : false)
                                 }
                                 endAdornment={
                                     this.state.selectedAddedTopic &&
@@ -794,9 +851,10 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 }
                                 sx={{ width: '100%' }}
                                 disabled={
-                                    this.state.selectedAddedTopic
+                                    !this.state.alive ||
+                                    (this.state.selectedAddedTopic
                                         ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false
+                                        : false)
                                 }
                                 endAdornment={
                                     this.state.selectedAddedTopic &&
@@ -844,9 +902,10 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 }
                                 sx={{ width: '100%' }}
                                 disabled={
-                                    this.state.selectedAddedTopic
+                                    !this.state.alive ||
+                                    (this.state.selectedAddedTopic
                                         ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false
+                                        : false)
                                 }
                                 endAdornment={
                                     this.state.selectedAddedTopic &&

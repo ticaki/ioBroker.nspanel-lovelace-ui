@@ -32,6 +32,7 @@ interface UnlockPageState extends ConfigGenericState {
     confirmDeleteName?: string | null;
     pagesList?: string[];
     alive?: boolean;
+    pagesRetryCount?: number;
 }
 
 interface LocalUIState {
@@ -43,6 +44,7 @@ interface LocalUIState {
 class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, UnlockPageState> {
     private _local: LocalUIState | null = null;
     private aliveTimeout?: NodeJS.Timeout;
+    private pagesRetryTimeout?: NodeJS.Timeout;
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
@@ -53,6 +55,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
             confirmDeleteOpen: false,
             confirmDeleteName: null,
             alive: false,
+            pagesRetryCount: 0,
         } as UnlockPageState;
     }
 
@@ -61,7 +64,16 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
         const socket = this.props.oContext.socket;
         if (socket && typeof socket.getState === 'function') {
             void socket.getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`).then(state => {
-                this.setState({ alive: !!state?.val } as UnlockPageState);
+                const wasAlive = this.state.alive;
+                const isAlive = !!state?.val;
+
+                this.setState({ alive: isAlive } as UnlockPageState);
+
+                // If adapter just became alive and we don't have pages loaded, retry loading
+                if (!wasAlive && isAlive && (!this.state.pagesList || this.state.pagesList.length === 0)) {
+                    void this.loadPagesList();
+                }
+
                 this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
             });
         } else {
@@ -73,10 +85,18 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
         if (this.aliveTimeout) {
             clearTimeout(this.aliveTimeout);
         }
+        if (this.pagesRetryTimeout) {
+            clearTimeout(this.pagesRetryTimeout);
+        }
     }
 
     async componentDidMount(): Promise<void> {
+        super.componentDidMount();
         this.checkAlive();
+        await this.loadPagesList();
+    }
+
+    private async loadPagesList(): Promise<void> {
         // preload pages list for setNavi select
         const pages: string[] = [];
         if (this.props.oContext && this.props.oContext.socket && this.state.alive) {
@@ -93,9 +113,82 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                 for (const name of list) {
                     pages.push(name);
                 }
-            } catch {
-                // ignore
+
+                // Check if we got an empty array - keep retrying every 3 seconds until success
+                if (list.length === 0) {
+                    const currentRetryCount = this.state.pagesRetryCount || 0;
+                    const retryDelay = 3000; // 3 seconds
+
+                    console.log(
+                        `[UnlockPage] Got empty pages array, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1})`,
+                    );
+
+                    // Update retry count and schedule next retry
+                    this.setState({ pagesRetryCount: currentRetryCount + 1 } as UnlockPageState);
+
+                    // Clear any existing retry timeout
+                    if (this.pagesRetryTimeout) {
+                        clearTimeout(this.pagesRetryTimeout);
+                    }
+
+                    // Schedule retry in 3 seconds
+                    this.pagesRetryTimeout = setTimeout(() => {
+                        void this.loadPagesList();
+                    }, retryDelay);
+
+                    return; // Don't update pagesList yet, wait for retry
+                } else if (list.length > 0) {
+                    // Success! Reset retry count and clear any pending timeout
+                    console.log(
+                        `[UnlockPage] Successfully loaded ${list.length} pages after ${this.state.pagesRetryCount || 0} retries`,
+                    );
+                    this.setState({ pagesRetryCount: 0 } as UnlockPageState);
+                    if (this.pagesRetryTimeout) {
+                        clearTimeout(this.pagesRetryTimeout);
+                        this.pagesRetryTimeout = undefined;
+                    }
+                }
+            } catch (error) {
+                // On error, also retry in 3 seconds
+                const currentRetryCount = this.state.pagesRetryCount || 0;
+                const retryDelay = 3000;
+
+                console.log(
+                    `[UnlockPage] Error loading pages, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1}): ${String(error)}`,
+                );
+
+                this.setState({ pagesRetryCount: currentRetryCount + 1 } as UnlockPageState);
+
+                if (this.pagesRetryTimeout) {
+                    clearTimeout(this.pagesRetryTimeout);
+                }
+
+                this.pagesRetryTimeout = setTimeout(() => {
+                    void this.loadPagesList();
+                }, retryDelay);
+
+                return;
             }
+        } else {
+            // If adapter not alive, retry in 3 seconds
+            const currentRetryCount = this.state.pagesRetryCount || 0;
+            const retryDelay = 3000;
+
+            console.log(
+                `[UnlockPage] Adapter not alive or socket not available, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1})`,
+            );
+
+            this.setState({ pagesRetryCount: currentRetryCount + 1 } as UnlockPageState);
+
+            if (this.pagesRetryTimeout) {
+                clearTimeout(this.pagesRetryTimeout);
+            }
+
+            this.pagesRetryTimeout = setTimeout(() => {
+                void this.loadPagesList();
+            }, retryDelay);
+
+            return;
         }
 
         // remove duplicates and set state
@@ -769,6 +862,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
 
                     {/* navigation assignment right panel (30%) */}
                     <NavigationAssignmentPanel
+                        {...this.props}
                         widthPercent={30}
                         uniqueName={local.selected}
                         currentAssignments={
@@ -783,32 +877,33 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                             this.setState({ entries: updated } as UnlockPageState);
                             void this.onChange(this.props.attr!, updated);
                         }}
+                    />
+
+                    {/* Info box moved outside NavigationAssignmentPanel */}
+                    <Paper
+                        sx={{ height: '100%', p: 2, backgroundColor: 'transparent' }}
+                        elevation={0}
                     >
-                        <Paper
-                            sx={{ height: '100%', p: 2, backgroundColor: 'transparent' }}
-                            elevation={0}
-                        >
-                            <Box>
-                                <Typography
-                                    variant="subtitle2"
-                                    sx={{ mb: 1 }}
-                                >
-                                    {this.getText('unlock_unique_label')}
-                                </Typography>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ fontWeight: 600 }}
-                                >
-                                    {local.selected || this.getText('unlock_select_item')}
-                                </Typography>
-                                <InfoOutlined
-                                    fontSize="small"
-                                    color="action"
-                                    sx={{ mt: 1 }}
-                                />
-                            </Box>
-                        </Paper>
-                    </NavigationAssignmentPanel>
+                        <Box>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ mb: 1 }}
+                            >
+                                {this.getText('unlock_unique_label')}
+                            </Typography>
+                            <Typography
+                                variant="body1"
+                                sx={{ fontWeight: 600 }}
+                            >
+                                {local.selected || this.getText('unlock_select_item')}
+                            </Typography>
+                            <InfoOutlined
+                                fontSize="small"
+                                color="action"
+                                sx={{ mt: 1 }}
+                            />
+                        </Box>
+                    </Paper>
                 </Box>
             </Box>
         );
