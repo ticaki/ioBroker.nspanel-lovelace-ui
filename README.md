@@ -148,6 +148,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Admin: ScreensaverPage umfassende UI/UX-Verbesserungen — RadioButton disabled-Farbe mittelgrau, erweiterte Datumsformate mit Wochentag-Varianten, übersetzte Zeitformat-Labels, korrekte Custom-Format-Eingabe ohne Verschwinden
+- (ticaki) Admin: Screensaver.tsx i18n-Korrektur — alle Übersetzungen in korrekte src-admin/src/i18n/ Dateien verschoben statt Haupt-admin/i18n/ 
+- (ticaki) Admin: Screensaver.tsx erweiterte Konfiguration — Datum- und Zeitformat-Auswahl mit gängigen JS-Formaten, Custom-Option und Live-Beispielen für bessere Benutzerfreundlichkeit
+- (ticaki) Admin: Screensaver.tsx i18n-Verbesserungen — alle Strings in Übersetzungsdateien, "Card Type" wird "Bildschirmschonertyp", verbesserte RadioButton-Darstellung im disabled Zustand
+- (ticaki) Admin: Screensaver.tsx vertikale RadioButton-Gruppe für Card-Type-Auswahl — ermöglicht Wechsel zwischen standard/alternate, advanced und easyview Modi mit i18n-Unterstützung
 - (ticaki) Admin: NavigationAssignmentPanel professionelle Loading-Lösung — Ladespinner, 2s-Timeout, Retry-Logik statt primitiver Fallback-Liste 
 - (ticaki) Admin: NavigationAssignmentPanel Fallback-Pages bei Adapter-Offline — Navigation-Selects zeigen Standard-Seiten wenn Adapter nicht verfügbar
 - (ticaki) Admin: NavigationAssignmentPanel Race Condition behoben — Navigation-Selects zeigen nun auch nach Seitenreload korrekt Werte statt leerem Feld
