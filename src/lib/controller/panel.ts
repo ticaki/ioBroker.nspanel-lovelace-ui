@@ -277,6 +277,9 @@ export class Panel extends BaseClass {
                         },
                     };
                     let overrwriteNext = false;
+                    if (!navigation?.prev && !navigation?.next && !navigation?.home && !navigation?.parent) {
+                        navigation.home = 'main';
+                    }
                     if (navigation.prev) {
                         navigationEntry.left!.single = navigation.prev;
                         let index = options.navigation.findIndex(b => b && b.name === navigation.prev);

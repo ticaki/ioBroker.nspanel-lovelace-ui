@@ -633,14 +633,14 @@ export class ConfigManager extends BaseClass {
                     if ((config.subPages || []).includes(page)) {
                         let left = page.prev || page.parent || undefined;
                         let right = page.next || page.home || undefined;
-                        if (left === page.uniqueName) {
+                        if (left && left === page.uniqueName) {
                             left = '';
                             messages.push(
                                 `Page: ${page.native.uniqueID || 'unknown'} has left navigation to itself! Removed!`,
                             );
                             this.log.warn(messages[messages.length - 1]);
                         }
-                        if (right === page.uniqueName) {
+                        if (right && right === page.uniqueName) {
                             right = '';
                             messages.push(
                                 `Page: ${page.native.uniqueID || 'unknown'} has right navigation to itself! Removed!`,

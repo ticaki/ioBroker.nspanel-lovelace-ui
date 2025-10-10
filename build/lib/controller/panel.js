@@ -267,6 +267,9 @@ class Panel extends import_library.BaseClass {
             }
           };
           let overrwriteNext = false;
+          if (!(navigation == null ? void 0 : navigation.prev) && !(navigation == null ? void 0 : navigation.next) && !(navigation == null ? void 0 : navigation.home) && !(navigation == null ? void 0 : navigation.parent)) {
+            navigation.home = "main";
+          }
           if (navigation.prev) {
             navigationEntry.left.single = navigation.prev;
             let index = options.navigation.findIndex((b) => b && b.name === navigation.prev);
