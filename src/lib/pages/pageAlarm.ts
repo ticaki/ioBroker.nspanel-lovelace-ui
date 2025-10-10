@@ -1,3 +1,4 @@
+import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
@@ -5,7 +6,7 @@ import { genericStateObjects } from '../const/definition';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import * as pages from '../types/pages';
-import type { IncomingEvent } from '../types/types';
+import type { IncomingEvent, nsPanelState } from '../types/types';
 
 const PageAlarmMessageDefault: pages.PageAlarmMessage = {
     event: 'entityUpd',
@@ -49,7 +50,7 @@ export class PageAlarm extends Page {
     private useStates = true;
     private alarmType: string = 'alarm';
     items: pages.PageBase['items'];
-
+    private approveId: string = '';
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         if (this.useStates) {
             await this.library.writedp(
@@ -107,6 +108,7 @@ export class PageAlarm extends Page {
         }
         this.minUpdateInterval = 500;
         this.neverDeactivateTrigger = true;
+        this.approveId = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}.approve`, false, false);
     }
 
     /**
@@ -121,6 +123,16 @@ export class PageAlarm extends Page {
      */
     async init(): Promise<void> {
         const config = structuredClone(this.config);
+        if (!(config?.card === 'cardAlarm' && config.data)) {
+            throw new Error('PageAlarm: invalid configuration');
+        }
+
+        await this.library.writedp(this.approveId, false, genericStateObjects.panel.panels.alarm.cardAlarm.approve);
+
+        config.data.approveState = {
+            type: 'triggered',
+            dp: `${this.adapter.namespace}.${this.approveId}`,
+        };
         // search states for mode auto
         const tempConfig: Partial<pages.cardAlarmDataItemOptions> =
             this.enums || this.dpInit
@@ -207,21 +219,13 @@ export class PageAlarm extends Page {
                 message.status4 = '';
             } else {
                 //const entity1 = await getValueEntryNumber(data.entity1);
-                message.button1 =
-                    (data.button1 && (await data.button1.getTranslatedString())) ??
-                    this.library.getTranslation('arm_away');
+                message.button1 = (data.button1 && (await data.button1.getTranslatedString())) ?? '';
                 message.status1 = message.button1 ? 'A1' : '';
-                message.button2 =
-                    (data.button2 && (await data.button2.getTranslatedString())) ??
-                    this.library.getTranslation('arm_home');
+                message.button2 = (data.button2 && (await data.button2.getTranslatedString())) ?? '';
                 message.status2 = message.button2 ? 'A2' : '';
-                message.button3 =
-                    (data.button3 && (await data.button3.getTranslatedString())) ??
-                    this.library.getTranslation('arm_night');
+                message.button3 = (data.button3 && (await data.button3.getTranslatedString())) ?? '';
                 message.status3 = message.button3 ? 'A3' : '';
-                message.button4 =
-                    (data.button4 && (await data.button4.getTranslatedString())) ??
-                    this.library.getTranslation('arm_vacation');
+                message.button4 = (data.button4 && (await data.button4.getTranslatedString())) ?? '';
                 message.status4 = message.button4 ? 'A4' : '';
             }
             if (this.status == 'armed') {
@@ -306,12 +310,23 @@ export class PageAlarm extends Page {
         );
     }
 
-    protected async onStateTrigger(id: string): Promise<void> {
-        if (this.items && this.items.card === 'cardAlarm') {
-            const approved = this.items.data && this.items.data.approved;
-            if (approved && approved.options.type === 'triggered' && approved.options.dp === id) {
+    async onStateChange(
+        id: string,
+        _state: {
+            old: nsPanelState;
+            new: nsPanelState;
+        },
+    ): Promise<void> {
+        if (
+            id &&
+            this.items?.card === 'cardAlarm' &&
+            id === this.items?.data?.approveState?.options?.dp &&
+            !_state.new.ack
+        ) {
+            const approved = this.items.data && (await this.items.data.approved?.getBoolean());
+            if (approved) {
                 await this.getStatus();
-                const val = await approved.getBoolean();
+                const val = _state.new.val;
                 if (val) {
                     if (this.status === 'pending') {
                         await this.setStatus('disarmed');
@@ -325,12 +340,18 @@ export class PageAlarm extends Page {
                         await this.setStatus('disarmed');
                     }
                 }
+                await this.adapter.setForeignStateAsync(id, !!val, true);
                 if (this.unload || this.adapter.unload) {
                     return;
                 }
+
                 this.adapter.setTimeout(() => this.update(), 50);
             }
         }
+    }
+
+    protected async onStateTrigger(_dp: string, _from: BaseTriggeredPage): Promise<void> {
+        // ignore
     }
     /**
      * Handle a button event coming from the panel.
@@ -349,7 +370,7 @@ export class PageAlarm extends Page {
         if (!this.items || this.items.card !== 'cardAlarm') {
             return;
         }
-        const approved = this.items.data && this.items.data.approved;
+        const approved = this.items.data && (await this.items.data.approved?.getBoolean());
 
         if (pages.isAlarmButtonEvent(button)) {
             await this.getStatus();

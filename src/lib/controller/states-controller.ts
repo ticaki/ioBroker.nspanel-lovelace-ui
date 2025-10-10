@@ -150,7 +150,7 @@ export class StatesControler extends BaseClass {
         change?: 'ts',
     ): Promise<void> {
         // 1) Eigener Namespace? → verboten
-        if (id.startsWith(this.adapter.namespace)) {
+        if (id.startsWith(this.adapter.namespace) && !(id.includes('.alarm.') && id.endsWith('.approve'))) {
             this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
             return;
         }
@@ -454,7 +454,8 @@ export class StatesControler extends BaseClass {
             };
             entry.state = state;
 
-            const isSystemOrAlias = dp.startsWith('0_userdata.0') || dp.startsWith('alias.0');
+            const isSystemOrAlias =
+                dp.startsWith('0_userdata.0') || dp.startsWith('alias.0') || dp.startsWith(this.adapter.namespace);
             const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
 
             if (mayTrigger) {

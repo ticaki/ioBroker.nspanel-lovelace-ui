@@ -65,6 +65,7 @@ class PageAlarm extends import_Page.Page {
   useStates = true;
   alarmType = "alarm";
   items;
+  approveId = "";
   async setMode(m) {
     if (this.useStates) {
       await this.library.writedp(
@@ -119,6 +120,7 @@ class PageAlarm extends import_Page.Page {
     }
     this.minUpdateInterval = 500;
     this.neverDeactivateTrigger = true;
+    this.approveId = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}.approve`, false, false);
   }
   /**
    * Initialize the alarm page.
@@ -133,6 +135,14 @@ class PageAlarm extends import_Page.Page {
   async init() {
     var _a, _b, _c, _d;
     const config = structuredClone(this.config);
+    if (!((config == null ? void 0 : config.card) === "cardAlarm" && config.data)) {
+      throw new Error("PageAlarm: invalid configuration");
+    }
+    await this.library.writedp(this.approveId, false, import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.approve);
+    config.data.approveState = {
+      type: "triggered",
+      dp: `${this.adapter.namespace}.${this.approveId}`
+    };
     const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
@@ -207,13 +217,13 @@ class PageAlarm extends import_Page.Page {
         message.button4 = "";
         message.status4 = "";
       } else {
-        message.button1 = (_b = data.button1 && await data.button1.getTranslatedString()) != null ? _b : this.library.getTranslation("arm_away");
+        message.button1 = (_b = data.button1 && await data.button1.getTranslatedString()) != null ? _b : "";
         message.status1 = message.button1 ? "A1" : "";
-        message.button2 = (_c = data.button2 && await data.button2.getTranslatedString()) != null ? _c : this.library.getTranslation("arm_home");
+        message.button2 = (_c = data.button2 && await data.button2.getTranslatedString()) != null ? _c : "";
         message.status2 = message.button2 ? "A2" : "";
-        message.button3 = (_d = data.button3 && await data.button3.getTranslatedString()) != null ? _d : this.library.getTranslation("arm_night");
+        message.button3 = (_d = data.button3 && await data.button3.getTranslatedString()) != null ? _d : "";
         message.status3 = message.button3 ? "A3" : "";
-        message.button4 = (_e = data.button4 && await data.button4.getTranslatedString()) != null ? _e : this.library.getTranslation("arm_vacation");
+        message.button4 = (_e = data.button4 && await data.button4.getTranslatedString()) != null ? _e : "";
         message.status4 = message.button4 ? "A4" : "";
       }
       if (this.status == "armed") {
@@ -291,12 +301,13 @@ class PageAlarm extends import_Page.Page {
       )
     );
   }
-  async onStateTrigger(id) {
-    if (this.items && this.items.card === "cardAlarm") {
-      const approved = this.items.data && this.items.data.approved;
-      if (approved && approved.options.type === "triggered" && approved.options.dp === id) {
+  async onStateChange(id, _state) {
+    var _a, _b, _c, _d, _e, _f;
+    if (id && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm" && id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp) && !_state.new.ack) {
+      const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
+      if (approved) {
         await this.getStatus();
-        const val = await approved.getBoolean();
+        const val = _state.new.val;
         if (val) {
           if (this.status === "pending") {
             await this.setStatus("disarmed");
@@ -310,12 +321,15 @@ class PageAlarm extends import_Page.Page {
             await this.setStatus("disarmed");
           }
         }
+        await this.adapter.setForeignStateAsync(id, !!val, true);
         if (this.unload || this.adapter.unload) {
           return;
         }
         this.adapter.setTimeout(() => this.update(), 50);
       }
     }
+  }
+  async onStateTrigger(_dp, _from) {
   }
   /**
    * Handle a button event coming from the panel.
@@ -329,13 +343,13 @@ class PageAlarm extends import_Page.Page {
    * @returns Promise that resolves after the event has been handled
    */
   async onButtonEvent(_event) {
-    var _a;
+    var _a, _b;
     const button = _event.action;
     const value = _event.opt;
     if (!this.items || this.items.card !== "cardAlarm") {
       return;
     }
-    const approved = this.items.data && this.items.data.approved;
+    const approved = this.items.data && await ((_a = this.items.data.approved) == null ? void 0 : _a.getBoolean());
     if (pages.isAlarmButtonEvent(button)) {
       await this.getStatus();
       if (this.status === "triggered") {
@@ -397,7 +411,7 @@ class PageAlarm extends import_Page.Page {
         case "U1": {
           const entry = this.items;
           const item = entry.data;
-          const value2 = (_a = item.setNavi && await item.setNavi.getString()) != null ? _a : null;
+          const value2 = (_b = item.setNavi && await item.setNavi.getString()) != null ? _b : null;
           if (value2 !== null) {
             await this.basePanel.navigation.setTargetPageByName(value2);
             break;

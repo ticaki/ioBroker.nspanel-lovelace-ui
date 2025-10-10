@@ -124,7 +124,7 @@ class StatesControler extends import_library.BaseClass {
    * @param change    optional: 'ts' → löse auch ohne Wert-/Ack-Änderung (Zeitstempel)
    */
   async setTrigger(id, from, internal = false, trigger = true, change) {
-    if (id.startsWith(this.adapter.namespace)) {
+    if (id.startsWith(this.adapter.namespace) && !(id.includes(".alarm.") && id.endsWith(".approve"))) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
       return;
     }
@@ -393,7 +393,7 @@ class StatesControler extends import_library.BaseClass {
         lc: entry.state.lc
       };
       entry.state = state;
-      const isSystemOrAlias = dp.startsWith("0_userdata.0") || dp.startsWith("alias.0");
+      const isSystemOrAlias = dp.startsWith("0_userdata.0") || dp.startsWith("alias.0") || dp.startsWith(this.adapter.namespace);
       const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
       if (mayTrigger) {
         const to = entry.to;

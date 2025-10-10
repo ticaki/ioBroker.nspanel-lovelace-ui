@@ -40,14 +40,17 @@ __export(pages_exports, {
   stateRoleArray: () => stateRoleArray
 });
 module.exports = __toCommonJS(pages_exports);
-function isCardEntitiesType(F) {
-  return ["cardEntities", "cardSchedule"].indexOf(F) !== -1;
+const CARD_ENTITIES_TYPES = ["cardEntities", "cardSchedule"];
+const CARD_GRID_TYPES = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2", "cardMedia"];
+const CARD_MENU_HALF_PAGE_SCROLL_TYPES = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"];
+function isCardEntitiesType(value) {
+  return typeof value === "string" && CARD_ENTITIES_TYPES.includes(value);
 }
-function isCardGridType(F) {
-  return ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2", "cardMedia"].indexOf(F) !== -1;
+function isCardGridType(value) {
+  return typeof value === "string" && CARD_GRID_TYPES.includes(value);
 }
-function isCardMenuHalfPageScrollType(F) {
-  return ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"].indexOf(F) !== -1;
+function isCardMenuHalfPageScrollType(value) {
+  return typeof value === "string" && CARD_MENU_HALF_PAGE_SCROLL_TYPES.includes(value);
 }
 function isCardMenuRole(F) {
   return isCardEntitiesType(F) || isCardGridType(F);
@@ -73,48 +76,18 @@ function isScreenSaverCardType(F) {
   if (typeof F !== "string") {
     return false;
   }
-  switch (F) {
-    case "screensaver":
-    case "screensaver2":
-    case "screensaver3":
-      return true;
-    default:
-      console.info(`${F} is not isScreenSaverCardType!`);
-      return false;
-  }
+  return ["screensaver", "screensaver2", "screensaver3"].includes(F);
 }
 const screenSaverModeArray = arrayOfAllScreenSaverMode(["standard", "advanced", "alternate", "easyview"]);
 function isScreenSaverMode(F) {
   if (typeof F !== "string") {
     return false;
   }
-  switch (F) {
-    case "standard":
-    case "advanced":
-    case "alternate":
-    case "easyview":
-      return true;
-    default:
-      console.info(`${F} is not isScreenSaverMode!`);
-      return false;
-  }
+  return ["standard", "advanced", "alternate", "easyview"].includes(F);
 }
-function isScreenSaverModeAsNumber(F) {
-  if (typeof F !== "number") {
-    return false;
-  }
-  const N = F;
-  switch (N) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-      return true;
-    default:
-      exhaustiveCheck(N);
-      console.info(`${F} is not isScreenSaverModeAsNumber!`);
-      return false;
-  }
+const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3];
+function isScreenSaverModeAsNumber(value) {
+  return typeof value === "number" && SCREENSAVER_MODE_NUMBERS.includes(value);
 }
 const stateRoleArray = arrayOfAllStateRole([
   "button",
@@ -240,97 +213,71 @@ const stateRoleArray = arrayOfAllStateRole([
   ""
 ]);
 function isStateRole(F) {
-  switch (F) {
-    case "button.play":
-    case "button.pause":
-    case "button.next":
-    case "button.prev":
-    case "button.stop":
-    case "button.volume.up":
-    case "button.volume.down":
-    case "media.seek":
-    case "media.mode.shuffle":
-    case "media.mode.repeat":
-    case "media.state":
-    case "media.artist":
-    case "media.album":
-    case "media.title":
-    case "media.duration":
-    case "media.elapsed.text":
-    case "media.elapsed":
-    case "media.mute":
-    case "level.volume":
-    case "media.playlist":
-      return true;
-    default:
-      return true;
-  }
+  return true;
 }
-function isButtonActionType(F) {
-  switch (F) {
-    case "bExit":
-    case "bUp":
-    case "bNext":
-    case "bSubNext":
-    case "bPrev":
-    case "bSubPrev":
-    case "bHome":
-    case "notifyAction":
-    case "OnOff":
-    case "button":
-    case "up":
-    case "stop":
-    case "down":
-    case "positionSlider":
-    case "tiltOpen":
-    case "tiltStop":
-    case "tiltSlider":
-    case "tiltClose":
-    case "brightnessSlider":
-    case "colorTempSlider":
-    case "colorWheel":
-    case "tempUpd":
-    case "tempUpdHighLow":
-    case "media-back":
-    case "media-pause":
-    case "media-next":
-    case "media-shuffle":
-    case "volumeSlider":
-    case "mode-speakerlist":
-    case "mode-playlist":
-    case "mode-tracklist":
-    case "mode-repeat":
-    case "mode-equalizer":
-    case "mode-seek":
-    case "mode-crossfade":
-    case "mode-favorites":
-    case "mode-insel":
-    case "media-OnOff":
-    case "timer-start":
-    case "timer-pause":
-    case "timer-cancle":
-    case "timer-finish":
-    case "hvac_action":
-    case "mode-modus1":
-    case "mode-modus2":
-    case "mode-modus3":
-    case "number-set":
-    case "mode-preset_modes":
-    case "A1":
-    case "A2":
-    case "A3":
-    case "A4":
-    case "D1":
-    case "U1":
-    case "eu":
-      return true;
-    default:
-      console.info(`${F} is not isButtonActionType!`);
-      return false;
-  }
+const BUTTON_ACTION_TYPES = /* @__PURE__ */ new Set([
+  "bExit",
+  "bUp",
+  "bNext",
+  "bSubNext",
+  "bPrev",
+  "bSubPrev",
+  "bHome",
+  "notifyAction",
+  "OnOff",
+  "button",
+  "up",
+  "stop",
+  "down",
+  "positionSlider",
+  "tiltOpen",
+  "tiltStop",
+  "tiltSlider",
+  "tiltClose",
+  "brightnessSlider",
+  "colorTempSlider",
+  "colorWheel",
+  "tempUpd",
+  "tempUpdHighLow",
+  "media-back",
+  "media-pause",
+  "media-next",
+  "media-shuffle",
+  "volumeSlider",
+  "mode-speakerlist",
+  "mode-playlist",
+  "mode-tracklist",
+  "mode-repeat",
+  "mode-equalizer",
+  "mode-seek",
+  "mode-crossfade",
+  "mode-favorites",
+  "mode-insel",
+  "media-OnOff",
+  "timer-start",
+  "timer-pause",
+  "timer-cancle",
+  "timer-finish",
+  "hvac_action",
+  "mode-modus1",
+  "mode-modus2",
+  "mode-modus3",
+  "number-set",
+  "mode-preset_modes",
+  "A1",
+  "A2",
+  "A3",
+  "A4",
+  "D1",
+  "U1",
+  "eu"
+]);
+function isButtonActionType(value) {
+  return typeof value === "string" && BUTTON_ACTION_TYPES.has(value);
 }
-function isAlarmButtonEvent(F) {
-  return ["A1", "A2", "A3", "A4", "D1", "U1"].indexOf(F) !== -1;
+const ALARM_BUTTON_EVENTS = ["A1", "A2", "A3", "A4", "D1", "U1", ""];
+function isAlarmButtonEvent(value) {
+  return typeof value === "string" && ALARM_BUTTON_EVENTS.includes(value);
 }
 function isClosingBehavior(F) {
   return ["both", "yes", "no", "none"].indexOf(F) !== -1;

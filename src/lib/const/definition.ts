@@ -78,6 +78,7 @@ export const genericStateObjects: {
                 cardAlarm: customChannelType & {
                     status: ioBroker.StateObject;
                     mode: ioBroker.StateObject;
+                    approve: ioBroker.StateObject;
                 };
             };
         };
@@ -1350,6 +1351,18 @@ export const genericStateObjects: {
                         type: 'channel',
                         common: {
                             name: 'cardAlarm',
+                        },
+                        native: {},
+                    },
+                    approve: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.approve',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
                         },
                         native: {},
                     },

@@ -1323,6 +1323,18 @@ const genericStateObjects = {
             },
             native: {}
           },
+          approve: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.approve",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true
+            },
+            native: {}
+          },
           status: {
             _id: "",
             type: "state",

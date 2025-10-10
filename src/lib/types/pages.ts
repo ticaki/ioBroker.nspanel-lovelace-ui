@@ -13,14 +13,21 @@ export type cardGridTypes = Extract<
     'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2' | 'cardMedia'
 >;
 
-export function isCardEntitiesType(F: any): F is cardEntitiesTypes {
-    return ['cardEntities', 'cardSchedule'].indexOf(F) !== -1;
+// Optimierte Type Guards mit const assertions
+const CARD_ENTITIES_TYPES = ['cardEntities', 'cardSchedule'] as const;
+const CARD_GRID_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2', 'cardMedia'] as const;
+const CARD_MENU_HALF_PAGE_SCROLL_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'] as const;
+
+export function isCardEntitiesType(value: unknown): value is cardEntitiesTypes {
+    return typeof value === 'string' && CARD_ENTITIES_TYPES.includes(value as any);
 }
-export function isCardGridType(F: any): F is cardGridTypes {
-    return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2', 'cardMedia'].indexOf(F) !== -1;
+
+export function isCardGridType(value: unknown): value is cardGridTypes {
+    return typeof value === 'string' && CARD_GRID_TYPES.includes(value as any);
 }
-export function isCardMenuHalfPageScrollType(F: any): F is cardGridTypes {
-    return ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'].indexOf(F) !== -1;
+
+export function isCardMenuHalfPageScrollType(value: unknown): value is cardGridTypes {
+    return typeof value === 'string' && CARD_MENU_HALF_PAGE_SCROLL_TYPES.includes(value as any);
 }
 
 export function isCardMenuRole(F: any): F is cardGridTypes | cardEntitiesTypes {
@@ -57,20 +64,12 @@ export const screenSaverCardArray: screenSaverCardType[] = arrayOfAllScreenSaver
     'screensaver2',
     'screensaver3',
 ]);
-export function isScreenSaverCardType(F: any): F is screenSaverCardType {
+export function isScreenSaverCardType(F: string): F is screenSaverCardType {
     if (typeof F !== 'string') {
         return false;
     }
 
-    switch (F) {
-        case 'screensaver':
-        case 'screensaver2':
-        case 'screensaver3':
-            return true;
-        default:
-            console.info(`${F} is not isScreenSaverCardType!`);
-            return false;
-    }
+    return ['screensaver', 'screensaver2', 'screensaver3'].includes(F);
 }
 
 export const screenSaverModeArray = arrayOfAllScreenSaverMode(['standard', 'advanced', 'alternate', 'easyview']);
@@ -79,33 +78,13 @@ export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
         return false;
     }
 
-    switch (F) {
-        case 'standard':
-        case 'advanced':
-        case 'alternate':
-        case 'easyview':
-            return true;
-        default:
-            console.info(`${F} is not isScreenSaverMode!`);
-            return false;
-    }
+    return ['standard', 'advanced', 'alternate', 'easyview'].includes(F);
 }
-export function isScreenSaverModeAsNumber(F: any): F is Types.ScreensaverModeTypeAsNumber {
-    if (typeof F !== 'number') {
-        return false;
-    }
-    const N = F as Types.ScreensaverModeTypeAsNumber;
-    switch (N) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-            return true;
-        default:
-            exhaustiveCheck(N);
-            console.info(`${F} is not isScreenSaverModeAsNumber!`);
-            return false;
-    }
+// Optimierter Type Guard für ScreensaverMode Numbers
+const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3] as const;
+
+export function isScreenSaverModeAsNumber(value: unknown): value is Types.ScreensaverModeTypeAsNumber {
+    return typeof value === 'number' && SCREENSAVER_MODE_NUMBERS.includes(value as any);
 }
 
 /**
@@ -414,94 +393,70 @@ export type DeviceRole =
     | CardRole;
 
 export function isStateRole(F: string): F is StateRole {
-    switch (F as StateRole) {
-        case 'button.play':
-        case 'button.pause':
-        case 'button.next':
-        case 'button.prev':
-        case 'button.stop':
-        case 'button.volume.up':
-        case 'button.volume.down':
-        case 'media.seek':
-        case 'media.mode.shuffle':
-        case 'media.mode.repeat':
-        case 'media.state':
-        case 'media.artist':
-        case 'media.album':
-        case 'media.title':
-        case 'media.duration':
-        case 'media.elapsed.text':
-        case 'media.elapsed':
-        case 'media.mute':
-        case 'level.volume':
-        case 'media.playlist':
-            return true;
-        default:
-            return true;
-    }
+    // Alle StateRole Werte sind gültig - triviale Type Guard
+    return true;
 }
-export function isButtonActionType(F: string): F is Types.ButtonActionType {
-    switch (F) {
-        case 'bExit':
-        case 'bUp':
-        case 'bNext':
-        case 'bSubNext':
-        case 'bPrev':
-        case 'bSubPrev':
-        case 'bHome':
-        case 'notifyAction':
-        case 'OnOff':
-        case 'button':
-        case 'up':
-        case 'stop':
-        case 'down':
-        case 'positionSlider':
-        case 'tiltOpen':
-        case 'tiltStop':
-        case 'tiltSlider':
-        case 'tiltClose':
-        case 'brightnessSlider':
-        case 'colorTempSlider':
-        case 'colorWheel':
-        case 'tempUpd':
-        case 'tempUpdHighLow':
-        case 'media-back':
-        case 'media-pause':
-        case 'media-next':
-        case 'media-shuffle':
-        case 'volumeSlider':
-        case 'mode-speakerlist':
-        case 'mode-playlist':
-        case 'mode-tracklist':
-        case 'mode-repeat':
-        case 'mode-equalizer':
-        case 'mode-seek':
-        case 'mode-crossfade':
-        case 'mode-favorites':
-        case 'mode-insel':
-        case 'media-OnOff':
-        case 'timer-start':
-        case 'timer-pause':
-        case 'timer-cancle':
-        case 'timer-finish':
-        case 'hvac_action':
-        case 'mode-modus1':
-        case 'mode-modus2':
-        case 'mode-modus3':
-        case 'number-set':
-        case 'mode-preset_modes':
-        case 'A1':
-        case 'A2':
-        case 'A3':
-        case 'A4':
-        case 'D1':
-        case 'U1':
-        case 'eu':
-            return true;
-        default:
-            console.info(`${F} is not isButtonActionType!`);
-            return false;
-    }
+// Optimierte Type Guards mit Sets für bessere Performance
+const BUTTON_ACTION_TYPES = new Set([
+    'bExit',
+    'bUp',
+    'bNext',
+    'bSubNext',
+    'bPrev',
+    'bSubPrev',
+    'bHome',
+    'notifyAction',
+    'OnOff',
+    'button',
+    'up',
+    'stop',
+    'down',
+    'positionSlider',
+    'tiltOpen',
+    'tiltStop',
+    'tiltSlider',
+    'tiltClose',
+    'brightnessSlider',
+    'colorTempSlider',
+    'colorWheel',
+    'tempUpd',
+    'tempUpdHighLow',
+    'media-back',
+    'media-pause',
+    'media-next',
+    'media-shuffle',
+    'volumeSlider',
+    'mode-speakerlist',
+    'mode-playlist',
+    'mode-tracklist',
+    'mode-repeat',
+    'mode-equalizer',
+    'mode-seek',
+    'mode-crossfade',
+    'mode-favorites',
+    'mode-insel',
+    'media-OnOff',
+    'timer-start',
+    'timer-pause',
+    'timer-cancle',
+    'timer-finish',
+    'hvac_action',
+    'mode-modus1',
+    'mode-modus2',
+    'mode-modus3',
+    'number-set',
+    'mode-preset_modes',
+    'A1',
+    'A2',
+    'A3',
+    'A4',
+    'D1',
+    'U1',
+    'eu',
+] as const);
+
+export function isButtonActionType(value: unknown): value is Types.ButtonActionType {
+    return typeof value === 'string' && BUTTON_ACTION_TYPES.has(value as any);
 }
 
 export type PageBaseConfig = PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
@@ -538,11 +493,14 @@ export type PageBaseConfigTemplate =
           items: undefined;
       };
 
-export type AlarmButtonEvents = 'A1' | 'A2' | 'A3' | 'A4' | 'D1' | 'U1' | '';
+// Optimierte Alarm Types mit const assertions
+const ALARM_BUTTON_EVENTS = ['A1', 'A2', 'A3', 'A4', 'D1', 'U1', ''] as const;
+
+export type AlarmButtonEvents = (typeof ALARM_BUTTON_EVENTS)[number];
 export type AlarmStates = 'disarmed' | 'armed' | 'arming' | 'pending' | 'triggered';
 
-export function isAlarmButtonEvent(F: any): F is AlarmButtonEvents {
-    return ['A1', 'A2', 'A3', 'A4', 'D1', 'U1'].indexOf(F) !== -1;
+export function isAlarmButtonEvent(value: unknown): value is AlarmButtonEvents {
+    return typeof value === 'string' && ALARM_BUTTON_EVENTS.includes(value as any);
 }
 
 export type PageMenuConfig = (
@@ -721,6 +679,7 @@ type PageAlarmConfig = {
     icon: typePageItem.IconEntryType;
     pin: number;
     approved?: boolean;
+    approveState: boolean;
     setNavi?: string;
 };
 export type cardAlarmDataItemOptions = {
@@ -859,7 +818,10 @@ export type cardMediaDataItems = {
 
     data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined>;
 };
+
+// Screensaver Types - optimiert mit const assertion
 export type screenSaverCardType = 'screensaver' | 'screensaver2' | 'screensaver3';
+
 export type screensaverDataItemOptions = {
     card: Extends<PageTypeCards, screenSaverCardType>;
     mode: Types.ScreensaverModeType;
