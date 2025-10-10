@@ -2475,7 +2475,14 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'timeTable': {
-                throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
+                itemConfig = {
+                    template: 'button.alias.fahrplan.departure',
+                    dpInit: item.id,
+                    type: 'button',
+                    data: {
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
                 break;
             }
             default:
