@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "news": {
+      "0.6.1": {
+        "en": "PageUnlock: Config updated — fixed issue where some settings were not applied correctly.\nIconSelect showed a too short list. Fixed.\nAdmin: Added responsive layout for Admin PageUnlock (mobile devices)",
+        "de": "PageUnlock: Config aktualisiert — Problem behoben, bei dem einige Einstellungen nicht korrekt angewendet wurden.\nIconSelect zeigte eine zu kurze Liste. Behoben.\nAdmin: Ansprechlayout für Admin PageUnlock (mobile Geräte) hinzugefügt",
+        "ru": "PageUnlock: Config updated — исправленная проблема, при которой некоторые настройки не были применены правильно.\nIconSelect показал слишком короткий список. Исправлено.\nAdmin: Добавлен адаптивный макет для Admin PageUnlock (мобильные устройства)",
+        "pt": "Desbloquear página: Config updated — problema fixo onde algumas configurações não foram aplicadas corretamente.\nO IconSelect mostrou uma lista muito curta. Consertado.\nAdmin: Adicionado layout responsivo para Admin PageUnlock (dispositivos móveis)",
+        "nl": "PageUnlock: Configureren van een aangepast probleem waarbij sommige instellingen niet correct werden toegepast.\nIconSelect toonde een te korte lijst. Vast.\nBeheerder: Toegevoegd responsieve lay-out voor Admin PageUnlock (mobiele apparaten)",
+        "fr": "Déverrouillage de la page : Config mis à jour — problème corrigé où certains paramètres n'ont pas été appliqués correctement.\nIconSelect a montré une liste trop courte. Corrigé.\nAdmin: Ajout de la mise en page réactive pour Admin PageUnlock (appareils mobiles)",
+        "it": "PageUnlock: Config aggiornato — problema fisso in cui alcune impostazioni non sono state applicate correttamente.\nIconSelect ha mostrato una lista troppo breve. Risolto.\nAdmin: Aggiunto il layout reattivo per Admin PageUnlock (i dispositivi mobili)",
+        "es": "PageUnlock: Config updated — fixed issue where some settings were not applied properly.\nIconSelect mostró una lista muy corta. Arreglado.\nAdmin: Diseño receptivo añadido para Admin PageUnlock (dispositivos móviles)",
+        "pl": "PageUnlock: Aktualizacja konfiguracji - stałe wydanie, w którym niektóre ustawienia nie zostały prawidłowo zastosowane.\nIconSelect pokazał zbyt krótką listę. Naprawione.\nAdmin: Dodano układ reagujący dla Admin PageUnlock (urządzenia mobilne)",
+        "uk": "СторінкаРозблокування: Налаштуйте оновлений — виправлений номер, де деякі налаштування не були застосовані належним чином.\nІкона Селекція показала занадто короткий список. Фіксований.\nАдміністратор: Додано чуйний макет для Admin PageUnlock (мобільні пристрої)",
+        "zh-cn": "页面解锁 : 配置更新——一些设置应用不当的固定问题.\n图标选择显示列表太短 。 固定着.\n管理员: Admin PageUnlock (移动设备) 添加的响应布局"
+      },
       "0.6.0": {
         "en": "Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)\nAdmin: Added Unlock/Alarm editor to admin UI (headline, PIN, buttons, setNavi, duplicate-name check) - first admin only config for a page\nAdmin: Added navigation flow editor to admin UI (expert mode must be enabled)\nChart scale: rounded to nearest tens\nPagePower: improved icon selection in admin\nGerman documentation for screensaver notification features `isDismissiblePerEvent` and `dismissibleIDGlobal` added to `doc/de/screensaver.md`",
         "de": "Farbschema-Schlüssel dokumentiert (`doc/de/colorTheme.md`, englische Version `doc/en/colorTheme.md`)\nAdmin: Unlock/Alarm-Editor zur Admin-Oberfläche hinzugefügt (Überschrift, PIN, Buttons, setNavi, Prüfung auf doppelte Namen) – erste Admin-only-Konfiguration für eine Seite\nAdmin: Navigationsfluss-Editor zur Admin-Oberfläche hinzugefügt (Expertenmodus muss aktiviert sein)\nDiagrammskalierung: auf nächste Zehner gerundet\nPagePower: verbesserte Symbolauswahl in der Admin-Oberfläche\nDeutsche Dokumentation der Screensaver-Benachrichtigungsfunktionen `isDismissiblePerEvent` und `dismissibleIDGlobal` zu `doc/de/screensaver.md` hinzugefügt",
@@ -80,19 +93,6 @@
         "pl": "openweathermap dodany jako standardowy adapter pogodowy\nNiektóre korekty wynikające z aktualizacji oprogramowania firmowego\nPewne ulepszenia",
         "uk": "openweathermap додано як стандартний адаптер погоди\nДеякі налаштування через оновлену прошивку\nДеякі поліпшення",
         "zh-cn": "添加为标准天气适配器\n由于更新固件而作的一些调整\n一些改进"
-      },
-      "0.2.2": {
-        "en": "improved PageQR \nBREAKING: alias def changed\nactual-set handling changed\npopupFan added",
-        "de": "verbesserte PageQR\nBREAKING: Alias def geändert\ntatsächliche handhabung geändert\npopup Fan hinzugefügt",
-        "ru": "улучшенный PageQR\nОригинальное название: Alias Def Changed\nфактическая обработка изменилась\nвсплывающий Фан добавил",
-        "pt": "pageQR melhorado\nREPARTIÇÃO: alias def modified\no tratamento real foi alterado\npopup Fã adicionado",
-        "nl": "verbeterde PageQR\nBreaking: alias def gewijzigd\nwerkelijke ingestelde behandeling gewijzigd\npopup Ventilator toegevoegd",
-        "fr": "amélioration de la pageQR\nBREAKING: alias def changed\nchangement de gestion réelle\npopup Eventail ajouté",
-        "it": "migliorato PageQR\nBREAKING: alias def cambiato\nmovimentazione a set effettivo cambiata\npopup Fan aggiunto",
-        "es": "pageQR mejorado\nBREAKING: alias def changed\ncambios en el manejo real\npopup Fan añadido",
-        "pl": "poprawiony PageQR\nBREAKING: alias def zmienił\nzmiana obsługi zestawu aktualnego\npopup Dodano wentylator",
-        "uk": "покращений PageQR\nБРЕАКІНГ: псевдонім змінився\nзмінено фактичне обслуговування\nмастурбація Вентилятор додано",
-        "zh-cn": "已改进的页面QR\n破解:别名更改\n已更改实际处理\n弹出 风扇加了"
       }
     },
     "titleLang": {
