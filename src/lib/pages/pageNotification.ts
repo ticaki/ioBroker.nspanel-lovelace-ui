@@ -15,7 +15,7 @@ import type { PageItem } from './pageItem';
 
 // siehe typ PopupNotificationValue in src/lib/types/types.ts
 export class PageNotify extends Page {
-    config: pages.PageBaseConfig['config'];
+    config: pages.PageBase['config'];
     private lastpage: Page[] = [];
     private step: number = 0;
     private headlinePos: number = 0;
@@ -23,7 +23,7 @@ export class PageNotify extends Page {
     tempItem: PageItem | undefined;
     items: pages.cardNotifyDataItems | pages.cardNotify2DataItems | undefined;
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
         this.config = options.config;
         if (options.items && (isCardNotifyDataItems(options.items) || isCardNotify2DataItems(options.items))) {

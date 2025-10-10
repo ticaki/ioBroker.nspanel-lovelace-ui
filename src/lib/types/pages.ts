@@ -3,8 +3,15 @@ import type { RGB } from '../const/Color';
 import { type PageItem } from '../pages/pageItem';
 import type * as typePageItem from './type-pageItem';
 import type * as Types from './types';
+import type { AdminCardTypes } from './adminShareConfig';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker';
+
+export type cardEntitiesTypes = Extract<AdminCardTypes, 'cardEntities' | 'cardSchedule'>;
+export type cardGridTypes = Extract<
+    AdminCardTypes,
+    'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2' | 'cardMedia'
+>;
 
 export function isCardEntitiesType(F: any): F is cardEntitiesTypes {
     return ['cardEntities', 'cardSchedule'].indexOf(F) !== -1;
@@ -27,27 +34,15 @@ export function isPageMenuConfig(F: any): F is PageMenuConfig {
     }
     return isCardMenuRole(F.card);
 }
-export type cardEntitiesTypes = 'cardEntities' | 'cardSchedule';
-export type cardGridTypes = 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2' | 'cardMedia';
+
 export type PageTypeCards =
-    | cardEntitiesTypes
-    | cardGridTypes
-    | 'cardChart'
-    | 'cardLChart'
-    | 'cardThermo'
-    | 'cardMedia'
+    | AdminCardTypes
     | 'cardUnlock'
-    | 'cardQR'
-    | 'cardAlarm'
-    | 'cardPower'
     | 'screensaver'
     | 'screensaver2'
     | 'screensaver3'
     //| 'cardBurnRec'
-    | 'cardItemSpecial' // besonders, interne Card zum verwalten von pageItems
-    | 'popupNotify'
-    | 'popupNotify2'
-    | 'cardSchedule';
+    | 'cardItemSpecial'; // besonders, interne Card zum verwalten von pageItems
 
 export const arrayOfAll =
     <T>() =>
@@ -509,6 +504,15 @@ export function isButtonActionType(F: string): F is Types.ButtonActionType {
     }
 }
 
+export type PageBaseConfig = PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
+export type allCards =
+    | AdminCardTypes
+    | 'cardUnlock'
+    | 'screensaver'
+    | 'screensaver2'
+    | 'screensaver3'
+    | 'cardItemSpecial';
+
 export type PageBaseConfigTemplate =
     | {
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3'>;
@@ -518,7 +522,7 @@ export type PageBaseConfigTemplate =
           pageItems: typePageItem.PageItemDataItemsOptions[];
 
           //    mediaNamespace: string;
-          config: undefined | PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
+          config: undefined | PageBaseConfig;
           items: undefined;
       }
     | {
@@ -566,7 +570,7 @@ export type PageOthersConfigs =
     | cardQRDataItemOptions
     | cardChartDataItemOptions;
 
-export type PageBaseConfig = (
+export type PageBase = (
     | (
           | {
                 //    type: PlayerType;
@@ -660,7 +664,7 @@ export type PopupNotificationVal =
     | undefined;
 
 export type cardNotifyDataItemOptions = {
-    card: 'popupNotify';
+    card: Extract<AdminCardTypes, 'popupNotify'>;
     data: ChangeTypeOfKeys<PageNotifyConfig, Types.DataItemsOptions | undefined>;
 };
 
@@ -669,7 +673,7 @@ export function isClosingBehavior(F: any): F is closingBehaviour {
     return ['both', 'yes', 'no', 'none'].indexOf(F) !== -1;
 }
 export type cardNotifyDataItems = {
-    card: 'popupNotify';
+    card: Extract<AdminCardTypes, 'popupNotify'>;
     data: ChangeTypeOfKeys<PageNotifyConfig, dataItem.Dataitem | undefined>;
 };
 
@@ -679,11 +683,11 @@ type PageNotify2Config = {
 } & PageNotifyConfig;
 
 export type cardNotify2DataItemOptions = {
-    card: 'popupNotify2';
+    card: Extract<AdminCardTypes, 'popupNotify2'>;
     data: ChangeTypeOfKeys<PageNotify2Config, Types.DataItemsOptions | undefined>;
 };
 export type cardNotify2DataItems = {
-    card: 'popupNotify2';
+    card: Extract<AdminCardTypes, 'popupNotify2'>;
     data: ChangeTypeOfKeys<PageNotify2Config, dataItem.Dataitem | undefined>;
 };
 
@@ -697,12 +701,12 @@ type PageChartConfig = {
 };
 
 export type cardChartDataItemOptions = {
-    card: 'cardChart' | 'cardLChart';
+    card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
     index: number;
     data: ChangeTypeOfKeys<PageChartConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardChartDataItems = {
-    card: 'cardChart' | 'cardLChart';
+    card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
     data: ChangeTypeOfKeys<PageChartConfig, dataItem.Dataitem | undefined>;
 };
 
@@ -720,11 +724,11 @@ type PageAlarmConfig = {
     setNavi?: string;
 };
 export type cardAlarmDataItemOptions = {
-    card: 'cardAlarm';
+    card: Extract<AdminCardTypes, 'cardAlarm'>;
     data: ChangeTypeOfKeys<PageAlarmConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardAlarmDataItems = {
-    card: 'cardAlarm';
+    card: Extract<AdminCardTypes, 'cardAlarm'>;
     data: ChangeTypeOfKeys<PageAlarmConfig, dataItem.Dataitem | undefined>;
 };
 
@@ -733,12 +737,12 @@ type PageQRBaseConfig = {
     entity1?: string;
 };
 export type cardQRDataItemOptions = {
-    card: 'cardQR';
+    card: Extract<AdminCardTypes, 'cardQR'>;
     index: number;
     data: ChangeTypeOfKeys<PageQRBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardQRDataItems = {
-    card: 'cardQR';
+    card: Extract<AdminCardTypes, 'cardQR'>;
     data: ChangeTypeOfKeys<PageQRBaseConfig, dataItem.Dataitem | undefined>;
 };
 export type QRButtonEvent = 'OnOff';
@@ -747,12 +751,12 @@ export function isQRButtonEvent(F: any): F is QRButtonEvent {
 }
 
 export type cardPowerDataItemOptions = {
-    card: 'cardPower';
+    card: Extract<AdminCardTypes, 'cardPower'>;
     index: number;
     data: ChangeTypeOfKeys<PageGridPowerConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardPowerDataItems = {
-    card: 'cardPower';
+    card: Extract<AdminCardTypes, 'cardPower'>;
     data: ChangeTypeOfKeys<PageGridPowerConfig, dataItem.Dataitem | undefined>;
 };
 
@@ -831,11 +835,11 @@ type PageMenuBaseConfig = {
     );
 
 export type cardThermoDataItemOptions = {
-    card: 'cardThermo';
+    card: Extract<AdminCardTypes, 'cardThermo'>;
     data: ChangeTypeOfKeys<PageThermoBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardThermoDataItems = {
-    card: 'cardThermo';
+    card: Extract<AdminCardTypes, 'cardThermo'>;
     data: ChangeTypeOfKeys<PageThermoBaseConfig, dataItem.Dataitem | undefined>;
 };
 

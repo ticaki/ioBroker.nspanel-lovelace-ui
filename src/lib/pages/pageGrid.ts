@@ -16,9 +16,9 @@ const PageGrid2MessageDefault: pages.PageGridMessage = {
 };
 export class PageGrid extends PageMenu {
     config: pages.cardGridDataItemOptions;
-    items: pages.PageBaseConfig['items'];
+    items: pages.PageBase['items'];
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
         if (
             !(

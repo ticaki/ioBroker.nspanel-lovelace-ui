@@ -1,3 +1,25 @@
+// Zentrale Definition aller verfügbaren Card-Typen
+export type AdminCardTypes =
+    // Grid Cards
+    | 'cardGrid'
+    | 'cardGrid2'
+    | 'cardGrid3'
+    | 'cardThermo2'
+    | 'cardMedia'
+    // Entities Cards
+    | 'cardEntities'
+    | 'cardSchedule'
+    // Standalone Cards
+    | 'cardAlarm'
+    | 'cardQR'
+    | 'cardPower'
+    | 'cardChart'
+    | 'cardLChart'
+    | 'cardThermo'
+    // Popup Cards
+    | 'popupNotify'
+    | 'popupNotify2';
+
 // Typ für pageInfo bei PageMenuConfig (siehe Panel)
 export interface PageMenuConfigInfo {
     card: string;
@@ -53,6 +75,7 @@ export interface PanelListEntry {
 
 // Shared types for admin UI (typo: file name uses 'Shard')
 export type UnlockEntry = {
+    card: Extract<AdminCardTypes, 'cardAlarm'>; // 'cardUnlock' | 'cardAlarm'
     alarmType?: string; // e.g. 'alarm' | 'unlock'
     headline: string;
     button1: string;
@@ -74,7 +97,6 @@ export type UnlockEntries = UnlockEntry[];
 export type NavigationAssignment = {
     topic: string;
 
-    active: boolean;
     navigation?: {
         next?: string;
         prev?: string;

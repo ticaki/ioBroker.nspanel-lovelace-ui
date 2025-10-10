@@ -120,6 +120,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
             }
             // create a default UnlockEntry with provided uniqueName
             const newEntry: UnlockEntry = {
+                card: 'cardAlarm',
                 uniqueName: name,
                 headline: name,
                 button1: '',

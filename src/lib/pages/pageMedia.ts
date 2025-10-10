@@ -60,7 +60,7 @@ export class PageMedia extends PageMenu {
         return this.currentItem?.logoItem;
     }
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
         this.config = options.config as pages.cardMediaDataItemOptions;
         this.currentPlayer = this.config.ident ?? '';
@@ -149,7 +149,7 @@ export class PageMedia extends PageMenu {
     ): Promise<pages.cardMediaDataItems> {
         const config = structuredClone(c);
         // search states for mode auto
-        const tempConfig: Partial<pages.PageBaseConfig['config']> =
+        const tempConfig: Partial<pages.PageBase['config']> =
             enums || dpInit
                 ? await this.basePanel.statesControler.getDataItemsFromAuto(dpInit, config, undefined, enums)
                 : config;
@@ -773,10 +773,10 @@ export class PageMedia extends PageMenu {
     static async getPage(
         configManager: ConfigManager,
         page: ScriptConfig.PageMedia,
-        gridItem: pages.PageBaseConfig,
+        gridItem: pages.PageBase,
         messages: string[],
         justCheck: boolean = false,
-    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+    ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
         const adapter = configManager.adapter;
         if (page.type !== 'cardMedia' || !gridItem.config || gridItem.config.card !== 'cardMedia') {
             const msg = `Error in page ${page.uniqueName}: Not a media page!`;

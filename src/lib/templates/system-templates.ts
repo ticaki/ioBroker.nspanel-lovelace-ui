@@ -1,8 +1,8 @@
 import type { NavigationItemConfig } from '../classes/navigation';
-import type { PageBaseConfig } from '../types/pages';
+import type { PageBase } from '../types/pages';
 import { Color } from '../const/Color';
 
-const popupWelcome: PageBaseConfig = {
+const popupWelcome: PageBase = {
     dpInit: '',
     alwaysOn: 'ignore',
     uniqueID: '///WelcomePopup',
@@ -29,7 +29,7 @@ const popupWelcome: PageBaseConfig = {
     items: undefined,
 };
 
-const popupNotification: PageBaseConfig = {
+const popupNotification: PageBase = {
     dpInit: '',
     alwaysOn: 'ignore',
     uniqueID: '///popupNotification',
@@ -57,7 +57,7 @@ const popupNotification: PageBaseConfig = {
     items: undefined,
 };
 
-const popupNotification2: PageBaseConfig = {
+const popupNotification2: PageBase = {
     dpInit: '',
     alwaysOn: 'ignore',
     uniqueID: '///popupNotification2',
@@ -83,7 +83,7 @@ const popupNotification2: PageBaseConfig = {
     items: undefined,
 };
 
-const popupNotificationCustom: PageBaseConfig = {
+const popupNotificationCustom: PageBase = {
     dpInit: '',
     alwaysOn: 'ignore',
     uniqueID: '///popupNotificationCustom',
@@ -207,7 +207,7 @@ const popupNotificationCustom: PageBaseConfig = {
     items: undefined,
 };
 
-const popupInfo: PageBaseConfig = {
+const popupInfo: PageBase = {
     dpInit: '',
     alwaysOn: 'ignore',
     uniqueID: '///PopupInfo',
@@ -261,7 +261,7 @@ const popupInfo: PageBaseConfig = {
     items: undefined,
 };
 
-const AdapterInformation: PageBaseConfig = {
+const AdapterInformation: PageBase = {
     //type: 'sonstiges',
     //card: 'cardEntities',
     dpInit: '',
@@ -330,7 +330,7 @@ const AdapterInformation: PageBaseConfig = {
     items: undefined,
 };
 
-const ServiceUnlock: PageBaseConfig = {
+const ServiceUnlock: PageBase = {
     uniqueID: '///unlock',
     alwaysOn: 'always',
     dpInit: '',
@@ -352,7 +352,7 @@ const ServiceUnlock: PageBaseConfig = {
     },
 };
 
-const ServiceOverview: PageBaseConfig = {
+const ServiceOverview: PageBase = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///Overview',
@@ -528,7 +528,7 @@ const ServiceOverview: PageBaseConfig = {
     items: undefined,
 };
 
-const AdapterNotConnectedDetail: PageBaseConfig = {
+const AdapterNotConnectedDetail: PageBase = {
     //card: 'cardEntities',
     dpInit: '',
     alwaysOn: 'none',
@@ -549,7 +549,7 @@ const AdapterNotConnectedDetail: PageBaseConfig = {
     items: undefined,
 };
 
-const AdapterStoppedDetail: PageBaseConfig = {
+const AdapterStoppedDetail: PageBase = {
     //card: 'cardEntities',
     dpInit: '',
     alwaysOn: 'none',
@@ -570,7 +570,7 @@ const AdapterStoppedDetail: PageBaseConfig = {
     items: undefined,
 };
 
-const AdapterUpdateDetail: PageBaseConfig = {
+const AdapterUpdateDetail: PageBase = {
     dpInit: 'admin.0.',
     alwaysOn: 'none',
     uniqueID: '///AdapterUpdate',
@@ -596,7 +596,7 @@ const AdapterUpdateDetail: PageBaseConfig = {
     items: undefined,
 };
 
-const ScreensaverOptions: PageBaseConfig = {
+const ScreensaverOptions: PageBase = {
     //type: 'sonstiges',
     //card: 'cardEntities',
     dpInit: '',
@@ -670,7 +670,7 @@ const ScreensaverOptions: PageBaseConfig = {
     items: undefined,
 };
 
-const ScreensaverBrightness: PageBaseConfig = {
+const ScreensaverBrightness: PageBase = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///ScreensaverBrightness',
@@ -852,7 +852,7 @@ const ScreensaverBrightness: PageBaseConfig = {
     items: undefined,
 };
 
-const ScreensaverLayout: PageBaseConfig = {
+const ScreensaverLayout: PageBase = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///ScreensaverLayout',
@@ -926,7 +926,7 @@ const ScreensaverLayout: PageBaseConfig = {
     items: undefined,
 };
 
-const RelaisOption: PageBaseConfig = {
+const RelaisOption: PageBase = {
     //type: 'sonstiges',
     //card: 'cardEntities',
     dpInit: '',
@@ -1009,7 +1009,7 @@ const RelaisOption: PageBaseConfig = {
     items: undefined,
 };
 
-const DeviceOption: PageBaseConfig = {
+const DeviceOption: PageBase = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///DeviceOption',
@@ -1169,7 +1169,7 @@ const DeviceOption: PageBaseConfig = {
     items: undefined,
 };
 
-const NetworkOption: PageBaseConfig = {
+const NetworkOption: PageBase = {
     //type: 'sonstiges',
     //card: 'cardEntities',
     dpInit: '',
@@ -1543,7 +1543,7 @@ const NetworkOption: PageBaseConfig = {
     items: undefined,
 };
 
-const SystemOption: PageBaseConfig = {
+const SystemOption: PageBase = {
     //type: 'sonstiges',
     //card: 'cardEntities',
     dpInit: '',
@@ -1589,7 +1589,7 @@ const SystemOption: PageBaseConfig = {
 /**
  * all pages from system
  */
-export const systemPages: PageBaseConfig[] = [
+export const systemPages: PageBase[] = [
     popupWelcome,
     popupNotification,
     popupNotification2,

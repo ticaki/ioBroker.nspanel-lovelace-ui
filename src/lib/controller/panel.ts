@@ -232,7 +232,7 @@ export class Panel extends BaseClass {
             if (unlock.navigationAssignment) {
                 const navAssign = unlock.navigationAssignment.find(a => a.topic === this.topic);
                 if (navAssign) {
-                    const newUnlock: pages.PageBaseConfig = {
+                    const newUnlock: pages.PageBase = {
                         uniqueID: unlock.uniqueName,
                         hidden: !!unlock.hidden,
                         alwaysOn: unlock.alwaysOn || 'none',
@@ -383,7 +383,7 @@ export class Panel extends BaseClass {
         this.navigation = new Navigation(navConfig);
     }
 
-    newPage(pmconfig: PageInterface, pageConfig: pages.PageBaseConfig): Page | undefined {
+    newPage(pmconfig: PageInterface, pageConfig: pages.PageBase): Page | undefined {
         switch (pageConfig.config?.card) {
             case 'cardChart': {
                 pageConfig = Panel.getPage(pageConfig, this);
@@ -2253,7 +2253,7 @@ export class Panel extends BaseClass {
         return res;
     }
 
-    static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
+    static getPage(config: pages.PageBase, that: BaseClass): pages.PageBase {
         if ('template' in config && config.template) {
             const template = cardTemplates[config.template];
             if (!template) {

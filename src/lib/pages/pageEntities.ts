@@ -11,9 +11,9 @@ const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
 
 export class PageEntities extends PageMenu {
     config: pages.cardEntitiesDataItemOptions;
-    items: pages.PageBaseConfig['items'];
+    items: pages.PageBase['items'];
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
         if (!options.config || options.config.card !== 'cardEntities') {
             throw new Error('wrong card, should never happen');

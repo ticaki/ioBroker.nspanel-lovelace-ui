@@ -25,7 +25,7 @@ export class PageChart extends Page {
     private checkState: boolean = true;
     protected adminConfig;
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
             return;
         }
@@ -82,10 +82,10 @@ export class PageChart extends Page {
     static async getChartPageConfig(
         configManager: ConfigManager,
         index: number,
-        gridItem: pages.PageBaseConfig,
+        gridItem: pages.PageBase,
         messages: string[],
         page: ScriptConfig.PageChart,
-    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+    ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
         const adapter = configManager.adapter;
         const config = adapter.config.pageChartdata[index];
         let stateExistValue = '';

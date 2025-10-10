@@ -6,10 +6,10 @@ import * as tools from '../../const/tools';
 export async function getPageAlexa(
     configManager: ConfigManager,
     page: ScriptConfig.PageMedia,
-    gridItem: pages.PageBaseConfig,
+    gridItem: pages.PageBase,
     messages: string[],
     justCheck = false,
-): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
     const adapter = configManager.adapter;
 
     const arr = page.media.id.split('.').slice(0, 3);

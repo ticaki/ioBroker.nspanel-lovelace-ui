@@ -78,7 +78,7 @@ export class PagePower extends Page {
     items: pages.cardPowerDataItems | undefined;
     index: number = 0;
     private autoUnit: (number | undefined)[] = [];
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
             this.config = options.config;
@@ -156,9 +156,9 @@ export class PagePower extends Page {
         configManager: ConfigManager,
         page: ScriptConfig.PagePower,
         index: number,
-        gridItem: pages.PageBaseConfig,
+        gridItem: pages.PageBase,
         messages: string[],
-    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+    ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
         const adapter = configManager.adapter;
         const config = adapter.config.pagePowerdata[index];
 

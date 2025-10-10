@@ -48,7 +48,7 @@ export class PageAlarm extends Page {
     private status: pages.AlarmStates = 'armed';
     private useStates = true;
     private alarmType: string = 'alarm';
-    items: pages.PageBaseConfig['items'];
+    items: pages.PageBase['items'];
 
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         if (this.useStates) {
@@ -100,7 +100,7 @@ export class PageAlarm extends Page {
     private pin: string = '0';
     private failCount: number = 0;
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
         if (options.config && options.config.card == 'cardAlarm') {
             this.config = options.config;

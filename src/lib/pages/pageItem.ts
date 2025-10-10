@@ -11,7 +11,7 @@ import {
     isCardGridType,
     type ChangeTypeOfKeys,
     type DeviceRole,
-    type PageBaseConfig,
+    type PageBase,
 } from '../types/pages';
 import type { Screensaver } from './screensaver';
 import { BaseTriggeredPage } from '../classes/baseClassPage';
@@ -1987,7 +1987,7 @@ export class PageItem extends BaseTriggeredPage {
                                           : 'cardGrid2',
                             };
 
-                            const pageConfig: PageBaseConfig = {
+                            const pageConfig: PageBase = {
                                 uniqueID: `temp253451_${this.parent.id}`,
                                 alwaysOn: this.parent.alwaysOn,
                                 items: undefined,

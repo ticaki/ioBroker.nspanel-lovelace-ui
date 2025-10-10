@@ -40,7 +40,7 @@ export class PageThermo extends Page {
     public convertValue: 1 | 10 = 1;
     private nextArrow: boolean = false;
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardThermo') {
             return;
         }

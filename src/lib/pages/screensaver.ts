@@ -29,7 +29,7 @@ export class Screensaver extends Page {
     private activeNotification: boolean = false;
     private activeNotifyId: string = '';
     //readonly mode: Types.ScreensaverModeType = 'standard';
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         if (
             !options.config ||
             (options.config.card !== 'screensaver' &&

@@ -60,7 +60,7 @@ export class ConfigManager extends BaseClass {
         panelConfig:
             | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
                   navigation: NavigationItemConfig[];
-                  pages: pages.PageBaseConfig[];
+                  pages: pages.PageBase[];
               })
             | undefined;
     }> {
@@ -75,7 +75,7 @@ export class ConfigManager extends BaseClass {
                 'pages' | 'navigation'
             > & {
                 navigation: NavigationItemConfig[];
-                pages: pages.PageBaseConfig[];
+                pages: pages.PageBase[];
             };
             let messages: string[] = [];
             // get all pages from global config
@@ -409,7 +409,7 @@ export class ConfigManager extends BaseClass {
         );
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
-            pages: pages.PageBaseConfig[];
+            pages: pages.PageBase[];
         } = { pages: [], navigation: [], scriptVersion: config.version };
 
         if (!config.panelTopic) {
@@ -610,13 +610,13 @@ export class ConfigManager extends BaseClass {
         config: ScriptConfig.Config,
         panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
-            pages: pages.PageBaseConfig[];
+            pages: pages.PageBase[];
         },
         messages: string[],
     ): Promise<{
         panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
-            pages: pages.PageBaseConfig[];
+            pages: pages.PageBase[];
         };
         messages: string[];
     }> {
@@ -718,7 +718,7 @@ export class ConfigManager extends BaseClass {
                     }
                 }
 
-                let gridItem: pages.PageBaseConfig = {
+                let gridItem: pages.PageBase = {
                     dpInit: '',
                     alwaysOn: page.alwaysOnDisplay
                         ? typeof page.alwaysOnDisplay === 'boolean'
@@ -736,7 +736,7 @@ export class ConfigManager extends BaseClass {
                         index: 0,
                     },
                     pageItems: [],
-                } as pages.PageBaseConfig;
+                } as pages.PageBase;
                 if (
                     (gridItem.config?.card === 'cardGrid' ||
                         gridItem.config?.card === 'cardGrid2' ||
@@ -915,9 +915,9 @@ export class ConfigManager extends BaseClass {
 
     async getPageThermo(
         page: ScriptConfig.PageThermo,
-        gridItem: pages.PageBaseConfig,
+        gridItem: pages.PageBase,
         messages: string[],
-    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+    ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
         if (page.type !== 'cardThermo' || !gridItem.config || gridItem.config.card !== 'cardThermo') {
             return { gridItem, messages };
         }
@@ -4146,7 +4146,7 @@ export class ConfigManager extends BaseClass {
                                     pageItems: [],
                                     config: { card: 'cardMedia', data: {} },
                                     alwaysOn: 'none',
-                                } as pages.PageBaseConfig,
+                                } as pages.PageBase,
                                 [],
                                 true,
                             );
@@ -4231,7 +4231,7 @@ export class ConfigManager extends BaseClass {
     async getScreensaverConfig(
         config: ScriptConfig.Config,
         messages: string[] = [],
-    ): Promise<{ configArray: pages.PageBaseConfig; messages: string[] }> {
+    ): Promise<{ configArray: pages.PageBase; messages: string[] }> {
         let pageItems: typePageItem.PageItemDataItemsOptions[] = [];
 
         const loadElementSection = async (
@@ -4809,7 +4809,7 @@ export class ConfigManager extends BaseClass {
         ]);
         pageItems = pageItems.concat(config.nativePageItems || []);
 
-        const configArray: pages.PageBaseConfig = {
+        const configArray: pages.PageBase = {
             dpInit: '',
             alwaysOn: 'none',
             uniqueID: 'scr',
@@ -4824,7 +4824,7 @@ export class ConfigManager extends BaseClass {
                 screensaverSwipe: false,
             },
             pageItems: pageItems,
-        } as pages.PageBaseConfig;
+        } as pages.PageBase;
 
         return { configArray, messages };
     }

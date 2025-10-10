@@ -32,7 +32,7 @@ export class PageQR extends Page {
     items: pages.cardQRDataItems | undefined;
     index: number = 0;
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardQR') {
             return;
         }
@@ -169,9 +169,9 @@ export class PageQR extends Page {
         configManager: ConfigManager,
         page: ScriptConfig.PageQR,
         index: number,
-        gridItem: pages.PageBaseConfig,
+        gridItem: pages.PageBase,
         messages: string[],
-    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+    ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
         const adapter = configManager.adapter;
         const config = adapter.config.pageQRdata[index];
         if (config) {

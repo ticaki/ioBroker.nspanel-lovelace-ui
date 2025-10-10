@@ -10,10 +10,15 @@ import {
     ListItemText,
     Divider,
     Typography,
+    CircularProgress,
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { I18n } from '@iobroker/adapter-react-v5';
-import type { PanelInfo, NavigationAssignmentList } from '../../../src/lib/types/adminShareConfig';
+import type {
+    PanelInfo,
+    NavigationAssignmentList,
+    NavigationAssignment,
+} from '../../../src/lib/types/adminShareConfig';
 import {
     SENDTO_GET_PANELS_COMMAND,
     SENDTO_GET_PAGES_COMMAND,
@@ -45,9 +50,14 @@ type State = {
     assignments: NavigationAssignmentList;
     // pages per panelTopic
     pagesMap: Record<string, string[]>;
-    alive?: boolean;
     // toggle state for collapsible panel
     isCollapsed?: boolean;
+    // loading states per topic
+    isLoading: Record<string, boolean>;
+    // last load time per topic for retry logic
+    lastLoadTime: Record<string, number>;
+    // focus tracking per topic for optimization
+    focusReceived: Record<string, boolean>;
 };
 
 /**
@@ -71,8 +81,10 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             added: [],
             assignments: props.currentAssignments || [],
             pagesMap: {},
-            alive: false,
             isCollapsed: false, // mobile: always expanded, desktop: start collapsed
+            isLoading: {},
+            lastLoadTime: {},
+            focusReceived: {},
         };
     }
 
@@ -81,16 +93,8 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
             return;
         }
-        const instance = this.props.oContext.instance ?? '0';
-        const socket = this.props.oContext.socket;
-        if (socket && typeof socket.getState === 'function') {
-            void socket.getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`).then((state: any) => {
-                this.setState({ alive: !!state?.val });
-                this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
-            });
-        } else {
-            this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
-        }
+        // No need for alive checking - just use oContext directly
+        this.aliveTimeout = setTimeout(() => this.checkAlive(), 5000);
     }
 
     componentWillUnmount(): void {
@@ -104,13 +108,13 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         // load panels but do not auto-select anything so select stays on '—'
         await this.loadPanels(false);
         // initialize from incoming props once panels are available
-        this.applyAssignmentsFromProps(this.props.currentAssignments || []);
+        await this.applyAssignmentsFromProps(this.props.currentAssignments || []);
     }
 
-    private applyAssignmentsFromProps(nextAssignments: NavigationAssignmentList): void {
+    private async applyAssignmentsFromProps(nextAssignments: NavigationAssignmentList): Promise<void> {
         const addedPanels = (nextAssignments || []).map(a => {
             const found = this.state.available.find(p => p.panelTopic === a.topic);
-            return found || ({ panelTopic: a.topic, friendlyName: a.topic } as PanelInfo);
+            return found || { panelTopic: a.topic, friendlyName: a.topic };
         });
 
         // Keep current selectedAddedTopic if it's still in the new assignments, otherwise pick first
@@ -124,24 +128,33 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             selectedAddedTopic: newSelected,
             selectedTopic: '',
         });
+
         // preload pages for all topics so selects have options immediately
-        for (const p of addedPanels) {
-            void this.loadPagesForPanel(p.panelTopic, true);
-        }
+        // and wait for them to load before the component renders completely
+        const loadPromises = addedPanels.map(p => this.loadPagesForPanel(p.panelTopic, true));
+        await Promise.all(loadPromises);
     }
 
     componentDidUpdate(prevProps: Props): void {
         // if the selected uniqueName changed, update internal assignments state
         if (prevProps.uniqueName !== this.props.uniqueName) {
             const nextAssignments = this.props.currentAssignments || [];
+
+            // Mark this as a focus event for optimization
+            if (this.props.uniqueName) {
+                this.setState(prev => ({
+                    focusReceived: { ...prev.focusReceived, [this.props.uniqueName!]: true },
+                }));
+            }
+
             // ensure panels are loaded so we can map topics -> friendlyName
             void this.loadPanels(false).then(() => {
-                this.applyAssignmentsFromProps(nextAssignments);
+                void this.applyAssignmentsFromProps(nextAssignments);
             });
         } else if (prevProps.currentAssignments !== this.props.currentAssignments && this.props.currentAssignments) {
             // props currentAssignments changed (same uniqueName), update internal state
             const nextAssignments = this.props.currentAssignments || [];
-            this.applyAssignmentsFromProps(nextAssignments);
+            void this.applyAssignmentsFromProps(nextAssignments);
         }
     }
 
@@ -150,7 +163,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
             let list: PanelInfo[] = [];
             if (this.props.fetchPanels) {
                 list = await this.props.fetchPanels();
-            } else if (this.props.oContext && this.props.oContext.socket && this.state.alive) {
+            } else if (this.props.oContext && this.props.oContext.socket) {
                 const instance = this.props.oContext.instance ?? '0';
                 const target = `${ADAPTER_NAME}.${instance}`;
                 try {
@@ -197,10 +210,10 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         if (added.find(a => a.panelTopic === panel.panelTopic)) {
             return;
         }
-        const next = [...added, panel];
-        const nextAssignments = [...this.state.assignments, { topic: panel.panelTopic, active: false }];
+        const updatedAdded = [...added, panel];
+        const nextAssignments: NavigationAssignmentList = [...this.state.assignments, { topic: panel.panelTopic }];
         this.setState({
-            added: next,
+            added: updatedAdded,
             assignments: nextAssignments,
             selectedTopic: '',
         });
@@ -237,43 +250,115 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         if (!topic) {
             return;
         }
+
+        const now = Date.now();
+        const lastLoad = this.state.lastLoadTime[topic] || 0;
+        const isCurrentlyLoading = this.state.isLoading[topic];
+        const hasBeenLoaded = !!this.state.pagesMap[topic];
+        const needsReload = forceReload || !hasBeenLoaded || now - lastLoad > 60000; // 1 minute cache
+
+        // Skip if already loading or recently loaded (unless forced)
+        if (isCurrentlyLoading || (!needsReload && hasBeenLoaded)) {
+            console.log('[NavigationAssignmentPanel] Skipping loadPagesForPanel', {
+                topic,
+                isCurrentlyLoading,
+                hasBeenLoaded,
+                needsReload,
+                forceReload,
+                timeSinceLastLoad: now - lastLoad,
+            });
+            return;
+        }
+
+        // Start loading state
+        this.setState(prev => ({
+            isLoading: { ...prev.isLoading, [topic]: true },
+            lastLoadTime: { ...prev.lastLoadTime, [topic]: now },
+        }));
+
         try {
-            // already loaded?
-            if (!forceReload && this.state.pagesMap && this.state.pagesMap[topic]) {
-                return;
-            }
+            console.log('[NavigationAssignmentPanel] Starting loadPagesForPanel', {
+                topic,
+                hasSocket: !!this.props.oContext?.socket,
+            });
+
             let list: string[] = [];
-            if (this.props.oContext && this.props.oContext.socket && this.state.alive) {
+            let success = false;
+
+            // Try to load from adapter with timeout
+            if (this.props.oContext?.socket) {
                 const instance = this.props.oContext.instance ?? '0';
                 const target = `${ADAPTER_NAME}.${instance}`;
                 const payload = { panelTopic: topic };
+
                 try {
-                    const raw = await this.props.oContext.socket.sendTo(target, SENDTO_GET_PAGES_COMMAND, payload);
+                    // Race between sendTo and 2-second timeout
+                    const timeoutPromise = new Promise<never>((_, reject) => {
+                        setTimeout(() => reject(new Error('sendTo timeout after 2 seconds')), 2000);
+                    });
+
+                    const sendToPromise = this.props.oContext.socket.sendTo(target, SENDTO_GET_PAGES_COMMAND, payload);
+                    const raw = await Promise.race([sendToPromise, timeoutPromise]);
+
                     if (Array.isArray(raw)) {
                         list = raw as string[];
+                        success = true;
                     } else if (raw && Array.isArray(raw.result)) {
                         list = raw.result as string[];
+                        success = true;
                     }
+
+                    console.log('[NavigationAssignmentPanel] sendTo successful', { topic, pages: list });
                 } catch (e) {
-                    console.error('[NavigationAssignmentPanel] sendTo failed', {
+                    console.warn('[NavigationAssignmentPanel] sendTo failed or timed out', {
                         target,
                         cmd: SENDTO_GET_PAGES_COMMAND,
                         payload,
                         error: e,
                     });
                 }
-            } else {
-                console.warn('[NavigationAssignmentPanel] no oContext.socket available to sendTo');
             }
 
-            // Only cache non-empty results; empty arrays indicate invalid/missing data
-            if (list.length > 0) {
-                const next = { ...(this.state.pagesMap || {}) };
-                next[topic] = list;
-                this.setState({ pagesMap: next });
+            // If sendTo failed or timed out, retry logic for critical scenarios
+            if (!success && !this.props.oContext?.socket) {
+                console.log('[NavigationAssignmentPanel] Retrying in 1 second due to no socket...');
+
+                // Retry after 1 second delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Mark as not loading temporarily to allow retry
+                this.setState(prev => ({
+                    isLoading: { ...prev.isLoading, [topic]: false },
+                }));
+
+                // Recursive retry (but only once to avoid infinite loops)
+                if (!this.state.focusReceived[topic]) {
+                    this.setState(prev => ({
+                        focusReceived: { ...prev.focusReceived, [topic]: true },
+                    }));
+                    return this.loadPagesForPanel(topic, true);
+                }
             }
-        } catch {
-            // ignore
+
+            // Update state with results (even if empty)
+            this.setState(prev => ({
+                pagesMap: { ...prev.pagesMap, [topic]: list },
+                isLoading: { ...prev.isLoading, [topic]: false },
+            }));
+
+            console.log('[NavigationAssignmentPanel] loadPagesForPanel completed', {
+                topic,
+                success,
+                pagesCount: list.length,
+                pages: list,
+            });
+        } catch (error) {
+            console.error('[NavigationAssignmentPanel] loadPagesForPanel error', { topic, error });
+
+            // End loading state even on error
+            this.setState(prev => ({
+                isLoading: { ...prev.isLoading, [topic]: false },
+            }));
         }
     }
 
@@ -284,28 +369,23 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         }
 
         const idx = assignments.findIndex(a => a.topic === selectedAddedTopic);
-        const next = [...assignments];
+        const nextAssignments: NavigationAssignmentList = [...assignments];
         const existing = assignments[idx];
-        let newAssignment: any;
-        if (existing && (existing as any).active) {
-            newAssignment = {
-                ...existing,
-                active: true,
-                navigation: { ...(existing as any).navigation, ...nav },
-            };
-        } else {
-            newAssignment = { topic: selectedAddedTopic, active: true, navigation: { ...nav } };
-        }
+
+        const newAssignment: NavigationAssignment = {
+            topic: selectedAddedTopic,
+            navigation: { ...existing?.navigation, ...nav },
+        };
 
         if (idx >= 0) {
-            next[idx] = newAssignment;
+            nextAssignments[idx] = newAssignment;
         } else {
-            next.push(newAssignment);
+            nextAssignments.push(newAssignment);
         }
 
-        this.setState({ assignments: next });
+        this.setState({ assignments: nextAssignments });
         if (this.props.onAssign && this.props.uniqueName) {
-            this.props.onAssign(this.props.uniqueName, next);
+            this.props.onAssign(this.props.uniqueName, nextAssignments);
         }
     };
 
@@ -313,13 +393,9 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         if (!topic) {
             return '';
         }
-        const a = this.state.assignments.find(x => x.topic === topic);
-
-        // Return navigation value if it exists, regardless of active status
-        if (!a || !(a as any).navigation) {
-            return '';
-        }
-        return (a as any).navigation[field] ?? '';
+        const assignment = this.state.assignments.find(a => a.topic === topic);
+        const result = assignment?.navigation?.[field] || '';
+        return result;
     };
 
     togglePanel = (): void => {
@@ -329,7 +405,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
 
         // If expanding, re-apply assignments to ensure data is fresh
         if (wasCollapsed) {
-            this.applyAssignmentsFromProps(this.props.currentAssignments || []);
+            void this.applyAssignmentsFromProps(this.props.currentAssignments || []);
         }
     };
 
@@ -339,6 +415,14 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
         const pages: string[] = this.state.selectedAddedTopic
             ? (this.state.pagesMap[this.state.selectedAddedTopic] ?? [])
             : [];
+
+        // Debug information
+        console.log('[NavigationAssignmentPanel] Render state:', {
+            selectedAddedTopic: this.state.selectedAddedTopic,
+            assignments: this.state.assignments,
+            pages: pages,
+            pagesMap: this.state.pagesMap,
+        });
 
         return (
             <Box
@@ -584,7 +668,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 size="small"
                                 displayEmpty
                                 aria-label="prev"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'prev')}
+                                value={this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''}
                                 onOpen={() => {
                                     if (this.state.selectedAddedTopic) {
                                         void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -594,6 +678,19 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                     this.setNavigationForSelected({ prev: String(e.target.value) || undefined })
                                 }
                                 sx={{ width: '100%' }}
+                                disabled={
+                                    this.state.selectedAddedTopic
+                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                        : false
+                                }
+                                endAdornment={
+                                    this.state.selectedAddedTopic &&
+                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                            <CircularProgress size={16} />
+                                        </Box>
+                                    ) : null
+                                }
                             >
                                 <MenuItem value="">
                                     {this.state.selectedAddedTopic ? (
@@ -630,7 +727,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 size="small"
                                 displayEmpty
                                 aria-label="next"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'next')}
+                                value={this.getNavValue(this.state.selectedAddedTopic, 'next') || ''}
                                 onOpen={() => {
                                     if (this.state.selectedAddedTopic) {
                                         void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -640,6 +737,19 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                     this.setNavigationForSelected({ next: String(e.target.value) || undefined })
                                 }
                                 sx={{ width: '100%' }}
+                                disabled={
+                                    this.state.selectedAddedTopic
+                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                        : false
+                                }
+                                endAdornment={
+                                    this.state.selectedAddedTopic &&
+                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                            <CircularProgress size={16} />
+                                        </Box>
+                                    ) : null
+                                }
                             >
                                 <MenuItem value="">
                                     {this.state.selectedAddedTopic ? (
@@ -673,7 +783,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 size="small"
                                 displayEmpty
                                 aria-label="home"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'home')}
+                                value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
                                 onOpen={() => {
                                     if (this.state.selectedAddedTopic) {
                                         void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -683,6 +793,19 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                     this.setNavigationForSelected({ home: String(e.target.value) || undefined })
                                 }
                                 sx={{ width: '100%' }}
+                                disabled={
+                                    this.state.selectedAddedTopic
+                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                        : false
+                                }
+                                endAdornment={
+                                    this.state.selectedAddedTopic &&
+                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                            <CircularProgress size={16} />
+                                        </Box>
+                                    ) : null
+                                }
                             >
                                 <MenuItem value="">{<em>—</em>}</MenuItem>
                                 {pages
@@ -710,7 +833,7 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                 size="small"
                                 displayEmpty
                                 aria-label="parent"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'parent')}
+                                value={this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''}
                                 onOpen={() => {
                                     if (this.state.selectedAddedTopic) {
                                         void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -720,6 +843,19 @@ class NavigationAssignmentPanel extends React.Component<Props, State> {
                                     this.setNavigationForSelected({ parent: String(e.target.value) || undefined })
                                 }
                                 sx={{ width: '100%' }}
+                                disabled={
+                                    this.state.selectedAddedTopic
+                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                        : false
+                                }
+                                endAdornment={
+                                    this.state.selectedAddedTopic &&
+                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                            <CircularProgress size={16} />
+                                        </Box>
+                                    ) : null
+                                }
                             >
                                 <MenuItem value="">{<em>—</em>}</MenuItem>
                                 {pages

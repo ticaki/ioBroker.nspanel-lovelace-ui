@@ -10,7 +10,7 @@ import { Icons } from '../const/icon_mapping';
 import { Color, type RGB } from '../const/Color';
 
 //interface Page extends BaseClass | PageConfig..
-export type PageConfigAll = pages.PageBaseConfig;
+export type PageConfigAll = pages.PageBase;
 
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
@@ -31,11 +31,11 @@ export class Page extends BaseClassPage {
      * bypassing navigation logic.
      */
     public directChildPage: Page | undefined; //readonly enums: string | string[];
-    config: pages.PageBaseConfig['config'];
+    config: pages.PageBase['config'];
     //config: Card['config'];
     constructor(
         card: PageInterface,
-        pageItemsConfig: pages.PageBaseConfig | undefined,
+        pageItemsConfig: pages.PageBase | undefined,
         isScreensaver: boolean = false,
     ) {
         super(card, pageItemsConfig && pageItemsConfig.alwaysOn, pageItemsConfig && pageItemsConfig.pageItems);

@@ -11,9 +11,9 @@ const PageScheduleMessageDefault: pages.PageScheduleMessage = {
 
 export class PageSchedule extends PageMenu {
     config: pages.cardScheduleDataItemOptions;
-    items: pages.PageBaseConfig['items'];
+    items: pages.PageBase['items'];
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
         if (!options.config || options.config.card !== 'cardSchedule') {
             throw new Error('wrong card, should never happen');

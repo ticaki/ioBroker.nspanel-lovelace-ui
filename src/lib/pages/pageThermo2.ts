@@ -55,7 +55,7 @@ export class PageThermo2 extends PageMenu {
     public convertValue: 1 | 10 = 1;
     public index = 0;
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardThermo2') {
             return;
         }
@@ -383,9 +383,9 @@ export class PageThermo2 extends PageMenu {
     static async getPage(
         configManager: ConfigManager,
         page: ScriptConfig.PageThermo2,
-        gridItem: pages.PageBaseConfig,
+        gridItem: pages.PageBase,
         messages: string[],
-    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+    ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
         if (page.type !== 'cardThermo2' || !gridItem.config || gridItem.config.card !== 'cardThermo2') {
             return { gridItem, messages };
         }

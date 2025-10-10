@@ -5,10 +5,10 @@ import type { ConfigManager } from '../../classes/config-manager';
 export async function getPageSpotify(
     configManager: ConfigManager,
     page: ScriptConfig.PageMedia,
-    gridItem: pages.PageBaseConfig,
+    gridItem: pages.PageBase,
     messages: string[],
     justCheck = false,
-): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
     //const adapter = configManager.adapter;
     if (justCheck) {
         return { gridItem, messages: ['done'] };

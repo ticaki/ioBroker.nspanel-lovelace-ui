@@ -753,7 +753,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             panelConfig:
                                 | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
                                       navigation: NavigationItemConfig[];
-                                      pages: pages.PageBaseConfig[];
+                                      pages: pages.PageBase[];
                                   })
                                 | undefined;
                         } = { messages: [], panelConfig: undefined };
@@ -806,7 +806,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 panelConfig:
                                     | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
                                           navigation: NavigationItemConfig[];
-                                          pages: pages.PageBaseConfig[];
+                                          pages: pages.PageBase[];
                                       })
                                     | undefined;
                             } = { messages: [], panelConfig: undefined };

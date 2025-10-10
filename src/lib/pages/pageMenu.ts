@@ -27,7 +27,7 @@ export class PageMenu extends Page {
 
     private tempItems: (PageItem | undefined)[] | undefined;
 
-    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+    constructor(config: PageInterface, options: pages.PageBase) {
         if (!pages.isPageMenuConfig(config)) {
             throw new Error(`PageMenu: invalid config (card=${(config as any).card})`);
         }
