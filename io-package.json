@@ -3,7 +3,7 @@
     "name": "nspanel-lovelace-ui",
     "version": "0.6.1",
     "news": {
-      "0.6.1": {
+      "0.6.2": {
         "en": "PageUnlock: Config updated — fixed issue where some settings were not applied correctly.\nIconSelect showed a too short list. Fixed.\nAdmin: Added responsive layout for Admin PageUnlock (mobile devices)",
         "de": "PageUnlock: Config aktualisiert — Problem behoben, bei dem einige Einstellungen nicht korrekt angewendet wurden.\nIconSelect zeigte eine zu kurze Liste. Behoben.\nAdmin: Ansprechlayout für Admin PageUnlock (mobile Geräte) hinzugefügt",
         "ru": "PageUnlock: Config updated — исправленная проблема, при которой некоторые настройки не были применены правильно.\nIconSelect показал слишком короткий список. Исправлено.\nAdmin: Добавлен адаптивный макет для Admin PageUnlock (мобильные устройства)",

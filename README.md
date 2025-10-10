@@ -147,7 +147,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### 0.6.1 (2025-10-10)
+### **WORK IN PROGRESS**
 - (ticaki) PageUnlock: Config updated — fixed issue where some settings were not applied correctly.
 - (ticaki) IconSelect showed a too short list. Fixed.
 - (ticaki) Admin: Added responsive layout for Admin PageUnlock (mobile devices)

@@ -33,11 +33,7 @@ export class Page extends BaseClassPage {
     public directChildPage: Page | undefined; //readonly enums: string | string[];
     config: pages.PageBase['config'];
     //config: Card['config'];
-    constructor(
-        card: PageInterface,
-        pageItemsConfig: pages.PageBase | undefined,
-        isScreensaver: boolean = false,
-    ) {
+    constructor(card: PageInterface, pageItemsConfig: pages.PageBase | undefined, isScreensaver: boolean = false) {
         super(card, pageItemsConfig && pageItemsConfig.alwaysOn, pageItemsConfig && pageItemsConfig.pageItems);
         this.isScreensaver = isScreensaver;
         this.card = card.card;

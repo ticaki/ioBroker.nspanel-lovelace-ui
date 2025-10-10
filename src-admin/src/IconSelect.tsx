@@ -70,7 +70,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                             icons.find(opt => opt.name === this.state.iconValue) || null
                         }
                         inputValue={this.state.inputValue}
-                        onInputChange={(_, newInputValue, reason) => {
+                        onInputChange={(_, newInputValue) => {
                             const newFilteredIcons = this.filterIcons(this.state.icons, newInputValue);
                             this.setState({
                                 inputValue: newInputValue,
