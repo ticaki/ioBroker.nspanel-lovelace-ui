@@ -444,9 +444,9 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                     open={!!this.state.confirmDeleteOpen}
                     onClose={closeConfirm}
                     onConfirm={confirmDelete}
-                    title={this.getText('unlock_delete_confirm_title')}
+                    title={this.getText('delete_confirm_title')}
                     description={
-                        this.getText('unlock_delete_confirm_text') +
+                        this.getText('delete_confirm_text') +
                         (this.state.confirmDeleteName ? `: ${this.state.confirmDeleteName}` : '')
                     }
                     cancelText={this.getText('Cancel')}
@@ -481,13 +481,13 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                             {!local.selected ? (
                                 // nothing selected: show only hint
                                 <Box>
-                                    <Typography variant="h6">{this.getText('unlock_select_item')}</Typography>
+                                    <Typography variant="h6">{this.getText('select_item')}</Typography>
                                     <Box sx={{ mt: 2 }}>
                                         <Typography
                                             variant="body2"
                                             color="text.secondary"
                                         >
-                                            {this.getText('unlock_select_description')}
+                                            {this.getText('select_description')}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -517,7 +517,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                         fullWidth
                                                         variant="standard"
                                                         type="text"
-                                                        label={this.getText('unlock_unique_label')}
+                                                        label={this.getText('unique_label')}
                                                         value={sel}
                                                         onChange={e => {
                                                             const newUniqueName = e.target.value;
@@ -589,7 +589,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                     variant="standard"
                                                     type="text"
                                                     autoComplete="off"
-                                                    label={this.getText('unlock_headline')}
+                                                    label={this.getText('headline')}
                                                     value={ent.headline ?? ''}
                                                     onChange={e => {
                                                         const v = e.target.value;
@@ -674,7 +674,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                                 }}
                                                             />
                                                         }
-                                                        label={this.getText('unlock_hidden')}
+                                                        label={this.getText('hidden')}
                                                     />
 
                                                     {/* alwaysOn radio group */}
@@ -684,7 +684,7 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                                 variant="subtitle2"
                                                                 sx={{ mb: 1 }}
                                                             >
-                                                                {this.getText('unlock_alwaysOn')}
+                                                                {this.getText('alwaysOn')}
                                                             </Typography>
                                                             <RadioGroup
                                                                 row
@@ -710,17 +710,17 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                                 <FormControlLabel
                                                                     value="none"
                                                                     control={<Radio />}
-                                                                    label={this.getText('unlock_alwaysOn_none')}
+                                                                    label={this.getText('alwaysOn_none')}
                                                                 />
                                                                 <FormControlLabel
                                                                     value="always"
                                                                     control={<Radio />}
-                                                                    label={this.getText('unlock_alwaysOn_always')}
+                                                                    label={this.getText('alwaysOn_always')}
                                                                 />
                                                                 <FormControlLabel
                                                                     value="ignore"
                                                                     control={<Radio />}
-                                                                    label={this.getText('unlock_alwaysOn_ignore')}
+                                                                    label={this.getText('alwaysOn_ignore')}
                                                                 />
                                                             </RadioGroup>
                                                         </FormControl>

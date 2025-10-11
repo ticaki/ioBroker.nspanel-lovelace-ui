@@ -93,6 +93,25 @@ export type UnlockEntry = {
 
 export type UnlockEntries = UnlockEntry[];
 
+// QR Entry for pageQR configuration
+export type QREntry = {
+    card: Extract<AdminCardTypes, 'cardQR'>;
+    selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
+    headline: string;
+    SSIDURLTEL: string;
+    wlanhidden: boolean;
+    wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+    qrPaas?: string;
+    pwdhidden: boolean;
+    setState: string;
+    hidden?: boolean;
+    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+    navigationAssignment?: NavigationAssignmentList;
+    uniqueName: string;
+};
+
+export type QREntries = QREntry[];
+
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;
