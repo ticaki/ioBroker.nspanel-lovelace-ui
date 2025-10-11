@@ -4,6 +4,7 @@ require('./test-setup');
 const path = require('path');
 const { tests } = require('@iobroker/testing');
 const { testScriptConfig } = require('./test-config-data');
+const { TestDataProvider } = require('./test-data-provider');
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -30,9 +31,16 @@ tests.integration(path.join(__dirname, '..'), {
         // Test suite for NSPanel integration with simulated panel
         suite("Test adapter with simulated NSPanel", (getHarness) => {
             let harness;
+            let panelClient;
 
             before(() => {
                 harness = getHarness();
+            });
+            
+            after(() => {
+                if (panelClient) {
+                    panelClient.end();
+                }
             });
 
             it('should start adapter with NSPanel configuration and complete test workflow', () => new Promise(async (resolve, reject) => {
@@ -114,6 +122,44 @@ tests.integration(path.join(__dirname, '..'), {
                     console.log('📝 Starting adapter...');
                     await harness.startAdapterAndWait();
                     console.log('✅ Adapter started');
+                    
+                    // Create MQTT client to simulate NSPanel device
+                    console.log('🤖 Creating MQTT panel simulation...');
+                    const mqtt = require('mqtt');
+                    const testDataProvider = new TestDataProvider();
+                    
+                    // Connect to the MQTT server created by the adapter
+                    panelClient = mqtt.connect(`mqtt://127.0.0.1:${MQTT_PORT}`, {
+                        username: MQTT_USERNAME,
+                        password: MQTT_PASSWORD,
+                        clientId: 'test-panel-simulator'
+                    });
+                    
+                    await new Promise((resolve) => {
+                        panelClient.on('connect', () => {
+                            console.log('✅ Panel simulator connected to MQTT');
+                            resolve();
+                        });
+                    });
+                    
+                    // Subscribe to commands from adapter and respond like a real panel
+                    panelClient.subscribe(`${PANEL_TOPIC}/cmnd/#`);
+                    
+                    panelClient.on('message', async (topic, message) => {
+                        const msg = message.toString();
+                        console.log(`📩 Panel received: ${topic} -> ${msg}`);
+                        
+                        if (msg === 'pageType~pageStartup') {
+                            console.log('   ↳ Responding with startup confirmation');
+                            panelClient.publish(`${PANEL_TOPIC}/stat/RESULT`, testDataProvider.getCustomSendDone());
+                            panelClient.publish(`${PANEL_TOPIC}/tele/RESULT`, testDataProvider.getStartupEvent());
+                        } else if (topic === `${PANEL_TOPIC}/cmnd/STATUS0`) {
+                            console.log('   ↳ Responding with STATUS0 data');
+                            panelClient.publish(`${PANEL_TOPIC}/stat/STATUS0`, testDataProvider.getStatus0Response());
+                        }
+                    });
+                    
+                    console.log('✅ Panel simulation active');
                     
                     // Send ScriptConfig to configure the panel (simulates external script configuration)
                     console.log('📝 Sending ScriptConfig message...');
