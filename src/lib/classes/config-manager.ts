@@ -21,20 +21,563 @@ import { isPageItemDataItemsOptions } from '../types/type-pageItem';
 import { getVersionAsNumber } from '../const/tools';
 
 export class ConfigManager extends BaseClass {
-    //private test: ConfigManager.DeviceState;
-    //colorOn: RGB = Color.On;
-    //colorOff: RGB = Color.Off;
-    colorDefault: RGB = Color.Off;
-    dontWrite: boolean = false;
-    extraConfigLogging: boolean = false;
+    // OPTIMIERT: Entferne auskommentierte Properties und verbessere Typisierung
+    private readonly colorDefault: RGB = Color.Off;
+    private readonly dontWrite: boolean;
+    private extraConfigLogging: boolean = false;
+    private readonly breakingVersion = '0.6.0';
+    private statesController: StatesControler | undefined;
 
-    readonly breakingVersion = '0.6.0';
-
-    statesController: StatesControler | undefined;
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
         super(adapter, 'config-manager');
         this.dontWrite = dontWrite;
         this.statesController = new StatesControler(adapter);
+    }
+
+    /**
+     * Logs a message and adds it to the messages array.
+     *
+     * @param message - The message to log and track
+     * @param level - The log level (error, warn, info)
+     * @param messages - Array to add the message to
+     */
+    private logAndTrackMessage(message: string, level: 'error' | 'warn' | 'info', messages: string[]): void {
+        messages.push(message);
+        this.log[level](message);
+    }
+
+    /**
+     * Logs an error message and adds it to the messages array.
+     *
+     * @param message - The error message to log
+     * @param messages - Array to add the message to
+     */
+    private logError(message: string, messages: string[]): void {
+        this.logAndTrackMessage(message, 'error', messages);
+    }
+
+    /**
+     * Logs a warning message and adds it to the messages array.
+     *
+     * @param message - The warning message to log
+     * @param messages - Array to add the message to
+     */
+    private logWarning(message: string, messages: string[]): void {
+        this.logAndTrackMessage(message, 'warn', messages);
+    }
+
+    /**
+     * Logs an info message and adds it to the messages array.
+     *
+     * @param message - The info message to log
+     * @param messages - Array to add the message to
+     */
+    private logInfo(message: string, messages: string[]): void {
+        this.logAndTrackMessage(message, 'info', messages);
+    }
+
+    /**
+     * Handles validation errors with consistent messaging.
+     *
+     * @param message - The validation error message
+     * @param messages - Array to add the message to
+     * @param isBreaking - Whether this is a breaking error that should return early
+     * @returns Validation result object for breaking errors, undefined otherwise
+     */
+    private handleValidationError(
+        message: string,
+        messages: string[],
+        isBreaking: boolean = false,
+    ): { messages: string[]; panelConfig: undefined } | void {
+        if (isBreaking) {
+            this.logError(message, messages);
+            return { messages, panelConfig: undefined };
+        }
+        this.logWarning(message, messages);
+    }
+
+    /**
+     * Adjusts navigation references when pages are renamed or copied.
+     * Handles deep navigation updates including items, next/prev/home/parent references.
+     *
+     * @param oldUniqueName - The original unique name of the page to be renamed
+     * @param newUniqueName - The new unique name for the page
+     * @param pages - Array of pages to update navigation references in
+     * @param renamedPages - Record tracking already renamed pages
+     * @param maxRun - Maximum number of recursive runs to prevent infinite loops
+     * @param indexRun - Current run index for recursion tracking
+     * @param runPrefix - Prefix for generated names to avoid conflicts
+     * @returns Updated pages array with corrected navigation references
+     */
+    private adjustNavigationReferences(
+        oldUniqueName: string | undefined,
+        newUniqueName: string | undefined,
+        pages: ScriptConfig.PageTypeGlobal[],
+        renamedPages: Record<string, string>,
+        maxRun: number = 3,
+        indexRun: number = 0,
+        runPrefix = '',
+    ): ScriptConfig.PageTypeGlobal[] {
+        // Early return for invalid inputs
+        if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
+            return pages;
+        }
+
+        // Prevent infinite recursion
+        if (indexRun++ > maxRun) {
+            this.log.warn(
+                `navigationAdjustRun for ${oldUniqueName} to ${newUniqueName} aborted - maxRun ${maxRun} reached!`,
+            );
+            return pages;
+        }
+
+        const pageIndex = pages.findIndex(item => item.uniqueName === oldUniqueName);
+        if (pageIndex === -1) {
+            return pages;
+        }
+
+        const page = pages[pageIndex];
+        if (!page) {
+            return pages;
+        }
+
+        // Track renamed pages and create copy
+        renamedPages[oldUniqueName] = newUniqueName;
+        const updatedPage = { ...structuredClone(page), uniqueName: newUniqueName };
+        pages.push(updatedPage);
+
+        // Update navigation references in page items
+        this.updatePageItemsNavigation(updatedPage, renamedPages, pages, maxRun, indexRun, runPrefix);
+
+        // Update navigation tags (next, prev, home, parent)
+        this.updatePageNavigationTags(updatedPage, renamedPages, pages, maxRun, indexRun, runPrefix);
+
+        return pages;
+    }
+
+    /**
+     * Updates navigation references in page items.
+     *
+     * @param page - The page containing items to update
+     * @param renamedPages - Record tracking already renamed pages
+     * @param pages - Array of all pages for reference checking
+     * @param maxRun - Maximum number of recursive runs
+     * @param indexRun - Current run index for recursion tracking
+     * @param runPrefix - Prefix for generated names to avoid conflicts
+     */
+    private updatePageItemsNavigation(
+        page: ScriptConfig.PageTypeGlobal,
+        renamedPages: Record<string, string>,
+        pages: ScriptConfig.PageTypeGlobal[],
+        maxRun: number,
+        indexRun: number,
+        runPrefix: string,
+    ): void {
+        if (!('items' in page) || !page.items) {
+            return;
+        }
+
+        for (let i = 0; i < page.items.length; i++) {
+            const item = page.items[i];
+            if (!item?.navigate || !item.targetPage) {
+                continue;
+            }
+
+            // Check if already renamed
+            if (this.isAlreadyRenamed(item.targetPage, renamedPages)) {
+                item.targetPage = renamedPages[item.targetPage];
+                continue;
+            }
+
+            // Create new name and recursively adjust
+            const newName = `${runPrefix}_${item.targetPage}_copy_nav_${Math.floor(Math.random() * 100_000)}`;
+            if (pages.findIndex(it => it.uniqueName === newName) === -1) {
+                this.adjustNavigationReferences(
+                    item.targetPage,
+                    newName,
+                    pages,
+                    renamedPages,
+                    maxRun,
+                    indexRun,
+                    runPrefix,
+                );
+            }
+            item.targetPage = newName;
+        }
+    }
+
+    /**
+     * Updates navigation tags (next, prev, home, parent) for a page.
+     *
+     * @param page - The page to update navigation tags for
+     * @param renamedPages - Record tracking already renamed pages
+     * @param pages - Array of all pages for reference checking
+     * @param maxRun - Maximum number of recursive runs
+     * @param indexRun - Current run index for recursion tracking
+     * @param runPrefix - Prefix for generated names to avoid conflicts
+     */
+    private updatePageNavigationTags(
+        page: ScriptConfig.PageTypeGlobal,
+        renamedPages: Record<string, string>,
+        pages: ScriptConfig.PageTypeGlobal[],
+        maxRun: number,
+        indexRun: number,
+        runPrefix: string,
+    ): void {
+        const navigationTags = ['next', 'prev', 'home', 'parent'] as const;
+
+        for (const tag of navigationTags) {
+            if (!page[tag] || page[tag] === page.uniqueName) {
+                continue;
+            }
+
+            // Check if already renamed
+            if (this.isAlreadyRenamed(page[tag], renamedPages)) {
+                page[tag] = renamedPages[page[tag]];
+                continue;
+            }
+
+            // Create new name and recursively adjust
+            const newName = `${runPrefix}_${page[tag]}_copy_nav_${Math.floor(Math.random() * 100_000)}`;
+            if (pages.findIndex(it => it.uniqueName === newName) === -1) {
+                this.adjustNavigationReferences(page[tag], newName, pages, renamedPages, maxRun, indexRun, runPrefix);
+            }
+            page[tag] = newName;
+        }
+    }
+
+    /**
+     * Checks if a page reference has already been renamed.
+     *
+     * @param targetPage - The target page name to check
+     * @param renamedPages - Record of renamed pages to check against
+     * @returns True if the page has already been renamed
+     */
+    private isAlreadyRenamed(targetPage: string, renamedPages: Record<string, string>): boolean {
+        return Object.values(renamedPages).includes(targetPage) || !!renamedPages[targetPage];
+    }
+
+    /**
+     * Processes and merges global configuration with the script configuration.
+     *
+     * @param config - The script configuration to merge global config into
+     * @param messages - Array to collect processing messages
+     */
+    private async processGlobalConfiguration(config: ScriptConfig.Config, messages: string[]): Promise<void> {
+        const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+        if (!obj?.native?.globalConfigRaw) {
+            return;
+        }
+
+        const globalConfig = obj.native.globalConfigRaw as ScriptConfig.globalPagesConfig;
+        if (!globalConfig || !configManagerConst.isGlobalConfig(globalConfig)) {
+            return;
+        }
+
+        // Set default maxNavigationAdjustRuns
+        globalConfig.maxNavigationAdjustRuns =
+            globalConfig.maxNavigationAdjustRuns && globalConfig.maxNavigationAdjustRuns > 0
+                ? globalConfig.maxNavigationAdjustRuns
+                : 3;
+
+        const removeGlobalPageIndexs: Set<number> = new Set();
+
+        // Process global config for pages
+        this.mergeGlobalConfigForPages(config, globalConfig, messages);
+        this.mergeGlobalConfigForMainPages(config, globalConfig, messages, removeGlobalPageIndexs);
+        this.mergeGlobalConfigForSubPages(config, globalConfig, messages, removeGlobalPageIndexs);
+
+        // Remove processed global pages and merge remaining
+        this.finalizeGlobalConfigMerge(config, globalConfig, removeGlobalPageIndexs);
+    }
+
+    /**
+     * Merges global config navigation links for pages.
+     *
+     * @param config - The script configuration to process
+     * @param globalConfig - The global configuration to merge from
+     * @param messages - Array to collect processing messages
+     */
+    private mergeGlobalConfigForPages(
+        config: ScriptConfig.Config,
+        globalConfig: ScriptConfig.globalPagesConfig,
+        messages: string[],
+    ): void {
+        for (let i = 0; i < config.pages.length; i++) {
+            const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
+            if (!page || !('globalLink' in page) || !page.globalLink) {
+                continue;
+            }
+
+            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
+            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
+            if (!gPage) {
+                continue;
+            }
+
+            this.processPageNavigationLinks(page, gPage, config, messages, i, globalConfig);
+        }
+    }
+
+    /**
+     * Processes navigation links for a specific page.
+     *
+     * @param page - The page with global link to process
+     * @param gPage - The global page being linked to
+     * @param config - The script configuration being processed
+     * @param messages - Array to collect processing messages
+     * @param pageIndex - Index of the page in the config array
+     * @param globalConfig - The global configuration containing sub pages
+     */
+    private processPageNavigationLinks(
+        page: ScriptConfig.PageTypeGlobal,
+        gPage: ScriptConfig.PageType,
+        config: ScriptConfig.Config,
+        messages: string[],
+        pageIndex: number,
+        globalConfig: ScriptConfig.globalPagesConfig,
+    ): void {
+        for (const tag of ['next', 'prev'] as const) {
+            if (gPage[tag] == null) {
+                continue;
+            }
+
+            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === gPage[tag]);
+            const index = config.pages.findIndex(
+                item => ('globalLink' in item && item.globalLink === gPage[tag]) || item.uniqueName === gPage[tag],
+            );
+
+            if (gIndex !== -1 && index === -1) {
+                let msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. `;
+                if (tag === 'next') {
+                    msg += `Remove ${gPage[tag]} from subPages and add to pages at index ${pageIndex + 1}!`;
+                } else {
+                    msg += `This is not recommended! Prev navigation will "randomly" change the order of pages! Consider to remove it!`;
+                }
+                messages.push(msg);
+                (config.pages as ScriptConfig.PageTypeGlobal[]).splice(pageIndex + 1, 0, {
+                    globalLink: gPage[tag],
+                });
+            }
+        }
+    }
+
+    /**
+     * Merges global config for main pages (config.pages).
+     *
+     * @param config - The script configuration to process main pages for
+     * @param globalConfig - The global configuration containing sub pages
+     * @param messages - Array to collect processing messages
+     * @param removeGlobalPageIndexs - Set tracking which global pages to remove after processing
+     */
+    private mergeGlobalConfigForMainPages(
+        config: ScriptConfig.Config,
+        globalConfig: ScriptConfig.globalPagesConfig,
+        messages: string[],
+        removeGlobalPageIndexs: Set<number>,
+    ): void {
+        for (let i = config.pages.length - 1; i >= 0; i--) {
+            const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
+            if (!page || !('globalLink' in page) || !page.globalLink) {
+                continue;
+            }
+
+            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
+            let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
+
+            if (gPage) {
+                gPage = this.handlePageUniqueNameConflict(page, gPage, globalConfig, removeGlobalPageIndexs);
+                config.pages[i] = this.createMergedPage(gPage, page);
+            } else {
+                this.handleMissingGlobalPage(config, messages, page, i);
+            }
+        }
+    }
+
+    /**
+     * Merges global config for sub pages (config.subPages).
+     *
+     * @param config - The script configuration to process sub pages for
+     * @param globalConfig - The global configuration containing sub pages
+     * @param messages - Array to collect processing messages
+     * @param removeGlobalPageIndexs - Set tracking which global pages to remove after processing
+     */
+    private mergeGlobalConfigForSubPages(
+        config: ScriptConfig.Config,
+        globalConfig: ScriptConfig.globalPagesConfig,
+        messages: string[],
+        removeGlobalPageIndexs: Set<number>,
+    ): void {
+        for (let i = config.subPages.length - 1; i >= 0; i--) {
+            const page = config.subPages[i] as ScriptConfig.PageTypeGlobal;
+            if (!page || !('globalLink' in page) || !page.globalLink) {
+                continue;
+            }
+
+            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
+            let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
+
+            if (gPage) {
+                gPage = this.handlePageUniqueNameConflict(page, gPage, globalConfig, removeGlobalPageIndexs);
+                config.subPages[i] = this.createMergedSubPage(gPage, page);
+            } else {
+                this.handleMissingGlobalSubPage(config, messages, page, i);
+            }
+        }
+    }
+
+    /**
+     * Handles unique name conflicts between pages.
+     *
+     * @param page - The page with potential unique name conflict
+     * @param gPage - The global page being processed
+     * @param globalConfig - The global configuration containing sub pages
+     * @param removeGlobalPageIndexs - Set tracking which global pages to remove after processing
+     * @returns The processed global page with updated unique name
+     */
+    private handlePageUniqueNameConflict(
+        page: ScriptConfig.PageTypeGlobal,
+        gPage: ScriptConfig.PageType,
+        globalConfig: ScriptConfig.globalPagesConfig,
+        removeGlobalPageIndexs: Set<number>,
+    ): ScriptConfig.PageType {
+        const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === gPage.uniqueName);
+
+        if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
+            globalConfig.subPages = this.adjustNavigationReferences(
+                gPage.uniqueName,
+                page.uniqueName,
+                globalConfig.subPages,
+                {},
+                globalConfig.maxNavigationAdjustRuns,
+                0,
+                page.uniqueName,
+            ) as ScriptConfig.PageType[];
+
+            const index = globalConfig.subPages.findIndex(p => p.uniqueName === page.uniqueName);
+            if (index !== -1) {
+                gPage = globalConfig.subPages[index];
+                gPage.uniqueName = page.uniqueName;
+            }
+        } else {
+            removeGlobalPageIndexs.add(gIndex);
+        }
+
+        return gPage;
+    }
+
+    /**
+     * Creates a merged page for main pages (strips navigation).
+     *
+     * @param gPage - The global page to merge from
+     * @param page - The page configuration with heading override
+     * @returns Merged page configuration with navigation stripped
+     */
+    private createMergedPage(gPage: ScriptConfig.PageType, page: ScriptConfig.PageTypeGlobal): ScriptConfig.PageType {
+        const mergedPage = {
+            ...gPage,
+            prev: undefined,
+            next: undefined,
+            home: undefined,
+            parent: undefined,
+        };
+
+        if (page.heading) {
+            mergedPage.heading = page.heading;
+        }
+
+        return mergedPage;
+    }
+
+    /**
+     * Creates a merged page for sub pages (preserves navigation if exists).
+     *
+     * @param gPage - The global page to merge from
+     * @param page - The page configuration with navigation and heading overrides
+     * @returns Merged page configuration with conditional navigation preservation
+     */
+    private createMergedSubPage(
+        gPage: ScriptConfig.PageType,
+        page: ScriptConfig.PageTypeGlobal,
+    ): ScriptConfig.PageType {
+        const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
+
+        const mergedPage = {
+            ...gPage,
+            prev: existNav ? page.prev : gPage.prev,
+            parent: existNav ? page.parent : gPage.parent,
+            next: existNav ? page.next : gPage.next,
+            home: existNav ? page.home : gPage.home,
+        };
+
+        if (page.heading) {
+            mergedPage.heading = page.heading;
+        }
+
+        return mergedPage;
+    }
+
+    /**
+     * Handles missing global page for main pages.
+     *
+     * @param config - The script configuration to remove page from
+     * @param messages - Array to collect error messages
+     * @param page - The page with missing global link
+     * @param index - Index of the page to remove
+     */
+    private handleMissingGlobalPage(
+        config: ScriptConfig.Config,
+        messages: string[],
+        page: ScriptConfig.PageTypeGlobal & { globalLink: string },
+        index: number,
+    ): void {
+        config.pages.splice(index, 1);
+        const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+        messages.push(msg);
+        this.log.warn(msg);
+    }
+
+    /**
+     * Handles missing global page for sub pages.
+     *
+     * @param config - The script configuration to remove page from
+     * @param messages - Array to collect error messages
+     * @param page - The page with missing global link
+     * @param index - Index of the page to remove
+     */
+    private handleMissingGlobalSubPage(
+        config: ScriptConfig.Config,
+        messages: string[],
+        page: ScriptConfig.PageTypeGlobal & { globalLink: string },
+        index: number,
+    ): void {
+        config.subPages.splice(index, 1);
+        const msg = `Global page with uniqueName ${page.globalLink} not found!`;
+        messages.push(msg);
+        this.log.warn(msg);
+    }
+
+    /**
+     * Finalizes the global config merge by removing processed pages and merging remaining.
+     *
+     * @param config - The script configuration to merge remaining global config into
+     * @param globalConfig - The global configuration with sub pages to merge
+     * @param removeGlobalPageIndexs - Set of indices of global pages to remove before merging
+     */
+    private finalizeGlobalConfigMerge(
+        config: ScriptConfig.Config,
+        globalConfig: ScriptConfig.globalPagesConfig,
+        removeGlobalPageIndexs: Set<number>,
+    ): void {
+        // Remove processed global pages (sort descending to maintain indices)
+        for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
+            globalConfig.subPages.splice(index, 1);
+        }
+
+        // Merge remaining global config
+        config.subPages = config.subPages.concat(globalConfig.subPages || []);
+        config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
+        config.nativePageItems = (config.nativePageItems || []).concat(globalConfig.nativePageItems || []);
     }
 
     /**
@@ -55,7 +598,7 @@ export class ConfigManager extends BaseClass {
      *
      * If any errors occur during the process, they are logged and included in the returned messages..
      */
-    async setScriptConfig(configuration: any): Promise<{
+    async setScriptConfig(configuration: ScriptConfig.Config | ScriptConfig.globalPagesConfig): Promise<{
         messages: string[];
         panelConfig:
             | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
@@ -65,8 +608,10 @@ export class ConfigManager extends BaseClass {
             | undefined;
     }> {
         if (!configuration || typeof configuration !== 'object') {
-            this.log.error(`Invalid configuration from Script: ${configuration || 'undefined'}`);
-            return { messages: ['Abort: Invalid configuration'], panelConfig: undefined };
+            const messages = ['Abort: Invalid configuration'];
+            const configStr = configuration ? String(configuration) : 'undefined';
+            this.logError(`Invalid configuration from Script: ${configStr}`, messages);
+            return { messages, panelConfig: undefined };
         }
         /* handle global config */
         if (configManagerConst.isGlobalConfig(configuration)) {
@@ -101,20 +646,22 @@ export class ConfigManager extends BaseClass {
             ...configuration,
         };
         if (!config || !configManagerConst.isConfig(config, this.adapter)) {
-            this.log.error(
-                `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : 'undefined'}`,
-            );
-            return { messages: ['Abort: Invalid configuration'], panelConfig: undefined };
+            const messages = ['Abort: Invalid configuration'];
+            const configInfo = config
+                ? ('panelName' in config ? (config as any).panelName : undefined) ||
+                  ('panelTopic' in config ? (config as any).panelTopic : undefined) ||
+                  JSON.stringify(config)
+                : 'undefined';
+            this.logError(`Invalid configuration from Script: ${configInfo}`, messages);
+            return { messages, panelConfig: undefined };
         }
         const panelItem = this.adapter.config.panels.find(item => item.topic === config.panelTopic);
         if (!panelItem) {
-            this.log.error(`Panel for Topic: ${config.panelTopic} not found in adapter config!`);
-            return {
-                messages: [
-                    `Abort: Topic: ${config.panelTopic} not found in Adapter configuration! Maybe wrong topic?!`,
-                ],
-                panelConfig: undefined,
-            };
+            const messages = [
+                `Abort: Topic: ${config.panelTopic} not found in Adapter configuration! Maybe wrong topic?!`,
+            ];
+            this.logError(`Panel for Topic: ${config.panelTopic} not found in adapter config!`, messages);
+            return { messages, panelConfig: undefined };
         }
         let messages: string[] = [];
 
@@ -130,274 +677,26 @@ export class ConfigManager extends BaseClass {
         const breakingVersion = getVersionAsNumber(this.breakingVersion);
 
         if (version < breakingVersion) {
-            messages.push(
-                `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`,
-            );
-            this.log.error(messages[messages.length - 1]);
-            return { messages, panelConfig: undefined };
+            const message = `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`;
+            return this.handleValidationError(message, messages, true) as {
+                messages: string[];
+                panelConfig: undefined;
+            };
         }
         if (version < requiredVersion) {
-            messages.push(
-                `Update Script! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is lower than the required version ${scriptVersion}!`,
-            );
-            this.log.warn(messages[messages.length - 1]);
+            const message = `Update Script! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is lower than the required version ${scriptVersion}!`;
+            this.logWarning(message, messages);
         } else if (version > requiredVersion) {
-            messages.push(
-                `Update Adapter! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is higher than the required version ${scriptVersion}!`,
-            );
-            this.log.warn(messages[messages.length - 1]);
+            const message = `Update Adapter! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is higher than the required version ${scriptVersion}!`;
+            this.logWarning(message, messages);
         } else {
-            messages.push(
-                `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is correct!`,
-            );
+            const message = `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is correct!`;
+            this.logInfo(message, messages);
         }
 
         // start configuration
-
         {
-            const navigationAdjustRun = (
-                oldUniqueName: string | undefined,
-                newUniqueName: string | undefined,
-                pages: ScriptConfig.PageTypeGlobal[],
-                renamedPages: Record<string, string>,
-                maxRun: number = 3,
-                indexRun: number = 0,
-                runPrefix = '',
-            ): ScriptConfig.PageTypeGlobal[] => {
-                if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
-                    return pages;
-                }
-                if (indexRun++ > maxRun) {
-                    this.log.warn(
-                        `navigationAdjustRun for ${oldUniqueName} to ${newUniqueName} aborted - maxRun ${maxRun} reached!`,
-                    );
-                    return pages;
-                }
-                const pageIndex = pages.findIndex(item => item.uniqueName === oldUniqueName);
-
-                if (pageIndex === -1) {
-                    return pages;
-                }
-                let page = pages[pageIndex];
-                if (!page) {
-                    return pages;
-                }
-                renamedPages[oldUniqueName] = newUniqueName;
-                page = { ...structuredClone(page), uniqueName: newUniqueName };
-                pages.push(page);
-
-                if ('items' in page && page.items) {
-                    for (let i = 0; i < page.items.length; i++) {
-                        const item = page.items[i];
-                        if (item && item.navigate && item.targetPage) {
-                            const origin = item.targetPage;
-
-                            for (const key in renamedPages) {
-                                const value = renamedPages[key];
-                                if (origin === value) {
-                                    item.targetPage = value;
-                                    continue;
-                                }
-                            }
-                            if (renamedPages[item.targetPage]) {
-                                item.targetPage = renamedPages[item.targetPage];
-                                continue;
-                            }
-                            const newName = `${runPrefix}_${item.targetPage}_copy_nav_${Math.floor(Math.random() * 100_000)}`;
-                            if (pages.findIndex(it => it.uniqueName === newName) === -1) {
-                                pages = navigationAdjustRun(
-                                    item.targetPage,
-                                    newName,
-                                    pages,
-                                    renamedPages,
-                                    maxRun,
-                                    indexRun,
-                                    runPrefix,
-                                );
-                            }
-                            item.targetPage = newName;
-                        }
-                    }
-                }
-                for (const t of ['next', 'prev', 'home', 'parent']) {
-                    const tag = t as 'next' | 'prev' | 'home' | 'parent';
-                    if (page[tag] === oldUniqueName) {
-                        for (const key in renamedPages) {
-                            const value = renamedPages[key];
-                            if (page[tag] === value) {
-                                continue;
-                            }
-                        }
-                        if (renamedPages[page[tag]]) {
-                            page[tag] = renamedPages[page[tag]];
-                            continue;
-                        }
-                        const newName = `${runPrefix}_${page[tag]}_copy_nav_${Math.floor(Math.random() * 100_000)}`;
-                        if (pages.findIndex(it => it.uniqueName === newName) === -1) {
-                            pages = navigationAdjustRun(
-                                page[tag],
-                                newName,
-                                pages,
-                                renamedPages,
-                                maxRun,
-                                indexRun,
-                                runPrefix,
-                            );
-                        }
-                        page[tag] = newName;
-                    }
-                }
-                return pages;
-            };
-            // merge global config
-            const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
-            if (obj && obj.native && obj.native.globalConfigRaw) {
-                const globalConfig = obj.native.globalConfigRaw as ScriptConfig.globalPagesConfig;
-                if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
-                    globalConfig.maxNavigationAdjustRuns =
-                        globalConfig.maxNavigationAdjustRuns && globalConfig.maxNavigationAdjustRuns > 0
-                            ? globalConfig.maxNavigationAdjustRuns
-                            : 3;
-                    const removeGlobalPageIndexs: Set<number> = new Set();
-                    // merge global config for pages
-                    for (let i = 0; i < config.pages.length; i++) {
-                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
-                        if (page && 'globalLink' in page && page.globalLink) {
-                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
-                            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
-                            if (gPage) {
-                                for (const t of ['next', 'prev']) {
-                                    const tag = t as 'next' | 'prev';
-                                    if (gPage[tag] != null) {
-                                        const gIndex = globalConfig.subPages.findIndex(
-                                            item => item.uniqueName === gPage[tag],
-                                        );
-                                        const index = config.pages.findIndex(
-                                            item =>
-                                                ('globalLink' in item && item.globalLink === gPage[tag]) ||
-                                                item.uniqueName === gPage[tag],
-                                        );
-                                        if (gIndex !== -1 && index === -1) {
-                                            let msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. `;
-                                            if (tag === 'next') {
-                                                msg += `Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
-                                            } else {
-                                                msg += `This is not recommended! Prev navigation will "randomly" change the order of pages! Consider to remove it!`;
-                                            }
-                                            messages.push(msg);
-                                            (config.pages as ScriptConfig.PageTypeGlobal[]).splice(i + 1, 0, {
-                                                globalLink: gPage[tag],
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    for (let i = config.pages.length - 1; i >= 0; i--) {
-                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
-                        if (page && 'globalLink' in page && page.globalLink) {
-                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
-                            let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
-                            if (gPage) {
-                                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
-                                    globalConfig.subPages = navigationAdjustRun(
-                                        gPage.uniqueName,
-                                        page.uniqueName,
-                                        globalConfig.subPages,
-                                        {},
-                                        globalConfig.maxNavigationAdjustRuns,
-                                        0,
-                                        page.uniqueName,
-                                    ) as ScriptConfig.PageType[];
-                                    const index = globalConfig.subPages.findIndex(
-                                        p => p.uniqueName === page.uniqueName,
-                                    );
-                                    if (index !== -1) {
-                                        gPage = globalConfig.subPages[index];
-                                        gPage.uniqueName = page.uniqueName;
-                                    }
-                                } else {
-                                    removeGlobalPageIndexs.add(gIndex);
-                                }
-                                config.pages[i] = {
-                                    ...gPage,
-                                    prev: undefined,
-                                    next: undefined,
-                                    home: undefined,
-                                    parent: undefined,
-                                };
-                                if (page.heading) {
-                                    config.pages[i].heading = page.heading;
-                                }
-                            } else {
-                                config.pages.splice(i, 1);
-                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                                messages.push(msg);
-                                this.log.warn(msg);
-                            }
-                        }
-                    }
-
-                    // merge global config for subPages
-                    for (let i = config.subPages.length - 1; i >= 0; i--) {
-                        const page = config.subPages[i] as ScriptConfig.PageTypeGlobal;
-                        if (page && 'globalLink' in page && page.globalLink) {
-                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
-                            let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
-                            if (gPage) {
-                                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
-                                    globalConfig.subPages = navigationAdjustRun(
-                                        gPage.uniqueName,
-                                        page.uniqueName,
-                                        globalConfig.subPages,
-                                        {},
-                                        globalConfig.maxNavigationAdjustRuns,
-                                        0,
-                                        page.uniqueName,
-                                    ) as ScriptConfig.PageType[];
-                                    const index = globalConfig.subPages.findIndex(
-                                        p => p.uniqueName === page.uniqueName,
-                                    );
-                                    if (index !== -1) {
-                                        gPage = globalConfig.subPages[index];
-                                        gPage.uniqueName = page.uniqueName;
-                                    }
-                                } else {
-                                    removeGlobalPageIndexs.add(gIndex);
-                                }
-                                const existNav =
-                                    page.prev != null || page.parent != null || page.next != null || page.home != null;
-
-                                config.subPages[i] = {
-                                    ...gPage,
-                                    prev: existNav ? page.prev : gPage.prev,
-                                    parent: existNav ? page.parent : gPage.parent,
-                                    next: existNav ? page.next : gPage.next,
-                                    home: existNav ? page.home : gPage.home,
-                                };
-
-                                if (page.heading) {
-                                    config.subPages[i].heading = page.heading;
-                                }
-                            } else {
-                                config.subPages.splice(i, 1);
-                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                                messages.push(msg);
-                                this.log.warn(msg);
-                            }
-                        }
-                    }
-
-                    for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
-                        globalConfig.subPages.splice(index, 1);
-                    }
-                    config.subPages = config.subPages.concat(globalConfig.subPages || []);
-
-                    config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
-                    config.nativePageItems = (config.nativePageItems || []).concat(globalConfig.nativePageItems || []);
-                }
-            }
+            await this.processGlobalConfiguration(config, messages);
         }
         if (config.advancedOptions && config.advancedOptions.extraConfigLogging) {
             this.extraConfigLogging = true;
@@ -413,9 +712,9 @@ export class ConfigManager extends BaseClass {
         } = { pages: [], navigation: [], scriptVersion: config.version };
 
         if (!config.panelTopic) {
-            this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
-            messages.push('Required field panelTopic is missing');
-            return { messages: messages, panelConfig: undefined };
+            const message = `Required field panelTopic is missing in ${config.panelName || 'unknown'}!`;
+            this.logError(message, messages);
+            return { messages, panelConfig: undefined };
         }
         panelConfig.updated = true;
         if (config.panelTopic.endsWith('.cmnd.CustomSend')) {
@@ -428,12 +727,6 @@ export class ConfigManager extends BaseClass {
         } else {
             panelConfig.name = `NSPanel-${config.panelTopic}`;
         }
-        /*if (config.defaultOnColor) {
-            Color. = Color.convertScriptRGBtoRGB(config.defaultOnColor);
-        }
-        if (config.defaultOffColor) {
-            Color. = Color.convertScriptRGBtoRGB(config.defaultOffColor);
-        }*/
 
         // Screensaver configuration
         try {
@@ -452,13 +745,13 @@ export class ConfigManager extends BaseClass {
                 screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
             }
             panelConfig.pages.push(screensaver);
-        } catch (error: any) {
-            messages.push(`Screensaver configuration error - ${error}`);
-            this.log.warn(messages[messages.length - 1]);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            const message = `Screensaver configuration error - ${errorMessage}`;
+            this.logWarning(message, messages);
         }
         if (config.pages.length > 0) {
-            for (let a = 0; a < config.pages.length; a++) {
-                const page = config.pages[a];
+            for (const page of config.pages) {
                 let uniqueID = '';
                 if (page.type === undefined) {
                     uniqueID = page.native.uniqueID || '';
@@ -517,8 +810,8 @@ export class ConfigManager extends BaseClass {
             if (page && page.type !== undefined) {
                 if (names.includes(page.uniqueName)) {
                     double = true;
-                    messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
-                    this.log.error(messages[messages.length - 1]);
+                    const message = `Abort - double uniqueName ${page.uniqueName} in config!`;
+                    this.logError(message, messages);
                 } else {
                     names.push(page.uniqueName);
                 }
@@ -575,27 +868,32 @@ export class ConfigManager extends BaseClass {
 
             // remove duplicates
             obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
-                (item: any, i: number) =>
-                    obj.native.scriptConfigRaw.findIndex((item2: any) => item2.panelTopic === item.panelTopic) === i,
+                (item: ScriptConfig.Config, i: number) =>
+                    obj.native.scriptConfigRaw.findIndex(
+                        (item2: ScriptConfig.Config) => item2.panelTopic === item.panelTopic,
+                    ) === i,
             );
             // remove config with same topic and different name
             obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
-                (item: any) => item.panelTopic !== configuration.panelTopic,
+                (item: ScriptConfig.Config) => item.panelTopic !== configuration.panelTopic,
             );
             obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
-                (item: any) => this.adapter.config.panels.findIndex(a => a.topic === item.panelTopic) !== -1,
+                (item: ScriptConfig.Config) =>
+                    this.adapter.config.panels.findIndex(a => a.topic === item.panelTopic) !== -1,
             );
 
             obj.native.scriptConfig = obj.native.scriptConfig || [];
             // remove duplicates
             obj.native.scriptConfig = obj.native.scriptConfig.filter(
-                (item: any, i: number) =>
-                    obj.native.scriptConfig.findIndex((item2: any) => item2.topic === item.topic) === i,
+                (item: panelConfigPartial, i: number) =>
+                    obj.native.scriptConfig.findIndex((item2: panelConfigPartial) => item2.topic === item.topic) === i,
             );
             // remove config with same topic and different name
-            obj.native.scriptConfig = obj.native.scriptConfig.filter((item: any) => item.topic !== panelConfig.topic);
             obj.native.scriptConfig = obj.native.scriptConfig.filter(
-                (item: any) => this.adapter.config.panels.findIndex(a => a.topic === item.topic) !== -1,
+                (item: panelConfigPartial) => item.topic !== panelConfig.topic,
+            );
+            obj.native.scriptConfig = obj.native.scriptConfig.filter(
+                (item: panelConfigPartial) => this.adapter.config.panels.findIndex(a => a.topic === item.topic) !== -1,
             );
 
             obj.native.scriptConfigRaw.push(configuration);
@@ -1541,13 +1839,34 @@ export class ConfigManager extends BaseClass {
         return { gridItem, messages };
     }
 
+    /**
+     * Checks if an item is a native page item with pre-configured data.
+     *
+     * @param item - The page item to check
+     * @returns True if the item is a native page item
+     */
     isNativePageItem(item: ScriptConfig.PageItem): item is ScriptConfig.PageItemNative {
         return 'native' in item && item.native !== undefined && item.native !== null;
     }
+
+    /**
+     * Checks if an item is a base page item that needs configuration.
+     *
+     * @param item - The page item to check
+     * @returns True if the item is a base page item
+     */
     isPageBaseItem(item: ScriptConfig.PageItem): item is ScriptConfig.PageBaseItem {
         return !('native' in item);
     }
 
+    /**
+     * Creates configuration for navigation page items.
+     * Handles both native and base page items with navigation capabilities.
+     *
+     * @param item - The page item to configure for navigation
+     * @param page - The parent page containing this item
+     * @returns Promise resolving to the configured page item or undefined
+     */
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
@@ -2605,6 +2924,87 @@ export class ConfigManager extends BaseClass {
         return result;
     }
 
+    /**
+     * Handles navigation item configuration.
+     *
+     * @param item - The navigation item to configure
+     * @param page - The parent page containing this item
+     * @param messages - Array to collect configuration messages
+     * @returns Promise resolving to navigation item configuration result
+     */
+    private async handleNavigationItem(
+        item: ScriptConfig.PageItem,
+        page: ScriptConfig.PageType,
+        messages: string[],
+    ): Promise<{
+        itemConfig: typePageItem.PageItemDataItemsOptions | undefined;
+        messages: string[];
+        pageConfig?: ScriptConfig.PageType;
+    }> {
+        if (!item.navigate) {
+            throw new Error(`Item is not a navigation item!`);
+        }
+        if (!('targetPage' in item) || !item.targetPage || typeof item.targetPage !== 'string') {
+            throw new Error(`TargetPage missing in ${(item && 'id' in item && item.id) || 'no id'}!`);
+        }
+        return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
+    }
+
+    /**
+     * Handles native item configuration.
+     *
+     * @param item - The native item to configure
+     * @param messages - Array to collect configuration messages
+     * @returns Native item configuration result
+     */
+    private handleNativeItem(
+        item: ScriptConfig.PageItem,
+        messages: string[],
+    ): {
+        itemConfig: typePageItem.PageItemDataItemsOptions | undefined;
+        messages: string[];
+        pageConfig?: ScriptConfig.PageType;
+    } {
+        if (!this.isNativePageItem(item)) {
+            throw new Error(`Item is not a native item!`);
+        }
+        if (!('native' in item) || !isPageItemDataItemsOptions(item.native)) {
+            throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
+        }
+        return { itemConfig: item.native, messages };
+    }
+
+    /**
+     * Handles special item types like 'delete' and 'empty'.
+     *
+     * @param item - The item to check for special types
+     * @param messages - Array to collect configuration messages
+     * @returns Special item configuration result or null if not special
+     */
+    private handleSpecialItem(
+        item: ScriptConfig.PageItem,
+        messages: string[],
+    ): {
+        itemConfig: typePageItem.PageItemDataItemsOptions | undefined;
+        messages: string[];
+        pageConfig?: ScriptConfig.PageType;
+    } | null {
+        if ('id' in item && item.id && ['delete', 'empty'].includes(item.id)) {
+            return { itemConfig: { type: 'empty', data: undefined }, messages };
+        }
+        return null;
+    }
+
+    /**
+     * Creates configuration for page items based on their type and properties.
+     * Handles navigation items, native items, and ioBroker object-based items.
+     * This is the main entry point for configuring page items with all their templates and data mappings.
+     *
+     * @param item - The page item to configure (navigation, native, or object-based)
+     * @param page - The parent page containing this item
+     * @param messages - Array to collect configuration messages and warnings
+     * @returns Promise resolving to item configuration, messages, and optional page config
+     */
     async getPageItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
@@ -2614,24 +3014,46 @@ export class ConfigManager extends BaseClass {
         messages: string[];
         pageConfig?: ScriptConfig.PageType;
     }> {
-        let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
+        // Handle navigation items
         if (item.navigate) {
-            if (!item.targetPage || typeof item.targetPage !== 'string') {
-                throw new Error(`TargetPage missing in ${(item && 'id' in item && item.id) || 'no id'}!`);
-            }
-            return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
+            return await this.handleNavigationItem(item, page, messages);
         }
+
+        // Handle native items
         if (this.isNativePageItem(item)) {
-            if (!isPageItemDataItemsOptions(item.native)) {
-                throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
-            }
-            itemConfig = item.native;
-            return { itemConfig, messages };
+            return this.handleNativeItem(item, messages);
         }
+
+        // Handle special item types
+        const specialResult = this.handleSpecialItem(item, messages);
+        if (specialResult) {
+            return specialResult;
+        }
+
+        // Handle object-based items
+        return await this.handleObjectBasedItem(item, page, messages);
+    }
+
+    /**
+     * Handles configuration for object-based items that reference ioBroker objects.
+     *
+     * @param item - The object-based item to configure
+     * @param page - The parent page containing this item
+     * @param messages - Array to collect configuration messages
+     * @returns Promise resolving to object-based item configuration
+     */
+    private async handleObjectBasedItem(
+        item: ScriptConfig.PageItem,
+        page: ScriptConfig.PageType,
+        messages: string[],
+    ): Promise<{
+        itemConfig: typePageItem.PageItemDataItemsOptions | undefined;
+        messages: string[];
+        pageConfig?: ScriptConfig.PageType;
+    }> {
+        let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
+
         if ('id' in item && item.id) {
-            if (['delete', 'empty'].includes(item.id)) {
-                return { itemConfig: { type: 'empty', data: undefined }, messages };
-            }
             if (item.id.endsWith('.')) {
                 item.id = item.id
                     .split('.')
@@ -5498,12 +5920,12 @@ export class ConfigManager extends BaseClass {
         }
         if (scriptConfig) {
             // merge all pages into every pages array
-            for (let b = 0; b < scriptConfig.length; b++) {
-                for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
-                    if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
+            for (const [bIndex, scriptB] of scriptConfig.entries()) {
+                for (const [cIndex, scriptC] of scriptConfig.entries()) {
+                    if (cIndex === bIndex || !scriptC || !scriptB.pages || !scriptC.pages) {
                         continue;
                     }
-                    let pages = structuredClone(scriptConfig[c].pages);
+                    let pages = structuredClone(scriptC.pages);
                     if (pages) {
                         pages = pages.filter(a => {
                             if (
@@ -5513,18 +5935,17 @@ export class ConfigManager extends BaseClass {
                             ) {
                                 return false;
                             }
-                            if (scriptConfig[b].pages!.find(b => b.uniqueID === a.uniqueID)) {
+                            if (scriptB.pages!.find(existingPage => existingPage.uniqueID === a.uniqueID)) {
                                 return false;
                             }
                             return true;
                         });
 
-                        scriptConfig[b].pages = scriptConfig[b].pages!.concat(pages);
+                        scriptB.pages = scriptB.pages.concat(pages);
                     }
                 }
             }
-            for (let b = 0; b < scriptConfig.length; b++) {
-                const s = scriptConfig[b];
+            for (const [bIndex, s] of scriptConfig.entries()) {
                 if (!s || !s.pages) {
                     continue;
                 }
@@ -5537,22 +5958,25 @@ export class ConfigManager extends BaseClass {
                     panel.navigation = [];
                 }
                 panel.pages = panel.pages.filter(a => {
-                    if (s.pages!.find(b => b.uniqueID === a.uniqueID)) {
+                    if (s.pages!.find(existingPage => existingPage.uniqueID === a.uniqueID)) {
                         return false;
                     }
                     return true;
                 });
                 panel.navigation = panel.navigation.filter(a => {
-                    if (s.navigation && s.navigation.find(b => a == null || b == null || b.name === a.name)) {
+                    if (
+                        s.navigation &&
+                        s.navigation.find(navItem => a == null || navItem == null || navItem.name === a.name)
+                    ) {
                         return false;
                     }
                     return true;
                 });
                 s.navigation = (panel.navigation || []).concat(s.navigation || []);
                 s.pages = (panel.pages || []).concat(s.pages || []);
-                result[b] = {
+                result[bIndex] = {
                     ...{},
-                    ...result[b],
+                    ...result[bIndex],
                     ...panel,
                     ...s,
                 };
