@@ -329,13 +329,11 @@ class Controller extends Library.BaseClass {
   addPanel = async (panel) => {
     let index = this.panels.findIndex((p) => p.topic === panel.topic);
     if (index !== -1) {
-      this.adapter.testSuccessful = false;
       this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} already exists`);
       return;
     }
     index = this.adapter.config.panels.findIndex((p) => p.topic === panel.topic);
     if (index === -1) {
-      this.adapter.testSuccessful = false;
       this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} not found in config`);
       return;
     }
@@ -357,7 +355,6 @@ class Controller extends Library.BaseClass {
         this.log.debug(`Panel ${newPanel.name} created`);
       } else {
         await newPanel.delete();
-        this.adapter.testSuccessful = false;
         this.log.error(`Panel ${panel.name} has a invalid configuration.`);
       }
     } catch (e) {

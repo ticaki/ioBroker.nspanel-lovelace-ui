@@ -9,5 +9,4 @@ declare class NspanelLovelaceUi extends utils.Adapter {
     mqttServer: MQTTServerClass | undefined;
     controller: Controller | undefined;
     unload: boolean;
-    testSuccessful: boolean;
 }
