@@ -732,84 +732,84 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 r = await manager.setScriptConfig(obj.message);
                             }
                             //this.log.debug(`ScriptConfig result ${JSON.stringify(r.panelConfig)}`);
-                            
+
                             let reloaded = false;
                             //try {
                             if (r.panelConfig) {
-                                    const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
-                                    if (arr && arr.length > 0) {
-                                        const config = arr[0];
-                                        if (this.controller && config) {
-                                            const topic = config.topic;
+                                const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
+                                if (arr && arr.length > 0) {
+                                    const config = arr[0];
+                                    if (this.controller && config) {
+                                        const topic = config.topic;
 
-                                            if (topic) {
-                                                const index = this.controller.panels.findIndex(a => a.topic === topic);
-                                                if (index !== -1) {
-                                                    const name =
-                                                        this.controller.panels[index].friendlyName ||
-                                                        config.name ||
-                                                        config.topic;
-                                                    await this.controller.removePanel(this.controller.panels[index]);
-                                                    if (this.unload) {
-                                                        if (obj.callback) {
-                                                            this.sendTo(
-                                                                obj.from,
-                                                                obj.command,
-                                                                'Adapter is stopping',
-                                                                obj.callback,
-                                                            );
-                                                        }
-                                                        return;
+                                        if (topic) {
+                                            const index = this.controller.panels.findIndex(a => a.topic === topic);
+                                            if (index !== -1) {
+                                                const name =
+                                                    this.controller.panels[index].friendlyName ||
+                                                    config.name ||
+                                                    config.topic;
+                                                await this.controller.removePanel(this.controller.panels[index]);
+                                                if (this.unload) {
+                                                    if (obj.callback) {
+                                                        this.sendTo(
+                                                            obj.from,
+                                                            obj.command,
+                                                            'Adapter is stopping',
+                                                            obj.callback,
+                                                        );
                                                     }
-                                                    await this.delay(1500);
-                                                    if (this.unload) {
-                                                        if (obj.callback) {
-                                                            this.sendTo(
-                                                                obj.from,
-                                                                obj.command,
-                                                                'Adapter is stopping',
-                                                                obj.callback,
-                                                            );
-                                                        }
-                                                        return;
-                                                    }
-                                                    await this.controller.addPanel(config);
-
-                                                    const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
-                                                    this.log.info(msg);
-                                                    r.messages.push(msg);
-                                                    reloaded = true;
-                                                } else {
-                                                    r.messages.push(
-                                                        `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`,
-                                                    );
+                                                    return;
                                                 }
+                                                await this.delay(1500);
+                                                if (this.unload) {
+                                                    if (obj.callback) {
+                                                        this.sendTo(
+                                                            obj.from,
+                                                            obj.command,
+                                                            'Adapter is stopping',
+                                                            obj.callback,
+                                                        );
+                                                    }
+                                                    return;
+                                                }
+                                                await this.controller.addPanel(config);
+
+                                                const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
+                                                this.log.info(msg);
+                                                r.messages.push(msg);
+                                                reloaded = true;
                                             } else {
                                                 r.messages.push(
-                                                    `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`,
+                                                    `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`,
                                                 );
                                             }
                                         } else {
                                             r.messages.push(
-                                                this.controller
-                                                    ? `Controller not exist.  Configuration saved. Adapter restart required!`
-                                                    : `Config not exist. `,
+                                                `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`,
                                             );
                                         }
                                     } else {
-                                        r.messages.push(`No config found after conversion`);
+                                        r.messages.push(
+                                            this.controller
+                                                ? `Controller not exist.  Configuration saved. Adapter restart required!`
+                                                : `Config not exist. `,
+                                        );
                                     }
                                 } else {
-                                    r.messages.push(`Please send more as 0, '', false, null or undefined!`);
+                                    r.messages.push(`No config found after conversion`);
                                 }
-                                /*} catch (e: any) {
+                            } else {
+                                r.messages.push(`Please send more as 0, '', false, null or undefined!`);
+                            }
+                            /*} catch (e: any) {
                                         this.log.error(`Error in configuration: ${e.message}`);
                                     }*/
-                                if (!reloaded) {
-                                    const msg = `❌ Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
-                                    this.log.info(msg);
-                                    r.messages.push(msg);
-                                }
+                            if (!reloaded) {
+                                const msg = `❌ Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
+                                this.log.info(msg);
+                                r.messages.push(msg);
+                            }
                             await manager.delete();
                             result = r.messages;
                             if (obj.callback) {
