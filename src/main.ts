@@ -25,7 +25,6 @@ import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import axios from 'axios';
 import { URL } from 'url';
-import type { HttpServer } from './lib/classes/http-server';
 import type * as pages from './lib/types/pages';
 import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
@@ -42,7 +41,6 @@ class NspanelLovelaceUi extends utils.Adapter {
     controller: Controller | undefined;
     unload: boolean = false;
     testSuccessful: boolean = true;
-    httpServer: HttpServer[] = [];
     timeoutAdmin: ioBroker.Timeout | undefined;
     timeoutAdmin2: ioBroker.Timeout | undefined;
     timeoutAdminArray: (ioBroker.Timeout | undefined)[] = [];
@@ -548,11 +546,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             });
             if (this.controller) {
                 await this.controller.delete();
-            }
-            for (const server of this.httpServer) {
-                if (!server.unload) {
-                    await server.delete();
-                }
             }
             if (this.mqttClient) {
                 await this.mqttClient.destroy();

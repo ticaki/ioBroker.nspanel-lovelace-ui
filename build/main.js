@@ -44,7 +44,6 @@ class NspanelLovelaceUi extends utils.Adapter {
   controller;
   unload = false;
   testSuccessful = true;
-  httpServer = [];
   timeoutAdmin;
   timeoutAdmin2;
   timeoutAdminArray = [];
@@ -444,11 +443,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       });
       if (this.controller) {
         await this.controller.delete();
-      }
-      for (const server of this.httpServer) {
-        if (!server.unload) {
-          await server.delete();
-        }
       }
       if (this.mqttClient) {
         await this.mqttClient.destroy();
