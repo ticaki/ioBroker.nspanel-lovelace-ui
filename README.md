@@ -147,6 +147,13 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (copilot) Refactored test infrastructure: moved test code from main.ts to proper integration test files
+- (copilot) Created test-setup.js and test-data-provider.js for better test organization
+- (copilot) Added test/README.md with documentation for test infrastructure
+- (copilot) Removed testCase mode code from production adapter (main.ts and controller.ts)
+- (copilot) Tests now use external configuration via ScriptConfig message instead of embedded test code
+
 ### 0.6.3 (2025-10-10)
 - (ticaki) alarm and approved fixed  - static dp for approve
 

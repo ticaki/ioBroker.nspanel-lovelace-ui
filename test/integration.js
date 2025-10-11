@@ -3,6 +3,7 @@ require('./test-setup');
 
 const path = require('path');
 const { tests } = require('@iobroker/testing');
+const { testScriptConfig } = require('./test-config-data');
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -114,9 +115,20 @@ tests.integration(path.join(__dirname, '..'), {
                     await harness.startAdapterAndWait();
                     console.log('✅ Adapter started');
                     
-                    // Wait for adapter to initialize
-                    console.log('⏳ Waiting for adapter initialization (20s)...');
-                    await wait(20000);
+                    // Send ScriptConfig to configure the panel (simulates external script configuration)
+                    console.log('📝 Sending ScriptConfig message...');
+                    await new Promise((resolve) => {
+                        harness.sendTo('nspanel-lovelace-ui.0', 'ScriptConfig', testScriptConfig, (res) => {
+                            console.log('📊 ScriptConfig response:', res);
+                            resolve();
+                        });
+                    });
+                    await wait(3000); // Wait for configuration to be processed
+                    console.log('✅ ScriptConfig processed');
+                    
+                    // Wait for adapter to fully initialize
+                    console.log('⏳ Waiting for full initialization (15s)...');
+                    await wait(15000);
                     
                     console.log('📝 Requesting test results...');
                     
