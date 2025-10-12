@@ -24,7 +24,10 @@ import {
     SENDTO_GET_PANELS_COMMAND,
     SENDTO_GET_PAGES_COMMAND,
     ADAPTER_NAME,
+    ALL_PANELS_SPECIAL_ID,
 } from '../../../src/lib/types/adminShareConfig';
+
+// Special panel ID that the adapter will treat specially when present in assignments
 
 type NavigationAssignmentPanelProps = {
     widthPercent?: number; // percent of container width
@@ -157,10 +160,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     };
 
     private async applyAssignmentsFromProps(nextAssignments: NavigationAssignmentList): Promise<void> {
-        const addedPanels = (nextAssignments || []).map(a => {
-            const found = this.state.available.find(p => p.panelTopic === a.topic);
-            return found || { panelTopic: a.topic, friendlyName: a.topic };
-        });
+        const addedPanels = (nextAssignments || [])
+            .map(a => {
+                const found = this.state.available.find(p => p.panelTopic === a.topic);
+                return found || { panelTopic: a.topic, friendlyName: a.topic };
+            })
+            .sort((a, b) => a.friendlyName.localeCompare(b.friendlyName));
 
         // Keep current selectedAddedTopic if it's still in the new assignments, otherwise pick first
         const currentSelected = this.state.selectedAddedTopic;
@@ -246,7 +251,11 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             return;
         }
 
-        const panel = available.find(p => p.panelTopic === selectedTopic);
+        let panel = available.find(p => p.panelTopic === selectedTopic);
+        // if the special ALL id was chosen, create a synthetic panel entry
+        if (!panel && selectedTopic === ALL_PANELS_SPECIAL_ID) {
+            panel = { panelTopic: ALL_PANELS_SPECIAL_ID, friendlyName: `(${I18n.t('all') || 'All'})` } as PanelInfo;
+        }
         if (!panel) {
             return;
         }
@@ -271,16 +280,39 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     };
 
     doRemoveSelected = (): void => {
-        const { added } = this.state;
+        const { added, selectedAddedTopic } = this.state;
         if (!added.length) {
             return;
         }
-        // remove last added
-        const updated = added.slice(0, -1);
-        const updatedAssignments = this.state.assignments.slice(0, -1);
-        this.setState({ added: updated, assignments: updatedAssignments });
-        if (this.props.onAssign && this.props.uniqueName) {
-            this.props.onAssign(this.props.uniqueName, updatedAssignments);
+
+        if (selectedAddedTopic) {
+            // Entferne das ausgewählte Panel
+            const updated = added.filter(a => a.panelTopic !== selectedAddedTopic);
+            const updatedAssignments = this.state.assignments.filter(a => a.topic !== selectedAddedTopic);
+
+            // Bestimme neue Auswahl: versuche gleichen Index, ansonsten vorheriges oder erstes Element
+            const removedIndex = added.findIndex(a => a.panelTopic === selectedAddedTopic);
+            let newSelected: string | undefined;
+            if (updated.length > 0) {
+                const candidate = updated[removedIndex] ?? updated[removedIndex - 1] ?? updated[0];
+                newSelected = candidate?.panelTopic;
+            } else {
+                newSelected = undefined;
+            }
+
+            this.setState({ added: updated, assignments: updatedAssignments, selectedAddedTopic: newSelected });
+            if (this.props.onAssign && this.props.uniqueName) {
+                this.props.onAssign(this.props.uniqueName, updatedAssignments);
+            }
+        } else {
+            // Fallback: wenn nichts ausgewählt ist, entferne weiterhin das zuletzt hinzugefügte
+            const updated = added.slice(0, -1);
+            const updatedAssignments = this.state.assignments.slice(0, -1);
+            const newSelected = updated.length ? updated[updated.length - 1].panelTopic : undefined;
+            this.setState({ added: updated, assignments: updatedAssignments, selectedAddedTopic: newSelected });
+            if (this.props.onAssign && this.props.uniqueName) {
+                this.props.onAssign(this.props.uniqueName, updatedAssignments);
+            }
         }
     };
 
@@ -650,6 +682,8 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             displayEmpty
                         >
                             <MenuItem value="">{<em>—</em>}</MenuItem>
+                            {/* Special "All" option inserted at top */}
+                            <MenuItem value={ALL_PANELS_SPECIAL_ID}>{`(${I18n.t('all') || 'All'})`}</MenuItem>
                             {this.state.available.map(p => (
                                 <MenuItem
                                     key={p.panelTopic}
@@ -684,19 +718,28 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 ) : (
                                     <div style={{ overflow: 'auto' }}>
                                         <List dense>
-                                            {this.state.added.map(a => (
-                                                <ListItem
-                                                    key={a.panelTopic}
-                                                    component="div"
-                                                >
-                                                    <ListItemButton
-                                                        selected={this.state.selectedAddedTopic === a.panelTopic}
-                                                        onClick={() => this.selectAdded(a.panelTopic)}
-                                                    >
-                                                        <ListItemText primary={a.friendlyName} />
-                                                    </ListItemButton>
-                                                </ListItem>
-                                            ))}
+                                            {this.state.added.map(a => {
+                                                const topic = a.panelTopic;
+                                                // only render list item here; notices are shown in the lower summary
+                                                return (
+                                                    <React.Fragment key={topic}>
+                                                        <ListItem component="div">
+                                                            <ListItemButton
+                                                                selected={this.state.selectedAddedTopic === topic}
+                                                                onClick={() => this.selectAdded(topic)}
+                                                            >
+                                                                <ListItemText
+                                                                    primary={
+                                                                        topic === ALL_PANELS_SPECIAL_ID
+                                                                            ? `(${I18n.t('all') || 'All'})`
+                                                                            : a.friendlyName
+                                                                    }
+                                                                />
+                                                            </ListItemButton>
+                                                        </ListItem>
+                                                    </React.Fragment>
+                                                );
+                                            })}
                                         </List>
                                     </div>
                                 )}
@@ -943,31 +986,99 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                     ))}
                             </Select>
                         </Box>
+                        <Divider sx={{ my: 1 }} />
                     </Box>
 
                     {/* Notice when no next/prev is selected */}
-                    {(() => {
-                        if (!this.state.selectedAddedTopic) {
-                            return null;
-                        }
-                        const nextValue = this.getNavValue(this.state.selectedAddedTopic, 'next');
-                        const prevValue = this.getNavValue(this.state.selectedAddedTopic, 'prev');
-                        if (!nextValue && !prevValue) {
-                            return (
-                                <>
-                                    <Divider sx={{ my: 2 }} />
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ fontStyle: 'italic', lineHeight: 1.4 }}
-                                    >
-                                        {I18n.t('nav_target_only_notice')}
-                                    </Typography>
-                                </>
-                            );
-                        }
-                        return null;
-                    })()}
+                    {/* Für jedes hinzugefügte Panel: Status + nav summary */}
+                    {this.state.added.length > 0
+                        ? this.state.added.map(a => {
+                              const topic = a.panelTopic;
+                              const hasAll: boolean = this.state.added.some(
+                                  p => p.panelTopic === ALL_PANELS_SPECIAL_ID,
+                              );
+                              const nextValue = this.getNavValue(topic, 'next');
+                              const prevValue = this.getNavValue(topic, 'prev');
+                              const homeValue = this.getNavValue(topic, 'home');
+                              const parentValue = this.getNavValue(topic, 'parent');
+
+                              const anyNavSet = !!(nextValue || prevValue || homeValue || parentValue);
+
+                              const isAllThis = topic === ALL_PANELS_SPECIAL_ID;
+                              const showNotice = !nextValue && !prevValue;
+                              const noticeKey = isAllThis
+                                  ? 'nav_all_requires_prev_next'
+                                  : hasAll
+                                    ? 'nav_remove_from_all_notice'
+                                    : 'nav_target_only_notice';
+
+                              return (
+                                  <Box
+                                      key={`panel-summary-${topic}`}
+                                      data-has-all={hasAll}
+                                      sx={{ mt: 2, mb: 1 }}
+                                  >
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                          <Box
+                                              sx={{
+                                                  width: 10,
+                                                  height: 10,
+                                                  borderRadius: '50%',
+                                                  bgcolor: anyNavSet ? 'success.main' : 'error.main',
+                                              }}
+                                          />
+                                          <Typography
+                                              variant="subtitle2"
+                                              sx={{ fontWeight: 600 }}
+                                          >
+                                              {topic === ALL_PANELS_SPECIAL_ID
+                                                  ? `(${I18n.t('all') || 'All'})`
+                                                  : a.friendlyName || topic}
+                                          </Typography>
+                                      </Box>
+
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                          {(['next', 'prev', 'parent', 'home'] as const).map((field, idx) => {
+                                              const val = this.getNavValue(topic, field);
+                                              return (
+                                                  <React.Fragment key={`${topic}-${field}`}>
+                                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                          <Typography
+                                                              variant="caption"
+                                                              color="text.secondary"
+                                                          >
+                                                              {I18n.t(field) || field}
+                                                          </Typography>
+                                                          <Typography variant="body2">{val || <em>—</em>}</Typography>
+                                                      </Box>
+                                                      {idx < 3 && (
+                                                          <Divider
+                                                              orientation="vertical"
+                                                              flexItem
+                                                              sx={{ height: 18, mx: 1 }}
+                                                          />
+                                                      )}
+                                                  </React.Fragment>
+                                              );
+                                          })}
+                                      </Box>
+
+                                      {/* per-panel notice: shown here under the panel summary; Divider follows the notice */}
+                                      {showNotice ? (
+                                          <Box sx={{ mt: 1 }}>
+                                              <Typography
+                                                  variant="caption"
+                                                  color="text.secondary"
+                                                  sx={{ fontStyle: 'italic' }}
+                                              >
+                                                  {I18n.t(noticeKey)}
+                                              </Typography>
+                                          </Box>
+                                      ) : null}
+                                  </Box>
+                              );
+                          })
+                        : null}
 
                     {/* children area removed as requested (was rendered below the parent select) */}
                 </Box>

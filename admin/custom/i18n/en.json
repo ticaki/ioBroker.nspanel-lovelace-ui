@@ -30,6 +30,7 @@
 	"unlock_alwaysOn_always": "Never activate",
 	"unlock_alwaysOn_ignore": "Inherit from previous page",
 	"navigation_panel": "Navigation/Panel",
+    "all": "all",
 	"pages": "Pages",
 	"new_page": "New Page",
 	"unlock_type": "Type",
@@ -43,6 +44,8 @@
 	"No_data": "No data - Adapter might be offline or no panel configured.",
 	"select_panel_first": "Select panel",
 	"nav_target_only_notice": "Without next and prev this page can only be reached via { navigate: 'true', targetPage: 'abc'}",
+	"nav_remove_from_all_notice": "Page will not be added",
+	"nav_all_requires_prev_next": "For (all) prev or next must be set",
 	"documentation": "Documentation"
 	,"touch_hint_buttons": "For operating buttons from other flows a double tap is required"
 }

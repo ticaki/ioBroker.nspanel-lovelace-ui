@@ -259,7 +259,8 @@ declare global {
             }[];
 
             pageUnlockConfig: {
-                alarmType?: string; // e.g. 'alarm' | 'unlock'
+                card: 'cardAlarm' | 'cardQR'; // Card type - will be extended with more types
+                alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
                 headline: string;
                 button1: string;
                 button2: string;

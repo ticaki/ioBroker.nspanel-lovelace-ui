@@ -486,16 +486,45 @@ class NspanelLovelaceUi extends utils.Adapter {
       const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
       switch (obj.command) {
         case import_adminShareConfig.SENDTO_GET_PAGES_COMMAND: {
-          const names = [];
+          let names = [];
           if ((_a = obj == null ? void 0 : obj.message) == null ? void 0 : _a.panelTopic) {
             if ((_b = this.controller) == null ? void 0 : _b.panels) {
-              const panel = this.controller.panels.find((a) => a.topic === obj.message.panelTopic);
-              if (panel) {
-                const db = panel.navigation.getDatabase();
-                if (db) {
-                  for (const p of db) {
-                    if (p == null ? void 0 : p.page) {
-                      names.push(p.page.name);
+              if (obj.message.panelTopic === import_adminShareConfig.ALL_PANELS_SPECIAL_ID) {
+                const temp = /* @__PURE__ */ new Set();
+                this.controller.panels.forEach((a) => {
+                  const b = a.navigation.getDatabase().map((b2) => {
+                    var _a2;
+                    return (_a2 = b2 == null ? void 0 : b2.page) == null ? void 0 : _a2.name;
+                  }).filter((a2) => a2 != null);
+                  if (temp.size === 0) {
+                    for (const c of b) {
+                      if (c) {
+                        temp.add(c);
+                      }
+                    }
+                  } else {
+                    const lookup = new Set(b.filter(Boolean));
+                    const toRemove = [];
+                    for (const t of temp) {
+                      if (!lookup.has(t)) {
+                        toRemove.push(t);
+                      }
+                    }
+                    for (const r of toRemove) {
+                      temp.delete(r);
+                    }
+                  }
+                });
+                names = Array.from(temp);
+              } else {
+                const panel = this.controller.panels.find((a) => a.topic === obj.message.panelTopic);
+                if (panel) {
+                  const db = panel.navigation.getDatabase();
+                  if (db) {
+                    for (const p of db) {
+                      if (p == null ? void 0 : p.page) {
+                        names.push(p.page.name);
+                      }
                     }
                   }
                 }

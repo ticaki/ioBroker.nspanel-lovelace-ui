@@ -31,6 +31,7 @@
     "unlock_alwaysOn_always": "Niemals einschalten",
     "unlock_alwaysOn_ignore": "Von vorheriger Seite übernehmen",
     "navigation_panel": "Navigation/Panel",
+    "all": "alle",
     "pages": "Seiten",
     "new_page": "Neue Seite",
     "nav_next_tooltip": "Wenn 'Next' auf eine Seite zeigt, deren 'Prev' auf eine andere Seite verweist, wird diese Seite eingeschoben und die next und prev der anderen Seiten entsprechend angepasst. Bei Konflikten hat 'prev' vorrang.",
@@ -44,6 +45,8 @@
     "No_data": "Keine Daten – Adapter möglicherweise offline oder kein Panel konfiguriert.",
     "select_panel_first": "Panel auswählen",
     "nav_target_only_notice": "Ohne next und prev ist diese Seite nur über { navigate: 'true', targetPage: 'abc'} zu erreichen",
+    "nav_remove_from_all_notice": "Seite wird nicht hinzugefügt",
+    "nav_all_requires_prev_next": "Für (alle) muss prev oder next gesetzt sein",
     "documentation": "Dokumentation"
     ,"touch_hint_buttons": "Zum Bedienen Flow fremder Buttons ist ein doppelter Tip erforderlich"
 }

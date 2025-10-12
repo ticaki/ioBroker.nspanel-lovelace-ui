@@ -4,6 +4,7 @@ import {
     SENDTO_GET_PAGES_COMMAND,
     SENDTO_GET_PANELS_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
+    ALL_PANELS_SPECIAL_ID,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -592,17 +593,48 @@ class NspanelLovelaceUi extends utils.Adapter {
             const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
                 case SENDTO_GET_PAGES_COMMAND: {
-                    const names: string[] = [];
+                    let names: string[] = [];
                     if (obj?.message?.panelTopic) {
                         if (this.controller?.panels) {
-                            const panel = this.controller.panels.find(a => a.topic === obj.message.panelTopic);
-                            if (panel) {
-                                const db = panel.navigation.getDatabase();
+                            if (obj.message.panelTopic === ALL_PANELS_SPECIAL_ID) {
+                                const temp: Set<string> = new Set();
+                                this.controller.panels.forEach(a => {
+                                    const b = a.navigation
+                                        .getDatabase()
+                                        .map(b => b?.page?.name)
+                                        .filter(a => a != null);
+                                    if (temp.size === 0) {
+                                        for (const c of b) {
+                                            if (c) {
+                                                temp.add(c);
+                                            }
+                                        }
+                                    } else {
+                                        const lookup = new Set(b.filter(Boolean));
 
-                                if (db) {
-                                    for (const p of db) {
-                                        if (p?.page) {
-                                            names.push(p.page.name);
+                                        const toRemove = [];
+                                        for (const t of temp) {
+                                            if (!lookup.has(t)) {
+                                                toRemove.push(t);
+                                            }
+                                        }
+                                        for (const r of toRemove) {
+                                            temp.delete(r);
+                                        }
+                                    }
+                                });
+
+                                names = Array.from(temp);
+                            } else {
+                                const panel = this.controller.panels.find(a => a.topic === obj.message.panelTopic);
+                                if (panel) {
+                                    const db = panel.navigation.getDatabase();
+
+                                    if (db) {
+                                        for (const p of db) {
+                                            if (p?.page) {
+                                                names.push(p.page.name);
+                                            }
                                         }
                                     }
                                 }

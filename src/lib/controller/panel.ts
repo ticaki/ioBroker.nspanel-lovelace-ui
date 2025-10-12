@@ -4,6 +4,7 @@ import type {
     PageMenuConfigInfo,
     PanelListEntry,
 } from '../types/adminShareConfig';
+import { ALL_PANELS_SPECIAL_ID } from '../types/adminShareConfig';
 import { PanelSend } from './panel-message';
 
 import { Screensaver } from '../pages/screensaver';
@@ -227,112 +228,10 @@ export class Panel extends BaseClass {
         // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
-        const unlocks = this.adapter.config.pageUnlockConfig || [];
-        for (const unlock of unlocks) {
-            if (unlock.navigationAssignment) {
-                const navAssign = unlock.navigationAssignment.find(a => a.topic === this.topic);
-                if (navAssign) {
-                    const newUnlock: pages.PageBase = {
-                        uniqueID: unlock.uniqueName,
-                        hidden: !!unlock.hidden,
-                        alwaysOn: unlock.alwaysOn || 'none',
-                        template: undefined,
-                        dpInit: '',
-                        config: {
-                            card: 'cardAlarm',
 
-                            data: {
-                                alarmType: { type: 'const', constVal: unlock.alarmType || 'unlock' },
-                                headline: { type: 'const', constVal: unlock.headline || 'Unlock' },
-                                button1: unlock.button1 ? { type: 'const', constVal: unlock.button1 } : undefined,
-                                button2: unlock.button2 ? { type: 'const', constVal: unlock.button2 } : undefined,
-                                button3: unlock.button3 ? { type: 'const', constVal: unlock.button3 } : undefined,
-                                button4: unlock.button4 ? { type: 'const', constVal: unlock.button4 } : undefined,
-                                pin: unlock.pin != null ? { type: 'const', constVal: String(unlock.pin) } : undefined,
-                                approved: { type: 'const', constVal: !!unlock.approved },
-                                setNavi: unlock.setNavi ? { type: 'const', constVal: unlock.setNavi } : undefined,
-                            },
-                        },
-                        pageItems: [],
-                    };
-                    if (options.pages.find(a => a.uniqueID === newUnlock.uniqueID)) {
-                        this.log.warn(`Page with name ${newUnlock.uniqueID} already exists, skipping!`);
-                        continue;
-                    }
-                    options.pages.push(newUnlock);
-                    const navigation = navAssign.navigation;
-                    if (!navigation) {
-                        continue;
-                    }
-                    const navigationEntry: NavigationItemConfig = {
-                        name: newUnlock.uniqueID,
-                        page: newUnlock.uniqueID,
-                        right: {
-                            single: undefined,
-                            double: undefined,
-                        },
-                        left: {
-                            single: undefined,
-                            double: undefined,
-                        },
-                    };
-                    let overrwriteNext = false;
-                    if (!navigation?.prev && !navigation?.next && !navigation?.home && !navigation?.parent) {
-                        navigation.home = 'main';
-                    }
-                    if (navigation.prev) {
-                        navigationEntry.left!.single = navigation.prev;
-                        let index = options.navigation.findIndex(b => b && b.name === navigation.prev);
-                        if (index !== -1 && options.navigation[index]) {
-                            const oldNext = options.navigation[index]!.right?.single;
+        // Process unlock pages and build navigation
+        this.processUnlockPages(options);
 
-                            if (oldNext && oldNext !== newUnlock.uniqueID) {
-                                overrwriteNext = true;
-                                options.navigation[index]!.right = options.navigation[index]!.right || {};
-                                options.navigation[index]!.right!.single = newUnlock.uniqueID;
-                                navigationEntry.right!.single = oldNext;
-                                index = options.navigation.findIndex(b => b && b.name === oldNext);
-                                if (index !== -1 && options.navigation[index]) {
-                                    options.navigation[index]!.left = options.navigation[index]!.left || {};
-                                    options.navigation[index]!.left!.single = newUnlock.uniqueID;
-                                }
-                            } else if (!oldNext && options.navigation[index]) {
-                                options.navigation[index]!.right = { single: newUnlock.uniqueID };
-                            }
-                        }
-                    }
-                    if (!overrwriteNext) {
-                        if (navigation.next) {
-                            navigationEntry.right!.single = navigation.next;
-                            let index = options.navigation.findIndex(b => b && b.name === navigation.next);
-                            if (index !== -1 && options.navigation[index]) {
-                                const oldPrev = options.navigation[index]!.left?.single;
-                                if (oldPrev && oldPrev !== newUnlock.uniqueID) {
-                                    overrwriteNext = true;
-                                    options.navigation[index]!.left = options.navigation[index]!.left || {};
-                                    options.navigation[index]!.left!.single = newUnlock.uniqueID;
-                                    navigationEntry.left!.single = oldPrev;
-                                    index = options.navigation.findIndex(b => b && b.name === oldPrev);
-                                    if (index !== -1 && options.navigation[index]) {
-                                        options.navigation[index]!.right = options.navigation[index]!.right || {};
-                                        options.navigation[index]!.right!.single = newUnlock.uniqueID;
-                                    }
-                                } else if (!oldPrev && options.navigation[index]) {
-                                    options.navigation[index]!.left = { single: newUnlock.uniqueID };
-                                }
-                            }
-                        }
-                    }
-                    if (navigation.home) {
-                        navigationEntry.left!.double = navigation.home;
-                    }
-                    if (navigation.parent) {
-                        navigationEntry.right!.double = navigation.parent;
-                    }
-                    options.navigation.push(navigationEntry);
-                }
-            }
-        }
         options.pages = options.pages.filter(b => {
             if (
                 b.config?.card === 'screensaver' ||
@@ -2194,7 +2093,7 @@ export class Panel extends BaseClass {
                 const n = db[nav.left.double];
                 parent = n != null && n.page ? n.page.name : undefined;
             }
-            let pageInfo: PageMenuConfigInfo = { card: 'unknown', alwaysOn: 'none' };
+            let pageInfo: PageMenuConfigInfo = { card: 'cardGrid', alwaysOn: 'none' };
             if (pages.isPageMenuConfig(nav.page.config)) {
                 pageInfo = {
                     ...pageInfo,
@@ -2282,5 +2181,216 @@ export class Panel extends BaseClass {
             config = deepAssign(newTemplate, config);
         }
         return config;
+    }
+
+    /**
+     * Process configurable pages from adapter config and build navigation entries.
+     * Supports ALL_PANELS_SPECIAL_ID for applying pages to all panels at once,
+     * then allows individual panel overrides or exclusions.
+     *
+     * Logic:
+     * - First pass: If ALL_PANELS_SPECIAL_ID assignment exists, apply to all panels
+     * - Second pass: Process panel-specific assignments
+     *   - Empty navigation with prior ALL = exclude this panel from that page
+     *   - Empty navigation without ALL = default to home:'main'
+     *
+     * Supported card types: cardAlarm (unlock/alarm), cardQR, and more in the future.
+     *
+     * @param options - Panel configuration partial containing pages and navigation arrays
+     */
+    private processUnlockPages(options: panelConfigPartial): void {
+        const unlocks = this.adapter.config.pageUnlockConfig || [];
+
+        for (const unlock of unlocks) {
+            if (!unlock.navigationAssignment) {
+                continue;
+            }
+            unlock.card = unlock.card || 'cardAlarm';
+
+            // First pass: Check for ALL_PANELS_SPECIAL_ID assignment
+            const allPanelsAssignment = unlock.navigationAssignment.find(a => a.topic === ALL_PANELS_SPECIAL_ID);
+
+            // Second pass: Check for this specific panel's assignment
+            const panelAssignment = unlock.navigationAssignment.find(a => a.topic === this.topic);
+
+            // Determine which assignment to use
+            let navAssign:
+                | {
+                      topic: string;
+                      navigation?: {
+                          next?: string;
+                          prev?: string;
+                          home?: string;
+                          parent?: string;
+                      };
+                  }
+                | undefined;
+
+            if (panelAssignment) {
+                // Panel-specific assignment takes precedence
+                // Empty navigation means exclude if ALL was used, otherwise default
+                if (!panelAssignment.navigation && allPanelsAssignment) {
+                    // Explicit exclusion from ALL_PANELS
+                    continue;
+                }
+                navAssign = panelAssignment;
+            } else if (allPanelsAssignment) {
+                // Use ALL_PANELS assignment
+                navAssign = allPanelsAssignment;
+            } else {
+                // No assignment for this panel
+                continue;
+            }
+
+            // Create page configuration based on card type
+            let newPage: pages.PageBase;
+
+            switch (unlock.card) {
+                case 'cardAlarm': {
+                    newPage = {
+                        uniqueID: unlock.uniqueName,
+                        hidden: !!unlock.hidden,
+                        alwaysOn: unlock.alwaysOn || 'none',
+                        template: undefined,
+                        dpInit: '',
+                        config: {
+                            card: 'cardAlarm',
+                            data: {
+                                alarmType: { type: 'const', constVal: unlock.alarmType || 'unlock' },
+                                headline: { type: 'const', constVal: unlock.headline || 'Unlock' },
+                                button1: unlock.button1 ? { type: 'const', constVal: unlock.button1 } : undefined,
+                                button2: unlock.button2 ? { type: 'const', constVal: unlock.button2 } : undefined,
+                                button3: unlock.button3 ? { type: 'const', constVal: unlock.button3 } : undefined,
+                                button4: unlock.button4 ? { type: 'const', constVal: unlock.button4 } : undefined,
+                                pin: unlock.pin != null ? { type: 'const', constVal: String(unlock.pin) } : undefined,
+                                approved: { type: 'const', constVal: !!unlock.approved },
+                                setNavi: unlock.setNavi ? { type: 'const', constVal: unlock.setNavi } : undefined,
+                            },
+                        },
+                        pageItems: [],
+                    };
+                    break;
+                }
+
+                case 'cardQR': {
+                    // QR card configuration - placeholder for future implementation
+                    newPage = {
+                        uniqueID: unlock.uniqueName,
+                        hidden: !!unlock.hidden,
+                        alwaysOn: unlock.alwaysOn || 'none',
+                        template: undefined,
+                        dpInit: '',
+                        config: {
+                            card: 'cardQR',
+                            index: 0,
+                            data: {
+                                // TODO: Add QR-specific data configuration from unlock config
+                                headline: unlock.headline ? { type: 'const', constVal: unlock.headline } : undefined,
+                                entity1: undefined,
+                            },
+                        },
+                        pageItems: [],
+                    };
+                    break;
+                }
+
+                default: {
+                    // eslint-disable-next-line
+                    this.log.warn(`Unsupported card type '${unlock.card}' for page '${unlock.uniqueName}', skipping!`);
+                    continue;
+                }
+            }
+
+            // Check for duplicate page name
+            if (options.pages.find((a: pages.PageBase) => a.uniqueID === newPage.uniqueID)) {
+                this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+                continue;
+            }
+
+            options.pages.push(newPage);
+
+            const navigation = navAssign.navigation;
+            if (!navigation) {
+                continue;
+            }
+
+            // Build navigation entry
+            const navigationEntry: NavigationItemConfig = {
+                name: newPage.uniqueID,
+                page: newPage.uniqueID,
+                right: { single: undefined, double: undefined },
+                left: { single: undefined, double: undefined },
+            };
+
+            // Default to home:'main' if no navigation specified
+            if (!navigation.prev && !navigation.next && !navigation.home && !navigation.parent) {
+                navigation.home = 'main';
+            }
+
+            let overrwriteNext = false;
+
+            // Handle prev navigation
+            if (navigation.prev) {
+                navigationEntry.left!.single = navigation.prev;
+                const index = options.navigation.findIndex(
+                    (b: NavigationItemConfig | null) => b && b.name === navigation.prev,
+                );
+                if (index !== -1 && options.navigation[index]) {
+                    const oldNext = options.navigation[index].right?.single;
+                    if (oldNext && oldNext !== newPage.uniqueID) {
+                        overrwriteNext = true;
+                        options.navigation[index].right = options.navigation[index].right || {};
+                        options.navigation[index].right.single = newPage.uniqueID;
+                        navigationEntry.right!.single = oldNext;
+
+                        const nextIndex = options.navigation.findIndex(
+                            (b: NavigationItemConfig | null) => b && b.name === oldNext,
+                        );
+                        if (nextIndex !== -1 && options.navigation[nextIndex]) {
+                            options.navigation[nextIndex].left = options.navigation[nextIndex].left || {};
+                            options.navigation[nextIndex].left.single = newPage.uniqueID;
+                        }
+                    } else if (!oldNext) {
+                        options.navigation[index].right = { single: newPage.uniqueID };
+                    }
+                }
+            }
+
+            // Handle next navigation
+            if (!overrwriteNext && navigation.next) {
+                navigationEntry.right!.single = navigation.next;
+                const index = options.navigation.findIndex(
+                    (b: NavigationItemConfig | null) => b && b.name === navigation.next,
+                );
+                if (index !== -1 && options.navigation[index]) {
+                    const oldPrev = options.navigation[index].left?.single;
+                    if (oldPrev && oldPrev !== newPage.uniqueID) {
+                        options.navigation[index].left = options.navigation[index].left || {};
+                        options.navigation[index].left.single = newPage.uniqueID;
+                        navigationEntry.left!.single = oldPrev;
+
+                        const prevIndex = options.navigation.findIndex(
+                            (b: NavigationItemConfig | null) => b && b.name === oldPrev,
+                        );
+                        if (prevIndex !== -1 && options.navigation[prevIndex]) {
+                            options.navigation[prevIndex].right = options.navigation[prevIndex].right || {};
+                            options.navigation[prevIndex].right.single = newPage.uniqueID;
+                        }
+                    } else if (!oldPrev) {
+                        options.navigation[index].left = { single: newPage.uniqueID };
+                    }
+                }
+            }
+
+            // Handle home/parent navigation
+            if (navigation.home) {
+                navigationEntry.left!.double = navigation.home;
+            }
+            if (navigation.parent) {
+                navigationEntry.right!.double = navigation.parent;
+            }
+
+            options.navigation.push(navigationEntry);
+        }
     }
 }
