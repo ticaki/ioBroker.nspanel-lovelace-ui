@@ -897,32 +897,6 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                             void this.onChange(this.props.attr!, updated);
                         }}
                     />
-
-                    {/* Info box moved outside NavigationAssignmentPanel */}
-                    <Paper
-                        sx={{ height: '100%', p: 2, backgroundColor: 'transparent' }}
-                        elevation={0}
-                    >
-                        <Box>
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ mb: 1 }}
-                            >
-                                {this.getText('unlock_unique_label')}
-                            </Typography>
-                            <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 600 }}
-                            >
-                                {local.selected || this.getText('unlock_select_item')}
-                            </Typography>
-                            <InfoOutlined
-                                fontSize="small"
-                                color="action"
-                                sx={{ mt: 1 }}
-                            />
-                        </Box>
-                    </Paper>
                 </Box>
             </Box>
         );

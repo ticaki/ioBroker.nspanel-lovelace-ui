@@ -572,11 +572,6 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                                                                 void this.onChange(this.props.attr!, updated);
                                                             }}
                                                         >
-                                                            {/*<FormControlLabel
-                                                                value={0}
-                                                                control={<Radio />}
-                                                                label={this.getText('qr_type_free')}
-                                                            />*/}
                                                             <FormControlLabel
                                                                 value={1}
                                                                 control={<Radio />}
@@ -886,32 +881,6 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                             void this.onChange(this.props.attr!, updated);
                         }}
                     />
-
-                    {/* Info box */}
-                    <Paper
-                        sx={{ height: '100%', p: 2, backgroundColor: 'transparent' }}
-                        elevation={0}
-                    >
-                        <Box>
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ mb: 1 }}
-                            >
-                                {this.getText('qr_unique_label')}
-                            </Typography>
-                            <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 600 }}
-                            >
-                                {local.selected || this.getText('qr_select_item')}
-                            </Typography>
-                            <InfoOutlined
-                                fontSize="small"
-                                color="action"
-                                sx={{ mt: 1 }}
-                            />
-                        </Box>
-                    </Paper>
                 </Box>
             </Box>
         );

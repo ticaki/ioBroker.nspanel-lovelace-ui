@@ -281,6 +281,29 @@ declare global {
                     };
                 }[];
             }[];
+
+            pageQRConfig: {
+                uniqueName: string;
+                headline: string;
+                SSIDURLTEL: string;
+                selType: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
+                wlanhidden?: boolean;
+                wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+                qrPaas?: string;
+                pwdhidden?: boolean;
+                setState?: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                navigationAssignment?: {
+                    topic: string;
+                    navigation?: {
+                        next?: string;
+                        prev?: string;
+                        home?: string;
+                        parent?: string;
+                    };
+                }[];
+            }[];
         }
     }
 }
