@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';

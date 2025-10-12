@@ -18,13 +18,12 @@ import {
     IconButton,
     InputAdornment,
 } from '@mui/material';
-import { Visibility, VisibilityOff, InfoOutlined } from '@mui/icons-material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import {
     type QREntries,
     type QREntry,
-    type NavigationAssignmentList,
     ADAPTER_NAME,
     SENDTO_GET_PAGES_All_COMMAND,
 } from '../../src/lib/types/adminShareConfig';
