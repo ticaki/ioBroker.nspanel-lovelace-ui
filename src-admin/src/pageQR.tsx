@@ -619,7 +619,18 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                                                     variant="standard"
                                                     type="text"
                                                     autoComplete="off"
-                                                    label={this.getText('qr_content')}
+                                                    label={(() => {
+                                                        switch (ent.selType) {
+                                                            case 1:
+                                                                return this.getText('qr_content_wifi');
+                                                            case 2:
+                                                                return this.getText('qr_content_url');
+                                                            case 3:
+                                                                return this.getText('qr_content_tel');
+                                                            default:
+                                                                return this.getText('qr_content');
+                                                        }
+                                                    })()}
                                                     value={ent.SSIDURLTEL ?? ''}
                                                     onChange={e => {
                                                         const v = e.target.value;
