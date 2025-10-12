@@ -4,6 +4,7 @@
 declare global {
     namespace ioBroker {
         interface AdapterConfig {
+            rememberLastSite: boolean
             testCase: boolean;
             mqttServer: boolean;
             mqttPassword: string;
