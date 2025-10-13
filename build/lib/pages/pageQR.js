@@ -105,7 +105,7 @@ class PageQR extends import_Page.Page {
       return;
     }
     const message = {};
-    const config = this.adapter.config.pageQRdata[this.index];
+    const config = this.adapter.config.pageQRConfig[this.index];
     if (this.items && config != null) {
       const items = this.items;
       message.headline = this.library.getTranslation(
@@ -180,13 +180,13 @@ class PageQR extends import_Page.Page {
   }
   static async getQRPageConfig(configManager, page, index, gridItem, messages) {
     const adapter = configManager.adapter;
-    const config = adapter.config.pageQRdata[index];
+    const config = adapter.config.pageQRConfig[index];
     if (config) {
       let text1 = "", text = "", icon1 = "", icon2 = "";
       switch (config.selType) {
         case 0:
           text1 = config.SSIDURLTEL;
-          text = config.optionalText || "";
+          text = "";
           break;
         case 1: {
           text1 = config.SSIDURLTEL;
@@ -213,9 +213,12 @@ class PageQR extends import_Page.Page {
       const stateExist = config.setState && await configManager.existsState(config.setState || "");
       gridItem = {
         ...gridItem,
-        uniqueID: config.pageName,
-        alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? "always" : "none",
-        hidden: gridItem.hidden || config.hiddenByTrigger,
+        uniqueID: config.uniqueName,
+        //config.pageName,
+        alwaysOn: gridItem.alwaysOn || config.alwaysOn ? "always" : "none",
+        //config.alwaysOnDisplay ? 'always' : 'none',
+        hidden: gridItem.hidden || config.hidden,
+        //config.hiddenByTrigger,
         config: {
           card: "cardQR",
           index,
@@ -270,20 +273,7 @@ class PageQR extends import_Page.Page {
           text = "";
           break;
         case 1: {
-          switch (config.qrPass) {
-            case 1:
-              text1 = adapter.config.pageQRpwd1 || "";
-              break;
-            case 2:
-              text1 = adapter.config.pageQRpwd2 || "";
-              break;
-            case 3:
-              text1 = adapter.config.pageQRpwd3 || "";
-              break;
-            default:
-              text1 = "";
-              break;
-          }
+          text1 = config.qrPass ? config.qrPass : "";
           text = "Password";
           break;
         }
