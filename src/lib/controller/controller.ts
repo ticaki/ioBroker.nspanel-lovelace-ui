@@ -465,14 +465,22 @@ export class Controller extends Library.BaseClass {
                 ? result.data['tft-beta'].split('_')[0]
                 : result.data.tft.split('_')[0];
             this.globalPanelInfo.availableTftFirmwareVersion = version.trim();
+
             for (const panel of this.panels) {
                 panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
+            }
+
+            this.globalPanelInfo.availableTasmotaFirmwareVersion = result.data.tasmota.trim();
+
+            for (const panel of this.panels) {
+                panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
             }
         } catch {
             // nothing
         }
     }
     async getTasmotaVersion(): Promise<void> {
+        return; // vorerst deaktiviert, da nicht so gewollt
         const urlString = 'https://api.github.com/repositories/80286288/releases/latest';
         try {
             const response = await axios(urlString, { headers: { 'User-Agent': 'ioBroker' } });

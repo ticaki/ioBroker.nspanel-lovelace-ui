@@ -475,7 +475,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -1561,8 +1561,15 @@ class NspanelLovelaceUi extends utils.Adapter {
         case "updateTasmota": {
           let language = this.library.getLocalLanguage();
           language = language === "zh-cn" ? "en" : language;
-          const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-          if ((_H = this.controller) == null ? void 0 : _H.panels) {
+          const result = await import_axios.default.get(
+            "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
+          );
+          if (result.status !== 200 || !((_H = result.data) == null ? void 0 : _H.tasmota)) {
+            this.log.warn(`Error getting Tasmota version: ${result.status}`);
+            return;
+          }
+          const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.data.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+          if ((_I = this.controller) == null ? void 0 : _I.panels) {
             const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
             if (index !== -1) {
               const panel = this.controller.panels[index];
@@ -1610,7 +1617,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "screensaverNotify": {
-          if (((_I = obj.message) == null ? void 0 : _I.panel) && ((_J = this.controller) == null ? void 0 : _J.panels)) {
+          if (((_J = obj.message) == null ? void 0 : _J.panel) && ((_K = this.controller) == null ? void 0 : _K.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.topic);
             if (panel == null ? void 0 : panel.screenSaver) {
               if (typeof obj.message.heading === "string") {
@@ -1646,7 +1653,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "buzzer": {
-          if (((_K = obj.message) == null ? void 0 : _K.panel) && ((_L = this.controller) == null ? void 0 : _L.panels)) {
+          if (((_L = obj.message) == null ? void 0 : _L.panel) && ((_M = this.controller) == null ? void 0 : _M.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(
