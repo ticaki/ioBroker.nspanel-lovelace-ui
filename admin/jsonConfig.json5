@@ -446,6 +446,17 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 3
+                },
+                "rememberLastSite": {
+                    "type": "checkbox",
+                    "label": "rememberLastSite",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },

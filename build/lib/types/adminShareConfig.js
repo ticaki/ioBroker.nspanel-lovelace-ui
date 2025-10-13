@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var adminShareConfig_exports = {};
 __export(adminShareConfig_exports, {
   ADAPTER_NAME: () => ADAPTER_NAME,
+  ALL_PANELS_SPECIAL_ID: () => ALL_PANELS_SPECIAL_ID,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND: () => SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
@@ -26,6 +27,7 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
+const ALL_PANELS_SPECIAL_ID = "///ALL_PANELS_SPECIAL";
 const SENDTO_GET_PANEL_NAVIGATION_COMMAND = "getPanelNavigation";
 const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
 const SENDTO_GET_PANELS_COMMAND = "getPanels";
@@ -35,6 +37,7 @@ const ADAPTER_NAME = "nspanel-lovelace-ui";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ADAPTER_NAME,
+  ALL_PANELS_SPECIAL_ID,
   SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND,

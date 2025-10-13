@@ -31,6 +31,10 @@ export class StatesControler extends BaseClass {
             change: ('ne' | 'ts')[];
         };
     } = {};
+
+    // Performance-optimized lookup maps
+    private targetToTriggerMap = new Map<BaseTriggeredPage, Set<string>>();
+    private activeTriggerCount = new Map<string, number>();
     /**
      * Holds subscriptions created while the subscription system is temporarily blocked.
      *
@@ -57,14 +61,18 @@ export class StatesControler extends BaseClass {
                 return;
             }
             this.objectDatabase = {};
+            // ADDED: Cleanup expired stateDB entries to prevent memory leaks
+            this.cleanupStateDB();
         }, 180_000);
     }
     deletePageLoop = (f?: getInternalFunctionType): void => {
         const removeIds: string[] = [];
 
-        for (const id of Object.keys(this.triggerDB)) {
+        // Performance-optimiert: Verwende for..in statt Object.keys()
+        for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
             const removeIdx: number[] = [];
+
             if (f && entry.f === f) {
                 removeIds.push(id);
                 continue;
@@ -78,18 +86,27 @@ export class StatesControler extends BaseClass {
                 }
             }
 
-            if (removeIdx.length) {
+            if (removeIdx.length > 0) {
+                // FIXED: Sichere Array-Manipulation mit expliziten Array-Namen
                 // Absteigend sortieren, damit Splices Indizes nicht verschieben
                 removeIdx.sort((a, b) => b - a);
 
-                // Für alle Array-Properties in entry den gleichen Index entfernen
+                // Für alle relevanten Array-Properties den gleichen Index entfernen
+                const arrayProperties = ['to', 'subscribed', 'triggerAllowed', 'change'] as const;
                 for (const idx of removeIdx) {
-                    for (let idx2 = Object.keys(entry).length - 1; idx2 >= 0; idx2--) {
-                        const key = Object.keys(entry)[idx2];
-                        const val = (entry as any)[key];
-                        if (Array.isArray(val) && idx >= 0 && idx < val.length) {
-                            val.splice(idx, 1);
+                    for (const prop of arrayProperties) {
+                        const arr = entry[prop] as any[];
+                        if (arr && Array.isArray(arr) && idx >= 0 && idx < arr.length) {
+                            arr.splice(idx, 1);
                         }
+                    }
+                }
+
+                // Update performance maps
+                for (const idx of removeIdx) {
+                    const target = entry.to[idx];
+                    if (target) {
+                        this.removeFromTargetMap(target, id);
                     }
                 }
             }
@@ -98,11 +115,15 @@ export class StatesControler extends BaseClass {
                 removeIds.push(id);
             }
         }
+
+        // Cleanup for removed IDs
         this.blockedSubscriptions = [];
         for (const id of removeIds) {
             //await this.adapter.unsubscribeForeignStatesAsync(id);
             delete this.triggerDB[id];
+            this.activeTriggerCount.delete(id);
         }
+
         while (this.blockedSubscriptions && this.blockedSubscriptions.length > 0) {
             for (let idx = this.blockedSubscriptions.length - 1; idx >= 0; idx--) {
                 if (idx >= this.blockedSubscriptions.length) {
@@ -126,6 +147,68 @@ export class StatesControler extends BaseClass {
         }
         if (this.deletePageInterval) {
             this.adapter.clearInterval(this.deletePageInterval);
+        }
+
+        // Cleanup performance maps
+        this.targetToTriggerMap.clear();
+        this.activeTriggerCount.clear();
+    }
+
+    // Performance optimization helper methods
+    private addToTargetMap(target: BaseTriggeredPage, triggerId: string): void {
+        if (!this.targetToTriggerMap.has(target)) {
+            this.targetToTriggerMap.set(target, new Set());
+        }
+        this.targetToTriggerMap.get(target)!.add(triggerId);
+    }
+
+    private removeFromTargetMap(target: BaseTriggeredPage, triggerId: string): void {
+        const triggers = this.targetToTriggerMap.get(target);
+        if (triggers) {
+            triggers.delete(triggerId);
+            if (triggers.size === 0) {
+                this.targetToTriggerMap.delete(target);
+            }
+        }
+    }
+
+    private incrementActiveTrigger(triggerId: string): void {
+        const current = this.activeTriggerCount.get(triggerId) || 0;
+        this.activeTriggerCount.set(triggerId, current + 1);
+    }
+
+    private decrementActiveTrigger(triggerId: string): void {
+        const current = this.activeTriggerCount.get(triggerId) || 0;
+        if (current <= 1) {
+            this.activeTriggerCount.delete(triggerId);
+        } else {
+            this.activeTriggerCount.set(triggerId, current - 1);
+        }
+    }
+
+    /**
+     * Cleanup expired entries from stateDB to prevent memory leaks
+     * OPTIMIERT: Regelmäßige Bereinigung des Cache
+     */
+    private cleanupStateDB(): void {
+        const now = Date.now();
+        const expiredIds: string[] = [];
+
+        for (const id in this.stateDB) {
+            const entry = this.stateDB[id];
+            const age = now - entry.ts;
+            // Keep entries 2x timespan
+            if (age > this.timespan * 2) {
+                expiredIds.push(id);
+            }
+        }
+
+        for (const id of expiredIds) {
+            delete this.stateDB[id];
+        }
+
+        if (expiredIds.length > 0 && this.adapter.config.debugLogStates) {
+            this.log.debug(`Cleaned up ${expiredIds.length} expired stateDB entries`);
         }
     }
     /**
@@ -159,12 +242,17 @@ export class StatesControler extends BaseClass {
 
         // 2) Bereits vorhanden → Empfänger anhängen (falls nicht schon drin)
         if (existing) {
-            const idx = existing.to.findIndex(a => a === from);
+            // OPTIMIERT: Verwende indexOf für bessere Performance als findIndex
+            const idx = existing.to.indexOf(from);
             if (idx === -1) {
                 existing.to.push(from);
                 existing.subscribed.push(false);
                 existing.triggerAllowed.push(trigger);
                 existing.change.push(change ?? 'ne');
+
+                // Update performance maps
+                this.addToTargetMap(from, id);
+
                 if (this.adapter.config.debugLogStates) {
                     this.log.debug(`Add a trigger for ${from.name} to ${id}`);
                 }
@@ -210,6 +298,10 @@ export class StatesControler extends BaseClass {
             if (this.adapter.config.debugLogStates) {
                 this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
             }
+
+            // Add to performance maps
+            this.addToTargetMap(from, id);
+
             // 5) Fremd-State & -Objekt holen
             const state = await this.adapter.getForeignStateAsync(id);
             if (state) {
@@ -217,8 +309,8 @@ export class StatesControler extends BaseClass {
             }
 
             // 6) DB befüllen, abonnieren, evtl. alten stateDB-Eintrag entfernen
-
-            if (this.stateDB[id] !== undefined) {
+            // OPTIMIERT: Verwende has() statt !== undefined
+            if (this.stateDB[id]) {
                 delete this.stateDB[id];
             }
         } catch (err) {
@@ -230,6 +322,7 @@ export class StatesControler extends BaseClass {
 
     /**
      * Activate the triggers of a pageItem for self or parent. First subscribes to the state.
+     * OPTIMIERT: Verwende performance maps für bessere Effizienz
      *
      * @param to Page
      */
@@ -237,9 +330,47 @@ export class StatesControler extends BaseClass {
         if (!to) {
             return;
         }
+
+        // OPTIMIERT: Verwende Map für direkte Lookup statt Iteration über alle IDs
+        const triggerIds = this.targetToTriggerMap.get(to);
+        if (triggerIds) {
+            for (const id of triggerIds) {
+                const entry = this.triggerDB[id];
+                if (!entry) {
+                    continue;
+                }
+
+                const index = entry.to.indexOf(to);
+                if (index === -1) {
+                    continue;
+                }
+                if (entry.subscribed[index]) {
+                    continue;
+                }
+                if (!entry.triggerAllowed[index]) {
+                    continue;
+                }
+
+                const hasActiveSubscription = entry.subscribed.some(a => a);
+                if (!hasActiveSubscription) {
+                    entry.subscribed[index] = true;
+                    this.incrementActiveTrigger(id);
+                    //await this.adapter.subscribeForeignStatesAsync(id);
+                    const state = await this.adapter.getForeignStateAsync(id);
+                    if (state) {
+                        entry.state = state;
+                    }
+                } else {
+                    entry.subscribed[index] = true;
+                    this.incrementActiveTrigger(id);
+                }
+            }
+        }
+
+        // Fallback: Check parent relationships (less common case)
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
-            const index = entry.to.findIndex(a => a === to || (a.parent && a.parent === to));
+            const index = entry.to.findIndex(a => a.parent && a.parent === to);
             if (index === -1) {
                 continue;
             }
@@ -249,56 +380,113 @@ export class StatesControler extends BaseClass {
             if (!entry.triggerAllowed[index]) {
                 continue;
             }
-            if (!entry.subscribed.some(a => a)) {
+
+            const hasActiveSubscription = entry.subscribed.some(a => a);
+            if (!hasActiveSubscription) {
                 entry.subscribed[index] = true;
+                this.incrementActiveTrigger(id);
                 //await this.adapter.subscribeForeignStatesAsync(id);
                 const state = await this.adapter.getForeignStateAsync(id);
                 if (state) {
                     entry.state = state;
                 }
+            } else {
+                entry.subscribed[index] = true;
+                this.incrementActiveTrigger(id);
             }
-            entry.subscribed[index] = true;
         }
     }
 
     /**
      * Deactivate the triggers of a pageItem for self or parent page. Last unsubscribes to the state.
+     * OPTIMIERT: Verwende performance maps und effizientere Suche
      *
      * @param to Page
      */
     async deactivateTrigger(to: BaseTriggeredPage): Promise<void> {
-        for (const id in this.triggerDB) {
-            if (to.neverDeactivateTrigger) {
-                continue;
+        if (to.neverDeactivateTrigger) {
+            return;
+        }
+
+        // OPTIMIERT: Verwende direkte Map-Lookup für bessere Performance
+        const triggerIds = this.targetToTriggerMap.get(to);
+        if (triggerIds) {
+            for (const id of triggerIds) {
+                const entry = this.triggerDB[id];
+                if (!entry || entry.internal) {
+                    continue;
+                }
+
+                const index = entry.to.indexOf(to);
+                if (index === -1 || !entry.subscribed[index]) {
+                    continue;
+                }
+
+                // Check if parent has another active page
+                const indexParent = entry.to.findIndex(a => a.parent && a.parent === to);
+                if (indexParent !== -1 && entry.subscribed[indexParent]) {
+                    continue; // parent has another page that is still active
+                }
+
+                entry.subscribed[index] = false;
+                this.decrementActiveTrigger(id);
+
+                if (this.adapter.config.debugLogStates) {
+                    this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
+                }
+
+                // Check if no subscriptions are left
+                const hasActiveSubscriptions = entry.subscribed.some(a => a);
+                if (!hasActiveSubscriptions) {
+                    if (this.blockedSubscriptions) {
+                        const idx = this.blockedSubscriptions.indexOf(id);
+                        if (idx !== -1) {
+                            this.blockedSubscriptions.splice(idx, 1);
+                        }
+                    }
+                    //await this.adapter.unsubscribeForeignStatesAsync(id);
+                }
             }
+        }
+
+        // Handle any remaining entries not in the map (edge case)
+        for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
             if (entry.internal) {
                 continue;
             }
+
             const index = entry.to.indexOf(to);
-            if (index === -1) {
+            if (index === -1 || !entry.subscribed[index]) {
                 continue;
             }
+
+            // Check if already handled by map lookup
+            const triggerIdsForTarget = this.targetToTriggerMap.get(to);
+            if (triggerIdsForTarget && triggerIdsForTarget.has(id)) {
+                continue; // Already handled above
+            }
+
             const indexParent = entry.to.findIndex(a => a.parent && a.parent === to);
             if (indexParent !== -1 && entry.subscribed[indexParent]) {
-                // parent has another page that is still active
-                continue;
+                continue; // parent has another page that is still active
             }
-            if (!entry.subscribed[index]) {
-                continue;
-            }
+
             entry.subscribed[index] = false;
+            this.decrementActiveTrigger(id);
+
             if (this.adapter.config.debugLogStates) {
                 this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
             }
-            if (!entry.subscribed.some(a => a)) {
+
+            const hasActiveSubscriptions = entry.subscribed.some(a => a);
+            if (!hasActiveSubscriptions) {
                 if (this.blockedSubscriptions) {
                     const idx = this.blockedSubscriptions.indexOf(id);
                     if (idx !== -1) {
                         this.blockedSubscriptions.splice(idx, 1);
                     }
                 }
-
                 //await this.adapter.unsubscribeForeignStatesAsync(id);
             }
         }
@@ -317,43 +505,60 @@ export class StatesControler extends BaseClass {
     }
     /**
      * Read a state from DB or js-controller
+     * OPTIMIERT: Verbesserte Cache-Strategie und Performance
      *
      * @param id state id with namespace
      * @param internal if the state is internal
      * @returns nsPanelState or null
      */
     async getState(id: string, internal: boolean = false): Promise<nsPanelState | null> {
-        if (
-            this.triggerDB[id] !== undefined &&
-            (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some(a => a))
-        ) {
+        // 1) TriggerDB has priority (subscribed or internal states)
+        const triggerEntry = this.triggerDB[id];
+        if (triggerEntry && (triggerEntry.internal || triggerEntry.subscribed.some(a => a))) {
             let state: nsPanelState | null = null;
-            const f = this.triggerDB[id].f;
+            const f = triggerEntry.f;
             if (f) {
                 state = {
-                    ...this.triggerDB[id].state,
+                    ...triggerEntry.state,
                     val: await f(id, undefined),
                 };
             } else {
-                state = this.triggerDB[id].state;
+                state = triggerEntry.state;
             }
             return state;
-        } else if (this.stateDB[id]) {
-            return this.stateDB[id].state;
         }
+
+        // 2) Check stateDB cache with timespan validation
+        const cachedEntry = this.stateDB[id];
+        if (cachedEntry) {
+            const age = Date.now() - cachedEntry.ts;
+            if (age < this.timespan) {
+                return cachedEntry.state;
+            }
+            // Cache expired, remove it
+            delete this.stateDB[id];
+        }
+
+        // 3) Handle internal states (with '/')
         if (id.includes('/')) {
             internal = true;
         }
+
         if (!internal) {
             try {
                 const state = await this.adapter.getForeignStateAsync(id);
                 if (state != null) {
+                    // Update cache only if we don't have it in stateDB
                     if (!this.stateDB[id]) {
                         const obj = await this.getObjectAsync(id);
                         if (!obj || !obj.common || obj.type !== 'state') {
                             throw new Error(`Got invalid object for ${id}`);
                         }
                         this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
+                    } else {
+                        // Update existing cache
+                        this.stateDB[id].state = state;
+                        this.stateDB[id].ts = Date.now();
                     }
                     return state;
                 }
@@ -417,6 +622,7 @@ export class StatesControler extends BaseClass {
     /**
      * Handle incoming state changes from ioBroker.
      *
+     * Performance-optimized version for high-frequency calls (1000s per minute).
      * Responsibilities:
      *  - Update the internal triggerDB entry for the given datapoint.
      *  - Decide whether the state change should trigger dependent classes.
@@ -435,94 +641,133 @@ export class StatesControler extends BaseClass {
             return;
         }
 
+        // Cache adapter namespace for string comparisons
+        const adapterNamespace = this.adapter.namespace;
+        const debugLogEnabled = this.adapter.config.debugLogStates;
+
+        // Pre-calculate common checks to avoid repeated string operations
+        const startsWithUserdata = dp.startsWith('0_userdata.0');
+        const startsWithAlias = dp.startsWith('alias.0');
+        const startsWithNamespace = dp.startsWith(adapterNamespace);
+
         const entry = this.triggerDB[dp];
 
         // --- Trigger/ACK-Pfad ------------------------------------------------------
         if (entry?.state) {
-            if (this.adapter.config.debugLogStates) {
+            // Only create debug log if enabled to avoid string operations
+            if (debugLogEnabled) {
                 this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
             }
 
+            // Cache old values before updating (avoid object creation if not needed)
+            const oldVal = entry.state.val;
+            const oldAck = entry.state.ack;
+            const oldTs = entry.state.ts;
+            const oldFrom = entry.state.from;
+            const oldLc = entry.state.lc;
+
             // Update triggerDB entry
             entry.ts = Date.now();
-            const oldState: nsPanelState = {
-                val: entry.state.val,
-                ack: entry.state.ack,
-                from: entry.state.from,
-                ts: entry.state.ts,
-                lc: entry.state.lc,
-            };
             entry.state = state;
 
-            const isSystemOrAlias =
-                dp.startsWith('0_userdata.0') ||
-                dp.startsWith('alias.0') ||
-                (!state.ack && dp.startsWith(this.adapter.namespace));
+            const isSystemOrAlias = startsWithUserdata || startsWithAlias || (!state.ack && startsWithNamespace);
             const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
 
             if (mayTrigger) {
-                const to = entry.to; // Ziel-Liste von Trigger-Empfängern
-                const changes = entry.change || []; // Änderungsregeln je Empfänger
+                // Cache array references to avoid repeated property access
+                const to = entry.to;
+                const toLength = to.length;
+
+                // Early exit if no targets
+                if (toLength === 0) {
+                    return;
+                }
+
+                const changes = entry.change || [];
                 const subscribed = entry.subscribed || [];
                 const allowed = entry.triggerAllowed || [];
-                const hasValChange = oldState.val !== state.val;
-                for (let i = 0; i < to.length; i++) {
+                const hasValChange = oldVal !== state.val;
+                const hasAckChange = oldAck !== state.ack;
+
+                // Only create oldState object if we have targets that need it
+                let oldState: nsPanelState | undefined;
+
+                for (let i = 0; i < toLength; i++) {
                     const target = to[i];
 
-                    // Nur reagieren, wenn sich etwas geändert hat (val, ack oder "ts")
-                    const hasChange = hasValChange || oldState.ack !== state.ack || changes[i] === 'ts';
-
-                    if (!hasChange) {
-                        this.log.debug(`Ignore trigger from state ${dp} no change!`);
+                    // Skip unloaded targets early
+                    if (target.unload) {
                         continue;
-                    } else if (!target.unload) {
-                        await target.onStateChange(dp, { old: oldState, new: state });
                     }
 
-                    // Prüfen ob trigger erlaubt und abonniert
-                    const notSubscribedOrNotAllowed = (!target.neverDeactivateTrigger && !subscribed[i]) || !allowed[i];
+                    // Check for changes efficiently
+                    const hasChange = hasValChange || hasAckChange || changes[i] === 'ts';
+                    if (!hasChange) {
+                        if (debugLogEnabled) {
+                            this.log.debug(`Ignore trigger from state ${dp} no change!`);
+                        }
+                        continue;
+                    }
 
-                    if (notSubscribedOrNotAllowed) {
-                        if (i === to.length - 1) {
+                    // Create oldState only when needed and once
+                    if (!oldState) {
+                        oldState = {
+                            val: oldVal,
+                            ack: oldAck,
+                            from: oldFrom,
+                            ts: oldTs,
+                            lc: oldLc,
+                        };
+                    }
+
+                    // Call target state change handler
+                    await target.onStateChange(dp, { old: oldState, new: state });
+
+                    // Check subscription and trigger permissions efficiently
+                    const isSubscribed = target.neverDeactivateTrigger || subscribed[i];
+                    const isAllowed = allowed[i];
+
+                    if (!isSubscribed || !isAllowed) {
+                        if (debugLogEnabled && i === toLength - 1) {
                             this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
                             this.log.debug(
                                 `c: ${target.name} !c.neverDeactivateTrigger: ${!target.neverDeactivateTrigger} && ` +
-                                    `!this.triggerDB[dp].subscribed[i]: ${!subscribed[i]} || ` +
-                                    `!this.triggerDB[dp].triggerAllowed[i]: ${!allowed[i]}`,
+                                    `!subscribed[${i}]: ${!subscribed[i]} || !allowed[${i}]: ${!allowed[i]}`,
                             );
                         }
                         continue;
                     }
 
-                    // Weiterreichen an Parent (falls vorhanden) oder direkt
-                    if (target.parent && target.triggerParent && !target.parent.unload && !target.parent.sleep) {
-                        if (target.parent.onStateTriggerSuperDoNotOverride) {
-                            await target.parent.onStateTriggerSuperDoNotOverride(dp, target);
-                        }
-                    } else if (!target.unload) {
-                        if (target.onStateTriggerSuperDoNotOverride) {
-                            await target.onStateTriggerSuperDoNotOverride(dp, target);
-                        }
+                    // Handle parent/direct trigger routing
+                    const parent = target.parent;
+                    if (parent && target.triggerParent && !parent.unload && !parent.sleep) {
+                        await parent.onStateTriggerSuperDoNotOverride?.(dp, target);
+                    } else {
+                        await target.onStateTriggerSuperDoNotOverride?.(dp, target);
                     }
                 }
-            } else {
+            } else if (debugLogEnabled) {
                 this.log.debug(`Ignore trigger from state ${dp} ack is false!`);
             }
         } else if (this.stateDB[dp]) {
-            this.stateDB[dp].state = state as ioBroker.State;
-            this.stateDB[dp].ts = state.ts;
+            // Fast path for stateDB updates
+            const stateEntry = this.stateDB[dp];
+            stateEntry.state = state as ioBroker.State;
+            stateEntry.ts = state.ts;
         }
 
         // --- Primitive-Update-Pfad (nur Nicht-Objekte) -----------------------------
+        // Early primitive check to avoid unnecessary processing
         const v = state.val;
-        const isPrimitive = v === null || v === undefined || typeof v !== 'object';
-        if (!isPrimitive) {
+        if (v !== null && v !== undefined && typeof v === 'object') {
             return;
         }
 
-        // Eigene States (im Adapter-Namespace) updaten
-        if (!state.ack && dp.startsWith(this.adapter.namespace)) {
-            const id = dp.replace(`${this.adapter.namespace}.`, '');
+        // Handle adapter namespace states efficiently
+        if (!state.ack && startsWithNamespace) {
+            // Cache namespace replacement to avoid repeated string operations
+            const namespacePrefix = `${adapterNamespace}.`;
+            const id = dp.slice(namespacePrefix.length); // More efficient than replace()
             const libState = this.library.readdb(id);
 
             if (libState) {
@@ -532,17 +777,18 @@ export class StatesControler extends BaseClass {
                     ts: state.ts,
                     ack: state.ack,
                 });
-            }
 
-            // Weiterreichen an Panels nur wenn state beschreibbar ist
-            if (libState?.obj?.common?.write && this.adapter.controller) {
-                for (const panel of this.adapter.controller.panels) {
-                    await panel.onStateChange(id, state);
+                // Forward to panels only if writable and controller exists
+                if (libState.obj?.common?.write && this.adapter.controller) {
+                    const panels = this.adapter.controller.panels;
+                    for (const panel of panels) {
+                        await panel.onStateChange(id, state);
+                    }
                 }
             }
         }
 
-        // System-Host-Notifications weiterreichen
+        // System host notifications (less frequent, can stay as is)
         if (dp.startsWith('system.host') && this.adapter.controller) {
             await this.adapter.controller.systemNotification.onStateChange(dp, state as ioBroker.State);
         }

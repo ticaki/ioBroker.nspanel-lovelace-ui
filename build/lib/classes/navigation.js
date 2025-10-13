@@ -375,6 +375,9 @@ class Navigation extends import_library.BaseClass {
     return (0, import_tools.getPayload)(navigationString, navigationString2);
   }
   resetPosition() {
+    if (this.adapter.config.rememberLastSite === true) {
+      return;
+    }
     const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
     if (index !== -1 && this.database[index]) {
       this.currentItem = index;

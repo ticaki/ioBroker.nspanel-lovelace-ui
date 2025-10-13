@@ -31,6 +31,7 @@ __export(panel_exports, {
   Panel: () => Panel
 });
 module.exports = __toCommonJS(panel_exports);
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_panel_message = require("./panel-message");
 var import_screensaver = require("../pages/screensaver");
 var Types = __toESM(require("../types/types"));
@@ -192,7 +193,7 @@ class Panel extends import_library.BaseClass {
     return false;
   }
   constructor(adapter, options) {
-    var _a, _b, _c, _d;
+    var _a, _b;
     super(adapter, options.name, (_a = options.friendlyName) != null ? _a : options.name);
     this.panelSend = new import_panel_message.PanelSend(adapter, {
       name: `${this.friendlyName}-SendClass`,
@@ -218,113 +219,10 @@ class Panel extends import_library.BaseClass {
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
     this.statesControler = options.controller.statesControler;
-    const unlocks = this.adapter.config.pageUnlockConfig || [];
-    for (const unlock of unlocks) {
-      if (unlock.navigationAssignment) {
-        const navAssign = unlock.navigationAssignment.find((a) => a.topic === this.topic);
-        if (navAssign) {
-          const newUnlock = {
-            uniqueID: unlock.uniqueName,
-            hidden: !!unlock.hidden,
-            alwaysOn: unlock.alwaysOn || "none",
-            template: void 0,
-            dpInit: "",
-            config: {
-              card: "cardAlarm",
-              data: {
-                alarmType: { type: "const", constVal: unlock.alarmType || "unlock" },
-                headline: { type: "const", constVal: unlock.headline || "Unlock" },
-                button1: unlock.button1 ? { type: "const", constVal: unlock.button1 } : void 0,
-                button2: unlock.button2 ? { type: "const", constVal: unlock.button2 } : void 0,
-                button3: unlock.button3 ? { type: "const", constVal: unlock.button3 } : void 0,
-                button4: unlock.button4 ? { type: "const", constVal: unlock.button4 } : void 0,
-                pin: unlock.pin != null ? { type: "const", constVal: String(unlock.pin) } : void 0,
-                approved: { type: "const", constVal: !!unlock.approved },
-                setNavi: unlock.setNavi ? { type: "const", constVal: unlock.setNavi } : void 0
-              }
-            },
-            pageItems: []
-          };
-          if (options.pages.find((a) => a.uniqueID === newUnlock.uniqueID)) {
-            this.log.warn(`Page with name ${newUnlock.uniqueID} already exists, skipping!`);
-            continue;
-          }
-          options.pages.push(newUnlock);
-          const navigation = navAssign.navigation;
-          if (!navigation) {
-            continue;
-          }
-          const navigationEntry = {
-            name: newUnlock.uniqueID,
-            page: newUnlock.uniqueID,
-            right: {
-              single: void 0,
-              double: void 0
-            },
-            left: {
-              single: void 0,
-              double: void 0
-            }
-          };
-          let overrwriteNext = false;
-          if (!(navigation == null ? void 0 : navigation.prev) && !(navigation == null ? void 0 : navigation.next) && !(navigation == null ? void 0 : navigation.home) && !(navigation == null ? void 0 : navigation.parent)) {
-            navigation.home = "main";
-          }
-          if (navigation.prev) {
-            navigationEntry.left.single = navigation.prev;
-            let index = options.navigation.findIndex((b) => b && b.name === navigation.prev);
-            if (index !== -1 && options.navigation[index]) {
-              const oldNext = (_c = options.navigation[index].right) == null ? void 0 : _c.single;
-              if (oldNext && oldNext !== newUnlock.uniqueID) {
-                overrwriteNext = true;
-                options.navigation[index].right = options.navigation[index].right || {};
-                options.navigation[index].right.single = newUnlock.uniqueID;
-                navigationEntry.right.single = oldNext;
-                index = options.navigation.findIndex((b) => b && b.name === oldNext);
-                if (index !== -1 && options.navigation[index]) {
-                  options.navigation[index].left = options.navigation[index].left || {};
-                  options.navigation[index].left.single = newUnlock.uniqueID;
-                }
-              } else if (!oldNext && options.navigation[index]) {
-                options.navigation[index].right = { single: newUnlock.uniqueID };
-              }
-            }
-          }
-          if (!overrwriteNext) {
-            if (navigation.next) {
-              navigationEntry.right.single = navigation.next;
-              let index = options.navigation.findIndex((b) => b && b.name === navigation.next);
-              if (index !== -1 && options.navigation[index]) {
-                const oldPrev = (_d = options.navigation[index].left) == null ? void 0 : _d.single;
-                if (oldPrev && oldPrev !== newUnlock.uniqueID) {
-                  overrwriteNext = true;
-                  options.navigation[index].left = options.navigation[index].left || {};
-                  options.navigation[index].left.single = newUnlock.uniqueID;
-                  navigationEntry.left.single = oldPrev;
-                  index = options.navigation.findIndex((b) => b && b.name === oldPrev);
-                  if (index !== -1 && options.navigation[index]) {
-                    options.navigation[index].right = options.navigation[index].right || {};
-                    options.navigation[index].right.single = newUnlock.uniqueID;
-                  }
-                } else if (!oldPrev && options.navigation[index]) {
-                  options.navigation[index].left = { single: newUnlock.uniqueID };
-                }
-              }
-            }
-          }
-          if (navigation.home) {
-            navigationEntry.left.double = navigation.home;
-          }
-          if (navigation.parent) {
-            navigationEntry.right.double = navigation.parent;
-          }
-          options.navigation.push(navigationEntry);
-        }
-      }
-    }
+    this.processUnlockPages(options);
     options.pages = options.pages.filter((b) => {
-      var _a2, _b2, _c2;
-      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c2 = b.config) == null ? void 0 : _c2.card) === "screensaver3") {
+      var _a2, _b2, _c;
+      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
         return true;
       }
       if (options.navigation.find((c) => c && c.name === b.uniqueID)) {
@@ -2037,7 +1935,7 @@ ${this.info.tasmota.onlineVersion}`;
         const n = db[nav.left.double];
         parent = n != null && n.page ? n.page.name : void 0;
       }
-      let pageInfo = { card: "unknown", alwaysOn: "none" };
+      let pageInfo = { card: "cardGrid", alwaysOn: "none" };
       if (pages.isPageMenuConfig(nav.page.config)) {
         pageInfo = {
           ...pageInfo,
@@ -2116,6 +2014,169 @@ ${this.info.tasmota.onlineVersion}`;
       config = (0, import_tools.deepAssign)(newTemplate, config);
     }
     return config;
+  }
+  /**
+   * Process configurable pages from adapter config and build navigation entries.
+   * Supports ALL_PANELS_SPECIAL_ID for applying pages to all panels at once,
+   * then allows individual panel overrides or exclusions.
+   *
+   * Logic:
+   * - First pass: If ALL_PANELS_SPECIAL_ID assignment exists, apply to all panels
+   * - Second pass: Process panel-specific assignments
+   *   - Empty navigation with prior ALL = exclude this panel from that page
+   *   - Empty navigation without ALL = default to home:'main'
+   *
+   * Supported card types: cardAlarm (unlock/alarm), cardQR, and more in the future.
+   *
+   * @param options - Panel configuration partial containing pages and navigation arrays
+   */
+  processUnlockPages(options) {
+    var _a, _b;
+    const unlocks = this.adapter.config.pageUnlockConfig || [];
+    for (const unlock of unlocks) {
+      if (!unlock.navigationAssignment) {
+        continue;
+      }
+      unlock.card = unlock.card || "cardAlarm";
+      const allPanelsAssignment = unlock.navigationAssignment.find((a) => a.topic === import_adminShareConfig.ALL_PANELS_SPECIAL_ID);
+      const panelAssignment = unlock.navigationAssignment.find((a) => a.topic === this.topic);
+      let navAssign;
+      if (panelAssignment) {
+        if (!panelAssignment.navigation && allPanelsAssignment) {
+          continue;
+        }
+        navAssign = panelAssignment;
+      } else if (allPanelsAssignment) {
+        navAssign = allPanelsAssignment;
+      } else {
+        continue;
+      }
+      let newPage;
+      switch (unlock.card) {
+        case "cardAlarm": {
+          newPage = {
+            uniqueID: unlock.uniqueName,
+            hidden: !!unlock.hidden,
+            alwaysOn: unlock.alwaysOn || "none",
+            template: void 0,
+            dpInit: "",
+            config: {
+              card: "cardAlarm",
+              data: {
+                alarmType: { type: "const", constVal: unlock.alarmType || "unlock" },
+                headline: { type: "const", constVal: unlock.headline || "Unlock" },
+                button1: unlock.button1 ? { type: "const", constVal: unlock.button1 } : void 0,
+                button2: unlock.button2 ? { type: "const", constVal: unlock.button2 } : void 0,
+                button3: unlock.button3 ? { type: "const", constVal: unlock.button3 } : void 0,
+                button4: unlock.button4 ? { type: "const", constVal: unlock.button4 } : void 0,
+                pin: unlock.pin != null ? { type: "const", constVal: String(unlock.pin) } : void 0,
+                approved: { type: "const", constVal: !!unlock.approved },
+                setNavi: unlock.setNavi ? { type: "const", constVal: unlock.setNavi } : void 0
+              }
+            },
+            pageItems: []
+          };
+          break;
+        }
+        case "cardQR": {
+          newPage = {
+            uniqueID: unlock.uniqueName,
+            hidden: !!unlock.hidden,
+            alwaysOn: unlock.alwaysOn || "none",
+            template: void 0,
+            dpInit: "",
+            config: {
+              card: "cardQR",
+              index: 0,
+              data: {
+                // TODO: Add QR-specific data configuration from unlock config
+                headline: unlock.headline ? { type: "const", constVal: unlock.headline } : void 0,
+                entity1: void 0
+              }
+            },
+            pageItems: []
+          };
+          break;
+        }
+        default: {
+          this.log.warn(`Unsupported card type '${unlock.card}' for page '${unlock.uniqueName}', skipping!`);
+          continue;
+        }
+      }
+      if (options.pages.find((a) => a.uniqueID === newPage.uniqueID)) {
+        this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+        continue;
+      }
+      options.pages.push(newPage);
+      const navigation = navAssign.navigation;
+      if (!navigation) {
+        continue;
+      }
+      const navigationEntry = {
+        name: newPage.uniqueID,
+        page: newPage.uniqueID,
+        right: { single: void 0, double: void 0 },
+        left: { single: void 0, double: void 0 }
+      };
+      if (!navigation.prev && !navigation.next && !navigation.home && !navigation.parent) {
+        navigation.home = "main";
+      }
+      let overrwriteNext = false;
+      if (navigation.prev) {
+        navigationEntry.left.single = navigation.prev;
+        const index = options.navigation.findIndex(
+          (b) => b && b.name === navigation.prev
+        );
+        if (index !== -1 && options.navigation[index]) {
+          const oldNext = (_a = options.navigation[index].right) == null ? void 0 : _a.single;
+          if (oldNext && oldNext !== newPage.uniqueID) {
+            overrwriteNext = true;
+            options.navigation[index].right = options.navigation[index].right || {};
+            options.navigation[index].right.single = newPage.uniqueID;
+            navigationEntry.right.single = oldNext;
+            const nextIndex = options.navigation.findIndex(
+              (b) => b && b.name === oldNext
+            );
+            if (nextIndex !== -1 && options.navigation[nextIndex]) {
+              options.navigation[nextIndex].left = options.navigation[nextIndex].left || {};
+              options.navigation[nextIndex].left.single = newPage.uniqueID;
+            }
+          } else if (!oldNext) {
+            options.navigation[index].right = { single: newPage.uniqueID };
+          }
+        }
+      }
+      if (!overrwriteNext && navigation.next) {
+        navigationEntry.right.single = navigation.next;
+        const index = options.navigation.findIndex(
+          (b) => b && b.name === navigation.next
+        );
+        if (index !== -1 && options.navigation[index]) {
+          const oldPrev = (_b = options.navigation[index].left) == null ? void 0 : _b.single;
+          if (oldPrev && oldPrev !== newPage.uniqueID) {
+            options.navigation[index].left = options.navigation[index].left || {};
+            options.navigation[index].left.single = newPage.uniqueID;
+            navigationEntry.left.single = oldPrev;
+            const prevIndex = options.navigation.findIndex(
+              (b) => b && b.name === oldPrev
+            );
+            if (prevIndex !== -1 && options.navigation[prevIndex]) {
+              options.navigation[prevIndex].right = options.navigation[prevIndex].right || {};
+              options.navigation[prevIndex].right.single = newPage.uniqueID;
+            }
+          } else if (!oldPrev) {
+            options.navigation[index].left = { single: newPage.uniqueID };
+          }
+        }
+      }
+      if (navigation.home) {
+        navigationEntry.left.double = navigation.home;
+      }
+      if (navigation.parent) {
+        navigationEntry.right.double = navigation.parent;
+      }
+      options.navigation.push(navigationEntry);
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

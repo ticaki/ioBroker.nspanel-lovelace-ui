@@ -30,6 +30,70 @@
 - Panel topics: `{panelTopic}/cmnd/`, `{panelTopic}/tele/`, `{panelTopic}/stat/`.
 - TFT firmware updates via MQTT commands.
 
+
+
+
+## Admin React (./src-admin) rules
+
+These are mandatory rules for any changes that affect the Admin/React frontend located in `./src-admin`.
+
+1. Use class-based components only
+  - All React components under `./src-admin` must be implemented as ES6 classes (no hooks / functional components).
+
+2. All user-visible strings must be translated
+  - Any string that can be seen by the user must be passed through the i18n layer (e.g. `I18n.t('key')`).
+
+3. Minimum languages: English and German
+  - New or changed translation keys must be added at least to `src-admin/src/i18n/en.json` and `src-admin/src/i18n/de.json`.
+
+4. Build & verify after agent activity
+  - After any automated agent change that touches `./src-admin` run the admin build from the repo root and verify output:
+
+```bash
+npm run build:admin
+```
+
+ - The agent must report the build result and at least check the admin bundle finished without errors.
+
+5. Function return types are not optional
+  - Public and internal functions must declare non-optional return types. Avoid `undefined` as an expected success return value.
+
+6. Minimize `as` casting
+  - Avoid `as` type casts. Prefer proper typing, type guards, discriminated unions or small helper functions to narrow types.
+
+7. Class template example
+  - Classes should follow this pattern (example):
+
+```ts
+
+type NavigationAssignmentPanelProps = {
+    /** ... add additional prop fields here ... */
+};
+
+interface NavigationAssignmentPanelState extends ConfigGenericState {
+    /** ... add additional state fields here ... */
+}
+class NavigationAssignmentPanel extends ConfigGeneric<
+   ConfigGenericProps & NavigationAssignmentPanelProps,
+   NavigationAssignmentPanelState
+> {
+  constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
+    super(props);
+    // Minimal example state — real components will include additional fields
+    this.state = {
+      ...this.state,
+      /** ... add additional state fields here ... */
+    };
+  }
+  // ... rest of the class omitted for brevity ...
+}
+```
+
+Notes
+- Translations that affect the Admin/React code (everything under `./src-admin`) belong in the corresponding admin UI i18n files: `./src-admin/src/i18n/*` (not in `admin/i18n`).
+- These rules are additive to the general repository guidelines above. When in doubt prefer explicit type-safety and full i18n coverage.
+
+
 ### External Script Configuration  
 - Configuration received through `OnMessage` handler in `main.ts` (command: 'ScriptConfig').
 - External scripts send complete panel configurations via sendTo interface.
@@ -210,7 +274,7 @@
 ## Documentation References
 - [ioBroker adapter development documentation](https://www.iobroker.net/#en/documentation/dev/adapterdev.md)
 - [NSPanel Adapter Wiki](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki) - **Primary source for NSPanel-specific behavior**
-- [NSPanel Icon Cheatsheet](https://docs.nspanel.pky.eu/icon-cheatsheet.html) - **Complete list of available icons for NSPanel**
+- [NSPanel Icon list](../src-admin/src/icons.json) - **Complete list of available icons for NSPanel**
 - Hardware compatibility: Sonoff NSPanel with Tasmota firmware
 - UI Design: Based on Home Assistant Lovelace UI principles
 

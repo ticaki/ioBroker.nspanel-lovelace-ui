@@ -433,6 +433,9 @@ export class Navigation extends BaseClass {
     }
 
     resetPosition(): void {
+        if (this.adapter.config.rememberLastSite === true) {
+            return;
+        }
         const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
         if (index !== -1 && this.database[index]) {
             this.currentItem = index;

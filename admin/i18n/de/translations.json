@@ -119,6 +119,7 @@
     "hideCards": "Seiten verbergen",
     "horizontal": "waagerecht",
     "iconOverview": "Symbolübersicht",
+    
     "internalCalculation": "Interne Berechnung",
     "internalServerIp": "IP von ioBroker",
     "ipFromPanel": "IP des Panel",

@@ -22,13 +22,16 @@ export type AdminCardTypes =
 
 // Typ für pageInfo bei PageMenuConfig (siehe Panel)
 export interface PageMenuConfigInfo {
-    card: string;
+    card: AdminCardTypes;
     alwaysOn?: string;
     scrollPresentation?: string;
     scrollType?: string;
     scrollAutoTiming?: number;
     pageItemCount?: number;
 }
+
+export const ALL_PANELS_SPECIAL_ID = '///ALL_PANELS_SPECIAL';
+
 // Zentrale Kommandos für Navigation-API
 export const SENDTO_GET_PANEL_NAVIGATION_COMMAND = 'getPanelNavigation';
 export const SAVE_PANEL_NAVIGATION_COMMAND = 'savePanelNavigation';
@@ -75,8 +78,8 @@ export interface PanelListEntry {
 
 // Shared types for admin UI (typo: file name uses 'Shard')
 export type UnlockEntry = {
-    card: Extract<AdminCardTypes, 'cardAlarm'>; // 'cardUnlock' | 'cardAlarm'
-    alarmType?: string; // e.g. 'alarm' | 'unlock'
+    card: Extract<AdminCardTypes, 'cardAlarm' | 'cardQR'>; // Supported card types - will be extended
+    alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
     headline: string;
     button1: string;
     button2: string;
