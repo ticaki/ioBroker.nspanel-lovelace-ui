@@ -24,7 +24,6 @@ export class PageChart extends Page {
     index: number = 0;
     private checkState: boolean = true;
     protected adminConfig;
-    private updateChartTimout: ioBroker.Timeout | undefined | null = null;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
@@ -37,7 +36,7 @@ export class PageChart extends Page {
             throw new Error('Missing config!');
         }
         this.index = this.config.index;
-        this.minUpdateInterval = 2000;
+        this.minUpdateInterval = 60_000;
         this.adminConfig = this.adapter.config.pageChartdata[this.index];
     }
 
@@ -78,19 +77,6 @@ export class PageChart extends Page {
         }
         this.sendType(true);
         this.sendToPanel(this.getMessage(message), false);
-        // breche laufenden Timer immer ab
-        if (this.updateChartTimout) {
-            this.adapter.clearTimeout(this.updateChartTimout);
-            this.updateChartTimout = null;
-        }
-        // update Page jede Stunde
-        this.updateChartTimout = this.adapter.setTimeout(
-            () => {
-                this.updateChartTimout = null;
-                void this.update();
-            },
-            60 * 60 * 1000,
-        );
     }
 
     static async getChartPageConfig(
@@ -212,10 +198,6 @@ export class PageChart extends Page {
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
         // breche laufenden Timer immer ab wenn sich die Sichtbarkeit ändert
-        if (this.updateChartTimout) {
-            this.adapter.clearTimeout(this.updateChartTimout);
-            this.updateChartTimout = null;
-        }
         if (val) {
             // Neu: bei Sichtbarkeit immer neu prüfen
             this.checkState = false; // Standardmäßig auf false setzen
@@ -320,14 +302,5 @@ export class PageChart extends Page {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
-    }
-
-    async delete(): Promise<void> {
-        // breche laufenden Timer immer ab - vorallem wenn die Page gelöscht wird
-        if (this.updateChartTimout) {
-            this.adapter.clearTimeout(this.updateChartTimout);
-            this.updateChartTimout = null;
-        }
-        await super.delete();
     }
 }

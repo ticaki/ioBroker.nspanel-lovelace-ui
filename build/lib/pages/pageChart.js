@@ -42,7 +42,6 @@ class PageChart extends import_Page.Page {
   index = 0;
   checkState = true;
   adminConfig;
-  updateChartTimout = null;
   constructor(config, options) {
     if (config.card !== "cardChart" && config.card !== "cardLChart") {
       return;
@@ -54,7 +53,7 @@ class PageChart extends import_Page.Page {
       throw new Error("Missing config!");
     }
     this.index = this.config.index;
-    this.minUpdateInterval = 2e3;
+    this.minUpdateInterval = 6e4;
     this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {
@@ -91,17 +90,6 @@ class PageChart extends import_Page.Page {
     }
     this.sendType(true);
     this.sendToPanel(this.getMessage(message), false);
-    if (this.updateChartTimout) {
-      this.adapter.clearTimeout(this.updateChartTimout);
-      this.updateChartTimout = null;
-    }
-    this.updateChartTimout = this.adapter.setTimeout(
-      () => {
-        this.updateChartTimout = null;
-        void this.update();
-      },
-      60 * 60 * 1e3
-    );
   }
   static async getChartPageConfig(configManager, index, gridItem, messages, page) {
     const adapter = configManager.adapter;
@@ -207,10 +195,6 @@ class PageChart extends import_Page.Page {
     );
   }
   async onVisibilityChange(val) {
-    if (this.updateChartTimout) {
-      this.adapter.clearTimeout(this.updateChartTimout);
-      this.updateChartTimout = null;
-    }
     if (val) {
       this.checkState = false;
       if (!this.adminConfig) {
@@ -297,13 +281,6 @@ class PageChart extends import_Page.Page {
   async onStateTrigger(_id) {
   }
   async onButtonEvent(_event) {
-  }
-  async delete() {
-    if (this.updateChartTimout) {
-      this.adapter.clearTimeout(this.updateChartTimout);
-      this.updateChartTimout = null;
-    }
-    await super.delete();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
