@@ -101,7 +101,7 @@ export type QREntry = {
     SSIDURLTEL: string;
     wlanhidden: boolean;
     wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
-    qrPaas?: string;
+    qrPass?: string;
     pwdhidden: boolean;
     setState: string;
     hidden?: boolean;

@@ -687,12 +687,12 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                                                                 variant="standard"
                                                                 type={local.showPassword ? 'text' : 'password'}
                                                                 label={this.getText('qr_password')}
-                                                                value={ent.qrPaas ?? ''}
+                                                                value={ent.qrPass ?? ''}
                                                                 onChange={e => {
                                                                     const v = e.target.value;
                                                                     const updated = entries.map(it =>
                                                                         it.uniqueName === sel
-                                                                            ? { ...it, qrPaas: v }
+                                                                            ? { ...it, qrPass: v }
                                                                             : it,
                                                                     );
                                                                     this.setState({ entries: updated } as QRPageState);

@@ -75,7 +75,7 @@ export class PageQR extends Page {
             return;
         }
         const message: Partial<pages.PageQRMessage> = {};
-        const config = this.adapter.config.pageQRdata[this.index];
+        const config = this.adapter.config.pageQRConfig[this.index];
         if (this.items && config != null) {
             const items = this.items;
 
@@ -88,12 +88,12 @@ export class PageQR extends Page {
                 case 0:
                     this.log.debug(`qrType = FREE`);
                     message.textQR = config.SSIDURLTEL;
-                    message.optionalValue1 = config.optionalText || '';
+                    message.optionalValue1 = '';
                     break;
                 case 1: {
                     this.log.debug(`qrType = wifi`);
-                    let pass = '';
-                    switch (config.qrPass) {
+                    const pass = config.qrPass || '';
+                    /* switch (config.qrPass) {
                         case 0:
                             break;
                         case 1:
@@ -105,7 +105,7 @@ export class PageQR extends Page {
                         case 3:
                             pass = this.adapter.config.pageQRpwd3 || '';
                             break;
-                    }
+                    } */
                     message.textQR = `WIFI:T:${config.wlantype};S:${config.SSIDURLTEL};P:${pass};${config.wlanhidden ? `H:${config.wlanhidden}` : `H:`};`;
                     message.optionalValue1 = config.SSIDURLTEL;
                     break;

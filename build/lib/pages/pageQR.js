@@ -105,7 +105,7 @@ class PageQR extends import_Page.Page {
       return;
     }
     const message = {};
-    const config = this.adapter.config.pageQRdata[this.index];
+    const config = this.adapter.config.pageQRConfig[this.index];
     if (this.items && config != null) {
       const items = this.items;
       message.headline = this.library.getTranslation(
@@ -116,24 +116,11 @@ class PageQR extends import_Page.Page {
         case 0:
           this.log.debug(`qrType = FREE`);
           message.textQR = config.SSIDURLTEL;
-          message.optionalValue1 = config.optionalText || "";
+          message.optionalValue1 = "";
           break;
         case 1: {
           this.log.debug(`qrType = wifi`);
-          let pass = "";
-          switch (config.qrPass) {
-            case 0:
-              break;
-            case 1:
-              pass = this.adapter.config.pageQRpwd1 || "";
-              break;
-            case 2:
-              pass = this.adapter.config.pageQRpwd2 || "";
-              break;
-            case 3:
-              pass = this.adapter.config.pageQRpwd3 || "";
-              break;
-          }
+          const pass = config.qrPass || "";
           message.textQR = `WIFI:T:${config.wlantype};S:${config.SSIDURLTEL};P:${pass};${config.wlanhidden ? `H:${config.wlanhidden}` : `H:`};`;
           message.optionalValue1 = config.SSIDURLTEL;
           break;

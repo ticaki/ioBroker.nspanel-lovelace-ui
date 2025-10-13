@@ -289,7 +289,7 @@ declare global {
                 selType: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
                 wlanhidden?: boolean;
                 wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
-                qrPaas?: string;
+                qrPass?: string;
                 pwdhidden?: boolean;
                 setState?: string;
                 hidden?: boolean;
