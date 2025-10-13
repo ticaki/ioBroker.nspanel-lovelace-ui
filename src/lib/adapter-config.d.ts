@@ -260,7 +260,7 @@ declare global {
             }[];
 
             pageUnlockConfig: {
-                card: 'cardAlarm' | 'cardQR'; // Card type - will be extended with more types
+                card: 'cardAlarm'; // Card type - will be extended with more types
                 alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
                 headline: string;
                 button1: string;
@@ -273,42 +273,36 @@ declare global {
                 uniqueName: string;
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
-                navigationAssignment?: {
-                    topic: string;
-                    navigation?: {
-                        next?: string;
-                        prev?: string;
-                        home?: string;
-                        parent?: string;
-                    };
-                }[];
+                navigationAssignment?: navigationAssignment[];
             }[];
 
             pageQRConfig: {
-                uniqueName: string;
+                card: 'cardQR';
+                selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
                 headline: string;
                 SSIDURLTEL: string;
-                selType: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
-                wlanhidden?: boolean;
+                wlanhidden: boolean;
                 wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
                 qrPass?: string;
-                pwdhidden?: boolean;
-                setState?: string;
+                pwdhidden: boolean;
+                setState: string;
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
-                navigationAssignment?: {
-                    topic: string;
-                    navigation?: {
-                        next?: string;
-                        prev?: string;
-                        home?: string;
-                        parent?: string;
-                    };
-                }[];
+                uniqueName: string;
+                navigationAssignment?: navigationAssignment[]
             }[];
         }
     }
 }
 
+type navigationAssignment = {
+    topic: string;
+    navigation?: {
+        next?: string;
+        prev?: string;
+        home?: string;
+        parent?: string;
+    };
+};
 // this is required so the above AdapterConfig is found by TypeScript / type checking
 export { };

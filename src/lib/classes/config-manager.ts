@@ -2,7 +2,6 @@ import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
-import { PageQR } from '../pages/pageQR';
 import { PagePower } from '../pages/pagePower';
 import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
@@ -806,7 +805,8 @@ export class ConfigManager extends BaseClass {
                         continue;
                     }
                     try {
-                        ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
+                        continue;
+                        // ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
                     } catch (error: any) {
                         messages.push(
                             `Configuration error in page qr ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,

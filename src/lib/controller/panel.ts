@@ -3,6 +3,8 @@ import type {
     NavigationPositionsMap,
     PageMenuConfigInfo,
     PanelListEntry,
+    QREntry,
+    UnlockEntry,
 } from '../types/adminShareConfig';
 import { ALL_PANELS_SPECIAL_ID } from '../types/adminShareConfig';
 import { PanelSend } from './panel-message';
@@ -2199,7 +2201,8 @@ export class Panel extends BaseClass {
      * @param options - Panel configuration partial containing pages and navigation arrays
      */
     private processUnlockPages(options: panelConfigPartial): void {
-        const unlocks = this.adapter.config.pageUnlockConfig || [];
+        let unlocks: (UnlockEntry | QREntry)[] = this.adapter.config.pageUnlockConfig || [];
+        unlocks = unlocks.concat(this.adapter.config.pageQRConfig || []);
 
         for (const unlock of unlocks) {
             if (!unlock.navigationAssignment) {
@@ -2295,7 +2298,7 @@ export class Panel extends BaseClass {
                 }
 
                 default: {
-                    // eslint-disable-next-line
+                    // @ts-expect-error die muß hier stehen und keinen Fehler haben
                     this.log.warn(`Unsupported card type '${unlock.card}' for page '${unlock.uniqueName}', skipping!`);
                     continue;
                 }

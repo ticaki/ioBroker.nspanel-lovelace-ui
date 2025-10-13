@@ -2032,7 +2032,8 @@ ${this.info.tasmota.onlineVersion}`;
    */
   processUnlockPages(options) {
     var _a, _b;
-    const unlocks = this.adapter.config.pageUnlockConfig || [];
+    let unlocks = this.adapter.config.pageUnlockConfig || [];
+    unlocks = unlocks.concat(this.adapter.config.pageQRConfig || []);
     for (const unlock of unlocks) {
       if (!unlock.navigationAssignment) {
         continue;

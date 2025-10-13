@@ -34,7 +34,6 @@ module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_states_controller = require("../controller/states-controller");
-var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
 var import_readme = require("../tools/readme");
@@ -699,7 +698,7 @@ class ConfigManager extends import_library.BaseClass {
             continue;
           }
           try {
-            ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, page, index, gridItem, messages));
+            continue;
           } catch (error) {
             messages.push(
               `Configuration error in page qr ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
