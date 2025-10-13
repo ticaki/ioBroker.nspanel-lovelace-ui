@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
@@ -393,27 +394,48 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                 backgroundColor:
                                                     local.selected === name ? 'action.selected' : 'transparent',
                                                 mb: 0.5,
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                '&:hover .delete-icon': {
+                                                    opacity: 1,
+                                                },
                                             }}
                                         >
-                                            <Typography variant="body2">{name}</Typography>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                                            >
+                                                {name}
+                                            </Typography>
+                                            <IconButton
+                                                className="delete-icon"
+                                                edge="end"
+                                                aria-label="delete"
+                                                size="small"
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    // Set selected and open confirmation dialog
+                                                    local.selected = name;
+                                                    this.setState({
+                                                        confirmDeleteOpen: true,
+                                                        confirmDeleteName: name,
+                                                    } as UnlockPageState);
+                                                }}
+                                                sx={{
+                                                    color: 'error.main',
+                                                    opacity: { xs: 1, md: 0 }, // Always visible on mobile, hover on desktop
+                                                    transition: 'opacity 0.2s',
+                                                }}
+                                            >
+                                                <DeleteOutlineIcon fontSize="small" />
+                                            </IconButton>
                                         </Box>
                                     ))
                                 )}
                             </Paper>
                         );
                     })()}
-
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button
-                            size="small"
-                            color="error"
-                            variant="outlined"
-                            onClick={doRemove}
-                            disabled={!local.selected}
-                        >
-                            -
-                        </Button>
-                    </Box>
                     <Divider sx={{ my: 1 }} />
                     {/* Documentation link */}
                     <Box sx={{ mb: 2 }}>

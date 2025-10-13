@@ -11,7 +11,9 @@ import {
     Divider,
     Typography,
     CircularProgress,
+    IconButton,
 } from '@mui/material';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/adapter-react-v5';
@@ -21,7 +23,7 @@ import type {
     NavigationAssignment,
 } from '../../../src/lib/types/adminShareConfig';
 import {
-    SENDTO_GET_PANELS_COMMAND,
+    // SENDTO_GET_PANELS_COMMAND,
     SENDTO_GET_PAGES_COMMAND,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
@@ -31,8 +33,6 @@ import {
 
 type NavigationAssignmentPanelProps = {
     widthPercent?: number; // percent of container width
-    // optional admin context to perform sendTo
-    oContext?: any;
     // optional custom fetch function
     fetchPanels?: () => Promise<PanelInfo[]>;
     // currently selected uniqueName from parent
@@ -65,6 +65,8 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
     focusReceived: Record<string, boolean>;
     // retry tracking for empty results
     retryCount: Record<string, number>;
+    // pending delete confirmation (mobile two-step delete)
+    pendingDelete?: string;
 }
 /**
  * Reusable navigation assignment side panel (class-based)
@@ -85,7 +87,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 > {
     static defaultProps = {
         widthPercent: 30,
-    } as NavigationAssignmentPanelProps;
+    };
 
     constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
         super(props);
@@ -163,10 +165,19 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         const addedPanels = (nextAssignments || [])
             .map(a => {
                 const found = this.state.available.find(p => p.panelTopic === a.topic);
-                return found || { panelTopic: a.topic, friendlyName: a.topic };
+                return (
+                    found || {
+                        panelTopic: a.topic,
+                        friendlyName: a.topic,
+                    }
+                );
             })
             .sort((a, b) => a.friendlyName.localeCompare(b.friendlyName));
 
+        // console log available and added panels for debugging
+        console.log(
+            `[NavigationAssignmentPanel] applyAssignmentsFromProps: available=${JSON.stringify(this.state.available)}, added=${JSON.stringify(addedPanels)}`,
+        );
         // Keep current selectedAddedTopic if it's still in the new assignments, otherwise pick first
         const currentSelected = this.state.selectedAddedTopic;
         const stillExists = addedPanels.find(p => p.panelTopic === currentSelected);
@@ -213,29 +224,22 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             let list: PanelInfo[] = [];
             if (this.props.fetchPanels) {
                 list = await this.props.fetchPanels();
-            } else if (this.props.oContext && this.props.oContext.socket) {
-                const instance = this.props.oContext.instance ?? '0';
-                const target = `${ADAPTER_NAME}.${instance}`;
-                try {
-                    const raw = await this.props.oContext.socket.sendTo(target, SENDTO_GET_PANELS_COMMAND, null);
-                    if (Array.isArray(raw)) {
-                        list = raw as PanelInfo[];
-                    } else if (raw && Array.isArray(raw.result)) {
-                        list = raw.result as PanelInfo[];
-                    }
-                } catch (e) {
-                    console.error('[NavigationAssignmentPanel] sendTo failed', {
-                        target,
-                        cmd: SENDTO_GET_PANELS_COMMAND,
-                        error: e,
-                    });
-                }
+            } else if (this.props.data?.panels) {
+                list = (this.props.data.panels || []).map((p: { name: string; topic: string }) => ({
+                    panelTopic: p.topic,
+                    friendlyName: p.name || p.topic,
+                }));
             }
 
-            this.setState({
-                available: list,
-                selectedTopic: setDefaultSelected ? '' : '',
-            });
+            await new Promise<void>(resolve =>
+                this.setState(
+                    {
+                        available: list,
+                        selectedTopic: setDefaultSelected ? '' : '',
+                    },
+                    () => resolve(),
+                ),
+            );
         } catch {
             // ignore errors silently for now
             // console.error('Failed to load panels', e);
@@ -682,16 +686,21 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             displayEmpty
                         >
                             <MenuItem value="">{<em>—</em>}</MenuItem>
-                            {/* Special "All" option inserted at top */}
-                            <MenuItem value={ALL_PANELS_SPECIAL_ID}>{`(${I18n.t('all') || 'All'})`}</MenuItem>
-                            {this.state.available.map(p => (
-                                <MenuItem
-                                    key={p.panelTopic}
-                                    value={p.panelTopic}
-                                >
-                                    {p.friendlyName}
-                                </MenuItem>
-                            ))}
+                            {/* Special "All" option inserted at top (if not already added) */}
+                            {!this.state.added.some(a => a.panelTopic === ALL_PANELS_SPECIAL_ID) && (
+                                <MenuItem value={ALL_PANELS_SPECIAL_ID}>{`(${I18n.t('all') || 'All'})`}</MenuItem>
+                            )}
+                            {/* Only show panels that are not already added */}
+                            {this.state.available
+                                .filter(p => !this.state.added.some(a => a.panelTopic === p.panelTopic))
+                                .map(p => (
+                                    <MenuItem
+                                        key={p.panelTopic}
+                                        value={p.panelTopic}
+                                    >
+                                        {p.friendlyName}
+                                    </MenuItem>
+                                ))}
                         </Select>
                         <Button
                             size="small"
@@ -720,13 +729,99 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                         <List dense>
                                             {this.state.added.map(a => {
                                                 const topic = a.panelTopic;
+                                                const isPending = this.state.pendingDelete === topic;
                                                 // only render list item here; notices are shown in the lower summary
                                                 return (
                                                     <React.Fragment key={topic}>
-                                                        <ListItem component="div">
+                                                        <ListItem
+                                                            component="div"
+                                                            disablePadding
+                                                            sx={{
+                                                                '&:hover .delete-icon': {
+                                                                    opacity: 1,
+                                                                },
+                                                            }}
+                                                            secondaryAction={
+                                                                <IconButton
+                                                                    className="delete-icon"
+                                                                    edge="end"
+                                                                    aria-label="delete"
+                                                                    size="small"
+                                                                    onClick={e => {
+                                                                        e.stopPropagation();
+                                                                        // Two-step delete on mobile (touch devices)
+                                                                        if (!isPending) {
+                                                                            // First tap: mark as pending
+                                                                            this.setState({ pendingDelete: topic });
+                                                                            // Auto-clear after 3 seconds
+                                                                            setTimeout(() => {
+                                                                                if (
+                                                                                    this.state.pendingDelete === topic
+                                                                                ) {
+                                                                                    this.setState({
+                                                                                        pendingDelete: undefined,
+                                                                                    });
+                                                                                }
+                                                                            }, 3000);
+                                                                        } else {
+                                                                            // Second tap: confirm delete
+                                                                            const updated = this.state.added.filter(
+                                                                                p => p.panelTopic !== topic,
+                                                                            );
+                                                                            const updatedAssignments =
+                                                                                this.state.assignments.filter(
+                                                                                    ass => ass.topic !== topic,
+                                                                                );
+                                                                            const newSelected =
+                                                                                updated.length > 0
+                                                                                    ? updated[0]?.panelTopic
+                                                                                    : undefined;
+                                                                            this.setState({
+                                                                                added: updated,
+                                                                                assignments: updatedAssignments,
+                                                                                selectedAddedTopic: newSelected,
+                                                                                pendingDelete: undefined,
+                                                                            });
+                                                                            if (
+                                                                                this.props.onAssign &&
+                                                                                this.props.uniqueName
+                                                                            ) {
+                                                                                this.props.onAssign(
+                                                                                    this.props.uniqueName,
+                                                                                    updatedAssignments,
+                                                                                );
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    sx={{
+                                                                        color: isPending ? 'error.dark' : 'error.main',
+                                                                        opacity: { xs: 1, md: 0 }, // Always visible on mobile
+                                                                        transition: 'opacity 0.2s',
+                                                                        backgroundColor: isPending
+                                                                            ? 'error.main'
+                                                                            : 'transparent',
+                                                                        '&:hover': {
+                                                                            backgroundColor: isPending
+                                                                                ? 'error.dark'
+                                                                                : 'action.hover',
+                                                                        },
+                                                                    }}
+                                                                >
+                                                                    <DeleteOutlineIcon fontSize="small" />
+                                                                </IconButton>
+                                                            }
+                                                        >
                                                             <ListItemButton
                                                                 selected={this.state.selectedAddedTopic === topic}
-                                                                onClick={() => this.selectAdded(topic)}
+                                                                onClick={() => {
+                                                                    this.selectAdded(topic);
+                                                                    // Show delete icon on mobile when selecting
+                                                                    this.setState({ pendingDelete: undefined });
+                                                                }}
+                                                                sx={{
+                                                                    // Ensure text takes full width minus icon space
+                                                                    pr: 6,
+                                                                }}
                                                             >
                                                                 <ListItemText
                                                                     primary={
@@ -734,6 +829,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                             ? `(${I18n.t('all') || 'All'})`
                                                                             : a.friendlyName
                                                                     }
+                                                                    sx={{
+                                                                        // Text should use full available width
+                                                                        flex: 1,
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
+                                                                    }}
                                                                 />
                                                             </ListItemButton>
                                                         </ListItem>
@@ -746,19 +847,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             </Box>
                         );
                     })()}
-
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mt: 1 }}>
-                        <Button
-                            size="small"
-                            color="error"
-                            variant="contained"
-                            onClick={this.doRemoveSelected}
-                            disabled={this.state.added.length === 0}
-                            sx={{ minWidth: 32, padding: '4px 8px' }}
-                        >
-                            -
-                        </Button>
-                    </Box>
 
                     <Divider sx={{ my: 1 }} />
 
