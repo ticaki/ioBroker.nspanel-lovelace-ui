@@ -291,11 +291,10 @@ export class PageChart extends Page {
     }
 
     protected async onStateTrigger(_id: string): Promise<void> {
-        // kann mir nicht vorstellen dass du das brauchst - ein trigger ändert doch nix in der ansicht oder?
-        /*if (this.unload || this.adapter.unload) {
+        if (this.unload || this.adapter.unload) {
             return;
         }
-        this.adapter.setTimeout(() => this.update(), 50);*/
+        this.adapter.setTimeout(() => this.update(), 50);
     }
 
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
