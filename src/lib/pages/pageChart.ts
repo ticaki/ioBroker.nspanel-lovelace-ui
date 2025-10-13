@@ -24,6 +24,7 @@ export class PageChart extends Page {
     index: number = 0;
     private checkState: boolean = true;
     protected adminConfig;
+    private updateChartTimout: ioBroker.Timeout | undefined | null = null;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
@@ -77,6 +78,19 @@ export class PageChart extends Page {
         }
         this.sendType(true);
         this.sendToPanel(this.getMessage(message), false);
+        // breche laufenden Timer immer ab
+        if (this.updateChartTimout) {
+            this.adapter.clearTimeout(this.updateChartTimout);
+            this.updateChartTimout = null;
+        }
+        // update Page jede Stunde
+        this.updateChartTimout = this.adapter.setTimeout(
+            () => {
+                this.updateChartTimout = null;
+                void this.update();
+            },
+            60 * 60 * 1000,
+        );
     }
 
     static async getChartPageConfig(
@@ -197,14 +211,20 @@ export class PageChart extends Page {
     }
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
-        try {
-            if (val) {
-                // Neu: bei Sichtbarkeit immer neu prüfen
-                this.checkState = false; // Standardmäßig auf false setzen
-                if (!this.adminConfig) {
-                    this.log.warn('AdminConfig is not set, cannot check states');
-                    this.checkState = false;
-                } else {
+        // breche laufenden Timer immer ab wenn sich die Sichtbarkeit ändert
+        if (this.updateChartTimout) {
+            this.adapter.clearTimeout(this.updateChartTimout);
+            this.updateChartTimout = null;
+        }
+        if (val) {
+            // Neu: bei Sichtbarkeit immer neu prüfen
+            this.checkState = false; // Standardmäßig auf false setzen
+            if (!this.adminConfig) {
+                this.log.warn('AdminConfig is not set, cannot check states');
+                this.checkState = false;
+            } else {
+                // trys klein halten - die fangen auch alle vertipper ab und suchen ist dann lustig
+                try {
                     const cfg: any = this.adminConfig;
                     const ds = cfg.selInstanceDataSource;
 
@@ -279,25 +299,35 @@ export class PageChart extends Page {
                         this.log.error('Unknown selInstanceDataSource, skipping specific checks');
                         this.checkState = false;
                     }
+                } catch (error) {
+                    this.log.error(`Error onVisibilityChange: ${error as string}`);
                 }
             }
-        } catch (error) {
-            this.log.error(`Error onVisibilityChange: ${error as string}`);
-        } finally {
+            // ich glaube nicht das du updaten willst, wenn das unsichtbar wird, auch wenns am anfang von this.update() abgefragt wird
             await this.update();
         }
     }
 
     protected async onStateTrigger(_id: string): Promise<void> {
-        if (this.unload || this.adapter.unload) {
+        // kann mir nicht vorstellen dass du das brauchst - ein trigger ändert doch nix in der ansicht oder?
+        /*if (this.unload || this.adapter.unload) {
             return;
         }
-        this.adapter.setTimeout(() => this.update(), 50);
+        this.adapter.setTimeout(() => this.update(), 50);*/
     }
 
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
+    }
+
+    async delete(): Promise<void> {
+        // breche laufenden Timer immer ab - vorallem wenn die Page gelöscht wird
+        if (this.updateChartTimout) {
+            this.adapter.clearTimeout(this.updateChartTimout);
+            this.updateChartTimout = null;
+        }
+        await super.delete();
     }
 }

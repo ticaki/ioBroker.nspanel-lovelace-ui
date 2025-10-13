@@ -42,6 +42,7 @@ class PageChart extends import_Page.Page {
   index = 0;
   checkState = true;
   adminConfig;
+  updateChartTimout = null;
   constructor(config, options) {
     if (config.card !== "cardChart" && config.card !== "cardLChart") {
       return;
@@ -90,6 +91,17 @@ class PageChart extends import_Page.Page {
     }
     this.sendType(true);
     this.sendToPanel(this.getMessage(message), false);
+    if (this.updateChartTimout) {
+      this.adapter.clearTimeout(this.updateChartTimout);
+      this.updateChartTimout = null;
+    }
+    this.updateChartTimout = this.adapter.setTimeout(
+      () => {
+        this.updateChartTimout = null;
+        void this.update();
+      },
+      60 * 60 * 1e3
+    );
   }
   static async getChartPageConfig(configManager, index, gridItem, messages, page) {
     const adapter = configManager.adapter;
@@ -195,13 +207,17 @@ class PageChart extends import_Page.Page {
     );
   }
   async onVisibilityChange(val) {
-    try {
-      if (val) {
+    if (this.updateChartTimout) {
+      this.adapter.clearTimeout(this.updateChartTimout);
+      this.updateChartTimout = null;
+    }
+    if (val) {
+      this.checkState = false;
+      if (!this.adminConfig) {
+        this.log.warn("AdminConfig is not set, cannot check states");
         this.checkState = false;
-        if (!this.adminConfig) {
-          this.log.warn("AdminConfig is not set, cannot check states");
-          this.checkState = false;
-        } else {
+      } else {
+        try {
           const cfg = this.adminConfig;
           const ds = cfg.selInstanceDataSource;
           if (ds === 0) {
@@ -271,21 +287,23 @@ class PageChart extends import_Page.Page {
             this.log.error("Unknown selInstanceDataSource, skipping specific checks");
             this.checkState = false;
           }
+        } catch (error) {
+          this.log.error(`Error onVisibilityChange: ${error}`);
         }
       }
-    } catch (error) {
-      this.log.error(`Error onVisibilityChange: ${error}`);
-    } finally {
       await this.update();
     }
   }
   async onStateTrigger(_id) {
-    if (this.unload || this.adapter.unload) {
-      return;
-    }
-    this.adapter.setTimeout(() => this.update(), 50);
   }
   async onButtonEvent(_event) {
+  }
+  async delete() {
+    if (this.updateChartTimout) {
+      this.adapter.clearTimeout(this.updateChartTimout);
+      this.updateChartTimout = null;
+    }
+    await super.delete();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
