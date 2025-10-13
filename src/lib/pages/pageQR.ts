@@ -75,7 +75,7 @@ export class PageQR extends Page {
             return;
         }
         const message: Partial<pages.PageQRMessage> = {};
-        const config = this.adapter.config.pageQRConfig[this.index];
+        const config = this.adapter.config.pageQRdata[this.index];
         if (this.items && config != null) {
             const items = this.items;
 

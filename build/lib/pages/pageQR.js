@@ -105,7 +105,7 @@ class PageQR extends import_Page.Page {
       return;
     }
     const message = {};
-    const config = this.adapter.config.pageQRConfig[this.index];
+    const config = this.adapter.config.pageQRdata[this.index];
     if (this.items && config != null) {
       const items = this.items;
       message.headline = this.library.getTranslation(
