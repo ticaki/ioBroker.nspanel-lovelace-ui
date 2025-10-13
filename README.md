@@ -147,7 +147,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.6.4 (2025-10-13)
 - (ticaki) use tasmota version from version.json
 - (ticaki) Added disarmed buttons (5–8) to UnlockPage, implemented a responsive two-column layout.
 - (ticaki) Improved NavigationAssignmentPanel to show per-panel notices in the lower overview, add a per-item trash icon (hover + mobile two-step confirmation)
