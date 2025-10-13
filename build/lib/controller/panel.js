@@ -2069,6 +2069,10 @@ ${this.info.tasmota.onlineVersion}`;
                 button2: unlock.button2 ? { type: "const", constVal: unlock.button2 } : void 0,
                 button3: unlock.button3 ? { type: "const", constVal: unlock.button3 } : void 0,
                 button4: unlock.button4 ? { type: "const", constVal: unlock.button4 } : void 0,
+                button5: unlock.button1 ? { type: "const", constVal: unlock.button5 } : void 0,
+                button6: unlock.button2 ? { type: "const", constVal: unlock.button6 } : void 0,
+                button7: unlock.button3 ? { type: "const", constVal: unlock.button7 } : void 0,
+                button8: unlock.button4 ? { type: "const", constVal: unlock.button8 } : void 0,
                 pin: unlock.pin != null ? { type: "const", constVal: String(unlock.pin) } : void 0,
                 approved: { type: "const", constVal: !!unlock.approved },
                 setNavi: unlock.setNavi ? { type: "const", constVal: unlock.setNavi } : void 0

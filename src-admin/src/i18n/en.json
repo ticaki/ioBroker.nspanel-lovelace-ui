@@ -20,6 +20,8 @@
 	"unlock_button3_placeholder": "3. Button text",
 	"unlock_button4_label": "Bottom button",
 	"unlock_button4_placeholder": "4. Button text",
+	"unlock_armed_header": "Armed",
+	"unlock_disarmed_header": "Disarmed",
 	"unlock_approved": "Approved",
 	"unlock_setnavi_hint": "Optional: NSPanel page to open on unlock — must be the page's uniqueName.",
 	"unlock_setnavi_placeholder": "“UniqueName of the page to be opened (optional)”",

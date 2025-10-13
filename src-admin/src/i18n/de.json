@@ -21,6 +21,8 @@
     "unlock_button3_placeholder": "Text für 3. Button",
     "unlock_button4_label": "Unterer Button",
     "unlock_button4_placeholder": "Text für 4. Button",
+    "unlock_armed_header": "Bereitschaft",
+    "unlock_disarmed_header": "Deaktiviert",
     "unlock_approved": "Freizugeben",
     "unlock_setnavi_hint": "Optional: Name der NSPanel-Seite, die beim Entsperren geöffnet werden soll — hier muss die uniqueName der Seite stehen.",
     "unlock_setnavi_placeholder": "UniqueName der zu öffnenden Seite (optional)",

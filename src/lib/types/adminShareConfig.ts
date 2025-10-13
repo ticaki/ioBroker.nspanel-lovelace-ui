@@ -85,6 +85,10 @@ export type UnlockEntry = {
     button2: string;
     button3: string;
     button4: string;
+    button5: string;
+    button6: string;
+    button7: string;
+    button8: string;
     pin: number;
     approved?: boolean;
     setNavi?: string;

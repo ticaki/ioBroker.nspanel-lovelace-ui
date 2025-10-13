@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
@@ -239,6 +238,10 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                 button2: '',
                 button3: '',
                 button4: '',
+                button5: '',
+                button6: '',
+                button7: '',
+                button8: '',
                 pin: 0,
             };
             const updated = [...entries, newEntry];
@@ -730,61 +733,148 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                                                 {/* alarm-specific controls */}
                                                 {ent.alarmType === 'alarm' && (
                                                     <Box sx={{ mt: 2 }}>
-                                                        {/* Buttons 1..4 with small label above each */}
+                                                        {/* Responsive two-column on md+: left = buttons 1..4 (armed), right = buttons 5..8 (disarmed)
+                                                            On small screens stack: header 1..4 then 5..8 */}
                                                         <Box
                                                             sx={{
                                                                 display: 'grid',
-                                                                gridTemplateColumns: '1fr',
+                                                                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                                                                 gap: 2,
                                                             }}
                                                         >
-                                                            {[1, 2, 3, 4].map(i => {
-                                                                const key = `button${i}` as const;
-                                                                return (
-                                                                    <Box key={i}>
-                                                                        <Typography
-                                                                            variant="caption"
-                                                                            color="text.secondary"
-                                                                            sx={{ mb: 0.5 }}
-                                                                        >
-                                                                            {this.getText(`unlock_button${i}_label`)}
-                                                                        </Typography>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            variant="standard"
-                                                                            placeholder={this.getText(
-                                                                                `unlock_button${i}_placeholder`,
-                                                                            )}
-                                                                            value={(ent as any)[key] ?? ''}
-                                                                            onChange={e => {
-                                                                                const v = e.target.value;
-                                                                                const updated = entries.map(it =>
-                                                                                    it.uniqueName === sel
-                                                                                        ? { ...it, [key]: v }
-                                                                                        : it,
-                                                                                );
-                                                                                this.setState({
-                                                                                    entries: updated,
-                                                                                } as UnlockPageState);
-                                                                                void this.onChange(
-                                                                                    this.props.attr!,
-                                                                                    updated,
-                                                                                );
-                                                                            }}
-                                                                            InputProps={{
-                                                                                disableUnderline: true,
-                                                                                sx: {
-                                                                                    backgroundColor: 'transparent',
-                                                                                    px: 1,
-                                                                                    '& input::placeholder': {
-                                                                                        color: 'text.disabled',
-                                                                                    },
-                                                                                },
-                                                                            }}
-                                                                        />
-                                                                    </Box>
-                                                                );
-                                                            })}
+                                                            {/* left column: buttons 1..4 */}
+                                                            <Box>
+                                                                <Typography
+                                                                    variant="subtitle2"
+                                                                    sx={{ mb: 1 }}
+                                                                >
+                                                                    {this.getText('unlock_armed_header')}
+                                                                </Typography>
+                                                                <Box sx={{ display: 'grid', gap: 2 }}>
+                                                                    {[1, 2, 3, 4].map(i => {
+                                                                        const key = `button${i}` as const;
+                                                                        const labelIndex = ((i - 1) % 4) + 1; // 1..4
+                                                                        return (
+                                                                            <Box key={i}>
+                                                                                <Typography
+                                                                                    variant="caption"
+                                                                                    color="text.secondary"
+                                                                                    sx={{ mb: 0.5 }}
+                                                                                >
+                                                                                    {this.getText(
+                                                                                        `unlock_button${labelIndex}_label`,
+                                                                                    )}
+                                                                                </Typography>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    variant="standard"
+                                                                                    placeholder={this.getText(
+                                                                                        `unlock_button${labelIndex}_placeholder`,
+                                                                                    )}
+                                                                                    value={(ent as any)[key] ?? ''}
+                                                                                    onChange={e => {
+                                                                                        const v = e.target.value;
+                                                                                        const updated = entries.map(
+                                                                                            it =>
+                                                                                                it.uniqueName === sel
+                                                                                                    ? {
+                                                                                                          ...it,
+                                                                                                          [key]: v,
+                                                                                                      }
+                                                                                                    : it,
+                                                                                        );
+                                                                                        this.setState({
+                                                                                            entries: updated,
+                                                                                        } as UnlockPageState);
+                                                                                        void this.onChange(
+                                                                                            this.props.attr!,
+                                                                                            updated,
+                                                                                        );
+                                                                                    }}
+                                                                                    InputProps={{
+                                                                                        disableUnderline: true,
+                                                                                        sx: {
+                                                                                            backgroundColor:
+                                                                                                'transparent',
+                                                                                            px: 1,
+                                                                                            '& input::placeholder': {
+                                                                                                color: 'text.disabled',
+                                                                                            },
+                                                                                        },
+                                                                                    }}
+                                                                                />
+                                                                            </Box>
+                                                                        );
+                                                                    })}
+                                                                </Box>
+                                                            </Box>
+
+                                                            {/* right column: buttons 5..8 */}
+                                                            <Box>
+                                                                <Typography
+                                                                    variant="subtitle2"
+                                                                    sx={{ mb: 1 }}
+                                                                >
+                                                                    {this.getText('unlock_disarmed_header')}
+                                                                </Typography>
+                                                                <Box sx={{ display: 'grid', gap: 2 }}>
+                                                                    {[5, 6, 7, 8].map(i => {
+                                                                        const key = `button${i}` as const;
+                                                                        const labelIndex = ((i - 1) % 4) + 1; // maps 5..8 -> 1..4
+                                                                        return (
+                                                                            <Box key={i}>
+                                                                                <Typography
+                                                                                    variant="caption"
+                                                                                    color="text.secondary"
+                                                                                    sx={{ mb: 0.5 }}
+                                                                                >
+                                                                                    {this.getText(
+                                                                                        `unlock_button${labelIndex}_label`,
+                                                                                    )}
+                                                                                </Typography>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    variant="standard"
+                                                                                    placeholder={this.getText(
+                                                                                        `unlock_button${labelIndex}_placeholder`,
+                                                                                    )}
+                                                                                    value={(ent as any)[key] ?? ''}
+                                                                                    onChange={e => {
+                                                                                        const v = e.target.value;
+                                                                                        const updated = entries.map(
+                                                                                            it =>
+                                                                                                it.uniqueName === sel
+                                                                                                    ? {
+                                                                                                          ...it,
+                                                                                                          [key]: v,
+                                                                                                      }
+                                                                                                    : it,
+                                                                                        );
+                                                                                        this.setState({
+                                                                                            entries: updated,
+                                                                                        } as UnlockPageState);
+                                                                                        void this.onChange(
+                                                                                            this.props.attr!,
+                                                                                            updated,
+                                                                                        );
+                                                                                    }}
+                                                                                    InputProps={{
+                                                                                        disableUnderline: true,
+                                                                                        sx: {
+                                                                                            backgroundColor:
+                                                                                                'transparent',
+                                                                                            px: 1,
+                                                                                            '& input::placeholder': {
+                                                                                                color: 'text.disabled',
+                                                                                            },
+                                                                                        },
+                                                                                    }}
+                                                                                />
+                                                                            </Box>
+                                                                        );
+                                                                    })}
+                                                                </Box>
+                                                            </Box>
                                                         </Box>
 
                                                         {/* approved checkbox */}
@@ -897,32 +987,6 @@ class UnlockPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Unl
                             void this.onChange(this.props.attr!, updated);
                         }}
                     />
-
-                    {/* Info box moved outside NavigationAssignmentPanel */}
-                    <Paper
-                        sx={{ height: '100%', p: 2, backgroundColor: 'transparent' }}
-                        elevation={0}
-                    >
-                        <Box>
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ mb: 1 }}
-                            >
-                                {this.getText('unlock_unique_label')}
-                            </Typography>
-                            <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 600 }}
-                            >
-                                {local.selected || this.getText('unlock_select_item')}
-                            </Typography>
-                            <InfoOutlined
-                                fontSize="small"
-                                color="action"
-                                sx={{ mt: 1 }}
-                            />
-                        </Box>
-                    </Paper>
                 </Box>
             </Box>
         );

@@ -494,7 +494,7 @@ export type PageBaseConfigTemplate =
       };
 
 // Optimierte Alarm Types mit const assertions
-const ALARM_BUTTON_EVENTS = ['A1', 'A2', 'A3', 'A4', 'D1', 'U1', ''] as const;
+const ALARM_BUTTON_EVENTS = ['A1', 'A2', 'A3', 'A4', 'D1', 'D2', 'D3', 'D4', 'U1', ''] as const;
 
 export type AlarmButtonEvents = (typeof ALARM_BUTTON_EVENTS)[number];
 export type AlarmStates = 'disarmed' | 'armed' | 'arming' | 'pending' | 'triggered';
@@ -676,6 +676,10 @@ type PageAlarmConfig = {
     button2: string;
     button3: string;
     button4: string;
+    button5: string;
+    button6: string;
+    button7: string;
+    button8: string;
     icon: typePageItem.IconEntryType;
     pin: number;
     approved?: boolean;

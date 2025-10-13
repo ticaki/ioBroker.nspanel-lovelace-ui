@@ -147,6 +147,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Added disarmed buttons (5–8) to UnlockPage, implemented a responsive two-column layout.
+
 ### 0.6.3 (2025-10-10)
 - (ticaki) alarm and approved fixed  - static dp for approve
 
