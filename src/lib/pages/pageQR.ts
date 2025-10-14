@@ -1,7 +1,5 @@
-import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
-import { Color } from '../const/Color';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
@@ -93,19 +91,6 @@ export class PageQR extends Page {
                 case 1: {
                     this.log.debug(`qrType = wifi`);
                     const pass = config.qrPass || '';
-                    /* switch (config.qrPass) {
-                        case 0:
-                            break;
-                        case 1:
-                            pass = this.adapter.config.pageQRpwd1 || '';
-                            break;
-                        case 2:
-                            pass = this.adapter.config.pageQRpwd2 || '';
-                            break;
-                        case 3:
-                            pass = this.adapter.config.pageQRpwd3 || '';
-                            break;
-                    } */
                     message.textQR = `WIFI:T:${config.wlantype};S:${config.SSIDURLTEL};P:${pass};${config.wlanhidden ? `H:${config.wlanhidden}` : `H:`};`;
                     message.optionalValue1 = config.SSIDURLTEL;
                     break;
