@@ -295,7 +295,7 @@ export class Page extends BaseClassPage {
             }
             for (let a = 0; a < pageItemsConfig.length; a++) {
                 const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
-                    name: ident ? ident : 'PI',
+                    name: ident ? ident : `${this.name}|PI`,
                     adapter: this.adapter,
                     panel: this.basePanel,
                     card: 'cardItemSpecial',

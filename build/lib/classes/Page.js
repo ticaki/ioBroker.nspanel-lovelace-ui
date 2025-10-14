@@ -275,7 +275,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       }
       for (let a = 0; a < pageItemsConfig.length; a++) {
         const config = {
-          name: ident ? ident : "PI",
+          name: ident ? ident : `${this.name}|PI`,
           adapter: this.adapter,
           panel: this.basePanel,
           card: "cardItemSpecial",
