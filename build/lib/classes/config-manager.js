@@ -4436,7 +4436,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!result.data.entity1) {
       throw new Error("Invalid data");
     }
-    result.data.entity2 = this.library.cloneGenericObject(result.data.entity1);
+    result.data.entity2 = structuredClone(result.data.entity1);
     let obj;
     if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
       obj = await this.adapter.getForeignObjectAsync(entity.ScreensaverEntity);

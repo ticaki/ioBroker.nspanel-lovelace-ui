@@ -352,9 +352,7 @@ class Panel extends import_library.BaseClass {
     await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
     this.log.info(`Setting panel to offline until first message!`);
     this.isOnline = false;
-    const channelObj = this.library.cloneObject(
-      definition.genericStateObjects.panel.panels._channel
-    );
+    const channelObj = structuredClone(definition.genericStateObjects.panel.panels._channel);
     channelObj.common.name = this.friendlyName;
     channelObj.native = {
       topic: this.topic,
