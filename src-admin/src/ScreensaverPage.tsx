@@ -15,12 +15,11 @@ import {
     MenuItem,
     InputLabel,
 } from '@mui/material';
-import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
-import ObjectIdSelectorPopup from './components/ObjectIdSelectorPopup';
-import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
+import { SelectID } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import type { ScreensaverEntry, ScreensaverEntries } from '../../src/lib/types/adminShareConfig';
 import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
 
@@ -32,6 +31,8 @@ interface ScreensaverPageState extends ConfigGenericState {
     alive?: boolean;
     pagesRetryCount?: number;
     objectIdSelectorOpen?: boolean;
+    selectedObjectId?: string;
+    showSelectDialog?: boolean;
 }
 
 interface LocalUIState {
@@ -42,6 +43,8 @@ interface LocalUIState {
 class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, ScreensaverPageState> {
     private _local: LocalUIState | null = null;
     private pagesRetryTimeout?: NodeJS.Timeout;
+
+    // Filter function for ObjectId selector - only show states with role starting with 'switch'
 
     // Common date and time format options
     private readonly dateFormats = [
@@ -94,19 +97,6 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             .replace(/h/g, String(date.getHours() % 12 || 12))
             .replace(/a/g, date.getHours() >= 12 ? 'PM' : 'AM');
     }
-
-    private handleObjectIdSelectorOpen = (): void => {
-        this.setState({ objectIdSelectorOpen: true } as ScreensaverPageState);
-    };
-
-    private handleObjectIdSelectorClose = (): void => {
-        this.setState({ objectIdSelectorOpen: false } as ScreensaverPageState);
-    };
-
-    private handleObjectIdSelect = (filePath: string): void => {
-        console.log('[ScreensaverPage] Selected file:', filePath);
-        // Handle file selection here (e.g., update state or show notification)
-    };
 
     componentWillUnmount(): void {
         if (this.pagesRetryTimeout) {
@@ -408,6 +398,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                 size="small"
                                 variant="contained"
                                 onClick={doAdd}
+                                sx={{ minWidth: 32, padding: '4px 8px' }}
                                 disabled={(() => {
                                     const nameTrim = (local?.newName || '').trim();
                                     return !nameTrim || uniqueNames.includes(nameTrim);
@@ -422,7 +413,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         return (
                             <Paper
                                 sx={{ overflow: 'auto', p: 1, backgroundColor: 'transparent' }}
-                                elevation={0}
+                                elevation={1}
                             >
                                 {uniqueNames.length === 0 ? (
                                     <Typography
@@ -463,6 +454,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             size="small"
                             color="error"
                             variant="outlined"
+                            sx={{ minWidth: 32, padding: '4px 8px' }}
                             onClick={doRemove}
                             disabled={!local?.selected}
                         >
@@ -570,17 +562,46 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         </a>
                     </Box>
 
-                    {/* Test Button for ObjectIdSelectorPopup */}
+                    {/* Inline ObjectId selector with custom filter */}
                     <Box sx={{ mb: 2 }}>
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            size="small"
+                        <TextField
                             fullWidth
-                            onClick={this.handleObjectIdSelectorOpen}
-                        >
-                            Test ObjectIdSelector
-                        </Button>
+                            label="Select Object ID"
+                            value={this.state.selectedObjectId || ''}
+                            onClick={() => {
+                                this.setState({ showSelectDialog: true });
+                            }}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                        />
+                        {this.state.showSelectDialog && (
+                            <SelectID
+                                socket={this.props.oContext.socket}
+                                selected={this.state.selectedObjectId || ''}
+                                onOk={(selectedId: string | string[] | undefined) => {
+                                    const id = Array.isArray(selectedId) ? selectedId[0] : selectedId;
+                                    this.setState({
+                                        selectedObjectId: id || '',
+                                        showSelectDialog: false,
+                                    });
+                                }}
+                                onClose={() => {
+                                    this.setState({ showSelectDialog: false });
+                                }}
+                                filterFunc={(obj: ioBroker.Object): boolean => {
+                                    // Only show states with role starting with 'switch'
+                                    return !!(
+                                        obj?.type === 'state' &&
+                                        obj.common?.role &&
+                                        obj.common.role.startsWith('switch')
+                                    );
+                                }}
+                                dialogName="nspanel-screensaver"
+                                theme={this.props.theme}
+                                themeType={this.props.theme?.palette?.mode || 'light'}
+                            />
+                        )}
                     </Box>
                 </Box>
                 <ConfirmDialog
@@ -893,52 +914,9 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             void this.onChange(this.props.attr!, updated);
                         }}
                     />
-
-                    {/* Info box moved outside NavigationAssignmentPanel */}
-                    <Paper
-                        sx={{ height: '100%', p: 2, backgroundColor: 'transparent' }}
-                        elevation={0}
-                    >
-                        <Box>
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ mb: 1 }}
-                            >
-                                {this.getText('screensaver_unique_label')}
-                            </Typography>
-                            <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 600 }}
-                            >
-                                {local.selected || this.getText('screensaver_select_item')}
-                            </Typography>
-                            <InfoOutlined
-                                fontSize="small"
-                                color="action"
-                                sx={{ mt: 1 }}
-                            />
-                        </Box>
-                    </Paper>
                 </Box>
 
-                {/* ObjectIdSelectorPopup component */}
-                <ObjectIdSelectorPopup
-                    open={!!this.state.objectIdSelectorOpen}
-                    onClose={this.handleObjectIdSelectorClose}
-                    onSelect={this.handleObjectIdSelect}
-                    socket={this.props.oContext.socket}
-                    themeName={this.props.themeName}
-                    themeType={this.props.theme?.palette?.mode || 'light'}
-                    theme={this.props.theme}
-                    adapterName="nspanel-lovelace-ui"
-                    instance={this.props.oContext?.instance || 0}
-                    objectIdConfig={{
-                        types: 'state',
-                        filterFunc: (obj: ioBroker.Object) => {
-                            return !!(obj?.type === 'state' && obj.common.role && obj.common.role.startsWith('switch'));
-                        },
-                    }}
-                />
+                {/* ObjectIdSelector is embedded in the left sidebar via JsonConfigComponent above. */}
             </Box>
         );
     }
