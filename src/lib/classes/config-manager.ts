@@ -791,31 +791,7 @@ export class ConfigManager extends BaseClass {
                     this.log.warn(messages[messages.length - 1]);
                     continue;
                 }
-                // aufräumen PageQR
-                /*                 // PageQR einlesen
-                if (page.type === 'cardQR') {
-                    if (!Array.isArray(this.adapter.config.pageQRdata)) {
-                        messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
-                    if (index === -1) {
-                        messages.push(`No pageQRdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    try {
-                        continue;
-                        // ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
-                    } catch (error: any) {
-                        messages.push(
-                            `Configuration error in page qr ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
-                        );
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                } */
+
                 // PagePower einlesen
                 if (page.type === 'cardPower') {
                     if (!Array.isArray(this.adapter.config.pagePowerdata)) {
