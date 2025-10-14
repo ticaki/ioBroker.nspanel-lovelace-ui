@@ -82,7 +82,7 @@
     "test": "npm run test:ts && npm run test:package",
     "check": "tsc --noEmit",
     "coverage": "nyc npm run test:ts",
-    "lint": "eslint -c eslint.config.mjs .",
+    "lint": "eslint -c eslint.config.mjs . --cache --cache-location .eslintcache --cache-strategy content",
     "translate": "translate-adapter",
     "release": "release-script",
     "npm": "npm i && cd src-admin && npm i",
