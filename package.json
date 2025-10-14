@@ -82,12 +82,13 @@
     "test": "npm run test:ts && npm run test:package",
     "check": "tsc --noEmit",
     "coverage": "nyc npm run test:ts",
-    "lint": "eslint -c eslint.config.mjs .",
+    "lint": "eslint -c eslint.config.mjs . --cache --cache-location .eslintcache --cache-strategy content",
     "translate": "translate-adapter",
     "release": "release-script",
     "npm": "npm i && cd src-admin && npm i",
     "build:admin": "cd src-admin && npm run build",
-    "build:all": "npm run build && npm run build:admin && dev-server upload"
+    "build:all": "npm run build && npm run build:admin && dev-server upload",
+    "verify": "npm run lint && npm run build"
   },
   "bugs": {
     "url": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues"
