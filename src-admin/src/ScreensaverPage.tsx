@@ -18,7 +18,7 @@ import {
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
-import FileSelectorPopup from './components/FileSelectorPopup';
+import ObjectIdSelectorPopup from './components/ObjectIdSelectorPopup';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import type { ScreensaverEntry, ScreensaverEntries } from '../../src/lib/types/adminShareConfig';
@@ -922,7 +922,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 </Box>
 
                 {/* FileSelectorPopup component */}
-                <FileSelectorPopup
+                <ObjectIdSelectorPopup
                     open={!!this.state.fileSelectorOpen}
                     onClose={this.handleFileSelectorClose}
                     onSelect={this.handleFileSelect}

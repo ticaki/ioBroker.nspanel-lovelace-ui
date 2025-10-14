@@ -4,7 +4,7 @@ import { JsonConfigComponent } from '@iobroker/json-config';
 import { I18n, type ThemeName, type ThemeType, type IobTheme } from '@iobroker/adapter-react-v5';
 import type { ConfigItemPanel, ConfigItemObjectId } from '@iobroker/json-config';
 
-type FileSelectorPopupProps = {
+type ObjectIdSelectorPopupProps = {
     open: boolean;
     onClose: () => void;
     onSelect?: (objectId: string) => void;
@@ -18,7 +18,7 @@ type FileSelectorPopupProps = {
     objectIdConfig?: Partial<Omit<ConfigItemObjectId, 'type' | 'label'>>;
 };
 
-interface FileSelectorPopupState {
+interface ObjectIdSelectorPopupState {
     selectedObjectId: string;
     data: Record<string, any>;
 }
@@ -27,10 +27,10 @@ interface FileSelectorPopupState {
  * FileSelectorPopup - Popup with JsonConfigComponent for ObjectID selection
  * Uses the built-in objectId selector from @iobroker/json-config
  */
-class FileSelectorPopup extends React.Component<FileSelectorPopupProps, FileSelectorPopupState> {
+class ObjectIdSelectorPopup extends React.Component<ObjectIdSelectorPopupProps, ObjectIdSelectorPopupState> {
     private schema: ConfigItemPanel;
 
-    constructor(props: FileSelectorPopupProps) {
+    constructor(props: ObjectIdSelectorPopupProps) {
         super(props);
         this.state = {
             selectedObjectId: '',
@@ -131,4 +131,4 @@ class FileSelectorPopup extends React.Component<FileSelectorPopupProps, FileSele
     }
 }
 
-export default FileSelectorPopup;
+export default ObjectIdSelectorPopup;
