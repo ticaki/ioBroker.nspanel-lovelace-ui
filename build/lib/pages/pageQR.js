@@ -390,11 +390,6 @@ class PageQR extends import_Page.Page {
       )
     );
   }
-  async onVisibilityChange(val) {
-    if (val) {
-      await this.update();
-    }
-  }
   async onStateTrigger(_id) {
     if (this.unload || this.adapter.unload) {
       return;

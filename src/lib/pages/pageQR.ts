@@ -402,11 +402,6 @@ export class PageQR extends Page {
         );
     }
 
-    protected async onVisibilityChange(val: boolean): Promise<void> {
-        if (val) {
-            await this.update();
-        }
-    }
     protected async onStateTrigger(_id: string): Promise<void> {
         if (this.unload || this.adapter.unload) {
             return;
