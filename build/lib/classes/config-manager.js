@@ -685,28 +685,6 @@ class ConfigManager extends import_library.BaseClass {
           this.log.warn(messages[messages.length - 1]);
           continue;
         }
-        if (page.type === "cardQR") {
-          if (!Array.isArray(this.adapter.config.pageQRdata)) {
-            messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
-          if (index === -1) {
-            messages.push(`No pageQRdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          try {
-            continue;
-          } catch (error) {
-            messages.push(
-              `Configuration error in page qr ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
-            );
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-        }
         if (page.type === "cardPower") {
           if (!Array.isArray(this.adapter.config.pagePowerdata)) {
             messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);

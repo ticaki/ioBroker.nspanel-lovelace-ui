@@ -2276,7 +2276,7 @@ export class Panel extends BaseClass {
                 }
 
                 case 'cardQR': {
-                    // QR card configuration - inline implementation based on PageQR.getQRPageConfig
+                    // QR card configuration
                     const qrIndex = this.adapter.config.pageQRConfig.findIndex(
                         (qr: any) => qr.uniqueName === unlock.uniqueName,
                     );

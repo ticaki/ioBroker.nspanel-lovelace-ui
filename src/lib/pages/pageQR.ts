@@ -165,7 +165,8 @@ export class PageQR extends Page {
         }
         this.sendToPanel(this.getMessage(message), false);
     }
-    static async getQRPageConfig(
+    // aufräumen PageQR
+    /*     static async getQRPageConfig(
         configManager: ConfigManager,
         page: ScriptConfig.PageQR,
         index: number,
@@ -283,7 +284,7 @@ export class PageQR extends Page {
                         default:
                             text1 = '';
                             break;
-                    } */
+                    }
                     text = 'Password';
                     break;
                 }
@@ -376,7 +377,7 @@ export class PageQR extends Page {
             return { gridItem, messages };
         }
         throw new Error('No config for cardQR found');
-    }
+    } */
 
     private getMessage(_message: Partial<pages.PageQRMessage>): string {
         let result: pages.PageQRMessage = PageQRMessageDefault;

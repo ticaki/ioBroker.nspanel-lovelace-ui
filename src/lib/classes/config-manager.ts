@@ -791,7 +791,8 @@ export class ConfigManager extends BaseClass {
                     this.log.warn(messages[messages.length - 1]);
                     continue;
                 }
-                // PageQR einlesen
+                // aufräumen PageQR
+                /*                 // PageQR einlesen
                 if (page.type === 'cardQR') {
                     if (!Array.isArray(this.adapter.config.pageQRdata)) {
                         messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
@@ -814,7 +815,7 @@ export class ConfigManager extends BaseClass {
                         this.log.warn(messages[messages.length - 1]);
                         continue;
                     }
-                }
+                } */
                 // PagePower einlesen
                 if (page.type === 'cardPower') {
                     if (!Array.isArray(this.adapter.config.pagePowerdata)) {
