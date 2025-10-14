@@ -30,6 +30,10 @@ export class PageItem extends BaseTriggeredPage {
     tempInterval: ioBroker.Interval | undefined;
     confirmClick: number | 'lock' | 'unlock' = 'lock';
     timeouts: Record<string, ioBroker.Timeout | undefined> = {};
+
+    // for select - force next read of common
+    private updateCommon: { lastRequest: number; counts: number } = { lastRequest: 0, counts: 0 };
+
     constructor(
         config: Omit<PageItemInterface, 'pageItemsConfig' | 'parent'> & { parent: Page },
         options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
@@ -1346,7 +1350,18 @@ export class PageItem extends BaseTriggeredPage {
                     message.speedText = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.text, value)) ?? '',
                     );
-
+                    let force = false;
+                    if (this.updateCommon.counts < 4) {
+                        if (Date.now() - this.updateCommon.lastRequest > 5000) {
+                            this.updateCommon.counts = 0;
+                        } else {
+                            this.updateCommon.counts++;
+                        }
+                    } else {
+                        this.updateCommon.counts = 0;
+                        this.updateCommon.lastRequest = Date.now();
+                        force = true;
+                    }
                     const sList =
                         item.entityInSel &&
                         (await this.getListFromStates(
@@ -1354,6 +1369,7 @@ export class PageItem extends BaseTriggeredPage {
                             item.valueList,
                             entry.role,
                             'valueList2' in item ? item.valueList2 : undefined,
+                            force,
                         ));
                     if (
                         sList !== undefined &&
@@ -2977,6 +2993,7 @@ export class PageItem extends BaseTriggeredPage {
         valueList: Dataitem | undefined,
         role: DeviceRole | undefined,
         valueList2: Dataitem | undefined = undefined,
+        force: boolean = false,
     ): Promise<{ value?: string | undefined; list?: string[] | undefined; states?: string[] }> {
         const list: { value?: string | undefined; list?: string[] | undefined; states?: string[] } = {};
 
@@ -3038,7 +3055,7 @@ export class PageItem extends BaseTriggeredPage {
             } else if (role === 'spotify-speaker' || role === 'spotify-playlist') {
                 // Spotify Speaker
                 if (entityInSel.value.options.dp) {
-                    const o = await entityInSel.value.getCommonStates(true);
+                    const o = await entityInSel.value.getCommonStates(force);
                     const v = await entityInSel.value.getString();
                     const al = await valueList?.getObject();
 
@@ -3083,7 +3100,7 @@ export class PageItem extends BaseTriggeredPage {
                 }
             } else if (
                 ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
-                ((await entityInSel.value.getCommonStates()) || valueList2 != null)
+                ((await entityInSel.value.getCommonStates(force)) || valueList2 != null)
             ) {
                 let states: Record<string | number, string> | string[] | null = null;
                 const value = await tools.getValueEntryString(entityInSel);
@@ -3129,7 +3146,7 @@ export class PageItem extends BaseTriggeredPage {
                         break;
                     }
                     default: {
-                        states = await entityInSel.value.getCommonStates();
+                        states = await entityInSel.value.getCommonStates(force);
                     }
                 }
                 if (value !== null && states) {
