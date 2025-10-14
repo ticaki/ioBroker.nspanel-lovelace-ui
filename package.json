@@ -86,7 +86,9 @@
     "translate": "translate-adapter",
     "release": "release-script",
     "npm": "npm i && cd src-admin && npm i",
-    "build:admin": "cd src-admin && npm run build"
+    "build:admin": "cd src-admin && npm run build",
+    "build:all": "npm run build && npm run build:admin && dev-server upload",
+    "verify": "npm run lint && npm run build"
   },
   "bugs": {
     "url": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues"
