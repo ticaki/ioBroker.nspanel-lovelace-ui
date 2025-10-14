@@ -84,6 +84,10 @@ export class Panel extends BaseClass {
     private data: Record<string, any> = {};
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
+
+    public blockTouchEventsForMs: number = 400; // ms
+    public lastSendTypeDate: number = 0;
+
     options: panelConfigPartial;
     flashing: boolean = false;
     public screenSaver: Screensaver | undefined;
@@ -371,9 +375,7 @@ export class Panel extends BaseClass {
         await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
         this.log.info(`Setting panel to offline until first message!`);
         this.isOnline = false;
-        const channelObj = this.library.cloneObject(
-            definition.genericStateObjects.panel.panels._channel,
-        ) as ioBroker.ChannelObject;
+        const channelObj = structuredClone(definition.genericStateObjects.panel.panels._channel);
 
         channelObj.common.name = this.friendlyName;
         channelObj.native = {
@@ -1435,7 +1437,7 @@ export class Panel extends BaseClass {
 
                 this.sendDimmode();
 
-                this.navigation.resetPosition();
+                this.navigation.resetPosition(true);
 
                 const start = this.navigation.getCurrentMainPage();
                 if (start === undefined) {
@@ -1539,6 +1541,12 @@ export class Panel extends BaseClass {
                         break;
                     }
                     if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
+                        if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+                            this.log.debug(
+                                `Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`,
+                            );
+                            break;
+                        }
                         this.navigation.resetPosition();
                         await this.navigation.setCurrentPage();
                         break;
@@ -1546,6 +1554,10 @@ export class Panel extends BaseClass {
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);
                 } else {
+                    if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+                        this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
+                        break;
+                    }
                     if (
                         event.action === 'button' &&
                         ['bNext', 'bPrev', 'bUp', 'bHome', 'bSubNext', 'bSubPrev'].indexOf(event.id) != -1
@@ -2265,6 +2277,10 @@ export class Panel extends BaseClass {
                                 button2: unlock.button2 ? { type: 'const', constVal: unlock.button2 } : undefined,
                                 button3: unlock.button3 ? { type: 'const', constVal: unlock.button3 } : undefined,
                                 button4: unlock.button4 ? { type: 'const', constVal: unlock.button4 } : undefined,
+                                button5: unlock.button1 ? { type: 'const', constVal: unlock.button5 } : undefined,
+                                button6: unlock.button2 ? { type: 'const', constVal: unlock.button6 } : undefined,
+                                button7: unlock.button3 ? { type: 'const', constVal: unlock.button7 } : undefined,
+                                button8: unlock.button4 ? { type: 'const', constVal: unlock.button8 } : undefined,
                                 pin: unlock.pin != null ? { type: 'const', constVal: String(unlock.pin) } : undefined,
                                 approved: { type: 'const', constVal: !!unlock.approved },
                                 setNavi: unlock.setNavi ? { type: 'const', constVal: unlock.setNavi } : undefined,

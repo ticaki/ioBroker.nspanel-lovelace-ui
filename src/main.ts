@@ -1821,7 +1821,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'updateTasmota': {
                     let language = this.library.getLocalLanguage();
                     language = language === 'zh-cn' ? 'en' : language;
-                    const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+                    const result = await axios.get(
+                        'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                    );
+                    if (result.status !== 200 || !result.data?.tasmota) {
+                        this.log.warn(`Error getting Tasmota version: ${result.status}`);
+                        return;
+                    }
+                    const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.data.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
 
                     if (this.controller?.panels) {
                         const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);

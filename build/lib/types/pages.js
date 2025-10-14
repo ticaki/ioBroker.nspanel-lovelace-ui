@@ -275,7 +275,7 @@ const BUTTON_ACTION_TYPES = /* @__PURE__ */ new Set([
 function isButtonActionType(value) {
   return typeof value === "string" && BUTTON_ACTION_TYPES.has(value);
 }
-const ALARM_BUTTON_EVENTS = ["A1", "A2", "A3", "A4", "D1", "U1", ""];
+const ALARM_BUTTON_EVENTS = ["A1", "A2", "A3", "A4", "D1", "D2", "D3", "D4", "U1", ""];
 function isAlarmButtonEvent(value) {
   return typeof value === "string" && ALARM_BUTTON_EVENTS.includes(value);
 }

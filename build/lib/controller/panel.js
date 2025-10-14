@@ -75,6 +75,9 @@ class Panel extends import_library.BaseClass {
   data = {};
   blockStartup = null;
   _isOnline = false;
+  blockTouchEventsForMs = 400;
+  // ms
+  lastSendTypeDate = 0;
   options;
   flashing = false;
   screenSaver;
@@ -349,9 +352,7 @@ class Panel extends import_library.BaseClass {
     await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
     this.log.info(`Setting panel to offline until first message!`);
     this.isOnline = false;
-    const channelObj = this.library.cloneObject(
-      definition.genericStateObjects.panel.panels._channel
-    );
+    const channelObj = structuredClone(definition.genericStateObjects.panel.panels._channel);
     channelObj.common.name = this.friendlyName;
     channelObj.native = {
       topic: this.topic,
@@ -1293,7 +1294,7 @@ class Panel extends import_library.BaseClass {
         await this.writeInfo();
         await this.adapter.delay(100);
         this.sendDimmode();
-        this.navigation.resetPosition();
+        this.navigation.resetPosition(true);
         const start = this.navigation.getCurrentMainPage();
         if (start === void 0) {
           this.log.error("No start page defined!");
@@ -1390,6 +1391,12 @@ class Panel extends import_library.BaseClass {
             break;
           }
           if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
+            if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+              this.log.debug(
+                `Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`
+              );
+              break;
+            }
             this.navigation.resetPosition();
             await this.navigation.setCurrentPage();
             break;
@@ -1397,6 +1404,10 @@ class Panel extends import_library.BaseClass {
         } else if (event.action === "bExit" && event.id !== "popupNotify") {
           await this.setActivePage(true);
         } else {
+          if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+            this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
+            break;
+          }
           if (event.action === "button" && ["bNext", "bPrev", "bUp", "bHome", "bSubNext", "bSubPrev"].indexOf(event.id) != -1) {
             if (["bPrev", "bUp", "bSubPrev"].indexOf(event.id) != -1) {
               this.getActivePage().goLeft();
@@ -2070,6 +2081,10 @@ ${this.info.tasmota.onlineVersion}`;
                 button2: unlock.button2 ? { type: "const", constVal: unlock.button2 } : void 0,
                 button3: unlock.button3 ? { type: "const", constVal: unlock.button3 } : void 0,
                 button4: unlock.button4 ? { type: "const", constVal: unlock.button4 } : void 0,
+                button5: unlock.button1 ? { type: "const", constVal: unlock.button5 } : void 0,
+                button6: unlock.button2 ? { type: "const", constVal: unlock.button6 } : void 0,
+                button7: unlock.button3 ? { type: "const", constVal: unlock.button7 } : void 0,
+                button8: unlock.button4 ? { type: "const", constVal: unlock.button8 } : void 0,
                 pin: unlock.pin != null ? { type: "const", constVal: String(unlock.pin) } : void 0,
                 approved: { type: "const", constVal: !!unlock.approved },
                 setNavi: unlock.setNavi ? { type: "const", constVal: unlock.setNavi } : void 0

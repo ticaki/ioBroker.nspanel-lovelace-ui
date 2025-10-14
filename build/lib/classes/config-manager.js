@@ -634,7 +634,6 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: "",
           alwaysOn: page.alwaysOnDisplay ? typeof page.alwaysOnDisplay === "boolean" ? "always" : "action" : "none",
           uniqueID: page.uniqueName || "",
-          useColor: false,
           hidden: page.hiddenByTrigger || false,
           config: {
             card: page.type,
@@ -827,7 +826,6 @@ class ConfigManager extends import_library.BaseClass {
       ...gridItem,
       card: "cardThermo",
       alwaysOn: "none",
-      useColor: false,
       items: void 0,
       config: {
         card: "cardThermo",
@@ -4076,7 +4074,6 @@ class ConfigManager extends import_library.BaseClass {
       dpInit: "",
       alwaysOn: "none",
       uniqueID: "scr",
-      useColor: false,
       config: {
         card: "screensaver",
         mode: "standard",
@@ -4416,7 +4413,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!result.data.entity1) {
       throw new Error("Invalid data");
     }
-    result.data.entity2 = this.library.cloneGenericObject(result.data.entity1);
+    result.data.entity2 = structuredClone(result.data.entity1);
     let obj;
     if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
       obj = await this.adapter.getForeignObjectAsync(entity.ScreensaverEntity);

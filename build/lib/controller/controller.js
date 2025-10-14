@@ -452,10 +452,15 @@ class Controller extends Library.BaseClass {
       for (const panel of this.panels) {
         panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
       }
+      this.globalPanelInfo.availableTasmotaFirmwareVersion = result.data.tasmota.trim();
+      for (const panel of this.panels) {
+        panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
+      }
     } catch {
     }
   }
   async getTasmotaVersion() {
+    return;
     const urlString = "https://api.github.com/repositories/80286288/releases/latest";
     try {
       const response = await (0, import_axios.default)(urlString, { headers: { "User-Agent": "ioBroker" } });

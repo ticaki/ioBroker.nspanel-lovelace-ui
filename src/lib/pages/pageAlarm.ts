@@ -209,14 +209,14 @@ export class PageAlarm extends Page {
         message.navigation = this.getNavigation();
         if (this.alarmType === 'alarm') {
             if (this.status === 'armed' || this.status === 'triggered') {
-                message.button1 = this.library.getTranslation('disarm');
-                message.status1 = 'D1';
-                message.button2 = '';
-                message.status2 = '';
-                message.button3 = '';
-                message.status3 = '';
-                message.button4 = '';
-                message.status4 = '';
+                message.button1 = (data.button5 && (await data.button5.getTranslatedString())) ?? '';
+                message.status1 = message.button1 ? 'D1' : '';
+                message.button2 = (data.button6 && (await data.button6.getTranslatedString())) ?? '';
+                message.status2 = message.button2 ? 'D2' : '';
+                message.button3 = (data.button7 && (await data.button7.getTranslatedString())) ?? '';
+                message.status3 = message.button3 ? 'D3' : '';
+                message.button4 = (data.button8 && (await data.button8.getTranslatedString())) ?? '';
+                message.status4 = message.button4 ? 'D4' : '';
             } else {
                 //const entity1 = await getValueEntryNumber(data.entity1);
                 message.button1 = (data.button1 && (await data.button1.getTranslatedString())) ?? '';

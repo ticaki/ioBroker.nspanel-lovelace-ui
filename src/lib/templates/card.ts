@@ -1040,14 +1040,13 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 },
             },
         ],
-        useColor: false,
     },
     'entities.fahrplan.departure-timetable': {
         //Anzeigetafel Fahrplan
         adapter: 'fahrplan.0',
         card: 'cardSchedule',
         alwaysOn: 'none',
-        useColor: false,
+
         items: undefined,
         config: {
             card: 'cardSchedule',
@@ -1578,7 +1577,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         adapter: 'fahrplan.0',
         card: 'cardSchedule',
         alwaysOn: 'none',
-        useColor: false,
+
         items: undefined,
         config: {
             card: 'cardSchedule',
@@ -2037,7 +2036,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         adapter: 'hmip.0',
         card: 'cardThermo',
         alwaysOn: 'none',
-        useColor: false,
+
         items: undefined,
         config: {
             card: 'cardThermo',
@@ -2398,7 +2397,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         adapter: 'hmip.0',
         card: 'cardThermo',
         alwaysOn: 'none',
-        useColor: false,
+
         items: undefined,
         config: {
             card: 'cardThermo',
@@ -2759,7 +2758,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         adapter: 'alias.0',
         card: 'cardThermo',
         alwaysOn: 'none',
-        useColor: false,
+
         items: undefined,
         config: {
             card: 'cardThermo',
