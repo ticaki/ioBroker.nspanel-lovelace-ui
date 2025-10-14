@@ -2080,23 +2080,161 @@ ${this.info.tasmota.onlineVersion}`;
           break;
         }
         case "cardQR": {
+          const qrIndex = this.adapter.config.pageQRConfig.findIndex(
+            (qr) => qr.uniqueName === unlock.uniqueName
+          );
+          if (qrIndex === -1) {
+            this.log.warn(`QR config not found for page '${unlock.uniqueName}', skipping!`);
+            continue;
+          }
+          const qrConfig = this.adapter.config.pageQRConfig[qrIndex];
+          let text1 = "", text = "", icon1 = "", icon2 = "";
+          switch (qrConfig.selType) {
+            case 0:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "";
+              break;
+            case 1:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "SSID";
+              icon1 = "wifi";
+              icon2 = "key-wireless";
+              break;
+            case 2:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "URL / Website";
+              icon1 = "web";
+              icon2 = "";
+              break;
+            case 3:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "Telephone";
+              icon1 = "phone";
+              icon2 = "";
+              break;
+            default:
+              break;
+          }
           newPage = {
-            uniqueID: unlock.uniqueName,
-            hidden: !!unlock.hidden,
-            alwaysOn: unlock.alwaysOn || "none",
+            uniqueID: qrConfig.uniqueName,
+            hidden: !!qrConfig.hidden,
+            alwaysOn: qrConfig.alwaysOn ? "always" : "none",
             template: void 0,
             dpInit: "",
             config: {
               card: "cardQR",
-              index: 0,
+              index: qrIndex,
               data: {
-                // TODO: Add QR-specific data configuration from unlock config
-                headline: unlock.headline ? { type: "const", constVal: unlock.headline } : void 0,
-                entity1: void 0
+                headline: { type: "const", constVal: qrConfig.headline || "" }
               }
             },
             pageItems: []
           };
+          newPage.pageItems.push({
+            type: "text",
+            dpInit: "",
+            role: "button",
+            data: {
+              icon: {
+                true: {
+                  value: { type: "const", constVal: icon1 },
+                  color: { type: "const", constVal: import_Color.Color.on }
+                },
+                false: {
+                  value: { type: "const", constVal: icon1 },
+                  color: { type: "const", constVal: import_Color.Color.off }
+                },
+                scale: void 0,
+                maxBri: void 0,
+                minBri: void 0
+              },
+              text1: {
+                true: { type: "const", constVal: text1 }
+              },
+              text: {
+                true: { type: "const", constVal: text }
+              },
+              entity1: qrConfig.setState ? {
+                value: {
+                  type: "triggered",
+                  dp: qrConfig.setState
+                }
+              } : void 0
+            }
+          });
+          let text1Second = "";
+          let textSecond = "";
+          switch (qrConfig.selType) {
+            case 1:
+              text1Second = qrConfig.qrPass ? qrConfig.qrPass : "";
+              textSecond = "Password";
+              break;
+            default:
+              break;
+          }
+          if (qrConfig.setState) {
+            newPage.pageItems.push({
+              type: "button",
+              dpInit: "",
+              role: "button",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: "wifi" },
+                    color: { type: "const", constVal: import_Color.Color.Green }
+                  },
+                  false: {
+                    value: { type: "const", constVal: "wifi-off" },
+                    color: { type: "const", constVal: import_Color.Color.off }
+                  },
+                  scale: void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                text1: {
+                  true: { type: "const", constVal: text1Second }
+                },
+                text: {
+                  true: { type: "const", constVal: "WlanOn" },
+                  false: { type: "const", constVal: "WlanOff" }
+                },
+                entity1: {
+                  value: {
+                    type: "triggered",
+                    dp: qrConfig.setState
+                  }
+                }
+              }
+            });
+          } else {
+            newPage.pageItems.push({
+              type: "text",
+              dpInit: "",
+              role: "button",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: icon2 },
+                    color: { type: "const", constVal: import_Color.Color.on }
+                  },
+                  false: {
+                    value: { type: "const", constVal: icon2 },
+                    color: { type: "const", constVal: import_Color.Color.off }
+                  },
+                  scale: void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                text1: {
+                  true: { type: "const", constVal: text1Second }
+                },
+                text: {
+                  true: { type: "const", constVal: textSecond }
+                },
+                entity1: void 0
+              }
+            });
+          }
           break;
         }
         default: {

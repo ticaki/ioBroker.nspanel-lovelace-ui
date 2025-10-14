@@ -174,7 +174,7 @@ class PageQR extends import_Page.Page {
       }
     }
     if (message.textQR) {
-      this.log.debug(message.textQR);
+      this.log.debug(`textQR: ${message.textQR}`);
     }
     this.sendToPanel(this.getMessage(message), false);
   }
@@ -390,6 +390,11 @@ class PageQR extends import_Page.Page {
       )
     );
   }
+  async onVisibilityChange(val) {
+    if (val) {
+      await this.update();
+    }
+  }
   async onStateTrigger(_id) {
     if (this.unload || this.adapter.unload) {
       return;
@@ -410,7 +415,7 @@ class PageQR extends import_Page.Page {
     }
     this.log.debug(`action: ${button}, value: ${value}`);
     if (pages.isQRButtonEvent(button)) {
-      if (this.adapter.config.pageQRdata[this.index]) {
+      if (this.adapter.config.pageQRConfig[this.index]) {
         if (this.pageItems && this.pageItems[_event.id] && this.pageItems[_event.id].config && this.pageItems[_event.id].config.type == "button") {
           await this.pageItems[_event.id].onCommand("switch", value);
         }

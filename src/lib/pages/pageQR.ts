@@ -161,7 +161,7 @@ export class PageQR extends Page {
             }
         }
         if (message.textQR) {
-            this.log.debug(message.textQR);
+            this.log.debug(`textQR: ${message.textQR}`);
         }
         this.sendToPanel(this.getMessage(message), false);
     }
@@ -402,6 +402,11 @@ export class PageQR extends Page {
         );
     }
 
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        if (val) {
+            await this.update();
+        }
+    }
     protected async onStateTrigger(_id: string): Promise<void> {
         if (this.unload || this.adapter.unload) {
             return;
@@ -422,7 +427,7 @@ export class PageQR extends Page {
         }
         this.log.debug(`action: ${button}, value: ${value}`);
         if (pages.isQRButtonEvent(button)) {
-            if (this.adapter.config.pageQRdata[this.index]) {
+            if (this.adapter.config.pageQRConfig[this.index]) {
                 if (
                     this.pageItems &&
                     this.pageItems[_event.id as any] &&

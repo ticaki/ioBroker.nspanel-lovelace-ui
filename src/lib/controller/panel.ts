@@ -2276,34 +2276,187 @@ export class Panel extends BaseClass {
                 }
 
                 case 'cardQR': {
-                    // QR card configuration - placeholder for future implementation
+                    // QR card configuration - inline implementation based on PageQR.getQRPageConfig
+                    const qrIndex = this.adapter.config.pageQRConfig.findIndex(
+                        (qr: any) => qr.uniqueName === unlock.uniqueName,
+                    );
+                    if (qrIndex === -1) {
+                        this.log.warn(`QR config not found for page '${unlock.uniqueName}', skipping!`);
+                        continue;
+                    }
+
+                    const qrConfig = this.adapter.config.pageQRConfig[qrIndex];
+                    let text1 = '',
+                        text = '',
+                        icon1 = '',
+                        icon2 = '';
+
+                    switch (qrConfig.selType) {
+                        case 0: // FREE
+                            text1 = qrConfig.SSIDURLTEL;
+                            text = '';
+                            break;
+                        case 1: // WIFI
+                            text1 = qrConfig.SSIDURLTEL;
+                            text = 'SSID';
+                            icon1 = 'wifi';
+                            icon2 = 'key-wireless';
+                            break;
+                        case 2: // URL
+                            text1 = qrConfig.SSIDURLTEL;
+                            text = 'URL / Website';
+                            icon1 = 'web';
+                            icon2 = '';
+                            break;
+                        case 3: // Telephone
+                            text1 = qrConfig.SSIDURLTEL;
+                            text = 'Telephone';
+                            icon1 = 'phone';
+                            icon2 = '';
+                            break;
+                        default:
+                            break;
+                    }
+
                     newPage = {
-                        uniqueID: unlock.uniqueName,
-                        hidden: !!unlock.hidden,
-                        alwaysOn: unlock.alwaysOn || 'none',
+                        uniqueID: qrConfig.uniqueName,
+                        hidden: !!qrConfig.hidden,
+                        alwaysOn: qrConfig.alwaysOn ? 'always' : 'none',
                         template: undefined,
                         dpInit: '',
                         config: {
                             card: 'cardQR',
-                            index: 0,
+                            index: qrIndex,
                             data: {
-                                // TODO: Add QR-specific data configuration from unlock config
-                                headline: unlock.headline ? { type: 'const', constVal: unlock.headline } : undefined,
-                                entity1: undefined,
+                                headline: { type: 'const', constVal: qrConfig.headline || '' },
                             },
                         },
                         pageItems: [],
                     };
+
+                    // First page item - SSID/URL/Tel display
+                    newPage.pageItems.push({
+                        type: 'text',
+                        dpInit: '',
+                        role: 'button',
+                        data: {
+                            icon: {
+                                true: {
+                                    value: { type: 'const', constVal: icon1 },
+                                    color: { type: 'const', constVal: Color.on },
+                                },
+                                false: {
+                                    value: { type: 'const', constVal: icon1 },
+                                    color: { type: 'const', constVal: Color.off },
+                                },
+                                scale: undefined,
+                                maxBri: undefined,
+                                minBri: undefined,
+                            },
+                            text1: {
+                                true: { type: 'const', constVal: text1 },
+                            },
+                            text: {
+                                true: { type: 'const', constVal: text },
+                            },
+                            entity1: qrConfig.setState
+                                ? {
+                                      value: {
+                                          type: 'triggered',
+                                          dp: qrConfig.setState,
+                                      },
+                                  }
+                                : undefined,
+                        },
+                    });
+
+                    // Second page item - Password/Button or additional text
+                    let text1Second = '';
+                    let textSecond = '';
+
+                    switch (qrConfig.selType) {
+                        case 1: // WIFI - show password
+                            text1Second = qrConfig.qrPass ? qrConfig.qrPass : '';
+                            textSecond = 'Password';
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (qrConfig.setState) {
+                        // Button variant with state
+                        newPage.pageItems.push({
+                            type: 'button',
+                            dpInit: '',
+                            role: 'button',
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: { type: 'const', constVal: 'wifi' },
+                                        color: { type: 'const', constVal: Color.Green },
+                                    },
+                                    false: {
+                                        value: { type: 'const', constVal: 'wifi-off' },
+                                        color: { type: 'const', constVal: Color.off },
+                                    },
+                                    scale: undefined,
+                                    maxBri: undefined,
+                                    minBri: undefined,
+                                },
+                                text1: {
+                                    true: { type: 'const', constVal: text1Second },
+                                },
+                                text: {
+                                    true: { type: 'const', constVal: 'WlanOn' },
+                                    false: { type: 'const', constVal: 'WlanOff' },
+                                },
+                                entity1: {
+                                    value: {
+                                        type: 'triggered',
+                                        dp: qrConfig.setState,
+                                    },
+                                },
+                            },
+                        });
+                    } else {
+                        // Text variant without state
+                        newPage.pageItems.push({
+                            type: 'text',
+                            dpInit: '',
+                            role: 'button',
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: { type: 'const', constVal: icon2 },
+                                        color: { type: 'const', constVal: Color.on },
+                                    },
+                                    false: {
+                                        value: { type: 'const', constVal: icon2 },
+                                        color: { type: 'const', constVal: Color.off },
+                                    },
+                                    scale: undefined,
+                                    maxBri: undefined,
+                                    minBri: undefined,
+                                },
+                                text1: {
+                                    true: { type: 'const', constVal: text1Second },
+                                },
+                                text: {
+                                    true: { type: 'const', constVal: textSecond },
+                                },
+                                entity1: undefined,
+                            },
+                        });
+                    }
+
                     break;
                 }
-
                 default: {
                     // @ts-expect-error die muß hier stehen und keinen Fehler haben
                     this.log.warn(`Unsupported card type '${unlock.card}' for page '${unlock.uniqueName}', skipping!`);
                     continue;
                 }
             }
-
             // Check for duplicate page name
             if (options.pages.find((a: pages.PageBase) => a.uniqueID === newPage.uniqueID)) {
                 this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
