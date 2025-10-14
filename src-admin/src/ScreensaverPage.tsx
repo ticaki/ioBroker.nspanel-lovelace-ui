@@ -932,6 +932,12 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     theme={this.props.theme}
                     adapterName="nspanel-lovelace-ui"
                     instance={this.props.oContext?.instance || 0}
+                    objectIdConfig={{
+                        types: 'state',
+                        filterFunc: (obj: ioBroker.Object) => {
+                            return !!(obj?.type === 'state' && obj.common.role && obj.common.role.startsWith('switch'));
+                        },
+                    }}
                 />
             </Box>
         );

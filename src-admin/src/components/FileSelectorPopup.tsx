@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box } from '@mui/material';
 import { JsonConfigComponent } from '@iobroker/json-config';
 import { I18n, type ThemeName, type ThemeType, type IobTheme } from '@iobroker/adapter-react-v5';
-import type { ConfigItemPanel } from '@iobroker/json-config';
+import type { ConfigItemPanel, ConfigItemObjectId } from '@iobroker/json-config';
 
 type FileSelectorPopupProps = {
     open: boolean;
@@ -14,6 +14,8 @@ type FileSelectorPopupProps = {
     theme: IobTheme;
     adapterName?: string;
     instance?: number;
+    /** Optional: filter configuration for the objectId selector */
+    objectIdConfig?: Partial<Omit<ConfigItemObjectId, 'type' | 'label'>>;
 };
 
 interface FileSelectorPopupState {
@@ -38,17 +40,21 @@ class FileSelectorPopup extends React.Component<FileSelectorPopupProps, FileSele
         };
 
         // Schema definition for JsonConfigComponent with objectId selector
+        // Merge user-provided objectIdConfig with defaults
+        const objectIdItem: ConfigItemObjectId = {
+            type: 'objectId',
+            label: 'Select an object',
+            sm: 12,
+            md: 12,
+            lg: 12,
+            ...this.props.objectIdConfig,
+        };
+
         this.schema = {
             type: 'panel',
             label: 'Object Selector Test',
             items: {
-                testObjectId: {
-                    type: 'objectId',
-                    label: 'Select an object',
-                    sm: 12,
-                    md: 12,
-                    lg: 12,
-                },
+                testObjectId: objectIdItem,
             },
         };
     }
