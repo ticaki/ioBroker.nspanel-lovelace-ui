@@ -31,7 +31,7 @@ interface ScreensaverPageState extends ConfigGenericState {
     pagesList?: string[];
     alive?: boolean;
     pagesRetryCount?: number;
-    fileSelectorOpen?: boolean;
+    objectIdSelectorOpen?: boolean;
 }
 
 interface LocalUIState {
@@ -95,15 +95,15 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             .replace(/a/g, date.getHours() >= 12 ? 'PM' : 'AM');
     }
 
-    private handleFileSelectorOpen = (): void => {
-        this.setState({ fileSelectorOpen: true } as ScreensaverPageState);
+    private handleObjectIdSelectorOpen = (): void => {
+        this.setState({ objectIdSelectorOpen: true } as ScreensaverPageState);
     };
 
-    private handleFileSelectorClose = (): void => {
-        this.setState({ fileSelectorOpen: false } as ScreensaverPageState);
+    private handleObjectIdSelectorClose = (): void => {
+        this.setState({ objectIdSelectorOpen: false } as ScreensaverPageState);
     };
 
-    private handleFileSelect = (filePath: string): void => {
+    private handleObjectIdSelect = (filePath: string): void => {
         console.log('[ScreensaverPage] Selected file:', filePath);
         // Handle file selection here (e.g., update state or show notification)
     };
@@ -570,16 +570,16 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         </a>
                     </Box>
 
-                    {/* Test Button for FileSelectorPopup */}
+                    {/* Test Button for ObjectIdSelectorPopup */}
                     <Box sx={{ mb: 2 }}>
                         <Button
                             variant="outlined"
                             color="primary"
                             size="small"
                             fullWidth
-                            onClick={this.handleFileSelectorOpen}
+                            onClick={this.handleObjectIdSelectorOpen}
                         >
-                            Test FileSelector
+                            Test ObjectIdSelector
                         </Button>
                     </Box>
                 </Box>
@@ -921,11 +921,11 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     </Paper>
                 </Box>
 
-                {/* FileSelectorPopup component */}
+                {/* ObjectIdSelectorPopup component */}
                 <ObjectIdSelectorPopup
-                    open={!!this.state.fileSelectorOpen}
-                    onClose={this.handleFileSelectorClose}
-                    onSelect={this.handleFileSelect}
+                    open={!!this.state.objectIdSelectorOpen}
+                    onClose={this.handleObjectIdSelectorClose}
+                    onSelect={this.handleObjectIdSelect}
                     socket={this.props.oContext.socket}
                     themeName={this.props.themeName}
                     themeType={this.props.theme?.palette?.mode || 'light'}
