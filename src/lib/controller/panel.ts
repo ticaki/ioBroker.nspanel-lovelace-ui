@@ -82,6 +82,10 @@ export class Panel extends BaseClass {
     private data: Record<string, any> = {};
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
+
+    public blockTouchEventsForMs: number = 400; // ms
+    public lastSendTypeDate: number = 0;
+
     options: panelConfigPartial;
     flashing: boolean = false;
     public screenSaver: Screensaver | undefined;
@@ -1433,7 +1437,7 @@ export class Panel extends BaseClass {
 
                 this.sendDimmode();
 
-                this.navigation.resetPosition();
+                this.navigation.resetPosition(true);
 
                 const start = this.navigation.getCurrentMainPage();
                 if (start === undefined) {
@@ -1537,6 +1541,12 @@ export class Panel extends BaseClass {
                         break;
                     }
                     if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
+                        if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+                            this.log.debug(
+                                `Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`,
+                            );
+                            break;
+                        }
                         this.navigation.resetPosition();
                         await this.navigation.setCurrentPage();
                         break;
@@ -1544,6 +1554,10 @@ export class Panel extends BaseClass {
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);
                 } else {
+                    if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+                        this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
+                        break;
+                    }
                     if (
                         event.action === 'button' &&
                         ['bNext', 'bPrev', 'bUp', 'bHome', 'bSubNext', 'bSubPrev'].indexOf(event.id) != -1

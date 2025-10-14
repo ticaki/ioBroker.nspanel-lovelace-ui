@@ -252,10 +252,16 @@ class Page extends import_baseClassPage.BaseClassPage {
         break;
     }
     if (forceSend || this.basePanel.lastCard !== this.card) {
+      this.basePanel.lastSendTypeDate = Date.now();
+      this.log.debug(`Register last send type ${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`);
       this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
     } else {
       if (this.lastCardCounter++ > 15) {
         this.lastCardCounter = 0;
+        this.basePanel.lastSendTypeDate = Date.now();
+        this.log.debug(
+          `Register last send type ${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`
+        );
         this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
       }
     }

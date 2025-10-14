@@ -75,6 +75,9 @@ class Panel extends import_library.BaseClass {
   data = {};
   blockStartup = null;
   _isOnline = false;
+  blockTouchEventsForMs = 400;
+  // ms
+  lastSendTypeDate = 0;
   options;
   flashing = false;
   screenSaver;
@@ -1293,7 +1296,7 @@ class Panel extends import_library.BaseClass {
         await this.writeInfo();
         await this.adapter.delay(100);
         this.sendDimmode();
-        this.navigation.resetPosition();
+        this.navigation.resetPosition(true);
         const start = this.navigation.getCurrentMainPage();
         if (start === void 0) {
           this.log.error("No start page defined!");
@@ -1390,6 +1393,12 @@ class Panel extends import_library.BaseClass {
             break;
           }
           if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
+            if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+              this.log.debug(
+                `Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`
+              );
+              break;
+            }
             this.navigation.resetPosition();
             await this.navigation.setCurrentPage();
             break;
@@ -1397,6 +1406,10 @@ class Panel extends import_library.BaseClass {
         } else if (event.action === "bExit" && event.id !== "popupNotify") {
           await this.setActivePage(true);
         } else {
+          if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+            this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
+            break;
+          }
           if (event.action === "button" && ["bNext", "bPrev", "bUp", "bHome", "bSubNext", "bSubPrev"].indexOf(event.id) != -1) {
             if (["bPrev", "bUp", "bSubPrev"].indexOf(event.id) != -1) {
               this.getActivePage().goLeft();

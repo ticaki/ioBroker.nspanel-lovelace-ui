@@ -432,8 +432,8 @@ export class Navigation extends BaseClass {
         return getPayload(navigationString, navigationString2);
     }
 
-    resetPosition(): void {
-        if (this.adapter.config.rememberLastSite === true) {
+    resetPosition(force: boolean = false): void {
+        if (!force && this.adapter.config.rememberLastSite === true) {
             return;
         }
         const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
