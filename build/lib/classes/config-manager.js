@@ -635,7 +635,6 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: "",
           alwaysOn: page.alwaysOnDisplay ? typeof page.alwaysOnDisplay === "boolean" ? "always" : "action" : "none",
           uniqueID: page.uniqueName || "",
-          useColor: false,
           hidden: page.hiddenByTrigger || false,
           config: {
             card: page.type,
@@ -850,7 +849,6 @@ class ConfigManager extends import_library.BaseClass {
       ...gridItem,
       card: "cardThermo",
       alwaysOn: "none",
-      useColor: false,
       items: void 0,
       config: {
         card: "cardThermo",
@@ -4099,7 +4097,6 @@ class ConfigManager extends import_library.BaseClass {
       dpInit: "",
       alwaysOn: "none",
       uniqueID: "scr",
-      useColor: false,
       config: {
         card: "screensaver",
         mode: "standard",

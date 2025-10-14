@@ -726,7 +726,7 @@ export class ConfigManager extends BaseClass {
                             : 'action'
                         : 'none',
                     uniqueID: page.uniqueName || '',
-                    useColor: false,
+
                     hidden: page.hiddenByTrigger || false,
                     config: {
                         card: page.type,
@@ -966,7 +966,7 @@ export class ConfigManager extends BaseClass {
             ...gridItem,
             card: 'cardThermo' as const,
             alwaysOn: 'none',
-            useColor: false,
+
             items: undefined,
             config: {
                 card: 'cardThermo',
@@ -4820,7 +4820,7 @@ export class ConfigManager extends BaseClass {
             dpInit: '',
             alwaysOn: 'none',
             uniqueID: 'scr',
-            useColor: false,
+
             config: {
                 card: 'screensaver',
                 mode: 'standard',

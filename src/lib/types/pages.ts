@@ -468,31 +468,6 @@ export type allCards =
     | 'screensaver3'
     | 'cardItemSpecial';
 
-export type PageBaseConfigTemplate =
-    | {
-          card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3'>;
-          adapter: string;
-          alwaysOn: 'none' | 'always' | 'action' | 'ignore';
-          useColor?: boolean;
-          pageItems: typePageItem.PageItemDataItemsOptions[];
-
-          //    mediaNamespace: string;
-          config: undefined | PageBaseConfig;
-          items: undefined;
-      }
-    | {
-          card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
-          template: Types.PageTemplateIdent;
-          adapter: string;
-          alwaysOn: 'none' | 'always' | 'action' | 'ignore';
-          useColor?: boolean;
-          pageItems: typePageItem.PageItemDataItemsOptions[];
-
-          //    mediaNamespace: string;
-          config: undefined | screensaverDataItemOptions;
-          items: undefined;
-      };
-
 // Optimierte Alarm Types mit const assertions
 const ALARM_BUTTON_EVENTS = ['A1', 'A2', 'A3', 'A4', 'D1', 'D2', 'D3', 'D4', 'U1', ''] as const;
 
@@ -528,50 +503,28 @@ export type PageOthersConfigs =
     | cardQRDataItemOptions
     | cardChartDataItemOptions;
 
-export type PageBase = (
-    | (
-          | {
-                //    type: PlayerType;
-                //card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-                uniqueID: string;
-                template?: Types.PageTemplateIdent;
-                dpInit?: string | RegExp; // ''
-                enums?: string | string[];
-                device?: string;
-                alwaysOn: 'none' | 'always' | 'action' | 'ignore';
-                useColor?: boolean;
-                hidden?: boolean;
-                pageItems: typePageItem.PageItemDataItemsOptions[];
-                //    mediaNamespace: string;
-                config: PageMenuConfig | PageOthersConfigs;
-            }
-          | {
-                //    type: PlayerType;
-                //card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
-                uniqueID: string;
-                template?: Types.PageTemplateIdent;
-                dpInit: string | RegExp; // ''
-                enums?: string | string[];
-                alwaysOn: 'none' | 'always' | 'action' | 'ignore';
-                device?: string;
-                useColor?: boolean;
-                hidden?: boolean;
-                cardRole?: CardRole;
-                pageItems: typePageItem.PageItemDataItemsOptions[];
-                /*&
-                    Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/
+type PageBaseNoIdea1 = {
+    uniqueID: string;
+    template: Types.PageTemplateIdent;
+    dpInit: string | RegExp;
+    hidden?: boolean;
+} & Partial<Omit<PageBaseConfigTemplate, 'template'>>;
 
-                //    mediaNamespace: string;
-                config: screensaverDataItemOptions;
-            }
-      )
-    | ({
-          //card: PageTypeCards;
+export type PageBase = (
+    | {
           uniqueID: string;
-          template: Types.PageTemplateIdent;
-          dpInit: string | RegExp;
+          template?: Types.PageTemplateIdent;
+          dpInit?: string | RegExp; // ''
+          enums?: string | string[];
+          device?: string;
+          alwaysOn: 'none' | 'always' | 'action' | 'ignore';
           hidden?: boolean;
-      } & Partial<Omit<PageBaseConfigTemplate, 'template'>>)
+          cardRole?: CardRole;
+          pageItems: typePageItem.PageItemDataItemsOptions[];
+          //    mediaNamespace: string;
+          config: PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
+      }
+    | PageBaseNoIdea1
 ) & {
     items?:
         | undefined
@@ -588,6 +541,18 @@ export type PageBase = (
         | cardChartDataItems
         | cardScheduleDataItems;
 };
+
+export type PageBaseConfigTemplate = {
+    card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3'>;
+    adapter: string;
+    alwaysOn: 'none' | 'always' | 'action' | 'ignore';
+    pageItems: typePageItem.PageItemDataItemsOptions[];
+
+    //    mediaNamespace: string;
+    config: undefined | PageBaseConfig | screensaverDataItemOptions;
+    items: undefined;
+};
+
 type PageNotifyConfig = {
     headline: string;
     entity1?: typePageItem.ValueEntryType;

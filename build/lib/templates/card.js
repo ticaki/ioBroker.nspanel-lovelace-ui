@@ -1034,15 +1034,13 @@ const cardTemplates = {
           }
         }
       }
-    ],
-    useColor: false
+    ]
   },
   "entities.fahrplan.departure-timetable": {
     //Anzeigetafel Fahrplan
     adapter: "fahrplan.0",
     card: "cardSchedule",
     alwaysOn: "none",
-    useColor: false,
     items: void 0,
     config: {
       card: "cardSchedule",
@@ -1578,7 +1576,6 @@ const cardTemplates = {
     adapter: "fahrplan.0",
     card: "cardSchedule",
     alwaysOn: "none",
-    useColor: false,
     items: void 0,
     config: {
       card: "cardSchedule",
@@ -2037,7 +2034,6 @@ const cardTemplates = {
     adapter: "hmip.0",
     card: "cardThermo",
     alwaysOn: "none",
-    useColor: false,
     items: void 0,
     config: {
       card: "cardThermo",
@@ -2398,7 +2394,6 @@ const cardTemplates = {
     adapter: "hmip.0",
     card: "cardThermo",
     alwaysOn: "none",
-    useColor: false,
     items: void 0,
     config: {
       card: "cardThermo",
@@ -2759,7 +2754,6 @@ const cardTemplates = {
     adapter: "alias.0",
     card: "cardThermo",
     alwaysOn: "none",
-    useColor: false,
     items: void 0,
     config: {
       card: "cardThermo",
