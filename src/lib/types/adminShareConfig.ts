@@ -16,6 +16,9 @@ export type AdminCardTypes =
     | 'cardChart'
     | 'cardLChart'
     | 'cardThermo'
+    | 'screensaver'
+    | 'screensaver2'
+    | 'screensaver3'
     // Popup Cards
     | 'popupNotify'
     | 'popupNotify2';
@@ -100,6 +103,31 @@ export type UnlockEntry = {
 
 export type UnlockEntries = UnlockEntry[];
 
+// Screensaver types
+export type ScreensaverEntry = {
+    card: Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>; // Use the card type from AdminCardTypes
+    uniqueName: string;
+    headline: string;
+    type?: 'clock' | 'weather' | 'slideshow' | 'custom';
+    enabled?: boolean;
+    timeout?: number; // timeout in seconds
+    backgroundColor?: string;
+    textColor?: string;
+    weatherEntity?: string;
+    clockFormat?: '12h' | '24h';
+    dateFormat?: string; // JavaScript date format string
+    timeFormat?: string; // JavaScript time format string
+    customDateFormat?: string; // Custom date format when dateFormat is 'custom'
+    customTimeFormat?: string; // Custom time format when timeFormat is 'custom'
+    slideshow?: {
+        images: string[];
+        interval: number;
+    };
+    navigation?: NavigationAssignmentList;
+    navigationAssignment?: NavigationAssignmentList;
+};
+
+export type ScreensaverEntries = ScreensaverEntry[];
 // QR Entry for pageQR configuration
 export type QREntry = {
     card: Extract<AdminCardTypes, 'cardQR'>;
