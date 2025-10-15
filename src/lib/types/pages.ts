@@ -663,6 +663,12 @@ export type cardAlarmDataItems = {
 type PageQRBaseConfig = {
     headline: string;
     entity1?: string;
+    SSIDURLTEL?: string;
+    selType?: number;
+    wlantype?: string;
+    wlanhidden?: boolean;
+    password?: string;
+    pwdhidden?: boolean;
 };
 export type cardQRDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardQR'>;
