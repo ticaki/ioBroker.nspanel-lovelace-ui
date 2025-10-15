@@ -99,16 +99,16 @@ class PageQR extends import_Page.Page {
    * @returns //Rücksprung
    */
   async update() {
-    var _a, _b;
+    var _a, _b, _c;
     if (!this.visibility) {
       return;
     }
     const message = {};
-    const config = this.adapter.config.pageQRConfig[this.index];
+    const config = (_a = this.adapter.config.pageQRConfig) == null ? void 0 : _a[this.index];
     if (this.items && config != null) {
       const items = this.items;
       message.headline = this.library.getTranslation(
-        (_b = (_a = items.data.headline && await items.data.headline.getString()) != null ? _a : config.headline) != null ? _b : ""
+        (_c = (_b = items.data.headline && await items.data.headline.getString()) != null ? _b : config.headline) != null ? _c : ""
       );
       message.navigation = this.getNavigation();
       switch (config.selType) {
@@ -219,8 +219,8 @@ class PageQR extends import_Page.Page {
       return;
     }
     this.log.debug(`action: ${button}, value: ${value}`);
-    if (pages.isQRButtonEvent(button)) {
-      if (this.adapter.config.pageQRConfig[this.index]) {
+    if (convertColorScaleBest.isQRButtonEvent(button)) {
+      if (this.adapter.config.pageQRdata[this.index]) {
         if (this.pageItems && this.pageItems[_event.id] && this.pageItems[_event.id].config && this.pageItems[_event.id].config.type == "button") {
           await this.pageItems[_event.id].onCommand("switch", value);
         }

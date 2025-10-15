@@ -2144,6 +2144,7 @@ ${this.info.tasmota.onlineVersion}`;
             },
             pageItems: []
           };
+          newPage.pageItems = [];
           newPage.pageItems.push({
             type: "text",
             dpInit: "",

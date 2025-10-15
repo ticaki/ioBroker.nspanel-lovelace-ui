@@ -2351,6 +2351,8 @@ export class Panel extends BaseClass {
                         pageItems: [],
                     };
 
+                    // typescript doesn't like push on empty array with strict settings
+                    newPage.pageItems = [];
                     // First page item - SSID/URL/Tel display
                     newPage.pageItems.push({
                         type: 'text',

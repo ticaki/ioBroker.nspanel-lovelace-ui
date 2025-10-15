@@ -196,6 +196,7 @@ export class PageQR extends Page {
         }
         this.log.debug(`action: ${button}, value: ${value}`);
         if (convertColorScaleBest.isQRButtonEvent(button)) {
+            // @ts-expect-error du solltest das nicht löschen aus der adapter config wegen späterer konvertierung
             if (this.adapter.config.pageQRdata[this.index]) {
                 if (
                     this.pageItems &&
