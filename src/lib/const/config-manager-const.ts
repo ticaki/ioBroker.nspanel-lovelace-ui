@@ -1,6 +1,7 @@
+import type { NSPanel } from '../types/NSPanel';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import { arrayOfAll, type StateRole } from '../types/pages';
-import type { ConfigButtonFunction, DataItemsOptions } from '../types/types';
+import type { ConfigButtonFunction } from '../types/types';
 
 export const CustomTemplates: ConfigManager.CustomTemplate[] = [
     {
@@ -158,12 +159,12 @@ export const defaultConfig: ScriptConfig.Config = {
 
 export type checkedDatapointsUnionWithNull = Record<
     ScriptConfig.channelRoles,
-    Partial<Record<mydps, DataItemsOptions | undefined | null>>
+    Partial<Record<mydps, NSPanel.DataItemsOptions | undefined | null>>
 >;
 
 export type checkedDatapointsUnion = Record<
     ScriptConfig.channelRoles,
-    Partial<Record<mydps, DataItemsOptions | undefined>>
+    Partial<Record<mydps, NSPanel.DataItemsOptions | undefined>>
 >;
 
 export const checkedDatapoints: checkedDatapointsUnionWithNull = {

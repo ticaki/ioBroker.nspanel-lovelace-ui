@@ -1,12 +1,12 @@
 import { isDataItem, type Dataitem } from '../controller/data-item';
-import type * as typePageItem from '../types/type-pageItem';
 import type { Library } from '../controller/library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';
 import * as types from '../types/types';
+import type { NSPanel } from '../types/NSPanel';
 
-export const messageItemDefault: typePageItem.MessageItem = {
+export const messageItemDefault: NSPanel.MessageItem = {
     type: 'input_sel',
     intNameEntity: '',
     icon: '',
@@ -15,7 +15,7 @@ export const messageItemDefault: typePageItem.MessageItem = {
     optionalValue: '',
 };
 export function ifValueEntryIs(
-    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined>,
     type: ioBroker.CommonType,
 ): boolean {
     if (i && i.value && i.value.type) {
@@ -25,7 +25,7 @@ export function ifValueEntryIs(
 }
 
 export async function setValueEntry(
-    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined>,
     value: number | boolean | string,
     sca: boolean = true,
 ): Promise<void> {
@@ -54,7 +54,7 @@ export async function setValueEntry(
     }
 }
 export async function getValueEntryNumber(
-    i: ChangeTypeOfKeys<typePageItem.ValueEntryType | typePageItem.ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ValueEntryType | NSPanel.ScaledNumberType, Dataitem | undefined>,
     s: boolean = true,
     options?: { ignoreDecimal?: boolean },
 ): Promise<number | null> {
@@ -111,7 +111,7 @@ function getScaledNumberRaw(
 }
 
 export async function getScaledNumber(
-    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>,
 ): Promise<number | null> {
     if (!i) {
         return null;
@@ -137,7 +137,7 @@ export async function getScaledNumber(
 }
 
 export async function getTemperaturColorFromValue(
-    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>,
     dimmer: number = 100,
 ): Promise<string | null> {
     if (!i) {
@@ -165,7 +165,7 @@ export async function getTemperaturColorFromValue(
 }
 
 export async function getSliderCTFromValue(
-    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>,
 ): Promise<string | null> {
     if (!i) {
         return null;
@@ -203,7 +203,7 @@ export async function getSliderCTFromValue(
     return null;
 }
 export async function setSliderCTFromValue(
-    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>,
     value: number,
 ): Promise<void> {
     if (!i || !i.value) {
@@ -244,7 +244,7 @@ export async function setSliderCTFromValue(
 }
 
 export async function setScaledNumber(
-    i: ChangeTypeOfKeys<typePageItem.ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>,
     value: number,
 ): Promise<void> {
     if (!i || (!i.set && !i.value)) {
@@ -266,7 +266,7 @@ export async function setScaledNumber(
 }
 
 export async function getIconEntryValue(
-    i: ChangeTypeOfKeys<typePageItem.IconEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<NSPanel.IconEntryType, Dataitem | undefined> | undefined,
     on: boolean | number | null,
     def: string,
     defOff: string | null = null,
@@ -333,7 +333,7 @@ export async function getIconEntryValue(
 }
 
 export async function getIconEntryColor(
-    i: ChangeTypeOfKeys<typePageItem.ColorEntryTypeBooleanStandard, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<NSPanel.ColorEntryTypeBooleanStandard, Dataitem | undefined> | undefined,
     value: boolean | number | null,
     def: string | RGB | number,
     defOff: string | RGB | null = null,
@@ -507,7 +507,7 @@ function getLogFromIconScale(i: types.IconColorElement, factor: number): number 
     return factor;
 }
 export async function GetIconColor(
-    item: ChangeTypeOfKeys<typePageItem.IconEntryType, Dataitem | undefined> | undefined | RGB,
+    item: ChangeTypeOfKeys<NSPanel.IconEntryType, Dataitem | undefined> | undefined | RGB,
     value: boolean | number | null,
     min: number | null = null,
     max: number | null = null,
@@ -570,7 +570,7 @@ export async function GetIconColor(
 }
 
 export async function getEntryColor(
-    i: ChangeTypeOfKeys<typePageItem.ColorEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<NSPanel.ColorEntryType, Dataitem | undefined> | undefined,
     value: boolean | number,
     def: string | number | RGB,
 ): Promise<string> {
@@ -606,10 +606,7 @@ export async function getEntryColor(
  * @returns Resolved display text, or `null` if no meaningful result exists.
  */
 export async function getEntryTextOnOff(
-    i:
-        | ChangeTypeOfKeys<typePageItem.TextEntryType | typePageItem.TextEntryType2, Dataitem | undefined>
-        | undefined
-        | Dataitem,
+    i: ChangeTypeOfKeys<NSPanel.TextEntryType | NSPanel.TextEntryType2, Dataitem | undefined> | undefined | Dataitem,
     on: boolean | number | null,
     useCommon: boolean = false,
 ): Promise<string | null> {
@@ -711,7 +708,7 @@ export async function getEnabledNumber(items: Dataitem | undefined | (Dataitem |
 }
 
 export async function getValueEntryBoolean(
-    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined> | undefined,
 ): Promise<boolean | null> {
     if (!i) {
         return null;
@@ -722,11 +719,11 @@ export async function getValueEntryBoolean(
     }
     return null;
 }
-function isTextSizeEntryType(F: any): F is ChangeTypeOfKeys<typePageItem.TextSizeEntryType, Dataitem | undefined> {
-    return 'textSize' in (F as typePageItem.TextSizeEntryType);
+function isTextSizeEntryType(F: any): F is ChangeTypeOfKeys<NSPanel.TextSizeEntryType, Dataitem | undefined> {
+    return 'textSize' in (F as NSPanel.TextSizeEntryType);
 }
 export async function getValueEntryString(
-    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null = null,
 ): Promise<string | null> {
     if (!i || !i.value) {
@@ -885,7 +882,7 @@ export const siPrefixes = [
  * ```
  */
 export async function getValueAutoUnit(
-    i: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null,
     space: number,
     unit: string | null = null,
@@ -983,7 +980,7 @@ export function getTranslation(library: Library, key1: any, key2?: string): stri
     return result;
 }
 
-export const getRGBfromRGBThree = async (item: typePageItem.PageItemLightDataItems['data']): Promise<RGB | null> => {
+export const getRGBfromRGBThree = async (item: NSPanel.PageItemLightDataItems['data']): Promise<RGB | null> => {
     if (!item) {
         return Color.White;
     }
@@ -995,14 +992,14 @@ export const getRGBfromRGBThree = async (item: typePageItem.PageItemLightDataIte
     }
     return { r: red, g: green, b: blue };
 };
-export const getDecfromRGBThree = async (item: typePageItem.PageItemLightDataItems['data']): Promise<string | null> => {
+export const getDecfromRGBThree = async (item: NSPanel.PageItemLightDataItems['data']): Promise<string | null> => {
     const rgb = await getRGBfromRGBThree(item);
     if (!rgb) {
         return null;
     }
     return String(Color.rgb_dec565(rgb));
 };
-export const setRGBThreefromRGB = async (item: typePageItem.PageItemLightDataItems['data'], c: RGB): Promise<void> => {
+export const setRGBThreefromRGB = async (item: NSPanel.PageItemLightDataItems['data'], c: RGB): Promise<void> => {
     if (!item || !item.Red || !item.Green || !item.Blue) {
         return;
     }
@@ -1011,7 +1008,7 @@ export const setRGBThreefromRGB = async (item: typePageItem.PageItemLightDataIte
     await item.Blue.setState(c.b);
 };
 
-export const getDecfromHue = async (item: typePageItem.PageItemLightDataItems['data']): Promise<string | null> => {
+export const getDecfromHue = async (item: NSPanel.PageItemLightDataItems['data']): Promise<string | null> => {
     if (!item || !item.hue) {
         return null;
     }
@@ -1027,7 +1024,7 @@ export const getDecfromHue = async (item: typePageItem.PageItemLightDataItems['d
     return String(Color.rgb_dec565({ r: arr[0], g: arr[1], b: arr[2] }));
 };
 
-export const setHuefromRGB = async (item: typePageItem.PageItemLightDataItems['data'], c: RGB): Promise<void> => {
+export const setHuefromRGB = async (item: NSPanel.PageItemLightDataItems['data'], c: RGB): Promise<void> => {
     if (!item || !item.hue || !Color.isRGB(c)) {
         return;
     }
@@ -1087,10 +1084,10 @@ export function formatInSelText(text: string | string[] | null | undefined): str
  * Create a part of the panel messsage for bottom icons. if event === '' u get '~~~~~~'.
  * default for event: input_sel
  *
- * @param msg {Partial<typePageItem.MessageItem>}
+ * @param msg {Partial<NSPanel.MessageItem>}
  * @returns string
  */
-export function getItemMesssage(msg: Partial<typePageItem.MessageItem> | undefined): string {
+export function getItemMesssage(msg: Partial<NSPanel.MessageItem> | undefined): string {
     if (!msg || !msg.intNameEntity || !msg.type) {
         return '~~~~~';
     }

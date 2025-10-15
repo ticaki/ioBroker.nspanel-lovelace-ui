@@ -2,8 +2,8 @@ import { Color, type RGB } from '../const/Color';
 import { BaseClass } from './library';
 import type { StatesControler } from './states-controller';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
-
-import * as NSPanel from '../types/types';
+import type { NSPanel } from '../types/NSPanel';
+import { isIconColorScaleElement } from '../types/types';
 
 export class Dataitem extends BaseClass {
     #compiledReadFn?: (
@@ -239,7 +239,7 @@ export class Dataitem extends BaseClass {
     async getIconScale(): Promise<NSPanel.IconScaleElement | null> {
         const value = await this.getObject();
         if (value) {
-            if (NSPanel.isIconColorScaleElement(value)) {
+            if (isIconColorScaleElement(value)) {
                 return value;
             }
         }

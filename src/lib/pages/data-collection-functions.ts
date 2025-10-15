@@ -2,12 +2,12 @@ import type { AdapterClassDefinition } from '../controller/library';
 import { Color } from '../const/Color';
 import { getStringFromStringOrTranslated } from '../const/tools';
 import { exhaustiveCheck, type CardRole, type PageMenuConfig } from '../types/pages';
-import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import type { PageMedia } from './pageMedia';
 import type { PageEntities } from './pageEntities';
 import type { PageSchedule } from './pageSchedule';
 import type { PageGrid } from './pageGrid';
 import type { PageMenu } from './pageMenu';
+import type { NSPanel } from '../types/NSPanel';
 
 /**
  * Handles the role of a card and returns the corresponding page item data options.
@@ -42,7 +42,7 @@ export async function handleCardRole(
     cardRole: CardRole | undefined,
     page?: PageEntities | PageGrid | PageSchedule | PageMenu,
     _options?: PageMenuConfig['options'],
-): Promise<PageItemDataItemsOptions[] | null> {
+): Promise<NSPanel.PageItemDataItemsOptions[] | null> {
     if (!cardRole) {
         return null;
     }
@@ -85,7 +85,7 @@ export async function handleCardRole(
                     continue;
                 }
 
-                const pi: PageItemDataItemsOptions = {
+                const pi: NSPanel.PageItemDataItemsOptions = {
                     role: '',
                     type: 'text',
                     dpInit: '',
@@ -146,7 +146,7 @@ export async function handleCardRole(
                     const dp = page.items.data.list.options.dp;
                     const result = [];
                     for (const a in value) {
-                        const pi: PageItemDataItemsOptions = {
+                        const pi: NSPanel.PageItemDataItemsOptions = {
                             role: '',
                             type: 'text',
                             dpInit: '',
@@ -198,7 +198,7 @@ export async function handleCardRole(
             }
             break;
         case 'SonosSpeaker': {
-            let result: PageItemDataItemsOptions[] | null = null;
+            let result: NSPanel.PageItemDataItemsOptions[] | null = null;
             const _tempArr = _options?.cardRoleList;
             //const ident = _options?.indentifier ?? '';
             if (!((!_tempArr || Array.isArray(_tempArr)) && page && page.directParentPage)) {

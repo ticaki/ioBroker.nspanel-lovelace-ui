@@ -2719,7 +2719,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         switch (role) {
           /*case 'spotify-tracklist': {
               if (valueList) {
-                  const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
+                  const val = (await valueList.getObject()) as NSPanel.spotifyPlaylist | null;
                   if (val) {
                       states = {};
                       for (let a = 0; a < val.length; a++) {

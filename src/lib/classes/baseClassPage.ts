@@ -1,12 +1,12 @@
 import type { PageInterface } from './PageInterface';
 import type { PageItem } from '../pages/pageItem';
-import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import type { Panel } from '../controller/panel';
 import { BaseClass } from '../controller/library';
 import { genericStateObjects } from '../const/definition';
 import type { Controller } from '../controller/controller';
 import type { IClientPublishOptions } from 'mqtt';
 import type { AlwaysOnMode, nsPanelState } from '../types/types';
+import type { NSPanel } from '../types/NSPanel';
 
 /**
  * Basisklasse für alles das auf Statestriggern soll - also jede card / popup
@@ -271,12 +271,12 @@ export class BaseTriggeredPage extends BaseClass {
     }
 }
 export class BaseClassPage extends BaseTriggeredPage {
-    pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
+    pageItemConfig: (NSPanel.PageItemDataItemsOptions | undefined)[] | undefined;
     pageItems: (PageItem | undefined)[] | undefined;
     constructor(
         card: PageInterface,
         alwaysOn: AlwaysOnMode = 'none',
-        pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined,
+        pageItemsConfig: (NSPanel.PageItemDataItemsOptions | undefined)[] | undefined,
     ) {
         super(card, alwaysOn);
         this.pageItemConfig = pageItemsConfig;

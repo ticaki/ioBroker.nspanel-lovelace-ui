@@ -1,3 +1,4 @@
+import type { NSPanel } from '../types/NSPanel';
 import * as types from '../types/types';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
@@ -1826,7 +1827,7 @@ export const tasmotaOtaUrl = 'http://ota.tasmota.com/tasmota32/release/';
 export const ScreenSaverConst: Record<
     types.ScreensaverModeType,
     Record<
-        types.ScreenSaverPlaces,
+        NSPanel.ScreenSaverPlaces,
         {
             maxEntries: Pick<Record<types.NSpanelModel, number>, 'eu'> &
                 Partial<Omit<Record<types.NSpanelModel, number>, 'eu'>>;

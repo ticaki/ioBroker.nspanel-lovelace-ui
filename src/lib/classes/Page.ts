@@ -3,11 +3,11 @@ import { BaseClassPage } from './baseClassPage';
 import * as types from '../types/types';
 import { PageItem } from '../pages/pageItem';
 import { deepAssign, getPayload, getPayloadRemoveTilde, getRegExp } from '../const/tools';
-import type { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 import { pageItemTemplates } from '../templates/templateArray';
 import type { PageInterface, PageItemInterface } from './PageInterface';
 import { Icons } from '../const/icon_mapping';
 import { Color, type RGB } from '../const/Color';
+import type { NSPanel } from '../types/NSPanel';
 
 //interface Page extends BaseClass | PageConfig..
 export type PageConfigAll = pages.PageBase;
@@ -117,9 +117,9 @@ export class Page extends BaseClassPage {
     }
 
     async initPageItems(
-        item: PageItemDataItemsOptions | undefined,
+        item: NSPanel.PageItemDataItemsOptions | undefined,
         overrideDpInit: string | RegExp = '',
-    ): Promise<PageItemDataItemsOptions | undefined> {
+    ): Promise<NSPanel.PageItemDataItemsOptions | undefined> {
         let options = item;
         if (options === undefined) {
             return undefined;
@@ -144,12 +144,12 @@ export class Page extends BaseClassPage {
     }
 
     async getItemFromTemplate(
-        options: PageItemDataItemsOptions,
+        options: NSPanel.PageItemDataItemsOptions,
         subtemplate: types.TemplateIdent = '',
         loop: number = 0,
-    ): Promise<PageItemDataItemsOptions | undefined> {
+    ): Promise<NSPanel.PageItemDataItemsOptions | undefined> {
         if ('template' in options && options.template) {
-            const template: PageItemOptionsTemplate | undefined = subtemplate
+            const template: NSPanel.PageItemOptionsTemplate | undefined = subtemplate
                 ? pageItemTemplates[subtemplate]
                 : pageItemTemplates[options.template];
             const name = options.template;
@@ -170,15 +170,14 @@ export class Page extends BaseClassPage {
                 return undefined;
             }
 
-            const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
+            const newTemplate = structuredClone(template) as Partial<NSPanel.PageItemOptionsTemplate>;
             delete newTemplate.adapter;
             if (
                 options.type &&
                 options.type !== template.type &&
                 !(options.type == 'button' && template.type == 'text')
             ) {
-                // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                this.log.error(`Type: ${String(options.type)} is not equal with ${template.type}`);
+                this.log.error(`Type: ${String(options.type as string)} is not equal with ${template.type}`);
                 return undefined;
             }
             const colorTrue = (options.color || {}).true;
@@ -247,7 +246,6 @@ export class Page extends BaseClassPage {
             case 'cardGrid2':
             case 'cardGrid3':
             case 'cardMedia':
-            case 'cardUnlock':
             case 'cardQR':
             case 'cardAlarm':
             case 'cardPower':
@@ -285,7 +283,10 @@ export class Page extends BaseClassPage {
     }
 
     async createPageItems(
-        pageItemsConfig: PageItemDataItemsOptions | (PageItemDataItemsOptions | undefined)[] | undefined,
+        pageItemsConfig:
+            | NSPanel.PageItemDataItemsOptions
+            | (NSPanel.PageItemDataItemsOptions | undefined)[]
+            | undefined,
         ident: string = '',
     ): Promise<(PageItem | undefined)[] | undefined> {
         const result = [];

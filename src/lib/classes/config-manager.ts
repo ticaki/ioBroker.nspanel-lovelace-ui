@@ -9,7 +9,7 @@ import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import * as pages from '../types/pages';
 import { exhaustiveCheck } from '../types/pages';
-import type * as typePageItem from '../types/type-pageItem';
+import type { NSPanel } from '../types/NSPanel';
 import * as Types from '../types/types';
 import { BaseClass } from '../controller/library';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
@@ -1103,7 +1103,7 @@ export class ConfigManager extends BaseClass {
                 }
             }
 
-            const tempItem: typePageItem.PageItemDataItemsOptions = {
+            const tempItem: NSPanel.PageItemDataItemsOptions = {
                 role: 'button',
                 type: 'button',
                 dpInit: '',
@@ -1551,7 +1551,7 @@ export class ConfigManager extends BaseClass {
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
-    ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
+    ): Promise<NSPanel.PageItemDataItemsOptions | undefined> {
         if (this.isNativePageItem(item)) {
             if (!isPageItemDataItemsOptions(item.native)) {
                 throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
@@ -1566,14 +1566,14 @@ export class ConfigManager extends BaseClass {
                     ...item.native.data,
                     setNavi: { type: 'const', constVal: item.targetPage },
                 },
-            } as typePageItem.PageItemDataItemsOptions;
+            } as NSPanel.PageItemDataItemsOptions;
         }
 
         if (!pages.isCardMenuRole(page.type) || !item.navigate || !item.targetPage) {
             this.log.warn(`Page type ${page.type} not supported for navigation item!`);
             return undefined;
         }
-        let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
+        let itemConfig: NSPanel.PageItemDataItemsOptions | undefined = undefined;
 
         const obj =
             'id' in item && item.id && !item.id.endsWith('.')
@@ -1594,7 +1594,7 @@ export class ConfigManager extends BaseClass {
         const getButtonsTextTrue = async (
             item: ScriptConfig.PageBaseItem,
             def1: string,
-        ): Promise<Types.DataItemsOptions> => {
+        ): Promise<NSPanel.DataItemsOptions> => {
             return item.buttonText
                 ? await this.getFieldAsDataItemConfig(item.buttonText, true)
                 : item.id && (await this.existsState(`${item.id}.BUTTONTEXT`))
@@ -1605,7 +1605,7 @@ export class ConfigManager extends BaseClass {
         const getButtonsTextFalse = async (
             item: ScriptConfig.PageBaseItem,
             def1: string,
-        ): Promise<Types.DataItemsOptions> => {
+        ): Promise<NSPanel.DataItemsOptions> => {
             return item.buttonTextOff
                 ? await this.getFieldAsDataItemConfig(item.buttonTextOff, true)
                 : item.id && (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
@@ -1627,10 +1627,10 @@ export class ConfigManager extends BaseClass {
         };
 
         const iconTextDefaults: {
-            unit?: Types.DataItemsOptions | null | undefined;
-            textSize?: Types.DataItemsOptions | null | undefined;
-            prefix?: Types.DataItemsOptions | null | undefined;
-            suffix?: Types.DataItemsOptions | null | undefined;
+            unit?: NSPanel.DataItemsOptions | null | undefined;
+            textSize?: NSPanel.DataItemsOptions | null | undefined;
+            prefix?: NSPanel.DataItemsOptions | null | undefined;
+            suffix?: NSPanel.DataItemsOptions | null | undefined;
         } = {
             unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
             textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
@@ -1719,7 +1719,7 @@ export class ConfigManager extends BaseClass {
                 }
                 icon = item.icon || icon || 'power';
                 icon2 = item.icon2 || icon2 || 'power-standby';
-                const tempItem: typePageItem.PageItemDataItemsOptions = {
+                const tempItem: NSPanel.PageItemDataItemsOptions = {
                     type: 'button',
                     role: 'button',
                     data: {
@@ -1764,7 +1764,7 @@ export class ConfigManager extends BaseClass {
             case 'rgb':
             case 'rgbSingle':
             case 'ct': {
-                const tempItem: typePageItem.PageItemDataItemsOptions = {
+                const tempItem: NSPanel.PageItemDataItemsOptions = {
                     type: 'button',
                     role: role === 'rgb' ? 'rgbThree' : role,
                     data: {
@@ -1803,7 +1803,7 @@ export class ConfigManager extends BaseClass {
             }
             case undefined:
             case 'button': {
-                const tempItem: typePageItem.PageItemDataItemsOptions = {
+                const tempItem: NSPanel.PageItemDataItemsOptions = {
                     type: 'button',
                     role: '',
                     data: {
@@ -2610,11 +2610,11 @@ export class ConfigManager extends BaseClass {
         page: ScriptConfig.PageType,
         messages: string[] = [],
     ): Promise<{
-        itemConfig: typePageItem.PageItemDataItemsOptions | undefined;
+        itemConfig: NSPanel.PageItemDataItemsOptions | undefined;
         messages: string[];
         pageConfig?: ScriptConfig.PageType;
     }> {
-        let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
+        let itemConfig: NSPanel.PageItemDataItemsOptions | undefined = undefined;
         if (item.navigate) {
             if (!item.targetPage || typeof item.targetPage !== 'string') {
                 throw new Error(`TargetPage missing in ${(item && 'id' in item && item.id) || 'no id'}!`);
@@ -2688,7 +2688,7 @@ export class ConfigManager extends BaseClass {
                 const getButtonsTextTrue = async (
                     item: ScriptConfig.PageBaseItem,
                     def1: string,
-                ): Promise<Types.DataItemsOptions> => {
+                ): Promise<NSPanel.DataItemsOptions> => {
                     return item.buttonText
                         ? await this.getFieldAsDataItemConfig(item.buttonText, true)
                         : item.id && (await this.existsState(`${item.id}.BUTTONTEXT`))
@@ -2699,7 +2699,7 @@ export class ConfigManager extends BaseClass {
                 const getButtonsTextFalse = async (
                     item: ScriptConfig.PageBaseItem,
                     def1: string,
-                ): Promise<Types.DataItemsOptions> => {
+                ): Promise<NSPanel.DataItemsOptions> => {
                     return item.buttonTextOff
                         ? await this.getFieldAsDataItemConfig(item.buttonTextOff, true)
                         : item.id && (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
@@ -2724,10 +2724,10 @@ export class ConfigManager extends BaseClass {
                 item.icon2 = item.icon2 || item.icon;
 
                 const iconTextDefaults: {
-                    unit?: Types.DataItemsOptions | null | undefined;
-                    textSize?: Types.DataItemsOptions | null | undefined;
-                    prefix?: Types.DataItemsOptions | null | undefined;
-                    suffix?: Types.DataItemsOptions | null | undefined;
+                    unit?: NSPanel.DataItemsOptions | null | undefined;
+                    textSize?: NSPanel.DataItemsOptions | null | undefined;
+                    prefix?: NSPanel.DataItemsOptions | null | undefined;
+                    suffix?: NSPanel.DataItemsOptions | null | undefined;
                 } = {
                     unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
                     textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
@@ -2764,7 +2764,7 @@ export class ConfigManager extends BaseClass {
                         }
                         icon = item.icon || icon || 'power';
                         icon2 = item.icon2 || icon2 || 'power-standby';
-                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                        const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'switch',
                             role: '',
                             data: {
@@ -2795,7 +2795,7 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'light': {
-                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                        const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'light',
                             role: 'light',
                             data: {
@@ -2834,7 +2834,7 @@ export class ConfigManager extends BaseClass {
                     }
 
                     case 'dimmer': {
-                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                        const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'light',
                             role: 'dimmer',
                             data: {
@@ -2909,7 +2909,7 @@ export class ConfigManager extends BaseClass {
                                 valueList2 = item.modeList ? { type: 'const', constVal: item.modeList } : undefined;
                             }
                         }
-                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                        const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'light',
                             role:
                                 role === 'hue'
@@ -3020,7 +3020,7 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'button': {
-                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                        const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'button',
                             role: 'button',
                             data: {
@@ -3062,7 +3062,7 @@ export class ConfigManager extends BaseClass {
                             foundedStates[role].TILT_CLOSE ||
                             foundedStates[role].TILT_STOP
                         ) {
-                            const tempItem: typePageItem.PageItemDataItemsOptions = {
+                            const tempItem: NSPanel.PageItemDataItemsOptions = {
                                 type: 'shutter',
                                 role: 'blind',
                                 data: {
@@ -3155,7 +3155,7 @@ export class ConfigManager extends BaseClass {
                                     ? item.shutterIcons[2].id
                                     : undefined;
                             const S4 = R4 && (await this.existsAndWriteableState(R4)) ? R4 : undefined;
-                            const tempItem: typePageItem.PageItemDataItemsOptions = {
+                            const tempItem: NSPanel.PageItemDataItemsOptions = {
                                 type: 'shutter2',
                                 role: 'blind',
                                 data: {
@@ -3438,7 +3438,7 @@ export class ConfigManager extends BaseClass {
                                 break;
                             }
                         }
-                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                        const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'text',
                             role: adapterRole,
                             template: '',
@@ -3534,7 +3534,7 @@ export class ConfigManager extends BaseClass {
                         }
 
                         const icontemp = item.icon2 || item.icon;
-                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                        const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'text',
                             role: adapterRole,
                             template: '',
@@ -4123,7 +4123,7 @@ export class ConfigManager extends BaseClass {
                         let defaultColorOff = Color.off;
                         let defaultIconOn = 'pause';
                         let defaultIconOff = 'play';
-                        let nav: Types.DataItemsOptions | undefined = undefined;
+                        let nav: NSPanel.DataItemsOptions | undefined = undefined;
                         if (!(await this.existsState(id))) {
                             throw new Error(`DP: ${item.id} - media STATE ${id} not found!`);
                         }
@@ -4239,13 +4239,13 @@ export class ConfigManager extends BaseClass {
         config: ScriptConfig.Config,
         messages: string[] = [],
     ): Promise<{ configArray: pages.PageBase; messages: string[] }> {
-        let pageItems: typePageItem.PageItemDataItemsOptions[] = [];
+        let pageItems: NSPanel.PageItemDataItemsOptions[] = [];
 
         const loadElementSection = async (
             items: ScriptConfig.ScreenSaverElement[] | undefined,
             mode: 'favorit' | 'alternate' | 'bottom',
             errorLabel: string,
-        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+        ): Promise<NSPanel.PageItemDataItemsOptions[]> => {
             if (!items || items.length === 0) {
                 return [];
             }
@@ -4258,13 +4258,13 @@ export class ConfigManager extends BaseClass {
                 }),
             );
             const res = await Promise.all(tasks);
-            return res.filter((r): r is typePageItem.PageItemDataItemsOptions => !!r);
+            return res.filter((r): r is NSPanel.PageItemDataItemsOptions => !!r);
         };
         const loadNotifySection = async (
             items: ScriptConfig.ScreenSaverNotifyElement[] | undefined,
             mode: 'notify',
             errorLabel: string,
-        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+        ): Promise<NSPanel.PageItemDataItemsOptions[]> => {
             if (!items || items.length === 0) {
                 return [];
             }
@@ -4277,20 +4277,20 @@ export class ConfigManager extends BaseClass {
                 }),
             );
             const res = await Promise.all(tasks);
-            return res.filter((r): r is typePageItem.PageItemDataItemsOptions => !!r);
+            return res.filter((r): r is NSPanel.PageItemDataItemsOptions => !!r);
         };
 
         const loadElementSectionUndef = async (
             items: ScriptConfig.ScreenSaverElementWithUndefined[] | undefined,
             mode: 'left' | 'indicator',
             errorLabel: string,
-        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+        ): Promise<NSPanel.PageItemDataItemsOptions[]> => {
             if (!items || items.length === 0) {
                 return [];
             }
             const tasks = items.map(item => {
                 if (!item) {
-                    return Promise.resolve<typePageItem.PageItemDataItemsOptions | null>(null);
+                    return Promise.resolve<NSPanel.PageItemDataItemsOptions | null>(null);
                 }
                 return this.getEntityData(item, mode, config).catch(err => {
                     const msg = `${errorLabel} - ${String(err)}`;
@@ -4300,13 +4300,13 @@ export class ConfigManager extends BaseClass {
                 });
             });
             const res = await Promise.all(tasks);
-            return res.filter((r): r is typePageItem.PageItemDataItemsOptions => !!r);
+            return res.filter((r): r is NSPanel.PageItemDataItemsOptions => !!r);
         };
 
         const loadMrIcon = async (
             entity: ScriptConfig.ScreenSaverMRElement | undefined,
             errorLabel: string,
-        ): Promise<typePageItem.PageItemDataItemsOptions[]> => {
+        ): Promise<NSPanel.PageItemDataItemsOptions[]> => {
             if (!entity) {
                 return [];
             }
@@ -4335,7 +4335,7 @@ export class ConfigManager extends BaseClass {
             notify: config.notifyScreensaverEntity?.length || 0,
         };
 
-        const blocks = await Promise.all<typePageItem.PageItemDataItemsOptions[]>([
+        const blocks = await Promise.all<NSPanel.PageItemDataItemsOptions[]>([
             loadElementSection(config.favoritScreensaverEntity, 'favorit', 'favoritScreensaverEntity'),
             loadElementSection(config.alternateScreensaverEntity, 'alternate', 'alternateScreensaverEntity'),
             loadElementSectionUndef(config.leftScreensaverEntity, 'left', 'leftScreensaverEntity'),
@@ -4954,19 +4954,19 @@ export class ConfigManager extends BaseClass {
     }
     async getMrEntityData(
         entity: ScriptConfig.ScreenSaverMRElement,
-        mode: Types.ScreenSaverPlaces,
-    ): Promise<typePageItem.PageItemDataItemsOptions> {
-        const result: Partial<typePageItem.PageItemDataItemsOptions> = {
+        mode: NSPanel.ScreenSaverPlaces,
+    ): Promise<NSPanel.PageItemDataItemsOptions> {
+        const result: Partial<NSPanel.PageItemDataItemsOptions> = {
             modeScr: mode,
             type: 'text',
             data: { entity1: {} },
         };
         if (entity.type === 'native') {
-            const temp = JSON.parse(JSON.stringify(entity.native)) as typePageItem.PageItemDataItemsOptions;
+            const temp = JSON.parse(JSON.stringify(entity.native)) as NSPanel.PageItemDataItemsOptions;
             temp.type = undefined;
             return temp;
         } else if (entity.type === 'template') {
-            const temp = JSON.parse(JSON.stringify(entity)) as unknown as typePageItem.PageItemDataItemsOptions;
+            const temp = JSON.parse(JSON.stringify(entity)) as unknown as NSPanel.PageItemDataItemsOptions;
             temp.type = undefined;
             return temp;
         }
@@ -5043,19 +5043,19 @@ export class ConfigManager extends BaseClass {
 
     async getNotifyEntityData(
         entity: ScriptConfig.ScreenSaverNotifyElement,
-        mode: Types.ScreenSaverPlaces,
-    ): Promise<typePageItem.PageItemDataItemsOptions> {
-        const result: typePageItem.PageItemDataItemsOptions = {
+        mode: NSPanel.ScreenSaverPlaces,
+    ): Promise<NSPanel.PageItemDataItemsOptions> {
+        const result: NSPanel.PageItemDataItemsOptions = {
             modeScr: mode,
             role: '',
             type: 'text',
             data: { entity1: {} },
         };
         if (entity.type === 'native') {
-            const temp = structuredClone(entity.native) as typePageItem.PageItemDataItemsOptions;
+            const temp = structuredClone(entity.native) as NSPanel.PageItemDataItemsOptions;
             return temp;
         } else if (entity.type === 'template') {
-            const temp = structuredClone(entity) as unknown as typePageItem.PageItemDataItemsOptions;
+            const temp = structuredClone(entity) as unknown as NSPanel.PageItemDataItemsOptions;
             delete temp.type;
             return temp;
         }
@@ -5148,22 +5148,22 @@ export class ConfigManager extends BaseClass {
 
     async getEntityData(
         entity: ScriptConfig.ScreenSaverElement,
-        mode: Types.ScreenSaverPlaces,
+        mode: NSPanel.ScreenSaverPlaces,
         defaultColors: {
             defaultOffColor: ScriptConfig.RGB;
             defaultOnColor: ScriptConfig.RGB;
         },
-    ): Promise<typePageItem.PageItemDataItemsOptions> {
-        const result: typePageItem.PageItemDataItemsOptions = {
+    ): Promise<NSPanel.PageItemDataItemsOptions> {
+        const result: NSPanel.PageItemDataItemsOptions = {
             modeScr: mode,
             type: 'text',
             data: { entity1: {} },
         };
         if (entity.type === 'native') {
-            const temp = structuredClone(entity.native) as typePageItem.PageItemDataItemsOptions;
+            const temp = structuredClone(entity.native) as NSPanel.PageItemDataItemsOptions;
             return temp;
         } else if (entity.type === 'template') {
-            const temp = structuredClone(entity) as unknown as typePageItem.PageItemDataItemsOptions;
+            const temp = structuredClone(entity) as unknown as NSPanel.PageItemDataItemsOptions;
 
             if ('enabled' in temp) {
                 if (Array.isArray(temp.enabled)) {
@@ -5277,7 +5277,7 @@ export class ConfigManager extends BaseClass {
             };
         }
 
-        let color: Types.DataItemsOptions | undefined = undefined;
+        let color: NSPanel.DataItemsOptions | undefined = undefined;
         if (entity.ScreensaverEntityOnColor) {
             color = await this.getIconColor(entity.ScreensaverEntityOnColor || Color.on);
         } else if (entity.ScreensaverEntityIconColor && !isIconScaleElement(entity.ScreensaverEntityIconColor)) {
@@ -5286,7 +5286,7 @@ export class ConfigManager extends BaseClass {
             color = await this.getIconColor(defaultColors.defaultOnColor || this.colorDefault);
         }
 
-        let colorOff: Types.DataItemsOptions | undefined = undefined;
+        let colorOff: NSPanel.DataItemsOptions | undefined = undefined;
         if (entity.ScreensaverEntityOffColor) {
             colorOff = await this.getIconColor(entity.ScreensaverEntityOffColor);
         } else if (entity.ScreensaverEntityOffColor !== null) {
@@ -5410,7 +5410,7 @@ export class ConfigManager extends BaseClass {
     async getFieldAsDataItemConfig(
         possibleId: string | number | ScriptConfig.RGB | boolean,
         isTrigger: boolean = false,
-    ): Promise<Types.DataItemsOptions> {
+    ): Promise<NSPanel.DataItemsOptions> {
         if (typeof possibleId === 'string') {
             const state =
                 Color.isScriptRGB(possibleId) || possibleId === '' || possibleId.endsWith('.')
@@ -5430,7 +5430,7 @@ export class ConfigManager extends BaseClass {
     async getIconColor(
         item: ScriptConfig.RGB | RGB | ScriptConfig.IconScaleElement | string | undefined,
         def: ScriptConfig.RGB | RGB | string | undefined = undefined,
-    ): Promise<Types.DataItemsOptions | undefined> {
+    ): Promise<NSPanel.DataItemsOptions | undefined> {
         if (isIconScaleElement(item)) {
             //later
         } else if (typeof item === 'string' && (await this.existsState(item))) {
@@ -5566,6 +5566,6 @@ export class ConfigManager extends BaseClass {
 function isIconScaleElement(obj: any): obj is ScriptConfig.IconScaleElement {
     return obj && obj.val_min !== undefined && obj.val_max !== undefined;
 }
-function isScreensaverPageItemDataItemsOptions(obj: any): obj is typePageItem.PageItemDataItemsOptions {
+function isScreensaverPageItemDataItemsOptions(obj: any): obj is NSPanel.PageItemDataItemsOptions {
     return obj && obj.modeScr && obj.data;
 }
