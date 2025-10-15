@@ -251,6 +251,7 @@ export class PageItem extends BaseTriggeredPage {
             );
             if (states) {
                 this.tempData = Object.keys(states);
+                this.log.error(`Playlists found: ${this.tempData.length} values: ${JSON.stringify(this.tempData)}`);
             }
         }
     }
@@ -3038,7 +3039,9 @@ export class PageItem extends BaseTriggeredPage {
 
                             const matchedState = source.find(s => s.includes(stateToken));
                             if (!matchedState) {
-                                this.log.warn(`Alexa playlist: no matching state for token "${stateToken}".`);
+                                this.log.warn(
+                                    `Alexa playlist: no matching state for token "${stateToken}" source "${source.join(', ')}".`,
+                                );
                                 continue;
                             }
 
