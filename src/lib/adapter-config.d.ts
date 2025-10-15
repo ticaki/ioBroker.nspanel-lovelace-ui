@@ -36,25 +36,6 @@ declare global {
             panels: {name: string, topic: string, id: string, ip: string, model: string}[];
             pw1: string;
 
-            // PageQR
-            pageQRdata: {
-                pageName: string,
-                headline: string,
-                alwaysOnDisplay: boolean,
-                hiddenByTrigger: boolean,
-                optionalText: string,
-                SSIDURLTEL: string,
-                selType: 0 | 1 | 2 | 3,
-                wlantype?: "nopass" | "WPA" | "WPA2" | "WPA3" | "WEP",
-                qrPass?: number,
-                wlanhidden?: boolean,
-                pwdhidden?: boolean,
-                setState?: string,
-            }[];
-            pageQRpwd1: string;
-            pageQRpwd2: string;
-            pageQRpwd3: string;
-
             // PagePower
             pagePowerdata: {
                 pageName: string,

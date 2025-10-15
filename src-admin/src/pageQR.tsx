@@ -29,7 +29,7 @@ import {
 } from '../../src/lib/types/adminShareConfig';
 import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
 import ConfirmDialog from './components/ConfirmDialog';
-import ObjectIdSelectorPopup from './components/ObjectIdSelectorPopup';
+import ObjectIdSelector from './components/ObjectIdSelector';
 
 interface QRPageState extends ConfigGenericState {
     entries: QREntries;
@@ -63,19 +63,6 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
             pagesRetryCount: 0,
         } as QRPageState;
     }
-
-    private handleObjectIdSelectorOpen = (): void => {
-        this.setState({ objectIdSelectorOpen: true });
-    };
-
-    private handleObjectIdSelectorClose = (): void => {
-        this.setState({ objectIdSelectorOpen: false });
-    };
-
-    private handleObjectIdSelect = (filePath: string): void => {
-        console.log('[QRPage] Selected file:', filePath);
-        // Handle file selection here (e.g., update state or show notification)
-    };
 
     componentWillUnmount(): void {
         if (this.pagesRetryTimeout) {
@@ -788,35 +775,42 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                                                         </Box>
 
                                                         {/* Set State field */}
-                                                        <TextField
-                                                            fullWidth
-                                                            variant="standard"
-                                                            type="text"
-                                                            autoComplete="off"
-                                                            label={this.getText('qr_set_state')}
-                                                            value={ent.setState ?? ''}
-                                                            onChange={e => {
-                                                                const v = e.target.value;
-                                                                const updated = entries.map(it =>
-                                                                    it.uniqueName === sel ? { ...it, setState: v } : it,
-                                                                );
-                                                                this.setState({ entries: updated } as QRPageState);
-                                                                void this.onChange(this.props.attr!, updated);
-                                                            }}
-                                                            InputProps={{
-                                                                sx: { backgroundColor: 'transparent', px: 1 },
-                                                            }}
-                                                            sx={{ mb: 2 }}
-                                                        />
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="primary"
-                                                            size="small"
-                                                            fullWidth
-                                                            onClick={this.handleObjectIdSelectorOpen}
-                                                        >
-                                                            Test ObjectIdSelector
-                                                        </Button>
+                                                        <Box sx={{ mb: 2 }}>
+                                                            <Typography
+                                                                variant="body2"
+                                                                sx={{ mb: 1, color: 'text.secondary' }}
+                                                            >
+                                                                {this.getText('qr_set_state')}
+                                                            </Typography>
+                                                            <ObjectIdSelector
+                                                                value={ent.setState ?? ''}
+                                                                onChange={v => {
+                                                                    const updated = entries.map(it =>
+                                                                        it.uniqueName === sel
+                                                                            ? { ...it, setState: v }
+                                                                            : it,
+                                                                    );
+                                                                    this.setState({ entries: updated } as QRPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                socket={this.props.oContext.socket}
+                                                                themeName={this.props.themeName}
+                                                                themeType={this.props.theme?.palette?.mode || 'light'}
+                                                                theme={this.props.theme}
+                                                                adapterName="nspanel-lovelace-ui"
+                                                                instance={this.props.oContext?.instance || 0}
+                                                                objectIdConfig={{
+                                                                    types: 'state',
+                                                                    filterFunc: (obj: ioBroker.Object) => {
+                                                                        return !!(
+                                                                            obj?.type === 'state' &&
+                                                                            obj.common.role &&
+                                                                            obj.common.role.startsWith('switch')
+                                                                        );
+                                                                    },
+                                                                }}
+                                                            />
+                                                        </Box>
                                                     </Box>
                                                 )}
 
@@ -916,24 +910,6 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                         }}
                     />
                 </Box>
-                {/* ObjectIdSelectorPopup component */}
-                <ObjectIdSelectorPopup
-                    open={!!this.state.objectIdSelectorOpen}
-                    onClose={this.handleObjectIdSelectorClose}
-                    onSelect={this.handleObjectIdSelect}
-                    socket={this.props.oContext.socket}
-                    themeName={this.props.themeName}
-                    themeType={this.props.theme?.palette?.mode || 'light'}
-                    theme={this.props.theme}
-                    adapterName="nspanel-lovelace-ui"
-                    instance={this.props.oContext?.instance || 0}
-                    objectIdConfig={{
-                        types: 'state',
-                        filterFunc: (obj: ioBroker.Object) => {
-                            return !!(obj?.type === 'state' && obj.common.role && obj.common.role.startsWith('switch'));
-                        },
-                    }}
-                />
             </Box>
         );
     }

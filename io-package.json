@@ -164,19 +164,11 @@
     },
     "protectedNative": [
         "mqttPassword",
-        "pageQRssid",
-        "pageQRpwd1",
-        "pageQRpwd2",
-        "pageQRpwd3",
         "tasmotaAdminPassword",
         "pw1"
     ],
     "encryptedNative": [
         "mqttPassword",
-        "pageQRssid",
-        "pageQRpwd1",
-        "pageQRpwd2",
-        "pageQRpwd3",
         "tasmotaAdminPassword",
         "pw1"
     ],
@@ -186,10 +178,6 @@
         "mqttIp": "",
         "mqttPort": 0,
         "panels": [],
-        "pageQRpwd1": "",
-        "pageQRpwd2": "",
-        "pageQRpwd3": "",
-        "pageQRssid": "",
         "pw1": "",
         "tasmotaAdminPassword": "",
         "useBetaTFT": false,
