@@ -18,7 +18,14 @@ import {
 import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
 import { SelectID } from '@iobroker/adapter-react-v5';
-import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import {
+    ConfigGeneric,
+    type ConfigGenericProps,
+    type ConfigGenericState,
+    type ConfigItemPanel,
+    type ConfigItemObjectId,
+    JsonConfigComponent,
+} from '@iobroker/json-config';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import type { ScreensaverEntry, ScreensaverEntries } from '../../src/lib/types/adminShareConfig';
 import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
@@ -33,6 +40,7 @@ interface ScreensaverPageState extends ConfigGenericState {
     objectIdSelectorOpen?: boolean;
     selectedObjectId?: string;
     showSelectDialog?: boolean;
+    selectedObjectIdJson?: string;
 }
 
 interface LocalUIState {
@@ -562,11 +570,17 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         </a>
                     </Box>
 
-                    {/* Inline ObjectId selector with custom filter */}
+                    {/* Test 1: SelectID Dialog with filterFunc as real function */}
                     <Box sx={{ mb: 2 }}>
+                        <Typography
+                            variant="caption"
+                            sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
+                        >
+                            Test 1: SelectID Dialog (filterFunc = real function)
+                        </Typography>
                         <TextField
                             fullWidth
-                            label="Select Object ID"
+                            label="Select Object ID (Dialog)"
                             value={this.state.selectedObjectId || ''}
                             onClick={() => {
                                 this.setState({ showSelectDialog: true });
@@ -602,6 +616,53 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                 themeType={this.props.theme?.palette?.mode || 'light'}
                             />
                         )}
+                    </Box>
+
+                    {/* Test 2: JsonConfigComponent with filterFunc as string */}
+                    <Box sx={{ mb: 2 }}>
+                        <Typography
+                            variant="caption"
+                            sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
+                        >
+                            Test 2: JsonConfigComponent (filterFunc = string compiled with new Function)
+                        </Typography>
+                        <JsonConfigComponent
+                            socket={this.props.oContext.socket}
+                            themeName={this.props.themeName}
+                            themeType={this.props.theme?.palette?.mode || 'light'}
+                            theme={this.props.theme}
+                            schema={(() => {
+                                const objectIdItem: ConfigItemObjectId = {
+                                    type: 'objectId',
+                                    label: 'Select Object (JsonConfig)',
+                                    sm: 12,
+                                    md: 12,
+                                    lg: 12,
+                                    // filterFunc as string - will be compiled with new Function()
+                                    // TypeScript doesn't allow string, but runtime does - cast to any
+                                    filterFunc:
+                                        "return !!(obj?.type === 'state' && obj.common?.role && obj.common.role.startsWith('switch'));" as any,
+                                };
+                                const schema: ConfigItemPanel = {
+                                    type: 'panel',
+                                    label: 'Object Selector',
+                                    items: {
+                                        testObjectId: objectIdItem,
+                                    },
+                                };
+                                return schema;
+                            })()}
+                            data={{ testObjectId: this.state.selectedObjectIdJson || '' }}
+                            onChange={(newData: Record<string, any>) => {
+                                const sel = (newData && (newData as any).testObjectId) || '';
+                                this.setState({ selectedObjectIdJson: sel });
+                            }}
+                            isFloatComma={false}
+                            dateFormat="DD.MM.YYYY"
+                            onError={() => {}}
+                            adapterName="nspanel-lovelace-ui"
+                            instance={Number(this.props.oContext?.instance || 0)}
+                        />
                     </Box>
                 </Box>
                 <ConfirmDialog
