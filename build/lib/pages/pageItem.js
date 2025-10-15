@@ -50,6 +50,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
   tempInterval;
   confirmClick = "lock";
   timeouts = {};
+  // for select - force next read of common
+  updateCommon = { lastRequest: 0, counts: 0 };
   constructor(config, options) {
     super({
       name: config.name,
@@ -1180,11 +1182,24 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           message.speedText = this.library.getTranslation(
             (_C = await tools.getEntryTextOnOff(item.text, value)) != null ? _C : ""
           );
+          let force = false;
+          if (this.updateCommon.counts < 4) {
+            if (Date.now() - this.updateCommon.lastRequest > 5e3) {
+              this.updateCommon.counts = 0;
+            } else {
+              this.updateCommon.counts++;
+            }
+          } else {
+            this.updateCommon.counts = 0;
+            this.updateCommon.lastRequest = Date.now();
+            force = true;
+          }
           const sList = item.entityInSel && await this.getListFromStates(
             item.entityInSel,
             item.valueList,
             entry.role,
-            "valueList2" in item ? item.valueList2 : void 0
+            "valueList2" in item ? item.valueList2 : void 0,
+            force
           );
           if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0 && sList.states !== void 0) {
             if (sList.list.length > 0) {
@@ -2604,7 +2619,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     return false;
   }
-  async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
+  async getListFromStates(entityInSel, valueList, role, valueList2 = void 0, force = false) {
     var _a, _b, _c, _d, _e, _f;
     const list = {};
     if (entityInSel && entityInSel.value) {
@@ -2656,7 +2671,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         this.log.debug(`Alexa Playlist list: finish`);
       } else if (role === "spotify-speaker" || role === "spotify-playlist") {
         if (entityInSel.value.options.dp) {
-          const o = await entityInSel.value.getCommonStates(true);
+          const o = await entityInSel.value.getCommonStates(force);
           const v = await entityInSel.value.getString();
           const al = await (valueList == null ? void 0 : valueList.getObject());
           if (o) {
@@ -2696,7 +2711,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates() || valueList2 != null)) {
+      } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
         let states = null;
         const value = await tools.getValueEntryString(entityInSel);
         switch (role) {
@@ -2735,7 +2750,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             break;
           }
           default: {
-            states = await entityInSel.value.getCommonStates();
+            states = await entityInSel.value.getCommonStates(force);
           }
         }
         if (value !== null && states) {
