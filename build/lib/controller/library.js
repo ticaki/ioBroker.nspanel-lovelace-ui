@@ -218,11 +218,11 @@ class Library extends BaseClass {
       const k = key.split(".");
       if (k && k[k.length - 1].startsWith("_")) {
         result = import_definition.genericStateObjects.customString;
-        result = this.cloneObject(result);
+        result = structuredClone(result);
       } else {
         this.log.debug(`No definition for ${key}!`);
         result = import_definition.genericStateObjects.default;
-        result = this.cloneObject(result);
+        result = structuredClone(result);
         switch (typeof data) {
           case "number":
           case "bigint":
@@ -255,7 +255,7 @@ class Library extends BaseClass {
         }
       }
     } else {
-      result = this.cloneObject(result);
+      result = structuredClone(result);
     }
     return result;
   }
@@ -545,20 +545,6 @@ class Library extends BaseClass {
     for (const d of data) {
       await d.delete();
     }
-  }
-  cloneObject(obj) {
-    if (typeof obj !== "object") {
-      this.log.error(`Error clone object target is type: ${typeof obj}`);
-      return obj;
-    }
-    return JSON.parse(JSON.stringify(obj));
-  }
-  cloneGenericObject(obj) {
-    if (typeof obj !== "object") {
-      this.log.error(`Error clone object target is type: ${typeof obj}`);
-      return obj;
-    }
-    return JSON.parse(JSON.stringify(obj));
   }
   async fileExistAsync(file) {
     if (import_fs.default.existsSync(`./admin/${file}`)) {

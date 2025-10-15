@@ -192,7 +192,7 @@ class PageAlarm extends import_Page.Page {
    * @returns Promise that resolves after the message was sent (or skipped)
    */
   async update() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     if (!this.visibility) {
       return;
     }
@@ -208,22 +208,22 @@ class PageAlarm extends import_Page.Page {
     message.navigation = this.getNavigation();
     if (this.alarmType === "alarm") {
       if (this.status === "armed" || this.status === "triggered") {
-        message.button1 = this.library.getTranslation("disarm");
-        message.status1 = "D1";
-        message.button2 = "";
-        message.status2 = "";
-        message.button3 = "";
-        message.status3 = "";
-        message.button4 = "";
-        message.status4 = "";
+        message.button1 = (_b = data.button5 && await data.button5.getTranslatedString()) != null ? _b : "";
+        message.status1 = message.button1 ? "D1" : "";
+        message.button2 = (_c = data.button6 && await data.button6.getTranslatedString()) != null ? _c : "";
+        message.status2 = message.button2 ? "D2" : "";
+        message.button3 = (_d = data.button7 && await data.button7.getTranslatedString()) != null ? _d : "";
+        message.status3 = message.button3 ? "D3" : "";
+        message.button4 = (_e = data.button8 && await data.button8.getTranslatedString()) != null ? _e : "";
+        message.status4 = message.button4 ? "D4" : "";
       } else {
-        message.button1 = (_b = data.button1 && await data.button1.getTranslatedString()) != null ? _b : "";
+        message.button1 = (_f = data.button1 && await data.button1.getTranslatedString()) != null ? _f : "";
         message.status1 = message.button1 ? "A1" : "";
-        message.button2 = (_c = data.button2 && await data.button2.getTranslatedString()) != null ? _c : "";
+        message.button2 = (_g = data.button2 && await data.button2.getTranslatedString()) != null ? _g : "";
         message.status2 = message.button2 ? "A2" : "";
-        message.button3 = (_d = data.button3 && await data.button3.getTranslatedString()) != null ? _d : "";
+        message.button3 = (_h = data.button3 && await data.button3.getTranslatedString()) != null ? _h : "";
         message.status3 = message.button3 ? "A3" : "";
-        message.button4 = (_e = data.button4 && await data.button4.getTranslatedString()) != null ? _e : "";
+        message.button4 = (_i = data.button4 && await data.button4.getTranslatedString()) != null ? _i : "";
         message.status4 = message.button4 ? "A4" : "";
       }
       if (this.status == "armed") {

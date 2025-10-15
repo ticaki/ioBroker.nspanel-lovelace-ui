@@ -88,6 +88,10 @@ export type UnlockEntry = {
     button2: string;
     button3: string;
     button4: string;
+    button5: string;
+    button6: string;
+    button7: string;
+    button8: string;
     pin: number;
     approved?: boolean;
     setNavi?: string;
@@ -124,6 +128,24 @@ export type ScreensaverEntry = {
 };
 
 export type ScreensaverEntries = ScreensaverEntry[];
+// QR Entry for pageQR configuration
+export type QREntry = {
+    card: Extract<AdminCardTypes, 'cardQR'>;
+    selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
+    headline: string;
+    SSIDURLTEL: string;
+    wlanhidden: boolean;
+    wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+    qrPass?: string;
+    pwdhidden: boolean;
+    setState: string;
+    hidden?: boolean;
+    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+    navigationAssignment?: NavigationAssignmentList;
+    uniqueName: string;
+};
+
+export type QREntries = QREntry[];
 
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {

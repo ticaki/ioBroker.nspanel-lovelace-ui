@@ -2,7 +2,6 @@ import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
-import { PageQR } from '../pages/pageQR';
 import { PagePower } from '../pages/pagePower';
 import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
@@ -726,7 +725,7 @@ export class ConfigManager extends BaseClass {
                             : 'action'
                         : 'none',
                     uniqueID: page.uniqueName || '',
-                    useColor: false,
+
                     hidden: page.hiddenByTrigger || false,
                     config: {
                         card: page.type,
@@ -792,29 +791,7 @@ export class ConfigManager extends BaseClass {
                     this.log.warn(messages[messages.length - 1]);
                     continue;
                 }
-                // PageQR einlesen
-                if (page.type === 'cardQR') {
-                    if (!Array.isArray(this.adapter.config.pageQRdata)) {
-                        messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
-                    if (index === -1) {
-                        messages.push(`No pageQRdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    try {
-                        ({ gridItem, messages } = await PageQR.getQRPageConfig(this, page, index, gridItem, messages));
-                    } catch (error: any) {
-                        messages.push(
-                            `Configuration error in page qr ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
-                        );
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                }
+
                 // PagePower einlesen
                 if (page.type === 'cardPower') {
                     if (!Array.isArray(this.adapter.config.pagePowerdata)) {
@@ -966,7 +943,7 @@ export class ConfigManager extends BaseClass {
             ...gridItem,
             card: 'cardThermo' as const,
             alwaysOn: 'none',
-            useColor: false,
+
             items: undefined,
             config: {
                 card: 'cardThermo',
@@ -4820,7 +4797,7 @@ export class ConfigManager extends BaseClass {
             dpInit: '',
             alwaysOn: 'none',
             uniqueID: 'scr',
-            useColor: false,
+
             config: {
                 card: 'screensaver',
                 mode: 'standard',
@@ -5221,7 +5198,7 @@ export class ConfigManager extends BaseClass {
         if (!result.data.entity1) {
             throw new Error('Invalid data');
         }
-        result.data.entity2 = this.library.cloneGenericObject(result.data.entity1);
+        result.data.entity2 = structuredClone(result.data.entity1);
 
         let obj;
         if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {

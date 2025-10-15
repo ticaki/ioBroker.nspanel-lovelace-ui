@@ -485,6 +485,12 @@ class StatesControler extends import_library.BaseClass {
       const obj = await this.adapter.getForeignObjectAsync(id);
       if (obj && obj.common && obj.common.states) {
         j = obj.common.states;
+        if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common.states) {
+          this.triggerDB[id].common.states = j;
+        }
+        if (this.stateDB[id] !== void 0 && this.stateDB[id].common.states) {
+          this.stateDB[id].common.states = j;
+        }
       }
     } else if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common) {
       j = this.triggerDB[id].common.states;

@@ -4,6 +4,7 @@
 declare global {
     namespace ioBroker {
         interface AdapterConfig {
+            rememberLastSite: boolean
             testCase: boolean;
             mqttServer: boolean;
             mqttPassword: string;
@@ -34,25 +35,6 @@ declare global {
             tasmotaAdminPassword: string;
             panels: {name: string, topic: string, id: string, ip: string, model: string}[];
             pw1: string;
-
-            // PageQR
-            pageQRdata: {
-                pageName: string,
-                headline: string,
-                alwaysOnDisplay: boolean,
-                hiddenByTrigger: boolean,
-                optionalText: string,
-                SSIDURLTEL: string,
-                selType: 0 | 1 | 2 | 3,
-                wlantype?: "nopass" | "WPA" | "WPA2" | "WPA3" | "WEP",
-                qrPass?: number,
-                wlanhidden?: boolean,
-                pwdhidden?: boolean,
-                setState?: string,
-            }[];
-            pageQRpwd1: string;
-            pageQRpwd2: string;
-            pageQRpwd3: string;
 
             // PagePower
             pagePowerdata: {
@@ -259,32 +241,53 @@ declare global {
             }[];
 
             pageUnlockConfig: {
-                card: 'cardAlarm' | 'cardQR'; // Card type - will be extended with more types
+                card: 'cardAlarm'; // Card type - will be extended with more types
                 alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
                 headline: string;
                 button1: string;
                 button2: string;
                 button3: string;
                 button4: string;
+                button5: string;
+                button6: string;
+                button7: string;
+                button8: string;
                 pin: number;
                 approved?: boolean;
                 setNavi?: string;
                 uniqueName: string;
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
-                navigationAssignment?: {
-                    topic: string;
-                    navigation?: {
-                        next?: string;
-                        prev?: string;
-                        home?: string;
-                        parent?: string;
-                    };
-                }[];
+                navigationAssignment?: navigationAssignment[];
+            }[];
+
+            pageQRConfig: {
+                card: 'cardQR';
+                selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
+                headline: string;
+                SSIDURLTEL: string;
+                wlanhidden: boolean;
+                wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+                qrPass?: string;
+                pwdhidden: boolean;
+                setState: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                uniqueName: string;
+                navigationAssignment?: navigationAssignment[]
             }[];
         }
     }
 }
 
+type navigationAssignment = {
+    topic: string;
+    navigation?: {
+        next?: string;
+        prev?: string;
+        home?: string;
+        parent?: string;
+    };
+};
 // this is required so the above AdapterConfig is found by TypeScript / type checking
 export { };

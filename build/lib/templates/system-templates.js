@@ -276,7 +276,6 @@ const AdapterInformation = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///Adapter-Info",
-  useColor: false,
   config: {
     card: "cardEntities",
     data: {
@@ -362,7 +361,6 @@ const ServiceOverview = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///Overview",
-  useColor: false,
   config: {
     card: "cardGrid2",
     data: {
@@ -598,7 +596,6 @@ const ScreensaverOptions = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///ScreensaverOptions",
-  useColor: false,
   config: {
     card: "cardGrid3",
     scrollType: "page",
@@ -667,7 +664,6 @@ const ScreensaverBrightness = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///ScreensaverBrightness",
-  useColor: false,
   config: {
     card: "cardEntities",
     scrollType: "page",
@@ -847,7 +843,6 @@ const ScreensaverLayout = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///ScreensaverLayout",
-  useColor: false,
   config: {
     card: "cardEntities",
     scrollType: "page",
@@ -922,7 +917,6 @@ const RelaisOption = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///RelaisOption",
-  useColor: false,
   config: {
     card: "cardEntities",
     data: {
@@ -1000,7 +994,6 @@ const DeviceOption = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///DeviceOption",
-  useColor: false,
   config: {
     card: "cardEntities",
     data: {
@@ -1157,7 +1150,6 @@ const NetworkOption = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///NetworkOption",
-  useColor: false,
   config: {
     card: "cardEntities",
     data: {
@@ -1519,7 +1511,6 @@ const SystemOption = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///SystemOption",
-  useColor: false,
   config: {
     card: "cardEntities",
     data: {

@@ -75,6 +75,9 @@ class Panel extends import_library.BaseClass {
   data = {};
   blockStartup = null;
   _isOnline = false;
+  blockTouchEventsForMs = 400;
+  // ms
+  lastSendTypeDate = 0;
   options;
   flashing = false;
   screenSaver;
@@ -349,9 +352,7 @@ class Panel extends import_library.BaseClass {
     await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
     this.log.info(`Setting panel to offline until first message!`);
     this.isOnline = false;
-    const channelObj = this.library.cloneObject(
-      definition.genericStateObjects.panel.panels._channel
-    );
+    const channelObj = structuredClone(definition.genericStateObjects.panel.panels._channel);
     channelObj.common.name = this.friendlyName;
     channelObj.native = {
       topic: this.topic,
@@ -1293,7 +1294,7 @@ class Panel extends import_library.BaseClass {
         await this.writeInfo();
         await this.adapter.delay(100);
         this.sendDimmode();
-        this.navigation.resetPosition();
+        this.navigation.resetPosition(true);
         const start = this.navigation.getCurrentMainPage();
         if (start === void 0) {
           this.log.error("No start page defined!");
@@ -1390,6 +1391,12 @@ class Panel extends import_library.BaseClass {
             break;
           }
           if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
+            if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+              this.log.debug(
+                `Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`
+              );
+              break;
+            }
             this.navigation.resetPosition();
             await this.navigation.setCurrentPage();
             break;
@@ -1397,6 +1404,10 @@ class Panel extends import_library.BaseClass {
         } else if (event.action === "bExit" && event.id !== "popupNotify") {
           await this.setActivePage(true);
         } else {
+          if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+            this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
+            break;
+          }
           if (event.action === "button" && ["bNext", "bPrev", "bUp", "bHome", "bSubNext", "bSubPrev"].indexOf(event.id) != -1) {
             if (["bPrev", "bUp", "bSubPrev"].indexOf(event.id) != -1) {
               this.getActivePage().goLeft();
@@ -2032,7 +2043,8 @@ ${this.info.tasmota.onlineVersion}`;
    */
   processUnlockPages(options) {
     var _a, _b;
-    const unlocks = this.adapter.config.pageUnlockConfig || [];
+    let unlocks = this.adapter.config.pageUnlockConfig || [];
+    unlocks = unlocks.concat(this.adapter.config.pageQRConfig || []);
     for (const unlock of unlocks) {
       if (!unlock.navigationAssignment) {
         continue;
@@ -2069,6 +2081,10 @@ ${this.info.tasmota.onlineVersion}`;
                 button2: unlock.button2 ? { type: "const", constVal: unlock.button2 } : void 0,
                 button3: unlock.button3 ? { type: "const", constVal: unlock.button3 } : void 0,
                 button4: unlock.button4 ? { type: "const", constVal: unlock.button4 } : void 0,
+                button5: unlock.button1 ? { type: "const", constVal: unlock.button5 } : void 0,
+                button6: unlock.button2 ? { type: "const", constVal: unlock.button6 } : void 0,
+                button7: unlock.button3 ? { type: "const", constVal: unlock.button7 } : void 0,
+                button8: unlock.button4 ? { type: "const", constVal: unlock.button8 } : void 0,
                 pin: unlock.pin != null ? { type: "const", constVal: String(unlock.pin) } : void 0,
                 approved: { type: "const", constVal: !!unlock.approved },
                 setNavi: unlock.setNavi ? { type: "const", constVal: unlock.setNavi } : void 0
@@ -2079,23 +2095,161 @@ ${this.info.tasmota.onlineVersion}`;
           break;
         }
         case "cardQR": {
+          const qrIndex = this.adapter.config.pageQRConfig.findIndex(
+            (qr) => qr.uniqueName === unlock.uniqueName
+          );
+          if (qrIndex === -1) {
+            this.log.warn(`QR config not found for page '${unlock.uniqueName}', skipping!`);
+            continue;
+          }
+          const qrConfig = this.adapter.config.pageQRConfig[qrIndex];
+          let text1 = "", text = "", icon1 = "", icon2 = "";
+          switch (qrConfig.selType) {
+            case 0:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "";
+              break;
+            case 1:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "SSID";
+              icon1 = "wifi";
+              icon2 = "key-wireless";
+              break;
+            case 2:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "URL / Website";
+              icon1 = "web";
+              icon2 = "";
+              break;
+            case 3:
+              text1 = qrConfig.SSIDURLTEL;
+              text = "Telephone";
+              icon1 = "phone";
+              icon2 = "";
+              break;
+            default:
+              break;
+          }
           newPage = {
-            uniqueID: unlock.uniqueName,
-            hidden: !!unlock.hidden,
-            alwaysOn: unlock.alwaysOn || "none",
+            uniqueID: qrConfig.uniqueName,
+            hidden: !!qrConfig.hidden,
+            alwaysOn: qrConfig.alwaysOn ? "always" : "none",
             template: void 0,
             dpInit: "",
             config: {
               card: "cardQR",
-              index: 0,
+              index: qrIndex,
               data: {
-                // TODO: Add QR-specific data configuration from unlock config
-                headline: unlock.headline ? { type: "const", constVal: unlock.headline } : void 0,
-                entity1: void 0
+                headline: { type: "const", constVal: qrConfig.headline || "" }
               }
             },
             pageItems: []
           };
+          newPage.pageItems.push({
+            type: "text",
+            dpInit: "",
+            role: "button",
+            data: {
+              icon: {
+                true: {
+                  value: { type: "const", constVal: icon1 },
+                  color: { type: "const", constVal: import_Color.Color.on }
+                },
+                false: {
+                  value: { type: "const", constVal: icon1 },
+                  color: { type: "const", constVal: import_Color.Color.off }
+                },
+                scale: void 0,
+                maxBri: void 0,
+                minBri: void 0
+              },
+              text1: {
+                true: { type: "const", constVal: text1 }
+              },
+              text: {
+                true: { type: "const", constVal: text }
+              },
+              entity1: qrConfig.setState ? {
+                value: {
+                  type: "triggered",
+                  dp: qrConfig.setState
+                }
+              } : void 0
+            }
+          });
+          let text1Second = "";
+          let textSecond = "";
+          switch (qrConfig.selType) {
+            case 1:
+              text1Second = qrConfig.qrPass ? qrConfig.qrPass : "";
+              textSecond = "Password";
+              break;
+            default:
+              break;
+          }
+          if (qrConfig.setState) {
+            newPage.pageItems.push({
+              type: "button",
+              dpInit: "",
+              role: "button",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: "wifi" },
+                    color: { type: "const", constVal: import_Color.Color.Green }
+                  },
+                  false: {
+                    value: { type: "const", constVal: "wifi-off" },
+                    color: { type: "const", constVal: import_Color.Color.off }
+                  },
+                  scale: void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                text1: {
+                  true: { type: "const", constVal: text1Second }
+                },
+                text: {
+                  true: { type: "const", constVal: "WlanOn" },
+                  false: { type: "const", constVal: "WlanOff" }
+                },
+                entity1: {
+                  value: {
+                    type: "triggered",
+                    dp: qrConfig.setState
+                  }
+                }
+              }
+            });
+          } else {
+            newPage.pageItems.push({
+              type: "text",
+              dpInit: "",
+              role: "button",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: icon2 },
+                    color: { type: "const", constVal: import_Color.Color.on }
+                  },
+                  false: {
+                    value: { type: "const", constVal: icon2 },
+                    color: { type: "const", constVal: import_Color.Color.off }
+                  },
+                  scale: void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                text1: {
+                  true: { type: "const", constVal: text1Second }
+                },
+                text: {
+                  true: { type: "const", constVal: textSecond }
+                },
+                entity1: void 0
+              }
+            });
+          }
           break;
         }
         default: {

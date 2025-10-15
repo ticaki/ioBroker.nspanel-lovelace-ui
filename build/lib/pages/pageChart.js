@@ -53,7 +53,7 @@ class PageChart extends import_Page.Page {
       throw new Error("Missing config!");
     }
     this.index = this.config.index;
-    this.minUpdateInterval = 2e3;
+    this.minUpdateInterval = 6e4;
     this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {
@@ -195,13 +195,13 @@ class PageChart extends import_Page.Page {
     );
   }
   async onVisibilityChange(val) {
-    try {
-      if (val) {
+    if (val) {
+      this.checkState = false;
+      if (!this.adminConfig) {
+        this.log.warn("AdminConfig is not set, cannot check states");
         this.checkState = false;
-        if (!this.adminConfig) {
-          this.log.warn("AdminConfig is not set, cannot check states");
-          this.checkState = false;
-        } else {
+      } else {
+        try {
           const cfg = this.adminConfig;
           const ds = cfg.selInstanceDataSource;
           if (ds === 0) {
@@ -271,11 +271,10 @@ class PageChart extends import_Page.Page {
             this.log.error("Unknown selInstanceDataSource, skipping specific checks");
             this.checkState = false;
           }
+        } catch (error) {
+          this.log.error(`Error onVisibilityChange: ${error}`);
         }
       }
-    } catch (error) {
-      this.log.error(`Error onVisibilityChange: ${error}`);
-    } finally {
       await this.update();
     }
   }
