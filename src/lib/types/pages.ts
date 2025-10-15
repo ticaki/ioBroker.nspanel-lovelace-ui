@@ -495,7 +495,7 @@ export type PageOthersConfigs =
     | cardQRDataItemOptions
     | cardChartDataItemOptions;
 
-type PageBaseNoIdea1 = {
+type PageBaseTemplate = {
     uniqueID: string;
     template: NSPanel.PageTemplateIdent;
     dpInit: string | RegExp;
@@ -505,7 +505,7 @@ type PageBaseNoIdea1 = {
 export type PageBase = (
     | {
           uniqueID: string;
-          template?: NSPanel.PageTemplateIdent;
+          //template?: NSPanel.PageTemplateIdent;
           dpInit?: string | RegExp; // ''
           enums?: string | string[];
           device?: string;
@@ -516,7 +516,7 @@ export type PageBase = (
           //    mediaNamespace: string;
           config: PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
       }
-    | PageBaseNoIdea1
+    | PageBaseTemplate
 ) & {
     items?:
         | undefined

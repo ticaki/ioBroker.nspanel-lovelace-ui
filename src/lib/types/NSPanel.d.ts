@@ -2,7 +2,6 @@ import type * as dataItem from '../controller/data-item';
 import type * as typePageItem from './type-pageItem';
 import type * as pages from './pages';
 
-// @typescript-eslint/no-redundant-type-constituents
 export namespace NSPanel {
     type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
     type RGB = {
@@ -275,60 +274,6 @@ export namespace NSPanel {
         | 'notify';
 
     type NSpanelModel = 'eu' | 'us-p' | 'us-l';
-
-    type Config = {
-        leftEntity: boolean;
-        indicatorEntity: any;
-        mrIcon1Entity: any;
-        mrIcon2Entity: any;
-        panelRecvTopic: string;
-        panelSendTopic: string;
-        weatherEntity: string;
-        screensaver: {
-            favoritEntity: [ScreenSaverElement];
-            leftEntity: ScreenSaverElement[];
-            bottomEntity: ScreenSaverElement[];
-            alternateEntity: [ScreenSaverElement?];
-            indicatorEntity: ScreenSaverElement[];
-            mrIconEntity: [ScreenSaverElement, ScreenSaverElement];
-        };
-        defaultColor: RGB;
-        defaultOnColor: RGB;
-        defaultOffColor: RGB;
-        defaultBackgroundColor: RGB;
-    };
-
-    type leftScreensaverEntityType =
-        | [ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined]
-        | [];
-
-    type indicatorScreensaverEntityType =
-        | [
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-          ]
-        | [];
-
-    type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-
-    type ScreenSaverDataItems = {
-        entityValue: pages.ChangeTypeOfKeys<typePageItem.ValueEntryType, dataItem.Dataitem | undefined>;
-        entityDateFormat: dataItem.Dataitem | undefined;
-        entityIcon: pages.ChangeTypeOfKeys<typePageItem.IconEntryType, dataItem.Dataitem | undefined>;
-        entityText: pages.ChangeTypeOfKeys<typePageItem.TextEntryType, dataItem.Dataitem | undefined>;
-        entityIconSelect: dataItem.Dataitem | undefined;
-    };
-
-    type ScreenSaverElement = {
-        entityValue: pages.ChangeTypeOfKeys<typePageItem.ValueEntryType, DataItemsOptions | undefined>;
-        entityDateFormat: ScreenSaverElementConfig;
-        entityIcon: pages.ChangeTypeOfKeys<typePageItem.IconEntryType, DataItemsOptions | undefined>;
-        entityText: pages.ChangeTypeOfKeys<typePageItem.TextEntryType, DataItemsOptions | undefined>;
-        entityIconSelect: ScreenSaverElementConfig;
-    };
 
     type IconScaleElement = IconColorElement | IconSelectElement;
 

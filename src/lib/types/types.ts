@@ -282,27 +282,6 @@ function swapKeyValue(obj: Record<string, string>): Record<string, string> {
 }
 
 export type NSpanelModel = 'eu' | 'us-p' | 'us-l';
-export type Config = {
-    leftEntity: boolean;
-    indicatorEntity: any;
-    mrIcon1Entity: any;
-    mrIcon2Entity: any;
-    panelRecvTopic: string;
-    panelSendTopic: string;
-    weatherEntity: string;
-    screensaver: {
-        favoritEntity: [NSPanel.ScreenSaverElement];
-        leftEntity: NSPanel.ScreenSaverElement[];
-        bottomEntity: NSPanel.ScreenSaverElement[];
-        alternateEntity: [NSPanel.ScreenSaverElement?];
-        indicatorEntity: NSPanel.ScreenSaverElement[];
-        mrIconEntity: [NSPanel.ScreenSaverElement, NSPanel.ScreenSaverElement];
-    };
-    defaultColor: RGB;
-    defaultOnColor: RGB;
-    defaultOffColor: RGB;
-    defaultBackgroundColor: RGB;
-};
 
 export type IconScaleElement = IconColorElement | IconSelectElement;
 
