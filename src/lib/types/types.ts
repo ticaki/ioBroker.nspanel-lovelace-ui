@@ -1,6 +1,6 @@
 import type * as dataItem from '../controller/data-item';
-import { Color, type RGB } from '../const/Color';
-import * as pages from './pages';
+import { type RGB } from '../const/Color';
+import type * as pages from './pages';
 import type { NSPanel } from './NSPanel';
 
 /**
@@ -113,23 +113,6 @@ export type TemplateIdent =
     | 'text.accuweather.favorit'
     | 'text.alias.fahrplan.departure';
 
-export function isEventMethod(F: string): F is EventMethod {
-    switch (F as EventMethod) {
-        case 'startup':
-        case 'sleepReached':
-        case 'pageOpenDetail':
-        case 'buttonPress2':
-        case 'renderCurrentPage':
-        case 'button1':
-        case 'button2':
-            return true;
-        default:
-            // Have to talk about this.
-            throw new Error(`Please report to developer: Unknown EventMethod: ${F} `);
-            return false;
-    }
-}
-
 export type InternalStatesObject = {
     val: ioBroker.StateValue;
     ack: boolean;
@@ -173,25 +156,6 @@ export type PanelInternalCommand =
     | 'cmd/hideCards'
     | 'cmd/buzzer';
 
-export function isPopupType(F: any): F is PopupType {
-    switch (F as PopupType) {
-        case 'popupFan':
-        case 'popupInSel':
-        case 'popupLight':
-        case 'popupLightNew':
-        case 'popupNotify':
-        case 'popupShutter':
-        case 'popupShutter2':
-        case 'popupThermo':
-        case 'popupTimer':
-        case 'popupSlider':
-            return true;
-        default:
-            console.info(`Unknown PopupType: ${F} `);
-            return false;
-    }
-}
-
 /**
  * Defines how the panel handles "always on" behavior.
  *
@@ -219,19 +183,6 @@ export type panelRecvType = {
     method: EventMethod;
 };
 
-export const SerialTypeArray = [
-    'light', //popup
-    'shutter', //popup
-    'delete',
-    'text',
-    'button',
-    'switch', // nur für cardQR
-    'number',
-    'input_sel', //popup
-    'timer', //popup
-    'fan', //popup
-];
-
 export type PopupType = NSPanel.PopupType;
 
 export type SerialTypePageElements = NSPanel.SerialTypePageElements;
@@ -255,54 +206,7 @@ export type DimMode = {
 
 export type ValueDateFormat = { local: string; format: any };
 
-export function isValueDateFormat(F: any): F is ValueDateFormat {
-    return F && typeof F === 'object' && F.local !== undefined && F.format !== undefined;
-}
-export const screenSaverInfoIconsUseable = {
-    none: '',
-    'clock!': 'clock-alert-outline',
-    'weather!': 'weather-sunny-alert',
-    'news!': 'bell-ring-outline',
-    'calendar!': 'calendar-alert',
-    'alarm!': 'alarm',
-    'info!': 'information-outline',
-    'error!': 'alert-circle-outline',
-    'critical!': 'alert-circle',
-} as const;
-
-export const screenSaverInfoIcons = swapKeyValue(screenSaverInfoIconsUseable);
-
-function swapKeyValue(obj: Record<string, string>): Record<string, string> {
-    const swapped: Record<string, string> = {};
-    for (const key in obj) {
-        const value = obj[key];
-        swapped[value] = key;
-    }
-    return swapped;
-}
-
 export type NSpanelModel = 'eu' | 'us-p' | 'us-l';
-export type Config = {
-    leftEntity: boolean;
-    indicatorEntity: any;
-    mrIcon1Entity: any;
-    mrIcon2Entity: any;
-    panelRecvTopic: string;
-    panelSendTopic: string;
-    weatherEntity: string;
-    screensaver: {
-        favoritEntity: [NSPanel.ScreenSaverElement];
-        leftEntity: NSPanel.ScreenSaverElement[];
-        bottomEntity: NSPanel.ScreenSaverElement[];
-        alternateEntity: [NSPanel.ScreenSaverElement?];
-        indicatorEntity: NSPanel.ScreenSaverElement[];
-        mrIconEntity: [NSPanel.ScreenSaverElement, NSPanel.ScreenSaverElement];
-    };
-    defaultColor: RGB;
-    defaultOnColor: RGB;
-    defaultOffColor: RGB;
-    defaultBackgroundColor: RGB;
-};
 
 export type IconScaleElement = IconColorElement | IconSelectElement;
 
@@ -336,90 +240,6 @@ export type IconColorElement = {
      */
     log10?: 'max' | 'min';
 };
-
-/**
- * Lightweight type guard for IconColorElement.
- * - Checks presence & finiteness of required numbers.
- * - Optional fields, if present, must be of the right *shape*.
- * - No normalization, no range constraints (val_min may be > val_max).
- *
- * @param x unknown
- * @returns true if x is IconColorElement
- */
-export function isIconColorScaleElement(x: unknown): x is IconColorElement {
-    if (typeof x !== 'object' || x === null) {
-        return false;
-    }
-
-    const v = x as Partial<IconColorElement>;
-
-    // required
-    if (!Number.isFinite(v.val_min as number)) {
-        return false;
-    }
-    if (!Number.isFinite(v.val_max as number)) {
-        return false;
-    }
-
-    // optional numbers
-    if (v.val_best != null && !Number.isFinite(v.val_best)) {
-        return false;
-    }
-
-    // optional enums
-    if (v.log10 != null && v.log10 !== 'max' && v.log10 !== 'min') {
-        return false;
-    }
-    if (
-        v.mode != null &&
-        v.mode !== 'mixed' &&
-        v.mode !== 'hue' &&
-        v.mode !== 'cie' &&
-        v.mode !== 'triGrad' &&
-        v.mode !== 'triGradAnchor' &&
-        v.mode !== 'quadriGrad' &&
-        v.mode !== 'quadriGradAnchor'
-    ) {
-        return false;
-    }
-
-    // optional color object
-    if (v.color_best != null && !Color.isRGB(v.color_best)) {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * Normalize a valid IconColorElement (e.g. fix color_best).
- * Call this after `isIconColorElement()` returned true.
- *
- * @param el IconColorElement
- */
-export function normalizeIconColorElement(el: IconColorElement): IconColorElement {
-    const copy: IconColorElement = { ...el };
-    if (copy.color_best) {
-        copy.color_best = convertColorScaleBest(copy.color_best);
-    }
-    return copy;
-}
-function convertColorScaleBest(F: any): IconColorElement['color_best'] {
-    if (F) {
-        return { r: F.red ?? F.r, g: F.green ?? F.g, b: F.blue ?? F.b };
-    }
-    return undefined;
-}
-export function isPartialColorScaleElement(F: any): F is IconColorElement {
-    return F && ('val_min' in (F as IconColorElement) || 'val_max' in (F as IconColorElement));
-}
-
-export function isIconSelectScaleElement(F: any): F is IconSelectElement {
-    return F && 'valIcon_min' in (F as IconSelectElement) && 'valIcon_max' in (F as IconSelectElement);
-}
-export function isPartialIconSelectScaleElement(F: any): F is IconSelectElement {
-    return F && ('valIcon_min' in (F as IconSelectElement) || 'valIcon_max' in (F as IconSelectElement));
-}
 
 export type DataItemstype = NSPanel.DataItemsOptions['type'];
 export type DataItemsMode = 'custom' | 'auto';
@@ -483,12 +303,6 @@ export type Event = {
     opt: string[];
 };
 export type EventType = 'event';
-export function isEventType(F: string): F is EventType {
-    return ['event'].indexOf(F) != -1;
-}
-
-const arrayOfModes = pages.arrayOfAll<ScreensaverModeType>();
-export const arrayOfScreensaverModes = arrayOfModes(['standard', 'alternate', 'advanced', 'easyview']);
 export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview';
 export type ScreensaverModeTypeAsNumber = 0 | 1 | 2 | 3;
 export interface State extends Omit<ioBroker.State, 'val'> {

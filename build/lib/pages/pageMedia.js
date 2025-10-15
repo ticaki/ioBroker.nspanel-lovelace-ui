@@ -35,7 +35,7 @@ module.exports = __toCommonJS(pageMedia_exports);
 var import_data_item = require("../controller/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
-var types = __toESM(require("../types/types"));
+var convertColorScaleBest = __toESM(require("../types/function-and-const"));
 var tools = __toESM(require("../const/tools"));
 var import_pageMenu = require("./pageMenu");
 var import_Page = require("../classes/Page");
@@ -792,7 +792,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     let msg = null;
     if (action && value !== void 0 && await item.onCommand(action, value)) {
       return;
-    } else if (types.isPopupType(popup) && action !== "bExit") {
+    } else if (convertColorScaleBest.isPopupType(popup) && action !== "bExit") {
       this.basePanel.lastCard = "";
       await this.basePanel.setActivePage(false);
       msg = await item.GeneratePopup(popup);

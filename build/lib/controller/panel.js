@@ -34,8 +34,7 @@ module.exports = __toCommonJS(panel_exports);
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_panel_message = require("./panel-message");
 var import_screensaver = require("../pages/screensaver");
-var Types = __toESM(require("../types/types"));
-var pages = __toESM(require("../types/pages"));
+var convertColorScaleBest = __toESM(require("../types/function-and-const"));
 var import_library = require("./library");
 var definition = __toESM(require("../const/definition"));
 var import_pageMedia = require("../pages/pageMedia");
@@ -557,7 +556,7 @@ class Panel extends import_library.BaseClass {
     if (currentScreensaver && currentScreensaver.val != null) {
       if (scs && scs[0]) {
         this.screenSaver = scs[0];
-        if (pages.isScreenSaverModeAsNumber(currentScreensaver.val)) {
+        if (convertColorScaleBest.isScreenSaverModeAsNumber(currentScreensaver.val)) {
           this.screenSaver.overwriteModel(currentScreensaver.val, true);
         }
       }
@@ -1037,7 +1036,7 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "screenSaver.layout": {
-          if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
+          if (typeof state.val === "number" && convertColorScaleBest.isScreenSaverModeAsNumber(state.val)) {
             await this.statesControler.setInternalState(
               `${this.name}/cmd/screenSaverLayout`,
               state.val,
@@ -1651,7 +1650,7 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cmd/screenSaverLayout": {
-          if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
+          if (typeof state.val === "number" && convertColorScaleBest.isScreenSaverModeAsNumber(state.val)) {
             if (this.screenSaver) {
               this.screenSaver.overwriteModel(state.val);
               await this.library.writedp(`panels.${this.name}.cmd.screenSaver.layout`, state.val);
@@ -1822,11 +1821,11 @@ ${this.info.tasmota.onlineVersion}`;
       return null;
     }
     const temp = msg.split(",");
-    if (!Types.isEventType(temp[0])) {
+    if (!convertColorScaleBest.isEventType(temp[0])) {
       return null;
     }
     try {
-      if (!Types.isEventMethod(temp[1])) {
+      if (!convertColorScaleBest.isEventMethod(temp[1])) {
         return null;
       }
     } catch (e) {
@@ -1847,7 +1846,7 @@ ${this.info.tasmota.onlineVersion}`;
         cmd: parseInt(arr[0]),
         popup,
         id: arr[2],
-        action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+        action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
         opt: (_a = temp[4]) != null ? _a : ""
       };
     }
@@ -1859,7 +1858,7 @@ ${this.info.tasmota.onlineVersion}`;
         cmd: parseInt(arr[1]),
         popup,
         id: arr[2],
-        action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+        action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
         opt: (_b = temp[4]) != null ? _b : ""
       };
     } else if (arr[1]) {
@@ -1869,7 +1868,7 @@ ${this.info.tasmota.onlineVersion}`;
         page: parseInt(arr[0]),
         popup,
         id: arr[1],
-        action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+        action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
         opt: (_c = temp[4]) != null ? _c : ""
       };
     }
@@ -1878,7 +1877,7 @@ ${this.info.tasmota.onlineVersion}`;
       method: temp[1],
       popup,
       id: arr[0],
-      action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+      action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
       opt: (_d = temp[4]) != null ? _d : ""
     };
   }
@@ -1947,7 +1946,7 @@ ${this.info.tasmota.onlineVersion}`;
         parent = n != null && n.page ? n.page.name : void 0;
       }
       let pageInfo = { card: "cardGrid", alwaysOn: "none" };
-      if (pages.isPageMenuConfig(nav.page.config)) {
+      if (convertColorScaleBest.isPageMenuConfig(nav.page.config)) {
         pageInfo = {
           ...pageInfo,
           card: nav.page.card,

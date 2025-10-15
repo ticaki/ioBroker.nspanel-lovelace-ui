@@ -23,7 +23,7 @@ __export(data_collection_functions_exports, {
 module.exports = __toCommonJS(data_collection_functions_exports);
 var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
-var import_pages = require("../types/pages");
+var import_function_and_const = require("../types/function-and-const");
 async function handleCardRole(adapter, cardRole, page, _options) {
   var _a, _b, _c;
   if (!cardRole) {
@@ -261,7 +261,7 @@ async function handleCardRole(adapter, cardRole, page, _options) {
       return result;
     }
     default: {
-      (0, import_pages.exhaustiveCheck)(cardRole);
+      (0, import_function_and_const.exhaustiveCheck)(cardRole);
       return null;
     }
   }

@@ -1,12 +1,13 @@
 import * as Definition from '../const/definition';
-import * as Types from '../types/types';
+import type * as Types from '../types/types';
+import * as convertColorScaleBest from '../types/function-and-const';
 import { Icons } from '../const/icon_mapping';
 
 //import dayjs from 'dayjs';
 //import moment from 'moment';
 //import parseFormat from 'moment-parseformat';
 import { Page } from '../classes/Page';
-import * as pages from '../types/pages';
+import type * as pages from '../types/pages';
 import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
 import type { PageInterface } from '../classes/PageInterface';
@@ -94,7 +95,7 @@ export class Screensaver extends Page {
      */
     async getData(places: NSPanel.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
         const config = this.config;
-        if (!config || !pages.isScreenSaverCardType(config.card)) {
+        if (!config || !convertColorScaleBest.isScreenSaverCardType(config.card)) {
             return null;
         }
 
@@ -666,10 +667,10 @@ export class Screensaver extends Page {
         ) {
             return;
         }
-        if (pages.isScreenSaverMode(mode)) {
+        if (convertColorScaleBest.isScreenSaverMode(mode)) {
             this.config.mode = mode;
         } else {
-            pages.exhaustiveCheck(mode);
+            convertColorScaleBest.exhaustiveCheck(mode);
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             this.log.error(`Invalid mode: ${mode}`);
         }
@@ -706,7 +707,7 @@ export class Screensaver extends Page {
                 break;
             }
             default: {
-                pages.exhaustiveCheck(mode);
+                convertColorScaleBest.exhaustiveCheck(mode);
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 this.log.error(`Invalid mode: ${mode}`);
                 return;
@@ -720,14 +721,14 @@ export class Screensaver extends Page {
     }
 
     static mapModeToNumber(mode: Types.ScreensaverModeType): Types.ScreensaverModeTypeAsNumber {
-        const index = Types.arrayOfScreensaverModes.findIndex(x => x === mode);
+        const index = convertColorScaleBest.arrayOfScreensaverModes.findIndex(x => x === mode);
         return Math.min(
             Math.max(index, 0),
-            Types.arrayOfScreensaverModes.length - 1,
+            convertColorScaleBest.arrayOfScreensaverModes.length - 1,
         ) as Types.ScreensaverModeTypeAsNumber;
     }
 
     static mapNumberToMode(mode: Types.ScreensaverModeTypeAsNumber): Types.ScreensaverModeType {
-        return Types.arrayOfScreensaverModes[mode];
+        return convertColorScaleBest.arrayOfScreensaverModes[mode];
     }
 }

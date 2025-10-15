@@ -35,7 +35,7 @@ var import_Color = require("../const/Color");
 var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
 var import_icon_mapping = require("../const/icon_mapping");
-var import_pages = require("../types/pages");
+var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
 class PageItem extends import_baseClassPage.BaseTriggeredPage {
   defaultOnColor = import_Color.Color.White;
@@ -243,7 +243,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (this.config.role === "volume.mute") {
             message.type = "light";
           } else {
-            message.type = (0, import_pages.isCardGridType)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.parent.basePanel.overrideLightPopup ? this.parent.basePanel.lightPopupV2 && this.parent.basePanel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
+            message.type = (0, import_function_and_const.isCardGridType)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.parent.basePanel.overrideLightPopup ? this.parent.basePanel.lightPopupV2 && this.parent.basePanel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
           }
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_a = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _a : null;
@@ -422,7 +422,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
             } else if (entry.type === "button") {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
-              if ((0, import_pages.isCardEntitiesType)(this.parent.card)) {
+              if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
                 message.optionalValue = (_F = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _F : message.optionalValue;
               }
             } else {
@@ -472,7 +472,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                if ((0, import_pages.isCardEntitiesType)(this.parent.card)) {
+                if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
                   message.optionalValue = (_I = await entry.data.confirm.getString()) != null ? _I : message.optionalValue;
                 }
                 this.confirmClick = Date.now();
@@ -506,7 +506,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   !!value,
                   "",
                   null,
-                  (_P = !(0, import_pages.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _P : false
+                  (_P = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _P : false
                 )) != null ? _Q : "";
               }
             }

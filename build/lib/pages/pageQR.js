@@ -33,7 +33,7 @@ __export(pageQR_exports, {
 module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
 var import_tools = require("../const/tools");
-var pages = __toESM(require("../types/pages"));
+var convertColorScaleBest = __toESM(require("../types/function-and-const"));
 const PageQRMessageDefault = {
   event: "entityUpd",
   headline: "Page QR",

@@ -33,7 +33,7 @@ __export(data_item_exports, {
 module.exports = __toCommonJS(data_item_exports);
 var import_Color = require("../const/Color");
 var import_library = require("./library");
-var import_types = require("../types/types");
+var import_function_and_const = require("../types/function-and-const");
 var _compiledReadFn, _compiledWriteFn;
 class Dataitem extends import_library.BaseClass {
   /**
@@ -249,7 +249,7 @@ class Dataitem extends import_library.BaseClass {
   async getIconScale() {
     const value = await this.getObject();
     if (value) {
-      if ((0, import_types.isIconColorScaleElement)(value)) {
+      if ((0, import_function_and_const.isIconColorScaleElement)(value)) {
         return value;
       }
     }

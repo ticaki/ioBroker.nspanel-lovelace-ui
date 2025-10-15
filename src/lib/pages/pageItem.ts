@@ -6,13 +6,8 @@ import * as tools from '../const/tools';
 import type { nsPanelState, PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../controller/data-item';
-import {
-    isCardEntitiesType,
-    isCardGridType,
-    type ChangeTypeOfKeys,
-    type DeviceRole,
-    type PageBase,
-} from '../types/pages';
+import { type ChangeTypeOfKeys, type DeviceRole, type PageBase } from '../types/pages';
+import { isCardEntitiesType, isCardGridType } from '../types/function-and-const';
 import type { Screensaver } from './screensaver';
 import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';

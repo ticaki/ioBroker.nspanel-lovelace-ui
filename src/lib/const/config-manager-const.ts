@@ -1,6 +1,7 @@
 import type { NSPanel } from '../types/NSPanel';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import { arrayOfAll, type StateRole } from '../types/pages';
+import { type StateRole } from '../types/pages';
+import { arrayOfAll } from '../types/function-and-const';
 import type { ConfigButtonFunction } from '../types/types';
 
 export const CustomTemplates: ConfigManager.CustomTemplate[] = [

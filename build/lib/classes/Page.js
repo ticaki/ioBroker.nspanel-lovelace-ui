@@ -32,9 +32,8 @@ __export(Page_exports, {
   isMediaButtonActionType: () => isMediaButtonActionType
 });
 module.exports = __toCommonJS(Page_exports);
-var pages = __toESM(require("../types/pages"));
+var convertColorScaleBest = __toESM(require("../types/function-and-const"));
 var import_baseClassPage = require("./baseClassPage");
-var types = __toESM(require("../types/types"));
 var import_pageItem = require("../pages/pageItem");
 var import_tools = require("../const/tools");
 var import_templateArray = require("../templates/templateArray");
@@ -296,7 +295,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         renderCurrentPage = false;
         break;
       default:
-        pages.exhaustiveCheck(this.card);
+        convertColorScaleBest.exhaustiveCheck(this.card);
         break;
     }
     if (forceSend || this.basePanel.lastCard !== this.card) {
@@ -496,7 +495,7 @@ class Page extends import_baseClassPage.BaseClassPage {
     let msg = null;
     if (action && value !== void 0 && await item.onCommand(action, value)) {
       return;
-    } else if (types.isPopupType(popup) && action !== "bExit") {
+    } else if (convertColorScaleBest.isPopupType(popup) && action !== "bExit") {
       this.basePanel.lastCard = "";
       msg = await item.GeneratePopup(popup);
     }

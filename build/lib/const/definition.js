@@ -44,7 +44,7 @@ __export(definition_exports, {
   weatherEntities: () => weatherEntities
 });
 module.exports = __toCommonJS(definition_exports);
-var types = __toESM(require("../types/types"));
+var convertColorScaleBest = __toESM(require("../types/function-and-const"));
 const defaultChannel = {
   _id: "",
   type: "channel",
@@ -274,7 +274,7 @@ const genericStateObjects = {
               name: "StateObjects.screenSaver.infoIcon",
               type: "string",
               role: "text",
-              states: types.screenSaverInfoIcons,
+              states: convertColorScaleBest.screenSaverInfoIcons,
               read: true,
               write: true,
               def: ""
@@ -341,7 +341,7 @@ const genericStateObjects = {
               role: "level",
               read: true,
               write: true,
-              states: types.arrayOfScreensaverModes
+              states: convertColorScaleBest.arrayOfScreensaverModes
             },
             native: {}
           },
@@ -1547,7 +1547,7 @@ const InternalStates = {
         role: "level",
         read: true,
         write: true,
-        states: types.arrayOfScreensaverModes
+        states: convertColorScaleBest.arrayOfScreensaverModes
       }
     },
     "cmd/NotificationCleared2": {
@@ -1746,7 +1746,7 @@ const InternalStates = {
         role: "text",
         read: true,
         write: true,
-        states: types.screenSaverInfoIcons,
+        states: convertColorScaleBest.screenSaverInfoIcons,
         def: "none"
       }
     },

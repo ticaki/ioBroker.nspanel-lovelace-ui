@@ -1,9 +1,9 @@
-import { Color, type RGB } from '../const/Color';
+import { Color } from '../const/Color';
 import { BaseClass } from './library';
 import type { StatesControler } from './states-controller';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { NSPanel } from '../types/NSPanel';
-import { isIconColorScaleElement } from '../types/types';
+import { isIconColorScaleElement } from '../types/function-and-const';
 
 export class Dataitem extends BaseClass {
     #compiledReadFn?: (
@@ -224,7 +224,7 @@ export class Dataitem extends BaseClass {
         }
         return null;
     }
-    async getRGBValue(): Promise<RGB | null> {
+    async getRGBValue(): Promise<NSPanel.RGB | null> {
         const value = await this.getObject();
         if (value) {
             if (Color.isRGB(value)) {
