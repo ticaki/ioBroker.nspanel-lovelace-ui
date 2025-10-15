@@ -18,7 +18,6 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var type_pageItem_exports = {};
 __export(type_pageItem_exports, {
-  isPageItemDataItem: () => isPageItemDataItem,
   isPageItemDataItemsOptions: () => isPageItemDataItemsOptions,
   islistCommandUnion: () => islistCommandUnion
 });
@@ -35,12 +34,6 @@ function isPageItemDataItemsOptions(obj) {
   }
   return false;
 }
-function isPageItemDataItem(f) {
-  if (f && typeof f === "object" && "type" in f && "data" in f) {
-    return true;
-  }
-  return false;
-}
 function islistCommandUnion(F) {
   switch (F) {
     case "flip": {
@@ -51,7 +44,6 @@ function islistCommandUnion(F) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  isPageItemDataItem,
   isPageItemDataItemsOptions,
   islistCommandUnion
 });

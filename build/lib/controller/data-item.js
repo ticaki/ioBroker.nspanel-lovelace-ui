@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
@@ -21,14 +19,6 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
@@ -43,7 +33,7 @@ __export(data_item_exports, {
 module.exports = __toCommonJS(data_item_exports);
 var import_Color = require("../const/Color");
 var import_library = require("./library");
-var NSPanel = __toESM(require("../types/types"));
+var import_types = require("../types/types");
 var _compiledReadFn, _compiledWriteFn;
 class Dataitem extends import_library.BaseClass {
   /**
@@ -259,7 +249,7 @@ class Dataitem extends import_library.BaseClass {
   async getIconScale() {
     const value = await this.getObject();
     if (value) {
-      if (NSPanel.isIconColorScaleElement(value)) {
+      if ((0, import_types.isIconColorScaleElement)(value)) {
         return value;
       }
     }

@@ -1,9 +1,8 @@
 import type * as dataItem from '../controller/data-item';
 import type { RGB } from '../const/Color';
 import { type PageItem } from '../pages/pageItem';
-import type * as typePageItem from './type-pageItem';
-import type * as Types from './types';
 import type { AdminCardTypes } from './adminShareConfig';
+import type { NSPanel } from './NSPanel';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker';
 
@@ -42,14 +41,7 @@ export function isPageMenuConfig(F: any): F is PageMenuConfig {
     return isCardMenuRole(F.card);
 }
 
-export type PageTypeCards =
-    | AdminCardTypes
-    | 'cardUnlock'
-    | 'screensaver'
-    | 'screensaver2'
-    | 'screensaver3'
-    //| 'cardBurnRec'
-    | 'cardItemSpecial'; // besonders, interne Card zum verwalten von pageItems
+export type PageTypeCards = NSPanel.PageTypeCards; // besonders, interne Card zum verwalten von pageItems
 
 export const arrayOfAll =
     <T>() =>
@@ -57,7 +49,7 @@ export const arrayOfAll =
         array;
 export function exhaustiveCheck(_param: never): void {}
 const arrayOfAllStateRole = arrayOfAll<StateRole>();
-const arrayOfAllScreenSaverMode = arrayOfAll<Types.ScreensaverModeType>();
+const arrayOfAllScreenSaverMode = arrayOfAll<NSPanel.ScreensaverModeType>();
 const arrayOfAllScreenSaverCards = arrayOfAll<screenSaverCardType>();
 export const screenSaverCardArray: screenSaverCardType[] = arrayOfAllScreenSaverCards([
     'screensaver',
@@ -73,7 +65,7 @@ export function isScreenSaverCardType(F: string): F is screenSaverCardType {
 }
 
 export const screenSaverModeArray = arrayOfAllScreenSaverMode(['standard', 'advanced', 'alternate', 'easyview']);
-export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
+export function isScreenSaverMode(F: any): F is NSPanel.ScreensaverModeType {
     if (typeof F !== 'string') {
         return false;
     }
@@ -83,7 +75,7 @@ export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
 // Optimierter Type Guard für ScreensaverMode Numbers
 const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3] as const;
 
-export function isScreenSaverModeAsNumber(value: unknown): value is Types.ScreensaverModeTypeAsNumber {
+export function isScreenSaverModeAsNumber(value: unknown): value is NSPanel.ScreensaverModeTypeAsNumber {
     return typeof value === 'number' && SCREENSAVER_MODE_NUMBERS.includes(value as any);
 }
 
@@ -455,7 +447,7 @@ const BUTTON_ACTION_TYPES = new Set([
     'eu',
 ] as const);
 
-export function isButtonActionType(value: unknown): value is Types.ButtonActionType {
+export function isButtonActionType(value: unknown): value is NSPanel.ButtonActionType {
     return typeof value === 'string' && BUTTON_ACTION_TYPES.has(value as any);
 }
 
@@ -505,7 +497,7 @@ export type PageOthersConfigs =
 
 type PageBaseNoIdea1 = {
     uniqueID: string;
-    template: Types.PageTemplateIdent;
+    template: NSPanel.PageTemplateIdent;
     dpInit: string | RegExp;
     hidden?: boolean;
 } & Partial<Omit<PageBaseConfigTemplate, 'template'>>;
@@ -513,14 +505,14 @@ type PageBaseNoIdea1 = {
 export type PageBase = (
     | {
           uniqueID: string;
-          template?: Types.PageTemplateIdent;
+          template?: NSPanel.PageTemplateIdent;
           dpInit?: string | RegExp; // ''
           enums?: string | string[];
           device?: string;
           alwaysOn: 'none' | 'always' | 'action' | 'ignore';
           hidden?: boolean;
           cardRole?: CardRole;
-          pageItems: typePageItem.PageItemDataItemsOptions[];
+          pageItems: NSPanel.PageItemDataItemsOptions[];
           //    mediaNamespace: string;
           config: PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
       }
@@ -546,7 +538,7 @@ export type PageBaseConfigTemplate = {
     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3'>;
     adapter: string;
     alwaysOn: 'none' | 'always' | 'action' | 'ignore';
-    pageItems: typePageItem.PageItemDataItemsOptions[];
+    pageItems: NSPanel.PageItemDataItemsOptions[];
 
     //    mediaNamespace: string;
     config: undefined | PageBaseConfig | screensaverDataItemOptions;
@@ -555,14 +547,14 @@ export type PageBaseConfigTemplate = {
 
 type PageNotifyConfig = {
     headline: string;
-    entity1?: typePageItem.ValueEntryType;
-    colorHeadline: typePageItem.ColorEntryTypeBooleanStandard;
+    entity1?: NSPanel.ValueEntryType;
+    colorHeadline: NSPanel.ColorEntryTypeBooleanStandard;
     buttonLeft: string;
-    colorButtonLeft: typePageItem.ColorEntryTypeBooleanStandard;
+    colorButtonLeft: NSPanel.ColorEntryTypeBooleanStandard;
     buttonRight: string;
-    colorButtonRight: typePageItem.ColorEntryTypeBooleanStandard;
+    colorButtonRight: NSPanel.ColorEntryTypeBooleanStandard;
     text: string;
-    colorText: typePageItem.ColorEntryTypeBooleanStandard;
+    colorText: NSPanel.ColorEntryTypeBooleanStandard;
     timeout: number;
     optionalValue?: string;
     setValue1?: string;
@@ -588,7 +580,7 @@ export type PopupNotificationVal =
 
 export type cardNotifyDataItemOptions = {
     card: Extract<AdminCardTypes, 'popupNotify'>;
-    data: ChangeTypeOfKeys<PageNotifyConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageNotifyConfig, NSPanel.DataItemsOptions | undefined>;
 };
 
 export type closingBehaviour = 'both' | 'yes' | 'no' | 'none';
@@ -602,12 +594,12 @@ export type cardNotifyDataItems = {
 
 type PageNotify2Config = {
     textSize: string;
-    icon: typePageItem.IconEntryType;
+    icon: NSPanel.IconEntryType;
 } & PageNotifyConfig;
 
 export type cardNotify2DataItemOptions = {
     card: Extract<AdminCardTypes, 'popupNotify2'>;
-    data: ChangeTypeOfKeys<PageNotify2Config, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageNotify2Config, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardNotify2DataItems = {
     card: Extract<AdminCardTypes, 'popupNotify2'>;
@@ -617,16 +609,16 @@ export type cardNotify2DataItems = {
 type PageChartConfig = {
     headline: string;
     text: string;
-    color: typePageItem.ColorEntryTypeBooleanStandard;
+    color: NSPanel.ColorEntryTypeBooleanStandard;
     ticks: string;
     value: string;
-    entity1: typePageItem.ValueEntryType;
+    entity1: NSPanel.ValueEntryType;
 };
 
 export type cardChartDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
     index: number;
-    data: ChangeTypeOfKeys<PageChartConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageChartConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardChartDataItems = {
     card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
@@ -636,7 +628,7 @@ export type cardChartDataItems = {
 type PageAlarmConfig = {
     alarmType?: string; //alarm unlock
     headline: string;
-    entity1: typePageItem.ValueEntryType;
+    entity1: NSPanel.ValueEntryType;
     button1: string;
     button2: string;
     button3: string;
@@ -645,7 +637,7 @@ type PageAlarmConfig = {
     button6: string;
     button7: string;
     button8: string;
-    icon: typePageItem.IconEntryType;
+    icon: NSPanel.IconEntryType;
     pin: number;
     approved?: boolean;
     approveState: boolean;
@@ -653,7 +645,7 @@ type PageAlarmConfig = {
 };
 export type cardAlarmDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardAlarm'>;
-    data: ChangeTypeOfKeys<PageAlarmConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageAlarmConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardAlarmDataItems = {
     card: Extract<AdminCardTypes, 'cardAlarm'>;
@@ -673,7 +665,7 @@ type PageQRBaseConfig = {
 export type cardQRDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardQR'>;
     index: number;
-    data: ChangeTypeOfKeys<PageQRBaseConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageQRBaseConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardQRDataItems = {
     card: Extract<AdminCardTypes, 'cardQR'>;
@@ -687,7 +679,7 @@ export function isQRButtonEvent(F: any): F is QRButtonEvent {
 export type cardPowerDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardPower'>;
     index: number;
-    data: ChangeTypeOfKeys<PageGridPowerConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageGridPowerConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardPowerDataItems = {
     card: Extract<AdminCardTypes, 'cardPower'>;
@@ -698,7 +690,7 @@ export type cardGridDataItemOptions = {
     card: Extract<cardGridTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3'>;
     cardRole?: CardRole;
 
-    data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageGridBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 export type cardGridDataItems = {
     card: Extract<cardGridTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3'>;
@@ -708,7 +700,7 @@ export type cardGridDataItems = {
 export type cardEntitiesDataItemOptions = {
     card: Extract<cardEntitiesTypes, 'cardEntities'>;
     cardRole?: CardRole;
-    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 export type cardEntitiesDataItems = {
     card: Extract<cardEntitiesTypes, 'cardEntities'>;
@@ -719,13 +711,12 @@ export type cardScheduleDataItemOptions = {
     card: Extract<cardEntitiesTypes, 'cardSchedule'>;
     cardRole?: CardRole;
 
-    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 export type cardScheduleDataItems = {
     card: Extract<cardEntitiesTypes, 'cardSchedule'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
-export type filterType = true | false | number | string;
 
 type PageMenuBaseConfig = {
     cardRole?: CardRole;
@@ -742,7 +733,7 @@ type PageMenuBaseConfig = {
      * - `"false"`: Show only items whose primary entity resolves to `false`.
      * - `number`: Show only items matching the given numeric filter value.
      */
-    filterType?: filterType;
+    filterType?: NSPanel.filterType;
 } &
     /**
      * Standard scroll presentations.
@@ -770,7 +761,7 @@ type PageMenuBaseConfig = {
 
 export type cardThermoDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardThermo'>;
-    data: ChangeTypeOfKeys<PageThermoBaseConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageThermoBaseConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardThermoDataItems = {
     card: Extract<AdminCardTypes, 'cardThermo'>;
@@ -780,15 +771,15 @@ export type cardThermoDataItems = {
 export type cardMediaDataItemOptions = {
     card: Extract<cardGridTypes, 'cardMedia'>;
     ident?: string;
-    logo?: typePageItem.PageItemDataItemsOptions | undefined;
-    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined>;
+    logo?: NSPanel.PageItemDataItemsOptions | undefined;
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 
 export type cardMediaDataItems = {
     card: Extract<cardGridTypes, 'cardMedia'>;
     dpInit?: string | RegExp; // ''
     ident?: string;
-    logo?: typePageItem.PageItemDataItemsOptions | undefined;
+    logo?: NSPanel.PageItemDataItemsOptions | undefined;
     logoItem?: PageItem | undefined;
 
     data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined>;
@@ -799,9 +790,9 @@ export type screenSaverCardType = 'screensaver' | 'screensaver2' | 'screensaver3
 
 export type screensaverDataItemOptions = {
     card: Extends<PageTypeCards, screenSaverCardType>;
-    mode: Types.ScreensaverModeType;
+    mode: NSPanel.ScreensaverModeType;
     rotationTime: number;
-    model: Types.NSpanelModel;
+    model: NSPanel.NSpanelModel;
     screensaverSwipe: boolean;
     screensaverIndicatorButtons: boolean;
     data: undefined;
@@ -811,38 +802,38 @@ export type ChangeDeepPartial<Obj> = Obj extends
     | object
     | listItem
     | PageTypeCards
-    | typePageItem.IconBoolean
-    | typePageItem.TextEntryType
-    | typePageItem.ValueEntryType
-    | typePageItem.IconEntryType
-    | typePageItem.ScaledNumberType
+    | NSPanel.IconBoolean
+    | NSPanel.TextEntryType
+    | NSPanel.ValueEntryType
+    | NSPanel.IconEntryType
+    | NSPanel.ScaledNumberType
     | PageGridPowerConfigElement
     | RGB
-    | typePageItem.ColorEntryType
+    | NSPanel.ColorEntryType
     | PageMediaBaseConfig
-    | Types.SerialTypePageElements
-    ? Obj extends Types.DataItemsOptions
-        ? Types.DataItemsOptions | null
+    | NSPanel.SerialTypePageElements
+    ? Obj extends NSPanel.DataItemsOptions
+        ? NSPanel.DataItemsOptions | null
         : {
               [K in keyof Obj]?: ChangeDeepPartial<Obj[K]> | null;
           }
-    : Types.DataItemsOptions | null;
+    : NSPanel.DataItemsOptions | null;
 
 export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | object
     | listItem
     | PageTypeCards
-    | typePageItem.IconBoolean
-    | typePageItem.TextEntryType
-    | typePageItem.ValueEntryType
-    | typePageItem.IconEntryType
-    | typePageItem.ScaledNumberType
+    | NSPanel.IconBoolean
+    | NSPanel.TextEntryType
+    | NSPanel.ValueEntryType
+    | NSPanel.IconEntryType
+    | NSPanel.ScaledNumberType
     | PageGridPowerConfigElement
     | RGB
-    | typePageItem.ColorEntryType
+    | NSPanel.ColorEntryType
     | PageMediaBaseConfig
-    | Types.SerialTypePageElements
-    ? Obj extends RGB | Types.IconScaleElement | Types.DataItemsOptions
+    | NSPanel.SerialTypePageElements
+    ? Obj extends RGB | NSPanel.IconScaleElement | NSPanel.DataItemsOptions
         ? N
         : {
               [K in keyof Obj]?: ChangeTypeOfKeys<Obj[K], N>;
@@ -857,22 +848,22 @@ export type ChangeTypeOfKeysGeneric<Obj, N> = Obj extends object
           }
     : N;
 
-type PageMediaBaseConfig = {
+export type PageMediaBaseConfig = {
     headline: string;
     alwaysOnDisplay?: boolean;
     album?: string;
-    title?: typePageItem.ValueEntryTypeWithColor;
+    title?: NSPanel.ValueEntryTypeWithColor;
     duration?: string;
     elapsed?: string;
     station?: boolean;
-    artist?: typePageItem.ValueEntryTypeWithColor;
-    shuffle?: typePageItem.ScaledNumberType;
-    volume?: typePageItem.ScaledNumberType;
+    artist?: NSPanel.ValueEntryTypeWithColor;
+    shuffle?: NSPanel.ScaledNumberType;
+    volume?: NSPanel.ScaledNumberType;
     useGroupVolume?: boolean;
-    volumeGroup?: typePageItem.ScaledNumberType;
+    volumeGroup?: NSPanel.ScaledNumberType;
     icon?: string;
     play?: string;
-    onOffColor?: typePageItem.ColorEntryTypeBooleanStandard;
+    onOffColor?: NSPanel.ColorEntryTypeBooleanStandard;
     mediaState?: string;
     isPlaying?: boolean;
     stop?: string;
@@ -894,9 +885,9 @@ type PageEntitiesBaseConfig = {
 
 type PageGridPowerConfig = {
     headline: string;
-    homeValueTop: typePageItem.ValueEntryType;
-    homeIcon: typePageItem.IconEntryType;
-    homeValueBot: typePageItem.ValueEntryType;
+    homeValueTop: NSPanel.ValueEntryType;
+    homeIcon: NSPanel.IconEntryType;
+    homeValueBot: NSPanel.ValueEntryType;
     leftTop: PageGridPowerConfigElement;
     leftMiddle: PageGridPowerConfigElement;
     leftBottom: PageGridPowerConfigElement;
@@ -907,10 +898,10 @@ type PageGridPowerConfig = {
 
 export type PageGridPowerConfigElement =
     | {
-          icon?: typePageItem.IconEntryType;
-          value?: typePageItem.ValueEntryType;
-          speed?: typePageItem.ScaledNumberType;
-          text?: typePageItem.TextEntryType;
+          icon?: NSPanel.IconEntryType;
+          value?: NSPanel.ValueEntryType;
+          speed?: NSPanel.ScaledNumberType;
+          text?: NSPanel.TextEntryType;
       }
     | undefined;
 
@@ -919,7 +910,7 @@ export type cardThermo2DataItemOptions = {
 
     sortOrder?: 'H' | 'V' | 'HM' | 'VM' | 'HB' | 'VB';
     cardRole?: CardRole;
-    data: ChangeTypeOfKeys<PageThermo2BaseConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageThermo2BaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 export type cardThermo2DataItems = {
     card: Extract<cardGridTypes, 'cardThermo2'>;
@@ -929,13 +920,13 @@ export type cardThermo2DataItems = {
 type PageThermo2BaseConfig = Thermo2DataSetBase | Thermo2DataSetBase[];
 
 type Thermo2DataSetBase = {
-    entity3?: typePageItem.ValueEntryType; // Thermostat
-    entity1: typePageItem.ValueEntryType; // sensor
-    icon1?: typePageItem.IconEntryType;
-    entity2?: typePageItem.ValueEntryType; // humidity
-    icon2?: typePageItem.IconEntryType;
-    icon4?: typePageItem.IconEntryType;
-    icon5?: typePageItem.IconEntryType;
+    entity3?: NSPanel.ValueEntryType; // Thermostat
+    entity1: NSPanel.ValueEntryType; // sensor
+    icon1?: NSPanel.IconEntryType;
+    entity2?: NSPanel.ValueEntryType; // humidity
+    icon2?: NSPanel.IconEntryType;
+    icon4?: NSPanel.IconEntryType;
+    icon5?: NSPanel.IconEntryType;
     headline?: string;
     minValue?: number;
     maxValue?: number;
@@ -945,8 +936,8 @@ type Thermo2DataSetBase = {
 };
 
 /*type ThermoDataSetBase = {
-    entity1: typePageItem.ValueEntryType;
-    humidity?: typePageItem.ValueEntryType;
+    entity1: NSPanel.ValueEntryType;
+    humidity?: NSPanel.ValueEntryType;
     set: boolean;
     unit: string;
     headline: string;
@@ -977,17 +968,17 @@ type PageThermoBaseConfig = {
     swing?: number;
     unit: string;
     headline: string;
-    mixed1: typePageItem.ValueEntryType;
-    mixed2: typePageItem.ValueEntryType;
-    mixed3: typePageItem.ValueEntryType;
-    mixed4: typePageItem.ValueEntryType;
+    mixed1: NSPanel.ValueEntryType;
+    mixed2: NSPanel.ValueEntryType;
+    mixed3: NSPanel.ValueEntryType;
+    mixed4: NSPanel.ValueEntryType;
     minTemp: number; // *10
     maxTemp: number; // *10
     tempStep: number; // *10
     icon?: string;
     color?: string;
 };
-export function isColorEntryType(F: object | typePageItem.ColorEntryType): F is typePageItem.ColorEntryType {
+export function isColorEntryType(F: object | NSPanel.ColorEntryType): F is NSPanel.ColorEntryType {
     if ('true' in F && 'false' in F && 'scale' in F) {
         return true;
     }
@@ -1131,7 +1122,7 @@ export type PageNotifyMessage = {
                 + v_popupNotifyTextColor + '~'
                 + getState(popupNotifySleepTimeout).val;*/
 export type screensaverMessage = {
-    options: Record<Types.ScreenSaverPlaces, string[]>;
+    options: Record<NSPanel.ScreenSaverPlaces, string[]>;
 };
 
 export type PageEntitiesMessage = {
@@ -1203,20 +1194,13 @@ export type PageThermoMessage = {
 };
 
 type writeItem = { dp: string } | undefined;
-export type listItem =
-    | {
-          on: string;
-          text: string;
-          color: typePageItem.ColorEntryType | string | undefined;
-          icon?: typePageItem.IconBoolean | string | undefined;
-          list?: string | undefined;
-      }
-    | undefined; // mean string start with getState(' and end with ').val
-export type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & {
-    action: typePageItem.MediaToolBoxAction;
+export type listItem = NSPanel.listItem;
+
+export type toolboxItem = ChangeTypeOfKeys<listItem, NSPanel.DataItemsOptions | undefined> & {
+    action: NSPanel.MediaToolBoxAction;
 };
-export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, dataItem.Dataitem | undefined> & {
-    action: typePageItem.MediaToolBoxAction;
+export type toolboxItemDataItem = ChangeTypeOfKeys<NSPanel.listItem, dataItem.Dataitem | undefined> & {
+    action: NSPanel.MediaToolBoxAction;
 };
 
 export type placeholderType = Record<

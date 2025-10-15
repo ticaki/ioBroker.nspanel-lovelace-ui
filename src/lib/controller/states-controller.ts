@@ -2,11 +2,12 @@
 
 import { Dataitem } from './data-item';
 import { BaseClass } from './library';
-import type { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/types';
+import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import { getRegExp } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { StateRole } from '../types/pages';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
+import type { NSPanel } from '../types/NSPanel';
 
 type getInternalFunctionType = (
     id: string,
@@ -1054,11 +1055,11 @@ export class StatesControler extends BaseClass {
         triggered?: boolean;
         writeable?: boolean;
         commonType?: ioBroker.CommonType | ioBroker.CommonType[] | '';
-    }): Promise<DataItemsOptions | undefined> {
+    }): Promise<NSPanel.DataItemsOptions | undefined> {
         const { dpInit, role = '', enums = '', regexp, triggered, writeable, commonType = '' } = options;
 
         const status = { ok: true };
-        let item: DataItemsOptions | undefined;
+        let item: NSPanel.DataItemsOptions | undefined;
         if (triggered) {
             item = {
                 type: 'triggered',
@@ -1108,7 +1109,7 @@ export class StatesControler extends BaseClass {
                 if (typeof t === 'object' && !('type' in t)) {
                     data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums, status);
                 } else if (typeof t === 'object' && 'type' in t) {
-                    const d = t as DataItemsOptions;
+                    const d = t as NSPanel.DataItemsOptions;
                     let found = false;
                     if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') {
                         continue;

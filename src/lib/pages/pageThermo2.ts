@@ -7,6 +7,7 @@ import type { ConfigManager } from '../classes/config-manager';
 import { PageMenu } from './pageMenu';
 import { Color } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
+import type { NSPanel } from '../types/NSPanel';
 
 const PageThermo2MessageDefault: pages.PageThermo2Message = {
     event: 'entityUpd',
@@ -409,9 +410,9 @@ export class PageThermo2 extends PageMenu {
             let actual = '';
             let humidity = '';
             let set = '';
-            let power: Types.DataItemsOptions | undefined;
+            let power: NSPanel.DataItemsOptions | undefined;
             let role: ScriptConfig.channelRoles = 'thermostat';
-            let mode: Types.DataItemsOptions | undefined;
+            let mode: NSPanel.DataItemsOptions | undefined;
             let foundedStates: configManagerConst.checkedDatapointsUnion | undefined;
             const item = thermoItems[i];
             foundedStates = undefined;

@@ -11,8 +11,8 @@ import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
 import type { PageInterface } from '../classes/PageInterface';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
-import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { Color, type RGB } from '../const/Color';
+import type { NSPanel } from '../types/NSPanel';
 
 export class Screensaver extends Page {
     items: undefined;
@@ -92,7 +92,7 @@ export class Screensaver extends Page {
      *
      * @param places Places to include in the message.
      */
-    async getData(places: Types.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
+    async getData(places: NSPanel.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
         const config = this.config;
         if (!config || !pages.isScreenSaverCardType(config.card)) {
             return null;
@@ -111,7 +111,7 @@ export class Screensaver extends Page {
                 notify: [],
             },
         };
-        const overwrite: Record<Types.ScreenSaverPlaces, string[]> = {
+        const overwrite: Record<NSPanel.ScreenSaverPlaces, string[]> = {
             indicator: [],
             left: [],
             time: [],
@@ -130,10 +130,10 @@ export class Screensaver extends Page {
         const model = 'model' in config ? config.model : 'eu';
         const layout = this.mode;
 
-        type AppendResult = { kind: 'append'; place: Types.ScreenSaverPlaces; idx: number; payload: string };
+        type AppendResult = { kind: 'append'; place: NSPanel.ScreenSaverPlaces; idx: number; payload: string };
         type OverwriteResult = {
             kind: 'overwrite';
-            place: Types.ScreenSaverPlaces;
+            place: NSPanel.ScreenSaverPlaces;
             enabledIndex: number;
             payload: string;
         };
@@ -186,7 +186,7 @@ export class Screensaver extends Page {
         );
 
         // Apply overwrites and collect appends grouped by place
-        const appendsByPlace: Record<Types.ScreenSaverPlaces, Array<{ idx: number; payload: string }>> = {
+        const appendsByPlace: Record<NSPanel.ScreenSaverPlaces, Array<{ idx: number; payload: string }>> = {
             indicator: [],
             left: [],
             time: [],
@@ -211,7 +211,7 @@ export class Screensaver extends Page {
 
         // Build message.options per place in original order, then apply overwrites
         for (const key in message.options) {
-            const place = key as Types.ScreenSaverPlaces;
+            const place = key as NSPanel.ScreenSaverPlaces;
             if (!places.includes(place)) {
                 continue;
             }
@@ -334,7 +334,7 @@ export class Screensaver extends Page {
     }
 
     public async createPageItems(
-        pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined,
+        pageItemsConfig: (NSPanel.PageItemDataItemsOptions | undefined)[] | undefined,
     ): Promise<(PageItem | undefined)[] | undefined> {
         return await super.createPageItems(pageItemsConfig);
     }

@@ -249,7 +249,7 @@ export async function getPageAlexa(
     gridItem.pageItems = gridItem.pageItems || [];
 
     //reminder
-    if (!page.media.deactivateDefaultItems?.reminder) {
+    if (page.media.deactivateDefaultItems?.reminder === false) {
         gridItem.pageItems.push({
             role: 'text.list',
             type: 'text',

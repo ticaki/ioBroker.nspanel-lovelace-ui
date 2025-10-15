@@ -280,7 +280,6 @@ class Page extends import_baseClassPage.BaseClassPage {
       case "cardGrid2":
       case "cardGrid3":
       case "cardMedia":
-      case "cardUnlock":
       case "cardQR":
       case "cardAlarm":
       case "cardPower":

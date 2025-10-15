@@ -1,7 +1,6 @@
 import { isDataItem, Dataitem } from '../controller/data-item';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import type { ColorEntryType } from '../types/type-pageItem';
 import type * as pages from '../types/pages';
 import * as types from '../types/types';
 import { type PageInterface } from '../classes/PageInterface';
@@ -15,6 +14,7 @@ import { getPageMpd } from './tools/getMpd';
 import { getPageSonos } from './tools/getSonos';
 import { PageItem } from './pageItem';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
+import type { NSPanel } from '../types/NSPanel';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
@@ -979,7 +979,7 @@ type _SelectValueFromBoolean = 'color' | 'string';
 export async function getValueFromBoolean(
     item:
         | Record<types.BooleanUnion, Dataitem | undefined>
-        | pages.ChangeTypeOfKeys<ColorEntryType, Dataitem | undefined>
+        | pages.ChangeTypeOfKeys<NSPanel.ColorEntryType, Dataitem | undefined>
         | Dataitem
         | undefined,
     type: _SelectValueFromBoolean,

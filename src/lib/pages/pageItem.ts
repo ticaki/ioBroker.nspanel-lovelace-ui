@@ -16,13 +16,14 @@ import {
 import type { Screensaver } from './screensaver';
 import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
+import type { NSPanel } from '../types/NSPanel';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseTriggeredPage {
     defaultOnColor = Color.White;
     defaultOffColor = Color.Blue;
-    config: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined;
-    dataItems: typePageItem.PageItemDataItems | undefined;
+    config: NSPanel.PageItemDataItemsOptionsWithOutTemplate | undefined;
+    dataItems: NSPanel.PageItemDataItems | undefined;
     id: string;
     lastPopupType: PopupType | undefined = undefined;
     readonly parent: Page;
@@ -36,7 +37,7 @@ export class PageItem extends BaseTriggeredPage {
 
     constructor(
         config: Omit<PageItemInterface, 'pageItemsConfig' | 'parent'> & { parent: Page },
-        options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
+        options: NSPanel.PageItemDataItemsOptionsWithOutTemplate | undefined,
     ) {
         super({
             name: config.name,
@@ -57,7 +58,7 @@ export class PageItem extends BaseTriggeredPage {
 
     static async getPageItem(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
-        options: typePageItem.PageItemDataItemsOptions | undefined,
+        options: NSPanel.PageItemDataItemsOptions | undefined,
     ): Promise<PageItem | undefined> {
         if (options === undefined) {
             return undefined;
@@ -65,7 +66,7 @@ export class PageItem extends BaseTriggeredPage {
         if (config.panel.persistentPageItems[config.id]) {
             return config.panel.persistentPageItems[config.id];
         }
-        const p = new PageItem(config, options as typePageItem.PageItemDataItemsOptionsWithOutTemplate);
+        const p = new PageItem(config, options as NSPanel.PageItemDataItemsOptionsWithOutTemplate);
         await p.init();
         return p;
     }
@@ -76,15 +77,15 @@ export class PageItem extends BaseTriggeredPage {
         }
         const config = structuredClone(this.config);
 
-        const tempItem: typePageItem.PageItemDataItems['data'] =
+        const tempItem: NSPanel.PageItemDataItems['data'] =
             (await this.parent.basePanel.statesControler.createDataItems(
                 config.data,
                 this,
                 {},
                 'data',
                 config.readOptions,
-            )) as typePageItem.PageItemDataItems['data'];
-        this.dataItems = { ...config, data: tempItem } as typePageItem.PageItemDataItems;
+            )) as NSPanel.PageItemDataItems['data'];
+        this.dataItems = { ...config, data: tempItem } as NSPanel.PageItemDataItems;
         this.canBeHidden = !!this.dataItems.data?.enabled;
         if (this.dataItems.data && 'enabled' in this.dataItems.data && this.dataItems.data.enabled) {
             this.canBeHidden = true;
@@ -262,7 +263,7 @@ export class PageItem extends BaseTriggeredPage {
             this.visibility = false;
             this.triggerParent = true;
             const entry = this.dataItems;
-            const message: Partial<typePageItem.MessageItem> = {};
+            const message: Partial<NSPanel.MessageItem> = {};
             message.intNameEntity = this.id;
             if (!(await this.isEnabled())) {
                 return '';
@@ -777,14 +778,14 @@ export class PageItem extends BaseTriggeredPage {
         return '~~~~~';
     }
 
-    getDetailPayload(message: Partial<typePageItem.entityUpdateDetailMessage>): string {
+    getDetailPayload(message: Partial<NSPanel.entityUpdateDetailMessage>): string {
         this.triggerParent = false;
         if (!message.type) {
             return '';
         }
         switch (message.type) {
             case '2Sliders': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: '2Sliders',
                     icon: '',
                     entityName: 'test',
@@ -816,7 +817,7 @@ export class PageItem extends BaseTriggeredPage {
                 break;
             }
             case 'insel': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: 'insel',
                     entityName: '',
                     headline: '',
@@ -837,7 +838,7 @@ export class PageItem extends BaseTriggeredPage {
                 break;
             }
             case 'popupThermo': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: 'popupThermo',
                     entityName: '',
                     headline: '',
@@ -854,7 +855,7 @@ export class PageItem extends BaseTriggeredPage {
                 break;
             }
             case 'popupFan': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: 'popupFan',
                     entityName: '',
                     icon: '',
@@ -882,7 +883,7 @@ export class PageItem extends BaseTriggeredPage {
                 break;
             }
             case 'popupTimer': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: 'popupTimer',
                     entityName: '',
                     iconColor: '',
@@ -916,7 +917,7 @@ export class PageItem extends BaseTriggeredPage {
                 break;
             }
             case 'popupShutter': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: 'popupShutter',
                     entityName: '',
                     pos1: '',
@@ -963,7 +964,7 @@ export class PageItem extends BaseTriggeredPage {
                 );
             }
             case 'popupShutter2': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: 'popupShutter2',
                     entityName: '',
                     pos1: '',
@@ -1016,7 +1017,7 @@ export class PageItem extends BaseTriggeredPage {
                 );
             }
             case 'popupSlider': {
-                let result: typePageItem.entityUpdateDetailMessage = {
+                let result: NSPanel.entityUpdateDetailMessage = {
                     type: 'popupSlider',
                     entityName: '',
                     tSlider1: '',
@@ -1147,7 +1148,7 @@ export class PageItem extends BaseTriggeredPage {
             return null;
         }
         const entry = this.dataItems;
-        let message: Partial<typePageItem.entityUpdateDetailMessage> = {};
+        let message: Partial<NSPanel.entityUpdateDetailMessage> = {};
         //const template = templatePageItems[mode][this.config.role];
         message.entityName = this.id;
         this.visibility = true;
@@ -2733,17 +2734,17 @@ export class PageItem extends BaseTriggeredPage {
             await this.parent.basePanel.screenSaver.onStateTrigger(id, from);
         }
     }
-    async getListCommands(setList: Dataitem | undefined): Promise<typePageItem.listCommand[] | null> {
+    async getListCommands(setList: Dataitem | undefined): Promise<NSPanel.listCommand[] | null> {
         if (!setList) {
             return null;
         }
-        let list: typePageItem.listCommand[] | null = (await setList.getObject()) as typePageItem.listCommand[] | null;
+        let list: NSPanel.listCommand[] | null = (await setList.getObject()) as NSPanel.listCommand[] | null;
         if (list === null) {
             const temp = await setList.getString();
             if (temp === null) {
                 return null;
             }
-            list = temp.split('|').map((a: string): typePageItem.listCommand => {
+            list = temp.split('|').map((a: string): NSPanel.listCommand => {
                 const t = a.split('?');
                 return typePageItem.islistCommandUnion(t[2])
                     ? { id: t[0], value: t[1], command: t[2] }
@@ -2761,7 +2762,7 @@ export class PageItem extends BaseTriggeredPage {
      * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
      */
 
-    async setListCommand(entry: typePageItem.PageItemDataItems, value: string): Promise<boolean> {
+    async setListCommand(entry: NSPanel.PageItemDataItems, value: string): Promise<boolean> {
         //if (entry.type !== 'input_sel') return false;
         const item = entry.data;
         if (!item || !('entityInSel' in item)) {
@@ -2989,7 +2990,7 @@ export class PageItem extends BaseTriggeredPage {
         return false;
     }
     async getListFromStates(
-        entityInSel: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
+        entityInSel: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined> | undefined,
         valueList: Dataitem | undefined,
         role: DeviceRole | undefined,
         valueList2: Dataitem | undefined = undefined,
@@ -3038,7 +3039,9 @@ export class PageItem extends BaseTriggeredPage {
 
                             const matchedState = source.find(s => s.includes(stateToken));
                             if (!matchedState) {
-                                this.log.warn(`Alexa playlist: no matching state for token "${stateToken}".`);
+                                this.log.warn(
+                                    `Alexa playlist: no matching state for token "${stateToken}" source "${source.join(', ')}".`,
+                                );
                                 continue;
                             }
 
@@ -3080,7 +3083,7 @@ export class PageItem extends BaseTriggeredPage {
             } else if (role === 'spotify-tracklist') {
                 // Spotify Tracklist
                 if (valueList2) {
-                    const arr = (await valueList2.getObject()) as typePageItem.spotifyPlaylist | null;
+                    const arr = (await valueList2.getObject()) as NSPanel.spotifyPlaylist | null;
                     if (arr) {
                         list.list = [];
                         list.states = [];
@@ -3108,7 +3111,7 @@ export class PageItem extends BaseTriggeredPage {
                 switch (role) {
                     /*case 'spotify-tracklist': {
                         if (valueList) {
-                            const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
+                            const val = (await valueList.getObject()) as NSPanel.spotifyPlaylist | null;
                             if (val) {
                                 states = {};
                                 for (let a = 0; a < val.length; a++) {
@@ -3213,7 +3216,7 @@ export class PageItem extends BaseTriggeredPage {
         }
         return list;
     }
-    static isPageItemTextDataItems(F: any): F is typePageItem.PageItemTextDataItems {
+    static isPageItemTextDataItems(F: any): F is NSPanel.PageItemTextDataItems {
         return F && typeof F === 'object' && 'type' in F && F.type === 'text';
     }
 }

@@ -2657,7 +2657,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               const label = entry.slice(sep + 1).trim();
               const matchedState = source.find((s) => s.includes(stateToken));
               if (!matchedState) {
-                this.log.warn(`Alexa playlist: no matching state for token "${stateToken}".`);
+                this.log.warn(
+                  `Alexa playlist: no matching state for token "${stateToken}" source "${source.join(", ")}".`
+                );
                 continue;
               }
               listOut.push(label);
@@ -2717,7 +2719,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         switch (role) {
           /*case 'spotify-tracklist': {
               if (valueList) {
-                  const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
+                  const val = (await valueList.getObject()) as NSPanel.spotifyPlaylist | null;
                   if (val) {
                       states = {};
                       for (let a = 0; a < val.length; a++) {

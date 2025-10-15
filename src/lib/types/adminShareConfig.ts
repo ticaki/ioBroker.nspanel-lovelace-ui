@@ -21,7 +21,8 @@ export type AdminCardTypes =
     | 'screensaver3'
     // Popup Cards
     | 'popupNotify'
-    | 'popupNotify2';
+    | 'popupNotify2'
+    | 'cardItemSpecial'; // Special card to manage pageItems (not selectable in admin UI)
 
 // Typ für pageInfo bei PageMenuConfig (siehe Panel)
 export interface PageMenuConfigInfo {

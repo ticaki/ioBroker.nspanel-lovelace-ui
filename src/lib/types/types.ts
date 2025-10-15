@@ -1,14 +1,14 @@
 import type * as dataItem from '../controller/data-item';
 import { Color, type RGB } from '../const/Color';
-import type * as typePageItem from './type-pageItem';
 import * as pages from './pages';
+import type { NSPanel } from './NSPanel';
 
 /**
  * Bitte an folgendes Schema halten
  * card.adapter?.aufgabe?.gerät?
  */
 
-export type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
+export type TemplateItems = Partial<Record<TemplateIdent, NSPanel.PageItemOptionsTemplate>>;
 
 export type PageTemplateIdent =
     | 'entities.waste-calendar'
@@ -232,98 +232,13 @@ export const SerialTypeArray = [
     'fan', //popup
 ];
 
-export type PopupType =
-    | 'popupFan'
-    | 'popupInSel'
-    | 'popupLight'
-    | 'popupLightNew'
-    | 'popupNotify'
-    | 'popupShutter'
-    | 'popupShutter2'
-    | 'popupThermo'
-    | 'popupTimer'
-    | 'popupSlider'; // for slider in popup
+export type PopupType = NSPanel.PopupType;
 
-export type SerialTypePageElements =
-    | 'button' //~button~button.entityName~3~17299~bt-name~bt-text
-    | 'light' // ~light~light.entityName~1~17299~Light1~0
-    | 'shutter' // ~shutter~cover.entityName~0~17299~Shutter2~iconUp|iconStop|iconDown
-    | 'shutter2' // ~shutter2~cover.entityName~0~17299~Shutter2~iconUp|iconStop|iconDown
-    | 'text' // ~text~sensor.entityName~3~17299~Temperature~content
-    | 'input_sel' //~input_sel~input_select.entityName~3~17299~sel-name~sel-text
-    | 'number' //~number~input_number.entityName~4~17299~Number123~value|min|max
-    | 'switch' // ~switch~switch.entityName~4~17299~Switch1~0
-    | 'delete'; //~delete~~~~~
+export type SerialTypePageElements = NSPanel.SerialTypePageElements;
 
-export type SerialTypePopup =
-    | 'button'
-    | 'light'
-    | 'light2'
-    | 'shutter'
-    | 'shutter2'
-    | 'text'
-    | 'input_sel'
-    | 'timer'
-    | 'number'
-    | 'fan'
-    | 'switch'
-    | 'delete';
+export type SerialTypePopup = NSPanel.SerialTypePopup;
 
-export type ButtonActionType =
-    | 'bExit'
-    | 'bUp'
-    | 'bNext'
-    | 'bSubNext'
-    | 'bPrev'
-    | 'bSubPrev'
-    | 'bHome'
-    | 'notifyAction'
-    | 'OnOff'
-    | 'button'
-    | 'up'
-    | 'stop'
-    | 'down'
-    | 'positionSlider'
-    | 'tiltOpen'
-    | 'tiltStop'
-    | 'tiltSlider'
-    | 'tiltClose'
-    | 'brightnessSlider'
-    | 'colorTempSlider'
-    | 'colorWheel'
-    | 'tempUpd'
-    | 'tempUpdHighLow'
-    | 'media-back'
-    | 'media-pause'
-    | 'media-next'
-    | 'media-shuffle'
-    | 'volumeSlider'
-    | 'mode-speakerlist'
-    | 'mode-playlist'
-    | 'mode-tracklist'
-    | 'mode-repeat'
-    | 'mode-equalizer'
-    | 'mode-seek'
-    | 'mode-crossfade'
-    | 'mode-favorites'
-    | 'mode-insel'
-    | 'media-OnOff'
-    | 'timer-start'
-    | 'timer-pause'
-    | 'timer-cancle'
-    | 'timer-finish'
-    | 'hvac_action'
-    | 'mode-modus1'
-    | 'mode-modus2'
-    | 'mode-modus3'
-    | 'number-set'
-    | 'mode-preset_modes'
-    | 'A1'
-    | 'A2'
-    | 'A3'
-    | 'A4'
-    | 'D1'
-    | 'U1';
+export type ButtonActionType = NSPanel.ButtonActionType;
 
 export type Payload = {
     payload: string;
@@ -366,17 +281,6 @@ function swapKeyValue(obj: Record<string, string>): Record<string, string> {
     return swapped;
 }
 
-export type ScreenSaverPlaces =
-    | 'left'
-    | 'bottom'
-    | 'indicator'
-    | 'alternate'
-    | 'favorit'
-    | 'mricon'
-    | 'time'
-    | 'date'
-    | 'notify';
-
 export type NSpanelModel = 'eu' | 'us-p' | 'us-l';
 export type Config = {
     leftEntity: boolean;
@@ -387,48 +291,18 @@ export type Config = {
     panelSendTopic: string;
     weatherEntity: string;
     screensaver: {
-        favoritEntity: [ScreenSaverElement];
-        leftEntity: ScreenSaverElement[];
-        bottomEntity: ScreenSaverElement[];
-        alternateEntity: [ScreenSaverElement?];
-        indicatorEntity: ScreenSaverElement[];
-        mrIconEntity: [ScreenSaverElement, ScreenSaverElement];
+        favoritEntity: [NSPanel.ScreenSaverElement];
+        leftEntity: NSPanel.ScreenSaverElement[];
+        bottomEntity: NSPanel.ScreenSaverElement[];
+        alternateEntity: [NSPanel.ScreenSaverElement?];
+        indicatorEntity: NSPanel.ScreenSaverElement[];
+        mrIconEntity: [NSPanel.ScreenSaverElement, NSPanel.ScreenSaverElement];
     };
     defaultColor: RGB;
     defaultOnColor: RGB;
     defaultOffColor: RGB;
     defaultBackgroundColor: RGB;
 };
-export type leftScreensaverEntityType =
-    | [ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined]
-    | [];
-export type indicatorScreensaverEntityType =
-    | [
-          ScreenSaverElementWithUndefined?,
-          ScreenSaverElementWithUndefined?,
-          ScreenSaverElementWithUndefined?,
-          ScreenSaverElementWithUndefined?,
-          ScreenSaverElementWithUndefined?,
-      ]
-    | [];
-export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-
-export type ScreenSaverDataItems = {
-    entityValue: pages.ChangeTypeOfKeys<typePageItem.ValueEntryType, dataItem.Dataitem | undefined>;
-    entityDateFormat: dataItem.Dataitem | undefined;
-    entityIcon: pages.ChangeTypeOfKeys<typePageItem.IconEntryType, dataItem.Dataitem | undefined>;
-    entityText: pages.ChangeTypeOfKeys<typePageItem.TextEntryType, dataItem.Dataitem | undefined>;
-    entityIconSelect: dataItem.Dataitem | undefined;
-};
-export type ScreenSaverElement = {
-    entityValue: pages.ChangeTypeOfKeys<typePageItem.ValueEntryType, DataItemsOptions | undefined>;
-    entityDateFormat: ScreenSaverElementConfig;
-    entityIcon: pages.ChangeTypeOfKeys<typePageItem.IconEntryType, DataItemsOptions | undefined>;
-    entityText: pages.ChangeTypeOfKeys<typePageItem.TextEntryType, DataItemsOptions | undefined>;
-    entityIconSelect: ScreenSaverElementConfig;
-};
-
-type ScreenSaverElementConfig = DataItemsOptions | undefined;
 
 export type IconScaleElement = IconColorElement | IconSelectElement;
 
@@ -547,25 +421,13 @@ export function isPartialIconSelectScaleElement(F: any): F is IconSelectElement 
     return F && ('valIcon_min' in (F as IconSelectElement) || 'valIcon_max' in (F as IconSelectElement));
 }
 
-export type DataItemstype = DataItemsOptions['type'];
+export type DataItemstype = NSPanel.DataItemsOptions['type'];
 export type DataItemsMode = 'custom' | 'auto';
 export type DataItemsOptionsIcon =
-    | Exclude<DataItemsOptions, DataItemsOptionsConst>
+    | Exclude<NSPanel.DataItemsOptions, DataItemsOptionsConst>
     | (DataItemsOptionsConst & {
           constVal: AllIcons;
       });
-export type DataItemsOptions = {
-    name?: string;
-    scale?: { min: number; max: number };
-    dp?: string | undefined;
-    constants?: Record<string, string>;
-} & (
-    | DataItemsOptionsConst
-    | DataItemsOptionsState
-    | DataItemsOptionsTriggered
-    | DataItemsOptionsInternal
-    | DataItemsOptionsInternalState
-);
 
 type RequireAtLeastOne<T, K extends keyof T = keyof T> = Pick<T, Exclude<keyof T, K>> &
     { [P in K]-?: Required<Pick<T, P>> & Partial<Pick<T, Exclude<K, P>>> }[K];
@@ -586,12 +448,6 @@ type Rest = Omit<Base, 'mode' | 'role' | 'commonType' | 'regexp'>;
 
 export type DataItemsOptionsAuto = { mode: 'auto' | 'done' | 'fail' } & Rest & AutoNeedOne; // bei 'auto': mind. eins von role/commonType/regexp
 
-type DataItemsOptionsCustom = {
-    mode?: 'custom'; // not set means custom
-    role?: string;
-    commonType?: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][] | '';
-};
-
 type DataItemsOptionsConst = {
     type: 'const';
     role?: pages.StateRole;
@@ -602,43 +458,6 @@ type DataItemsOptionsConst = {
     forceType?: 'string' | 'number' | 'boolean'; // force a type
     read?: string | ((val: any) => any);
     write?: string | ((val: any) => any);
-};
-type DataItemsOptionsInternal = {
-    type: 'internal';
-    role?: string;
-    commonType?: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][] | '';
-    dp: string;
-    read?: string | ((val: any) => any);
-    write?: string | ((val: any) => any);
-    change?: 'ts';
-};
-
-type DataItemsOptionsInternalState = {
-    type: 'internalState';
-    role?: string;
-    dp: string;
-    read?: string | ((val: any) => any);
-    write?: string | ((val: any) => any);
-};
-type DataItemsOptionsState = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
-    type: 'state';
-    dp: string;
-    state?: State | null; // use just inside of class
-    substring?: [number, number | undefined]; // only used with getString()
-    forceType?: 'string' | 'number' | 'boolean'; // force a type
-    read?: string | ((val: any) => any);
-    write?: string | ((val: any) => any);
-};
-type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
-    type: 'triggered';
-    dp: string;
-    state?: State | null; // use just inside of class
-    substring?: [number, number | undefined]; // only used with getString()
-    forceType?: 'string' | 'number' | 'boolean'; // force a type
-    read?: string | ((val: any) => any);
-    write?: string | ((val: any) => any);
-    change?: 'ts';
-    wirteable?: boolean;
 };
 
 //type internalDatapoints = 'Relais1' | 'Relais2';
