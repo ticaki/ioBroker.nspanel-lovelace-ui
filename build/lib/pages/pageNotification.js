@@ -36,7 +36,7 @@ module.exports = __toCommonJS(pageNotification_exports);
 var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
-var convertColorScaleBest = __toESM(require("../types/function-and-const"));
+var globals = __toESM(require("../types/function-and-const"));
 class PageNotify extends import_Page.Page {
   config;
   lastpage = [];
@@ -108,7 +108,7 @@ class PageNotify extends import_Page.Page {
       message.text = (_e = data.text && await data.text.getTranslatedString()) != null ? _e : "";
       message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.Color.White);
       const placeholder = (_f = data.optionalValue && await data.optionalValue.getObject()) != null ? _f : null;
-      if (placeholder && convertColorScaleBest.isPlaceholderType(placeholder)) {
+      if (placeholder && globals.isPlaceholderType(placeholder)) {
         for (const key in placeholder) {
           const target = placeholder[key];
           let val = (_g = target.dp && await this.basePanel.statesControler.getStateVal(target.dp)) != null ? _g : "";
@@ -278,7 +278,7 @@ ${message.text}`;
           data.setValue1 && await data.setValue1.setState(_event.opt === "yes");
         }
         const cb = (_a = data.closingBehaviour && await data.closingBehaviour.getString()) != null ? _a : "";
-        if (convertColorScaleBest.isClosingBehavior(cb)) {
+        if (globals.isClosingBehavior(cb)) {
           switch (cb) {
             case "none":
               close = false;

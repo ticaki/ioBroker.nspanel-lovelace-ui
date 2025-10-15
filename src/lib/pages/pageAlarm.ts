@@ -6,7 +6,7 @@ import { genericStateObjects } from '../const/definition';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import type * as pages from '../types/pages';
-import * as convertColorScaleBest from '../types/function-and-const';
+import * as globals from '../types/function-and-const';
 import type { IncomingEvent, nsPanelState } from '../types/types';
 
 const PageAlarmMessageDefault: pages.PageAlarmMessage = {
@@ -373,7 +373,7 @@ export class PageAlarm extends Page {
         }
         const approved = this.items.data && (await this.items.data.approved?.getBoolean());
 
-        if (convertColorScaleBest.isAlarmButtonEvent(button)) {
+        if (globals.isAlarmButtonEvent(button)) {
             await this.getStatus();
             if (this.status === 'triggered') {
                 return;

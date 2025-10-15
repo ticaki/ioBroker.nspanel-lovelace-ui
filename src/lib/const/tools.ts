@@ -4,7 +4,7 @@ import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';
 import type * as types from '../types/types';
-import * as convertColorScaleBest from '../types/function-and-const';
+import * as globals from '../types/function-and-const';
 import type { NSPanel } from '../types/NSPanel';
 
 export const messageItemDefault: NSPanel.MessageItem = {
@@ -286,7 +286,7 @@ export async function getIconEntryValue(
         const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;
         if (typeof on === 'number' && textFalse !== null) {
             const scale = i.scale && (await i.scale.getObject());
-            if (convertColorScaleBest.isPartialColorScaleElement(scale)) {
+            if (globals.isPartialColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= on) || (scale.val_max && scale.val_max <= on)) {
                     return text;
                 }
@@ -302,9 +302,7 @@ export async function getIconEntryValue(
     const scaleM = i.scale && (await i.scale.getObject());
 
     if (typeof on === 'boolean') {
-        const scale = convertColorScaleBest.isPartialIconSelectScaleElement(scaleM)
-            ? scaleM
-            : { valIcon_min: 0, valIcon_max: 1 };
+        const scale = globals.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
 
         if (scale.valIcon_min === 1 && scale.valIcon_max === 0) {
             on = !on;
@@ -318,9 +316,7 @@ export async function getIconEntryValue(
             );
         }
     } else if (typeof on === 'number') {
-        const scale = convertColorScaleBest.isPartialIconSelectScaleElement(scaleM)
-            ? scaleM
-            : { valIcon_min: 0, valIcon_max: 1 };
+        const scale = globals.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
         const swap = scale.valIcon_min > scale.valIcon_max;
         const min = swap ? scale.valIcon_max : scale.valIcon_min;
         const max = swap ? scale.valIcon_min : scale.valIcon_max;
@@ -365,7 +361,7 @@ export async function getIconEntryColor(
         const color = i.true && i.true.color && (await i.true.color.getRGBDec());
         const scale = i.scale && (await i.scale.getObject());
         if (scale) {
-            if (convertColorScaleBest.isIconColorScaleElement(scale)) {
+            if (globals.isIconColorScaleElement(scale)) {
                 if (scale.val_min === 1 && scale.val_max === 0) {
                     value = !value;
                 }
@@ -387,7 +383,7 @@ export async function getIconEntryColor(
         let cto = i.true && i.true.color && (await i.true.color.getRGBValue());
         let cfrom = i.false && i.false.color && (await i.false.color.getRGBValue());
         const scale = i.scale && (await i.scale.getObject());
-        if ((!cto || !cfrom) && convertColorScaleBest.isIconColorScaleElement(scale)) {
+        if ((!cto || !cfrom) && globals.isIconColorScaleElement(scale)) {
             switch (scale.mode) {
                 case 'hue':
                 case 'cie':
@@ -406,7 +402,7 @@ export async function getIconEntryColor(
 
         if (cto && cfrom && scale) {
             let rColor: RGB = cto;
-            if (convertColorScaleBest.isIconColorScaleElement(scale)) {
+            if (globals.isIconColorScaleElement(scale)) {
                 let swap = false;
                 let vMin = scale.val_min;
                 let vMax = scale.val_max;
@@ -476,7 +472,7 @@ export async function getIconEntryColor(
                     rColor = func(cfrom, cto, factor, { swap });
                 }
                 return String(Color.rgb_dec565(rColor));
-            } else if (convertColorScaleBest.isPartialColorScaleElement(scale)) {
+            } else if (globals.isPartialColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= value) || (scale.val_max && scale.val_max <= value)) {
                     return String(Color.rgb_dec565(cto));
                 }
@@ -742,7 +738,7 @@ export async function getValueEntryString(
 
     if (nval !== null && nval !== undefined) {
         let res = '';
-        if (convertColorScaleBest.isValueDateFormat(format)) {
+        if (globals.isValueDateFormat(format)) {
             if (nval < 0) {
                 return null;
             }
@@ -775,7 +771,7 @@ export async function getValueEntryString(
     let res = await i.value.getString();
 
     if (res != null) {
-        if (convertColorScaleBest.isValueDateFormat(format)) {
+        if (globals.isValueDateFormat(format)) {
             const temp = new Date(res);
             if (isValidDate(temp)) {
                 res = temp.toLocaleString(format.local, format.format);
