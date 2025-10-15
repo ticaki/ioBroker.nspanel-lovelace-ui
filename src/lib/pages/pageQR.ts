@@ -73,7 +73,7 @@ export class PageQR extends Page {
             return;
         }
         const message: Partial<pages.PageQRMessage> = {};
-        const config = this.adapter.config.pageQRConfig[this.index];
+        const config = this.adapter.config.pageQRConfig?.[this.index];
         if (this.items && config != null) {
             const items = this.items;
 
@@ -195,7 +195,7 @@ export class PageQR extends Page {
         }
         this.log.debug(`action: ${button}, value: ${value}`);
         if (pages.isQRButtonEvent(button)) {
-            if (this.adapter.config.pageQRConfig[this.index]) {
+            if (this.adapter.config.pageQRConfig?.[this.index]) {
                 if (
                     this.pageItems &&
                     this.pageItems[_event.id as any] &&
