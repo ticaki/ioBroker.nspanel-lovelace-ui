@@ -1,6 +1,6 @@
 import * as Definition from '../const/definition';
 import type * as Types from '../types/types';
-import * as convertColorScaleBest from '../types/function-and-const';
+import * as globals from '../types/function-and-const';
 import { Icons } from '../const/icon_mapping';
 
 //import dayjs from 'dayjs';
@@ -95,7 +95,7 @@ export class Screensaver extends Page {
      */
     async getData(places: NSPanel.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
         const config = this.config;
-        if (!config || !convertColorScaleBest.isScreenSaverCardType(config.card)) {
+        if (!config || !globals.isScreenSaverCardType(config.card)) {
             return null;
         }
 
@@ -667,10 +667,10 @@ export class Screensaver extends Page {
         ) {
             return;
         }
-        if (convertColorScaleBest.isScreenSaverMode(mode)) {
+        if (globals.isScreenSaverMode(mode)) {
             this.config.mode = mode;
         } else {
-            convertColorScaleBest.exhaustiveCheck(mode);
+            globals.exhaustiveCheck(mode);
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             this.log.error(`Invalid mode: ${mode}`);
         }
@@ -707,7 +707,7 @@ export class Screensaver extends Page {
                 break;
             }
             default: {
-                convertColorScaleBest.exhaustiveCheck(mode);
+                globals.exhaustiveCheck(mode);
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 this.log.error(`Invalid mode: ${mode}`);
                 return;
@@ -721,14 +721,14 @@ export class Screensaver extends Page {
     }
 
     static mapModeToNumber(mode: Types.ScreensaverModeType): Types.ScreensaverModeTypeAsNumber {
-        const index = convertColorScaleBest.arrayOfScreensaverModes.findIndex(x => x === mode);
+        const index = globals.arrayOfScreensaverModes.findIndex(x => x === mode);
         return Math.min(
             Math.max(index, 0),
-            convertColorScaleBest.arrayOfScreensaverModes.length - 1,
+            globals.arrayOfScreensaverModes.length - 1,
         ) as Types.ScreensaverModeTypeAsNumber;
     }
 
     static mapNumberToMode(mode: Types.ScreensaverModeTypeAsNumber): Types.ScreensaverModeType {
-        return convertColorScaleBest.arrayOfScreensaverModes[mode];
+        return globals.arrayOfScreensaverModes[mode];
     }
 }

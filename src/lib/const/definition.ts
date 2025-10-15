@@ -1,6 +1,6 @@
 import type { NSPanel } from '../types/NSPanel';
 import type * as types from '../types/types';
-import * as convertColorScaleBest from '../types/function-and-const';
+import * as globals from '../types/function-and-const';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -307,7 +307,7 @@ export const genericStateObjects: {
                             name: 'StateObjects.screenSaver.infoIcon',
                             type: 'string',
                             role: 'text',
-                            states: convertColorScaleBest.screenSaverInfoIcons,
+                            states: globals.screenSaverInfoIcons,
                             read: true,
                             write: true,
                             def: '',
@@ -374,7 +374,7 @@ export const genericStateObjects: {
                             role: 'level',
                             read: true,
                             write: true,
-                            states: convertColorScaleBest.arrayOfScreensaverModes,
+                            states: globals.arrayOfScreensaverModes,
                         },
                         native: {},
                     },
@@ -1584,7 +1584,7 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 role: 'level',
                 read: true,
                 write: true,
-                states: convertColorScaleBest.arrayOfScreensaverModes,
+                states: globals.arrayOfScreensaverModes,
             },
         },
         'cmd/NotificationCleared2': {
@@ -1783,7 +1783,7 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 role: 'text',
                 read: true,
                 write: true,
-                states: convertColorScaleBest.screenSaverInfoIcons,
+                states: globals.screenSaverInfoIcons,
                 def: 'none',
             },
         },

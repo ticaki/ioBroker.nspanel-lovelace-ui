@@ -36,7 +36,7 @@ var import_Color = require("../const/Color");
 var import_definition = require("../const/definition");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
-var convertColorScaleBest = __toESM(require("../types/function-and-const"));
+var globals = __toESM(require("../types/function-and-const"));
 const PageAlarmMessageDefault = {
   event: "entityUpd",
   headline: "Page Grid",
@@ -350,7 +350,7 @@ class PageAlarm extends import_Page.Page {
       return;
     }
     const approved = this.items.data && await ((_a = this.items.data.approved) == null ? void 0 : _a.getBoolean());
-    if (convertColorScaleBest.isAlarmButtonEvent(button)) {
+    if (globals.isAlarmButtonEvent(button)) {
       await this.getStatus();
       if (this.status === "triggered") {
         return;
