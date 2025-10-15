@@ -256,7 +256,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
-  if (!((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.reminder)) {
+  if (((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.reminder) === false) {
     gridItem.pageItems.push({
       role: "text.list",
       type: "text",

@@ -220,7 +220,6 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       );
       if (states) {
         this.tempData = Object.keys(states);
-        this.log.error(`Playlists found: ${this.tempData.length} values: ${JSON.stringify(this.tempData)}`);
       }
     }
   }
