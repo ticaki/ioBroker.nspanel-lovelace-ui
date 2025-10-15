@@ -29,6 +29,7 @@ import {
 } from '../../src/lib/types/adminShareConfig';
 import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
 import ConfirmDialog from './components/ConfirmDialog';
+import ObjectIdSelectorPopup from './components/ObjectIdSelectorPopup';
 
 interface QRPageState extends ConfigGenericState {
     entries: QREntries;
@@ -37,6 +38,7 @@ interface QRPageState extends ConfigGenericState {
     pagesList?: string[];
     alive?: boolean;
     pagesRetryCount?: number;
+    objectIdSelectorOpen?: boolean;
 }
 
 interface LocalUIState {
@@ -61,6 +63,19 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
             pagesRetryCount: 0,
         } as QRPageState;
     }
+
+    private handleObjectIdSelectorOpen = (): void => {
+        this.setState({ objectIdSelectorOpen: true });
+    };
+
+    private handleObjectIdSelectorClose = (): void => {
+        this.setState({ objectIdSelectorOpen: false });
+    };
+
+    private handleObjectIdSelect = (filePath: string): void => {
+        console.log('[QRPage] Selected file:', filePath);
+        // Handle file selection here (e.g., update state or show notification)
+    };
 
     componentWillUnmount(): void {
         if (this.pagesRetryTimeout) {
@@ -793,6 +808,15 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                                                             }}
                                                             sx={{ mb: 2 }}
                                                         />
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="primary"
+                                                            size="small"
+                                                            fullWidth
+                                                            onClick={this.handleObjectIdSelectorOpen}
+                                                        >
+                                                            Test ObjectIdSelector
+                                                        </Button>
                                                     </Box>
                                                 )}
 
@@ -892,6 +916,24 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                         }}
                     />
                 </Box>
+                {/* ObjectIdSelectorPopup component */}
+                <ObjectIdSelectorPopup
+                    open={!!this.state.objectIdSelectorOpen}
+                    onClose={this.handleObjectIdSelectorClose}
+                    onSelect={this.handleObjectIdSelect}
+                    socket={this.props.oContext.socket}
+                    themeName={this.props.themeName}
+                    themeType={this.props.theme?.palette?.mode || 'light'}
+                    theme={this.props.theme}
+                    adapterName="nspanel-lovelace-ui"
+                    instance={this.props.oContext?.instance || 0}
+                    objectIdConfig={{
+                        types: 'state',
+                        filterFunc: (obj: ioBroker.Object) => {
+                            return !!(obj?.type === 'state' && obj.common.role && obj.common.role.startsWith('switch'));
+                        },
+                    }}
+                />
             </Box>
         );
     }
