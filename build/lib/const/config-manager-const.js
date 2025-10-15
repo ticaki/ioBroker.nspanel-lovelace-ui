@@ -28,7 +28,7 @@ __export(config_manager_const_exports, {
   requiredScriptDataPoints: () => requiredScriptDataPoints
 });
 module.exports = __toCommonJS(config_manager_const_exports);
-var import_pages = require("../types/pages");
+var import_function_and_const = require("../types/function-and-const");
 const CustomTemplates = [
   {
     device: "shutter",
@@ -100,7 +100,7 @@ function isConfig(F, adapter) {
   }
   return true;
 }
-const arrayOfAllConfigRequiredFields = (0, import_pages.arrayOfAll)();
+const arrayOfAllConfigRequiredFields = (0, import_function_and_const.arrayOfAll)();
 const defaultConfig = {
   version: "0",
   panelTopic: "",

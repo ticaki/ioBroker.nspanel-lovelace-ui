@@ -2,7 +2,8 @@ import { isDataItem, Dataitem } from '../controller/data-item';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import type * as pages from '../types/pages';
-import * as types from '../types/types';
+import type * as types from '../types/types';
+import * as convertColorScaleBest from '../types/function-and-const';
 import { type PageInterface } from '../classes/PageInterface';
 import * as tools from '../const/tools';
 import type { ConfigManager } from '../classes/config-manager';
@@ -924,7 +925,7 @@ export class PageMedia extends PageMenu {
         let msg: string | null = null;
         if (action && value !== undefined && (await item.onCommand(action, value))) {
             return;
-        } else if (types.isPopupType(popup) && action !== 'bExit') {
+        } else if (convertColorScaleBest.isPopupType(popup) && action !== 'bExit') {
             this.basePanel.lastCard = '';
             await this.basePanel.setActivePage(false);
             msg = await item.GeneratePopup(popup);

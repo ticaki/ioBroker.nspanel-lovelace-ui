@@ -34,7 +34,7 @@ module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
-var pages = __toESM(require("../types/pages"));
+var convertColorScaleBest = __toESM(require("../types/function-and-const"));
 const PageQRMessageDefault = {
   event: "entityUpd",
   headline: "Page QR",
@@ -432,7 +432,7 @@ class PageQR extends import_Page.Page {
       return;
     }
     this.log.debug(`action: ${button}, value: ${value}`);
-    if (pages.isQRButtonEvent(button)) {
+    if (convertColorScaleBest.isQRButtonEvent(button)) {
       if (this.adapter.config.pageQRdata[this.index]) {
         if (this.pageItems && this.pageItems[_event.id] && this.pageItems[_event.id].config && this.pageItems[_event.id].config.type == "button") {
           await this.pageItems[_event.id].onCommand("switch", value);

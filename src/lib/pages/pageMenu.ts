@@ -3,7 +3,8 @@ import { type PageInterface } from '../classes/PageInterface';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray, getPayloadRemoveTilde, getRegExp } from '../const/tools';
-import * as pages from '../types/pages';
+import type * as pages from '../types/pages';
+import * as convertColorScaleBest from '../types/function-and-const';
 import type { IncomingEvent, nsPanelState, nsPanelStateVal } from '../types/types';
 import { handleCardRole } from './data-collection-functions';
 import type { PageItem } from './pageItem';
@@ -28,7 +29,7 @@ export class PageMenu extends Page {
     private tempItems: (PageItem | undefined)[] | undefined;
 
     constructor(config: PageInterface, options: pages.PageBase) {
-        if (!pages.isPageMenuConfig(config)) {
+        if (!convertColorScaleBest.isPageMenuConfig(config)) {
             throw new Error(`PageMenu: invalid config (card=${(config as any).card})`);
         }
         super(config, options);
@@ -209,7 +210,7 @@ export class PageMenu extends Page {
         // classic paging
         if (style === 'classic') {
             const requestedScrollType = this.config.scrollType === 'half' ? 'half' : 'page';
-            const cardAllowsHalf = pages.isCardMenuHalfPageScrollType(this.config.card);
+            const cardAllowsHalf = convertColorScaleBest.isCardMenuHalfPageScrollType(this.config.card);
             const effectiveScrollType: 'page' | 'half' =
                 requestedScrollType === 'half' && cardAllowsHalf ? 'half' : 'page';
 
@@ -330,7 +331,7 @@ export class PageMenu extends Page {
                     }
                 }
             }
-            if (this.config && pages.isPageMenuConfig(this.config)) {
+            if (this.config && convertColorScaleBest.isPageMenuConfig(this.config)) {
                 switch (this.config.card) {
                     case 'cardSchedule':
                     case 'cardGrid':
@@ -377,7 +378,7 @@ export class PageMenu extends Page {
             super.goLeft();
             return;
         }
-        if (!this.config || !pages.isPageMenuConfig(this.config)) {
+        if (!this.config || !convertColorScaleBest.isPageMenuConfig(this.config)) {
             return;
         }
 
@@ -407,7 +408,9 @@ export class PageMenu extends Page {
         const maxItems = Math.max(0, this.maxItems | 0);
         const requested: 'page' | 'half' = this.config.scrollType === 'half' ? 'half' : 'page';
         const effective: 'page' | 'half' =
-            requested === 'half' && pages.isCardMenuHalfPageScrollType(this.config.card) ? 'half' : 'page';
+            requested === 'half' && convertColorScaleBest.isCardMenuHalfPageScrollType(this.config.card)
+                ? 'half'
+                : 'page';
         const stride = effective === 'page' ? maxItems : Math.max(1, Math.floor(maxItems / 2));
 
         // wenn es gar keine weitere Seite gibt, delegiere nach links
@@ -432,7 +435,7 @@ export class PageMenu extends Page {
             super.goRight();
             return;
         }
-        if (!this.config || !pages.isPageMenuConfig(this.config)) {
+        if (!this.config || !convertColorScaleBest.isPageMenuConfig(this.config)) {
             return;
         }
 
@@ -462,7 +465,9 @@ export class PageMenu extends Page {
         const maxItems = Math.max(0, this.maxItems | 0);
         const requested: 'page' | 'half' = this.config.scrollType === 'half' ? 'half' : 'page';
         const effective: 'page' | 'half' =
-            requested === 'half' && pages.isCardMenuHalfPageScrollType(this.config.card) ? 'half' : 'page';
+            requested === 'half' && convertColorScaleBest.isCardMenuHalfPageScrollType(this.config.card)
+                ? 'half'
+                : 'page';
         const stride = effective === 'page' ? maxItems : Math.max(1, Math.floor(maxItems / 2));
 
         const nextStart = (this.step + 1) * stride;
@@ -488,7 +493,7 @@ export class PageMenu extends Page {
 
         // Scrolltyp wie in getOptions() bestimmen
         const requested: 'page' | 'half' = this.config.scrollType === 'half' ? 'half' : 'page';
-        const cardAllowsHalf = pages.isCardMenuHalfPageScrollType(this.config.card);
+        const cardAllowsHalf = convertColorScaleBest.isCardMenuHalfPageScrollType(this.config.card);
         const effective: 'page' | 'half' = requested === 'half' && cardAllowsHalf ? 'half' : 'page';
 
         const stride = effective === 'page' ? maxItems : Math.max(1, Math.floor(maxItems / 2));

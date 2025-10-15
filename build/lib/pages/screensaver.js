@@ -40,10 +40,9 @@ __export(screensaver_exports, {
 });
 module.exports = __toCommonJS(screensaver_exports);
 var Definition = __toESM(require("../const/definition"));
-var Types = __toESM(require("../types/types"));
+var convertColorScaleBest = __toESM(require("../types/function-and-const"));
 var import_icon_mapping = require("../const/icon_mapping");
 var import_Page = require("../classes/Page");
-var pages = __toESM(require("../types/pages"));
 var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
 var import_Color = require("../const/Color");
@@ -185,7 +184,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    */
   async getData(places) {
     const config = this.config;
-    if (!config || !pages.isScreenSaverCardType(config.card)) {
+    if (!config || !convertColorScaleBest.isScreenSaverCardType(config.card)) {
       return null;
     }
     const message = {
@@ -567,10 +566,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3") {
       return;
     }
-    if (pages.isScreenSaverMode(mode)) {
+    if (convertColorScaleBest.isScreenSaverMode(mode)) {
       this.config.mode = mode;
     } else {
-      pages.exhaustiveCheck(mode);
+      convertColorScaleBest.exhaustiveCheck(mode);
       this.log.error(`Invalid mode: ${mode}`);
     }
   }
@@ -602,7 +601,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         break;
       }
       default: {
-        pages.exhaustiveCheck(mode);
+        convertColorScaleBest.exhaustiveCheck(mode);
         this.log.error(`Invalid mode: ${mode}`);
         return;
       }
@@ -614,14 +613,14 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
   }
   static mapModeToNumber(mode) {
-    const index = Types.arrayOfScreensaverModes.findIndex((x) => x === mode);
+    const index = convertColorScaleBest.arrayOfScreensaverModes.findIndex((x) => x === mode);
     return Math.min(
       Math.max(index, 0),
-      Types.arrayOfScreensaverModes.length - 1
+      convertColorScaleBest.arrayOfScreensaverModes.length - 1
     );
   }
   static mapNumberToMode(mode) {
-    return Types.arrayOfScreensaverModes[mode];
+    return convertColorScaleBest.arrayOfScreensaverModes[mode];
   }
 };
 _Screensaver_instances = new WeakSet();

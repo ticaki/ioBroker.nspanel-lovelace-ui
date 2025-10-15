@@ -1,5 +1,4 @@
 import type * as dataItem from '../controller/data-item';
-import type { RGB } from '../const/Color';
 import { type PageItem } from '../pages/pageItem';
 import type { AdminCardTypes } from './adminShareConfig';
 import type { NSPanel } from './NSPanel';
@@ -12,199 +11,7 @@ export type cardGridTypes = Extract<
     'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2' | 'cardMedia'
 >;
 
-// Optimierte Type Guards mit const assertions
-const CARD_ENTITIES_TYPES = ['cardEntities', 'cardSchedule'] as const;
-const CARD_GRID_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2', 'cardMedia'] as const;
-const CARD_MENU_HALF_PAGE_SCROLL_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'] as const;
-
-export function isCardEntitiesType(value: unknown): value is cardEntitiesTypes {
-    return typeof value === 'string' && CARD_ENTITIES_TYPES.includes(value as any);
-}
-
-export function isCardGridType(value: unknown): value is cardGridTypes {
-    return typeof value === 'string' && CARD_GRID_TYPES.includes(value as any);
-}
-
-export function isCardMenuHalfPageScrollType(value: unknown): value is cardGridTypes {
-    return typeof value === 'string' && CARD_MENU_HALF_PAGE_SCROLL_TYPES.includes(value as any);
-}
-
-export function isCardMenuRole(F: any): F is cardGridTypes | cardEntitiesTypes {
-    return isCardEntitiesType(F) || isCardGridType(F);
-}
-
-// cardMedia use some features of cardGrid, but is not a menu card
-export function isPageMenuConfig(F: any): F is PageMenuConfig {
-    if (typeof F !== 'object' || F === null || !('card' in F)) {
-        return false;
-    }
-    return isCardMenuRole(F.card);
-}
-
 export type PageTypeCards = NSPanel.PageTypeCards; // besonders, interne Card zum verwalten von pageItems
-
-export const arrayOfAll =
-    <T>() =>
-    <U extends T[]>(array: U & ([T] extends [U[number]] ? unknown : 'Invalid') & { 0: T }): U =>
-        array;
-export function exhaustiveCheck(_param: never): void {}
-const arrayOfAllStateRole = arrayOfAll<StateRole>();
-const arrayOfAllScreenSaverMode = arrayOfAll<NSPanel.ScreensaverModeType>();
-const arrayOfAllScreenSaverCards = arrayOfAll<screenSaverCardType>();
-export const screenSaverCardArray: screenSaverCardType[] = arrayOfAllScreenSaverCards([
-    'screensaver',
-    'screensaver2',
-    'screensaver3',
-]);
-export function isScreenSaverCardType(F: string): F is screenSaverCardType {
-    if (typeof F !== 'string') {
-        return false;
-    }
-
-    return ['screensaver', 'screensaver2', 'screensaver3'].includes(F);
-}
-
-export const screenSaverModeArray = arrayOfAllScreenSaverMode(['standard', 'advanced', 'alternate', 'easyview']);
-export function isScreenSaverMode(F: any): F is NSPanel.ScreensaverModeType {
-    if (typeof F !== 'string') {
-        return false;
-    }
-
-    return ['standard', 'advanced', 'alternate', 'easyview'].includes(F);
-}
-// Optimierter Type Guard für ScreensaverMode Numbers
-const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3] as const;
-
-export function isScreenSaverModeAsNumber(value: unknown): value is NSPanel.ScreensaverModeTypeAsNumber {
-    return typeof value === 'number' && SCREENSAVER_MODE_NUMBERS.includes(value as any);
-}
-
-/**
- * if u get a error here, u have to add the new stateRole to the type StateRole or visa versa
- */
-export const stateRoleArray = arrayOfAllStateRole([
-    'button',
-    'button.close',
-    'button.close.blind',
-    'button.close.tilt',
-    'button.next',
-    'button.open',
-    'button.open.blind',
-    'button.open.tilt',
-    'button.pause',
-    'button.play',
-    'button.press',
-    'button.prev',
-    'button.stop',
-    'button.stop.blind',
-    'button.stop.tilt',
-    'button.volume.down',
-    'button.volume.up',
-    'date',
-    'date.sunrise.forecast.0',
-    'date.sunrise.forecast.1',
-    'date.sunset.forecast.0',
-    'date.sunset.forecast.1',
-    'indicator.error',
-    'indicator.lowbat',
-    'indicator.maintenance',
-    'indicator.maintenance.lowbat',
-    'indicator.maintenance.unreach',
-    'indicator.working',
-    'level',
-    'level.blind',
-    'level.brightness',
-    'level.color.blue',
-    'level.color.cie',
-    'level.color.green',
-    'level.color.hue',
-    'level.color.name',
-    'level.color.red',
-    'level.color.rgb',
-    'level.color.temperature',
-    'level.color.white',
-    'level.dimmer',
-    'level.mode.airconditioner',
-    'level.mode.fan',
-    'level.mode.thermostat',
-    'level.speed',
-    'level.mode.swing',
-    'level.temperature',
-    'level.tilt',
-    'level.value',
-    'level.volume',
-    'media.album',
-    'media.artist',
-    'media.duration',
-    'media.elapsed',
-    'media.elapsed.text',
-    'media.mode.repeat',
-    'media.mode.shuffle',
-    'media.mute',
-    'media.playlist',
-    'media.seek',
-    'media.state',
-    'media.title',
-    'sensor.door',
-    'sensor.light',
-    'sensor.motion',
-    'sensor.open',
-    'sensor.window',
-    'state',
-    'state.light',
-    'switch',
-    'switch.gate',
-    'switch.light',
-    'switch.lock',
-    'switch.mode.auto',
-    'switch.mode.boost',
-    'switch.boost',
-    'switch.mode.manual',
-    'switch.mode.party',
-    'switch.mode.swing',
-    'switch.power',
-    'text',
-    'timestamp',
-    'value',
-    'value.battery',
-    'value.blind',
-    'value.dimmer',
-    'value.humidity',
-    'value.power',
-    'value.rgb',
-    'value.temperature',
-    'value.tilt',
-    'value.volume',
-    'value.warning',
-    'weather.icon.forecast',
-    'weather.title',
-    'weather.title.short',
-    'level.mode.select',
-    'value.mode.select',
-    'level.timer',
-    'value.timer',
-    'level.mode',
-    'sensor.alarm.flood',
-    'indicator.reachable',
-    'sensor.switch',
-    'date.sunrise',
-    'date.sunset',
-    'weather.icon',
-    'weather.icon.name',
-    'value.uv',
-    'value.direction.wind',
-    'value.speed.wind',
-    'value.mode.airconditioner',
-    'value.mode.thermostat',
-    'indicator',
-    'indicator.connected',
-    'level.volume.group',
-    'media.mode.crossfade',
-    'media.station',
-    'date.sunrise,forecast.0',
-    'date.sunset.forecast.0',
-    '',
-]);
 
 export type StateRole =
     | 'date.sunrise,forecast.0'
@@ -384,73 +191,6 @@ export type DeviceRole =
     | ''
     | CardRole;
 
-export function isStateRole(F: string): F is StateRole {
-    // Alle StateRole Werte sind gültig - triviale Type Guard
-    return true;
-}
-// Optimierte Type Guards mit Sets für bessere Performance
-const BUTTON_ACTION_TYPES = new Set([
-    'bExit',
-    'bUp',
-    'bNext',
-    'bSubNext',
-    'bPrev',
-    'bSubPrev',
-    'bHome',
-    'notifyAction',
-    'OnOff',
-    'button',
-    'up',
-    'stop',
-    'down',
-    'positionSlider',
-    'tiltOpen',
-    'tiltStop',
-    'tiltSlider',
-    'tiltClose',
-    'brightnessSlider',
-    'colorTempSlider',
-    'colorWheel',
-    'tempUpd',
-    'tempUpdHighLow',
-    'media-back',
-    'media-pause',
-    'media-next',
-    'media-shuffle',
-    'volumeSlider',
-    'mode-speakerlist',
-    'mode-playlist',
-    'mode-tracklist',
-    'mode-repeat',
-    'mode-equalizer',
-    'mode-seek',
-    'mode-crossfade',
-    'mode-favorites',
-    'mode-insel',
-    'media-OnOff',
-    'timer-start',
-    'timer-pause',
-    'timer-cancle',
-    'timer-finish',
-    'hvac_action',
-    'mode-modus1',
-    'mode-modus2',
-    'mode-modus3',
-    'number-set',
-    'mode-preset_modes',
-    'A1',
-    'A2',
-    'A3',
-    'A4',
-    'D1',
-    'U1',
-    'eu',
-] as const);
-
-export function isButtonActionType(value: unknown): value is NSPanel.ButtonActionType {
-    return typeof value === 'string' && BUTTON_ACTION_TYPES.has(value as any);
-}
-
 export type PageBaseConfig = PageMenuConfig | PageOthersConfigs | screensaverDataItemOptions;
 export type allCards =
     | AdminCardTypes
@@ -460,15 +200,8 @@ export type allCards =
     | 'screensaver3'
     | 'cardItemSpecial';
 
-// Optimierte Alarm Types mit const assertions
-const ALARM_BUTTON_EVENTS = ['A1', 'A2', 'A3', 'A4', 'D1', 'D2', 'D3', 'D4', 'U1', ''] as const;
-
-export type AlarmButtonEvents = (typeof ALARM_BUTTON_EVENTS)[number];
+export type AlarmButtonEvents = 'A1' | 'A2' | 'A3' | 'A4' | 'D1' | 'D2' | 'D3' | 'D4' | 'U1' | '';
 export type AlarmStates = 'disarmed' | 'armed' | 'arming' | 'pending' | 'triggered';
-
-export function isAlarmButtonEvent(value: unknown): value is AlarmButtonEvents {
-    return typeof value === 'string' && ALARM_BUTTON_EVENTS.includes(value as any);
-}
 
 export type PageMenuConfig = (
     | cardThermo2DataItemOptions
@@ -584,9 +317,7 @@ export type cardNotifyDataItemOptions = {
 };
 
 export type closingBehaviour = 'both' | 'yes' | 'no' | 'none';
-export function isClosingBehavior(F: any): F is closingBehaviour {
-    return ['both', 'yes', 'no', 'none'].indexOf(F) !== -1;
-}
+
 export type cardNotifyDataItems = {
     card: Extract<AdminCardTypes, 'popupNotify'>;
     data: ChangeTypeOfKeys<PageNotifyConfig, dataItem.Dataitem | undefined>;
@@ -666,9 +397,6 @@ export type cardQRDataItems = {
     data: ChangeTypeOfKeys<PageQRBaseConfig, dataItem.Dataitem | undefined>;
 };
 export type QRButtonEvent = 'OnOff';
-export function isQRButtonEvent(F: any): F is QRButtonEvent {
-    return ['OnOff'].indexOf(F) !== -1;
-}
 
 export type cardPowerDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardPower'>;
@@ -802,7 +530,7 @@ export type ChangeDeepPartial<Obj> = Obj extends
     | NSPanel.IconEntryType
     | NSPanel.ScaledNumberType
     | PageGridPowerConfigElement
-    | RGB
+    | NSPanel.RGB
     | NSPanel.ColorEntryType
     | PageMediaBaseConfig
     | NSPanel.SerialTypePageElements
@@ -823,11 +551,11 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | NSPanel.IconEntryType
     | NSPanel.ScaledNumberType
     | PageGridPowerConfigElement
-    | RGB
+    | NSPanel.RGB
     | NSPanel.ColorEntryType
     | PageMediaBaseConfig
     | NSPanel.SerialTypePageElements
-    ? Obj extends RGB | NSPanel.IconScaleElement | NSPanel.DataItemsOptions
+    ? Obj extends NSPanel.RGB | NSPanel.IconScaleElement | NSPanel.DataItemsOptions
         ? N
         : {
               [K in keyof Obj]?: ChangeTypeOfKeys<Obj[K], N>;
@@ -835,7 +563,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     : N;
 
 export type ChangeTypeOfKeysGeneric<Obj, N> = Obj extends object
-    ? Obj extends RGB
+    ? Obj extends NSPanel.RGB
         ? N
         : {
               [K in keyof Obj]: ChangeTypeOfKeysGeneric<Obj[K], N>;
@@ -972,12 +700,7 @@ type PageThermoBaseConfig = {
     icon?: string;
     color?: string;
 };
-export function isColorEntryType(F: object | NSPanel.ColorEntryType): F is NSPanel.ColorEntryType {
-    if ('true' in F && 'false' in F && 'scale' in F) {
-        return true;
-    }
-    return false;
-}
+
 export type PageMediaBaseConfigWrite = {
     pplay: writeItem;
     pause: writeItem;
@@ -1204,24 +927,3 @@ export type placeholderType = Record<
         dp?: string;
     }
 >;
-
-export function isPlaceholderType(F: any): F is placeholderType {
-    if (!F || typeof F !== 'object') {
-        return false;
-    }
-    for (const a in F) {
-        let count = 0;
-        if (!F[a]) {
-            return false;
-        }
-        for (const b in F[a]) {
-            if (['text', 'dp'].indexOf(b) !== -1 && F[a][b] !== undefined) {
-                count++;
-            }
-        }
-        if (count !== 1) {
-            return false;
-        }
-    }
-    return true;
-}

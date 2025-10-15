@@ -3,7 +3,7 @@ import { BaseClass } from './library';
 import type { StatesControler } from './states-controller';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { NSPanel } from '../types/NSPanel';
-import { isIconColorScaleElement } from '../types/types';
+import { isIconColorScaleElement } from '../types/function-and-const';
 
 export class Dataitem extends BaseClass {
     #compiledReadFn?: (

@@ -1,6 +1,7 @@
-import * as pages from '../types/pages';
+import type * as pages from '../types/pages';
+import * as convertColorScaleBest from '../types/function-and-const';
 import { BaseClassPage } from './baseClassPage';
-import * as types from '../types/types';
+import type * as types from '../types/types';
 import { PageItem } from '../pages/pageItem';
 import { deepAssign, getPayload, getPayloadRemoveTilde, getRegExp } from '../const/tools';
 import { pageItemTemplates } from '../templates/templateArray';
@@ -262,7 +263,7 @@ export class Page extends BaseClassPage {
                 renderCurrentPage = false;
                 break;
             default:
-                pages.exhaustiveCheck(this.card);
+                convertColorScaleBest.exhaustiveCheck(this.card);
                 break;
         }
         if (forceSend || this.basePanel.lastCard !== this.card) {
@@ -418,7 +419,7 @@ export class Page extends BaseClassPage {
         let msg: string | null = null;
         if (action && value !== undefined && (await item.onCommand(action, value))) {
             return;
-        } else if (types.isPopupType(popup) && action !== 'bExit') {
+        } else if (convertColorScaleBest.isPopupType(popup) && action !== 'bExit') {
             this.basePanel.lastCard = '';
             msg = await item.GeneratePopup(popup);
         }

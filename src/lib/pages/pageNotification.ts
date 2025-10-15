@@ -9,7 +9,8 @@ import {
     getValueEntryNumber,
     setTriggeredToState,
 } from '../const/tools';
-import * as pages from '../types/pages';
+import type * as pages from '../types/pages';
+import * as convertColorScaleBest from '../types/function-and-const';
 import type { IncomingEvent } from '../types/types';
 import type { PageItem } from './pageItem';
 
@@ -101,7 +102,7 @@ export class PageNotify extends Page {
             message.textColor = await getIconEntryColor(data.colorText, value, Color.White);
 
             const placeholder = (data.optionalValue && (await data.optionalValue.getObject())) ?? null;
-            if (placeholder && pages.isPlaceholderType(placeholder)) {
+            if (placeholder && convertColorScaleBest.isPlaceholderType(placeholder)) {
                 for (const key in placeholder) {
                     const target = placeholder[key];
                     let val = (target.dp && (await this.basePanel.statesControler.getStateVal(target.dp))) ?? '';
@@ -271,7 +272,7 @@ export class PageNotify extends Page {
                 }
 
                 const cb = (data.closingBehaviour && (await data.closingBehaviour.getString())) ?? '';
-                if (pages.isClosingBehavior(cb)) {
+                if (convertColorScaleBest.isClosingBehavior(cb)) {
                     switch (cb) {
                         case 'none':
                             close = false;

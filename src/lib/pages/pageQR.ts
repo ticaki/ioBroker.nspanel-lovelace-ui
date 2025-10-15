@@ -3,7 +3,8 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
-import * as pages from '../types/pages';
+import type * as pages from '../types/pages';
+import * as convertColorScaleBest from '../types/function-and-const';
 import type { IncomingEvent } from '../types/types';
 
 const PageQRMessageDefault: pages.PageQRMessage = {
@@ -420,7 +421,7 @@ export class PageQR extends Page {
             return;
         }
         this.log.debug(`action: ${button}, value: ${value}`);
-        if (pages.isQRButtonEvent(button)) {
+        if (convertColorScaleBest.isQRButtonEvent(button)) {
             if (this.adapter.config.pageQRdata[this.index]) {
                 if (
                     this.pageItems &&

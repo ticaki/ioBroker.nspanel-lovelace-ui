@@ -8,8 +8,9 @@ import { ALL_PANELS_SPECIAL_ID } from '../types/adminShareConfig';
 import { PanelSend } from './panel-message';
 
 import { Screensaver } from '../pages/screensaver';
-import * as Types from '../types/types';
-import * as pages from '../types/pages';
+import type * as Types from '../types/types';
+import type * as pages from '../types/pages';
+import * as convertColorScaleBest from '../types/function-and-const';
 import type { Controller } from './controller';
 import { BaseClass, type AdapterClassDefinition } from './library';
 import type { callbackMessageType } from '../classes/mqtt';
@@ -606,7 +607,7 @@ export class Panel extends BaseClass {
         if (currentScreensaver && currentScreensaver.val != null) {
             if (scs && scs[0]) {
                 this.screenSaver = scs[0] as Screensaver;
-                if (pages.isScreenSaverModeAsNumber(currentScreensaver.val)) {
+                if (convertColorScaleBest.isScreenSaverModeAsNumber(currentScreensaver.val)) {
                     this.screenSaver.overwriteModel(currentScreensaver.val, true);
                 }
             }
@@ -1166,7 +1167,7 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'screenSaver.layout': {
-                    if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
+                    if (typeof state.val === 'number' && convertColorScaleBest.isScreenSaverModeAsNumber(state.val)) {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverLayout`,
                             state.val,
@@ -1809,7 +1810,7 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/screenSaverLayout': {
-                    if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
+                    if (typeof state.val === 'number' && convertColorScaleBest.isScreenSaverModeAsNumber(state.val)) {
                         if (this.screenSaver) {
                             this.screenSaver.overwriteModel(state.val);
                             await this.library.writedp(`panels.${this.name}.cmd.screenSaver.layout`, state.val);
@@ -1980,11 +1981,11 @@ export class Panel extends BaseClass {
             return null;
         }
         const temp = msg.split(',');
-        if (!Types.isEventType(temp[0])) {
+        if (!convertColorScaleBest.isEventType(temp[0])) {
             return null;
         }
         try {
-            if (!Types.isEventMethod(temp[1])) {
+            if (!convertColorScaleBest.isEventMethod(temp[1])) {
                 return null;
             }
         } catch (e: any) {
@@ -2005,7 +2006,7 @@ export class Panel extends BaseClass {
                 cmd: parseInt(arr[0]),
                 popup: popup,
                 id: arr[2],
-                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+                action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
                 opt: temp[4] ?? '',
             };
         }
@@ -2017,7 +2018,7 @@ export class Panel extends BaseClass {
                 cmd: parseInt(arr[1]),
                 popup: popup,
                 id: arr[2],
-                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+                action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
                 opt: temp[4] ?? '',
             };
         } else if (arr[1]) {
@@ -2027,7 +2028,7 @@ export class Panel extends BaseClass {
                 page: parseInt(arr[0]),
                 popup: popup,
                 id: arr[1],
-                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+                action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
                 opt: temp[4] ?? '',
             };
         }
@@ -2036,7 +2037,7 @@ export class Panel extends BaseClass {
             method: temp[1],
             popup: popup,
             id: arr[0],
-            action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+            action: convertColorScaleBest.isButtonActionType(temp[3]) ? temp[3] : temp[3],
             opt: temp[4] ?? '',
         };
     }
@@ -2106,7 +2107,7 @@ export class Panel extends BaseClass {
                 parent = n != null && n.page ? n.page.name : undefined;
             }
             let pageInfo: PageMenuConfigInfo = { card: 'cardGrid', alwaysOn: 'none' };
-            if (pages.isPageMenuConfig(nav.page.config)) {
+            if (convertColorScaleBest.isPageMenuConfig(nav.page.config)) {
                 pageInfo = {
                     ...pageInfo,
                     card: nav.page.card,
