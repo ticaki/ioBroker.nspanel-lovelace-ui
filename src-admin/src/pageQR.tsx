@@ -801,13 +801,10 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                                                                 instance={this.props.oContext?.instance || 0}
                                                                 objectIdConfig={{
                                                                     types: 'state',
-                                                                    filterFunc: (obj: ioBroker.Object) => {
-                                                                        return !!(
-                                                                            obj?.type === 'state' &&
-                                                                            obj.common.role &&
-                                                                            obj.common.role.startsWith('switch')
-                                                                        );
-                                                                    },
+                                                                    // provide filterFunc as string so it can be compiled with `new Function` at runtime
+                                                                    // the string should be the function body, using 'obj' as parameter
+                                                                    filterFunc:
+                                                                        "return !!(obj && obj.type === 'state' && obj.common && obj.common.type === 'boolean' && obj.common.write && obj.common.read);" as any,
                                                                 }}
                                                             />
                                                         </Box>
