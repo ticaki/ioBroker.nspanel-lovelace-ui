@@ -85,7 +85,7 @@
     "qr_type_wifi": "WLAN",
     "qr_type_url": "URL",
     "qr_type_tel": "Telefon",
-        "qr_content": "Inhalt",
+        "qr_content": "QR-Inhalt",
     "qr_content_wifi": "WLAN-SSID",
     "qr_content_url": "URL",
     "qr_content_tel": "Telefonnummer",
