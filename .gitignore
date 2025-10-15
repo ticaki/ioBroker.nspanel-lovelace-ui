@@ -9,7 +9,7 @@ nbproject
 
 # npm package files
 iobroker.*.tgz
-src-admin/build
+src-admin/build/**
 Thumbs.db
 mqtt
 # NYC coverage files
