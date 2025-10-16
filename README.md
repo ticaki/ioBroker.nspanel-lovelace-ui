@@ -157,6 +157,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)
 
 ### 0.6.5 (2025-10-14)
 
