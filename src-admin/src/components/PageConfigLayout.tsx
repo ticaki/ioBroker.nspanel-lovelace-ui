@@ -14,12 +14,12 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
-import type { UnlockEntries, NavigationAssignmentList } from '../../../src/lib/types/adminShareConfig';
+import type { NavigationAssignmentList, PageConfigEntry } from '../../../src/lib/types/adminShareConfig';
 
 export type PageCardType = 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
 
 export interface PageConfigLayoutProps {
-    entries: UnlockEntries;
+    entries: PageConfigEntry[];
     selected: string;
     selectedCardType: PageCardType;
     onSelectedChange: (name: string) => void;

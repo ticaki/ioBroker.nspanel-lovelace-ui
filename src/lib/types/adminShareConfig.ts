@@ -102,8 +102,6 @@ export type UnlockEntry = {
     uniqueName: string;
 };
 
-export type UnlockEntries = UnlockEntry[];
-
 // Screensaver types
 export type ScreensaverEntry = {
     card: Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>; // Use the card type from AdminCardTypes
@@ -146,8 +144,7 @@ export type QREntry = {
     uniqueName: string;
 };
 
-export type QREntries = QREntry[];
-
+export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;

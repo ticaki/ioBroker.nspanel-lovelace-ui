@@ -1324,7 +1324,7 @@
                     "type": "custom",
                     "i18n": true,
                     "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/pageQR",
+                    "name": "AdminComponentTemplateSet/Components/PageConfigManager",
                     "bundlerType": "module",
                     "xs": 12
                     //"label": "test"

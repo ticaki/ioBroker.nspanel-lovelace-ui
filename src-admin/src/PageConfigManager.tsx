@@ -2,13 +2,14 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { UnlockEntry, UnlockEntries, NavigationAssignmentList } from '../../src/lib/types/adminShareConfig';
+import type { PageConfigEntry, NavigationAssignmentList, QREntry } from '../../src/lib/types/adminShareConfig';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
+import { PageQREditor } from './components/PageQREditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
-    entries: UnlockEntries;
+    entries: PageConfigEntry[];
     selected: string;
     selectedCardType: PageCardType;
     pagesList: string[];
@@ -24,7 +25,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const saved = ConfigGeneric.getValue(props.data, props.attr!);
         this.state = {
             ...(this.state as ConfigGenericState),
-            entries: Array.isArray(saved) ? (saved as UnlockEntries) : [],
+            entries: Array.isArray(saved) ? (saved as PageConfigEntry[]) : [],
             selected: '',
             selectedCardType: 'all', // Default: alle anzeigen
             pagesList: [],
@@ -175,20 +176,39 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (cardType === 'all') {
             return; // Sollte nicht vorkommen (Button ist disabled)
         }
-        const newEntry: UnlockEntry = {
-            card: cardType,
-            uniqueName: name,
-            headline: name,
-            button1: '',
-            button2: '',
-            button3: '',
-            button4: '',
-            button5: '',
-            button6: '',
-            button7: '',
-            button8: '',
-            pin: 0,
-        };
+
+        let newEntry: PageConfigEntry;
+
+        if (cardType === 'cardAlarm') {
+            newEntry = {
+                card: 'cardAlarm',
+                uniqueName: name,
+                headline: name,
+                button1: '',
+                button2: '',
+                button3: '',
+                button4: '',
+                button5: '',
+                button6: '',
+                button7: '',
+                button8: '',
+                pin: 0,
+            };
+        } else if (cardType === 'cardQR') {
+            newEntry = {
+                card: 'cardQR',
+                uniqueName: name,
+                headline: name,
+                SSIDURLTEL: '',
+                wlanhidden: false,
+                pwdhidden: false,
+                setState: '',
+                selType: 0,
+            };
+        } else {
+            return; // Unbekannter Typ
+        }
+
         const updated = [...this.state.entries, newEntry];
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr!, updated);
@@ -211,7 +231,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         void this.onChange(this.props.attr!, updated);
     };
 
-    private handleEntryChange = (updatedEntry: UnlockEntry): void => {
+    private handleEntryChange = (updatedEntry: PageConfigEntry): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === updatedEntry.uniqueName ? updatedEntry : it));
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr!, updated);
@@ -266,30 +286,36 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
 
         // Render different panels based on card type
-        switch (currentEntry.card) {
-            case 'cardAlarm':
-                return (
-                    <PageAlarmEditor
-                        entry={currentEntry}
-                        pagesList={pagesList}
-                        onEntryChange={this.handleEntryChange}
-                        onUniqueNameChange={this.handleUniqueNameChange}
-                        getText={key => this.getText(key)}
-                    />
-                );
-            case 'cardQR':
-                return (
-                    <Typography variant="body2">
-                        {this.getText('page_type_qr')} - {this.getText('coming_soon')}
-                    </Typography>
-                );
-            default:
-                return (
-                    <Typography variant="body2">
-                        {currentEntry.card} - {this.getText('coming_soon')}
-                    </Typography>
-                );
+        if (currentEntry.card === 'cardAlarm') {
+            return (
+                <PageAlarmEditor
+                    entry={currentEntry}
+                    pagesList={pagesList}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                />
+            );
         }
+
+        if (currentEntry.card === 'cardQR') {
+            return (
+                <PageQREditor
+                    entry={currentEntry as QREntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        return (
+            <Typography variant="body2">
+                {currentEntry.card} - {this.getText('coming_soon')}
+            </Typography>
+        );
     }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
