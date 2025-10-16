@@ -43,10 +43,6 @@ const alarmStates: pages.AlarmStates[] = ['disarmed', 'armed', 'arming', 'pendin
  * (init, update, onButtonEvent).
  */
 export class PageAlarm extends Page {
-    private step: number = 1;
-    private headlinePos: number = 0;
-    private titelPos: number = 0;
-    private nextArrow: boolean = false;
     private status: pages.AlarmStates = 'armed';
     private useStates = true;
     private alarmType: string = 'alarm';
@@ -54,6 +50,7 @@ export class PageAlarm extends Page {
     items: pages.PageBase['items'];
     private approveId: string = '';
     private statusState: string = '';
+    readonly isGlobal: boolean = false;
     private updatePanelTimeout: ioBroker.Timeout | undefined | null = null;
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         if (this.useStates) {
@@ -92,7 +89,7 @@ export class PageAlarm extends Page {
      * @param value - new alarm status to set
      * @returns Promise that resolves when the status has been persisted
      */
-    async setStatus(value: pages.AlarmStates): Promise<void> {
+    private async setStatus(value: pages.AlarmStates): Promise<void> {
         this.status = value;
         if (this.useStates) {
             await this.library.writedp(
@@ -101,6 +98,10 @@ export class PageAlarm extends Page {
                 genericStateObjects.panel.panels.alarm.cardAlarm.status,
             );
         }
+    }
+    public async setStatusGlobal(value: pages.AlarmStates): Promise<void> {
+        this.status = value;
+        this.delayUpdate();
     }
     private pin: string = '0';
     private failCount: number = 0;
@@ -113,6 +114,7 @@ export class PageAlarm extends Page {
         const data = this.config?.data as pages.cardAlarmDataItemOptions['data'];
         this.pathToStates = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}`, false, false);
         if (data?.global?.type === 'const' && !!data.global.constVal) {
+            this.isGlobal = true;
             this.pathToStates = this.library.cleandp(`alarm.${this.name}`, false, false);
         }
         this.minUpdateInterval = 500;
@@ -347,14 +349,9 @@ export class PageAlarm extends Page {
             new: nsPanelState;
         },
     ): Promise<void> {
-        this.log.info(`PageAlarm with unique id ${this.id} got state change for ${id}: ${JSON.stringify(_state)}`);
         if (id && !_state.new.ack && this.items?.card === 'cardAlarm') {
             if (id === this.items?.data?.approveState?.options?.dp) {
                 const approved = this.items.data && (await this.items.data.approved?.getBoolean());
-                this.log.info(
-                    `PageAlarm with unique id ${this.id} got approve state change: ${String(_state.new.val as string | boolean)} approved: ${String(approved)}`,
-                );
-
                 if (approved) {
                     if (this.updatePanelTimeout) {
                         this.adapter.clearTimeout(this.updatePanelTimeout);
@@ -380,7 +377,7 @@ export class PageAlarm extends Page {
                         return;
                     }
 
-                    this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
+                    this.delayUpdate();
                 }
             }
             if (id === this.items?.data?.statusState?.options?.dp && typeof _state.new.val === 'number') {
@@ -389,10 +386,13 @@ export class PageAlarm extends Page {
                     this.updatePanelTimeout = null;
                 }
                 await this.setStatus(_state.new.val in alarmStates ? alarmStates[_state.new.val] : 'disarmed');
+                if (this.isGlobal) {
+                    await this.basePanel.controller.setGlobalAlarmStatus(this.name, this.status);
+                }
                 if (this.unload || this.adapter.unload) {
                     return;
                 }
-                this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
+                this.delayUpdate();
             }
         }
     }
@@ -451,7 +451,7 @@ export class PageAlarm extends Page {
                         if (this.unload || this.adapter.unload) {
                             return;
                         }
-                        this.adapter.setTimeout(() => this.update(), 50);
+                        this.delayUpdate();
                     } else if (this.status === 'arming') {
                         // nothing to do
                     } else if (!approved) {
@@ -460,7 +460,7 @@ export class PageAlarm extends Page {
                         if (this.unload || this.adapter.unload) {
                             return;
                         }
-                        this.adapter.setTimeout(() => this.update(), 50);
+                        this.delayUpdate();
                     }
                     break;
                 }
@@ -474,7 +474,7 @@ export class PageAlarm extends Page {
                         if (this.unload || this.adapter.unload) {
                             return;
                         }
-                        this.adapter.setTimeout(() => this.update(), 50);
+                        this.delayUpdate();
                     } else if (this.status === 'pending') {
                         // nothing to do
                     } else if (!approved) {
@@ -483,7 +483,7 @@ export class PageAlarm extends Page {
                         if (this.unload || this.adapter.unload) {
                             return;
                         }
-                        this.adapter.setTimeout(() => this.update(), 50);
+                        this.delayUpdate();
                     }
 
                     break;
@@ -505,6 +505,17 @@ export class PageAlarm extends Page {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
+    }
+
+    delayUpdate(): void {
+        if (this.updatePanelTimeout) {
+            this.adapter.clearTimeout(this.updatePanelTimeout);
+            this.updatePanelTimeout = null;
+        }
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        this.delayUpdate();
     }
     async delete(): Promise<void> {
         if (this.updatePanelTimeout) {

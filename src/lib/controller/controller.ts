@@ -9,6 +9,8 @@ import axios from 'axios';
 import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
+import {PageAlarm} from '../pages/pageAlarm';
+import {AlarmStates} from '../types/pages';
 
 axios.defaults.timeout = 15_000;
 
@@ -410,6 +412,18 @@ export class Controller extends Library.BaseClass {
             }
         }
     }
+
+    async setGlobalAlarmStatus(name: string, status: AlarmStates): Promise<void> {
+        for (const panel of this.panels) {
+            // @ts-expect-error accessing private subclass property
+            for (const page of panel.pages) {
+                if (page?.card === 'cardAlarm' && 'isGlobal' in page && page.isGlobal && page.name === name) {
+                    await (page as PageAlarm).setStatusGlobal(status);
+                }
+            }
+        }
+    }
+
     async delete(): Promise<void> {
         this.unload = true;
         if (this.minuteLoopTimeout) {

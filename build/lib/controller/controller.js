@@ -393,6 +393,15 @@ class Controller extends Library.BaseClass {
       }
     }
   }
+  async setGlobalAlarmStatus(name, status) {
+    for (const panel of this.panels) {
+      for (const page of panel.pages) {
+        if ((page == null ? void 0 : page.card) === "cardAlarm" && "isGlobal" in page && page.isGlobal && page.name === name) {
+          await page.setStatusGlobal(status);
+        }
+      }
+    }
+  }
   async delete() {
     this.unload = true;
     if (this.minuteLoopTimeout) {

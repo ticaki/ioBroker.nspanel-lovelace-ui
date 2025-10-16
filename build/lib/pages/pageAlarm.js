@@ -57,10 +57,6 @@ const PageAlarmMessageDefault = {
 };
 const alarmStates = ["disarmed", "armed", "arming", "pending", "triggered"];
 class PageAlarm extends import_Page.Page {
-  step = 1;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
   status = "armed";
   useStates = true;
   alarmType = "alarm";
@@ -68,6 +64,7 @@ class PageAlarm extends import_Page.Page {
   items;
   approveId = "";
   statusState = "";
+  isGlobal = false;
   updatePanelTimeout = null;
   async setMode(m) {
     if (this.useStates) {
@@ -114,6 +111,10 @@ class PageAlarm extends import_Page.Page {
       );
     }
   }
+  async setStatusGlobal(value) {
+    this.status = value;
+    this.delayUpdate();
+  }
   pin = "0";
   failCount = 0;
   constructor(config, options) {
@@ -125,6 +126,7 @@ class PageAlarm extends import_Page.Page {
     const data = (_a = this.config) == null ? void 0 : _a.data;
     this.pathToStates = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}`, false, false);
     if (((_b = data == null ? void 0 : data.global) == null ? void 0 : _b.type) === "const" && !!data.global.constVal) {
+      this.isGlobal = true;
       this.pathToStates = this.library.cleandp(`alarm.${this.name}`, false, false);
     }
     this.minUpdateInterval = 500;
@@ -332,13 +334,9 @@ class PageAlarm extends import_Page.Page {
   }
   async onStateChange(id, _state) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
-    this.log.info(`PageAlarm with unique id ${this.id} got state change for ${id}: ${JSON.stringify(_state)}`);
     if (id && !_state.new.ack && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm") {
       if (id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp)) {
         const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
-        this.log.info(
-          `PageAlarm with unique id ${this.id} got approve state change: ${String(_state.new.val)} approved: ${String(approved)}`
-        );
         if (approved) {
           if (this.updatePanelTimeout) {
             this.adapter.clearTimeout(this.updatePanelTimeout);
@@ -363,7 +361,7 @@ class PageAlarm extends import_Page.Page {
           if (this.unload || this.adapter.unload) {
             return;
           }
-          this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
+          this.delayUpdate();
         }
       }
       if (id === ((_j = (_i = (_h = (_g = this.items) == null ? void 0 : _g.data) == null ? void 0 : _h.statusState) == null ? void 0 : _i.options) == null ? void 0 : _j.dp) && typeof _state.new.val === "number") {
@@ -372,10 +370,13 @@ class PageAlarm extends import_Page.Page {
           this.updatePanelTimeout = null;
         }
         await this.setStatus(_state.new.val in alarmStates ? alarmStates[_state.new.val] : "disarmed");
+        if (this.isGlobal) {
+          await this.basePanel.controller.setGlobalAlarmStatus(this.name, this.status);
+        }
         if (this.unload || this.adapter.unload) {
           return;
         }
-        this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
+        this.delayUpdate();
       }
     }
   }
@@ -427,7 +428,7 @@ class PageAlarm extends import_Page.Page {
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           } else if (this.status === "arming") {
           } else if (!approved) {
             await this.setStatus("armed");
@@ -435,7 +436,7 @@ class PageAlarm extends import_Page.Page {
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           }
           break;
         }
@@ -449,7 +450,7 @@ class PageAlarm extends import_Page.Page {
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           } else if (this.status === "pending") {
           } else if (!approved) {
             await this.setStatus("disarmed");
@@ -457,7 +458,7 @@ class PageAlarm extends import_Page.Page {
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           }
           break;
         }
@@ -475,6 +476,16 @@ class PageAlarm extends import_Page.Page {
         }
       }
     }
+  }
+  delayUpdate() {
+    if (this.updatePanelTimeout) {
+      this.adapter.clearTimeout(this.updatePanelTimeout);
+      this.updatePanelTimeout = null;
+    }
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
+    this.delayUpdate();
   }
   async delete() {
     if (this.updatePanelTimeout) {
