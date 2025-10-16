@@ -332,9 +332,13 @@ class PageAlarm extends import_Page.Page {
   }
   async onStateChange(id, _state) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    this.log.info(`PageAlarm with unique id ${this.id} got state change for ${id}: ${JSON.stringify(_state)}`);
     if (id && !_state.new.ack && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm") {
       if (id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp)) {
         const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
+        this.log.info(
+          `PageAlarm with unique id ${this.id} got approve state change: ${String(_state.new.val)} approved: ${String(approved)}`
+        );
         if (approved) {
           if (this.updatePanelTimeout) {
             this.adapter.clearTimeout(this.updatePanelTimeout);

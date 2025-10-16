@@ -347,9 +347,14 @@ export class PageAlarm extends Page {
             new: nsPanelState;
         },
     ): Promise<void> {
+        this.log.info(`PageAlarm with unique id ${this.id} got state change for ${id}: ${JSON.stringify(_state)}`);
         if (id && !_state.new.ack && this.items?.card === 'cardAlarm') {
             if (id === this.items?.data?.approveState?.options?.dp) {
                 const approved = this.items.data && (await this.items.data.approved?.getBoolean());
+                this.log.info(
+                    `PageAlarm with unique id ${this.id} got approve state change: ${String(_state.new.val as string | boolean)} approved: ${String(approved)}`,
+                );
+
                 if (approved) {
                     if (this.updatePanelTimeout) {
                         this.adapter.clearTimeout(this.updatePanelTimeout);
