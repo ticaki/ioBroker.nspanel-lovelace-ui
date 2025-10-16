@@ -3191,7 +3191,7 @@
                     "type": "custom",
                     "i18n": true,
                     "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/UnlockPage",
+                    "name": "AdminComponentTemplateSet/Components/PageConfigManager",
                     "bundlerType": "module",
                     "xs": 12
                     //"label": "test"
@@ -4030,7 +4030,7 @@
                     "type": "custom",
                     "i18n": true,
                     "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/UnlockPage",
+                    "name": "AdminComponentTemplateSet/Components/PageConfigManager",
                     "bundlerType": "module",
                     "xs": 12
                     //"label": "test"
