@@ -389,7 +389,6 @@ export class PageAlarm extends Page {
                     this.updatePanelTimeout = null;
                 }
                 await this.setStatus(_state.new.val in alarmStates ? alarmStates[_state.new.val] : 'disarmed');
-                await this.adapter.setForeignStateAsync(id, _state.new.val, true);
                 if (this.unload || this.adapter.unload) {
                     return;
                 }
@@ -465,7 +464,10 @@ export class PageAlarm extends Page {
                     }
                     break;
                 }
-                case 'D1': {
+                case 'D1':
+                case 'D2':
+                case 'D3':
+                case 'D4': {
                     if (this.status === 'armed' && approved) {
                         await this.setStatus('pending');
                         await this.setMode(button);
