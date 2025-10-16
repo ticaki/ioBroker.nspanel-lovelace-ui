@@ -1377,7 +1377,7 @@ export const genericStateObjects: {
                             role: 'value',
                             states: ['disarmed', 'armed', 'arming', 'pending', 'triggered'],
                             read: true,
-                            write: false,
+                            write: true,
                         },
                         native: {},
                     },
