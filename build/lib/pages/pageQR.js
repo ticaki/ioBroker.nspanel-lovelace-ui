@@ -104,8 +104,8 @@ class PageQR extends import_Page.Page {
       return;
     }
     const message = {};
-    const config = (_a = this.adapter.config.pageQRConfig) == null ? void 0 : _a[this.index];
-    if (this.items && config != null) {
+    const config = (_a = this.adapter.config.pageConfig) == null ? void 0 : _a[this.index];
+    if (this.items && config != null && config.card === "cardQR") {
       const items = this.items;
       message.headline = this.library.getTranslation(
         (_c = (_b = items.data.headline && await items.data.headline.getString()) != null ? _b : config.headline) != null ? _c : ""

@@ -2214,8 +2214,7 @@ export class Panel extends BaseClass {
      * @param options - Panel configuration partial containing pages and navigation arrays
      */
     private processUnlockPages(options: panelConfigPartial): void {
-        let unlocks: (UnlockEntry | QREntry)[] = this.adapter.config.pageUnlockConfig || [];
-        unlocks = unlocks.concat(this.adapter.config.pageQRConfig || []);
+        const unlocks: (UnlockEntry | QREntry)[] = this.adapter.config.pageConfig || [];
 
         for (const unlock of unlocks) {
             if (!unlock.navigationAssignment) {
@@ -2294,7 +2293,7 @@ export class Panel extends BaseClass {
 
                 case 'cardQR': {
                     // QR card configuration
-                    const qrIndex = this.adapter.config.pageQRConfig.findIndex(
+                    const qrIndex = this.adapter.config.pageConfig.findIndex(
                         (qr: any) => qr.uniqueName === unlock.uniqueName,
                     );
                     if (qrIndex === -1) {
@@ -2302,7 +2301,7 @@ export class Panel extends BaseClass {
                         continue;
                     }
 
-                    const qrConfig = this.adapter.config.pageQRConfig[qrIndex];
+                    const qrConfig = unlock as QREntry;
                     let text1 = '',
                         text = '',
                         icon1 = '',

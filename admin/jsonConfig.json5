@@ -1316,7 +1316,7 @@
                 }
             }
         },
-        "pageqr": {
+        /*"pageqr": {
             "type": "panel",
             "label": "PageQR",
             "items": {
@@ -1330,7 +1330,7 @@
                     //"label": "test"
                 }
             }
-        },
+        },*/
         "pagePower": {
             "type": "panel",
             "label": "Page Power",
@@ -3183,11 +3183,11 @@
                 }
             }
         },
-        "pageUnlock": {
+        "_pageConfig": {
             "type": "panel",
-            "label": "PageUnlock",
+            "label": "PageConfig",
             "items": {
-                "pageUnlockConfig": {
+                "pageConfig": {
                     "type": "custom",
                     "i18n": true,
                     "url": "custom/customComponents.js",
@@ -4022,21 +4022,7 @@
                 }
             }
         },
-        "pageUnlock": {
-            "type": "panel",
-            "label": "PageUnlock",
-            "items": {
-                "pageUnlockConfig": {
-                    "type": "custom",
-                    "i18n": true,
-                    "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/PageConfigManager",
-                    "bundlerType": "module",
-                    "xs": 12
-                    //"label": "test"
-                }
-            }
-        },
+
         "ScreensaverPage": {
             "type": "panel",
             "label": "ScreensaverPage",

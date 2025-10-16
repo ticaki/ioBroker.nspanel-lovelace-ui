@@ -239,8 +239,8 @@ declare global {
                 colMediaTitleOff: string;
                 colMediaOnOffColor: string;
             }[];
-
-            pageUnlockConfig: {
+            pageUnlockConfig: any
+            pageConfig: ({
                 card: 'cardAlarm'; // Card type - will be extended with more types
                 alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
                 headline: string;
@@ -259,9 +259,7 @@ declare global {
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 navigationAssignment?: navigationAssignment[];
-            }[];
-
-            pageQRConfig: {
+            }|{
                 card: 'cardQR';
                 selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
                 headline: string;
@@ -275,7 +273,9 @@ declare global {
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
                 navigationAssignment?: navigationAssignment[]
-            }[];
+            })[];
+
+            pageQRConfig: any[];
         }
     }
 }

@@ -2042,8 +2042,7 @@ ${this.info.tasmota.onlineVersion}`;
    */
   processUnlockPages(options) {
     var _a, _b;
-    let unlocks = this.adapter.config.pageUnlockConfig || [];
-    unlocks = unlocks.concat(this.adapter.config.pageQRConfig || []);
+    const unlocks = this.adapter.config.pageConfig || [];
     for (const unlock of unlocks) {
       if (!unlock.navigationAssignment) {
         continue;
@@ -2094,14 +2093,14 @@ ${this.info.tasmota.onlineVersion}`;
           break;
         }
         case "cardQR": {
-          const qrIndex = this.adapter.config.pageQRConfig.findIndex(
+          const qrIndex = this.adapter.config.pageConfig.findIndex(
             (qr) => qr.uniqueName === unlock.uniqueName
           );
           if (qrIndex === -1) {
             this.log.warn(`QR config not found for page '${unlock.uniqueName}', skipping!`);
             continue;
           }
-          const qrConfig = this.adapter.config.pageQRConfig[qrIndex];
+          const qrConfig = unlock;
           let text1 = "", text = "", icon1 = "", icon2 = "";
           switch (qrConfig.selType) {
             case 0:

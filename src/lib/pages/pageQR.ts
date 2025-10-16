@@ -4,6 +4,7 @@ import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import type * as pages from '../types/pages';
 import * as convertColorScaleBest from '../types/function-and-const';
 import type { IncomingEvent } from '../types/types';
+import type { QREntry } from '../types/adminShareConfig';
 
 const PageQRMessageDefault: pages.PageQRMessage = {
     event: 'entityUpd',
@@ -74,8 +75,8 @@ export class PageQR extends Page {
             return;
         }
         const message: Partial<pages.PageQRMessage> = {};
-        const config = this.adapter.config.pageQRConfig?.[this.index];
-        if (this.items && config != null) {
+        const config = this.adapter.config.pageConfig?.[this.index] as QREntry | undefined;
+        if (this.items && config != null && config.card === 'cardQR') {
             const items = this.items;
 
             message.headline = this.library.getTranslation(
