@@ -371,7 +371,8 @@ type PageAlarmConfig = {
     icon: NSPanel.IconEntryType;
     pin: number;
     approved?: boolean;
-    approveState: boolean;
+    approveState: string;
+    statusState: string;
     global: boolean;
     setNavi?: string;
 };

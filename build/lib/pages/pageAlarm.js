@@ -67,6 +67,8 @@ class PageAlarm extends import_Page.Page {
   pathToStates = "";
   items;
   approveId = "";
+  statusState = "";
+  updatePanelTimeout = null;
   async setMode(m) {
     if (this.useStates) {
       await this.library.writedp(
@@ -128,6 +130,7 @@ class PageAlarm extends import_Page.Page {
     this.minUpdateInterval = 500;
     this.neverDeactivateTrigger = true;
     this.approveId = this.library.cleandp(`${this.pathToStates}.approve`, false, false);
+    this.statusState = this.library.cleandp(`${this.pathToStates}.status`, false, false);
   }
   /**
    * Initialize the alarm page.
@@ -149,6 +152,10 @@ class PageAlarm extends import_Page.Page {
     config.data.approveState = {
       type: "triggered",
       dp: `${this.adapter.namespace}.${this.approveId}`
+    };
+    config.data.statusState = {
+      type: "triggered",
+      dp: `${this.adapter.namespace}.${this.statusState}`
     };
     const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.basePanel.statesControler.createDataItems(
@@ -229,7 +236,7 @@ class PageAlarm extends import_Page.Page {
         message.status3 = message.button3 ? "D3" : "";
         message.button4 = (_e = data.button8 && await data.button8.getTranslatedString()) != null ? _e : "";
         message.status4 = message.button4 ? "D4" : "";
-      } else {
+      } else if (this.status === "disarmed") {
         message.button1 = (_f = data.button1 && await data.button1.getTranslatedString()) != null ? _f : "";
         message.status1 = message.button1 ? "A1" : "";
         message.button2 = (_g = data.button2 && await data.button2.getTranslatedString()) != null ? _g : "";
@@ -238,6 +245,15 @@ class PageAlarm extends import_Page.Page {
         message.status3 = message.button3 ? "A3" : "";
         message.button4 = (_i = data.button4 && await data.button4.getTranslatedString()) != null ? _i : "";
         message.status4 = message.button4 ? "A4" : "";
+      } else {
+        message.button1 = this.library.getTranslation(this.status);
+        message.status1 = "";
+        message.button2 = "";
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
       }
       if (this.status == "armed") {
         message.icon = import_icon_mapping.Icons.GetIcon("shield-home");
@@ -315,30 +331,48 @@ class PageAlarm extends import_Page.Page {
     );
   }
   async onStateChange(id, _state) {
-    var _a, _b, _c, _d, _e, _f;
-    if (id && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm" && id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp) && !_state.new.ack) {
-      const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
-      if (approved) {
-        await this.getStatus();
-        const val = _state.new.val;
-        if (val) {
-          if (this.status === "pending") {
-            await this.setStatus("disarmed");
-          } else if (this.status === "arming") {
-            await this.setStatus("armed");
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    if (id && !_state.new.ack && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm") {
+      if (id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp)) {
+        const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
+        if (approved) {
+          if (this.updatePanelTimeout) {
+            this.adapter.clearTimeout(this.updatePanelTimeout);
+            this.updatePanelTimeout = null;
           }
-        } else {
-          if (this.status === "pending") {
-            await this.setStatus("armed");
-          } else if (this.status === "arming") {
-            await this.setStatus("disarmed");
+          await this.getStatus();
+          const val = _state.new.val;
+          if (val) {
+            if (this.status === "pending") {
+              await this.setStatus("disarmed");
+            } else if (this.status === "arming") {
+              await this.setStatus("armed");
+            }
+          } else {
+            if (this.status === "pending") {
+              await this.setStatus("armed");
+            } else if (this.status === "arming") {
+              await this.setStatus("disarmed");
+            }
           }
+          await this.adapter.setForeignStateAsync(id, !!val, true);
+          if (this.unload || this.adapter.unload) {
+            return;
+          }
+          this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
         }
-        await this.adapter.setForeignStateAsync(id, !!val, true);
+      }
+      if (id === ((_j = (_i = (_h = (_g = this.items) == null ? void 0 : _g.data) == null ? void 0 : _h.statusState) == null ? void 0 : _i.options) == null ? void 0 : _j.dp) && typeof _state.new.val === "number") {
+        if (this.updatePanelTimeout) {
+          this.adapter.clearTimeout(this.updatePanelTimeout);
+          this.updatePanelTimeout = null;
+        }
+        await this.setStatus(_state.new.val in alarmStates ? alarmStates[_state.new.val] : "disarmed");
+        await this.adapter.setForeignStateAsync(id, _state.new.val, true);
         if (this.unload || this.adapter.unload) {
           return;
         }
-        this.adapter.setTimeout(() => this.update(), 50);
+        this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
       }
     }
   }
@@ -435,6 +469,13 @@ class PageAlarm extends import_Page.Page {
         }
       }
     }
+  }
+  async delete() {
+    if (this.updatePanelTimeout) {
+      this.adapter.clearTimeout(this.updatePanelTimeout);
+      this.updatePanelTimeout = null;
+    }
+    await super.delete();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

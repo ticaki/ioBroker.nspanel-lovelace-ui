@@ -53,6 +53,8 @@ export class PageAlarm extends Page {
     private pathToStates: string = '';
     items: pages.PageBase['items'];
     private approveId: string = '';
+    private statusState: string = '';
+    private updatePanelTimeout: ioBroker.Timeout | undefined | null = null;
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         if (this.useStates) {
             await this.library.writedp(
@@ -116,6 +118,7 @@ export class PageAlarm extends Page {
         this.minUpdateInterval = 500;
         this.neverDeactivateTrigger = true;
         this.approveId = this.library.cleandp(`${this.pathToStates}.approve`, false, false);
+        this.statusState = this.library.cleandp(`${this.pathToStates}.status`, false, false);
     }
 
     /**
@@ -139,6 +142,10 @@ export class PageAlarm extends Page {
         config.data.approveState = {
             type: 'triggered',
             dp: `${this.adapter.namespace}.${this.approveId}`,
+        };
+        config.data.statusState = {
+            type: 'triggered',
+            dp: `${this.adapter.namespace}.${this.statusState}`,
         };
         // search states for mode auto
         const tempConfig: Partial<pages.cardAlarmDataItemOptions> =
@@ -231,7 +238,7 @@ export class PageAlarm extends Page {
                 message.status3 = message.button3 ? 'D3' : '';
                 message.button4 = (data.button8 && (await data.button8.getTranslatedString())) ?? '';
                 message.status4 = message.button4 ? 'D4' : '';
-            } else {
+            } else if (this.status === 'disarmed') {
                 //const entity1 = await getValueEntryNumber(data.entity1);
                 message.button1 = (data.button1 && (await data.button1.getTranslatedString())) ?? '';
                 message.status1 = message.button1 ? 'A1' : '';
@@ -241,6 +248,15 @@ export class PageAlarm extends Page {
                 message.status3 = message.button3 ? 'A3' : '';
                 message.button4 = (data.button4 && (await data.button4.getTranslatedString())) ?? '';
                 message.status4 = message.button4 ? 'A4' : '';
+            } else {
+                message.button1 = this.library.getTranslation(this.status);
+                message.status1 = '';
+                message.button2 = '';
+                message.status2 = '';
+                message.button3 = '';
+                message.status3 = '';
+                message.button4 = '';
+                message.status4 = '';
             }
             if (this.status == 'armed') {
                 message.icon = Icons.GetIcon('shield-home'); //icon*~*
@@ -331,35 +347,48 @@ export class PageAlarm extends Page {
             new: nsPanelState;
         },
     ): Promise<void> {
-        if (
-            id &&
-            this.items?.card === 'cardAlarm' &&
-            id === this.items?.data?.approveState?.options?.dp &&
-            !_state.new.ack
-        ) {
-            const approved = this.items.data && (await this.items.data.approved?.getBoolean());
-            if (approved) {
-                await this.getStatus();
-                const val = _state.new.val;
-                if (val) {
-                    if (this.status === 'pending') {
-                        await this.setStatus('disarmed');
-                    } else if (this.status === 'arming') {
-                        await this.setStatus('armed');
+        if (id && !_state.new.ack && this.items?.card === 'cardAlarm') {
+            if (id === this.items?.data?.approveState?.options?.dp) {
+                const approved = this.items.data && (await this.items.data.approved?.getBoolean());
+                if (approved) {
+                    if (this.updatePanelTimeout) {
+                        this.adapter.clearTimeout(this.updatePanelTimeout);
+                        this.updatePanelTimeout = null;
                     }
-                } else {
-                    if (this.status === 'pending') {
-                        await this.setStatus('armed');
-                    } else if (this.status === 'arming') {
-                        await this.setStatus('disarmed');
+                    await this.getStatus();
+                    const val = _state.new.val;
+                    if (val) {
+                        if (this.status === 'pending') {
+                            await this.setStatus('disarmed');
+                        } else if (this.status === 'arming') {
+                            await this.setStatus('armed');
+                        }
+                    } else {
+                        if (this.status === 'pending') {
+                            await this.setStatus('armed');
+                        } else if (this.status === 'arming') {
+                            await this.setStatus('disarmed');
+                        }
                     }
+                    await this.adapter.setForeignStateAsync(id, !!val, true);
+                    if (this.unload || this.adapter.unload) {
+                        return;
+                    }
+
+                    this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
                 }
-                await this.adapter.setForeignStateAsync(id, !!val, true);
+            }
+            if (id === this.items?.data?.statusState?.options?.dp && typeof _state.new.val === 'number') {
+                if (this.updatePanelTimeout) {
+                    this.adapter.clearTimeout(this.updatePanelTimeout);
+                    this.updatePanelTimeout = null;
+                }
+                await this.setStatus(_state.new.val in alarmStates ? alarmStates[_state.new.val] : 'disarmed');
+                await this.adapter.setForeignStateAsync(id, _state.new.val, true);
                 if (this.unload || this.adapter.unload) {
                     return;
                 }
-
-                this.adapter.setTimeout(() => this.update(), 50);
+                this.updatePanelTimeout = this.adapter.setTimeout(() => this.update(), 50);
             }
         }
     }
@@ -469,5 +498,12 @@ export class PageAlarm extends Page {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
+    }
+    async delete(): Promise<void> {
+        if (this.updatePanelTimeout) {
+            this.adapter.clearTimeout(this.updatePanelTimeout);
+            this.updatePanelTimeout = null;
+        }
+        await super.delete();
     }
 }
