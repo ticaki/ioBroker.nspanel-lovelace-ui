@@ -3061,7 +3061,8 @@ class ConfigManager extends import_library.BaseClass {
                       ...iconTextDefaults,
                       value: foundedStates[role].ACTUAL
                     } : void 0
-                  }
+                  },
+                  scale: convertColorScaleBest.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
                 },
                 text,
                 text1: { true: foundedStates[role].ACTUAL },

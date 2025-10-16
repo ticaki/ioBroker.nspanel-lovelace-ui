@@ -3607,6 +3607,9 @@ export class ConfigManager extends BaseClass {
                                               }
                                             : undefined,
                                     },
+                                    scale: convertColorScaleBest.isIconColorScaleElement(item.colorScale)
+                                        ? { type: 'const', constVal: item.colorScale }
+                                        : undefined,
                                 },
                                 text: text,
                                 text1: { true: foundedStates[role].ACTUAL },
