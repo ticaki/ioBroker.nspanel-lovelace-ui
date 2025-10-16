@@ -372,6 +372,7 @@ type PageAlarmConfig = {
     pin: number;
     approved?: boolean;
     approveState: boolean;
+    global: boolean;
     setNavi?: string;
 };
 export type cardAlarmDataItemOptions = {

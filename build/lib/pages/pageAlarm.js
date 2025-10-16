@@ -64,12 +64,13 @@ class PageAlarm extends import_Page.Page {
   status = "armed";
   useStates = true;
   alarmType = "alarm";
+  pathToStates = "";
   items;
   approveId = "";
   async setMode(m) {
     if (this.useStates) {
       await this.library.writedp(
-        `panels.${this.basePanel.name}.alarm.${this.name}.mode`,
+        `${this.pathToStates}.mode`,
         m,
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
       );
@@ -105,7 +106,7 @@ class PageAlarm extends import_Page.Page {
     this.status = value;
     if (this.useStates) {
       await this.library.writedp(
-        `panels.${this.basePanel.name}.alarm.${this.name}.status`,
+        `${this.pathToStates}.status`,
         alarmStates.indexOf(this.status),
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
       );
@@ -114,13 +115,19 @@ class PageAlarm extends import_Page.Page {
   pin = "0";
   failCount = 0;
   constructor(config, options) {
+    var _a, _b;
     super(config, options);
     if (options.config && options.config.card == "cardAlarm") {
       this.config = options.config;
     }
+    const data = (_a = this.config) == null ? void 0 : _a.data;
+    this.pathToStates = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}`, false, false);
+    if (((_b = data == null ? void 0 : data.global) == null ? void 0 : _b.type) === "const" && !!data.global.constVal) {
+      this.pathToStates = this.library.cleandp(`alarm.${this.name}`, false, false);
+    }
     this.minUpdateInterval = 500;
     this.neverDeactivateTrigger = true;
-    this.approveId = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}.approve`, false, false);
+    this.approveId = this.library.cleandp(`${this.pathToStates}.approve`, false, false);
   }
   /**
    * Initialize the alarm page.
@@ -159,8 +166,9 @@ class PageAlarm extends import_Page.Page {
         void 0,
         import_definition.genericStateObjects.panel.panels.alarm._channel
       );
+      await this.library.writedp(`alarm`, void 0, import_definition.genericStateObjects.panel.panels.alarm._channel);
       await this.library.writedp(
-        `panels.${this.basePanel.name}.alarm.${this.name}`,
+        `${this.pathToStates}`,
         void 0,
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
       );
@@ -174,6 +182,11 @@ class PageAlarm extends import_Page.Page {
       } else {
         await this.setStatus(this.status);
       }
+      await this.library.writedp(
+        `${this.pathToStates}.mode`,
+        "",
+        import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
+      );
     } else {
       await this.setStatus("armed");
     }

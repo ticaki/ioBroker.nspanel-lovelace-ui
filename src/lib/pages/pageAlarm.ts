@@ -50,12 +50,13 @@ export class PageAlarm extends Page {
     private status: pages.AlarmStates = 'armed';
     private useStates = true;
     private alarmType: string = 'alarm';
+    private pathToStates: string = '';
     items: pages.PageBase['items'];
     private approveId: string = '';
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         if (this.useStates) {
             await this.library.writedp(
-                `panels.${this.basePanel.name}.alarm.${this.name}.mode`,
+                `${this.pathToStates}.mode`,
                 m,
                 genericStateObjects.panel.panels.alarm.cardAlarm.mode,
             );
@@ -93,7 +94,7 @@ export class PageAlarm extends Page {
         this.status = value;
         if (this.useStates) {
             await this.library.writedp(
-                `panels.${this.basePanel.name}.alarm.${this.name}.status`,
+                `${this.pathToStates}.status`,
                 alarmStates.indexOf(this.status),
                 genericStateObjects.panel.panels.alarm.cardAlarm.status,
             );
@@ -107,9 +108,14 @@ export class PageAlarm extends Page {
         if (options.config && options.config.card == 'cardAlarm') {
             this.config = options.config;
         }
+        const data = this.config?.data as pages.cardAlarmDataItemOptions['data'];
+        this.pathToStates = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}`, false, false);
+        if (data?.global?.type === 'const' && !!data.global.constVal) {
+            this.pathToStates = this.library.cleandp(`alarm.${this.name}`, false, false);
+        }
         this.minUpdateInterval = 500;
         this.neverDeactivateTrigger = true;
-        this.approveId = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}.approve`, false, false);
+        this.approveId = this.library.cleandp(`${this.pathToStates}.approve`, false, false);
     }
 
     /**
@@ -160,8 +166,9 @@ export class PageAlarm extends Page {
                 undefined,
                 genericStateObjects.panel.panels.alarm._channel,
             );
+            await this.library.writedp(`alarm`, undefined, genericStateObjects.panel.panels.alarm._channel);
             await this.library.writedp(
-                `panels.${this.basePanel.name}.alarm.${this.name}`,
+                `${this.pathToStates}`,
                 undefined,
                 genericStateObjects.panel.panels.alarm.cardAlarm._channel,
             );
@@ -175,6 +182,12 @@ export class PageAlarm extends Page {
             } else {
                 await this.setStatus(this.status);
             }
+
+            await this.library.writedp(
+                `${this.pathToStates}.mode`,
+                '',
+                genericStateObjects.panel.panels.alarm.cardAlarm.mode,
+            );
         } else {
             await this.setStatus('armed');
         }

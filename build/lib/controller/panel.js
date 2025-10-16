@@ -221,7 +221,7 @@ class Panel extends import_library.BaseClass {
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
     this.statesControler = options.controller.statesControler;
-    this.processUnlockPages(options);
+    this.processAdminPages(options);
     options.pages = options.pages.filter((b) => {
       var _a2, _b2, _c;
       if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
@@ -2040,16 +2040,15 @@ ${this.info.tasmota.onlineVersion}`;
    *
    * @param options - Panel configuration partial containing pages and navigation arrays
    */
-  processUnlockPages(options) {
+  processAdminPages(options) {
     var _a, _b;
-    const unlocks = this.adapter.config.pageConfig || [];
-    for (const unlock of unlocks) {
-      if (!unlock.navigationAssignment) {
+    const entries = this.adapter.config.pageConfig || [];
+    for (const entry of entries) {
+      if (!entry.navigationAssignment || !entry.card) {
         continue;
       }
-      unlock.card = unlock.card || "cardAlarm";
-      const allPanelsAssignment = unlock.navigationAssignment.find((a) => a.topic === import_adminShareConfig.ALL_PANELS_SPECIAL_ID);
-      const panelAssignment = unlock.navigationAssignment.find((a) => a.topic === this.topic);
+      const allPanelsAssignment = entry.navigationAssignment.find((a) => a.topic === import_adminShareConfig.ALL_PANELS_SPECIAL_ID);
+      const panelAssignment = entry.navigationAssignment.find((a) => a.topic === this.topic);
       let navAssign;
       if (panelAssignment) {
         if (!panelAssignment.navigation && allPanelsAssignment) {
@@ -2062,30 +2061,30 @@ ${this.info.tasmota.onlineVersion}`;
         continue;
       }
       let newPage;
-      switch (unlock.card) {
+      switch (entry.card) {
         case "cardAlarm": {
           newPage = {
-            uniqueID: unlock.uniqueName,
-            hidden: !!unlock.hidden,
-            alwaysOn: unlock.alwaysOn || "none",
-            template: void 0,
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn || "none",
             dpInit: "",
             config: {
               card: "cardAlarm",
               data: {
-                alarmType: { type: "const", constVal: unlock.alarmType || "unlock" },
-                headline: { type: "const", constVal: unlock.headline || "Unlock" },
-                button1: unlock.button1 ? { type: "const", constVal: unlock.button1 } : void 0,
-                button2: unlock.button2 ? { type: "const", constVal: unlock.button2 } : void 0,
-                button3: unlock.button3 ? { type: "const", constVal: unlock.button3 } : void 0,
-                button4: unlock.button4 ? { type: "const", constVal: unlock.button4 } : void 0,
-                button5: unlock.button1 ? { type: "const", constVal: unlock.button5 } : void 0,
-                button6: unlock.button2 ? { type: "const", constVal: unlock.button6 } : void 0,
-                button7: unlock.button3 ? { type: "const", constVal: unlock.button7 } : void 0,
-                button8: unlock.button4 ? { type: "const", constVal: unlock.button8 } : void 0,
-                pin: unlock.pin != null ? { type: "const", constVal: String(unlock.pin) } : void 0,
-                approved: { type: "const", constVal: !!unlock.approved },
-                setNavi: unlock.setNavi ? { type: "const", constVal: unlock.setNavi } : void 0
+                alarmType: { type: "const", constVal: entry.alarmType || "unlock" },
+                headline: { type: "const", constVal: entry.headline || "Unlock" },
+                button1: entry.button1 ? { type: "const", constVal: entry.button1 } : void 0,
+                button2: entry.button2 ? { type: "const", constVal: entry.button2 } : void 0,
+                button3: entry.button3 ? { type: "const", constVal: entry.button3 } : void 0,
+                button4: entry.button4 ? { type: "const", constVal: entry.button4 } : void 0,
+                button5: entry.button1 ? { type: "const", constVal: entry.button5 } : void 0,
+                button6: entry.button2 ? { type: "const", constVal: entry.button6 } : void 0,
+                button7: entry.button3 ? { type: "const", constVal: entry.button7 } : void 0,
+                button8: entry.button4 ? { type: "const", constVal: entry.button8 } : void 0,
+                pin: entry.pin != null ? { type: "const", constVal: String(entry.pin) } : void 0,
+                approved: { type: "const", constVal: !!entry.approved },
+                global: { type: "const", constVal: !!entry.global },
+                setNavi: entry.setNavi ? { type: "const", constVal: entry.setNavi } : void 0
               }
             },
             pageItems: []
@@ -2094,13 +2093,13 @@ ${this.info.tasmota.onlineVersion}`;
         }
         case "cardQR": {
           const qrIndex = this.adapter.config.pageConfig.findIndex(
-            (qr) => qr.uniqueName === unlock.uniqueName
+            (qr) => qr.uniqueName === entry.uniqueName
           );
           if (qrIndex === -1) {
-            this.log.warn(`QR config not found for page '${unlock.uniqueName}', skipping!`);
+            this.log.warn(`QR config not found for page '${entry.uniqueName}', skipping!`);
             continue;
           }
-          const qrConfig = unlock;
+          const qrConfig = entry;
           let text1 = "", text = "", icon1 = "", icon2 = "";
           switch (qrConfig.selType) {
             case 0:
@@ -2252,7 +2251,7 @@ ${this.info.tasmota.onlineVersion}`;
           break;
         }
         default: {
-          this.log.warn(`Unsupported card type '${unlock.card}' for page '${unlock.uniqueName}', skipping!`);
+          this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
           continue;
         }
       }

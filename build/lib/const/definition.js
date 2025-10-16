@@ -1339,12 +1339,12 @@ const genericStateObjects = {
             _id: "",
             type: "state",
             common: {
-              name: "StateObjects.status",
+              name: "StateObjects.alarmstatus",
               type: "number",
               role: "value",
               states: ["disarmed", "armed", "arming", "pending", "triggered"],
               read: true,
-              write: true
+              write: false
             },
             native: {}
           },
@@ -1352,7 +1352,7 @@ const genericStateObjects = {
             _id: "",
             type: "state",
             common: {
-              name: "StateObjects.power2",
+              name: "StateObjects.alarmmode",
               type: "string",
               role: "text",
               read: true,

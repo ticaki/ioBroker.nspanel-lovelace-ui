@@ -334,6 +334,19 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 label={this.getText('unlock_approved')}
                             />
                         </Box>
+                        <Box sx={{ mt: 1 }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={!!entry.global}
+                                        onChange={(_e, checked) => {
+                                            this.handleFieldChange('global', checked);
+                                        }}
+                                    />
+                                }
+                                label={this.getText('unlock_global')}
+                            />
+                        </Box>
                     </Box>
                 )}
 

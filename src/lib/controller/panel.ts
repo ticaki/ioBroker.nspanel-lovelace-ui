@@ -237,7 +237,7 @@ export class Panel extends BaseClass {
         this.statesControler = options.controller.statesControler;
 
         // Process unlock pages and build navigation
-        this.processUnlockPages(options);
+        this.processAdminPages(options);
 
         options.pages = options.pages.filter(b => {
             if (
@@ -2213,20 +2213,19 @@ export class Panel extends BaseClass {
      *
      * @param options - Panel configuration partial containing pages and navigation arrays
      */
-    private processUnlockPages(options: panelConfigPartial): void {
-        const unlocks: (UnlockEntry | QREntry)[] = this.adapter.config.pageConfig || [];
+    private processAdminPages(options: panelConfigPartial): void {
+        const entries: (UnlockEntry | QREntry)[] = this.adapter.config.pageConfig || [];
 
-        for (const unlock of unlocks) {
-            if (!unlock.navigationAssignment) {
+        for (const entry of entries) {
+            if (!entry.navigationAssignment || !entry.card) {
                 continue;
             }
-            unlock.card = unlock.card || 'cardAlarm';
 
             // First pass: Check for ALL_PANELS_SPECIAL_ID assignment
-            const allPanelsAssignment = unlock.navigationAssignment.find(a => a.topic === ALL_PANELS_SPECIAL_ID);
+            const allPanelsAssignment = entry.navigationAssignment.find(a => a.topic === ALL_PANELS_SPECIAL_ID);
 
             // Second pass: Check for this specific panel's assignment
-            const panelAssignment = unlock.navigationAssignment.find(a => a.topic === this.topic);
+            const panelAssignment = entry.navigationAssignment.find(a => a.topic === this.topic);
 
             // Determine which assignment to use
             let navAssign:
@@ -2260,30 +2259,30 @@ export class Panel extends BaseClass {
             // Create page configuration based on card type
             let newPage: pages.PageBase;
 
-            switch (unlock.card) {
+            switch (entry.card) {
                 case 'cardAlarm': {
                     newPage = {
-                        uniqueID: unlock.uniqueName,
-                        hidden: !!unlock.hidden,
-                        alwaysOn: unlock.alwaysOn || 'none',
-                        template: undefined,
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn || 'none',
                         dpInit: '',
                         config: {
                             card: 'cardAlarm',
                             data: {
-                                alarmType: { type: 'const', constVal: unlock.alarmType || 'unlock' },
-                                headline: { type: 'const', constVal: unlock.headline || 'Unlock' },
-                                button1: unlock.button1 ? { type: 'const', constVal: unlock.button1 } : undefined,
-                                button2: unlock.button2 ? { type: 'const', constVal: unlock.button2 } : undefined,
-                                button3: unlock.button3 ? { type: 'const', constVal: unlock.button3 } : undefined,
-                                button4: unlock.button4 ? { type: 'const', constVal: unlock.button4 } : undefined,
-                                button5: unlock.button1 ? { type: 'const', constVal: unlock.button5 } : undefined,
-                                button6: unlock.button2 ? { type: 'const', constVal: unlock.button6 } : undefined,
-                                button7: unlock.button3 ? { type: 'const', constVal: unlock.button7 } : undefined,
-                                button8: unlock.button4 ? { type: 'const', constVal: unlock.button8 } : undefined,
-                                pin: unlock.pin != null ? { type: 'const', constVal: String(unlock.pin) } : undefined,
-                                approved: { type: 'const', constVal: !!unlock.approved },
-                                setNavi: unlock.setNavi ? { type: 'const', constVal: unlock.setNavi } : undefined,
+                                alarmType: { type: 'const', constVal: entry.alarmType || 'unlock' },
+                                headline: { type: 'const', constVal: entry.headline || 'Unlock' },
+                                button1: entry.button1 ? { type: 'const', constVal: entry.button1 } : undefined,
+                                button2: entry.button2 ? { type: 'const', constVal: entry.button2 } : undefined,
+                                button3: entry.button3 ? { type: 'const', constVal: entry.button3 } : undefined,
+                                button4: entry.button4 ? { type: 'const', constVal: entry.button4 } : undefined,
+                                button5: entry.button1 ? { type: 'const', constVal: entry.button5 } : undefined,
+                                button6: entry.button2 ? { type: 'const', constVal: entry.button6 } : undefined,
+                                button7: entry.button3 ? { type: 'const', constVal: entry.button7 } : undefined,
+                                button8: entry.button4 ? { type: 'const', constVal: entry.button8 } : undefined,
+                                pin: entry.pin != null ? { type: 'const', constVal: String(entry.pin) } : undefined,
+                                approved: { type: 'const', constVal: !!entry.approved },
+                                global: { type: 'const', constVal: !!entry.global },
+                                setNavi: entry.setNavi ? { type: 'const', constVal: entry.setNavi } : undefined,
                             },
                         },
                         pageItems: [],
@@ -2294,14 +2293,14 @@ export class Panel extends BaseClass {
                 case 'cardQR': {
                     // QR card configuration
                     const qrIndex = this.adapter.config.pageConfig.findIndex(
-                        (qr: any) => qr.uniqueName === unlock.uniqueName,
+                        (qr: any) => qr.uniqueName === entry.uniqueName,
                     );
                     if (qrIndex === -1) {
-                        this.log.warn(`QR config not found for page '${unlock.uniqueName}', skipping!`);
+                        this.log.warn(`QR config not found for page '${entry.uniqueName}', skipping!`);
                         continue;
                     }
 
-                    const qrConfig = unlock as QREntry;
+                    const qrConfig = entry as QREntry;
                     let text1 = '',
                         text = '',
                         icon1 = '',
@@ -2471,7 +2470,7 @@ export class Panel extends BaseClass {
                 }
                 default: {
                     // @ts-expect-error die muß hier stehen und keinen Fehler haben
-                    this.log.warn(`Unsupported card type '${unlock.card}' for page '${unlock.uniqueName}', skipping!`);
+                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
                     continue;
                 }
             }
