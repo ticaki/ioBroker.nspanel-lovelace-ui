@@ -1361,7 +1361,7 @@ class ConfigManager extends import_library.BaseClass {
     return !("native" in item);
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (this.isNativePageItem(item)) {
       if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
@@ -1951,9 +1951,13 @@ class ConfigManager extends import_library.BaseClass {
       }
       case "info": {
         let adapterRole = "";
+        let commonUnit = "";
         if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
           const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
-          if (((_e = o == null ? void 0 : o.common) == null ? void 0 : _e.type) === "boolean") {
+          if ((_e = o == null ? void 0 : o.common) == null ? void 0 : _e.unit) {
+            commonUnit = o.common.unit;
+          }
+          if (((_f = o == null ? void 0 : o.common) == null ? void 0 : _f.type) === "boolean") {
             adapterRole = "iconNotText";
           } else {
             adapterRole = valueDisplayRole;
@@ -1998,7 +2002,10 @@ class ConfigManager extends import_library.BaseClass {
               value: foundedStates[role].ACTUAL
             },
             entity2: {
-              value: foundedStates[role].ACTUAL
+              value: foundedStates[role].ACTUAL,
+              unit: item.unit ? { type: "const", constVal: item.unit } : { type: "const", constVal: commonUnit },
+              prefix: convertColorScaleBest.isCardEntitiesType(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
+              suffix: convertColorScaleBest.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -2034,8 +2041,8 @@ class ConfigManager extends import_library.BaseClass {
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
-              minScale: { type: "const", constVal: (_f = item.minValueLevel) != null ? _f : tempMinScale },
-              maxScale: { type: "const", constVal: (_g = item.maxValueLevel) != null ? _g : tempMaxScale }
+              minScale: { type: "const", constVal: (_g = item.minValueLevel) != null ? _g : tempMinScale },
+              maxScale: { type: "const", constVal: (_h = item.maxValueLevel) != null ? _h : tempMaxScale }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
