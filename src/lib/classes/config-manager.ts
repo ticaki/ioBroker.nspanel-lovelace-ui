@@ -1576,7 +1576,7 @@ export class ConfigManager extends BaseClass {
                 ? await this.getFieldAsDataItemConfig(item.buttonText, true)
                 : item.id && (await this.existsState(`${item.id}.BUTTONTEXT`))
                   ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                  : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
+                  : await this.getFieldAsDataItemConfig(def1, true);
         };
 
         const getButtonsTextFalse = async (
@@ -1589,14 +1589,26 @@ export class ConfigManager extends BaseClass {
                   ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
                   : await getButtonsTextTrue(item, def1);
         };
+        const text1 = {
+            true: await getButtonsTextTrue(item, 'press'),
+            false: await getButtonsTextFalse(item, 'press'),
+        };
         const text = {
             true: {
-                value: await getButtonsTextTrue(item, role || ''),
+                value: item.name
+                    ? await this.getFieldAsDataItemConfig(item.name, true)
+                    : commonName
+                      ? ({ type: 'const', constVal: commonName } as NSPanel.DataItemsOptions)
+                      : ({ type: 'const', constVal: 'Info' } as NSPanel.DataItemsOptions),
                 prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
                 suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
             },
             false: {
-                value: await getButtonsTextFalse(item, role || ''),
+                value: item.name
+                    ? await this.getFieldAsDataItemConfig(item.name, true)
+                    : commonName
+                      ? ({ type: 'const', constVal: commonName } as NSPanel.DataItemsOptions)
+                      : ({ type: 'const', constVal: 'Info' } as NSPanel.DataItemsOptions),
                 prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
                 suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
             },
@@ -1640,9 +1652,7 @@ export class ConfigManager extends BaseClass {
                         maxBri: undefined,
                         minBri: undefined,
                     },
-                    text1: {
-                        true: { type: 'const', constVal: 'press' },
-                    },
+                    text1: text1,
                     text: text,
                 },
             };
@@ -1721,10 +1731,7 @@ export class ConfigManager extends BaseClass {
                             maxBri: undefined,
                             minBri: undefined,
                         },
-                        text1: {
-                            true: { type: 'const', constVal: 'on' },
-                            false: { type: 'const', constVal: 'off' },
-                        },
+                        text1: text1,
                         text: text,
                         entity1: {
                             value: foundedStates[role].ACTUAL,
@@ -1766,10 +1773,7 @@ export class ConfigManager extends BaseClass {
                             maxBri: undefined,
                             minBri: undefined,
                         },
-                        text1: {
-                            true: { type: 'const', constVal: 'on' },
-                            false: { type: 'const', constVal: 'off' },
-                        },
+                        text1: text1,
                         text: text,
                         entity1: { value: foundedStates[role].ON_ACTUAL },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -1805,10 +1809,7 @@ export class ConfigManager extends BaseClass {
                             maxBri: undefined,
                             minBri: undefined,
                         },
-                        text1: {
-                            true: { type: 'const', constVal: 'on' },
-                            false: { type: 'const', constVal: 'off' },
-                        },
+                        text1: text1,
                         text: text,
                         entity1: {
                             value: foundedStates[role].ACTUAL,
@@ -1947,10 +1948,7 @@ export class ConfigManager extends BaseClass {
                         },
                         data: {
                             text: text,
-                            text1: {
-                                true: { type: 'const', constVal: 'opened' },
-                                false: { type: 'const', constVal: 'closed' },
-                            },
+                            text1: text1,
                             entity1: {
                                 value: foundedStates[role].ACTUAL,
                                 minScale: { type: 'const', constVal: item.minValueLevel ?? tempMinScale },
@@ -1978,10 +1976,7 @@ export class ConfigManager extends BaseClass {
                             entity1: { value: foundedStates[role].ACTUAL },
 
                             text: text,
-                            text1: {
-                                true: { type: 'const', constVal: 'opened' },
-                                false: { type: 'const', constVal: 'closed' },
-                            },
+                            text1: text1,
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
                     };
@@ -2004,10 +1999,7 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         entity1: { value: foundedStates[role].ACTUAL },
-                        text1: {
-                            true: { type: 'const', constVal: 'opened' },
-                            false: { type: 'const', constVal: 'closed' },
-                        },
+                        text1: text1,
                         text: text,
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -2030,10 +2022,7 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         entity1: { value: foundedStates[role].ACTUAL },
-                        text1: {
-                            true: { type: 'const', constVal: 'opened' },
-                            false: { type: 'const', constVal: 'closed' },
-                        },
+                        text1: text1,
                         text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -2092,10 +2081,7 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         entity1: { value: foundedStates[role].ACTUAL },
-                        text1: {
-                            true: { type: 'const', constVal: 'motion' },
-                            false: { type: 'const', constVal: 'none' },
-                        },
+                        text1: text1,
                         text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -2248,9 +2234,7 @@ export class ConfigManager extends BaseClass {
                                 : undefined,
                         },
                         text: text,
-                        text1: {
-                            true: foundedStates[role].ACTUAL,
-                        },
+                        text1: text1,
                         entity1: {
                             value: foundedStates[role].ACTUAL,
                         },
@@ -2296,10 +2280,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
-                        text1: {
-                            true: { type: 'const', constVal: 'opened' },
-                            false: { type: 'const', constVal: 'closed' },
-                        },
+                        text1: text1,
                         text: text,
                         entity1: {
                             value: foundedStates[role].ACTUAL,
