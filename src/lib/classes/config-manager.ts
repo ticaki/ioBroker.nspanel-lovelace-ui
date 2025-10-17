@@ -755,10 +755,7 @@ export class ConfigManager extends BaseClass {
                 ) {
                     gridItem.config.scrollType = page.scrollType || 'page';
                     gridItem.config.scrollPresentation = page.scrollPresentation || 'classic';
-                    if (
-                        globals.isPageMenuConfig(gridItem.config) &&
-                        gridItem.config.scrollPresentation === 'auto'
-                    ) {
+                    if (globals.isPageMenuConfig(gridItem.config) && gridItem.config.scrollPresentation === 'auto') {
                         gridItem.config.scrollAutoTiming = ('scrollAutoTiming' in page && page.scrollAutoTiming) || 15;
                     }
                 }
@@ -1965,9 +1962,7 @@ export class ConfigManager extends BaseClass {
                         color: {
                             true: await this.getIconColor(item.onColor, Color.open),
                             false: await this.getIconColor(item.offColor, Color.close),
-                            scale: globals.isIconColorScaleElement(item.colorScale)
-                                ? item.colorScale
-                                : undefined,
+                            scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                         },
                         icon: {
                             true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -1996,9 +1991,7 @@ export class ConfigManager extends BaseClass {
                         color: {
                             true: await this.getIconColor(item.onColor, Color.open),
                             false: await this.getIconColor(item.offColor, Color.close),
-                            scale: globals.isIconColorScaleElement(item.colorScale)
-                                ? item.colorScale
-                                : undefined,
+                            scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                         },
                         icon: {
                             true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2026,9 +2019,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.open),
                         false: await this.getIconColor(item.offColor, Color.close),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2054,9 +2045,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.open),
                         false: await this.getIconColor(item.offColor, Color.close),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2118,9 +2107,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.attention),
                         false: await this.getIconColor(item.offColor, Color.deactivated),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2155,9 +2142,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.activated),
                         false: await this.getIconColor(item.offColor, Color.deactivated),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2220,9 +2205,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.attention),
                         false: await this.getIconColor(item.offColor, Color.deactivated),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2329,9 +2312,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.open),
                         false: await this.getIconColor(item.offColor, Color.close),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2363,9 +2344,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.activated),
                         false: await this.getIconColor(item.offColor, Color.deactivated),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2392,9 +2371,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.open),
                         false: await this.getIconColor(item.offColor, Color.close),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -2426,9 +2403,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, Color.good),
                         false: await this.getIconColor(item.offColor, Color.bad),
-                        scale: globals.isIconColorScaleElement(item.colorScale)
-                            ? item.colorScale
-                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
@@ -3222,9 +3197,7 @@ export class ConfigManager extends BaseClass {
                                         },
                                         scale: {
                                             type: 'const',
-                                            constVal: globals.isIconColorScaleElement(
-                                                item.colorScale,
-                                            ) ?? {
+                                            constVal: globals.isIconColorScaleElement(item.colorScale) ?? {
                                                 val_min: 0,
                                                 val_max: 100,
                                             },
@@ -3542,13 +3515,11 @@ export class ConfigManager extends BaseClass {
                                         ? {
                                               value: foundedStates[role].ACTUAL,
                                               prefix:
-                                                  globals.isCardEntitiesType(page.type) &&
-                                                  item.prefixValue
+                                                  globals.isCardEntitiesType(page.type) && item.prefixValue
                                                       ? await this.getFieldAsDataItemConfig(item.prefixValue)
                                                       : undefined,
                                               suffix:
-                                                  globals.isCardEntitiesType(page.type) &&
-                                                  item.suffixValue
+                                                  globals.isCardEntitiesType(page.type) && item.suffixValue
                                                       ? await this.getFieldAsDataItemConfig(item.suffixValue)
                                                       : undefined,
                                               unit:
@@ -3665,9 +3636,7 @@ export class ConfigManager extends BaseClass {
                             color: {
                                 true: await this.getIconColor(item.onColor, Color.on),
                                 false: await this.getIconColor(item.offColor, Color.off),
-                                scale: globals.isIconColorScaleElement(item.colorScale)
-                                    ? item.colorScale
-                                    : undefined,
+                                scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                             },
                             icon: {
                                 true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
