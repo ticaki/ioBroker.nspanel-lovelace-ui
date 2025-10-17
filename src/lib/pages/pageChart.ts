@@ -287,7 +287,7 @@ export class PageChart extends Page {
                     this.log.error(`Error onVisibilityChange: ${error as string}`);
                 }
             }
-            // ich glaube nicht das du updaten willst, wenn das unsichtbar wird, auch wenns am anfang von this.update() abgefragt wird
+            // ich glaube nicht das du updaten willst, wenn das unsichtbar wird, auch wenn es am anfang von this.update() abgefragt wird
             await this.update();
         }
     }
