@@ -158,7 +158,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)
+- (TT-Tom17) Chart: Added "NO DATA" label when chart has no data to display - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)
+- (ticaki) PageItem info: Fixed missing scale property - fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)
+- (ticaki) Templates: Added Roborock vacuum status mapping template
+- (ticaki) PageAlarm: Fixed race conditions on fast adapter restarts (timeout cleanup, unload checks)
+- (ticaki) Refactor type definitions
 
 ### 0.6.5 (2025-10-14)
 
