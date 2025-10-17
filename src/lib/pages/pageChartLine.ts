@@ -32,8 +32,8 @@ export class PageChartLine extends PageChart {
 
     // Überschreiben der getChartData-Methode
     async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        let ticksChart: string[] = [];
-        let valuesChart = '';
+        let ticksChart: string[] = ['~'];
+        let valuesChart = '~';
 
         if (this.items && this.adminConfig != null) {
             const items = this.items;
@@ -43,10 +43,10 @@ export class PageChartLine extends PageChart {
                     // oldScriptVersion bleibt unverändert
                     const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
                     const tempValues = (items.data.value && (await items.data.value.getString())) ?? '';
-                    if (tempTicks && Array.isArray(tempTicks)) {
+                    if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
                         ticksChart = tempTicks;
                     }
-                    if (tempValues && typeof tempValues === 'string') {
+                    if (tempValues && typeof tempValues === 'string' && tempValues.length > 0) {
                         valuesChart = tempValues;
                     }
                     break;
@@ -131,12 +131,13 @@ export class PageChartLine extends PageChart {
                                 this.log.debug(
                                     `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) Intervall: ${intervall}`,
                                 );
-
+                                const tempTickChart: string[] = [];
                                 let currentTick = roundedMin - intervall * 2;
                                 while (currentTick < roundedMax + intervall) {
-                                    ticksChart.push(String(currentTick));
+                                    tempTickChart.push(String(currentTick));
                                     currentTick += intervall;
                                 }
+                                ticksChart = tempTickChart;
                             }
                         } else {
                             this.log.warn(
