@@ -21,6 +21,7 @@ export type PageTemplateIdent =
     | 'media.amazon';
 
 export type TemplateIdent =
+    | 'text.roborock.status'
     | 'button.alias.fahrplan.departure'
     | 'text.brightsky.bot1Value'
     | 'text.clock'
