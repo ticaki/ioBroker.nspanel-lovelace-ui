@@ -4200,7 +4200,7 @@ export const textTemplates: TemplateItems = {
                                 case 100:
                                     return 'battery';
                                 default:
-                                    return undefined;
+                                    return '?';
                             }
                         },
                     },

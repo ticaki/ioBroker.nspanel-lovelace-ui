@@ -4188,7 +4188,7 @@ const textTemplates = {
                 case 100:
                   return "battery";
                 default:
-                  return void 0;
+                  return "?";
               }
             }
           },
