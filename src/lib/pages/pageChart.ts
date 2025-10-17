@@ -207,7 +207,7 @@ export class PageChart extends Page {
                 this.log.warn('AdminConfig is not set, cannot check states');
                 this.checkState = false;
             } else {
-                // trys klein halten - die fangen auch alle vertipper ab und suchen ist dann lustig
+                // try-catch blocks klein halten - die fangen auch alle Vertipper ab und suchen ist dann lustig
                 try {
                     const cfg: any = this.adminConfig;
                     const ds = cfg.selInstanceDataSource;
