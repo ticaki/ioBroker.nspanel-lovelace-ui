@@ -485,7 +485,10 @@ class PageAlarm extends import_Page.Page {
     if (this.unload || this.adapter.unload) {
       return;
     }
-    this.delayUpdate();
+    this.updatePanelTimeout = this.adapter.setTimeout(() => {
+      this.updatePanelTimeout = null;
+      void this.update();
+    }, 50);
   }
   async delete() {
     if (this.updatePanelTimeout) {

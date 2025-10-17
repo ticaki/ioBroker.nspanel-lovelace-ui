@@ -514,7 +514,10 @@ export class PageAlarm extends Page {
         if (this.unload || this.adapter.unload) {
             return;
         }
-        this.delayUpdate();
+        this.updatePanelTimeout = this.adapter.setTimeout(() => {
+            this.updatePanelTimeout = null;
+            void this.update();
+        }, 50);
     }
     async delete(): Promise<void> {
         if (this.updatePanelTimeout) {
