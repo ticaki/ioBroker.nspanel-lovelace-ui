@@ -29,7 +29,7 @@ const config = {
         target: 'chrome89',
         outDir: './build',
         chunkSizeWarningLimit: 3000,
-        rollupOptions: {
+        /*rollupOptions: {
             output: {
                 manualChunks: (id: string): string | undefined => {
                     // Material-UI icons (very large) in separate chunk
@@ -70,7 +70,7 @@ const config = {
                     return undefined;
                 },
             },
-        },
+        },*/
     },
 };
 
