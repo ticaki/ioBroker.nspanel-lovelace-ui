@@ -136,6 +136,7 @@ export type StateRole =
     | '';
 
 export type DeviceRole =
+    | 'text.states'
     | 'volume.mute'
     /**
      * Defines the datapoints to write to depending on the current read of entity1 state.

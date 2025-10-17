@@ -5,7 +5,7 @@ import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import type { nsPanelState, PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
-import type { Dataitem } from '../controller/data-item';
+import { isDataItem, type Dataitem } from '../controller/data-item';
 import { type ChangeTypeOfKeys, type DeviceRole, type PageBase } from '../types/pages';
 import { isCardEntitiesType, isCardGridType } from '../types/function-and-const';
 import type { Screensaver } from './screensaver';
@@ -495,10 +495,25 @@ export class PageItem extends BaseTriggeredPage {
                         if (value === null) {
                             value = true;
                         }
-
-                        message.displayName = this.library.getTranslation(
-                            (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
-                        );
+                        if (entry.role === 'text.states') {
+                            const key = value ? 'true' : 'false';
+                            const dataitem = item.text?.[key]
+                                ? isDataItem(item.text[key])
+                                    ? item.text[key]
+                                    : item.text[key].value
+                                : null;
+                            const states = dataitem ? await dataitem.getCommonStates() : null;
+                            if (states && dataitem) {
+                                const v = await dataitem.getString();
+                                if (v != null && states[v]) {
+                                    message.displayName = this.library.getTranslation(states[v]) ?? '';
+                                }
+                            }
+                        } else {
+                            message.displayName = this.library.getTranslation(
+                                (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
+                            );
+                        }
                         if (entry.type === 'switch') {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                         } else if (entry.type === 'button') {
@@ -627,7 +642,7 @@ export class PageItem extends BaseTriggeredPage {
                             message.intNameEntity + additionalId,
                             message.icon,
                             message.iconColor,
-                            message.displayName,
+                            message.displayName ?? '',
                             message.optionalValue,
                         );
                     }

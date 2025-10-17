@@ -251,6 +251,6 @@
     "media.seek": "Playback position",
     "favoriteList": "Favorites list",
     "crossfade": "Crossfade",
-    "iconOverview": "Icon overview"
-    
+    "iconOverview": "Icon overview",
+    "locked_for": "Locked for"
 }

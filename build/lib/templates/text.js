@@ -4122,6 +4122,92 @@ const textTemplates = {
         false: void 0
       }
     }
+  },
+  "text.roborock.status": {
+    role: "text.states",
+    adapter: "roborock.0.Devices",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: {
+            type: "triggered",
+            mode: "auto",
+            regexp: /\.deviceStatus\.state$/,
+            dp: "",
+            read: (val) => {
+              switch (val) {
+                case 0:
+                  return "progress-question";
+                case 1:
+                  return "restart";
+                case 2:
+                  return "sleep";
+                case 3:
+                  return "timer-stop-outline";
+                case 4:
+                  return "remote";
+                case 5:
+                  return "broom";
+                case 6:
+                  return "home-circle-outline";
+                case 7:
+                  return "hand-back-right-outline";
+                case 8:
+                  return "battery-charging-medium";
+                case 9:
+                  return "battery-alert-variant-outline";
+                case 10:
+                  return "motion-pause-outline";
+                case 11:
+                  return "liquid-spot";
+                case 12:
+                  return "alert-outline";
+                case 13:
+                  return "power-off";
+                case 14:
+                  return "update";
+                case 15:
+                  return "home-heart";
+                case 16:
+                  return "arrow-down-bold-hexagon-outline";
+                case 17:
+                  return "select-place";
+                case 18:
+                  return "floor-plan";
+                case 22:
+                  return "delete-empty-outline";
+                case 23:
+                  return "Washing the mop";
+                case 26:
+                  return "wiper-wash";
+                case 28:
+                  return "call-made";
+                case 29:
+                  return "map";
+                case 100:
+                  return "battery";
+                default:
+                  return void 0;
+              }
+            }
+          },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        }
+      },
+      entity1: {
+        value: {
+          mode: "auto",
+          type: "triggered",
+          regexp: /\.deviceStatus\.state$/,
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "triggered", mode: "auto", regexp: /\.deviceStatus\.state$/, dp: "" },
+        false: void 0
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
