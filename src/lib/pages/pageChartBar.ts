@@ -32,8 +32,8 @@ export class PageChartBar extends PageChart {
 
     // Überschreiben der getChartData-Methode
     async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        let ticksChart: string[] = [];
-        let valuesChart = '';
+        let ticksChart: string[] = ['~'];
+        let valuesChart = '~';
 
         if (this.items && this.adminConfig != null) {
             const items = this.items;
@@ -43,10 +43,10 @@ export class PageChartBar extends PageChart {
                     // oldScriptVersion bleibt unverändert
                     const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
                     const tempValues = (items.data.value && (await items.data.value.getString())) ?? '';
-                    if (tempTicks && Array.isArray(tempTicks)) {
+                    if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
                         ticksChart = tempTicks;
                     }
-                    if (tempValues && typeof tempValues === 'string') {
+                    if (tempValues && typeof tempValues === 'string' && tempValues.length > 0) {
                         valuesChart = tempValues;
                     }
                     break;
@@ -63,7 +63,7 @@ export class PageChartBar extends PageChart {
 
                     try {
                         const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
-                        if (dbDaten && Array.isArray(dbDaten)) {
+                        if (dbDaten && Array.isArray(dbDaten) && dbDaten.length > 0) {
                             this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
 
                             const stepXAchsis = rangeHours / maxXAxisLabels;
@@ -100,11 +100,15 @@ export class PageChartBar extends PageChart {
 
                             this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
 
+                            const tempTickChart: string[] = [];
                             let currentTick = min;
                             while (currentTick < max + intervall) {
-                                ticksChart.push(String(currentTick));
+                                tempTickChart.push(String(currentTick));
                                 currentTick += intervall;
                             }
+                            ticksChart = tempTickChart;
+                        } else {
+                            this.log.warn(`No data found for state ${stateValue} in the last ${rangeHours} hours`);
                         }
                     } catch (error) {
                         this.log.error(`Error fetching data from DB: ${error as string}`);

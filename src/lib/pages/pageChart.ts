@@ -55,6 +55,8 @@ export class PageChart extends Page {
         const message: Partial<pages.PageChartMessage> = {};
         message.navigation = this.getNavigation();
         message.headline = `Error`;
+        message.ticks = ['~'];
+        message.value = '~';
 
         if (this.checkState) {
             if (this.items && this.adminConfig != null) {

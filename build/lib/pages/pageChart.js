@@ -71,6 +71,8 @@ class PageChart extends import_Page.Page {
     const message = {};
     message.navigation = this.getNavigation();
     message.headline = `Error`;
+    message.ticks = ["~"];
+    message.value = "~";
     if (this.checkState) {
       if (this.items && this.adminConfig != null) {
         const items = this.items;

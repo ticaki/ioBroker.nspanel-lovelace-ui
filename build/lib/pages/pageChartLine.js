@@ -44,18 +44,18 @@ class PageChartLine extends import_pageChart.PageChart {
   // Überschreiben der getChartData-Methode
   async getChartData() {
     var _a, _b;
-    let ticksChart = [];
-    let valuesChart = "";
+    let ticksChart = ["~"];
+    let valuesChart = "~";
     if (this.items && this.adminConfig != null) {
       const items = this.items;
       switch (this.adminConfig.selInstanceDataSource) {
         case 0: {
           const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
           const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
-          if (tempTicks && Array.isArray(tempTicks)) {
+          if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
             ticksChart = tempTicks;
           }
-          if (tempValues && typeof tempValues === "string") {
+          if (tempValues && typeof tempValues === "string" && tempValues.length > 0) {
             valuesChart = tempValues;
           }
           break;
@@ -117,11 +117,13 @@ class PageChartLine extends import_pageChart.PageChart {
                 this.log.debug(
                   `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) Intervall: ${intervall}`
                 );
+                const tempTickChart = [];
                 let currentTick = roundedMin - intervall * 2;
                 while (currentTick < roundedMax + intervall) {
-                  ticksChart.push(String(currentTick));
+                  tempTickChart.push(String(currentTick));
                   currentTick += intervall;
                 }
+                ticksChart = tempTickChart;
               }
             } else {
               this.log.warn(
