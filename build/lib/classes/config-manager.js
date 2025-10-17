@@ -1395,8 +1395,8 @@ class ConfigManager extends import_library.BaseClass {
       return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : await getButtonsTextTrue(item2, def1);
     };
     const text1 = {
-      true: await getButtonsTextTrue(item, "on"),
-      false: await getButtonsTextFalse(item, "off")
+      true: await getButtonsTextTrue(item, "press"),
+      false: await getButtonsTextFalse(item, "press")
     };
     const text = {
       true: {
@@ -1434,10 +1434,7 @@ class ConfigManager extends import_library.BaseClass {
             maxBri: void 0,
             minBri: void 0
           },
-          text1: {
-            true: await getButtonsTextTrue(item, "press"),
-            false: await getButtonsTextFalse(item, "press")
-          },
+          text1,
           text
         }
       };

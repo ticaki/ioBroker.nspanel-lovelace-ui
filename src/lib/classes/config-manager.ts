@@ -1613,8 +1613,8 @@ export class ConfigManager extends BaseClass {
                   : await getButtonsTextTrue(item, def1);
         };
         const text1 = {
-            true: await getButtonsTextTrue(item, 'on'),
-            false: await getButtonsTextFalse(item, 'off'),
+            true: await getButtonsTextTrue(item, 'press'),
+            false: await getButtonsTextFalse(item, 'press'),
         };
         const text = {
             true: {
@@ -1675,10 +1675,7 @@ export class ConfigManager extends BaseClass {
                         maxBri: undefined,
                         minBri: undefined,
                     },
-                    text1: {
-                        true: await getButtonsTextTrue(item, 'press'),
-                        false: await getButtonsTextFalse(item, 'press'),
-                    },
+                    text1: text1,
                     text: text,
                 },
             };
