@@ -103,15 +103,15 @@ class PageAlarm extends import_Page.Page {
    */
   async setStatus(value) {
     this.status = value;
-    if (this.isGlobal) {
-      await this.basePanel.controller.setGlobalAlarmStatus(this.name, this.status);
-    }
     if (this.useStates) {
       await this.library.writedp(
         `${this.pathToStates}.status`,
         alarmStates.indexOf(this.status),
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
       );
+    }
+    if (this.isGlobal) {
+      await this.basePanel.controller.setGlobalAlarmStatus(this.name, this.status);
     }
   }
   async setStatusGlobal(value) {
@@ -120,6 +120,7 @@ class PageAlarm extends import_Page.Page {
   }
   pin = "0";
   failCount = 0;
+  pinFailTimeout = null;
   constructor(config, options) {
     var _a, _b;
     super(config, options);
@@ -232,7 +233,7 @@ class PageAlarm extends import_Page.Page {
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
     if (this.alarmType === "alarm") {
-      if (this.status === "armed" || this.status === "triggered") {
+      if (this.status === "armed" && !this.pinFailTimeout) {
         message.button1 = (_b = data.button5 && await data.button5.getTranslatedString()) != null ? _b : "";
         message.status1 = message.button1 ? "D1" : "";
         message.button2 = (_c = data.button6 && await data.button6.getTranslatedString()) != null ? _c : "";
@@ -241,7 +242,7 @@ class PageAlarm extends import_Page.Page {
         message.status3 = message.button3 ? "D3" : "";
         message.button4 = (_e = data.button8 && await data.button8.getTranslatedString()) != null ? _e : "";
         message.status4 = message.button4 ? "D4" : "";
-      } else if (this.status === "disarmed") {
+      } else if (this.status === "disarmed" && !this.pinFailTimeout) {
         message.button1 = (_f = data.button1 && await data.button1.getTranslatedString()) != null ? _f : "";
         message.status1 = message.button1 ? "A1" : "";
         message.button2 = (_g = data.button2 && await data.button2.getTranslatedString()) != null ? _g : "";
@@ -250,6 +251,15 @@ class PageAlarm extends import_Page.Page {
         message.status3 = message.button3 ? "A3" : "";
         message.button4 = (_i = data.button4 && await data.button4.getTranslatedString()) != null ? _i : "";
         message.status4 = message.button4 ? "A4" : "";
+      } else if (this.pinFailTimeout) {
+        message.button1 = `${this.library.getTranslation("locked_for")}`;
+        message.status1 = "";
+        message.button2 = ` ${2 ** this.failCount} s`;
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
       } else {
         message.button1 = this.library.getTranslation(this.status);
         message.status1 = "";
@@ -260,7 +270,12 @@ class PageAlarm extends import_Page.Page {
         message.button4 = "";
         message.status4 = "";
       }
-      if (this.status == "armed") {
+      if (this.pinFailTimeout) {
+        message.icon = import_icon_mapping.Icons.GetIcon("key-alert-outline");
+        message.iconColor = String(import_Color.Color.rgb_dec565({ r: 255, g: 0, b: 0 }));
+        message.numpad = "disable";
+        message.flashing = "enable";
+      } else if (this.status == "armed") {
         message.icon = import_icon_mapping.Icons.GetIcon("shield-home");
         message.iconColor = "63488";
         message.numpad = "enable";
@@ -407,15 +422,20 @@ class PageAlarm extends import_Page.Page {
         return;
       }
       if (this.pin && this.pin != value) {
-        if (++this.failCount < 3) {
-          this.log.warn(`Wrong pin entered. try ${this.failCount} of 3`);
-        } else {
-          this.log.error("Wrong pin entered. locked!");
-          await this.setStatus("triggered");
-        }
+        this.log.warn(
+          `Wrong pin entered. try ${this.failCount}! Delay next try of ${2 ** ++this.failCount} seconds`
+        );
+        this.pinFailTimeout = this.adapter.setTimeout(
+          async () => {
+            this.pinFailTimeout = null;
+            void this.update();
+          },
+          2 ** this.failCount * 1e3
+        );
         await this.update();
         return;
       }
+      this.failCount = 0;
       this.log.debug(`Alarm event ${button} value: ${value}`);
       switch (button) {
         case "A1":
