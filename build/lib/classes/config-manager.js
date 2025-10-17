@@ -1400,12 +1400,12 @@ class ConfigManager extends import_library.BaseClass {
     };
     const text = {
       true: {
-        value: item.name ? await this.getFieldAsDataItemConfig(item.name) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
+        value: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
         prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
         suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
       },
       false: {
-        value: item.name ? await this.getFieldAsDataItemConfig(item.name) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
+        value: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
         prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
         suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
       },

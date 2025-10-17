@@ -1619,7 +1619,7 @@ export class ConfigManager extends BaseClass {
         const text = {
             true: {
                 value: item.name
-                    ? await this.getFieldAsDataItemConfig(item.name)
+                    ? await this.getFieldAsDataItemConfig(item.name, true)
                     : commonName
                       ? ({ type: 'const', constVal: commonName } as NSPanel.DataItemsOptions)
                       : ({ type: 'const', constVal: 'Info' } as NSPanel.DataItemsOptions),
@@ -1628,7 +1628,7 @@ export class ConfigManager extends BaseClass {
             },
             false: {
                 value: item.name
-                    ? await this.getFieldAsDataItemConfig(item.name)
+                    ? await this.getFieldAsDataItemConfig(item.name, true)
                     : commonName
                       ? ({ type: 'const', constVal: commonName } as NSPanel.DataItemsOptions)
                       : ({ type: 'const', constVal: 'Info' } as NSPanel.DataItemsOptions),
