@@ -9,8 +9,8 @@ import axios from 'axios';
 import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
-import {PageAlarm} from '../pages/pageAlarm';
-import {AlarmStates} from '../types/pages';
+import type { PageAlarm } from '../pages/pageAlarm';
+import type { AlarmStates } from '../types/pages';
 
 axios.defaults.timeout = 15_000;
 

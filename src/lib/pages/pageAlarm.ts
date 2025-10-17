@@ -141,7 +141,6 @@ export class PageAlarm extends Page {
         if (!(config?.card === 'cardAlarm' && config.data)) {
             throw new Error('PageAlarm: invalid configuration');
         }
-
         await this.library.writedp(this.approveId, false, genericStateObjects.panel.panels.alarm.cardAlarm.approve);
 
         config.data.approveState = {
