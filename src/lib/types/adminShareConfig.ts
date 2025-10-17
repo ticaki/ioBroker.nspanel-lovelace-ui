@@ -103,26 +103,23 @@ export type UnlockEntry = {
     uniqueName: string;
 };
 
+export type PageItemButtonEntry = {
+    type: 'text' | 'button';
+    headline?: string;
+    modeScr?: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+    data: any; // TODO: Should be NSPanel.PageItemButton but causes type resolution issues in admin
+};
+
 // Screensaver types
 export type ScreensaverEntry = {
     card: Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>; // Use the card type from AdminCardTypes
     uniqueName: string;
-    headline: string;
-    type?: 'clock' | 'weather' | 'slideshow' | 'custom';
-    enabled?: boolean;
-    timeout?: number; // timeout in seconds
-    backgroundColor?: string;
-    textColor?: string;
-    weatherEntity?: string;
     clockFormat?: '12h' | '24h';
     dateFormat?: string; // JavaScript date format string
     timeFormat?: string; // JavaScript time format string
     customDateFormat?: string; // Custom date format when dateFormat is 'custom'
     customTimeFormat?: string; // Custom time format when timeFormat is 'custom'
-    slideshow?: {
-        images: string[];
-        interval: number;
-    };
+    pageItems?: PageItemButtonEntry[];
     navigation?: NavigationAssignmentList;
     navigationAssignment?: NavigationAssignmentList;
 };

@@ -27,8 +27,9 @@ import {
     JsonConfigComponent,
 } from '@iobroker/json-config';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
-import type { ScreensaverEntry, ScreensaverEntries } from '../../src/lib/types/adminShareConfig';
+import type { ScreensaverEntry, ScreensaverEntries, PageItemButtonEntry } from '../../src/lib/types/adminShareConfig';
 import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
+import { PageItemEditor, MODE_SCR_ICONS } from './components/PageItemEditor';
 
 interface ScreensaverPageState extends ConfigGenericState {
     entries: ScreensaverEntries;
@@ -41,6 +42,8 @@ interface ScreensaverPageState extends ConfigGenericState {
     selectedObjectId?: string;
     showSelectDialog?: boolean;
     selectedObjectIdJson?: string;
+    editingPageItem?: PageItemButtonEntry | null; // null = new item, undefined = not editing
+    editingPageItemIndex?: number; // index in pageItems array
 }
 
 interface LocalUIState {
@@ -282,10 +285,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             const newEntry: ScreensaverEntry = {
                 card: 'screensaver',
                 uniqueName: name,
-                headline: name,
-                type: 'clock',
-                enabled: true,
-                timeout: 60,
+                pageItems: [],
             };
             const updated = [...entries, newEntry];
             this.setState({ entries: updated } as ScreensaverPageState);
@@ -335,6 +335,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' },
                     p: 1,
+                    overflow: 'hidden',
                 }}
             >
                 {/* left sidebar: 20% width on desktop, full width on mobile */}
@@ -345,23 +346,26 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 1,
+                        minHeight: 0,
+                        overflow: 'hidden',
                     }}
                 >
                     {/* Screensaver pages header */}
                     <Typography
                         variant="h6"
                         sx={{
-                            mb: 1,
+                            mb: 0.5,
                             fontWeight: 600,
                             color: 'primary.main',
                             fontSize: '1rem',
+                            flexShrink: 0,
                         }}
                     >
                         {this.getText('screensaver_pages')}
                     </Typography>
 
                     <Paper
-                        sx={{ p: 1, backgroundColor: 'transparent' }}
+                        sx={{ p: 1, backgroundColor: 'transparent', flexShrink: 0 }}
                         elevation={0}
                     >
                         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -420,7 +424,14 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     {(() => {
                         return (
                             <Paper
-                                sx={{ overflow: 'auto', p: 1, backgroundColor: 'transparent' }}
+                                sx={{
+                                    overflow: 'auto',
+                                    p: 1,
+                                    backgroundColor: 'transparent',
+                                    flex: 1,
+                                    minHeight: '50px',
+                                    maxHeight: '200px',
+                                }}
                                 elevation={1}
                             >
                                 {uniqueNames.length === 0 ? (
@@ -457,7 +468,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         );
                     })()}
 
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
                         <Button
                             size="small"
                             color="error"
@@ -470,199 +481,208 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         </Button>
                     </Box>
 
-                    {/* Card Type Selection */}
-                    <Box sx={{ marginTop: 2, marginBottom: 2 }}>
-                        <FormControl
-                            component="fieldset"
-                            disabled={local?.selected === null}
-                        >
-                            <FormLabel
-                                component="legend"
-                                sx={{
-                                    color:
-                                        local?.selected === null
-                                            ? this.props.theme?.palette?.text?.disabled || '#999'
-                                            : this.props.theme?.palette?.text?.primary,
-                                }}
+                    {/* Scrollbarer Bereich für Card Type, Documentation und Tests */}
+                    <Box
+                        sx={{
+                            flex: 1,
+                            overflow: 'auto',
+                            minHeight: 0,
+                        }}
+                    >
+                        {/* Card Type Selection */}
+                        <Box sx={{ marginTop: 1, marginBottom: 1 }}>
+                            <FormControl
+                                component="fieldset"
+                                disabled={local?.selected === null}
                             >
-                                {this.getText('cardType')}
-                            </FormLabel>
-                            <RadioGroup
-                                value={
-                                    local?.selected
-                                        ? this.state.entries.find(
-                                              (entry: ScreensaverEntry) => entry.uniqueName === local.selected,
-                                          )?.card || 'screensaver'
-                                        : 'screensaver'
-                                }
-                                onChange={event => {
-                                    if (local?.selected) {
-                                        const newCard = event.target.value as
-                                            | 'screensaver'
-                                            | 'screensaver2'
-                                            | 'screensaver3';
-                                        const updatedEntries = [...this.state.entries];
-                                        const index = updatedEntries.findIndex(
-                                            (entry: ScreensaverEntry) => entry.uniqueName === local.selected,
-                                        );
-                                        if (index !== -1) {
-                                            updatedEntries[index] = { ...updatedEntries[index], card: newCard };
-                                            this.setState({ entries: updatedEntries });
-                                            this.props.onChange(this.props.attr || '', updatedEntries);
-                                        }
+                                <FormLabel
+                                    component="legend"
+                                    sx={{
+                                        color:
+                                            local?.selected === null
+                                                ? this.props.theme?.palette?.text?.disabled || '#999'
+                                                : this.props.theme?.palette?.text?.primary,
+                                    }}
+                                >
+                                    {this.getText('cardType')}
+                                </FormLabel>
+                                <RadioGroup
+                                    value={
+                                        local?.selected
+                                            ? this.state.entries.find(
+                                                  (entry: ScreensaverEntry) => entry.uniqueName === local.selected,
+                                              )?.card || 'screensaver'
+                                            : 'screensaver'
                                     }
-                                }}
-                                sx={{
-                                    flexDirection: 'column',
-                                    '& .MuiRadio-root.Mui-disabled': {
-                                        color: '#999 !important',
-                                    },
-                                    '& .MuiFormControlLabel-label.Mui-disabled': {
-                                        color: '#999 !important',
-                                    },
+                                    onChange={event => {
+                                        if (local?.selected) {
+                                            const newCard = event.target.value as
+                                                | 'screensaver'
+                                                | 'screensaver2'
+                                                | 'screensaver3';
+                                            const updatedEntries = [...this.state.entries];
+                                            const index = updatedEntries.findIndex(
+                                                (entry: ScreensaverEntry) => entry.uniqueName === local.selected,
+                                            );
+                                            if (index !== -1) {
+                                                updatedEntries[index] = { ...updatedEntries[index], card: newCard };
+                                                this.setState({ entries: updatedEntries });
+                                                this.props.onChange(this.props.attr || '', updatedEntries);
+                                            }
+                                        }
+                                    }}
+                                    sx={{
+                                        flexDirection: 'column',
+                                        '& .MuiRadio-root.Mui-disabled': {
+                                            color: '#999 !important',
+                                        },
+                                        '& .MuiFormControlLabel-label.Mui-disabled': {
+                                            color: '#999 !important',
+                                        },
+                                    }}
+                                >
+                                    <FormControlLabel
+                                        value="screensaver"
+                                        control={<Radio />}
+                                        label={this.getText('cardTypeStandard')}
+                                    />
+                                    <FormControlLabel
+                                        value="screensaver2"
+                                        control={<Radio />}
+                                        label={this.getText('cardTypeAdvanced')}
+                                    />
+                                    <FormControlLabel
+                                        value="screensaver3"
+                                        control={<Radio />}
+                                        label={this.getText('cardTypeEasyview')}
+                                    />
+                                </RadioGroup>
+                            </FormControl>
+                        </Box>
+
+                        <Divider sx={{ my: 1 }} />
+                        {/* Documentation link */}
+                        <Box sx={{ mb: 2 }}>
+                            <a
+                                href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/screensaver"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    fontSize: '0.875rem',
                                 }}
                             >
-                                <FormControlLabel
-                                    value="screensaver"
-                                    control={<Radio />}
-                                    label={this.getText('cardTypeStandard')}
-                                />
-                                <FormControlLabel
-                                    value="screensaver2"
-                                    control={<Radio />}
-                                    label={this.getText('cardTypeAdvanced')}
-                                />
-                                <FormControlLabel
-                                    value="screensaver3"
-                                    control={<Radio />}
-                                    label={this.getText('cardTypeEasyview')}
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                    </Box>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: 'primary.main',
+                                        textDecoration: 'underline',
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                            opacity: 0.8,
+                                        },
+                                    }}
+                                >
+                                    {this.getText('documentation')}
+                                </Typography>
+                            </a>
+                        </Box>
 
-                    <Divider sx={{ my: 1 }} />
-                    {/* Documentation link */}
-                    <Box sx={{ mb: 2 }}>
-                        <a
-                            href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/screensaver"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                                textDecoration: 'none',
-                                color: 'inherit',
-                                fontSize: '0.875rem',
-                            }}
-                        >
+                        {/* Test 1: SelectID Dialog with filterFunc as real function */}
+                        <Box sx={{ mb: 2 }}>
                             <Typography
-                                variant="body2"
-                                sx={{
-                                    color: 'primary.main',
-                                    textDecoration: 'underline',
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                        opacity: 0.8,
-                                    },
-                                }}
+                                variant="caption"
+                                sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
                             >
-                                {this.getText('documentation')}
+                                Test 1: SelectID Dialog (filterFunc = real function)
                             </Typography>
-                        </a>
-                    </Box>
-
-                    {/* Test 1: SelectID Dialog with filterFunc as real function */}
-                    <Box sx={{ mb: 2 }}>
-                        <Typography
-                            variant="caption"
-                            sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
-                        >
-                            Test 1: SelectID Dialog (filterFunc = real function)
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            label="Select Object ID (Dialog)"
-                            value={this.state.selectedObjectId || ''}
-                            onClick={() => {
-                                this.setState({ showSelectDialog: true });
-                            }}
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                        />
-                        {this.state.showSelectDialog && (
-                            <SelectID
-                                socket={this.props.oContext.socket}
-                                selected={this.state.selectedObjectId || ''}
-                                onOk={(selectedId: string | string[] | undefined) => {
-                                    const id = Array.isArray(selectedId) ? selectedId[0] : selectedId;
-                                    this.setState({
-                                        selectedObjectId: id || '',
-                                        showSelectDialog: false,
-                                    });
+                            <TextField
+                                fullWidth
+                                label="Select Object ID (Dialog)"
+                                value={this.state.selectedObjectId || ''}
+                                onClick={() => {
+                                    this.setState({ showSelectDialog: true });
                                 }}
-                                onClose={() => {
-                                    this.setState({ showSelectDialog: false });
+                                InputProps={{
+                                    readOnly: true,
                                 }}
-                                filterFunc={(obj: ioBroker.Object): boolean => {
-                                    // Only show states with role starting with 'switch'
-                                    return !!(
-                                        obj?.type === 'state' &&
-                                        obj.common?.role &&
-                                        obj.common.role.startsWith('switch')
-                                    );
-                                }}
-                                dialogName="nspanel-screensaver"
-                                theme={this.props.theme}
-                                themeType={this.props.theme?.palette?.mode || 'light'}
                             />
-                        )}
-                    </Box>
+                            {this.state.showSelectDialog && (
+                                <SelectID
+                                    socket={this.props.oContext.socket}
+                                    selected={this.state.selectedObjectId || ''}
+                                    onOk={(selectedId: string | string[] | undefined) => {
+                                        const id = Array.isArray(selectedId) ? selectedId[0] : selectedId;
+                                        this.setState({
+                                            selectedObjectId: id || '',
+                                            showSelectDialog: false,
+                                        });
+                                    }}
+                                    onClose={() => {
+                                        this.setState({ showSelectDialog: false });
+                                    }}
+                                    filterFunc={(obj: ioBroker.Object): boolean => {
+                                        // Only show states with role starting with 'switch'
+                                        return !!(
+                                            obj?.type === 'state' &&
+                                            obj.common?.role &&
+                                            obj.common.role.startsWith('switch')
+                                        );
+                                    }}
+                                    dialogName="nspanel-screensaver"
+                                    theme={this.props.theme}
+                                    themeType={this.props.theme?.palette?.mode || 'light'}
+                                />
+                            )}
+                        </Box>
 
-                    {/* Test 2: JsonConfigComponent with filterFunc as string */}
-                    <Box sx={{ mb: 2 }}>
-                        <Typography
-                            variant="caption"
-                            sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
-                        >
-                            Test 2: JsonConfigComponent (filterFunc = string compiled with new Function)
-                        </Typography>
-                        <JsonConfigComponent
-                            socket={this.props.oContext.socket}
-                            themeName={this.props.themeName}
-                            themeType={this.props.theme?.palette?.mode || 'light'}
-                            theme={this.props.theme}
-                            schema={(() => {
-                                const objectIdItem: ConfigItemObjectId = {
-                                    type: 'objectId',
-                                    label: 'Select Object (JsonConfig)',
-                                    sm: 12,
-                                    md: 12,
-                                    lg: 12,
-                                    // filterFunc as string - will be compiled with new Function()
-                                    // TypeScript doesn't allow string, but runtime does - cast to any
-                                    filterFunc:
-                                        "return !!(obj?.type === 'state' && obj.common?.role && obj.common.role.startsWith('switch'));" as any,
-                                };
-                                const schema: ConfigItemPanel = {
-                                    type: 'panel',
-                                    label: 'Object Selector',
-                                    items: {
-                                        testObjectId: objectIdItem,
-                                    },
-                                };
-                                return schema;
-                            })()}
-                            data={{ testObjectId: this.state.selectedObjectIdJson || '' }}
-                            onChange={(newData: Record<string, any>) => {
-                                const sel = (newData && (newData as any).testObjectId) || '';
-                                this.setState({ selectedObjectIdJson: sel });
-                            }}
-                            isFloatComma={false}
-                            dateFormat="DD.MM.YYYY"
-                            onError={() => {}}
-                            adapterName="nspanel-lovelace-ui"
-                            instance={Number(this.props.oContext?.instance || 0)}
-                        />
+                        {/* Test 2: JsonConfigComponent with filterFunc as string */}
+                        <Box sx={{ mb: 2 }}>
+                            <Typography
+                                variant="caption"
+                                sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
+                            >
+                                Test 2: JsonConfigComponent (filterFunc = string compiled with new Function)
+                            </Typography>
+                            <JsonConfigComponent
+                                socket={this.props.oContext.socket}
+                                themeName={this.props.themeName}
+                                themeType={this.props.theme?.palette?.mode || 'light'}
+                                theme={this.props.theme}
+                                schema={(() => {
+                                    const objectIdItem: ConfigItemObjectId = {
+                                        type: 'objectId',
+                                        label: 'Select Object (JsonConfig)',
+                                        sm: 12,
+                                        md: 12,
+                                        lg: 12,
+                                        // filterFunc as string - will be compiled with new Function()
+                                        // TypeScript doesn't allow string, but runtime does - cast to any
+                                        filterFunc:
+                                            "return !!(obj?.type === 'state' && obj.common?.role && obj.common.role.startsWith('switch'));" as any,
+                                    };
+                                    const schema: ConfigItemPanel = {
+                                        type: 'panel',
+                                        label: 'Object Selector',
+                                        items: {
+                                            testObjectId: objectIdItem,
+                                        },
+                                    };
+                                    return schema;
+                                })()}
+                                data={{ testObjectId: this.state.selectedObjectIdJson || '' }}
+                                onChange={(newData: Record<string, any>) => {
+                                    const sel = (newData && (newData as any).testObjectId) || '';
+                                    this.setState({ selectedObjectIdJson: sel });
+                                }}
+                                isFloatComma={false}
+                                dateFormat="DD.MM.YYYY"
+                                onError={() => {}}
+                                adapterName="nspanel-lovelace-ui"
+                                instance={Number(this.props.oContext?.instance || 0)}
+                            />
+                        </Box>
                     </Box>
                 </Box>
                 <ConfirmDialog
@@ -683,24 +703,35 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 {/* right area: main content + optional collapsible side panel */}
                 <Box
                     sx={{
-                        width: { xs: '100%', md: '90%' },
+                        width: { xs: '100%', md: '80%' },
                         pl: { xs: 0, md: 2 },
                         mt: { xs: 2, md: 0 },
                         display: 'flex',
                         flexDirection: { xs: 'column', md: 'row' },
                         gap: 1,
                         position: 'relative',
+                        minHeight: 0,
+                        overflow: 'hidden',
                     }}
                 >
                     <Box
                         sx={{
-                            width: { xs: '100%', md: '95%' },
+                            width: { xs: '100%', md: '70%' },
                             borderLeft: { xs: 'none', md: '1px solid' },
                             borderColor: 'divider',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            minHeight: 0,
                         }}
                     >
                         <Paper
-                            sx={{ height: '100%', p: 2 }}
+                            sx={{
+                                height: '100%',
+                                p: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'auto',
+                            }}
                             elevation={1}
                         >
                             {!local?.selected ? (
@@ -742,207 +773,379 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                     {this.getText('screensaver_config')}: {sel}
                                                 </Typography>
 
-                                                {/* Screensaver-specific configuration fields would go here */}
-                                                <TextField
-                                                    label={this.getText('screensaver_headline')}
-                                                    value={ent.headline || ''}
-                                                    onChange={e => {
-                                                        const updated = entries.map((entry: ScreensaverEntry) =>
-                                                            entry.uniqueName === sel
-                                                                ? { ...entry, headline: e.target.value }
-                                                                : entry,
-                                                        );
-                                                        this.setState({ entries: updated } as ScreensaverPageState);
-                                                        void this.onChange(this.props.attr!, updated);
-                                                    }}
-                                                    variant="outlined"
-                                                    fullWidth
-                                                />
+                                                {/* Check if we're in editing mode for PageItem */}
+                                                {this.state.editingPageItem !== undefined ? (
+                                                    <PageItemEditor
+                                                        item={this.state.editingPageItem}
+                                                        onSave={item => {
+                                                            const pageItems = ent.pageItems || [];
+                                                            let updated: PageItemButtonEntry[];
 
-                                                <TextField
-                                                    label={this.getText('screensaver_timeout')}
-                                                    value={ent.timeout || 60}
-                                                    onChange={e => {
-                                                        const timeout = parseInt(e.target.value) || 60;
-                                                        const updated = entries.map((entry: ScreensaverEntry) =>
-                                                            entry.uniqueName === sel ? { ...entry, timeout } : entry,
-                                                        );
-                                                        this.setState({ entries: updated } as ScreensaverPageState);
-                                                        void this.onChange(this.props.attr!, updated);
-                                                    }}
-                                                    variant="outlined"
-                                                    type="number"
-                                                    fullWidth
-                                                />
-
-                                                {/* Date Format Selection */}
-                                                <FormControl
-                                                    variant="outlined"
-                                                    fullWidth
-                                                    sx={{ mt: 2 }}
-                                                >
-                                                    <InputLabel>{this.getText('dateFormat')}</InputLabel>
-                                                    <Select
-                                                        value={ent.dateFormat || 'dd.MM.yyyy'}
-                                                        onChange={e => {
-                                                            const dateFormat = e.target.value;
-                                                            const updated = entries.map((entry: ScreensaverEntry) =>
-                                                                entry.uniqueName === sel
-                                                                    ? { ...entry, dateFormat }
-                                                                    : entry,
-                                                            );
-                                                            this.setState({ entries: updated } as ScreensaverPageState);
-                                                            void this.onChange(this.props.attr!, updated);
-                                                        }}
-                                                        label={this.getText('dateFormat')}
-                                                    >
-                                                        {this.dateFormats.map(format => (
-                                                            <MenuItem
-                                                                key={format.label}
-                                                                value={JSON.stringify(format.value)}
-                                                            >
-                                                                {format.value === 'custom'
-                                                                    ? this.getText('dateFormatCustom')
-                                                                    : format.label}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-
-                                                {/* Custom Date Format Input */}
-                                                {ent.dateFormat === 'custom' && (
-                                                    <TextField
-                                                        label={this.getText('dateFormatCustom')}
-                                                        value={ent.customDateFormat || ''}
-                                                        onChange={e => {
-                                                            const customDateFormat = e.target.value;
-                                                            const updated = entries.map((entry: ScreensaverEntry) =>
-                                                                entry.uniqueName === sel
-                                                                    ? { ...entry, customDateFormat }
-                                                                    : entry,
-                                                            );
-                                                            this.setState({ entries: updated } as ScreensaverPageState);
-                                                            void this.onChange(this.props.attr!, updated);
-                                                        }}
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        placeholder="dd.MM.yyyy"
-                                                        sx={{ mt: 1 }}
-                                                    />
-                                                )}
-
-                                                {/* Date Format Example */}
-                                                <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                    sx={{ mt: 0.5, display: 'block' }}
-                                                >
-                                                    {this.getText('dateFormatExample')}:{' '}
-                                                    {(() => {
-                                                        const currentDate = new Date();
-                                                        const format = ent.dateFormat || 'dd.MM.yyyy';
-                                                        console.log('Formatting date with format:', ent.dateFormat);
-                                                        try {
-                                                            if (format === 'custom') {
-                                                                const customFormat = ent.customDateFormat || '';
-                                                                if (!customFormat) {
-                                                                    return 'Enter custom format above';
-                                                                }
-                                                                return this.formatDatePreview(
-                                                                    currentDate,
-                                                                    customFormat,
+                                                            if (this.state.editingPageItemIndex !== undefined) {
+                                                                // Edit existing item
+                                                                updated = pageItems.map((pi, idx) =>
+                                                                    idx === this.state.editingPageItemIndex ? item : pi,
                                                                 );
+                                                            } else {
+                                                                // Add new item
+                                                                updated = [...pageItems, item];
                                                             }
-                                                            return this.formatDatePreview(currentDate, format);
-                                                        } catch {
-                                                            return 'Invalid format';
-                                                        }
-                                                    })()}
-                                                </Typography>
 
-                                                {/* Time Format Selection */}
-                                                <FormControl
-                                                    variant="outlined"
-                                                    fullWidth
-                                                    sx={{ mt: 2 }}
-                                                >
-                                                    <InputLabel>{this.getText('timeFormat')}</InputLabel>
-                                                    <Select
-                                                        value={ent.timeFormat || 'HH:mm'}
-                                                        onChange={e => {
-                                                            const timeFormat = e.target.value;
-                                                            const updated = entries.map((entry: ScreensaverEntry) =>
-                                                                entry.uniqueName === sel
-                                                                    ? { ...entry, timeFormat }
-                                                                    : entry,
+                                                            const updatedEntries = entries.map(
+                                                                (entry: ScreensaverEntry) =>
+                                                                    entry.uniqueName === sel
+                                                                        ? { ...entry, pageItems: updated }
+                                                                        : entry,
                                                             );
-                                                            this.setState({ entries: updated } as ScreensaverPageState);
-                                                            void this.onChange(this.props.attr!, updated);
+                                                            this.setState({
+                                                                entries: updatedEntries,
+                                                                editingPageItem: undefined,
+                                                                editingPageItemIndex: undefined,
+                                                            } as ScreensaverPageState);
+                                                            void this.onChange(this.props.attr!, updatedEntries);
                                                         }}
-                                                        label={this.getText('timeFormat')}
-                                                    >
-                                                        {this.timeFormats.map(format => (
-                                                            <MenuItem
-                                                                key={format.value}
-                                                                value={format.value}
-                                                            >
-                                                                {format.value === 'custom'
-                                                                    ? this.getText('timeFormatCustom')
-                                                                    : this.getText(format.label)}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-
-                                                {/* Custom Time Format Input */}
-                                                {ent.timeFormat === 'custom' && (
-                                                    <TextField
-                                                        label={this.getText('timeFormatCustom')}
-                                                        value={ent.customTimeFormat || ''}
-                                                        onChange={e => {
-                                                            const customTimeFormat = e.target.value;
-                                                            const updated = entries.map((entry: ScreensaverEntry) =>
-                                                                entry.uniqueName === sel
-                                                                    ? { ...entry, customTimeFormat }
-                                                                    : entry,
-                                                            );
-                                                            this.setState({ entries: updated } as ScreensaverPageState);
-                                                            void this.onChange(this.props.attr!, updated);
-                                                        }}
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        placeholder="HH:mm"
-                                                        sx={{ mt: 1 }}
-                                                    />
-                                                )}
-
-                                                {/* Time Format Example */}
-                                                <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                    sx={{ mt: 0.5, display: 'block' }}
-                                                >
-                                                    {this.getText('timeFormatExample')}:{' '}
-                                                    {(() => {
-                                                        const currentTime = new Date();
-                                                        const format = ent.timeFormat || 'HH:mm';
-                                                        try {
-                                                            if (format === 'custom') {
-                                                                const customFormat = ent.customTimeFormat || '';
-                                                                if (!customFormat) {
-                                                                    return 'Enter custom format above';
-                                                                }
-                                                                return this.formatTimePreview(
-                                                                    currentTime,
-                                                                    customFormat,
+                                                        onDelete={() => {
+                                                            if (this.state.editingPageItemIndex !== undefined) {
+                                                                const pageItems = ent.pageItems || [];
+                                                                const updated = pageItems.filter(
+                                                                    (_, idx) => idx !== this.state.editingPageItemIndex,
                                                                 );
+                                                                const updatedEntries = entries.map(
+                                                                    (entry: ScreensaverEntry) =>
+                                                                        entry.uniqueName === sel
+                                                                            ? { ...entry, pageItems: updated }
+                                                                            : entry,
+                                                                );
+                                                                this.setState({
+                                                                    entries: updatedEntries,
+                                                                    editingPageItem: undefined,
+                                                                    editingPageItemIndex: undefined,
+                                                                } as ScreensaverPageState);
+                                                                void this.onChange(this.props.attr!, updatedEntries);
                                                             }
-                                                            return this.formatTimePreview(currentTime, format);
-                                                        } catch {
-                                                            return 'Invalid format';
-                                                        }
-                                                    })()}
-                                                </Typography>
+                                                        }}
+                                                        onBack={() => {
+                                                            this.setState({
+                                                                editingPageItem: undefined,
+                                                                editingPageItemIndex: undefined,
+                                                            } as ScreensaverPageState);
+                                                        }}
+                                                        getText={key => this.getText(key)}
+                                                        socket={this.props.oContext.socket}
+                                                        theme={this.props.theme}
+                                                        themeName={this.props.themeName}
+                                                        themeType={this.props.theme?.palette?.mode || 'light'}
+                                                        instance={Number(this.props.oContext?.instance || 0)}
+                                                    />
+                                                ) : (
+                                                    <>
+                                                        {/* Screensaver-specific configuration fields */}
+
+                                                        {/* Date Format Selection */}
+                                                        <FormControl
+                                                            variant="outlined"
+                                                            fullWidth
+                                                            sx={{ mt: 2 }}
+                                                        >
+                                                            <InputLabel>{this.getText('dateFormat')}</InputLabel>
+                                                            <Select
+                                                                value={ent.dateFormat || 'dd.MM.yyyy'}
+                                                                onChange={e => {
+                                                                    const dateFormat = e.target.value;
+                                                                    const updated = entries.map(
+                                                                        (entry: ScreensaverEntry) =>
+                                                                            entry.uniqueName === sel
+                                                                                ? { ...entry, dateFormat }
+                                                                                : entry,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as ScreensaverPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                label={this.getText('dateFormat')}
+                                                            >
+                                                                {this.dateFormats.map(format => (
+                                                                    <MenuItem
+                                                                        key={format.label}
+                                                                        value={JSON.stringify(format.value)}
+                                                                    >
+                                                                        {format.value === 'custom'
+                                                                            ? this.getText('dateFormatCustom')
+                                                                            : format.label}
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        </FormControl>
+
+                                                        {/* Custom Date Format Input */}
+                                                        {ent.dateFormat === 'custom' && (
+                                                            <TextField
+                                                                label={this.getText('dateFormatCustom')}
+                                                                value={ent.customDateFormat || ''}
+                                                                onChange={e => {
+                                                                    const customDateFormat = e.target.value;
+                                                                    const updated = entries.map(
+                                                                        (entry: ScreensaverEntry) =>
+                                                                            entry.uniqueName === sel
+                                                                                ? { ...entry, customDateFormat }
+                                                                                : entry,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as ScreensaverPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                variant="outlined"
+                                                                fullWidth
+                                                                placeholder="dd.MM.yyyy"
+                                                                sx={{ mt: 1 }}
+                                                            />
+                                                        )}
+
+                                                        {/* Date Format Example */}
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                            sx={{ mt: 0.5, display: 'block' }}
+                                                        >
+                                                            {this.getText('dateFormatExample')}:{' '}
+                                                            {(() => {
+                                                                const currentDate = new Date();
+                                                                const format = ent.dateFormat || 'dd.MM.yyyy';
+                                                                console.log(
+                                                                    'Formatting date with format:',
+                                                                    ent.dateFormat,
+                                                                );
+                                                                try {
+                                                                    if (format === 'custom') {
+                                                                        const customFormat = ent.customDateFormat || '';
+                                                                        if (!customFormat) {
+                                                                            return 'Enter custom format above';
+                                                                        }
+                                                                        return this.formatDatePreview(
+                                                                            currentDate,
+                                                                            customFormat,
+                                                                        );
+                                                                    }
+                                                                    return this.formatDatePreview(currentDate, format);
+                                                                } catch {
+                                                                    return 'Invalid format';
+                                                                }
+                                                            })()}
+                                                        </Typography>
+
+                                                        {/* Time Format Selection */}
+                                                        <FormControl
+                                                            variant="outlined"
+                                                            fullWidth
+                                                            sx={{ mt: 2 }}
+                                                        >
+                                                            <InputLabel>{this.getText('timeFormat')}</InputLabel>
+                                                            <Select
+                                                                value={ent.timeFormat || 'HH:mm'}
+                                                                onChange={e => {
+                                                                    const timeFormat = e.target.value;
+                                                                    const updated = entries.map(
+                                                                        (entry: ScreensaverEntry) =>
+                                                                            entry.uniqueName === sel
+                                                                                ? { ...entry, timeFormat }
+                                                                                : entry,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as ScreensaverPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                label={this.getText('timeFormat')}
+                                                            >
+                                                                {this.timeFormats.map(format => (
+                                                                    <MenuItem
+                                                                        key={format.value}
+                                                                        value={format.value}
+                                                                    >
+                                                                        {format.value === 'custom'
+                                                                            ? this.getText('timeFormatCustom')
+                                                                            : this.getText(format.label)}
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        </FormControl>
+
+                                                        {/* Custom Time Format Input */}
+                                                        {ent.timeFormat === 'custom' && (
+                                                            <TextField
+                                                                label={this.getText('timeFormatCustom')}
+                                                                value={ent.customTimeFormat || ''}
+                                                                onChange={e => {
+                                                                    const customTimeFormat = e.target.value;
+                                                                    const updated = entries.map(
+                                                                        (entry: ScreensaverEntry) =>
+                                                                            entry.uniqueName === sel
+                                                                                ? { ...entry, customTimeFormat }
+                                                                                : entry,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as ScreensaverPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                variant="outlined"
+                                                                fullWidth
+                                                                placeholder="HH:mm"
+                                                                sx={{ mt: 1 }}
+                                                            />
+                                                        )}
+
+                                                        {/* Time Format Example */}
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                            sx={{ mt: 0.5, display: 'block' }}
+                                                        >
+                                                            {this.getText('timeFormatExample')}:{' '}
+                                                            {(() => {
+                                                                const currentTime = new Date();
+                                                                const format = ent.timeFormat || 'HH:mm';
+                                                                try {
+                                                                    if (format === 'custom') {
+                                                                        const customFormat = ent.customTimeFormat || '';
+                                                                        if (!customFormat) {
+                                                                            return 'Enter custom format above';
+                                                                        }
+                                                                        return this.formatTimePreview(
+                                                                            currentTime,
+                                                                            customFormat,
+                                                                        );
+                                                                    }
+                                                                    return this.formatTimePreview(currentTime, format);
+                                                                } catch {
+                                                                    return 'Invalid format';
+                                                                }
+                                                            })()}
+                                                        </Typography>
+
+                                                        {/* PageItems Section */}
+                                                        <Divider sx={{ my: 3 }} />
+                                                        <Typography
+                                                            variant="h6"
+                                                            sx={{ mb: 2 }}
+                                                        >
+                                                            {this.getText('pageItems')}
+                                                        </Typography>
+
+                                                        {/* PageItems Icon Grid */}
+                                                        <Box
+                                                            sx={{
+                                                                display: 'grid',
+                                                                gridTemplateColumns:
+                                                                    'repeat(auto-fill, minmax(80px, 1fr))',
+                                                                gap: 2,
+                                                                mt: 2,
+                                                            }}
+                                                        >
+                                                            {/* Add New Item Button */}
+                                                            <Box
+                                                                onClick={() => {
+                                                                    this.setState({
+                                                                        editingPageItem: null,
+                                                                        editingPageItemIndex: undefined,
+                                                                    } as ScreensaverPageState);
+                                                                }}
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    alignItems: 'center',
+                                                                    cursor: 'pointer',
+                                                                    '&:hover': {
+                                                                        opacity: 0.8,
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <Box
+                                                                    sx={{
+                                                                        width: 60,
+                                                                        height: 60,
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        borderRadius: 1,
+                                                                        backgroundColor: 'success.main',
+                                                                        color: 'white',
+                                                                        fontSize: '2.5rem',
+                                                                        fontWeight: 'bold',
+                                                                        mb: 1,
+                                                                    }}
+                                                                >
+                                                                    +
+                                                                </Box>
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    sx={{
+                                                                        textAlign: 'center',
+                                                                        fontSize: '0.75rem',
+                                                                    }}
+                                                                >
+                                                                    {this.getText('add')}
+                                                                </Typography>
+                                                            </Box>
+
+                                                            {/* Dynamic PageItem Icons */}
+                                                            {(ent.pageItems || []).map((item, index) => {
+                                                                const iconText =
+                                                                    item.modeScr && MODE_SCR_ICONS[item.modeScr]
+                                                                        ? MODE_SCR_ICONS[item.modeScr]
+                                                                        : '?';
+                                                                return (
+                                                                    <Box
+                                                                        key={index}
+                                                                        onClick={() => {
+                                                                            this.setState({
+                                                                                editingPageItem: item,
+                                                                                editingPageItemIndex: index,
+                                                                            } as ScreensaverPageState);
+                                                                        }}
+                                                                        sx={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            alignItems: 'center',
+                                                                            cursor: 'pointer',
+                                                                            '&:hover': {
+                                                                                opacity: 0.8,
+                                                                            },
+                                                                        }}
+                                                                    >
+                                                                        <Box
+                                                                            sx={{
+                                                                                width: 60,
+                                                                                height: 60,
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                borderRadius: 1,
+                                                                                backgroundColor: 'action.hover',
+                                                                                color: 'primary.main',
+                                                                                fontSize: '2rem',
+                                                                                mb: 1,
+                                                                            }}
+                                                                        >
+                                                                            {iconText}
+                                                                        </Box>
+                                                                        <Typography
+                                                                            variant="caption"
+                                                                            sx={{
+                                                                                textAlign: 'center',
+                                                                                fontSize: '0.75rem',
+                                                                            }}
+                                                                        >
+                                                                            {item.headline || 'Item'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                );
+                                                            })}
+                                                        </Box>
+                                                    </>
+                                                )}
 
                                                 {/* Add more screensaver-specific fields here as needed */}
                                             </Box>
