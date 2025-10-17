@@ -234,7 +234,20 @@ export class PageAlarm extends Page {
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
         message.navigation = this.getNavigation();
         if (this.alarmType === 'alarm') {
-            if (this.status === 'armed' && !this.pinFailTimeout) {
+            if (this.pinFailTimeout) {
+                message.button1 = `${this.library.getTranslation('locked_for')}`;
+                message.status1 = '';
+                message.button2 = ` ${2 ** this.failCount} s`;
+                message.status2 = '';
+                message.button3 = '';
+                message.status3 = '';
+                message.button4 = '';
+                message.status4 = '';
+                message.icon = Icons.GetIcon('key-alert-outline'); //icon*~*
+                message.iconColor = String(Color.rgb_dec565({ r: 255, g: 0, b: 0 })); //iconcolor*~*
+                message.numpad = 'disable'; //numpadStatus*~*
+                message.flashing = 'enable'; //flashing*
+            } else if (this.status === 'armed') {
                 message.button1 = (data.button5 && (await data.button5.getTranslatedString())) ?? '';
                 message.status1 = message.button1 ? 'D1' : '';
                 message.button2 = (data.button6 && (await data.button6.getTranslatedString())) ?? '';
@@ -243,7 +256,11 @@ export class PageAlarm extends Page {
                 message.status3 = message.button3 ? 'D3' : '';
                 message.button4 = (data.button8 && (await data.button8.getTranslatedString())) ?? '';
                 message.status4 = message.button4 ? 'D4' : '';
-            } else if (this.status === 'disarmed' && !this.pinFailTimeout) {
+                message.icon = Icons.GetIcon('shield-home'); //icon*~*
+                message.iconColor = '63488'; //iconcolor*~*
+                message.numpad = 'enable'; //numpadStatus*~*
+                message.flashing = 'disable'; //flashing*
+            } else if (this.status === 'disarmed') {
                 //const entity1 = await getValueEntryNumber(data.entity1);
                 message.button1 = (data.button1 && (await data.button1.getTranslatedString())) ?? '';
                 message.status1 = message.button1 ? 'A1' : '';
@@ -253,15 +270,23 @@ export class PageAlarm extends Page {
                 message.status3 = message.button3 ? 'A3' : '';
                 message.button4 = (data.button4 && (await data.button4.getTranslatedString())) ?? '';
                 message.status4 = message.button4 ? 'A4' : '';
-            } else if (this.pinFailTimeout) {
-                message.button1 = `${this.library.getTranslation('locked_for')}`;
+                message.icon = Icons.GetIcon('shield-off'); //icon*~*
+                message.iconColor = String(Color.rgb_dec565(Color.Green)); //iconcolor*~*
+                message.numpad = 'enable'; //numpadStatus*~*
+                message.flashing = 'disable'; //flashing*
+            } else if (this.status == 'arming' || this.status == 'pending') {
+                message.button1 = this.library.getTranslation(this.status);
                 message.status1 = '';
-                message.button2 = ` ${2 ** this.failCount} s`;
+                message.button2 = '';
                 message.status2 = '';
                 message.button3 = '';
                 message.status3 = '';
                 message.button4 = '';
                 message.status4 = '';
+                message.icon = Icons.GetIcon(this.status == 'arming' ? 'shield' : 'shield-off'); //icon*~*
+                message.iconColor = String(Color.rgb_dec565({ r: 243, g: 179, b: 0 })); //iconcolor*~*
+                message.numpad = 'disable'; //numpadStatus*~*
+                message.flashing = 'enable'; //flashing*
             } else {
                 message.button1 = this.library.getTranslation(this.status);
                 message.status1 = '';
@@ -271,28 +296,6 @@ export class PageAlarm extends Page {
                 message.status3 = '';
                 message.button4 = '';
                 message.status4 = '';
-            }
-            if (this.pinFailTimeout) {
-                message.icon = Icons.GetIcon('key-alert-outline'); //icon*~*
-                message.iconColor = String(Color.rgb_dec565({ r: 255, g: 0, b: 0 })); //iconcolor*~*
-                message.numpad = 'disable'; //numpadStatus*~*
-                message.flashing = 'enable'; //flashing*
-            } else if (this.status == 'armed') {
-                message.icon = Icons.GetIcon('shield-home'); //icon*~*
-                message.iconColor = '63488'; //iconcolor*~*
-                message.numpad = 'enable'; //numpadStatus*~*
-                message.flashing = 'disable'; //flashing*
-            } else if (this.status == 'disarmed') {
-                message.icon = Icons.GetIcon('shield-off'); //icon*~*
-                message.iconColor = String(Color.rgb_dec565(Color.Green)); //iconcolor*~*
-                message.numpad = 'enable'; //numpadStatus*~*
-                message.flashing = 'disable'; //flashing*
-            } else if (this.status == 'arming' || this.status == 'pending') {
-                message.icon = Icons.GetIcon('shield'); //icon*~*
-                message.iconColor = String(Color.rgb_dec565({ r: 243, g: 179, b: 0 })); //iconcolor*~*
-                message.numpad = 'disable'; //numpadStatus*~*
-                message.flashing = 'enable'; //flashing*
-            } else if (this.status == 'triggered') {
                 message.icon = Icons.GetIcon('bell-ring'); //icon*~*
                 message.iconColor = String(Color.rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
                 message.numpad = 'enable'; //numpadStatus*~*
