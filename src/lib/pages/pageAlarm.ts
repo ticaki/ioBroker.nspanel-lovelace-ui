@@ -451,7 +451,7 @@ export class PageAlarm extends Page {
             }*/
             if (this.pin && this.pin != value) {
                 this.log.warn(
-                    `Wrong pin entered. try ${this.failCount}! Delay next attempt by ${2 ** ++this.failCount} seconds`,
+                    `Wrong pin entered. try ${++this.failCount}! Delay next attempt by ${2 ** this.failCount} seconds`,
                 );
 
                 this.pinFailTimeout = this.adapter.setTimeout(
