@@ -220,7 +220,7 @@ export class PageAlarm extends Page {
      * @returns Promise that resolves after the message was sent (or skipped)
      */
     public async update(): Promise<void> {
-        if (!this.visibility) {
+        if (!this.visibility || this.unload || this.adapter.unload) {
             return;
         }
         const message: Partial<pages.PageAlarmMessage> = {};
@@ -366,6 +366,9 @@ export class PageAlarm extends Page {
             new: nsPanelState;
         },
     ): Promise<void> {
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
         if (id && !_state.new.ack && this.items?.card === 'cardAlarm') {
             if (id === this.items?.data?.approveState?.options?.dp) {
                 const approved = this.items.data && (await this.items.data.approved?.getBoolean());
@@ -426,6 +429,9 @@ export class PageAlarm extends Page {
      * @returns Promise that resolves after the event has been handled
      */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
         const button = _event.action;
         const value = _event.opt;
         if (!this.items || this.items.card !== 'cardAlarm') {
@@ -445,7 +451,7 @@ export class PageAlarm extends Page {
             }*/
             if (this.pin && this.pin != value) {
                 this.log.warn(
-                    `Wrong pin entered. try ${this.failCount}! Delay next try of ${2 ** ++this.failCount} seconds`,
+                    `Wrong pin entered. try ${this.failCount}! Delay next attempt by ${2 ** ++this.failCount} seconds`,
                 );
 
                 this.pinFailTimeout = this.adapter.setTimeout(
@@ -535,15 +541,22 @@ export class PageAlarm extends Page {
         if (this.unload || this.adapter.unload) {
             return;
         }
-        this.updatePanelTimeout = this.adapter.setTimeout(() => {
-            this.updatePanelTimeout = null;
-            void this.update();
-        }, 50);
+        this.updatePanelTimeout = this.adapter.setTimeout(
+            () => {
+                this.updatePanelTimeout = null;
+                void this.update();
+            },
+            50 + Math.ceil(Math.random() * 50),
+        );
     }
     async delete(): Promise<void> {
         if (this.updatePanelTimeout) {
             this.adapter.clearTimeout(this.updatePanelTimeout);
             this.updatePanelTimeout = null;
+        }
+        if (this.pinFailTimeout) {
+            this.adapter.clearTimeout(this.pinFailTimeout);
+            this.pinFailTimeout = null;
         }
         await super.delete();
     }

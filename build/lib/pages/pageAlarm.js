@@ -219,7 +219,7 @@ class PageAlarm extends import_Page.Page {
    */
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i;
-    if (!this.visibility) {
+    if (!this.visibility || this.unload || this.adapter.unload) {
       return;
     }
     const message = {};
@@ -352,6 +352,9 @@ class PageAlarm extends import_Page.Page {
   }
   async onStateChange(id, _state) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
     if (id && !_state.new.ack && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm") {
       if (id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp)) {
         const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
@@ -410,6 +413,9 @@ class PageAlarm extends import_Page.Page {
    */
   async onButtonEvent(_event) {
     var _a, _b;
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
     const button = _event.action;
     const value = _event.opt;
     if (!this.items || this.items.card !== "cardAlarm") {
@@ -423,7 +429,7 @@ class PageAlarm extends import_Page.Page {
       }
       if (this.pin && this.pin != value) {
         this.log.warn(
-          `Wrong pin entered. try ${this.failCount}! Delay next try of ${2 ** ++this.failCount} seconds`
+          `Wrong pin entered. try ${this.failCount}! Delay next attempt by ${2 ** ++this.failCount} seconds`
         );
         this.pinFailTimeout = this.adapter.setTimeout(
           async () => {
@@ -505,15 +511,22 @@ class PageAlarm extends import_Page.Page {
     if (this.unload || this.adapter.unload) {
       return;
     }
-    this.updatePanelTimeout = this.adapter.setTimeout(() => {
-      this.updatePanelTimeout = null;
-      void this.update();
-    }, 50);
+    this.updatePanelTimeout = this.adapter.setTimeout(
+      () => {
+        this.updatePanelTimeout = null;
+        void this.update();
+      },
+      50 + Math.ceil(Math.random() * 50)
+    );
   }
   async delete() {
     if (this.updatePanelTimeout) {
       this.adapter.clearTimeout(this.updatePanelTimeout);
       this.updatePanelTimeout = null;
+    }
+    if (this.pinFailTimeout) {
+      this.adapter.clearTimeout(this.pinFailTimeout);
+      this.pinFailTimeout = null;
     }
     await super.delete();
   }
