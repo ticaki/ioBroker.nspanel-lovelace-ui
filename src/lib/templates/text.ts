@@ -4147,7 +4147,7 @@ export const textTemplates: TemplateItems = {
                         mode: 'auto',
                         regexp: /\.deviceStatus\.state$/,
                         dp: '',
-                        read: (val: any) => {
+                        read: `{
                             switch (val) {
                                 case 0:
                                     return 'progress-question';
@@ -4202,7 +4202,7 @@ export const textTemplates: TemplateItems = {
                                 default:
                                     return '?';
                             }
-                        },
+                        }`,
                     },
                     color: { type: 'const', constVal: Color.Green },
                 },
