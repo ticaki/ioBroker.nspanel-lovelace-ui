@@ -86,7 +86,7 @@ class PageAlarm extends import_Page.Page {
    */
   async getStatus() {
     if (this.useStates) {
-      const state = this.library.readdb(`panels.${this.basePanel.name}.alarm.${this.name}.status`);
+      const state = this.library.readdb(`${this.pathToStates}.status`);
       if (state) {
         if (typeof state.val === "number") {
           this.status = alarmStates[state.val];
