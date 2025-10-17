@@ -103,6 +103,9 @@ class PageAlarm extends import_Page.Page {
    */
   async setStatus(value) {
     this.status = value;
+    if (this.isGlobal) {
+      await this.basePanel.controller.setGlobalAlarmStatus(this.name, this.status);
+    }
     if (this.useStates) {
       await this.library.writedp(
         `${this.pathToStates}.status`,
@@ -370,9 +373,6 @@ class PageAlarm extends import_Page.Page {
           this.updatePanelTimeout = null;
         }
         await this.setStatus(_state.new.val in alarmStates ? alarmStates[_state.new.val] : "disarmed");
-        if (this.isGlobal) {
-          await this.basePanel.controller.setGlobalAlarmStatus(this.name, this.status);
-        }
         if (this.unload || this.adapter.unload) {
           return;
         }
