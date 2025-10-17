@@ -1,327 +1,327 @@
 {
-    "common": {
-        "name": "nspanel-lovelace-ui",
-        "version": "0.6.5",
-        "news": {
-            "0.6.5": {
-                "en": "HMI: Fix screensaver notification in advanced screensaver mode.\nHMI: Fix cardChart/cardLChart dimension issues; add \"No Data\" label and correct y-axis label positioning.\nCore: Add touch-event blocking (400 ms) to avoid accidental double-clicks during page transitions.\nTypeScript: Remove deprecated `useColor` property from type definitions.\nNote: HMI fixes will be delivered separately via a firmware update and are not tied to this adapter release.",
-                "de": "HMI: Benachrichtigung im erweiterten Bildschirmschoner-Modus behoben.\nHMI: Probleme mit den Abmessungen von cardChart/cardLChart behoben; \"No Data\"-Label hinzugefügt und y-Achsen-Beschriftung korrigiert.\nCore: Touch-Event-Blockierung (400 ms) hinzugefügt, um versehentliche Doppelklicks bei Seitenwechseln zu verhindern.\nTypeScript: Veraltete Eigenschaft `useColor` aus den Typdefinitionen entfernt.\nHinweis: Die HMI-Fixes werden separat per Firmware-Update nachgeliefert und sind nicht an dieses Adapter-Release gebunden.",
-                "ru": "HMI: Исправлено уведомление заставки в расширенном режиме.\nHMI: Исправлены проблемы с размерами cardChart/cardLChart; добавлена метка \"No Data\" и откорректировано положение подписи оси Y.\nCore: Добавлена блокировка сенсорных событий (400 мс) для предотвращения случайных двойных кликов при переходе между страницами.\nTypeScript: Удалено устаревшее свойство `useColor` из определений типов.",
-                "pt": "HMI: Corrigida a notificação do protetor de tela no modo avançado.\nHMI: Corrigidos problemas de dimensões em cardChart/cardLChart; adicionada a etiqueta \"No Data\" e corrigido o posicionamento do rótulo do eixo Y.\nCore: Adicionado bloqueio de eventos de toque (400 ms) para evitar cliques duplos acidentais durante transições de página.\nTypeScript: Removida a propriedade obsoleta `useColor` das definições de tipos.",
-                "nl": "HMI: Hersteld: screensaver-notificatie in de geavanceerde screensaver-modus.\nHMI: Problemen met de afmetingen van cardChart/cardLChart opgelost; \"No Data\" label toegevoegd en y-as label gecorrigeerd.\nCore: Touch-event blokkering (400 ms) toegevoegd om per ongeluk dubbelklikken bij paginaovergangen te voorkomen.\nTypeScript: Verouderde eigenschap `useColor` verwijderd uit de typedefinities.",
-                "fr": "HMI : Correction de la notification de l'écran de veille en mode avancé.\nHMI : Correction des problèmes de dimensions de cardChart/cardLChart ; ajout d'une étiquette \"No Data\" et correction du positionnement du label de l'axe Y.\nCore : Ajout d'un blocage des événements tactiles (400 ms) pour éviter les double-clics accidentels lors des transitions de page.\nTypeScript : Suppression de la propriété obsolète `useColor` des définitions de types.",
-                "it": "HMI: Correzione della notifica dello screensaver in modalità avanzata.\nHMI: Risolti problemi di dimensione di cardChart/cardLChart; aggiunta l'etichetta \"No Data\" e corretto il posizionamento dell'etichetta dell'asse Y.\nCore: Aggiunta la protezione dagli eventi touch (400 ms) per evitare doppi clic accidentali durante le transizioni di pagina.\nTypeScript: Rimossa la proprietà deprecata `useColor` dalle definizioni dei tipi.",
-                "es": "HMI: Corregida la notificación del salvapantallas en el modo avanzado.\nHMI: Corregidos problemas de dimensiones en cardChart/cardLChart; añadida la etiqueta \"No Data\" y corregida la posición de la etiqueta del eje Y.\nCore: Añadido bloqueo de eventos táctiles (400 ms) para evitar clics dobles accidentales durante transiciones de página.\nTypeScript: Eliminada la propiedad obsoleta `useColor` de las definiciones de tipos.",
-                "pl": "HMI: Naprawiono powiadomienie wygaszacza ekranu w trybie zaawansowanym.\nHMI: Naprawiono problemy z wymiarami cardChart/cardLChart; dodano etykietę \"No Data\" i poprawiono pozycjonowanie opisu osi Y.\nCore: Dodano blokadę zdarzeń dotykowych (400 ms) aby zapobiec przypadkowym podwójnym kliknięciom podczas przejść stron.\nTypeScript: Usunięto przestarzałą właściwość `useColor` z definicji typów.",
-                "uk": "HMI: Виправлено повідомлення заставки в розширеному режимі.\nHMI: Виправлено проблеми з розмірами cardChart/cardLChart; додано мітку \"No Data\" і скориговано положення підпису осі Y.\nCore: Додано блокування сенсорних подій (400 мс), щоб уникнути випадкових подвійних клацань під час переходів сторінок.\nTypeScript: Видалено застаріле властивість `useColor` з визначень типів.",
-                "zh-cn": "HMI: 修复了高级屏幕保护模式下的屏幕保护通知。\nHMI: 修复了 cardChart/cardLChart 的尺寸问题；添加了“无数据 (No Data)”标签并修正了 Y 轴标签位置。\nCore: 增加触摸事件阻塞（400 毫秒），以避免页面切换时的意外双击。\nTypeScript: 从类型定义中移除已弃用的 `useColor` 属性。"
-            },
-            "0.6.4": {
-                "en": "use tasmota version from version.json\nAdded disarmed buttons (5–8) to UnlockPage, implemented a responsive two-column layout.\nImproved NavigationAssignmentPanel to show per-panel notices in the lower overview, add a per-item trash icon (hover + mobile two-step confirmation)",
-                "de": "Verwende die Tasmota-Version aus version.json\nEntsperrseite: Tasten (5–8) für 'disarmed' hinzugefügt, zweispaltiges responsives Layout implementiert.\nNavigationAssignmentPanel verbessert: zeigt nun panelbezogene Hinweise in der unteren Übersicht an und fügt jedem Element ein Papierkorb-Symbol hinzu (Hover + zweistufige Bestätigung auf Mobilgeräten).",
-                "ru": "использование tasmota версии из версии. джонсон\nДобавлены обезоруженные кнопки (5-8) в UnlockPage, реализована отзывчивая двухколоночная компоновка.\nУлучшенная навигация Панель для отображения уведомлений на панели в нижнем обзоре, добавьте значок мусора для каждого предмета (подтверждение поверх + мобильное двухэтапное подтверждение)",
-                "pt": "use a versão tasmota da versão. json\nAdicionados botões desarmados (5–8) para DesbloquearPage, implementado um layout de duas colunas responsivo.\nMelhor atribuição de navegação Painel para mostrar avisos por painel na visão geral inferior, adicione um ícone de lixo por item (hover + confirmação móvel de dois passos)",
-                "nl": "gebruik tasmota versie van versie. json\nToegevoegd ontwapende knoppen (5.\nVerbeterde navigatieOpdracht Panel om per paneel berichten te tonen in het onderste overzicht, voeg een per-item prullenbak pictogram (hover + mobiele twee-stap bevestiging)",
-                "fr": "utiliser tasmota version de la version. json\nAjout de boutons désarmés (5–8) à UnlockPage, implémenté une mise en page de deux colonnes réactives.\nAmélioration de la navigation Panneau pour afficher les avis par panneau dans l'aperçu inférieur, ajouter une icône de poubelle par élément (hover + confirmation mobile en deux étapes)",
-                "it": "utilizzare la versione tasmota dalla versione. j\nAggiunti pulsanti disarmati (5–8) per sbloccarePage, implementato un layout reattivo a due colonne.\nMiglioramento dell'Assegnazione di Navigazione Pannello per mostrare avvisi per pannello nella panoramica inferiore, aggiungere un'icona del cestino per-item (hover + conferma mobile a due passi)",
-                "es": "use la versión tasmota de la versión. json\nSe agregaron botones desarmados (5-8) a DesbloquearPage, implementó un diseño sensible de dos columnas.\nMejora de la asignación de navegación Panel para mostrar avisos por panel en la descripción inferior, añadir un icono de basura por tema (confirmación móvil de dos pasos)",
-                "pl": "użyj wersji tasmota z wersji. json\nDodano rozbrojone przyciski (5- 8) do UnlockPage, zaimplementowano układ dwóch kolumn.\nLepsza nawigacja Przydział Panel do wyświetlania powiadomień w dolnym przeglądzie, dodaj ikonę typu per- element śmieci (hover + mobilne potwierdzenie dwuetapowe)",
-                "uk": "tasmota version from version. свінгери\nДодано дискриміновані кнопки (5–8) до UnlockPage, впроваджена чуйна двоколірна верстка.\nПокращити Навігацію Панель, щоб показати помітки про пер-панель в нижній огляді, додати піктограму занурення (понад + мобільний двоступеневе підтвердження)",
-                "zh-cn": "使用版本中的 tasmota 版本。 贾森\n将已解除的按钮(5-8)添加到UnlockPage中,实施了响应的两栏布局.\n改进导航任务 在下方概览中显示每组通知的面板, 添加一个每件垃圾图标( hover + 移动双步确认)"
-            },
-            "0.6.3": {
-                "en": "alarm and approved fixed  - static dp for approve",
-                "de": "alarm und approved verbesesert - statischer dp für approved",
-                "ru": "будильник и утвержденный фиксированный - статический dp для утверждения",
-                "pt": "alarme e aprovado fixo - dp estático para aprovação",
-                "nl": "alarm en goedgekeurde vaste - statische dp voor goedkeuring",
-                "fr": "alarme et approuvé fixe - statique dp pour approbation",
-                "it": "allarme e fisso omologato - dp statico per approvazione",
-                "es": "alarma y aprobado fijo - dp estática para aprobar",
-                "pl": "alarm i zatwierdzone stałe - statyczne dp do zatwierdzenia",
-                "uk": "сигналізація і затверджений фіксований - статичний dp для затвердження",
-                "zh-cn": "提醒和核准的固定-静态 dp 核准"
-            },
-            "0.6.2": {
-                "en": "PageUnlock: Config updated — fixed issue where some settings were not applied correctly.\nIconSelect showed a too short list. Fixed.\nAdmin: Added responsive layout for Admin PageUnlock (mobile devices)",
-                "de": "PageUnlock: Config aktualisiert — Problem behoben, bei dem einige Einstellungen nicht korrekt angewendet wurden.\nIconSelect zeigte eine zu kurze Liste. Behoben.\nAdmin: Ansprechlayout für Admin PageUnlock (mobile Geräte) hinzugefügt",
-                "ru": "PageUnlock: Config updated — исправленная проблема, при которой некоторые настройки не были применены правильно.\nIconSelect показал слишком короткий список. Исправлено.\nAdmin: Добавлен адаптивный макет для Admin PageUnlock (мобильные устройства)",
-                "pt": "Desbloquear página: Config updated — problema fixo onde algumas configurações não foram aplicadas corretamente.\nO IconSelect mostrou uma lista muito curta. Consertado.\nAdmin: Adicionado layout responsivo para Admin PageUnlock (dispositivos móveis)",
-                "nl": "PageUnlock: Configureren van een aangepast probleem waarbij sommige instellingen niet correct werden toegepast.\nIconSelect toonde een te korte lijst. Vast.\nBeheerder: Toegevoegd responsieve lay-out voor Admin PageUnlock (mobiele apparaten)",
-                "fr": "Déverrouillage de la page : Config mis à jour — problème corrigé où certains paramètres n'ont pas été appliqués correctement.\nIconSelect a montré une liste trop courte. Corrigé.\nAdmin: Ajout de la mise en page réactive pour Admin PageUnlock (appareils mobiles)",
-                "it": "PageUnlock: Config aggiornato — problema fisso in cui alcune impostazioni non sono state applicate correttamente.\nIconSelect ha mostrato una lista troppo breve. Risolto.\nAdmin: Aggiunto il layout reattivo per Admin PageUnlock (i dispositivi mobili)",
-                "es": "PageUnlock: Config updated — fixed issue where some settings were not applied properly.\nIconSelect mostró una lista muy corta. Arreglado.\nAdmin: Diseño receptivo añadido para Admin PageUnlock (dispositivos móviles)",
-                "pl": "PageUnlock: Aktualizacja konfiguracji - stałe wydanie, w którym niektóre ustawienia nie zostały prawidłowo zastosowane.\nIconSelect pokazał zbyt krótką listę. Naprawione.\nAdmin: Dodano układ reagujący dla Admin PageUnlock (urządzenia mobilne)",
-                "uk": "СторінкаРозблокування: Налаштуйте оновлений — виправлений номер, де деякі налаштування не були застосовані належним чином.\nІкона Селекція показала занадто короткий список. Фіксований.\nАдміністратор: Додано чуйний макет для Admin PageUnlock (мобільні пристрої)",
-                "zh-cn": "页面解锁 : 配置更新——一些设置应用不当的固定问题.\n图标选择显示列表太短 。 固定着.\n管理员: Admin PageUnlock (移动设备) 添加的响应布局"
-            },
-            "0.6.0": {
-                "en": "Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)\nAdmin: Added Unlock/Alarm editor to admin UI (headline, PIN, buttons, setNavi, duplicate-name check) - first admin only config for a page\nAdmin: Added navigation flow editor to admin UI (expert mode must be enabled)\nChart scale: rounded to nearest tens\nPagePower: improved icon selection in admin\nGerman documentation for screensaver notification features `isDismissiblePerEvent` and `dismissibleIDGlobal` added to `doc/de/screensaver.md`",
-                "de": "Farbschema-Schlüssel dokumentiert (`doc/de/colorTheme.md`, englische Version `doc/en/colorTheme.md`)\nAdmin: Unlock/Alarm-Editor zur Admin-Oberfläche hinzugefügt (Überschrift, PIN, Buttons, setNavi, Prüfung auf doppelte Namen) – erste Admin-only-Konfiguration für eine Seite\nAdmin: Navigationsfluss-Editor zur Admin-Oberfläche hinzugefügt (Expertenmodus muss aktiviert sein)\nDiagrammskalierung: auf nächste Zehner gerundet\nPagePower: verbesserte Symbolauswahl in der Admin-Oberfläche\nDeutsche Dokumentation der Screensaver-Benachrichtigungsfunktionen `isDismissiblePerEvent` und `dismissibleIDGlobal` zu `doc/de/screensaver.md` hinzugefügt",
-                "ru": "Задокументированные ключи цветовой темы ('doc/de/colorTheme.md', английская версия 'doc/en/colorTheme.md')\nAdmin: Добавлен редактор Unlock/Alarm для администратора UI (заголовок, PIN-код, кнопки, setNavi, проверка имени дубликата) - первый администратор только конфигурирует страницу\nAdmin: Добавлен редактор навигационного потока для управления пользовательским интерфейсом (должен быть включен экспертный режим)\nШкала диаграммы: округленная до ближайших десятков\nPagePower: улучшенный выбор значков в админ\nНемецкая документация для уведомлений заставки содержит «isDismissiblePerEvent» и «dismissibleIDGlobal», добавленные к «doc/de/screensaver.md»",
-                "pt": "Teclas de tema de cores documentadas (`doc/de/colorTheme.md`, versão em inglês `doc/en/colorTheme.md`)\nAdmin.: Adicionado Unlock/Alarm editor para administrar UI (linha principal, PIN, botões, setNavi, verificação de nome duplicado) - primeiro admin apenas config para uma página\nAdmin: Adicionado editor de fluxo de navegação para administrar UI (modo expert deve ser ativado)\nEscala do gráfico: arredondada às dezenas mais próximas\nPagePower: seleção de ícones melhorada no administrador\nDocumentação alemã para recursos de notificação de screensaver `isDismissiblePerEvent` e `dismissibleIDGlobal` adicionada a `doc/de/screensaver.md`",
-                "nl": "Kleur thema toetsen gedocumenteerd (\nAdmin: Unlock/Alarm editor toegevoegd aan admin UI (headline, PIN, knoppen, setNavi, duplicate-name check) - eerste admin alleen config voor een pagina\nAdmin: Navigatiestroom-editor toegevoegd aan admin UI (expert-modus moet worden ingeschakeld)\nGrafiekschaal: afgerond tot dichtsbijzijnde tientallen\nPagePower: verbeterde pictogram selectie in admin\nDuitse documentatie voor screensaver notificatie features ",
-                "fr": "Clés de thème couleur documentées (`doc/de/colorTheme.md`, version anglaise `doc/en/colorTheme.md`)\nAdmin: Ajout de l'éditeur Unlock/Alarm à l'interface utilisateur d'administration (headline, PIN, boutons, setNavi, duplicata check) - première configuration uniquement pour une page\nAdmin: Ajout de l'éditeur de flux de navigation à l'interface utilisateur admin (le mode expert doit être activé)\nÉchelle du graphique : arrondie aux dizaines les plus proches\nPagePower : sélection d'icônes améliorée dans admin\nLa documentation allemande pour les fonctions de notification screensaver `is DismissiblePerEvent` et `dismissibleIDGlobal` est ajoutée à `doc/de/screensaver.md`",
-                "it": "Tasti a tema a colori documentati (`doc/de/colorTheme.md`, versione inglese `doc/en/colorTheme.md`)\nAdmin: Aggiunta l'editor Sblocca/Allarma per amministrare UI (headline, PIN, pulsanti, setNavi, duplicato-name check) - primo amministratore solo configurazione per una pagina\nAdmin: Aggiunta l'editor di flusso di navigazione per admin UI (modalità esperta deve essere abilitata)\nScala del grafico: arrotondata alle decine più vicine\nPagePower: migliore selezione icona in admin\nDocumentazione tedesca per le funzioni di notifica screensaver `isDismitPerEvent` e `dismissibileIDGlobal` aggiunto a `doc/de/screensaver.md`",
-                "es": "Claves de tema de color documentadas (`doc/de/colorTheme.md`, versión en inglés `doc/en/colorTheme.md`)\nAdmin: Añadido Desbloquear/Alarm editor a admin UI (cabeza, PIN, botones, setNavi, duplicate-name check) - primero admin sólo config for a page\nAdmin: editor de flujo de navegación añadido a admin UI (modo de salida debe ser habilitado)\nEscala de carga: redondeado a los diez más cercanos\nPagePower: mejor selección de iconos en admin\nDocumentación alemana para la notificación de salvapantallas características `isDismissiblePerEvent ' y `dismissibleIDGlobal ' agregado a `doc/de/screensaver.md`",
-                "pl": "Klucze motywu kolorów udokumentowane ('doc / de / colorTheme.md', wersja angielska 'doc / en / colorTheme.md')\nAdmin: Dodano edytor odblokowywania / alarmu do interfejsu administratora (nagłówek, PIN, przyciski, setNavi, duplikat - sprawdzanie nazwy) - pierwszy administrator tylko config dla strony\nAdmin: Dodano edytor przepływu nawigacji do interfejsu administratora (musi być włączony tryb ekspertów)\nSkala wykresu: zaokrąglona do najbliższych dziesiątek\nPagePower: ulepszony wybór ikon w admin\nNiemiecka dokumentacja dotycząca funkcji powiadamiania o wygaszaczu ekranu \"isDismissiblePerEvent\" i \"dimissibleIDGlobal\" dodana do 'doc / de / screensaver.md'",
-                "uk": "Кольорові ключі задокументовані (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)\nАдміністратор: Додано Unlock/Alarm редактор для адміністратора UI (головна лінія, PIN, кнопки, setNavi, дублікати-ім'я check) - перший адміністратор тільки config для сторінки\nАдміністратор: Доданий редактор потоку навігаторів для адміністратора UI (режим розширення повинен бути включений)\nГрафік масштабу: закруглені до найближчих десятків\nPagePower: Покращений вибір ікони в адмін\n`isDismissiblePerEvent` і `dismissibleIDGlobal` додано до `doc/de/screensaver.md`",
-                "zh-cn": "已记录的颜色主题密钥(`doc/de/colorTheme.md',英文版`doc/en/colorTheme.md')\n管理员: 添加到管理员UI( 标题、 PIN、 按钮、 设置Navi、 重复名检查) - 第一个只配置页面的管理员\n管理员: 添加到管理员 UI 的导航流程编辑器( 必须启用专家模式)\n图表比例:四舍五入到最近的几十\nPagePower: 管理员中改进的图标选择\n用于屏幕保护器通知功能的德国文件 \" IsissiblePerEvent \" 和 \" DiissibleID Global \" 添加到 \" doc/de/screensaver.md \" 中"
-            },
-            "0.5.0": {
-                "en": "Admin UI: Reworked/reordered settings layout and improved usability\nAdded screensaver notification system  \nFixed cardThermo2 not switching  \nImplemented hiding of screensaver elements  \nAdjusted Brightsky templates  \nmade script configuration transfer more robust",
-                "de": "Admin UI: Einstellungen-Layout überarbeitet/neu angeordnet und Benutzerfreundlichkeit verbessert\nBildschirmschoner-Benachrichtigungssystem hinzugefügt\nFehler bei cardThermo2 behoben (wurde nicht umgeschaltet)\nAusblenden von Bildschirmschoner-Elementen implementiert\nBrightsky-Vorlagen angepasst\nSkriptkonfigurationsübertragung robuster gemacht",
-                "ru": "Admin UI: переработанный/упорядоченный макет настроек и улучшенное удобство использования\nПроблемы проверки фиксированного хранилища: Обновлена зависимость администратора от 7.6.17, добавлен .commitinfo к .gitignore, обновлен .vscode/settings. json с полными определениями схемы jsonConfig\nДобавлена система уведомлений Screensaver\nФиксированная карта Термо2 не переключается\nРеализованное скрытие элементов заставки\nСкорректированные шаблоны Brightsky\nсделал перенос конфигурации скриптов более надежным",
-                "pt": "UI de administração: layout de configurações retrabalhado/reordenado e usabilidade melhorada\nProblemas no verificador de repositórios fixos: Updated admin dependence to 7.6.17, add .commitinfo to .gitignore, updated .vscode/settings. json com definições completas do esquema jsonConfig\nSistema de notificação de protetor de tela adicionado\nCartão fixo Termo2 sem comutação\nEscondimento implementado de elementos protetores de tela\nModelos Brightsky ajustados\ntornou a transferência de configuração do script mais robusta",
-                "nl": "Beheerder UI: Herwerkte/herschikte instellingen lay-out en verbeterde bruikbaarheid\nProblemen met vaste archiefcontrole: Bijgewerkt admin afhankelijkheid naar 7.6.17, toegevoegd .commitinfo aan .gitignore, bijgewerkt .vscode/instellingen. json met volledige jsonConfig schema definities\nToegevoegd screensaver meldingssysteem\nVaste kaart Thermo2 niet schakelen\nGeïmplementeerd verbergen van screensaver elementen\nAangepaste Brightsky templates\nmade script configuratie overdracht robuuster",
-                "fr": "UI d'administration : Mise en page des paramètres remaniés/réordonnés et meilleure convivialité\nProblèmes de contrôle du dépôt fixe & #160;: Mise à jour de la dépendance admin à 7.6.17, ajout de .commitinfo à .gitignore, mise à jour de .vscode/settings. json avec des définitions complètes du schéma jsonConfig\nAjout du système de notification screensaver\nCarte fixe Thermo2 sans commutation\nMise en œuvre de la dissimulation des éléments de veille d'écran\nModèles Brightsky ajustés\nrendu le transfert de configuration de script plus robuste",
-                "it": "Admin UI: layout delle impostazioni rielaborate / riordinate e usabilità migliorata\nQuestioni di repository fissi: Dipendenza amministrativa aggiornata a 7.6.17, aggiunto .commitinfo a .gitignore, aggiornato .vscode/settings. json con definizioni complete dello schema jsonConfig\nAggiunto sistema di notifica screensaver\nScheda fissa Termo2 non commutazione\nNascondimento attuato di elementi screensaver\nModelli Brightsky regolati\nrende più robusto il trasferimento della configurazione dello script",
-                "es": "Admin UI: Diseño de ajustes reelaborados/reordenados y mayor usabilidad\nProblemas de control de repositorios fijos: Actualizado dependencia de administración a 7.6.17, añadido .commitinfo a .gitignore, actualizado .vscode/settings. json with complete jsonConfig schema definitions\nSistema de notificación de salvapantallas\nTarjeta fija El termo2 no cambia\nEscondite aplicado de elementos de salvapantallas\nPlantillas Brightsky ajustadas\ntransferencia de configuración de script hecho más robusta",
-                "pl": "Interfejs administracyjny: Przerabiany / zmieniany układ ustawień i poprawiona użyteczność\nProblemy ze sprawdzeniem repozytorium: Aktualizacja zależności administratora do 7.6.17, dodano .commitinfo do .gitignore, zaktualizowano .vscode / ustawienia. json z kompletnymi definicjami schematów jsonConfig\nDodano system powiadamiania o wygaszaczu ekranu\nKarta stała Termo2 bez przełączania\nWdrożone ukrywanie elementów wygaszacza ekranu\nDostosowane szablony Brightsky\nuczyniła transfer konfiguracji skryptu bardziej solidnym",
-                "uk": "Admin UI: Перероблено / переадресовано налаштування макета і поліпшення зручності\nВиправлені питання репозиторійної перевірки: Додано .gitignore, оновлений .vscode/settings. json з повним jsonConfig schema визначення\nДодана система сповіщення\nФіксована картка Термо2 не перемикач\nРеалізовано приховування елементів скринерів\nРегульовані яскраві шаблони\nпередача конфігурацій скрипта більш надійний",
-                "zh-cn": "Admin UI:重修/重订设置布局,提高可用性\n固定仓库检查器问题: 更新管理员依赖度为7.6.17,在.gitignore中加入.commitinfo,更新.vscode/设置. 拥有完整的 jsonFig 计划定义的 json\n添加屏幕保护通知系统\n固定卡 热量2 不切换\n屏蔽元素的隐藏\n调整的 Brightsky 模板\n使脚本配置传输更加有力"
-            },
-            "0.4.0": {
-                "en": "Panels can now be restarted individually while the adapter is running; faulty or missing configurations prevent restart with clear error messages\nMedia logo field now supports Alexa play/pause toggle and Spotify seek position popup\nAdded new channel role \"media\" with status display and pageMedia fallback; for this role only, added `asControl` as PageItem property\nFixed state evaluation: `getState() === null` no longer interpreted as missing state; boolean states now return `false` instead of `null` if the state exists but has no value.\nAdded support for ioBroker Sonos-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls\nAdded buzzer functionality for NSPanel devices - enables button sounds, urgent message notifications, and general buzzer control via state and sendTo interface\nAdded support for ioBroker MPD-Adapter in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls\nAdded support for ioBroker spotify-premium in cardMedia - play/pause/stop, volume, title/artist/album, shuffle, repeat controls\nStartup significantly improved and hangs removed\nColour themes added, but by no means used everywhere yet\nPage items on the cardMedia can be given custom colours\nEach card belonging to the Menu group can use classic or arrow scrolling - default is classic (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nWhen scrolling classic there is half page or full page “page” or “half” - default is “page” - “half” is supported by cardGrid*, cardThermo2",
-                "de": "Panels können jetzt einzeln neu gestartet werden, während der Adapter läuft; fehlerhafte oder fehlende Konfigurationen verhindern den Neustart mit klaren Fehlermeldungen\nDas Medienlogo-Feld unterstützt jetzt Alexa Play/Pause-Umschaltung und Spotify-Seek-Position-Popup\nNeue Channel-Rolle \"media\" mit Statusanzeige und pageMedia-Fallback hinzugefügt; nur für diese Rolle wurde `asControl` als PageItem-Eigenschaft hinzugefügt\nZustandsauswertung behoben: `getState() === null` wird nicht mehr als fehlender Zustand interpretiert; boolesche Zustände liefern nun `false` statt `null`, wenn der Zustand existiert, aber keinen Wert hat.\nUnterstützung für ioBroker Sonos-Adapter in cardMedia hinzugefügt - Play/Pause/Stop, Lautstärke, Titel/Interpret/Album, Shuffle-, Repeat-Steuerung\nBuzzer-Funktionalität für NSPanel-Geräte hinzugefügt - ermöglicht Tastentöne, dringende Nachrichtenbenachrichtigungen und allgemeine Buzzer-Steuerung über State und sendTo-Schnittstelle\nUnterstützung für ioBroker MPD-Adapter in cardMedia hinzugefügt - Play/Pause/Stop, Lautstärke, Titel/Interpret/Album, Shuffle-, Repeat-Steuerung\nUnterstützung für ioBroker spotify-premium in cardMedia hinzugefügt - Play/Pause/Stop, Lautstärke, Titel/Interpret/Album, Shuffle-, Repeat-Steuerung\nStart deutlich verbessert und Hänger entfernt\nFarbthemen hinzugefügt, bisher aber nicht überall verwendet\nPageItems in cardMedia können mit benutzerdefinierten Farben versehen werden\nJede Karte der Menügruppe kann klassisches oder Pfeil-Scrolling verwenden - Standard ist klassisch (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nBeim klassischen Scrollen gibt es eine halbe Seite oder eine ganze Seite „page“ oder „half“ - Standard ist „page“ - „half“ wird von cardGrid*, cardThermo2 unterstützt",
-                "ru": "Панели теперь можно перезапускать индивидуально, пока адаптер работает; неверные или отсутствующие конфигурации предотвращают перезапуск с четкими сообщениями об ошибках\nПоле логотипа медиа теперь поддерживает переключение Alexa воспроизведение/пауза и всплывающее окно Spotify seek position\nДобавлена новая роль канала \"media\" с отображением состояния и pageMedia fallback; только для этой роли добавлено `asControl` как свойство PageItem\nИсправлена оценка состояния: `getState() === null` больше не интерпретируется как отсутствующее состояние; булевы состояния теперь возвращают `false` вместо `null`, если состояние существует, но не имеет значения.\nДобавлена поддержка адаптера ioBroker Sonos в cardMedia - воспроизведение/пауза/стоп, громкость, заголовок/исполнитель/альбом, управление shuffle, repeat\nДобавлена функция буззера для устройств NSPanel - включает звуки кнопок, уведомления о срочных сообщениях и общий контроль буззера через state и интерфейс sendTo\nДобавлена поддержка адаптера ioBroker MPD в cardMedia - воспроизведение/пауза/стоп, громкость, заголовок/исполнитель/альбом, управление shuffle, repeat\nДобавлена поддержка ioBroker spotify-premium в cardMedia - воспроизведение/пауза/стоп, громкость, заголовок/исполнитель/альбом, управление shuffle, repeat\nЗапуск значительно улучшен и зависания удалены\nДобавлены цветовые темы, но пока не используются везде\nЭлементы страницы в cardMedia могут быть окрашены в пользовательские цвета\nКаждая карта, принадлежащая группе Menu, может использовать классическую или стрелочную прокрутку - по умолчанию классическая (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nПри классической прокрутке есть полстраницы или целая страница «page» или «half» - по умолчанию «page» - «half» поддерживается cardGrid*, cardThermo2",
-                "pt": "Os painéis agora podem ser reiniciados individualmente enquanto o adaptador está em execução; configurações defeituosas ou ausentes impedem o reinício com mensagens de erro claras\nO campo de logotipo de mídia agora suporta o toggle de reprodução/pausa da Alexa e o popup de posição de busca do Spotify\nAdicionado novo papel de canal \"media\" com exibição de status e fallback do pageMedia; apenas para esse papel, adicionado `asControl` como propriedade do PageItem\nAvaliação de estado corrigida: `getState() === null` não é mais interpretado como estado ausente; estados booleanos agora retornam `false` em vez de `null` se o estado existir, mas não tiver valor.\nAdicionado suporte para o adaptador ioBroker Sonos em cardMedia - reprodução/pausa/parada, volume, título/artista/álbum, controles de shuffle, repeat\nFuncionalidade de buzzer adicionada para dispositivos NSPanel - permite sons de botão, notificações de mensagens urgentes e controle geral de buzzer via state e interface sendTo\nAdicionado suporte para o adaptador ioBroker MPD em cardMedia - reprodução/pausa/parada, volume, título/artista/álbum, controles de shuffle, repeat\nAdicionado suporte para ioBroker spotify-premium em cardMedia - reprodução/pausa/parada, volume, título/artista/álbum, controles de shuffle, repeat\nInicialização significativamente melhorada e travamentos removidos\nTemas de cores adicionados, mas ainda não usados em todos os lugares\nOs itens da página no cardMedia podem receber cores personalizadas\nCada cartão pertencente ao grupo Menu pode usar rolagem clássica ou de seta - o padrão é clássico (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nAo rolar classicamente, há meia página ou página inteira “page” ou “half” - o padrão é “page” - “half” é suportado por cardGrid*, cardThermo2",
-                "nl": "Panels kunnen nu individueel opnieuw worden gestart terwijl de adapter draait; foutieve of ontbrekende configuraties voorkomen herstart met duidelijke foutmeldingen\nHet mediologo-veld ondersteunt nu Alexa afspelen/pauze wisselen en Spotify seek position popup\nNieuwe kanaalrol \"media\" toegevoegd met statusweergave en pageMedia fallback; alleen voor deze rol werd `asControl` toegevoegd als PageItem-eigenschap\nStatusbeoordeling opgelost: `getState() === null` wordt niet langer geïnterpreteerd als ontbrekende status; booleaanse statussen geven nu `false` terug in plaats van `null` als de status bestaat maar geen waarde heeft.\nOndersteuning toegevoegd voor ioBroker Sonos-adapter in cardMedia - afspelen/pauze/stop, volume, titel/artiest/album, shuffle-, repeat-besturing\nBuzzerfunctionaliteit toegevoegd voor NSPanel-apparaten - maakt knopgeluiden, urgente berichtmeldingen en algemene buzzerbesturing via state en sendTo-interface mogelijk\nOndersteuning toegevoegd voor ioBroker MPD-adapter in cardMedia - afspelen/pauze/stop, volume, titel/artiest/album, shuffle-, repeat-besturing\nOndersteuning toegevoegd voor ioBroker spotify-premium in cardMedia - afspelen/pauze/stop, volume, titel/artiest/album, shuffle-, repeat-besturing\nOpstarten aanzienlijk verbeterd en vastlopers verwijderd\nKleurenthema's toegevoegd, maar nog niet overal gebruikt\nPagina-items in cardMedia kunnen aangepaste kleuren krijgen\nElke kaart die tot de Menu-groep behoort, kan klassieke of pijlscrolling gebruiken - standaard is klassiek (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nBij klassiek scrollen is er een halve pagina of een hele pagina “page” of “half” - standaard is “page” - “half” wordt ondersteund door cardGrid*, cardThermo2",
-                "fr": "Les panneaux peuvent désormais être redémarrés individuellement pendant que l'adaptateur est en cours d'exécution ; les configurations défectueuses ou manquantes empêchent le redémarrage avec des messages d'erreur clairs\nLe champ du logo média prend désormais en charge le basculement lecture/pause Alexa et la fenêtre contextuelle de position de recherche Spotify\nNouveau rôle de canal \"media\" ajouté avec affichage de l'état et fallback pageMedia ; uniquement pour ce rôle, `asControl` a été ajouté comme propriété PageItem\nÉvaluation de l'état corrigée : `getState() === null` n'est plus interprété comme un état manquant ; les états booléens renvoient désormais `false` au lieu de `null` si l'état existe mais n'a pas de valeur.\nAjout du support pour l'adaptateur ioBroker Sonos dans cardMedia - lecture/pause/arrêt, volume, titre/artiste/album, commandes shuffle, repeat\nFonctionnalité buzzer ajoutée pour les appareils NSPanel - permet les sons de bouton, les notifications de messages urgents et le contrôle général du buzzer via l'état et l'interface sendTo\nAjout du support pour l'adaptateur ioBroker MPD dans cardMedia - lecture/pause/arrêt, volume, titre/artiste/album, commandes shuffle, repeat\nAjout du support pour ioBroker spotify-premium dans cardMedia - lecture/pause/arrêt, volume, titre/artiste/album, commandes shuffle, repeat\nDémarrage considérablement amélioré et blocages supprimés\nThèmes de couleurs ajoutés, mais pas encore utilisés partout\nLes éléments de page sur la cardMedia peuvent recevoir des couleurs personnalisées\nChaque carte appartenant au groupe Menu peut utiliser le défilement classique ou par flèche - par défaut, classique (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nLors du défilement classique, il y a une demi-page ou une page entière “page” ou “half” - par défaut “page” - “half” est pris en charge par cardGrid*, cardThermo2",
-                "it": "I pannelli possono ora essere riavviati individualmente mentre l'adattatore è in esecuzione; configurazioni difettose o mancanti impediscono il riavvio con messaggi di errore chiari\nIl campo logo multimediale ora supporta il toggle riproduzione/pausa Alexa e il popup della posizione di ricerca di Spotify\nAggiunto nuovo ruolo canale \"media\" con visualizzazione dello stato e fallback pageMedia; solo per questo ruolo è stato aggiunto `asControl` come proprietà PageItem\nValutazione dello stato corretta: `getState() === null` non è più interpretato come stato mancante; gli stati booleani ora restituiscono `false` invece di `null` se lo stato esiste ma non ha valore.\nAggiunto supporto per l'adattatore ioBroker Sonos in cardMedia - riproduzione/pausa/arresto, volume, titolo/artista/album, controlli shuffle, repeat\nAggiunta funzionalità buzzer per dispositivi NSPanel - abilita suoni dei pulsanti, notifiche di messaggi urgenti e controllo generale del buzzer tramite stato e interfaccia sendTo\nAggiunto supporto per l'adattatore ioBroker MPD in cardMedia - riproduzione/pausa/arresto, volume, titolo/artista/album, controlli shuffle, repeat\nAggiunto supporto per ioBroker spotify-premium in cardMedia - riproduzione/pausa/arresto, volume, titolo/artista/album, controlli shuffle, repeat\nAvvio notevolmente migliorato e blocchi rimossi\nTemi di colori aggiunti, ma non ancora usati ovunque\nGli elementi della pagina su cardMedia possono avere colori personalizzati\nOgni carta appartenente al gruppo Menu può utilizzare lo scorrimento classico o a freccia - predefinito classico (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nDurante lo scorrimento classico c'è mezza pagina o pagina intera “page” o “half” - predefinito è “page” - “half” è supportato da cardGrid*, cardThermo2",
-                "es": "Los paneles ahora se pueden reiniciar individualmente mientras el adaptador está en ejecución; las configuraciones defectuosas o faltantes evitan el reinicio con mensajes de error claros\nEl campo del logotipo de medios ahora admite el cambio de reproducción/pausa de Alexa y la ventana emergente de posición de búsqueda de Spotify\nNuevo rol de canal \"media\" agregado con visualización de estado y fallback de pageMedia; solo para este rol se agregó `asControl` como propiedad de PageItem\nEvaluación de estado corregida: `getState() === null` ya no se interpreta como estado faltante; los estados booleanos ahora devuelven `false` en lugar de `null` si el estado existe pero no tiene valor.\nSe agregó soporte para el adaptador ioBroker Sonos en cardMedia - reproducción/pausa/detener, volumen, título/artista/álbum, controles shuffle, repeat\nSe agregó funcionalidad de zumbador para dispositivos NSPanel - habilita sonidos de botón, notificaciones de mensajes urgentes y control general del zumbador a través de estado e interfaz sendTo\nSe agregó soporte para el adaptador ioBroker MPD en cardMedia - reproducción/pausa/detener, volumen, título/artista/álbum, controles shuffle, repeat\nSe agregó soporte para ioBroker spotify-premium en cardMedia - reproducción/pausa/detener, volumen, título/artista/álbum, controles shuffle, repeat\nInicio significativamente mejorado y bloqueos eliminados\nTemas de colores añadidos, pero aún no usados en todas partes\nLos elementos de página en cardMedia pueden tener colores personalizados\nCada tarjeta perteneciente al grupo Menu puede usar desplazamiento clásico o de flecha - por defecto es clásico (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nAl desplazarse de forma clásica hay media página o página completa “page” o “half” - por defecto es “page” - “half” es compatible con cardGrid*, cardThermo2",
-                "pl": "Panele można teraz ponownie uruchamiać indywidualnie podczas działania adaptera; błędne lub brakujące konfiguracje uniemożliwiają ponowne uruchomienie z wyraźnymi komunikatami o błędach\nPole logo mediów obsługuje teraz przełączanie Alexa odtwarzanie/pauza i wyskakujące okienko pozycji wyszukiwania Spotify\nDodano nową rolę kanału \"media\" z wyświetlaniem statusu i fallbackiem pageMedia; tylko dla tej roli dodano `asControl` jako właściwość PageItem\nPoprawiono ocenę stanu: `getState() === null` nie jest już interpretowany jako brakujący stan; stany logiczne teraz zwracają `false` zamiast `null`, jeśli stan istnieje, ale nie ma wartości.\nDodano obsługę adaptera ioBroker Sonos w cardMedia - odtwarzanie/pauza/stop, głośność, tytuł/artysta/album, kontrolki shuffle, repeat\nDodano funkcję buzzera dla urządzeń NSPanel - umożliwia dźwięki przycisków, powiadomienia o pilnych wiadomościach i ogólną kontrolę buzzera za pomocą stanu i interfejsu sendTo\nDodano obsługę adaptera ioBroker MPD w cardMedia - odtwarzanie/pauza/stop, głośność, tytuł/artysta/album, kontrolki shuffle, repeat\nDodano obsługę ioBroker spotify-premium w cardMedia - odtwarzanie/pauza/stop, głośność, tytuł/artysta/album, kontrolki shuffle, repeat\nUruchamianie znacznie ulepszone i usunięto zawieszanie się\nDodano motywy kolorów, ale jeszcze nie używane wszędzie\nElementy strony w cardMedia mogą mieć niestandardowe kolory\nKażda karta należąca do grupy Menu może korzystać z klasycznego lub strzałkowego przewijania - domyślnie klasyczne (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nPodczas klasycznego przewijania jest pół strony lub cała strona „page” lub „half” - domyślnie „page” - „half” jest obsługiwane przez cardGrid*, cardThermo2",
-                "uk": "Панелі тепер можна перезапускати індивідуально, поки адаптер працює; неправильні або відсутні конфігурації запобігають перезапуску з чіткими повідомленнями про помилки\nПоле логотипу медіа тепер підтримує перемикання Alexa відтворення/пауза та спливаюче вікно Spotify seek position\nДодано нову роль каналу \"media\" з відображенням статусу та pageMedia fallback; лише для цієї ролі додано `asControl` як властивість PageItem\nВиправлено оцінку стану: `getState() === null` більше не інтерпретується як відсутній стан; логічні стани тепер повертають `false` замість `null`, якщо стан існує, але не має значення.\nДодано підтримку адаптера ioBroker Sonos у cardMedia - відтворення/пауза/стоп, гучність, заголовок/виконавець/альбом, керування shuffle, repeat\nДодано функцію бузера для пристроїв NSPanel - вмикає звуки кнопок, сповіщення про термінові повідомлення та загальне керування бузером через state і інтерфейс sendTo\nДодано підтримку адаптера ioBroker MPD у cardMedia - відтворення/пауза/стоп, гучність, заголовок/виконавець/альбом, керування shuffle, repeat\nДодано підтримку ioBroker spotify-premium у cardMedia - відтворення/пауза/стоп, гучність, заголовок/виконавець/альбом, керування shuffle, repeat\nЗапуск значно покращено та усунено зависання\nДодано колірні теми, але поки що не використовуються всюди\nЕлементи сторінки на cardMedia можна налаштовувати за допомогою користувацьких кольорів\nКожна картка, що належить до групи Menu, може використовувати класичне або стрілкове прокручування - за замовчуванням класичне (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\nПід час класичного прокручування є півсторінки або ціла сторінка “page” або “half” - за замовчуванням “page” - “half” підтримується cardGrid*, cardThermo2",
-                "zh-cn": "面板现在可以在适配器运行时单独重新启动；错误或缺失的配置会阻止重启，并显示清晰的错误消息\n媒体徽标字段现在支持 Alexa 播放/暂停切换和 Spotify 搜索位置弹窗\n新增通道角色 \"media\"，带有状态显示和 pageMedia 回退；仅针对该角色，添加了 `asControl` 作为 PageItem 属性\n修复了状态评估：`getState() === null` 不再被解释为缺少状态；布尔状态如果存在但没有值，现在返回 `false` 而不是 `null`\n在 cardMedia 中添加了对 ioBroker Sonos 适配器的支持 - 播放/暂停/停止、音量、标题/艺术家/专辑、随机播放、重复控制\n为 NSPanel 设备添加了蜂鸣器功能 - 通过状态和 sendTo 接口启用按钮声音、紧急消息通知和通用蜂鸣器控制\n在 cardMedia 中添加了对 ioBroker MPD 适配器的支持 - 播放/暂停/停止、音量、标题/艺术家/专辑、随机播放、重复控制\n在 cardMedia 中添加了对 ioBroker spotify-premium 的支持 - 播放/暂停/停止、音量、标题/艺术家/专辑、随机播放、重复控制\n启动显著改善并消除了卡顿\n新增配色主题，但尚未全面使用\ncardMedia 上的页面项可以设置自定义颜色\n属于菜单组的每张卡片可以使用经典或箭头滚动 - 默认是经典 (cardGrid*, cardEntities, cardSchedule, cardThermo2, cardMedia)\n在经典滚动时，可以是半页或整页 “page” 或 “half” - 默认是 “page” - cardGrid*、cardThermo2 支持 “half”"
-            }
-        },
-        "titleLang": {
-            "en": "NSPanel-Lovelace-UI Next Level",
-            "de": "NSPanel-Lovelace-UI Next Level",
-            "ru": "Пользовательский интерфейс NSPanel Lovelace",
-            "pt": "UI NSPanel Lovelace",
-            "nl": "NSPanel Lovelace-gebruikersinterface",
-            "fr": "Interface utilisateur NSPanel Lovelace",
-            "it": "Interfaccia utente NPanel Lovelace",
-            "es": "Interfaz de usuario de NSPanel Lovelace",
-            "pl": "Interfejs NSPanel Lovelace",
-            "uk": "Інтерфейс користувача NSPanel Lovelace",
-            "zh-cn": "NSPanel Lovelace UI"
-        },
-        "desc": {
-            "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
-            "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Lovelace UI Design.",
-            "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
-            "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
-            "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
-            "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
-            "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
-            "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
-            "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
-            "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
-            "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
-        },
-        "authors": [
-            "ticaki <github@renopoint.de>"
-        ],
-        "keywords": [
-            "NSPanel",
-            "Lovelace",
-            "Sonoff",
-            "Lovelace UI"
-        ],
-        "licenseInformation": {
-            "license": "MIT",
-            "type": "free"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "nspanel-lovelace-ui.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
-        "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
-        "loglevel": "info",
-        "mode": "daemon",
-        "type": "hardware",
-        "compact": true,
-        "connectionType": "local",
-        "dataSource": "push",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=7.0.6"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.6.17",
-                "javascript": ">=8.9.2"
-            }
-        ],
-        "messagebox": true,
-        "tier": 3
+  "common": {
+    "name": "nspanel-lovelace-ui",
+    "version": "0.6.6",
+    "news": {
+      "0.6.6": {
+        "en": "Chart: Added \"NO DATA\" label when chart has no data to display - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nPageItem info: Fixed missing scale property - fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nTemplates: Added Roborock vacuum status mapping template\nPageAlarm: Fixed race conditions on fast adapter restarts (timeout cleanup, unload checks)\nRefactor type definitions",
+        "de": "Diagramm: \"NO DATA\"-Hinweis hinzugefügt, wenn das Diagramm keine Daten anzuzeigen hat – fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nSeitenobjekt Info: Fehlende Skalierungseigenschaft behoben – fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nVorlagen: Roborock-Staubsauger-Statusvorlage hinzugefügt\nPageAlarm: Race Conditions bei schnellen Adapter-Neustarts behoben (Timeout-Bereinigung, Unload-Prüfungen)\nRefactoring der Typdefinitionen",
+        "ru": "Диаграмма: Добавлена метка «НЕ ДАННЫЕ», когда на графике нет данных для отображения - исправления [#471] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nPageItem info: Fixed missing scale property - fixes [#532] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nШаблоны: Добавлен шаблон отображения состояния вакуума Roborock\nPageAlarm: фиксированные условия гонки на быстрых перезапусках адаптера (очистка тайм-аута, проверка разгрузки)\nОпределения типов рефакторов",
+        "pt": "Gráfico: Adicionado rótulo \"NO DATA\" quando o gráfico não tem dados para exibir - correções [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nPageItem info: Corrected missing scale property - fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nModelos: Adicionado modelo de mapeamento de status de vácuo Robolock\nPageAlarm: Condições de corrida fixas no adaptador rápido reinicia (limpeza de tempo, verificações de descarga)\nDefinições do tipo de refator",
+        "nl": "Grafiek: Toegevoegd label \"NO DATA\" wanneer de grafiek geen gegevens te tonen - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nPageItem info: Vaste ontbrekende schaal eigenschap - fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nSjablonen: Toegevoegd Roborock vacuüm status mapping template\nPageAlarm: Vaste racevoorwaarden op snelle adapter herstarten (timeout opruimen, uitladen controles)\nRefactortypedefinities",
+        "fr": "Graphique : Ajout de l'étiquette « NON DONNEES » lorsque le graphique n'a pas de données à afficher - corrections [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nPageItem info: Fixed absent scale property - corrections [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nModèles: Ajout d'un modèle de cartographie de l'état du vide Roborock\nPageAlarm: Conditions de course fixes sur les redémarrages rapides de l'adaptateur (nettoyage du temps écoulé, contrôle du déchargement)\nDéfinition du type de facteur",
+        "it": "Grafico: Aggiunto l'etichetta \"NO DATA\" quando il grafico non ha dati da visualizzare - correzioni [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nPageItem info: Proprietà in scala mancante fissa [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nTemplate: Aggiunto Roborock vuoto stato mapping modello\nPageAlarm: Condizioni di gara fissa su riavviamento rapido dell'adattatore (pulizia di timeout, controlli di scarico)\nDefinizioni di tipo refattore",
+        "es": "Gráfico: Añadida etiqueta \"NO DATA\" cuando el gráfico no tiene datos que mostrar - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nPageItem info: Fixed missing scale property - fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\nPlantillas: Plantilla de asignación de estado de vacío de Roborock\nPageAlarm: Las condiciones de carrera fijas en el adaptador rápido se reinicia (con limpieza de tiempo, cheques de descarga)\nDefiniciones tipo refactor",
+        "pl": "Wykres: Dodano etykietę \"NO DATA\", gdy wykres nie ma danych do wyświetlenia - poprawki [# 471] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 471)\nPageItem info: Fixed missing scale property - fixes [# 532] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 532)\nSzablony: Dodano szablon mapowania stanu podciśnienia Robock\nPageAlarm: Stałe warunki wyścigu przy ponownym uruchomieniu szybkiego adaptera (czyszczenie timeout, kontrola rozładunku)\nDefinicje typu reaktora",
+        "uk": "Графік: Додано тег \"NO DATA\" при діаграмі не має даних для відображення - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nСторінкаItem інформація: Фіксована відсутня вага власності - виправлення [#532] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/products/532)\nШаблони: Додано шаблон вакуумного статусу Roborock\nPageAlarm: Виправлені умови забігу на швидкому перезаряджувачі адаптера (очищення від часу, перевірка вивантаження)\nВизначення типу рефактора",
+        "zh-cn": "图:无数据显示时添加的“NO DATA”标签——修正[#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\n项目信息:固定缺失比例尺财产 -- -- 修复[#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\n模板:添加的Roborock真空状态映射模板\n页面提醒:快速适配器重启的固定赛车条件(超时清理,卸载检查)\n重构类型定义"
+      },
+      "0.6.5": {
+        "en": "HMI: Fix screensaver notification in advanced screensaver mode.\nHMI: Fix cardChart/cardLChart dimension issues; add \"No Data\" label and correct y-axis label positioning.\nCore: Add touch-event blocking (400 ms) to avoid accidental double-clicks during page transitions.\nTypeScript: Remove deprecated `useColor` property from type definitions.\nNote: HMI fixes will be delivered separately via a firmware update and are not tied to this adapter release.",
+        "de": "HMI: Benachrichtigung im erweiterten Bildschirmschoner-Modus behoben.\nHMI: Probleme mit den Abmessungen von cardChart/cardLChart behoben; \"No Data\"-Label hinzugefügt und y-Achsen-Beschriftung korrigiert.\nCore: Touch-Event-Blockierung (400 ms) hinzugefügt, um versehentliche Doppelklicks bei Seitenwechseln zu verhindern.\nTypeScript: Veraltete Eigenschaft `useColor` aus den Typdefinitionen entfernt.\nHinweis: Die HMI-Fixes werden separat per Firmware-Update nachgeliefert und sind nicht an dieses Adapter-Release gebunden.",
+        "ru": "HMI: Исправлено уведомление заставки в расширенном режиме.\nHMI: Исправлены проблемы с размерами cardChart/cardLChart; добавлена метка \"No Data\" и откорректировано положение подписи оси Y.\nCore: Добавлена блокировка сенсорных событий (400 мс) для предотвращения случайных двойных кликов при переходе между страницами.\nTypeScript: Удалено устаревшее свойство `useColor` из определений типов.",
+        "pt": "HMI: Corrigida a notificação do protetor de tela no modo avançado.\nHMI: Corrigidos problemas de dimensões em cardChart/cardLChart; adicionada a etiqueta \"No Data\" e corrigido o posicionamento do rótulo do eixo Y.\nCore: Adicionado bloqueio de eventos de toque (400 ms) para evitar cliques duplos acidentais durante transições de página.\nTypeScript: Removida a propriedade obsoleta `useColor` das definições de tipos.",
+        "nl": "HMI: Hersteld: screensaver-notificatie in de geavanceerde screensaver-modus.\nHMI: Problemen met de afmetingen van cardChart/cardLChart opgelost; \"No Data\" label toegevoegd en y-as label gecorrigeerd.\nCore: Touch-event blokkering (400 ms) toegevoegd om per ongeluk dubbelklikken bij paginaovergangen te voorkomen.\nTypeScript: Verouderde eigenschap `useColor` verwijderd uit de typedefinities.",
+        "fr": "HMI : Correction de la notification de l'écran de veille en mode avancé.\nHMI : Correction des problèmes de dimensions de cardChart/cardLChart ; ajout d'une étiquette \"No Data\" et correction du positionnement du label de l'axe Y.\nCore : Ajout d'un blocage des événements tactiles (400 ms) pour éviter les double-clics accidentels lors des transitions de page.\nTypeScript : Suppression de la propriété obsolète `useColor` des définitions de types.",
+        "it": "HMI: Correzione della notifica dello screensaver in modalità avanzata.\nHMI: Risolti problemi di dimensione di cardChart/cardLChart; aggiunta l'etichetta \"No Data\" e corretto il posizionamento dell'etichetta dell'asse Y.\nCore: Aggiunta la protezione dagli eventi touch (400 ms) per evitare doppi clic accidentali durante le transizioni di pagina.\nTypeScript: Rimossa la proprietà deprecata `useColor` dalle definizioni dei tipi.",
+        "es": "HMI: Corregida la notificación del salvapantallas en el modo avanzado.\nHMI: Corregidos problemas de dimensiones en cardChart/cardLChart; añadida la etiqueta \"No Data\" y corregida la posición de la etiqueta del eje Y.\nCore: Añadido bloqueo de eventos táctiles (400 ms) para evitar clics dobles accidentales durante transiciones de página.\nTypeScript: Eliminada la propiedad obsoleta `useColor` de las definiciones de tipos.",
+        "pl": "HMI: Naprawiono powiadomienie wygaszacza ekranu w trybie zaawansowanym.\nHMI: Naprawiono problemy z wymiarami cardChart/cardLChart; dodano etykietę \"No Data\" i poprawiono pozycjonowanie opisu osi Y.\nCore: Dodano blokadę zdarzeń dotykowych (400 ms) aby zapobiec przypadkowym podwójnym kliknięciom podczas przejść stron.\nTypeScript: Usunięto przestarzałą właściwość `useColor` z definicji typów.",
+        "uk": "HMI: Виправлено повідомлення заставки в розширеному режимі.\nHMI: Виправлено проблеми з розмірами cardChart/cardLChart; додано мітку \"No Data\" і скориговано положення підпису осі Y.\nCore: Додано блокування сенсорних подій (400 мс), щоб уникнути випадкових подвійних клацань під час переходів сторінок.\nTypeScript: Видалено застаріле властивість `useColor` з визначень типів.",
+        "zh-cn": "HMI: 修复了高级屏幕保护模式下的屏幕保护通知。\nHMI: 修复了 cardChart/cardLChart 的尺寸问题；添加了“无数据 (No Data)”标签并修正了 Y 轴标签位置。\nCore: 增加触摸事件阻塞（400 毫秒），以避免页面切换时的意外双击。\nTypeScript: 从类型定义中移除已弃用的 `useColor` 属性。"
+      },
+      "0.6.4": {
+        "en": "use tasmota version from version.json\nAdded disarmed buttons (5–8) to UnlockPage, implemented a responsive two-column layout.\nImproved NavigationAssignmentPanel to show per-panel notices in the lower overview, add a per-item trash icon (hover + mobile two-step confirmation)",
+        "de": "Verwende die Tasmota-Version aus version.json\nEntsperrseite: Tasten (5–8) für 'disarmed' hinzugefügt, zweispaltiges responsives Layout implementiert.\nNavigationAssignmentPanel verbessert: zeigt nun panelbezogene Hinweise in der unteren Übersicht an und fügt jedem Element ein Papierkorb-Symbol hinzu (Hover + zweistufige Bestätigung auf Mobilgeräten).",
+        "ru": "использование tasmota версии из версии. джонсон\nДобавлены обезоруженные кнопки (5-8) в UnlockPage, реализована отзывчивая двухколоночная компоновка.\nУлучшенная навигация Панель для отображения уведомлений на панели в нижнем обзоре, добавьте значок мусора для каждого предмета (подтверждение поверх + мобильное двухэтапное подтверждение)",
+        "pt": "use a versão tasmota da versão. json\nAdicionados botões desarmados (5–8) para DesbloquearPage, implementado um layout de duas colunas responsivo.\nMelhor atribuição de navegação Painel para mostrar avisos por painel na visão geral inferior, adicione um ícone de lixo por item (hover + confirmação móvel de dois passos)",
+        "nl": "gebruik tasmota versie van versie. json\nToegevoegd ontwapende knoppen (5.\nVerbeterde navigatieOpdracht Panel om per paneel berichten te tonen in het onderste overzicht, voeg een per-item prullenbak pictogram (hover + mobiele twee-stap bevestiging)",
+        "fr": "utiliser tasmota version de la version. json\nAjout de boutons désarmés (5–8) à UnlockPage, implémenté une mise en page de deux colonnes réactives.\nAmélioration de la navigation Panneau pour afficher les avis par panneau dans l'aperçu inférieur, ajouter une icône de poubelle par élément (hover + confirmation mobile en deux étapes)",
+        "it": "utilizzare la versione tasmota dalla versione. j\nAggiunti pulsanti disarmati (5–8) per sbloccarePage, implementato un layout reattivo a due colonne.\nMiglioramento dell'Assegnazione di Navigazione Pannello per mostrare avvisi per pannello nella panoramica inferiore, aggiungere un'icona del cestino per-item (hover + conferma mobile a due passi)",
+        "es": "use la versión tasmota de la versión. json\nSe agregaron botones desarmados (5-8) a DesbloquearPage, implementó un diseño sensible de dos columnas.\nMejora de la asignación de navegación Panel para mostrar avisos por panel en la descripción inferior, añadir un icono de basura por tema (confirmación móvil de dos pasos)",
+        "pl": "użyj wersji tasmota z wersji. json\nDodano rozbrojone przyciski (5- 8) do UnlockPage, zaimplementowano układ dwóch kolumn.\nLepsza nawigacja Przydział Panel do wyświetlania powiadomień w dolnym przeglądzie, dodaj ikonę typu per- element śmieci (hover + mobilne potwierdzenie dwuetapowe)",
+        "uk": "tasmota version from version. свінгери\nДодано дискриміновані кнопки (5–8) до UnlockPage, впроваджена чуйна двоколірна верстка.\nПокращити Навігацію Панель, щоб показати помітки про пер-панель в нижній огляді, додати піктограму занурення (понад + мобільний двоступеневе підтвердження)",
+        "zh-cn": "使用版本中的 tasmota 版本。 贾森\n将已解除的按钮(5-8)添加到UnlockPage中,实施了响应的两栏布局.\n改进导航任务 在下方概览中显示每组通知的面板, 添加一个每件垃圾图标( hover + 移动双步确认)"
+      },
+      "0.6.3": {
+        "en": "alarm and approved fixed  - static dp for approve",
+        "de": "alarm und approved verbesesert - statischer dp für approved",
+        "ru": "будильник и утвержденный фиксированный - статический dp для утверждения",
+        "pt": "alarme e aprovado fixo - dp estático para aprovação",
+        "nl": "alarm en goedgekeurde vaste - statische dp voor goedkeuring",
+        "fr": "alarme et approuvé fixe - statique dp pour approbation",
+        "it": "allarme e fisso omologato - dp statico per approvazione",
+        "es": "alarma y aprobado fijo - dp estática para aprobar",
+        "pl": "alarm i zatwierdzone stałe - statyczne dp do zatwierdzenia",
+        "uk": "сигналізація і затверджений фіксований - статичний dp для затвердження",
+        "zh-cn": "提醒和核准的固定-静态 dp 核准"
+      },
+      "0.6.2": {
+        "en": "PageUnlock: Config updated — fixed issue where some settings were not applied correctly.\nIconSelect showed a too short list. Fixed.\nAdmin: Added responsive layout for Admin PageUnlock (mobile devices)",
+        "de": "PageUnlock: Config aktualisiert — Problem behoben, bei dem einige Einstellungen nicht korrekt angewendet wurden.\nIconSelect zeigte eine zu kurze Liste. Behoben.\nAdmin: Ansprechlayout für Admin PageUnlock (mobile Geräte) hinzugefügt",
+        "ru": "PageUnlock: Config updated — исправленная проблема, при которой некоторые настройки не были применены правильно.\nIconSelect показал слишком короткий список. Исправлено.\nAdmin: Добавлен адаптивный макет для Admin PageUnlock (мобильные устройства)",
+        "pt": "Desbloquear página: Config updated — problema fixo onde algumas configurações não foram aplicadas corretamente.\nO IconSelect mostrou uma lista muito curta. Consertado.\nAdmin: Adicionado layout responsivo para Admin PageUnlock (dispositivos móveis)",
+        "nl": "PageUnlock: Configureren van een aangepast probleem waarbij sommige instellingen niet correct werden toegepast.\nIconSelect toonde een te korte lijst. Vast.\nBeheerder: Toegevoegd responsieve lay-out voor Admin PageUnlock (mobiele apparaten)",
+        "fr": "Déverrouillage de la page : Config mis à jour — problème corrigé où certains paramètres n'ont pas été appliqués correctement.\nIconSelect a montré une liste trop courte. Corrigé.\nAdmin: Ajout de la mise en page réactive pour Admin PageUnlock (appareils mobiles)",
+        "it": "PageUnlock: Config aggiornato — problema fisso in cui alcune impostazioni non sono state applicate correttamente.\nIconSelect ha mostrato una lista troppo breve. Risolto.\nAdmin: Aggiunto il layout reattivo per Admin PageUnlock (i dispositivi mobili)",
+        "es": "PageUnlock: Config updated — fixed issue where some settings were not applied properly.\nIconSelect mostró una lista muy corta. Arreglado.\nAdmin: Diseño receptivo añadido para Admin PageUnlock (dispositivos móviles)",
+        "pl": "PageUnlock: Aktualizacja konfiguracji - stałe wydanie, w którym niektóre ustawienia nie zostały prawidłowo zastosowane.\nIconSelect pokazał zbyt krótką listę. Naprawione.\nAdmin: Dodano układ reagujący dla Admin PageUnlock (urządzenia mobilne)",
+        "uk": "СторінкаРозблокування: Налаштуйте оновлений — виправлений номер, де деякі налаштування не були застосовані належним чином.\nІкона Селекція показала занадто короткий список. Фіксований.\nАдміністратор: Додано чуйний макет для Admin PageUnlock (мобільні пристрої)",
+        "zh-cn": "页面解锁 : 配置更新——一些设置应用不当的固定问题.\n图标选择显示列表太短 。 固定着.\n管理员: Admin PageUnlock (移动设备) 添加的响应布局"
+      },
+      "0.6.0": {
+        "en": "Color theme keys documented (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)\nAdmin: Added Unlock/Alarm editor to admin UI (headline, PIN, buttons, setNavi, duplicate-name check) - first admin only config for a page\nAdmin: Added navigation flow editor to admin UI (expert mode must be enabled)\nChart scale: rounded to nearest tens\nPagePower: improved icon selection in admin\nGerman documentation for screensaver notification features `isDismissiblePerEvent` and `dismissibleIDGlobal` added to `doc/de/screensaver.md`",
+        "de": "Farbschema-Schlüssel dokumentiert (`doc/de/colorTheme.md`, englische Version `doc/en/colorTheme.md`)\nAdmin: Unlock/Alarm-Editor zur Admin-Oberfläche hinzugefügt (Überschrift, PIN, Buttons, setNavi, Prüfung auf doppelte Namen) – erste Admin-only-Konfiguration für eine Seite\nAdmin: Navigationsfluss-Editor zur Admin-Oberfläche hinzugefügt (Expertenmodus muss aktiviert sein)\nDiagrammskalierung: auf nächste Zehner gerundet\nPagePower: verbesserte Symbolauswahl in der Admin-Oberfläche\nDeutsche Dokumentation der Screensaver-Benachrichtigungsfunktionen `isDismissiblePerEvent` und `dismissibleIDGlobal` zu `doc/de/screensaver.md` hinzugefügt",
+        "ru": "Задокументированные ключи цветовой темы ('doc/de/colorTheme.md', английская версия 'doc/en/colorTheme.md')\nAdmin: Добавлен редактор Unlock/Alarm для администратора UI (заголовок, PIN-код, кнопки, setNavi, проверка имени дубликата) - первый администратор только конфигурирует страницу\nAdmin: Добавлен редактор навигационного потока для управления пользовательским интерфейсом (должен быть включен экспертный режим)\nШкала диаграммы: округленная до ближайших десятков\nPagePower: улучшенный выбор значков в админ\nНемецкая документация для уведомлений заставки содержит «isDismissiblePerEvent» и «dismissibleIDGlobal», добавленные к «doc/de/screensaver.md»",
+        "pt": "Teclas de tema de cores documentadas (`doc/de/colorTheme.md`, versão em inglês `doc/en/colorTheme.md`)\nAdmin.: Adicionado Unlock/Alarm editor para administrar UI (linha principal, PIN, botões, setNavi, verificação de nome duplicado) - primeiro admin apenas config para uma página\nAdmin: Adicionado editor de fluxo de navegação para administrar UI (modo expert deve ser ativado)\nEscala do gráfico: arredondada às dezenas mais próximas\nPagePower: seleção de ícones melhorada no administrador\nDocumentação alemã para recursos de notificação de screensaver `isDismissiblePerEvent` e `dismissibleIDGlobal` adicionada a `doc/de/screensaver.md`",
+        "nl": "Kleur thema toetsen gedocumenteerd (\nAdmin: Unlock/Alarm editor toegevoegd aan admin UI (headline, PIN, knoppen, setNavi, duplicate-name check) - eerste admin alleen config voor een pagina\nAdmin: Navigatiestroom-editor toegevoegd aan admin UI (expert-modus moet worden ingeschakeld)\nGrafiekschaal: afgerond tot dichtsbijzijnde tientallen\nPagePower: verbeterde pictogram selectie in admin\nDuitse documentatie voor screensaver notificatie features ",
+        "fr": "Clés de thème couleur documentées (`doc/de/colorTheme.md`, version anglaise `doc/en/colorTheme.md`)\nAdmin: Ajout de l'éditeur Unlock/Alarm à l'interface utilisateur d'administration (headline, PIN, boutons, setNavi, duplicata check) - première configuration uniquement pour une page\nAdmin: Ajout de l'éditeur de flux de navigation à l'interface utilisateur admin (le mode expert doit être activé)\nÉchelle du graphique : arrondie aux dizaines les plus proches\nPagePower : sélection d'icônes améliorée dans admin\nLa documentation allemande pour les fonctions de notification screensaver `is DismissiblePerEvent` et `dismissibleIDGlobal` est ajoutée à `doc/de/screensaver.md`",
+        "it": "Tasti a tema a colori documentati (`doc/de/colorTheme.md`, versione inglese `doc/en/colorTheme.md`)\nAdmin: Aggiunta l'editor Sblocca/Allarma per amministrare UI (headline, PIN, pulsanti, setNavi, duplicato-name check) - primo amministratore solo configurazione per una pagina\nAdmin: Aggiunta l'editor di flusso di navigazione per admin UI (modalità esperta deve essere abilitata)\nScala del grafico: arrotondata alle decine più vicine\nPagePower: migliore selezione icona in admin\nDocumentazione tedesca per le funzioni di notifica screensaver `isDismitPerEvent` e `dismissibileIDGlobal` aggiunto a `doc/de/screensaver.md`",
+        "es": "Claves de tema de color documentadas (`doc/de/colorTheme.md`, versión en inglés `doc/en/colorTheme.md`)\nAdmin: Añadido Desbloquear/Alarm editor a admin UI (cabeza, PIN, botones, setNavi, duplicate-name check) - primero admin sólo config for a page\nAdmin: editor de flujo de navegación añadido a admin UI (modo de salida debe ser habilitado)\nEscala de carga: redondeado a los diez más cercanos\nPagePower: mejor selección de iconos en admin\nDocumentación alemana para la notificación de salvapantallas características `isDismissiblePerEvent ' y `dismissibleIDGlobal ' agregado a `doc/de/screensaver.md`",
+        "pl": "Klucze motywu kolorów udokumentowane ('doc / de / colorTheme.md', wersja angielska 'doc / en / colorTheme.md')\nAdmin: Dodano edytor odblokowywania / alarmu do interfejsu administratora (nagłówek, PIN, przyciski, setNavi, duplikat - sprawdzanie nazwy) - pierwszy administrator tylko config dla strony\nAdmin: Dodano edytor przepływu nawigacji do interfejsu administratora (musi być włączony tryb ekspertów)\nSkala wykresu: zaokrąglona do najbliższych dziesiątek\nPagePower: ulepszony wybór ikon w admin\nNiemiecka dokumentacja dotycząca funkcji powiadamiania o wygaszaczu ekranu \"isDismissiblePerEvent\" i \"dimissibleIDGlobal\" dodana do 'doc / de / screensaver.md'",
+        "uk": "Кольорові ключі задокументовані (`doc/de/colorTheme.md`, English version `doc/en/colorTheme.md`)\nАдміністратор: Додано Unlock/Alarm редактор для адміністратора UI (головна лінія, PIN, кнопки, setNavi, дублікати-ім'я check) - перший адміністратор тільки config для сторінки\nАдміністратор: Доданий редактор потоку навігаторів для адміністратора UI (режим розширення повинен бути включений)\nГрафік масштабу: закруглені до найближчих десятків\nPagePower: Покращений вибір ікони в адмін\n`isDismissiblePerEvent` і `dismissibleIDGlobal` додано до `doc/de/screensaver.md`",
+        "zh-cn": "已记录的颜色主题密钥(`doc/de/colorTheme.md',英文版`doc/en/colorTheme.md')\n管理员: 添加到管理员UI( 标题、 PIN、 按钮、 设置Navi、 重复名检查) - 第一个只配置页面的管理员\n管理员: 添加到管理员 UI 的导航流程编辑器( 必须启用专家模式)\n图表比例:四舍五入到最近的几十\nPagePower: 管理员中改进的图标选择\n用于屏幕保护器通知功能的德国文件 \" IsissiblePerEvent \" 和 \" DiissibleID Global \" 添加到 \" doc/de/screensaver.md \" 中"
+      },
+      "0.5.0": {
+        "en": "Admin UI: Reworked/reordered settings layout and improved usability\nAdded screensaver notification system  \nFixed cardThermo2 not switching  \nImplemented hiding of screensaver elements  \nAdjusted Brightsky templates  \nmade script configuration transfer more robust",
+        "de": "Admin UI: Einstellungen-Layout überarbeitet/neu angeordnet und Benutzerfreundlichkeit verbessert\nBildschirmschoner-Benachrichtigungssystem hinzugefügt\nFehler bei cardThermo2 behoben (wurde nicht umgeschaltet)\nAusblenden von Bildschirmschoner-Elementen implementiert\nBrightsky-Vorlagen angepasst\nSkriptkonfigurationsübertragung robuster gemacht",
+        "ru": "Admin UI: переработанный/упорядоченный макет настроек и улучшенное удобство использования\nПроблемы проверки фиксированного хранилища: Обновлена зависимость администратора от 7.6.17, добавлен .commitinfo к .gitignore, обновлен .vscode/settings. json с полными определениями схемы jsonConfig\nДобавлена система уведомлений Screensaver\nФиксированная карта Термо2 не переключается\nРеализованное скрытие элементов заставки\nСкорректированные шаблоны Brightsky\nсделал перенос конфигурации скриптов более надежным",
+        "pt": "UI de administração: layout de configurações retrabalhado/reordenado e usabilidade melhorada\nProblemas no verificador de repositórios fixos: Updated admin dependence to 7.6.17, add .commitinfo to .gitignore, updated .vscode/settings. json com definições completas do esquema jsonConfig\nSistema de notificação de protetor de tela adicionado\nCartão fixo Termo2 sem comutação\nEscondimento implementado de elementos protetores de tela\nModelos Brightsky ajustados\ntornou a transferência de configuração do script mais robusta",
+        "nl": "Beheerder UI: Herwerkte/herschikte instellingen lay-out en verbeterde bruikbaarheid\nProblemen met vaste archiefcontrole: Bijgewerkt admin afhankelijkheid naar 7.6.17, toegevoegd .commitinfo aan .gitignore, bijgewerkt .vscode/instellingen. json met volledige jsonConfig schema definities\nToegevoegd screensaver meldingssysteem\nVaste kaart Thermo2 niet schakelen\nGeïmplementeerd verbergen van screensaver elementen\nAangepaste Brightsky templates\nmade script configuratie overdracht robuuster",
+        "fr": "UI d'administration : Mise en page des paramètres remaniés/réordonnés et meilleure convivialité\nProblèmes de contrôle du dépôt fixe & #160;: Mise à jour de la dépendance admin à 7.6.17, ajout de .commitinfo à .gitignore, mise à jour de .vscode/settings. json avec des définitions complètes du schéma jsonConfig\nAjout du système de notification screensaver\nCarte fixe Thermo2 sans commutation\nMise en œuvre de la dissimulation des éléments de veille d'écran\nModèles Brightsky ajustés\nrendu le transfert de configuration de script plus robuste",
+        "it": "Admin UI: layout delle impostazioni rielaborate / riordinate e usabilità migliorata\nQuestioni di repository fissi: Dipendenza amministrativa aggiornata a 7.6.17, aggiunto .commitinfo a .gitignore, aggiornato .vscode/settings. json con definizioni complete dello schema jsonConfig\nAggiunto sistema di notifica screensaver\nScheda fissa Termo2 non commutazione\nNascondimento attuato di elementi screensaver\nModelli Brightsky regolati\nrende più robusto il trasferimento della configurazione dello script",
+        "es": "Admin UI: Diseño de ajustes reelaborados/reordenados y mayor usabilidad\nProblemas de control de repositorios fijos: Actualizado dependencia de administración a 7.6.17, añadido .commitinfo a .gitignore, actualizado .vscode/settings. json with complete jsonConfig schema definitions\nSistema de notificación de salvapantallas\nTarjeta fija El termo2 no cambia\nEscondite aplicado de elementos de salvapantallas\nPlantillas Brightsky ajustadas\ntransferencia de configuración de script hecho más robusta",
+        "pl": "Interfejs administracyjny: Przerabiany / zmieniany układ ustawień i poprawiona użyteczność\nProblemy ze sprawdzeniem repozytorium: Aktualizacja zależności administratora do 7.6.17, dodano .commitinfo do .gitignore, zaktualizowano .vscode / ustawienia. json z kompletnymi definicjami schematów jsonConfig\nDodano system powiadamiania o wygaszaczu ekranu\nKarta stała Termo2 bez przełączania\nWdrożone ukrywanie elementów wygaszacza ekranu\nDostosowane szablony Brightsky\nuczyniła transfer konfiguracji skryptu bardziej solidnym",
+        "uk": "Admin UI: Перероблено / переадресовано налаштування макета і поліпшення зручності\nВиправлені питання репозиторійної перевірки: Додано .gitignore, оновлений .vscode/settings. json з повним jsonConfig schema визначення\nДодана система сповіщення\nФіксована картка Термо2 не перемикач\nРеалізовано приховування елементів скринерів\nРегульовані яскраві шаблони\nпередача конфігурацій скрипта більш надійний",
+        "zh-cn": "Admin UI:重修/重订设置布局,提高可用性\n固定仓库检查器问题: 更新管理员依赖度为7.6.17,在.gitignore中加入.commitinfo,更新.vscode/设置. 拥有完整的 jsonFig 计划定义的 json\n添加屏幕保护通知系统\n固定卡 热量2 不切换\n屏蔽元素的隐藏\n调整的 Brightsky 模板\n使脚本配置传输更加有力"
+      }
     },
-    "protectedNative": [
-        "mqttPassword",
-        "pageQRssid",
-        "pageQRpwd1",
-        "pageQRpwd2",
-        "pageQRpwd3",
-        "tasmotaAdminPassword",
-        "pw1"
-    ],
-    "encryptedNative": [
-        "mqttPassword",
-        "pageQRssid",
-        "pageQRpwd1",
-        "pageQRpwd2",
-        "pageQRpwd3",
-        "tasmotaAdminPassword",
-        "pw1"
-    ],
-    "native": {
-        "mqttPassword": "",
-        "mqttUsername": "",
-        "mqttIp": "",
-        "mqttPort": 0,
-        "panels": [],
-        "pageQRpwd1": "",
-        "pageQRpwd2": "",
-        "pageQRpwd3": "",
-        "pageQRssid": "",
-        "pw1": "",
-        "tasmotaAdminPassword": "",
-        "useBetaTFT": false,
-        "shutterClosedIsZero": false,
-        "colorStates": [
-            {
-                "colGood": "#00ff00",
-                "colBad": "#ff0000",
-                "colTrue": "#00ff00",
-                "colFalse": "#ff0000",
-                "colActivated": "#ffff00",
-                "colDeactivated": "#808080",
-                "colAttention": "#00ffff",
-                "colInfo": "#ffffff",
-                "colOption1": "#ffff00",
-                "colOption2": "#ffcc00",
-                "colOption3": "#ff0000",
-                "colOption4": "#00ff00",
-                "colOpen": "#ff0000",
-                "colClose": "#00ff00",
-                "colHot": "#ff0000",
-                "colCold": "#0000ff",
-                "colOn": "#00ff00",
-                "colOff": "#ff0000",
-                "colLight": "#ffffff",
-                "colDark": "#808080",
-                "colWarning": "#ffa500",
-                "colSuccess": "#00ff00",
-                "colNeutral": "#808080",
-                "colHighlight": "#00c8ff",
-                "colDisabled": "#404040"
-            }
-        ],
-        "colorNavigation": [
-            {
-                "colNavLeft": "#ffffff",
-                "colNavRight": "#ffffff",
-                "colNavDownLeft": "#ffffff",
-                "colNavDownRight": "#ffffff",
-                "colNavDown": "#ffffff",
-                "colNavHome": "#ffffff",
-                "colNavParent": "#ffffff"
-            }
-        ],
-        "colorWeatherIcon": [
-            {
-                "colSunny": "#ffff00",
-                "colPartlyCloudy": "#999999",
-                "colCloudy": "#555555",
-                "colFog": "#aaaaaa",
-                "colHail": "#d0d0d0",
-                "colLightning": "#ffff33",
-                "colLightningRainy": "#cccc66",
-                "colPouring": "#3333ff",
-                "colRainy": "#6666ff",
-                "colSnowy": "#cccccc",
-                "colSnowyHeavy": "#bbbbbb",
-                "colSnowyRainy": "#9999ff",
-                "colWindy": "#999999",
-                "colTornado": "#ff3232",
-                "colClearNight": "#666666",
-                "colExceptional": "#ff3232"
-            }
-        ],
-        "colorDisplay": [
-            {
-                "colForeground": "#ffffff",
-                "colBackground": "#101010"
-            }
-        ],
-        "colorWeatherForecast": [
-            {
-                "colSolar": "#00ff00",
-                "colTemperature": "#ff0000",
-                "colGust": "#0000ff",
-                "colSunrise": "#ffff00",
-                "colSunset": "#ff9900"
-            }
-        ],
-        "colorScreensaver": [
-            {
-                "colFgTime": "#ffffff",
-                "colFgTimeAmPm": "#ffcc00",
-                "colFgDate": "#c0c0c0",
-                "colFgMain": "#ffffff",
-                "colFgMainAlt": "#ffcc00",
-                "colFgTimeAdd": "#00c8ff",
-                "colFgForecast": "#c0c0c0",
-                "colFgBar": "#c0c0c0"
-            }
-        ],
-        "colorCardMedia": [
-            {
-                "colMediaArtistOn": "#ffff00",
-                "colMediaArtistOff": "#808080",
-                "colMediaTitleOn": "#ffff00",
-                "colMediaTitleOff": "#808080",
-                "colMediaOnOffColor": "#ffffff"
-            }
-        ]
+    "titleLang": {
+      "en": "NSPanel-Lovelace-UI Next Level",
+      "de": "NSPanel-Lovelace-UI Next Level",
+      "ru": "Пользовательский интерфейс NSPanel Lovelace",
+      "pt": "UI NSPanel Lovelace",
+      "nl": "NSPanel Lovelace-gebruikersinterface",
+      "fr": "Interface utilisateur NSPanel Lovelace",
+      "it": "Interfaccia utente NPanel Lovelace",
+      "es": "Interfaz de usuario de NSPanel Lovelace",
+      "pl": "Interfejs NSPanel Lovelace",
+      "uk": "Інтерфейс користувача NSPanel Lovelace",
+      "zh-cn": "NSPanel Lovelace UI"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        },
-        {
-            "_id": "keys",
-            "type": "meta",
-            "common": {
-                "name": "keys",
-                "role": "meta.user"
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
+      "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Lovelace UI Design.",
+      "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
+      "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
+      "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
+      "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
+      "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
+      "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
+      "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
+      "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
+      "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
+    },
+    "authors": [
+      "ticaki <github@renopoint.de>"
+    ],
+    "keywords": [
+      "NSPanel",
+      "Lovelace",
+      "Sonoff",
+      "Lovelace UI"
+    ],
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "nspanel-lovelace-ui.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
+    "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "hardware",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "push",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=7.0.6"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.6.17",
+        "javascript": ">=8.9.2"
+      }
+    ],
+    "messagebox": true,
+    "tier": 3
+  },
+  "protectedNative": [
+    "mqttPassword",
+    "pageQRssid",
+    "pageQRpwd1",
+    "pageQRpwd2",
+    "pageQRpwd3",
+    "tasmotaAdminPassword",
+    "pw1"
+  ],
+  "encryptedNative": [
+    "mqttPassword",
+    "pageQRssid",
+    "pageQRpwd1",
+    "pageQRpwd2",
+    "pageQRpwd3",
+    "tasmotaAdminPassword",
+    "pw1"
+  ],
+  "native": {
+    "mqttPassword": "",
+    "mqttUsername": "",
+    "mqttIp": "",
+    "mqttPort": 0,
+    "panels": [],
+    "pageQRpwd1": "",
+    "pageQRpwd2": "",
+    "pageQRpwd3": "",
+    "pageQRssid": "",
+    "pw1": "",
+    "tasmotaAdminPassword": "",
+    "useBetaTFT": false,
+    "shutterClosedIsZero": false,
+    "colorStates": [
+      {
+        "colGood": "#00ff00",
+        "colBad": "#ff0000",
+        "colTrue": "#00ff00",
+        "colFalse": "#ff0000",
+        "colActivated": "#ffff00",
+        "colDeactivated": "#808080",
+        "colAttention": "#00ffff",
+        "colInfo": "#ffffff",
+        "colOption1": "#ffff00",
+        "colOption2": "#ffcc00",
+        "colOption3": "#ff0000",
+        "colOption4": "#00ff00",
+        "colOpen": "#ff0000",
+        "colClose": "#00ff00",
+        "colHot": "#ff0000",
+        "colCold": "#0000ff",
+        "colOn": "#00ff00",
+        "colOff": "#ff0000",
+        "colLight": "#ffffff",
+        "colDark": "#808080",
+        "colWarning": "#ffa500",
+        "colSuccess": "#00ff00",
+        "colNeutral": "#808080",
+        "colHighlight": "#00c8ff",
+        "colDisabled": "#404040"
+      }
+    ],
+    "colorNavigation": [
+      {
+        "colNavLeft": "#ffffff",
+        "colNavRight": "#ffffff",
+        "colNavDownLeft": "#ffffff",
+        "colNavDownRight": "#ffffff",
+        "colNavDown": "#ffffff",
+        "colNavHome": "#ffffff",
+        "colNavParent": "#ffffff"
+      }
+    ],
+    "colorWeatherIcon": [
+      {
+        "colSunny": "#ffff00",
+        "colPartlyCloudy": "#999999",
+        "colCloudy": "#555555",
+        "colFog": "#aaaaaa",
+        "colHail": "#d0d0d0",
+        "colLightning": "#ffff33",
+        "colLightningRainy": "#cccc66",
+        "colPouring": "#3333ff",
+        "colRainy": "#6666ff",
+        "colSnowy": "#cccccc",
+        "colSnowyHeavy": "#bbbbbb",
+        "colSnowyRainy": "#9999ff",
+        "colWindy": "#999999",
+        "colTornado": "#ff3232",
+        "colClearNight": "#666666",
+        "colExceptional": "#ff3232"
+      }
+    ],
+    "colorDisplay": [
+      {
+        "colForeground": "#ffffff",
+        "colBackground": "#101010"
+      }
+    ],
+    "colorWeatherForecast": [
+      {
+        "colSolar": "#00ff00",
+        "colTemperature": "#ff0000",
+        "colGust": "#0000ff",
+        "colSunrise": "#ffff00",
+        "colSunset": "#ff9900"
+      }
+    ],
+    "colorScreensaver": [
+      {
+        "colFgTime": "#ffffff",
+        "colFgTimeAmPm": "#ffcc00",
+        "colFgDate": "#c0c0c0",
+        "colFgMain": "#ffffff",
+        "colFgMainAlt": "#ffcc00",
+        "colFgTimeAdd": "#00c8ff",
+        "colFgForecast": "#c0c0c0",
+        "colFgBar": "#c0c0c0"
+      }
+    ],
+    "colorCardMedia": [
+      {
+        "colMediaArtistOn": "#ffff00",
+        "colMediaArtistOff": "#808080",
+        "colMediaTitleOn": "#ffff00",
+        "colMediaTitleOff": "#808080",
+        "colMediaOnOffColor": "#ffffff"
+      }
     ]
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "keys",
+      "type": "meta",
+      "common": {
+        "name": "keys",
+        "role": "meta.user"
+      },
+      "native": {}
+    }
+  ]
 }
