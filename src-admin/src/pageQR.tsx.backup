@@ -236,7 +236,7 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                 card: 'cardQR',
                 uniqueName: name,
                 headline: name,
-                SSIDURLTEL: '',
+                ssidUrlTel: '',
                 wlanhidden: false,
                 pwdhidden: false,
                 setState: '',
@@ -627,11 +627,11 @@ class QRPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, QRPageS
                                                                 return this.getText('qr_content');
                                                         }
                                                     })()}
-                                                    value={ent.SSIDURLTEL ?? ''}
+                                                    value={ent.ssidUrlTel ?? ''}
                                                     onChange={e => {
                                                         const v = e.target.value;
                                                         const updated = entries.map(it =>
-                                                            it.uniqueName === sel ? { ...it, SSIDURLTEL: v } : it,
+                                                            it.uniqueName === sel ? { ...it, ssidUrlTel: v } : it,
                                                         );
                                                         this.setState({ entries: updated } as QRPageState);
                                                         void this.onChange(this.props.attr!, updated);

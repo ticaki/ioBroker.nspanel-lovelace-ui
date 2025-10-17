@@ -199,7 +199,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 card: 'cardQR',
                 uniqueName: name,
                 headline: name,
-                SSIDURLTEL: '',
+                ssidUrlTel: '',
                 wlanhidden: false,
                 pwdhidden: false,
                 setState: '',

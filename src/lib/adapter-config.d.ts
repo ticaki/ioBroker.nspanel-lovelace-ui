@@ -263,7 +263,7 @@ declare global {
                 card: 'cardQR';
                 selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
                 headline: string;
-                SSIDURLTEL: string;
+                ssidUrlTel: string;
                 wlanhidden: boolean;
                 wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
                 qrPass?: string;

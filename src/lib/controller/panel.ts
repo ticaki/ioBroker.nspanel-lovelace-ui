@@ -236,8 +236,8 @@ export class Panel extends BaseClass {
 
         this.statesControler = options.controller.statesControler;
 
-        // Process unlock pages and build navigation
-        this.processAdminPages(options);
+        // Process admin pages and build navigation
+        this.processentrys(options);
 
         options.pages = options.pages.filter(b => {
             if (
@@ -2213,7 +2213,7 @@ export class Panel extends BaseClass {
      *
      * @param options - Panel configuration partial containing pages and navigation arrays
      */
-    private processAdminPages(options: panelConfigPartial): void {
+    private processentrys(options: panelConfigPartial): void {
         const entries: (UnlockEntry | QREntry)[] = this.adapter.config.pageConfig || [];
 
         for (const entry of entries) {
@@ -2291,181 +2291,26 @@ export class Panel extends BaseClass {
                 }
 
                 case 'cardQR': {
-                    // QR card configuration
-                    const qrIndex = this.adapter.config.pageConfig.findIndex(
-                        (qr: any) => qr.uniqueName === entry.uniqueName,
-                    );
-                    if (qrIndex === -1) {
-                        this.log.warn(`QR config not found for page '${entry.uniqueName}', skipping!`);
-                        continue;
-                    }
-
-                    const qrConfig = entry as QREntry;
-                    let text1 = '',
-                        text = '',
-                        icon1 = '',
-                        icon2 = '';
-
-                    switch (qrConfig.selType) {
-                        case 0: // FREE
-                            text1 = qrConfig.SSIDURLTEL;
-                            text = '';
-                            break;
-                        case 1: // WIFI
-                            text1 = qrConfig.SSIDURLTEL;
-                            text = 'SSID';
-                            icon1 = 'wifi';
-                            icon2 = 'key-wireless';
-                            break;
-                        case 2: // URL
-                            text1 = qrConfig.SSIDURLTEL;
-                            text = 'URL / Website';
-                            icon1 = 'web';
-                            icon2 = '';
-                            break;
-                        case 3: // Telephone
-                            text1 = qrConfig.SSIDURLTEL;
-                            text = 'Telephone';
-                            icon1 = 'phone';
-                            icon2 = '';
-                            break;
-                        default:
-                            break;
-                    }
-
                     newPage = {
-                        uniqueID: qrConfig.uniqueName,
-                        hidden: !!qrConfig.hidden,
-                        alwaysOn: qrConfig.alwaysOn ? 'always' : 'none',
-                        template: undefined,
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn ? 'always' : 'none',
                         dpInit: '',
                         config: {
                             card: 'cardQR',
-                            index: qrIndex,
                             data: {
-                                headline: { type: 'const', constVal: qrConfig.headline || '' },
+                                headline: { type: 'const', constVal: entry.headline || 'Page QR' },
+                                selType: { type: 'const', constVal: entry.selType || 0 },
+                                ssidUrlTel: { type: 'const', constVal: entry.ssidUrlTel || '' },
+                                wlantype: { type: 'const', constVal: entry.wlantype || 'WPA' },
+                                wlanhidden: { type: 'const', constVal: !!entry.wlanhidden || false },
+                                password: { type: 'const', constVal: entry.qrPass || '' },
+                                pwdhidden: { type: 'const', constVal: !!entry.pwdhidden || false },
+                                setState: entry.setState ? { type: 'triggered', dp: entry.setState } : undefined,
                             },
                         },
                         pageItems: [],
                     };
-
-                    // typescript doesn't like push on empty array with strict settings
-                    newPage.pageItems = [];
-                    // First page item - SSID/URL/Tel display
-                    newPage.pageItems.push({
-                        type: 'text',
-                        dpInit: '',
-                        role: 'button',
-                        data: {
-                            icon: {
-                                true: {
-                                    value: { type: 'const', constVal: icon1 },
-                                    color: { type: 'const', constVal: Color.on },
-                                },
-                                false: {
-                                    value: { type: 'const', constVal: icon1 },
-                                    color: { type: 'const', constVal: Color.off },
-                                },
-                                scale: undefined,
-                                maxBri: undefined,
-                                minBri: undefined,
-                            },
-                            text1: {
-                                true: { type: 'const', constVal: text1 },
-                            },
-                            text: {
-                                true: { type: 'const', constVal: text },
-                            },
-                            entity1: qrConfig.setState
-                                ? {
-                                      value: {
-                                          type: 'triggered',
-                                          dp: qrConfig.setState,
-                                      },
-                                  }
-                                : undefined,
-                        },
-                    });
-
-                    // Second page item - Password/Button or additional text
-                    let text1Second = '';
-                    let textSecond = '';
-
-                    switch (qrConfig.selType) {
-                        case 1: // WIFI - show password
-                            text1Second = qrConfig.qrPass ? qrConfig.qrPass : '';
-                            textSecond = 'Password';
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (qrConfig.setState) {
-                        // Button variant with state
-                        newPage.pageItems.push({
-                            type: 'button',
-                            dpInit: '',
-                            role: 'button',
-                            data: {
-                                icon: {
-                                    true: {
-                                        value: { type: 'const', constVal: 'wifi' },
-                                        color: { type: 'const', constVal: Color.Green },
-                                    },
-                                    false: {
-                                        value: { type: 'const', constVal: 'wifi-off' },
-                                        color: { type: 'const', constVal: Color.off },
-                                    },
-                                    scale: undefined,
-                                    maxBri: undefined,
-                                    minBri: undefined,
-                                },
-                                text1: {
-                                    true: { type: 'const', constVal: text1Second },
-                                },
-                                text: {
-                                    true: { type: 'const', constVal: 'WlanOn' },
-                                    false: { type: 'const', constVal: 'WlanOff' },
-                                },
-                                entity1: {
-                                    value: {
-                                        type: 'triggered',
-                                        dp: qrConfig.setState,
-                                    },
-                                },
-                            },
-                        });
-                    } else {
-                        // Text variant without state
-                        newPage.pageItems.push({
-                            type: 'text',
-                            dpInit: '',
-                            role: 'button',
-                            data: {
-                                icon: {
-                                    true: {
-                                        value: { type: 'const', constVal: icon2 },
-                                        color: { type: 'const', constVal: Color.on },
-                                    },
-                                    false: {
-                                        value: { type: 'const', constVal: icon2 },
-                                        color: { type: 'const', constVal: Color.off },
-                                    },
-                                    scale: undefined,
-                                    maxBri: undefined,
-                                    minBri: undefined,
-                                },
-                                text1: {
-                                    true: { type: 'const', constVal: text1Second },
-                                },
-                                text: {
-                                    true: { type: 'const', constVal: textSecond },
-                                },
-                                entity1: undefined,
-                            },
-                        });
-                    }
-
                     break;
                 }
                 default: {

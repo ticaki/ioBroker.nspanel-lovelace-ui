@@ -387,17 +387,16 @@ export type cardAlarmDataItems = {
 
 type PageQRBaseConfig = {
     headline: string;
-    entity1?: string;
-    SSIDURLTEL?: string;
+    ssidUrlTel?: string;
     selType?: number;
     wlantype?: string;
     wlanhidden?: boolean;
     password?: string;
     pwdhidden?: boolean;
+    setState?: string;
 };
 export type cardQRDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardQR'>;
-    index: number;
     data: ChangeTypeOfKeys<PageQRBaseConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardQRDataItems = {

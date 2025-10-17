@@ -82,7 +82,7 @@ export interface PanelListEntry {
 
 // Shared types for admin UI (typo: file name uses 'Shard')
 export type UnlockEntry = {
-    card: Extract<AdminCardTypes, 'cardAlarm' | 'cardQR'>; // Supported card types - will be extended
+    card: Extract<AdminCardTypes, 'cardAlarm'>; // Supported card types - will be extended
     alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
     headline: string;
     button1: string;
@@ -133,7 +133,7 @@ export type QREntry = {
     card: Extract<AdminCardTypes, 'cardQR'>;
     selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
     headline: string;
-    SSIDURLTEL: string;
+    ssidUrlTel: string;
     wlanhidden: boolean;
     wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
     qrPass?: string;

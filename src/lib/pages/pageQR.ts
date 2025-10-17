@@ -1,10 +1,11 @@
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
+import { Color } from '../const/Color';
+import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import type * as pages from '../types/pages';
-import * as convertColorScaleBest from '../types/function-and-const';
 import type { IncomingEvent } from '../types/types';
-import type { QREntry } from '../types/adminShareConfig';
+import * as globals from '../types/function-and-const';
 
 const PageQRMessageDefault: pages.PageQRMessage = {
     event: 'entityUpd',
@@ -25,29 +26,24 @@ const PageQRMessageDefault: pages.PageQRMessage = {
     optionalValue2: '~', //optionalvalue2
 };
 
-/**
- * untested
- */
 export class PageQR extends Page {
-    items: pages.cardQRDataItems | undefined;
-    index: number = 0;
+    items: pages.PageBase['items'];
 
     constructor(config: PageInterface, options: pages.PageBase) {
-        if (config.card !== 'cardQR') {
-            return;
-        }
         super(config, options);
         if (options.config && options.config.card == 'cardQR') {
             this.config = options.config;
         } else {
             throw new Error('Missing config!');
         }
-        this.index = this.config.index;
         this.minUpdateInterval = 1000;
     }
 
     async init(): Promise<void> {
         const config = structuredClone(this.config);
+        if (!(config?.card === 'cardQR' && config.data)) {
+            throw new Error('PageQR: invalid configuration');
+        }
         // search states for mode auto
         const tempConfig: Partial<pages.cardQRDataItemOptions> =
             this.enums || this.dpInit
@@ -59,10 +55,139 @@ export class PageQR extends Page {
             tempConfig,
             this,
         );
-        if (tempItem) {
-            tempItem.card = 'cardQR';
-        }
+
         this.items = tempItem as pages.cardQRDataItems;
+        this.items.card = 'cardQR';
+        await this.items.data.setState?.delete();
+        delete this.items.data.setState;
+
+        const selType = (await this.items.data.selType?.getNumber()) ?? 0;
+        const ssidurltel = (await this.items.data.ssidUrlTel?.getString()) ?? '';
+        const password = (await this.items.data.password?.getString()) ?? '';
+
+        let text1 = '';
+        let text = '';
+        let icon1 = '';
+        let icon2 = '';
+        switch (selType) {
+            case 0: // FREE
+                text1 = ssidurltel;
+                text = '';
+                icon1 = Icons.GetIcon('qrcode-scan');
+                icon2 = '';
+                break;
+            case 1: // WIFI
+                text1 = ssidurltel;
+                text = 'SSID';
+                icon1 = Icons.GetIcon('wifi');
+                icon2 = Icons.GetIcon('key-wireless');
+                break;
+            case 2: // URL
+                text1 = ssidurltel;
+                text = 'URL / Website';
+                icon1 = Icons.GetIcon('web');
+                icon2 = '';
+                break;
+            case 3: // Telephone
+                text1 = ssidurltel;
+                text = 'Telephone';
+                icon1 = Icons.GetIcon('phone');
+                icon2 = '';
+                break;
+            default:
+                break;
+        }
+        this.pageItemConfig = [];
+        this.pageItemConfig.push({
+            type: 'text',
+            role: 'button',
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: icon1 },
+                        color: { type: 'const', constVal: Color.on },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: icon1 },
+                        color: { type: 'const', constVal: Color.off },
+                    },
+                },
+                text1: {
+                    true: { type: 'const', constVal: text1 },
+                },
+                text: {
+                    true: { type: 'const', constVal: text },
+                },
+                entity1: this.items.data.setState
+                    ? {
+                          value: config.data?.setState,
+                      }
+                    : undefined,
+            },
+        });
+        let text1Second = '';
+        let textSecond = '';
+
+        if (selType == 1) {
+            // WIFI - show password
+            text1Second = password;
+            textSecond = 'Password';
+        }
+
+        if (this.items.data.setState) {
+            // Button variant with state
+            this.pageItemConfig.push({
+                type: 'button',
+                role: 'button',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'wifi' },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'wifi-off' },
+                            color: { type: 'const', constVal: Color.off },
+                        },
+                    },
+                    text1: {
+                        true: { type: 'const', constVal: text1Second },
+                    },
+                    text: {
+                        true: { type: 'const', constVal: 'WlanOn' },
+                        false: { type: 'const', constVal: 'WlanOff' },
+                    },
+                    entity1: {
+                        value: config.data?.setState,
+                    },
+                },
+            });
+        } else {
+            // Text variant without state
+            this.pageItemConfig.push({
+                type: 'text',
+                role: 'button',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: icon2 },
+                            color: { type: 'const', constVal: Color.on },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: icon2 },
+                            color: { type: 'const', constVal: Color.off },
+                        },
+                    },
+                    text1: {
+                        true: { type: 'const', constVal: text1Second },
+                    },
+                    text: {
+                        true: { type: 'const', constVal: textSecond },
+                    },
+                    entity1: undefined,
+                },
+            });
+        }
         await super.init();
     }
 
@@ -75,37 +200,44 @@ export class PageQR extends Page {
             return;
         }
         const message: Partial<pages.PageQRMessage> = {};
-        const config = this.adapter.config.pageConfig?.[this.index] as QREntry | undefined;
-        if (this.items && config != null && config.card === 'cardQR') {
+
+        if (this.items && this.items.card === 'cardQR') {
             const items = this.items;
 
             message.headline = this.library.getTranslation(
-                (items.data.headline && (await items.data.headline.getString())) ?? config.headline ?? '',
+                (items.data.headline && (await items.data.headline.getString())) ?? 'QR Code Page',
             );
             message.navigation = this.getNavigation();
 
-            switch (config.selType) {
+            const selType = (await items.data.selType?.getNumber()) || 0;
+            const ssidurltel = (await items.data.ssidUrlTel?.getString()) || '';
+            const password = (await items.data.password?.getString()) || '';
+            const pwdhidden = (await items.data.pwdhidden?.getBoolean()) || false;
+            const wlantype = (await items.data.wlantype?.getString()) || 'WPA';
+            const wlanhidden = (await items.data.wlanhidden?.getBoolean()) || false;
+
+            switch (selType) {
                 case 0:
                     this.log.debug(`qrType = FREE`);
-                    message.textQR = config.SSIDURLTEL;
+                    message.textQR = ssidurltel;
                     message.optionalValue1 = '';
                     break;
                 case 1: {
                     this.log.debug(`qrType = wifi`);
-                    const pass = config.qrPass || '';
-                    message.textQR = `WIFI:T:${config.wlantype};S:${config.SSIDURLTEL};P:${pass};${config.wlanhidden ? `H:${config.wlanhidden}` : `H:`};`;
-                    message.optionalValue1 = config.SSIDURLTEL;
+                    const pass = password;
+                    message.textQR = `WIFI:T:${wlantype};S:${ssidurltel};P:${pass};${wlanhidden ? `H:${wlanhidden}` : `H:`};`;
+                    message.optionalValue1 = ssidurltel;
                     break;
                 }
                 case 2:
                     this.log.debug(`qrType = url`);
-                    message.textQR = `URL:${config.SSIDURLTEL}`;
-                    message.optionalValue1 = config.SSIDURLTEL;
+                    message.textQR = `URL:${ssidurltel}`;
+                    message.optionalValue1 = ssidurltel;
                     break;
                 case 3:
                     this.log.debug(`qrType = Telephone`);
-                    message.textQR = `TEL:${config.SSIDURLTEL}`;
-                    message.optionalValue1 = config.SSIDURLTEL;
+                    message.textQR = `TEL:${ssidurltel}`;
+                    message.optionalValue1 = ssidurltel;
                     break;
                 default:
                     this.log.debug(`qrType = none`);
@@ -138,7 +270,7 @@ export class PageQR extends Page {
                                 message.internalName2 = arr[1];
                                 message.iconId2 = arr[2];
                                 message.iconColor2 = arr[3];
-                                message.optionalValue2 = arr[0] == 'button' ? arr[5] : config.pwdhidden ? '' : arr[5];
+                                message.optionalValue2 = arr[0] == 'button' ? arr[5] : pwdhidden ? '' : arr[5];
                                 break;
                             default:
                                 break;
@@ -196,17 +328,14 @@ export class PageQR extends Page {
             return;
         }
         this.log.debug(`action: ${button}, value: ${value}`);
-        if (convertColorScaleBest.isQRButtonEvent(button)) {
-            // @ts-expect-error du solltest das nicht löschen aus der adapter config wegen späterer konvertierung
-            if (this.adapter.config.pageQRdata[this.index]) {
-                if (
-                    this.pageItems &&
-                    this.pageItems[_event.id as any] &&
-                    this.pageItems[_event.id as any]!.config &&
-                    this.pageItems[_event.id as any]!.config!.type == 'button'
-                ) {
-                    await this.pageItems[_event.id as any]!.onCommand('switch', value);
-                }
+        if (globals.isQRButtonEvent(button)) {
+            if (
+                this.pageItems &&
+                this.pageItems[_event.id as any] &&
+                this.pageItems[_event.id as any]!.config &&
+                this.pageItems[_event.id as any]!.config!.type == 'button'
+            ) {
+                await this.pageItems[_event.id as any]!.onCommand('switch', value);
             }
         }
     }

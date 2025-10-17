@@ -152,9 +152,9 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                                 return this.getText('qr_content');
                         }
                     })()}
-                    value={entry.SSIDURLTEL ?? ''}
+                    value={entry.ssidUrlTel ?? ''}
                     onChange={e => {
-                        this.handleFieldChange('SSIDURLTEL', e.target.value);
+                        this.handleFieldChange('ssidUrlTel', e.target.value);
                     }}
                     InputProps={{
                         sx: { backgroundColor: 'transparent', px: 1 },
