@@ -55,6 +55,8 @@ export class PageChart extends Page {
         const message: Partial<pages.PageChartMessage> = {};
         message.navigation = this.getNavigation();
         message.headline = `Error`;
+        message.ticks = ['~'];
+        message.value = '~';
 
         if (this.checkState) {
             if (this.items && this.adminConfig != null) {
@@ -197,14 +199,16 @@ export class PageChart extends Page {
     }
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
-        try {
-            if (val) {
-                // Neu: bei Sichtbarkeit immer neu prüfen
-                this.checkState = false; // Standardmäßig auf false setzen
-                if (!this.adminConfig) {
-                    this.log.warn('AdminConfig is not set, cannot check states');
-                    this.checkState = false;
-                } else {
+        // breche laufenden Timer immer ab wenn sich die Sichtbarkeit ändert
+        if (val) {
+            // Neu: bei Sichtbarkeit immer neu prüfen
+            this.checkState = false; // Standardmäßig auf false setzen
+            if (!this.adminConfig) {
+                this.log.warn('AdminConfig is not set, cannot check states');
+                this.checkState = false;
+            } else {
+                // try-catch blocks klein halten - die fangen auch alle Vertipper ab und suchen ist dann lustig
+                try {
                     const cfg: any = this.adminConfig;
                     const ds = cfg.selInstanceDataSource;
 
@@ -279,11 +283,11 @@ export class PageChart extends Page {
                         this.log.error('Unknown selInstanceDataSource, skipping specific checks');
                         this.checkState = false;
                     }
+                } catch (error) {
+                    this.log.error(`Error onVisibilityChange: ${error as string}`);
                 }
             }
-        } catch (error) {
-            this.log.error(`Error onVisibilityChange: ${error as string}`);
-        } finally {
+            // ich glaube nicht das du updaten willst, wenn das unsichtbar wird, auch wenn es am anfang von this.update() abgefragt wird
             await this.update();
         }
     }
