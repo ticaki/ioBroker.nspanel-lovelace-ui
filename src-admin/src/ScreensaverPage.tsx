@@ -593,7 +593,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
                             <TextField
                                 fullWidth
-                                label="Select Object ID (Dialog)"
+                                label="Select Object ID (custom)"
                                 value={this.state.selectedObjectId || ''}
                                 onChange={e => {
                                     this.setState({ selectedObjectId: e.target.value });
