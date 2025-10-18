@@ -346,8 +346,8 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 1,
-                        minHeight: 0,
-                        overflow: 'hidden',
+                        minHeight: 100,
+                        overflow: 'auto',
                     }}
                 >
                     {/* Screensaver pages header */}
@@ -430,7 +430,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                     backgroundColor: 'transparent',
                                     flex: 1,
                                     minHeight: '50px',
-                                    maxHeight: '200px',
+                                    maxHeight: '100px',
                                 }}
                                 elevation={1}
                             >
@@ -485,7 +485,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     <Box
                         sx={{
                             flex: 1,
-                            overflow: 'auto',
+                            //overflow: 'auto',
                             minHeight: 0,
                         }}
                     >
@@ -589,25 +589,25 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             </a>
                         </Box>
 
-                        {/* Test 1: SelectID Dialog with filterFunc as real function */}
-                        <Box sx={{ mb: 2 }}>
-                            <Typography
-                                variant="caption"
-                                sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
-                            >
-                                Test 1: SelectID Dialog (filterFunc = real function)
-                            </Typography>
+                        {/* Test 1: SelectID Dialog with filterFunc Zum rumkopieren */}
+                        <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
                             <TextField
                                 fullWidth
                                 label="Select Object ID (Dialog)"
                                 value={this.state.selectedObjectId || ''}
-                                onClick={() => {
-                                    this.setState({ showSelectDialog: true });
+                                onChange={e => {
+                                    this.setState({ selectedObjectId: e.target.value });
                                 }}
-                                InputProps={{
-                                    readOnly: true,
-                                }}
+                                variant="standard"
                             />
+                            <Button
+                                variant="outlined"
+                                onClick={() => this.setState({ showSelectDialog: true })}
+                                sx={{ minWidth: 48 }}
+                            >
+                                ...
+                            </Button>
+
                             {this.state.showSelectDialog && (
                                 <SelectID
                                     socket={this.props.oContext.socket}
@@ -641,7 +641,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         <Box sx={{ mb: 2 }}>
                             <Typography
                                 variant="caption"
-                                sx={{ display: 'block', mb: 1, color: 'text.secondary' }}
+                                sx={{ display: 'flex', mb: 1, color: 'text.secondary' }}
                             >
                                 Test 2: JsonConfigComponent (filterFunc = string compiled with new Function)
                             </Typography>
