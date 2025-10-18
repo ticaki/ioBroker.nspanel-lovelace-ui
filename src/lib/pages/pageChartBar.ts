@@ -68,6 +68,7 @@ export class PageChartBar extends PageChart {
 
                             const stepXAchsis = rangeHours / maxXAxisLabels;
 
+                            valuesChart = '';
                             for (let i = 0; i < rangeHours; i++) {
                                 const deltaHour = rangeHours - i;
                                 const targetDate = new Date(Date.now() - deltaHour * 3600 * 1000);

@@ -72,6 +72,7 @@ class PageChartBar extends import_pageChart.PageChart {
             if (dbDaten && Array.isArray(dbDaten) && dbDaten.length > 0) {
               this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
               const stepXAchsis = rangeHours / maxXAxisLabels;
+              valuesChart = "";
               for (let i = 0; i < rangeHours; i++) {
                 const deltaHour = rangeHours - i;
                 const targetDate = new Date(Date.now() - deltaHour * 3600 * 1e3);
