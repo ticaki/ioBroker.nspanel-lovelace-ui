@@ -638,16 +638,10 @@ async function configuration (): Promise<void> {
         // ------ DE: Ende der Screensaver Einstellungen --------------------
         // ------ EN: End of screensaver settings ---------------------------
 
-        //-------DE: Anfang Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
-        //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
         // DE: Konfiguration des linken Schalters des NSPanels
         // EN: Configuration of the left switch of the NSPanel
-        buttonLeft: {
-            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'switch', 'set' - Wenn nicht definiert --> mode: null
-            // EN: Possible values if Rule2 defined: 'page', 'switch', 'set' - If not defined --> mode: null
-            mode: 'page',
-            // DE: Zielpage - Verwendet wenn mode = page
-            // EN: Target page - Used if mode = page
+        buttonLeft: {         
+            mode: 'page',   
             page: 'main',
         },
 
@@ -658,13 +652,6 @@ async function configuration (): Promise<void> {
             page: '0_userdata.0.example',
             
         }*/,
-
-        //--------- DE: Ende - Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
-        //--------- EN: End - settings for hardware button if they are used in software (Rule2) ------------------------------
-
-        // DE: WICHTIG !! Parameter nicht ändern  WICHTIG!!
-        // EN: IMPORTANT !! Do not change parameters IMPORTANT!!
-
     };
 
 
@@ -1447,8 +1434,6 @@ declare namespace ScriptConfig {
             mode: 'page';
             /**
              * The page to navigate to.
-             *
-             * @optional
              */
             page?: string;
         }
