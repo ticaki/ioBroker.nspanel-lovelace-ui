@@ -57,19 +57,19 @@ const PageAlarmMessageDefault = {
 };
 const alarmStates = ["disarmed", "armed", "arming", "pending", "triggered"];
 class PageAlarm extends import_Page.Page {
-  step = 1;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
   status = "armed";
   useStates = true;
   alarmType = "alarm";
+  pathToStates = "";
   items;
   approveId = "";
+  statusState = "";
+  isGlobal = false;
+  updatePanelTimeout = null;
   async setMode(m) {
     if (this.useStates) {
       await this.library.writedp(
-        `panels.${this.basePanel.name}.alarm.${this.name}.mode`,
+        `${this.pathToStates}.mode`,
         m,
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
       );
@@ -86,7 +86,7 @@ class PageAlarm extends import_Page.Page {
    */
   async getStatus() {
     if (this.useStates) {
-      const state = this.library.readdb(`panels.${this.basePanel.name}.alarm.${this.name}.status`);
+      const state = this.library.readdb(`${this.pathToStates}.status`);
       if (state) {
         if (typeof state.val === "number") {
           this.status = alarmStates[state.val];
@@ -105,22 +105,38 @@ class PageAlarm extends import_Page.Page {
     this.status = value;
     if (this.useStates) {
       await this.library.writedp(
-        `panels.${this.basePanel.name}.alarm.${this.name}.status`,
+        `${this.pathToStates}.status`,
         alarmStates.indexOf(this.status),
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
       );
     }
+    if (this.isGlobal) {
+      await this.basePanel.controller.setGlobalAlarmStatus(this.name, this.status);
+    }
+  }
+  async setStatusGlobal(value) {
+    this.status = value;
+    this.delayUpdate();
   }
   pin = "0";
   failCount = 0;
+  pinFailTimeout = null;
   constructor(config, options) {
+    var _a, _b;
     super(config, options);
     if (options.config && options.config.card == "cardAlarm") {
       this.config = options.config;
     }
+    const data = (_a = this.config) == null ? void 0 : _a.data;
+    this.pathToStates = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}`, false, false);
+    if (((_b = data == null ? void 0 : data.global) == null ? void 0 : _b.type) === "const" && !!data.global.constVal) {
+      this.isGlobal = true;
+      this.pathToStates = this.library.cleandp(`alarm.${this.name}`, false, false);
+    }
     this.minUpdateInterval = 500;
     this.neverDeactivateTrigger = true;
-    this.approveId = this.library.cleandp(`panels.${this.basePanel.name}.alarm.${this.name}.approve`, false, false);
+    this.approveId = this.library.cleandp(`${this.pathToStates}.approve`, false, false);
+    this.statusState = this.library.cleandp(`${this.pathToStates}.status`, false, false);
   }
   /**
    * Initialize the alarm page.
@@ -143,6 +159,10 @@ class PageAlarm extends import_Page.Page {
       type: "triggered",
       dp: `${this.adapter.namespace}.${this.approveId}`
     };
+    config.data.statusState = {
+      type: "triggered",
+      dp: `${this.adapter.namespace}.${this.statusState}`
+    };
     const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.basePanel.statesControler.createDataItems(
       tempConfig,
@@ -159,8 +179,9 @@ class PageAlarm extends import_Page.Page {
         void 0,
         import_definition.genericStateObjects.panel.panels.alarm._channel
       );
+      await this.library.writedp(`alarm`, void 0, import_definition.genericStateObjects.panel.panels.alarm._channel);
       await this.library.writedp(
-        `panels.${this.basePanel.name}.alarm.${this.name}`,
+        `${this.pathToStates}`,
         void 0,
         import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
       );
@@ -174,6 +195,11 @@ class PageAlarm extends import_Page.Page {
       } else {
         await this.setStatus(this.status);
       }
+      await this.library.writedp(
+        `${this.pathToStates}.mode`,
+        "",
+        import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
+      );
     } else {
       await this.setStatus("armed");
     }
@@ -193,7 +219,7 @@ class PageAlarm extends import_Page.Page {
    */
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i;
-    if (!this.visibility) {
+    if (!this.visibility || this.unload || this.adapter.unload) {
       return;
     }
     const message = {};
@@ -207,7 +233,20 @@ class PageAlarm extends import_Page.Page {
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
     if (this.alarmType === "alarm") {
-      if (this.status === "armed" || this.status === "triggered") {
+      if (this.pinFailTimeout) {
+        message.button1 = `${this.library.getTranslation("locked_for")}`;
+        message.status1 = "";
+        message.button2 = ` ${2 ** this.failCount} s`;
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
+        message.icon = import_icon_mapping.Icons.GetIcon("key-alert-outline");
+        message.iconColor = String(import_Color.Color.rgb_dec565({ r: 255, g: 0, b: 0 }));
+        message.numpad = "disable";
+        message.flashing = "enable";
+      } else if (this.status === "armed") {
         message.button1 = (_b = data.button5 && await data.button5.getTranslatedString()) != null ? _b : "";
         message.status1 = message.button1 ? "D1" : "";
         message.button2 = (_c = data.button6 && await data.button6.getTranslatedString()) != null ? _c : "";
@@ -216,7 +255,11 @@ class PageAlarm extends import_Page.Page {
         message.status3 = message.button3 ? "D3" : "";
         message.button4 = (_e = data.button8 && await data.button8.getTranslatedString()) != null ? _e : "";
         message.status4 = message.button4 ? "D4" : "";
-      } else {
+        message.icon = import_icon_mapping.Icons.GetIcon("shield-home");
+        message.iconColor = "63488";
+        message.numpad = "enable";
+        message.flashing = "disable";
+      } else if (this.status === "disarmed") {
         message.button1 = (_f = data.button1 && await data.button1.getTranslatedString()) != null ? _f : "";
         message.status1 = message.button1 ? "A1" : "";
         message.button2 = (_g = data.button2 && await data.button2.getTranslatedString()) != null ? _g : "";
@@ -225,23 +268,32 @@ class PageAlarm extends import_Page.Page {
         message.status3 = message.button3 ? "A3" : "";
         message.button4 = (_i = data.button4 && await data.button4.getTranslatedString()) != null ? _i : "";
         message.status4 = message.button4 ? "A4" : "";
-      }
-      if (this.status == "armed") {
-        message.icon = import_icon_mapping.Icons.GetIcon("shield-home");
-        message.iconColor = "63488";
-        message.numpad = "enable";
-        message.flashing = "disable";
-      } else if (this.status == "disarmed") {
         message.icon = import_icon_mapping.Icons.GetIcon("shield-off");
         message.iconColor = String(import_Color.Color.rgb_dec565(import_Color.Color.Green));
         message.numpad = "enable";
         message.flashing = "disable";
       } else if (this.status == "arming" || this.status == "pending") {
-        message.icon = import_icon_mapping.Icons.GetIcon("shield");
+        message.button1 = this.library.getTranslation(this.status);
+        message.status1 = "";
+        message.button2 = "";
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
+        message.icon = import_icon_mapping.Icons.GetIcon(this.status == "arming" ? "shield" : "shield-off");
         message.iconColor = String(import_Color.Color.rgb_dec565({ r: 243, g: 179, b: 0 }));
         message.numpad = "disable";
         message.flashing = "enable";
-      } else if (this.status == "triggered") {
+      } else {
+        message.button1 = this.library.getTranslation(this.status);
+        message.status1 = "";
+        message.button2 = "";
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
         message.icon = import_icon_mapping.Icons.GetIcon("bell-ring");
         message.iconColor = String(import_Color.Color.rgb_dec565({ r: 223, g: 76, b: 30 }));
         message.numpad = "enable";
@@ -302,30 +354,50 @@ class PageAlarm extends import_Page.Page {
     );
   }
   async onStateChange(id, _state) {
-    var _a, _b, _c, _d, _e, _f;
-    if (id && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm" && id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp) && !_state.new.ack) {
-      const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
-      if (approved) {
-        await this.getStatus();
-        const val = _state.new.val;
-        if (val) {
-          if (this.status === "pending") {
-            await this.setStatus("disarmed");
-          } else if (this.status === "arming") {
-            await this.setStatus("armed");
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
+    if (id && !_state.new.ack && ((_a = this.items) == null ? void 0 : _a.card) === "cardAlarm") {
+      if (id === ((_e = (_d = (_c = (_b = this.items) == null ? void 0 : _b.data) == null ? void 0 : _c.approveState) == null ? void 0 : _d.options) == null ? void 0 : _e.dp)) {
+        const approved = this.items.data && await ((_f = this.items.data.approved) == null ? void 0 : _f.getBoolean());
+        if (approved) {
+          if (this.updatePanelTimeout) {
+            this.adapter.clearTimeout(this.updatePanelTimeout);
+            this.updatePanelTimeout = null;
           }
-        } else {
-          if (this.status === "pending") {
-            await this.setStatus("armed");
-          } else if (this.status === "arming") {
-            await this.setStatus("disarmed");
+          await this.getStatus();
+          const val = _state.new.val;
+          if (val) {
+            if (this.status === "pending") {
+              await this.setStatus("disarmed");
+            } else if (this.status === "arming") {
+              await this.setStatus("armed");
+            }
+          } else {
+            if (this.status === "pending") {
+              await this.setStatus("armed");
+            } else if (this.status === "arming") {
+              await this.setStatus("disarmed");
+            }
           }
+          await this.adapter.setForeignStateAsync(id, !!val, true);
+          if (this.unload || this.adapter.unload) {
+            return;
+          }
+          this.delayUpdate();
         }
-        await this.adapter.setForeignStateAsync(id, !!val, true);
+      }
+      if (id === ((_j = (_i = (_h = (_g = this.items) == null ? void 0 : _g.data) == null ? void 0 : _h.statusState) == null ? void 0 : _i.options) == null ? void 0 : _j.dp) && typeof _state.new.val === "number") {
+        if (this.updatePanelTimeout) {
+          this.adapter.clearTimeout(this.updatePanelTimeout);
+          this.updatePanelTimeout = null;
+        }
+        await this.setStatus(_state.new.val in alarmStates ? alarmStates[_state.new.val] : "disarmed");
         if (this.unload || this.adapter.unload) {
           return;
         }
-        this.adapter.setTimeout(() => this.update(), 50);
+        this.delayUpdate();
       }
     }
   }
@@ -344,6 +416,9 @@ class PageAlarm extends import_Page.Page {
    */
   async onButtonEvent(_event) {
     var _a, _b;
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
     const button = _event.action;
     const value = _event.opt;
     if (!this.items || this.items.card !== "cardAlarm") {
@@ -356,15 +431,20 @@ class PageAlarm extends import_Page.Page {
         return;
       }
       if (this.pin && this.pin != value) {
-        if (++this.failCount < 3) {
-          this.log.warn(`Wrong pin entered. try ${this.failCount} of 3`);
-        } else {
-          this.log.error("Wrong pin entered. locked!");
-          await this.setStatus("triggered");
-        }
+        this.log.warn(
+          `Wrong pin entered. try ${++this.failCount}! Delay next attempt by ${2 ** this.failCount} seconds`
+        );
+        this.pinFailTimeout = this.adapter.setTimeout(
+          async () => {
+            this.pinFailTimeout = null;
+            void this.update();
+          },
+          2 ** this.failCount * 1e3
+        );
         await this.update();
         return;
       }
+      this.failCount = 0;
       this.log.debug(`Alarm event ${button} value: ${value}`);
       switch (button) {
         case "A1":
@@ -377,7 +457,7 @@ class PageAlarm extends import_Page.Page {
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           } else if (this.status === "arming") {
           } else if (!approved) {
             await this.setStatus("armed");
@@ -385,18 +465,21 @@ class PageAlarm extends import_Page.Page {
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           }
           break;
         }
-        case "D1": {
+        case "D1":
+        case "D2":
+        case "D3":
+        case "D4": {
           if (this.status === "armed" && approved) {
             await this.setStatus("pending");
             await this.setMode(button);
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           } else if (this.status === "pending") {
           } else if (!approved) {
             await this.setStatus("disarmed");
@@ -404,7 +487,7 @@ class PageAlarm extends import_Page.Page {
             if (this.unload || this.adapter.unload) {
               return;
             }
-            this.adapter.setTimeout(() => this.update(), 50);
+            this.delayUpdate();
           }
           break;
         }
@@ -422,6 +505,33 @@ class PageAlarm extends import_Page.Page {
         }
       }
     }
+  }
+  delayUpdate() {
+    if (this.updatePanelTimeout) {
+      this.adapter.clearTimeout(this.updatePanelTimeout);
+      this.updatePanelTimeout = null;
+    }
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
+    this.updatePanelTimeout = this.adapter.setTimeout(
+      () => {
+        this.updatePanelTimeout = null;
+        void this.update();
+      },
+      50 + Math.ceil(Math.random() * 50)
+    );
+  }
+  async delete() {
+    if (this.updatePanelTimeout) {
+      this.adapter.clearTimeout(this.updatePanelTimeout);
+      this.updatePanelTimeout = null;
+    }
+    if (this.pinFailTimeout) {
+      this.adapter.clearTimeout(this.pinFailTimeout);
+      this.pinFailTimeout = null;
+    }
+    await super.delete();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

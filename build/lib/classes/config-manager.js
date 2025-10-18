@@ -34,7 +34,6 @@ module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_states_controller = require("../controller/states-controller");
-var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
 var import_readme = require("../tools/readme");
@@ -683,28 +682,6 @@ class ConfigManager extends import_library.BaseClass {
           );
           this.log.warn(messages[messages.length - 1]);
           continue;
-        }
-        if (page.type === "cardQR") {
-          if (!Array.isArray(this.adapter.config.pageQRdata)) {
-            messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
-          if (index === -1) {
-            messages.push(`No pageQRdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          try {
-            ({ gridItem, messages } = await import_pageQR.PageQR.getQRPageConfig(this, page, index, gridItem, messages));
-          } catch (error) {
-            messages.push(
-              `Configuration error in page qr ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
-            );
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
         }
         if (page.type === "cardPower") {
           if (!Array.isArray(this.adapter.config.pagePowerdata)) {

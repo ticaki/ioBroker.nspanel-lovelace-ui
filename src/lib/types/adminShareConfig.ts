@@ -16,6 +16,9 @@ export type AdminCardTypes =
     | 'cardChart'
     | 'cardLChart'
     | 'cardThermo'
+    | 'screensaver'
+    | 'screensaver2'
+    | 'screensaver3'
     // Popup Cards
     | 'popupNotify'
     | 'popupNotify2'
@@ -79,7 +82,7 @@ export interface PanelListEntry {
 
 // Shared types for admin UI (typo: file name uses 'Shard')
 export type UnlockEntry = {
-    card: Extract<AdminCardTypes, 'cardAlarm' | 'cardQR'>; // Supported card types - will be extended
+    card: Extract<AdminCardTypes, 'cardAlarm'>; // Supported card types - will be extended
     alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
     headline: string;
     button1: string;
@@ -91,6 +94,7 @@ export type UnlockEntry = {
     button7: string;
     button8: string;
     pin: number;
+    global?: boolean;
     approved?: boolean;
     setNavi?: string;
     hidden?: boolean;
@@ -99,8 +103,46 @@ export type UnlockEntry = {
     uniqueName: string;
 };
 
-export type UnlockEntries = UnlockEntry[];
+export type PageItemButtonEntry = {
+    type: 'text' | 'button';
+    headline?: string;
+    modeScr?: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+    data: any; // TODO: Should be NSPanel.PageItemButton but causes type resolution issues in admin
+};
 
+// Screensaver types
+export type ScreensaverEntry = {
+    card: Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>; // Use the card type from AdminCardTypes
+    uniqueName: string;
+    clockFormat?: '12h' | '24h';
+    dateFormat?: string; // JavaScript date format string
+    timeFormat?: string; // JavaScript time format string
+    customDateFormat?: string; // Custom date format when dateFormat is 'custom'
+    customTimeFormat?: string; // Custom time format when timeFormat is 'custom'
+    pageItems?: PageItemButtonEntry[];
+    navigation?: NavigationAssignmentList;
+    navigationAssignment?: NavigationAssignmentList;
+};
+
+export type ScreensaverEntries = ScreensaverEntry[];
+// QR Entry for pageQR configuration
+export type QREntry = {
+    card: Extract<AdminCardTypes, 'cardQR'>;
+    selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
+    headline: string;
+    ssidUrlTel: string;
+    wlanhidden: boolean;
+    wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+    qrPass?: string;
+    pwdhidden: boolean;
+    setState: string;
+    hidden?: boolean;
+    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+    navigationAssignment?: NavigationAssignmentList;
+    uniqueName: string;
+};
+
+export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;

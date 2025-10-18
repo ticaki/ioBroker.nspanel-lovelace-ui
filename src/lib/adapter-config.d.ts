@@ -36,25 +36,6 @@ declare global {
             panels: {name: string, topic: string, id: string, ip: string, model: string}[];
             pw1: string;
 
-            // PageQR
-            pageQRdata: {
-                pageName: string,
-                headline: string,
-                alwaysOnDisplay: boolean,
-                hiddenByTrigger: boolean,
-                optionalText: string,
-                SSIDURLTEL: string,
-                selType: 0 | 1 | 2 | 3,
-                wlantype?: "nopass" | "WPA" | "WPA2" | "WPA3" | "WEP",
-                qrPass?: number,
-                wlanhidden?: boolean,
-                pwdhidden?: boolean,
-                setState?: string,
-            }[];
-            pageQRpwd1: string;
-            pageQRpwd2: string;
-            pageQRpwd3: string;
-
             // PagePower
             pagePowerdata: {
                 pageName: string,
@@ -258,9 +239,9 @@ declare global {
                 colMediaTitleOff: string;
                 colMediaOnOffColor: string;
             }[];
-
-            pageUnlockConfig: {
-                card: 'cardAlarm' | 'cardQR'; // Card type - will be extended with more types
+            pageUnlockConfig: any
+            pageConfig: ({
+                card: 'cardAlarm'; // Card type - will be extended with more types
                 alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
                 headline: string;
                 button1: string;
@@ -277,19 +258,36 @@ declare global {
                 uniqueName: string;
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
-                navigationAssignment?: {
-                    topic: string;
-                    navigation?: {
-                        next?: string;
-                        prev?: string;
-                        home?: string;
-                        parent?: string;
-                    };
-                }[];
-            }[];
+                navigationAssignment?: navigationAssignment[];
+            }|{
+                card: 'cardQR';
+                selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
+                headline: string;
+                ssidUrlTel: string;
+                wlanhidden: boolean;
+                wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+                qrPass?: string;
+                pwdhidden: boolean;
+                setState: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                uniqueName: string;
+                navigationAssignment?: navigationAssignment[]
+            })[];
+
+            pageQRConfig: any[];
         }
     }
 }
 
+type navigationAssignment = {
+    topic: string;
+    navigation?: {
+        next?: string;
+        prev?: string;
+        home?: string;
+        parent?: string;
+    };
+};
 // this is required so the above AdapterConfig is found by TypeScript / type checking
 export { };

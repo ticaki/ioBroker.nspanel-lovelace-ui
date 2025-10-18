@@ -186,7 +186,7 @@ class StatesControler extends import_library.BaseClass {
    * @param change    optional: 'ts' → löse auch ohne Wert-/Ack-Änderung (Zeitstempel)
    */
   async setTrigger(id, from, internal = false, trigger = true, change) {
-    if (id.startsWith(this.adapter.namespace) && !(id.includes(".alarm.") && id.endsWith(".approve"))) {
+    if (id.startsWith(this.adapter.namespace) && !(id.includes(".alarm.") && (id.endsWith(".approve") || id.endsWith(".status")))) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
       return;
     }

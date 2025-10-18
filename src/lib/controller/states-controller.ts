@@ -234,7 +234,10 @@ export class StatesControler extends BaseClass {
         change?: 'ts',
     ): Promise<void> {
         // 1) Eigener Namespace? → verboten
-        if (id.startsWith(this.adapter.namespace) && !(id.includes('.alarm.') && id.endsWith('.approve'))) {
+        if (
+            id.startsWith(this.adapter.namespace) &&
+            !(id.includes('.alarm.') && (id.endsWith('.approve') || id.endsWith('.status')))
+        ) {
             this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
             return;
         }

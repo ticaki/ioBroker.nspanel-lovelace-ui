@@ -53,7 +53,7 @@ class PageChart extends import_Page.Page {
       throw new Error("Missing config!");
     }
     this.index = this.config.index;
-    this.minUpdateInterval = 2e3;
+    this.minUpdateInterval = 6e4;
     this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {

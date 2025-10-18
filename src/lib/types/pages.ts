@@ -372,7 +372,9 @@ type PageAlarmConfig = {
     icon: NSPanel.IconEntryType;
     pin: number;
     approved?: boolean;
-    approveState: boolean;
+    approveState: string;
+    statusState: string;
+    global: boolean;
     setNavi?: string;
 };
 export type cardAlarmDataItemOptions = {
@@ -386,11 +388,16 @@ export type cardAlarmDataItems = {
 
 type PageQRBaseConfig = {
     headline: string;
-    entity1?: string;
+    ssidUrlTel?: string;
+    selType?: number;
+    wlantype?: string;
+    wlanhidden?: boolean;
+    password?: string;
+    pwdhidden?: boolean;
+    setState?: string;
 };
 export type cardQRDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardQR'>;
-    index: number;
     data: ChangeTypeOfKeys<PageQRBaseConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardQRDataItems = {
