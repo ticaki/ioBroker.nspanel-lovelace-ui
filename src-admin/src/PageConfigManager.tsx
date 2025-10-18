@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { PageConfigEntry, NavigationAssignmentList, QREntry } from '../../src/lib/types/adminShareConfig';
+import type { PageConfigEntry, NavigationAssignmentList } from '../../src/lib/types/adminShareConfig';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
@@ -301,7 +301,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardQR') {
             return (
                 <PageQREditor
-                    entry={currentEntry as QREntry}
+                    entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
