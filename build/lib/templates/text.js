@@ -4178,7 +4178,7 @@ const textTemplates = {
                                 case 22:
                                     return 'delete-empty-outline';
                                 case 23:
-                                    return 'Washing the mop';
+                                    return 'wiper-wash';
                                 case 26:
                                     return 'wiper-wash';
                                 case 28:
