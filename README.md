@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+ ### **WORK IN PROGRESS**
+- (ticaki) Use of IDs in colour specifications for pageItem icons and screensaver icons enabled.
+
 ### 0.6.6 (2025-10-17)
 - (tt-tom17) Chart: Added "NO DATA" label when chart has no data to display - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)
 - (ticaki) PageItem info: Fixed missing scale property - fixes [#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)
