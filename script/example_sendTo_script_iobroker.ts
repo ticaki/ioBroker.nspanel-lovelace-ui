@@ -683,7 +683,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.13.3';
+const version = '0.13.4';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -953,6 +953,7 @@ declare namespace ScriptConfig {
         useColor?: boolean;
         subPage?: boolean;
         parent?: string;
+        // icon and color not work here
         parentIcon?: string;
         parentIconColor?: RGB;
         prev?: string;
@@ -1328,11 +1329,11 @@ declare namespace ScriptConfig {
             /**
              * The color that is used in the standard case or if ID is true
              */
-            onColor?: RGB;
+            onColor?: RGB | string;
             /**
              * The color that is used when id is false
              */
-            offColor?: RGB;
+            offColor?: RGB | string;
             useColor?: boolean;
             /**
              * Interpolate the icon colour by ID
@@ -1405,8 +1406,8 @@ declare namespace ScriptConfig {
         id: string;
         icon: string;
         icon2?: string;
-        iconOnColor?: RGB;
-        iconOffColor?: RGB;
+        iconOnColor?: RGB | string;
+        iconOffColor?: RGB | string;
         buttonType: string;
     };
     export type DimMode = {
@@ -1562,8 +1563,8 @@ declare namespace ScriptConfig {
             ScreensaverEntityIconOff?: string | null;
             ScreensaverEntityUnitText?: string;
             ScreensaverEntityIconColor?: RGB | IconScaleElement | string;
-            ScreensaverEntityOnColor?: RGB;
-            ScreensaverEntityOffColor?: RGB;
+            ScreensaverEntityOnColor?: RGB | string;
+            ScreensaverEntityOffColor?: RGB | string;
             ScreensaverEntityOnText?: string | null;
             ScreensaverEntityOffText?: string | null;
             ScreensaverEntityNaviToPage?: string | null;
@@ -1717,8 +1718,8 @@ declare namespace ScriptConfig {
             ScreensaverEntityValue: string | null;
             ScreensaverEntityValueDecimalPlace: number | null;
             ScreensaverEntityValueUnit: string | null;
-            ScreensaverEntityOnColor: RGB;
-            ScreensaverEntityOffColor: RGB;
+            ScreensaverEntityOnColor: RGB | string;
+            ScreensaverEntityOffColor: RGB | string;
         }
     );
 

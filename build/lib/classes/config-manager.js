@@ -2145,11 +2145,11 @@ class ConfigManager extends import_library.BaseClass {
             icon: {
               true: {
                 value: { type: "const", constVal: item.icon || "fan" },
-                color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+                color: await this.getIconColor(item.onColor, import_Color.Color.Green)
               },
               false: {
                 value: { type: "const", constVal: item.icon2 || "fan-off" },
-                color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+                color: await this.getIconColor(item.offColor, import_Color.Color.Red)
               }
             },
             entity1: {
@@ -3392,11 +3392,11 @@ class ConfigManager extends import_library.BaseClass {
                 icon: {
                   true: {
                     value: { type: "const", constVal: item.icon || "fan" },
-                    color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+                    color: await this.getIconColor(item.onColor, import_Color.Color.Green)
                   },
                   false: {
                     value: { type: "const", constVal: item.icon2 || "fan-off" },
-                    color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+                    color: await this.getIconColor(item.offColor, import_Color.Color.Red)
                   }
                 },
                 entity1: {
