@@ -37,9 +37,7 @@ var Panel = __toESM(require("./panel"));
 var import_definition = require("../const/definition");
 var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
-var import_axios = __toESM(require("axios"));
 var import_Color = require("../const/Color");
-import_axios.default.defaults.timeout = 15e3;
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -442,19 +440,20 @@ class Controller extends Library.BaseClass {
   };
   async getTFTVersion() {
     try {
-      const result = await import_axios.default.get(
+      const result = await this.adapter.fetch(
         "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
       );
-      if (result.status !== 200) {
-        this.log.warn(`Error getting TFT version: ${result.status}`);
+      const data = result;
+      if (!data) {
+        this.log.error("No version data received.");
         return;
       }
-      const version = this.adapter.config.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
+      const version = this.adapter.config.useBetaTFT ? result["tft-beta"].split("_")[0] : result.tft.split("_")[0];
       this.globalPanelInfo.availableTftFirmwareVersion = version.trim();
       for (const panel of this.panels) {
         panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
       }
-      this.globalPanelInfo.availableTasmotaFirmwareVersion = result.data.tasmota.trim();
+      this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota.trim();
       for (const panel of this.panels) {
         panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
       }
@@ -462,21 +461,19 @@ class Controller extends Library.BaseClass {
     }
   }
   async getTasmotaVersion() {
-    return;
-    const urlString = "https://api.github.com/repositories/80286288/releases/latest";
+    var _a, _b;
     try {
-      const response = await (0, import_axios.default)(urlString, { headers: { "User-Agent": "ioBroker" } });
-      if (response && response.status === 200) {
-        const data = response.data;
-        const TasmotaTagName = data.tag_name;
-        const TasmotaVersionOnline = TasmotaTagName.replace(/v/i, "");
-        this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
-        for (const panel of this.panels) {
-          panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
-        }
+      const result = await this.adapter.fetch(
+        "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
+      );
+      const TasmotaVersionOnline = result.tasmota.trim();
+      this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
+      for (const panel of this.panels) {
+        panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
       }
     } catch {
     }
+    return (_b = (_a = this.globalPanelInfo) == null ? void 0 : _a.availableTasmotaFirmwareVersion) != null ? _b : "";
   }
   /**
    * Baut ein zusammengefasstes Farb-Objekt aus allen Color-Accordion Arrays.

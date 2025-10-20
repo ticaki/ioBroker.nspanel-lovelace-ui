@@ -54,7 +54,6 @@ var import_card = require("../templates/card");
 var import_tools = require("../const/tools");
 var import_pageChartBar = require("../pages/pageChartBar");
 var import_pageChartLine = require("../pages/pageChartLine");
-var import_axios = __toESM(require("axios"));
 var import_pageThermo2 = require("../pages/pageThermo2");
 const DefaultOptions = {
   format: {
@@ -780,19 +779,19 @@ class Panel extends import_library.BaseClass {
           this.adapter.setTimeout(async () => {
             let result = void 0;
             try {
-              result = await import_axios.default.get(
+              result = await this.adapter.fetch(
                 "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
               );
-              if (!result || !result.data) {
+              if (!result) {
                 return;
               }
-              const version = this.adapter.config.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
-              if (version != this.info.nspanel.berryDriverVersion && this.info.nspanel.berryDriverVersion != -1) {
+              const version = this.adapter.config.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
+              if (parseInt(version) != this.info.nspanel.berryDriverVersion && this.info.nspanel.berryDriverVersion != -1) {
                 const url = `http://${this.info.tasmota.net.IPAddress}/cm?${this.adapter.config.useTasmotaAdmin ? `user=admin&password=${this.adapter.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                 this.log.info(
                   `Automatic update of the berry driver version from ${this.info.nspanel.berryDriverVersion} to ${version} on tasmota with IP ${this.info.tasmota.net.IPAddress} and  ${this.info.tasmota.net.Hostname}.`
                 );
-                await import_axios.default.get(url);
+                await this.adapter.fetch(url);
               }
             } catch {
             }
@@ -1445,7 +1444,7 @@ class Panel extends import_library.BaseClass {
   }
   onDetachButtonEvent = async (button) => {
     const action = this.buttons ? button === "left" ? this.buttons.left : this.buttons.right : null;
-    await this.library.writedp(`panels.${this.name}.buttons.${button}`, false, null, true, true);
+    await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
     if (action) {
       switch (action.mode) {
         case "button": {

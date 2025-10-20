@@ -1366,19 +1366,23 @@ class ConfigManager extends import_library.BaseClass {
     const role = obj ? obj.common.role : null;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
     const getButtonsTextTrue = async (item2, def1) => {
-      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1, true);
+      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(def1, true);
     };
     const getButtonsTextFalse = async (item2, def1) => {
       return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : await getButtonsTextTrue(item2, def1);
     };
+    const text1 = {
+      true: await getButtonsTextTrue(item, "press"),
+      false: await getButtonsTextFalse(item, "press")
+    };
     const text = {
       true: {
-        value: await getButtonsTextTrue(item, role || ""),
+        value: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
         prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
         suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
       },
       false: {
-        value: await getButtonsTextFalse(item, role || ""),
+        value: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
         prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
         suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
       },
@@ -1407,9 +1411,7 @@ class ConfigManager extends import_library.BaseClass {
             maxBri: void 0,
             minBri: void 0
           },
-          text1: {
-            true: { type: "const", constVal: "press" }
-          },
+          text1,
           text
         }
       };
@@ -1481,10 +1483,7 @@ class ConfigManager extends import_library.BaseClass {
               maxBri: void 0,
               minBri: void 0
             },
-            text1: {
-              true: { type: "const", constVal: "on" },
-              false: { type: "const", constVal: "off" }
-            },
+            text1,
             text,
             entity1: {
               value: foundedStates[role].ACTUAL
@@ -1524,10 +1523,7 @@ class ConfigManager extends import_library.BaseClass {
               maxBri: void 0,
               minBri: void 0
             },
-            text1: {
-              true: { type: "const", constVal: "on" },
-              false: { type: "const", constVal: "off" }
-            },
+            text1,
             text,
             entity1: { value: foundedStates[role].ON_ACTUAL },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -1561,10 +1557,7 @@ class ConfigManager extends import_library.BaseClass {
               maxBri: void 0,
               minBri: void 0
             },
-            text1: {
-              true: { type: "const", constVal: "on" },
-              false: { type: "const", constVal: "off" }
-            },
+            text1,
             text,
             entity1: {
               value: foundedStates[role].ACTUAL
@@ -1691,10 +1684,7 @@ class ConfigManager extends import_library.BaseClass {
             },
             data: {
               text,
-              text1: {
-                true: { type: "const", constVal: "opened" },
-                false: { type: "const", constVal: "closed" }
-              },
+              text1,
               entity1: {
                 value: foundedStates[role].ACTUAL,
                 minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : tempMinScale },
@@ -1720,10 +1710,7 @@ class ConfigManager extends import_library.BaseClass {
             data: {
               entity1: { value: foundedStates[role].ACTUAL },
               text,
-              text1: {
-                true: { type: "const", constVal: "opened" },
-                false: { type: "const", constVal: "closed" }
-              },
+              text1,
               setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
             }
           };
@@ -1746,10 +1733,7 @@ class ConfigManager extends import_library.BaseClass {
           },
           data: {
             entity1: { value: foundedStates[role].ACTUAL },
-            text1: {
-              true: { type: "const", constVal: "opened" },
-              false: { type: "const", constVal: "closed" }
-            },
+            text1,
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1772,10 +1756,7 @@ class ConfigManager extends import_library.BaseClass {
           },
           data: {
             entity1: { value: foundedStates[role].ACTUAL },
-            text1: {
-              true: { type: "const", constVal: "opened" },
-              false: { type: "const", constVal: "closed" }
-            },
+            text1,
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1831,10 +1812,7 @@ class ConfigManager extends import_library.BaseClass {
           },
           data: {
             entity1: { value: foundedStates[role].ACTUAL },
-            text1: {
-              true: { type: "const", constVal: "motion" },
-              false: { type: "const", constVal: "none" }
-            },
+            text1,
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1972,9 +1950,7 @@ class ConfigManager extends import_library.BaseClass {
               scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
             },
             text,
-            text1: {
-              true: foundedStates[role].ACTUAL
-            },
+            text1,
             entity1: {
               value: foundedStates[role].ACTUAL
             },
@@ -2011,10 +1987,7 @@ class ConfigManager extends import_library.BaseClass {
             false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
-            text1: {
-              true: { type: "const", constVal: "opened" },
-              false: { type: "const", constVal: "closed" }
-            },
+            text1,
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
@@ -2149,11 +2122,11 @@ class ConfigManager extends import_library.BaseClass {
             icon: {
               true: {
                 value: { type: "const", constVal: item.icon || "fan" },
-                color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+                color: await this.getIconColor(item.onColor, import_Color.Color.Green)
               },
               false: {
                 value: { type: "const", constVal: item.icon2 || "fan-off" },
-                color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+                color: await this.getIconColor(item.offColor, import_Color.Color.Red)
               }
             },
             entity1: {
@@ -3396,11 +3369,11 @@ class ConfigManager extends import_library.BaseClass {
                 icon: {
                   true: {
                     value: { type: "const", constVal: item.icon || "fan" },
-                    color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+                    color: await this.getIconColor(item.onColor, import_Color.Color.Green)
                   },
                   false: {
                     value: { type: "const", constVal: item.icon2 || "fan-off" },
-                    color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+                    color: await this.getIconColor(item.offColor, import_Color.Color.Red)
                   }
                 },
                 entity1: {
