@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
  ### **WORK IN PROGRESS**
 - (ticaki) Use of IDs in colour specifications for pageItem icons and screensaver icons enabled.
+- (ticaki) Admin: Screensaver time formats now use toLocaleTimeString for better locale support and consistency with date formats
 
 ### 0.6.6 (2025-10-17)
 - (tt-tom17) Chart: Added "NO DATA" label when chart has no data to display - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)

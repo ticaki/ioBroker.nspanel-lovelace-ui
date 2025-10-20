@@ -72,10 +72,16 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     ];
 
     private readonly timeFormats = [
-        { value: 'HH:mm', label: 'timeFormat24' },
-        { value: 'h:mm a', label: 'timeFormat12' },
-        { value: 'HH:mm:ss', label: 'timeFormat24Seconds' },
-        { value: 'h:mm:ss a', label: 'timeFormat12Seconds' },
+        { value: { hour: '2-digit', minute: '2-digit', hour12: false }, label: 'timeFormat24' },
+        { value: { hour: 'numeric', minute: '2-digit', hour12: true }, label: 'timeFormat12' },
+        {
+            value: { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false },
+            label: 'timeFormat24Seconds',
+        },
+        {
+            value: { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true },
+            label: 'timeFormat12Seconds',
+        },
         { value: 'custom', label: 'Custom' },
     ];
 
@@ -101,12 +107,11 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     }
 
     private formatTimePreview(date: Date, format: string): string {
-        return format
-            .replace(/HH/g, String(date.getHours()).padStart(2, '0'))
-            .replace(/mm/g, String(date.getMinutes()).padStart(2, '0'))
-            .replace(/ss/g, String(date.getSeconds()).padStart(2, '0'))
-            .replace(/h/g, String(date.getHours() % 12 || 12))
-            .replace(/a/g, date.getHours() >= 12 ? 'PM' : 'AM');
+        try {
+            return date.toLocaleTimeString(undefined, typeof format === 'string' ? JSON.parse(format) : format);
+        } catch {
+            return 'Invalid Format';
+        }
     }
 
     componentWillUnmount(): void {
@@ -327,6 +332,9 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             }
             this.setState({} as ScreensaverPageState);
         };
+
+        const navCollapsed = this.state.editingPageItem !== undefined;
+        const navWidthPercent = navCollapsed ? 0 : 30;
 
         return (
             <Box
@@ -703,7 +711,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 {/* right area: main content + optional collapsible side panel */}
                 <Box
                     sx={{
-                        width: { xs: '100%', md: '80%' },
+                        width: { xs: '100%', md: '100%' },
                         pl: { xs: 0, md: 2 },
                         mt: { xs: 2, md: 0 },
                         display: 'flex',
@@ -716,7 +724,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 >
                     <Box
                         sx={{
-                            width: { xs: '100%', md: '70%' },
+                            width: { xs: '100%', md: '100%' },
                             borderLeft: { xs: 'none', md: '1px solid' },
                             borderColor: 'divider',
                             display: 'flex',
@@ -943,7 +951,14 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                         >
                                                             <InputLabel>{this.getText('timeFormat')}</InputLabel>
                                                             <Select
-                                                                value={ent.timeFormat || 'HH:mm'}
+                                                                value={
+                                                                    ent.timeFormat ||
+                                                                    JSON.stringify({
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false,
+                                                                    })
+                                                                }
                                                                 onChange={e => {
                                                                     const timeFormat = e.target.value;
                                                                     const updated = entries.map(
@@ -961,8 +976,8 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                             >
                                                                 {this.timeFormats.map(format => (
                                                                     <MenuItem
-                                                                        key={format.value}
-                                                                        value={format.value}
+                                                                        key={format.label}
+                                                                        value={JSON.stringify(format.value)}
                                                                     >
                                                                         {format.value === 'custom'
                                                                             ? this.getText('timeFormatCustom')
@@ -973,7 +988,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                         </FormControl>
 
                                                         {/* Custom Time Format Input */}
-                                                        {ent.timeFormat === 'custom' && (
+                                                        {ent.timeFormat === '"custom"' && (
                                                             <TextField
                                                                 label={this.getText('timeFormatCustom')}
                                                                 value={ent.customTimeFormat || ''}
@@ -992,7 +1007,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                 }}
                                                                 variant="outlined"
                                                                 fullWidth
-                                                                placeholder="HH:mm"
+                                                                placeholder='{"hour":"2-digit","minute":"2-digit","hour12":false}'
                                                                 sx={{ mt: 1 }}
                                                             />
                                                         )}
@@ -1006,9 +1021,15 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                             {this.getText('timeFormatExample')}:{' '}
                                                             {(() => {
                                                                 const currentTime = new Date();
-                                                                const format = ent.timeFormat || 'HH:mm';
+                                                                const format =
+                                                                    ent.timeFormat ||
+                                                                    JSON.stringify({
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false,
+                                                                    });
                                                                 try {
-                                                                    if (format === 'custom') {
+                                                                    if (format === '"custom"') {
                                                                         const customFormat = ent.customTimeFormat || '';
                                                                         if (!customFormat) {
                                                                             return 'Enter custom format above';
@@ -1155,29 +1176,41 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             )}
                         </Paper>
                     </Box>
-
-                    {/* NavigationAssignmentPanel */}
-                    <NavigationAssignmentPanel
-                        {...this.props}
-                        widthPercent={30}
-                        oContext={this.props.oContext}
-                        uniqueName={local?.selected || ''}
-                        currentAssignments={(() => {
-                            const sel = local?.selected;
-                            if (!sel) {
-                                return [];
-                            }
-                            const ent = entries.find((e: ScreensaverEntry) => e.uniqueName === sel);
-                            return ent?.navigation || [];
-                        })()}
-                        onAssign={(uniqueName, assignments) => {
-                            const updated = entries.map((entry: ScreensaverEntry) =>
-                                entry.uniqueName === uniqueName ? { ...entry, navigation: assignments } : entry,
-                            );
-                            this.setState({ entries: updated } as ScreensaverPageState);
-                            void this.onChange(this.props.attr!, updated);
+                    <Box
+                        sx={{
+                            // auf Mobile immer full width, auf Desktop die berechnete Breite (0 = ausgeblendet)
+                            width: { xs: '100%', md: `${navWidthPercent}%` },
+                            // sanfte Übergangsanimation beim ein-/ausklappen
+                            transition: 'width 300ms ease',
+                            // wenn ausgeblendet, verhindern wir Overflow / Fokusprobleme
+                            overflow: navCollapsed ? 'hidden' : 'visible',
+                            // optional: ganz ausblenden bei collapsed, damit auch tab-focus nicht hinein gelangt
+                            display: navCollapsed ? { xs: 'none', md: 'block' } : 'block',
                         }}
-                    />
+                    >
+                        {/* NavigationAssignmentPanel */}
+                        <NavigationAssignmentPanel
+                            {...this.props}
+                            widthPercent={30}
+                            oContext={this.props.oContext}
+                            uniqueName={local?.selected || ''}
+                            currentAssignments={(() => {
+                                const sel = local?.selected;
+                                if (!sel) {
+                                    return [];
+                                }
+                                const ent = entries.find((e: ScreensaverEntry) => e.uniqueName === sel);
+                                return ent?.navigation || [];
+                            })()}
+                            onAssign={(uniqueName, assignments) => {
+                                const updated = entries.map((entry: ScreensaverEntry) =>
+                                    entry.uniqueName === uniqueName ? { ...entry, navigation: assignments } : entry,
+                                );
+                                this.setState({ entries: updated } as ScreensaverPageState);
+                                void this.onChange(this.props.attr!, updated);
+                            }}
+                        />
+                    </Box>
                 </Box>
 
                 {/* ObjectIdSelector is embedded in the left sidebar via JsonConfigComponent above. */}
