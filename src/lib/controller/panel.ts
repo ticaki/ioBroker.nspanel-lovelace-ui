@@ -39,7 +39,6 @@ import { cardTemplates } from '../templates/card';
 import { deepAssign, getRegExp, isVersionGreaterOrEqual } from '../const/tools';
 import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
-import axios from 'axios';
 import { PageThermo2 } from '../pages/pageThermo2';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
@@ -863,19 +862,19 @@ export class Panel extends BaseClass {
                         return;
                     }
                     this.adapter.setTimeout(async () => {
-                        let result: axios.AxiosResponse<any, any> | undefined = undefined;
+                        let result: Record<string, string> | undefined = undefined;
                         try {
-                            result = await axios.get(
+                            result = (await this.adapter.fetch(
                                 'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                            );
-                            if (!result || !result.data) {
+                            )) as Record<string, string> | undefined;
+                            if (!result) {
                                 return;
                             }
                             const version = this.adapter.config.useBetaTFT
-                                ? result.data[`berry-beta`].split('_')[0]
-                                : result.data.berry.split('_')[0];
+                                ? result[`berry-beta`].split('_')[0]
+                                : result.berry.split('_')[0];
                             if (
-                                version != this.info.nspanel.berryDriverVersion &&
+                                parseInt(version) != this.info.nspanel.berryDriverVersion &&
                                 this.info.nspanel.berryDriverVersion != -1
                             ) {
                                 const url =
@@ -885,7 +884,7 @@ export class Panel extends BaseClass {
                                 this.log.info(
                                     `Automatic update of the berry driver version from ${this.info.nspanel.berryDriverVersion} to ${version} on tasmota with IP ${this.info.tasmota.net.IPAddress} and  ${this.info.tasmota.net.Hostname}.`,
                                 );
-                                await axios.get(url);
+                                await this.adapter.fetch(url);
                             }
                         } catch {
                             // nothing

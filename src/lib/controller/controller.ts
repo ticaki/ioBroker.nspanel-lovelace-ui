@@ -5,14 +5,11 @@ import * as Panel from './panel';
 import { genericStateObjects } from '../const/definition';
 import { SystemNotifications } from '../classes/system-notifications';
 import { getInternalDefaults } from '../const/tools';
-import axios from 'axios';
-import type { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
+import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
 import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates } from '../types/pages';
-
-axios.defaults.timeout = 15_000;
 
 /**
  * Controller Class
@@ -467,24 +464,26 @@ export class Controller extends Library.BaseClass {
 
     async getTFTVersion(): Promise<void> {
         try {
-            const result = await axios.get(
+            const result = (await this.adapter.fetch(
                 'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-            );
-            if (result.status !== 200) {
-                this.log.warn(`Error getting TFT version: ${result.status}`);
+            )) as Record<string, string> | undefined;
+
+            const data = result;
+            if (!data) {
+                this.log.error('No version data received.');
                 return;
             }
 
             const version = this.adapter.config.useBetaTFT
-                ? result.data['tft-beta'].split('_')[0]
-                : result.data.tft.split('_')[0];
+                ? result['tft-beta'].split('_')[0]
+                : result.tft.split('_')[0];
             this.globalPanelInfo.availableTftFirmwareVersion = version.trim();
 
             for (const panel of this.panels) {
                 panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
             }
 
-            this.globalPanelInfo.availableTasmotaFirmwareVersion = result.data.tasmota.trim();
+            this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota.trim();
 
             for (const panel of this.panels) {
                 panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
@@ -493,26 +492,22 @@ export class Controller extends Library.BaseClass {
             // nothing
         }
     }
-    async getTasmotaVersion(): Promise<void> {
-        return; // vorerst deaktiviert, da nicht so gewollt
-        const urlString = 'https://api.github.com/repositories/80286288/releases/latest';
+    async getTasmotaVersion(): Promise<string> {
         try {
-            const response = await axios(urlString, { headers: { 'User-Agent': 'ioBroker' } });
+            const result = (await this.adapter.fetch(
+                'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+            )) as Record<string, string>;
+            // Filter JSON by "tag_name" and write to variable
+            const TasmotaVersionOnline = result.tasmota.trim();
 
-            if (response && response.status === 200) {
-                const data = response.data as TasmotaOnlineResponse;
-
-                const TasmotaTagName = data.tag_name; // Filter JSON by "tag_name" and write to variable
-                const TasmotaVersionOnline = TasmotaTagName.replace(/v/i, ''); // Filter unnecessary "v" from variable and write to release variable
-
-                this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
-                for (const panel of this.panels) {
-                    panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
-                }
+            this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
+            for (const panel of this.panels) {
+                panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
             }
         } catch {
             // do nothing
         }
+        return this.globalPanelInfo?.availableTasmotaFirmwareVersion ?? '';
     }
 
     /**

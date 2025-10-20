@@ -24,7 +24,6 @@ import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
 import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
-import axios from 'axios';
 import { URL } from 'url';
 import type * as pages from './lib/types/pages';
 import * as fs from 'fs';
@@ -32,8 +31,8 @@ import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
 import type { NavigationSavePayload, PanelListEntry, PanelInfo } from './lib/types/adminShareConfig';
+import { isTasmotaStatusNet } from './lib/types/function-and-const';
 //import fs from 'fs';
-axios.defaults.timeout = 15_000;
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -481,7 +480,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
                 if (state && typeof state.val === 'number' && state.val >= 100) {
                     this.log.debug(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
-                    await axios.get(
+                    await this.fetch(
                         `http://${tasmota.ip}/cm?` +
                             `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                             `&cmnd=Backlog Restart 1`,
@@ -491,7 +490,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             } catch (e: any) {
                 this.log.warn(
-                    `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! ${e}`,
+                    `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! Error: ${e ? e.message : ''}`,
                 );
             }
         };
@@ -1030,8 +1029,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=status 5`,
                                 );
-                                let r = await axios.get(u.href);
-                                if (!r || !r.data || !r.data.StatusNET || !r.data.StatusNET.Mac) {
+                                let r = await this.fetch(u.href);
+                                if (!isTasmotaStatusNet(r)) {
                                     this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                                     if (obj.callback) {
                                         this.sendTo(
@@ -1043,9 +1042,22 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     }
                                     break;
                                 }
-                                let mac = r.data.StatusNET.Mac;
+
+                                if (!r || !r.StatusNET || !r.StatusNET.Mac) {
+                                    this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToDeviceNotFound' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                }
+                                let mac = r.StatusNET.Mac;
                                 const topic = obj.message.tasmotaTopic;
-                                const appendix = r.data.StatusNET.Mac.replace(/:/g, '').slice(-6);
+                                const appendix = r.StatusNET.Mac.replace(/:/g, '').slice(-6);
                                 const mqttClientId = `${this.library.cleandp(obj.message.tasmotaName)}-${appendix}`;
                                 const url: string =
                                     ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp};` +
@@ -1062,7 +1074,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 this.log.info(
                                     `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
                                 );
-                                await axios.get(u.href);
+                                await this.fetch(u.href);
                                 this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60_000));
 
                                 u = new URL(
@@ -1074,7 +1086,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         )}`,
                                 );
 
-                                await axios.get(u.href);
+                                await this.fetch(u.href);
                                 this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60_000));
 
                                 u = new URL(
@@ -1082,8 +1094,20 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=status 0`,
                                 );
-                                r = await axios.get(u.href);
-                                if (!r || !r.data || !r.data.StatusNET || !r.data.StatusNET.Mac) {
+                                r = await this.fetch(u.href);
+                                if (!isTasmotaStatusNet(r)) {
+                                    this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToDeviceNotFound' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                }
+                                if (!r || !r.StatusNET || !r.StatusNET.Mac) {
                                     this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                                     if (obj.callback) {
                                         this.sendTo(
@@ -1116,21 +1140,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 } else {
                                     update = index !== -1;
                                 }
-                                mac = r.data.StatusNET.Mac;
+                                mac = r.StatusNET.Mac;
                                 item.model = obj.message.model;
                                 item.name = obj.message.tasmotaName;
                                 item.topic = topic;
                                 item.id = this.library.cleandp(mac);
-                                item.ip = r.data.StatusNET.IPAddress;
+                                item.ip = r.StatusNET.IPAddress;
 
                                 if (index === -1) {
                                     panels.push(item);
                                 }
-                                let result: axios.AxiosResponse<any, any> | undefined = undefined;
+                                let result: Record<string, string> | undefined = undefined;
                                 try {
-                                    result = await axios.get(
+                                    result = (await this.fetch(
                                         'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                                    );
+                                    )) as Record<string, string> | undefined;
                                     if (!result || !result.data) {
                                         this.log.error('No version found!');
                                         if (obj.callback) {
@@ -1144,8 +1168,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         break;
                                     }
                                     const version = obj.message.useBetaTFT
-                                        ? result.data[`berry-beta`].split('_')[0]
-                                        : result.data.berry.split('_')[0];
+                                        ? result[`berry-beta`].split('_')[0]
+                                        : result.berry.split('_')[0];
                                     const url =
                                         `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
@@ -1154,7 +1178,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
                                     );
                                     this.log.debug(`URL: ${url}`);
-                                    await axios.get(url);
+                                    await this.fetch(url);
                                     this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
                                     await this.delay(7000);
                                 } catch (e: any) {
@@ -1237,11 +1261,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.message) {
                         if (obj.message.tasmotaIP) {
                             try {
-                                let result: axios.AxiosResponse<any, any> | undefined = undefined;
+                                let result: Record<string, string> | undefined = undefined;
 
-                                result = await axios.get(
+                                result = (await this.fetch(
                                     'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                                );
+                                )) as Record<string, string> | undefined;
                                 if (!result || !result.data) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
@@ -1255,15 +1279,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     break;
                                 }
                                 const version = obj.message.useBetaTFT
-                                    ? result.data[`berry-beta`].split('_')[0]
-                                    : result.data.berry.split('_')[0];
+                                    ? result[`berry-beta`].split('_')[0]
+                                    : result.berry.split('_')[0];
                                 const url =
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                     `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
 
                                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
-                                await axios.get(url);
+                                await this.fetch(url);
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
                                 }
@@ -1307,7 +1331,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                     `&cmnd=Backlog ${cmnd}`;
                                 this.log.debug(url);
-                                await axios.get(url);
+                                await this.fetch(url);
 
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1603,7 +1627,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                     `&cmnd=Restart 1`;
                                 this.log.debug(url);
-                                await axios.get(url);
+                                await this.fetch(url);
 
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1631,7 +1655,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                     `&cmnd=reset 4`;
                                 this.log.debug(`Reset to factory defaults tasmota with IP ${obj.message.tasmotaIP}`);
-                                await axios.get(url);
+                                await this.fetch(url);
 
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1851,21 +1875,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'updateTasmota': {
                     let language = this.library.getLocalLanguage();
                     language = language === 'zh-cn' ? 'en' : language;
-                    const result = await axios.get(
+                    const result = (await this.fetch(
                         'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                    );
-                    if (result.status !== 200 || !result.data?.tasmota) {
-                        this.log.warn(`Error getting Tasmota version: ${result.status}`);
-                        return;
-                    }
-                    const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.data.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+                    )) as Record<string, string>;
+                    if ('tasmota' in result) {
+                        const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
 
-                    if (this.controller?.panels) {
-                        const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
-                        if (index !== -1) {
-                            const panel = this.controller.panels[index];
-                            panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                        if (this.controller?.panels) {
+                            const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
+                            if (index !== -1) {
+                                const panel = this.controller.panels[index];
+                                panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                            }
                         }
+                    } else {
+                        this.log.warn(`Error getting Tasmota version!`);
                     }
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -2129,15 +2153,14 @@ class NspanelLovelaceUi extends utils.Adapter {
         m: string,
         beta: boolean,
         alpha: string,
-        result?: axios.AxiosResponse<any, any>,
+        result?: Record<string, string>,
     ): Promise<string | null> {
         if (!result) {
-            result = await axios.get(
+            result = (await this.fetch(
                 'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                { timeout: 10_000 },
-            );
+            )) as Record<string, string> | undefined;
         }
-        const data = result?.data;
+        const data = result;
         if (!data) {
             this.log.error('No version data received.');
             return null;

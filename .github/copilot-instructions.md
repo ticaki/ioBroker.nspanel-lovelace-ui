@@ -21,7 +21,7 @@
 - Build: `npm run build` (compiles TypeScript to `/build/`).
 - Test: `@iobroker/testing`, mocha/chai/sinon.
 - Lint/Format: ESLint + Prettier (keep semicolons, single quotes).
-- Dependencies: Includes `mqtt`, `aedes` (MQTT broker), `axios`, `colord`, `node-forge`.
+- Dependencies: Includes `mqtt`, `aedes` (MQTT broker), `colord`, `node-forge`.
 
 ## NSPanel-Specific Architecture
 ### MQTT Integration

@@ -46,6 +46,17 @@ __export(function_and_const_exports, {
   isScreenSaverMode: () => isScreenSaverMode,
   isScreenSaverModeAsNumber: () => isScreenSaverModeAsNumber,
   isStateRole: () => isStateRole,
+  isTasmotaSTATUS0: () => isTasmotaSTATUS0,
+  isTasmotaStatus0Status: () => isTasmotaStatus0Status,
+  isTasmotaStatusFWR: () => isTasmotaStatusFWR,
+  isTasmotaStatusLOG: () => isTasmotaStatusLOG,
+  isTasmotaStatusMEM: () => isTasmotaStatusMEM,
+  isTasmotaStatusMQT: () => isTasmotaStatusMQT,
+  isTasmotaStatusNet: () => isTasmotaStatusNet,
+  isTasmotaStatusPRM: () => isTasmotaStatusPRM,
+  isTasmotaStatusSNS: () => isTasmotaStatusSNS,
+  isTasmotaStatusSTS: () => isTasmotaStatusSTS,
+  isTasmotaStatusTIM: () => isTasmotaStatusTIM,
   isValueDateFormat: () => isValueDateFormat,
   normalizeIconColorElement: () => normalizeIconColorElement,
   screenSaverCardArray: () => screenSaverCardArray,
@@ -340,6 +351,39 @@ function isAlarmButtonEvent(value) {
 }
 const arrayOfModes = arrayOfAll();
 const arrayOfScreensaverModes = arrayOfModes(["standard", "alternate", "advanced", "easyview"]);
+function isTasmotaStatusNet(F) {
+  return F && typeof F === "object" && "StatusNET" in F && typeof F.StatusNET === "object";
+}
+function isTasmotaStatus0Status(F) {
+  return F && typeof F === "object" && "Status" in F && typeof F.Status === "object";
+}
+function isTasmotaStatusPRM(F) {
+  return F && typeof F === "object" && "StatusPRM" in F && typeof F.StatusPRM === "object";
+}
+function isTasmotaStatusFWR(F) {
+  return F && typeof F === "object" && "StatusFWR" in F && typeof F.StatusFWR === "object";
+}
+function isTasmotaStatusLOG(F) {
+  return F && typeof F === "object" && "StatusLOG" in F && typeof F.StatusLOG === "object";
+}
+function isTasmotaStatusMEM(F) {
+  return F && typeof F === "object" && "StatusMEM" in F && typeof F.StatusMEM === "object";
+}
+function isTasmotaStatusMQT(F) {
+  return F && typeof F === "object" && "StatusMQT" in F && typeof F.StatusMQT === "object";
+}
+function isTasmotaStatusTIM(F) {
+  return F && typeof F === "object" && "StatusTIM" in F && typeof F.StatusTIM === "object";
+}
+function isTasmotaStatusSNS(F) {
+  return F && typeof F === "object" && "StatusSNS" in F && typeof F.StatusSNS === "object";
+}
+function isTasmotaStatusSTS(F) {
+  return F && typeof F === "object" && "StatusSTS" in F && typeof F.StatusSTS === "object";
+}
+function isTasmotaSTATUS0(F) {
+  return F && typeof F === "object" && isTasmotaStatus0Status(F) && isTasmotaStatusPRM(F) && isTasmotaStatusFWR(F) && isTasmotaStatusLOG(F) && isTasmotaStatusMEM(F) && isTasmotaStatusNet(F) && isTasmotaStatusMQT(F) && isTasmotaStatusTIM(F) && isTasmotaStatusSNS(F) && isTasmotaStatusSTS(F);
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ALARM_BUTTON_EVENTS,
@@ -370,6 +414,17 @@ const arrayOfScreensaverModes = arrayOfModes(["standard", "alternate", "advanced
   isScreenSaverMode,
   isScreenSaverModeAsNumber,
   isStateRole,
+  isTasmotaSTATUS0,
+  isTasmotaStatus0Status,
+  isTasmotaStatusFWR,
+  isTasmotaStatusLOG,
+  isTasmotaStatusMEM,
+  isTasmotaStatusMQT,
+  isTasmotaStatusNet,
+  isTasmotaStatusPRM,
+  isTasmotaStatusSNS,
+  isTasmotaStatusSTS,
+  isTasmotaStatusTIM,
   isValueDateFormat,
   normalizeIconColorElement,
   screenSaverCardArray,
