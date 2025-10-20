@@ -74,8 +74,14 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     private readonly timeFormats = [
         { value: { hour: '2-digit', minute: '2-digit', hour12: false }, label: 'timeFormat24' },
         { value: { hour: 'numeric', minute: '2-digit', hour12: true }, label: 'timeFormat12' },
-        { value: { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }, label: 'timeFormat24Seconds' },
-        { value: { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }, label: 'timeFormat12Seconds' },
+        {
+            value: { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false },
+            label: 'timeFormat24Seconds',
+        },
+        {
+            value: { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true },
+            label: 'timeFormat12Seconds',
+        },
         { value: 'custom', label: 'Custom' },
     ];
 
@@ -945,7 +951,14 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                         >
                                                             <InputLabel>{this.getText('timeFormat')}</InputLabel>
                                                             <Select
-                                                                value={ent.timeFormat || JSON.stringify({ hour: '2-digit', minute: '2-digit', hour12: false })}
+                                                                value={
+                                                                    ent.timeFormat ||
+                                                                    JSON.stringify({
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false,
+                                                                    })
+                                                                }
                                                                 onChange={e => {
                                                                     const timeFormat = e.target.value;
                                                                     const updated = entries.map(
@@ -1008,7 +1021,13 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                             {this.getText('timeFormatExample')}:{' '}
                                                             {(() => {
                                                                 const currentTime = new Date();
-                                                                const format = ent.timeFormat || JSON.stringify({ hour: '2-digit', minute: '2-digit', hour12: false });
+                                                                const format =
+                                                                    ent.timeFormat ||
+                                                                    JSON.stringify({
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false,
+                                                                    });
                                                                 try {
                                                                     if (format === '"custom"') {
                                                                         const customFormat = ent.customTimeFormat || '';
