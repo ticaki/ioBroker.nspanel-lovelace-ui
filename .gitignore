@@ -21,4 +21,4 @@ admin/i18n/*/flat.txt
 src/lib/password.ts
 .eslintcache
 .gitignore
-.commitinfo.eslintcache
+.commitinfo

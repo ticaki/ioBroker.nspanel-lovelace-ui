@@ -328,6 +328,9 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             this.setState({} as ScreensaverPageState);
         };
 
+        const navCollapsed = this.state.editingPageItem !== undefined;
+        const navWidthPercent = navCollapsed ? 0 : 30;
+
         return (
             <Box
                 sx={{
@@ -703,7 +706,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 {/* right area: main content + optional collapsible side panel */}
                 <Box
                     sx={{
-                        width: { xs: '100%', md: '80%' },
+                        width: { xs: '100%', md: '100%' },
                         pl: { xs: 0, md: 2 },
                         mt: { xs: 2, md: 0 },
                         display: 'flex',
@@ -716,7 +719,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 >
                     <Box
                         sx={{
-                            width: { xs: '100%', md: '70%' },
+                            width: { xs: '100%', md: '100%' },
                             borderLeft: { xs: 'none', md: '1px solid' },
                             borderColor: 'divider',
                             display: 'flex',
@@ -1155,29 +1158,41 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             )}
                         </Paper>
                     </Box>
-
-                    {/* NavigationAssignmentPanel */}
-                    <NavigationAssignmentPanel
-                        {...this.props}
-                        widthPercent={30}
-                        oContext={this.props.oContext}
-                        uniqueName={local?.selected || ''}
-                        currentAssignments={(() => {
-                            const sel = local?.selected;
-                            if (!sel) {
-                                return [];
-                            }
-                            const ent = entries.find((e: ScreensaverEntry) => e.uniqueName === sel);
-                            return ent?.navigation || [];
-                        })()}
-                        onAssign={(uniqueName, assignments) => {
-                            const updated = entries.map((entry: ScreensaverEntry) =>
-                                entry.uniqueName === uniqueName ? { ...entry, navigation: assignments } : entry,
-                            );
-                            this.setState({ entries: updated } as ScreensaverPageState);
-                            void this.onChange(this.props.attr!, updated);
+                    <Box
+                        sx={{
+                            // auf Mobile immer full width, auf Desktop die berechnete Breite (0 = ausgeblendet)
+                            width: { xs: '100%', md: `${navWidthPercent}%` },
+                            // sanfte Übergangsanimation beim ein-/ausklappen
+                            transition: 'width 300ms ease',
+                            // wenn ausgeblendet, verhindern wir Overflow / Fokusprobleme
+                            overflow: navCollapsed ? 'hidden' : 'visible',
+                            // optional: ganz ausblenden bei collapsed, damit auch tab-focus nicht hinein gelangt
+                            display: navCollapsed ? { xs: 'none', md: 'block' } : 'block',
                         }}
-                    />
+                    >
+                        {/* NavigationAssignmentPanel */}
+                        <NavigationAssignmentPanel
+                            {...this.props}
+                            widthPercent={30}
+                            oContext={this.props.oContext}
+                            uniqueName={local?.selected || ''}
+                            currentAssignments={(() => {
+                                const sel = local?.selected;
+                                if (!sel) {
+                                    return [];
+                                }
+                                const ent = entries.find((e: ScreensaverEntry) => e.uniqueName === sel);
+                                return ent?.navigation || [];
+                            })()}
+                            onAssign={(uniqueName, assignments) => {
+                                const updated = entries.map((entry: ScreensaverEntry) =>
+                                    entry.uniqueName === uniqueName ? { ...entry, navigation: assignments } : entry,
+                                );
+                                this.setState({ entries: updated } as ScreensaverPageState);
+                                void this.onChange(this.props.attr!, updated);
+                            }}
+                        />
+                    </Box>
                 </Box>
 
                 {/* ObjectIdSelector is embedded in the left sidebar via JsonConfigComponent above. */}
