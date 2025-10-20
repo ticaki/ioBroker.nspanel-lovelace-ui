@@ -72,10 +72,10 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     ];
 
     private readonly timeFormats = [
-        { value: 'HH:mm', label: 'timeFormat24' },
-        { value: 'h:mm a', label: 'timeFormat12' },
-        { value: 'HH:mm:ss', label: 'timeFormat24Seconds' },
-        { value: 'h:mm:ss a', label: 'timeFormat12Seconds' },
+        { value: { hour: '2-digit', minute: '2-digit', hour12: false }, label: 'timeFormat24' },
+        { value: { hour: 'numeric', minute: '2-digit', hour12: true }, label: 'timeFormat12' },
+        { value: { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }, label: 'timeFormat24Seconds' },
+        { value: { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }, label: 'timeFormat12Seconds' },
         { value: 'custom', label: 'Custom' },
     ];
 
@@ -101,12 +101,11 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     }
 
     private formatTimePreview(date: Date, format: string): string {
-        return format
-            .replace(/HH/g, String(date.getHours()).padStart(2, '0'))
-            .replace(/mm/g, String(date.getMinutes()).padStart(2, '0'))
-            .replace(/ss/g, String(date.getSeconds()).padStart(2, '0'))
-            .replace(/h/g, String(date.getHours() % 12 || 12))
-            .replace(/a/g, date.getHours() >= 12 ? 'PM' : 'AM');
+        try {
+            return date.toLocaleTimeString(undefined, typeof format === 'string' ? JSON.parse(format) : format);
+        } catch {
+            return 'Invalid Format';
+        }
     }
 
     componentWillUnmount(): void {
@@ -946,7 +945,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                         >
                                                             <InputLabel>{this.getText('timeFormat')}</InputLabel>
                                                             <Select
-                                                                value={ent.timeFormat || 'HH:mm'}
+                                                                value={ent.timeFormat || JSON.stringify({ hour: '2-digit', minute: '2-digit', hour12: false })}
                                                                 onChange={e => {
                                                                     const timeFormat = e.target.value;
                                                                     const updated = entries.map(
@@ -964,8 +963,8 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                             >
                                                                 {this.timeFormats.map(format => (
                                                                     <MenuItem
-                                                                        key={format.value}
-                                                                        value={format.value}
+                                                                        key={format.label}
+                                                                        value={JSON.stringify(format.value)}
                                                                     >
                                                                         {format.value === 'custom'
                                                                             ? this.getText('timeFormatCustom')
@@ -976,7 +975,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                         </FormControl>
 
                                                         {/* Custom Time Format Input */}
-                                                        {ent.timeFormat === 'custom' && (
+                                                        {ent.timeFormat === '"custom"' && (
                                                             <TextField
                                                                 label={this.getText('timeFormatCustom')}
                                                                 value={ent.customTimeFormat || ''}
@@ -995,7 +994,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                 }}
                                                                 variant="outlined"
                                                                 fullWidth
-                                                                placeholder="HH:mm"
+                                                                placeholder='{"hour":"2-digit","minute":"2-digit","hour12":false}'
                                                                 sx={{ mt: 1 }}
                                                             />
                                                         )}
@@ -1009,9 +1008,9 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                             {this.getText('timeFormatExample')}:{' '}
                                                             {(() => {
                                                                 const currentTime = new Date();
-                                                                const format = ent.timeFormat || 'HH:mm';
+                                                                const format = ent.timeFormat || JSON.stringify({ hour: '2-digit', minute: '2-digit', hour12: false });
                                                                 try {
-                                                                    if (format === 'custom') {
+                                                                    if (format === '"custom"') {
                                                                         const customFormat = ent.customTimeFormat || '';
                                                                         if (!customFormat) {
                                                                             return 'Enter custom format above';
