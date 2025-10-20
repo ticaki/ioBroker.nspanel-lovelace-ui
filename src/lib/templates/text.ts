@@ -377,7 +377,7 @@ export const textTemplates: TemplateItems = {
                     role: 'value.power',
                     dp: '',
                     regexp: /\.State\.Power$/,
-                    read: 'return val <= 0',
+                    read: 'return val < 0',
                 },
             },
         },
