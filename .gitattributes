@@ -1,2 +1,3 @@
 build/** merge=ours
 admin/custom/** merge=ours
+src-admin/build/** merge=ours
