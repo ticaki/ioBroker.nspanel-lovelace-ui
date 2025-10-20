@@ -59,15 +59,26 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
 
     // Common date and time format options
     private readonly dateFormats = [
-        { value: { dateStyle: 'short' }, label: 'DD.MM.YY' },
-        { value: { dateStyle: 'short', locale: 'en-US' }, label: 'MM/DD/YY' },
-        { value: { year: 'numeric', month: '2-digit', day: '2-digit' }, label: 'YYYY-MM-DD' },
-        { value: { day: '2-digit', month: 'short', year: 'numeric' }, label: 'DD MMM YYYY' },
-        { value: { day: '2-digit', month: 'long', year: 'numeric' }, label: 'DD Month YYYY' },
-        { value: { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }, label: 'EEE, DD.MM.YYYY' },
-        { value: { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }, label: 'EEEE, DD.MM.YYYY' },
-        { value: { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }, label: 'EEE, DD MMM YYYY' },
-        { value: { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }, label: 'EEEE, DD Month YYYY' },
+        { value: { dateStyle: 'short' }, label: 'dateFormatShort' },
+        { value: { year: 'numeric', month: '2-digit', day: '2-digit' }, label: 'dateFormatYearMonthDay' },
+        { value: { day: '2-digit', month: 'short', year: 'numeric' }, label: 'dateFormatDayShortMonthYear' },
+        { value: { day: '2-digit', month: 'long', year: 'numeric' }, label: 'dateFormatDayLongMonthYear' },
+        {
+            value: { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' },
+            label: 'dateFormatWeekdayShortDate',
+        },
+        {
+            value: { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' },
+            label: 'dateFormatWeekdayLongDate',
+        },
+        {
+            value: { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' },
+            label: 'dateFormatWeekdayShortDayMonthYear',
+        },
+        {
+            value: { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' },
+            label: 'dateFormatWeekdayLongDayMonthYear',
+        },
         { value: 'custom', label: 'Custom' },
     ];
 
@@ -880,7 +891,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                     >
                                                                         {format.value === 'custom'
                                                                             ? this.getText('dateFormatCustom')
-                                                                            : format.label}
+                                                                            : this.getText(format.label)}
                                                                     </MenuItem>
                                                                 ))}
                                                             </Select>
