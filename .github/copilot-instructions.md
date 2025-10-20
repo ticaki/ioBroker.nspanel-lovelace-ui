@@ -18,10 +18,13 @@
 ## Tech & Build
 - Language: TypeScript only (no JS). Strict typing required.
 - Package manager: npm.
-- Build: `npm run build` (compiles TypeScript to `/build/`).
+- Build: 
+  - `npm run build` (compiles TypeScript to `/build/`)
+  - `npm run build:admin` (builds React admin UI from `/src-admin/`)
+  - `npm run build:all` (builds both and uploads to dev-server)
 - Test: `@iobroker/testing`, mocha/chai/sinon.
 - Lint/Format: ESLint + Prettier (keep semicolons, single quotes).
-- Dependencies: Includes `mqtt`, `aedes` (MQTT broker), `colord`, `node-forge`.
+- Dependencies: Includes `mqtt`, `aedes` (MQTT broker), `axios`, `colord`, `node-forge`, `level` (for MQTT persistence).
 
 ## NSPanel-Specific Architecture
 ### MQTT Integration
@@ -73,71 +76,300 @@ type NavigationAssignmentPanelProps = {
 interface NavigationAssignmentPanelState extends ConfigGenericState {
     /** ... add additional state fields here ... */
 }
-```instructions
-# Copilot instructions — ioBroker NSPanel Lovelace UI
+class NavigationAssignmentPanel extends ConfigGeneric<
+   ConfigGenericProps & NavigationAssignmentPanelProps,
+   NavigationAssignmentPanelState
+> {
+  constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
+    super(props);
+    // Minimal example state — real components will include additional fields
+    this.state = {
+      ...this.state,
+      /** ... add additional state fields here ... */
+    };
+  }
+  // ... rest of the class omitted for brevity ...
+}
+```
 
-This file gives short, actionable rules for automated coding agents working on this repository.
+Notes
+- Translations that affect the Admin/React code (everything under `./src-admin`) belong in the corresponding admin UI i18n files: `./src-admin/src/i18n/*` (not in `admin/i18n`).
+- These rules are additive to the general repository guidelines above. When in doubt prefer explicit type-safety and full i18n coverage.
 
-Quick start
-- Build adapter (TypeScript -> build): `npm run build`
-- Build admin UI: `npm run build:admin` (must be run after changes in `src-admin`)
-- Run tests: `npm test` (unit + package tests)
-- Lint: `npm run lint`
 
-Quick verification / install steps (recommended for automated edits)
-- Install root deps and admin UI deps before build (safe default):
-  1. Install root deps: `npm ci` (or `npm install` if you need latest installs)
-  2. Install admin deps: `npm --prefix src-admin ci` (or `npm --prefix src-admin install`)
-  3. Build adapter: `npm run build`
-  4. Build admin UI: `npm run build:admin`
+### External Script Configuration  
+- Configuration received through `OnMessage` handler in `main.ts` (command: 'ScriptConfig').
+- External scripts send complete panel configurations via sendTo interface.
+- ConfigManager class processes and validates external script configurations.
+- Support for multiple panels with different configurations.
 
-When an agent modifies `src-admin`, run the exact sequence above and report both build outputs. If `npm run build:admin` fails, include the admin build stderr and stop — do not commit UI changes that don't build.
+## Adapter Lifecycle (very important)
+- Create adapter via `utils.adapter(...)`.
+- Implement handlers:
+  - `on('ready')`: initialize MQTT server/client, create/extend objects, process panel configurations, set `info.connection`.
+  - `on('stateChange')`: react to user-writes, respect `ack` (only act when `ack === false`).
+  - `on('message')`: handle external script configurations, TFT updates, weather entity requests.
+  - `on('unload')`: clean up MQTT connections, timers/sockets (`clearTimeout/Interval`), HTTP servers.
+- Use adapter timers (`adapter.setTimeout/adapter.setInterval`) — not global timers.
+- MQTT connection status affects `info.connection` state.
 
-Where to look first
-- Adapter entry: `src/main.ts` -> compiled to `build/main.js`.
-- Core logic & pages: `src/lib/` (pages/, templates/, controller/, classes/).
-- Admin UI: `src-admin/` (React class components, i18n under `src-admin/src/i18n`).
-- Configs & metadata: `admin/jsonConfig.json5`, `io-package.json`, `package.json`.
+## Objects/States & NSPanel Specifics
+- Define objects in `io-package.json` (or extend programmatically).
+- Use roles & types correctly (e.g., `value.temperature`, `switch`, `level.dimmer`).
+- NSPanel-specific states:
+  - Panel states: `panels.{panelName}.info.*` (connection, firmware, etc.)
+  - Command states: `panels.{panelName}.cmd.*` (buzzer, tft commands, etc.)
+  - Navigation states for card switching and screen control.
+- State writes:
+  - Use `setStateAsync(id, value, true)` for updates from NSPanel (ack=true).
+  - Use `setForeignStateAsync` only when necessary across adapters.
+  - Rate-limit MQTT message bursts; never block the event loop.
+- Return `null` for “no result” where applicable (project policy).
+- Handle boolean states correctly: return `false` instead of `null` if state exists but has no value.
 
-Must-follow project rules (automated edits)
-- TypeScript-only. Avoid introducing JS files. Keep strict types; avoid `any` unless justified.
-- Admin UI: use class-based React components (no hooks). All user-visible strings must use i18n (`I18n.t('key')`).
-- New/changed admin translations: update `src-admin/src/i18n/en.json` and `src-admin/src/i18n/de.json`.
-- After any automated change to `src-admin`, run `npm run build:admin` and report build success/failure.
+## Logging & Errors
+- Use `adapter.log.debug/info/warn/error`. No raw `console.*` in prod code.
+- Wrap external I/O in try/catch; never swallow errors.
+- Reject promises with Error, not strings.
+- On connection changes, set `info.connection` true/false.
 
-Adapter lifecycle & state rules
-- Implement adapter lifecycle handlers: `on('ready')`, `on('stateChange')` (ignore `ack===true`), `on('message')`, `on('unload')`.
-- Use adapter timers (`adapter.setTimeout/adapter.setInterval`) instead of global timers.
-- Set `info.connection` based on MQTT/adapter connectivity.
-- Create/extend objects before first state write. Use `setStateAsync(id, value, true)` when acknowledging panel updates.
+## Development & Debugging Workflows
+- **Local development**: Use `npm run watch` for auto-rebuild during development.
+- **Testing changes**: Run `npm run verify` before committing (lint + build).
+- **Admin UI development**: Use `npm run build:admin` after React changes.
+- **MQTT debugging**: Check adapter logs for MQTT connection status and message flow.
+- **Panel debugging**: Monitor `panels.{panelName}.info.*` states for connection issues.
+- **State debugging**: Use StatesController's internal caching - check `timespan` parameter for cache behavior.
 
-MQTT / Tasmota integration
-- Local broker (aedes) is used for panel communication; external brokers supported via mqtt client.
-- Panel topics convention: `{panelTopic}/cmnd/`, `{panelTopic}/tele/`, `{panelTopic}/stat/`.
+## Async Patterns
+- Prefer `async/await`. Avoid unhandled promise rejections.
+- Do not use long synchronous loops (no CPU blocking).
+- For user-provided functions (e.g., compiled via `new Function`), compile once, cache, and sandbox if possible.
 
-Key patterns & files to reference in edits
-- PageItem system: `src/lib/pages/pageItem.ts` and templates in `src/lib/templates/` (light.ts, shutter.ts, button.ts, text.ts).
-- State caching & subscriptions: `src/lib/controller/states-controller.ts` and `src/lib/classes/data-item.ts`.
-- Config manager / external scripts: `src/main.ts` (OnMessage 'ScriptConfig').
+## Admin UI & NSPanel Configuration
+- Read config from `adapter.config`.
+- NSPanel admin uses JSON config format (`jsonConfig.json5`).
+- Configuration options include:
+  - MQTT server/client settings
+  - Panel configurations (topic, IP, etc.)
+  - Tasmota admin credentials
+  - TFT firmware settings
+- Validate required fields at startup; fail fast with clear `error` logs.
+- External script configuration via OnMessage handler (command: 'ScriptConfig').
+- i18n: Use `/admin/i18n/*/translations.json`. Keys must exist for English at least.
 
-Coding style & CI
-- ESLint + Prettier enforced; prefer semicolons and single quotes. Run `npm run lint` before PRs.
-- Add a short bullet under `## Changelog` in `README.md` for every fix/feature (format: `- (author) ...`).
+## Testing
+- Use `@iobroker/testing` harness:
+  - Unit tests for helpers in `/lib`.
+  - Integration smoke test: adapter starts, creates mandatory states, sets `info.connection`.
+- Mock timers with sinon when needed.
 
-Safety & reviewers
-- When changing German docs under `doc/de/` request `@tt-tom17` as reviewer and mention them in the PR description.
+## CI & Scripts  
+- `npm test` → runs lint + unit tests.
+- `npm run build` → compiles TypeScript to `/build/` directory.
+- `npm run build:admin` → builds React admin UI from `/src-admin/`.
+- `npm run build:all` → builds adapter + admin, uploads to dev-server.
+- `npm run lint` → ESLint with NSPanel-specific rules.
+- `npm run verify` → runs lint + build (good pre-commit check).
+- `npm run check` → TypeScript type checking without emit.
+- Keep PRs focused; update changelog in `README.md` (not separate CHANGELOG.md).
 
-Examples (copy-paste friendly)
-- Set connection state:
+## Style & Conventions
+- Files: `/src/lib/*.ts`, `/admin/*`, `/test/*`.
+- Main entry: `/src/main.ts`, compiled to `/build/main.js`.
+- Naming: camelCase (vars), PascalCase (classes), UPPER_SNAKE (const).
+- No magic numbers; extract to consts in `/src/lib/const/`.
+- JSDoc on public functions (short form, matching existing style).
+- Strict TypeScript - no `any` without good reason.
+
+## Do / Don’t
+**Do**
+- Create all objects before first state write.
+- Use `extendObjectAsync` to evolve schema.
+- Guard network calls with timeouts & retries (backoff).
+- Cleanly unsubscribe/close MQTT connections on unload.
+- Handle MQTT reconnection gracefully.
+- Validate panel configurations before processing.
+- Use proper error handling for Tasmota HTTP requests.
+- Initialize PageItems with proper templates and call `await pageItem.init()`.
+- Use StatesController for state access for panels.
+- Use direct state access for accessed user settings from class Panels or Controller.
+- Handle PageItem color themes consistently across all device types.
+- Implement proper cleanup in page/pageItem `delete()` methods.
+- Use appropriate page types (PageGrid, PageMenu, PageMedia) for different UI layouts.
+
+**Don’t**
+- Don’t write states in tight loops without debounce.
+- Don’t act on states with `ack===true` in `stateChange`.
+- Don’t block the event loop (no `while(true)`; no sync I/O).
+- Don’t introduce new deps casually; prefer stdlib or existing utils.
+- Don't ignore MQTT connection failures.
+- Don't modify panel firmware without proper validation.
+- Don't use StatesController for direct user settings that are rarely accessed.
+- Don't create PageItems without proper template configuration.
+- Don't forget to call `page.delete()` when removing pages.
+- Don't mix page types (don't use PageGrid for media controls).
+- Don't ignore PageItem type constraints (light, shutter, button, etc.).
+- Don't cache state values without respecting the StatesController timespan.
+
+## Common Snippets (NSPanel-specific)
+- Set connection:
   ```ts
   await this.setStateAsync('info.connection', true, true);
   ```
 - Handle ScriptConfig message (in `src/main.ts`):
   ```ts
-  case 'ScriptConfig':
-    await new ConfigManager(this).setScriptConfig(obj.message);
-    break;
+  if (message.topic.includes('/tele/')) {
+    // Handle telemetry from NSPanel
+  }
+  ```
+- External script config:
+  ```ts
+  case 'ScriptConfig': {
+    const manager = new ConfigManager(this);
+    const result = await manager.setScriptConfig(obj.message);
+    // Process configuration...
+  }
+  ```
+- Panel state update:
+  ```ts
+  await this.setStateAsync(`panels.${panelName}.info.connection`, true, true);
+  ```
+- PageItem creation with template:
+  ```ts
+  const pageItem = new PageItem(
+    { id: 'light1', name: 'Living Room Light', adapter: this, panel, dpInit: [] },
+    lightTemplate
+  );
+  await pageItem.init();
+  ```
+- DataItem with state subscription:
+  ```ts
+  const dataItem = new Dataitem(this, {
+    type: 'triggered',
+    mode: 'auto',
+    role: 'level.brightness',
+    dp: 'hue.0.Livingroom.Lamp.level'
+  }, page, statesController);
+  ```
+- Page configuration:
+  ```ts
+  const pageGrid = new PageGrid(panelConfig, {
+    config: { card: 'cardGrid', items: pageItems },
+    items: { card: 'cardGrid', items: itemConfigs }
+  });
+  await pageGrid.init();
+  ```
+- StatesController for frequently accessed states:
+  ```ts
+  // Use for states read by multiple panels
+  const state = await statesController.getState('hue.0.livingroom.temperature');
+  ```
+- Direct state access for user settings:
+  ```ts
+  // Use for rarely accessed direct user settings
+  const dimState = await this.getStateAsync('panels.panel1.cmd.dim.delay');
+  ```
+- Color handling for Dataitems:
+  ```ts
+  const onColor = Color.getColorFromDefaultOrReturn(config.colorOn || Color.activated);
+  const offColor = Color.getColorFromDefaultOrReturn(config.colorOff || Color.deactivated);
   ```
 
-If a change contradicts the NSPanel Wiki or documented behaviour, note this in the PR description.
-``` 
+## NSPanel TypeScript Rules
+- TypeScript-only (no JS). Strict mode enabled.
+- Follow ioBroker adapter structure & lifecycle.
+- Keep changes small and typed; avoid unnecessary abstractions.
+- For every fix/feature, add a **short bullet point** to the `README.md` under the `## Changelog` section.
+  - Use the existing format with `### **WORK IN PROGRESS**` and `- (author) ...`.
+  - Author format: `- (ticaki)`, `- (copilot)`, `- (tt-tom17)`, etc.
+  - **Important**: The author should be the person who commissioned the work or is responsible for it. For example, if ticaki is responsible for a function requested by copilot, use `- (ticaki)`.
+- **IMPORTANT**: Any generated code or changes must note if something contradicts the [NSPanel Wiki](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki) or modifies existing documented behavior.
+
+## Documentation References
+- [ioBroker adapter development documentation](https://www.iobroker.net/#en/documentation/dev/adapterdev.md)
+- [NSPanel Adapter Wiki](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki) - **Primary source for NSPanel-specific behavior**
+- [NSPanel Icon list](../src-admin/src/icons.json) - **Complete list of available icons for NSPanel**
+- Hardware compatibility: Sonoff NSPanel with Tasmota firmware
+- UI Design: Based on Home Assistant Lovelace UI principles
+
+## NSPanel Deep Architecture & Page System
+
+### PageItem System (Device Types)
+- **PageItem class** (`/src/lib/pages/pageItem.ts`): Base class for all interactive elements on NSPanel screens.
+- **Device type templates** (`/src/lib/templates/`): Define behavior for different device types:
+  - `light.ts`: Light controls (on/off, dimmer, RGB, hue, brightness sliders)
+  - `shutter.ts`: Blind/shutter controls (position, up/down, stop)
+  - `button.ts`: Interactive buttons with customizable actions
+  - `text.ts`, `number.ts`: Input elements
+- **PageItem types**: `'light' | 'shutter' | 'delete' (special type for removing items, not a physical device) | 'text' | 'button' | 'switch' | 'number' | 'input_sel' | 'timer' | 'fan'`
+- **State mapping**: PageItems map to ioBroker states via `DataItem` objects with type definitions:
+  - `triggered`: React to state changes with specific roles (`level.brightness`, `switch`, etc.)
+  - `const`: Static values
+  - `internal`: Internal adapter states
+- **Color handling**: PageItems have configurable `defaultOnColor`/`defaultOffColor` and support theme-based coloring.
+
+### Page Types & Navigation
+- **PageMenu** (`pageMenu.ts`): Base class for scrollable menu pages with navigation arrows.
+  - Supports pagination with `step` and `maxItems` properties
+  - Handles auto-scrolling and user navigation
+  - Arrow controls: `iconLeft/Right`, `iconLeftP/RightP` for different states
+- **PageGrid** (`pageGrid.ts`): Grid layout for device controls, extends PageMenu.
+  - Card types: `cardGrid` (6 items), `cardGrid2` (8-9 items), `cardGrid3` (4 items)
+  - Different layouts based on panel model (`us-p` vs standard)
+- **PageMedia** (`pageMedia.ts`): Media player controls with service integration.
+  - Supports: Alexa, Spotify, MPD, Sonos
+  - Handles: play/pause, volume, track info, artist scrolling
+  - Service-specific tools in `/pages/tools/` directory
+- **PageEntities** (`pageEntities.ts`): Entity list view for cardEntities (4-5 items).
+- **Specialized pages**: PageChart (with PageChartBar/PageChartLine variants), PageThermo, PageAlarm, PageSchedule, PageQR, PagePower, PageNotification, etc.
+
+### Internal State Management
+- **StatesController** (`/src/lib/controller/states-controller.ts`): Central state management system.
+  - Manages subscriptions to ioBroker states with caching (`timespan` parameter, default 15s)
+  - `triggerDB`: Tracks state changes and triggers affected pages with performance optimization
+  - `stateDB`: Local state cache with timestamps (auto-cleanup every 3 minutes)
+  - `objectDatabase`: Object definitions cache (cleared every 3 minutes to prevent memory leaks)
+  - Handles internal states (prefixed with `///`) vs external states
+  - **Blocked subscriptions system**: Temporarily holds subscriptions during initialization to prevent conflicts
+- **DataItem** (`/src/lib/classes/data-item.ts`): Wrapper for individual state access.
+  - Compiles read/write functions with user-defined transformations
+  - Type validation and role-based behavior
+  - Color processing and value transformation
+  - Integration with `StatesController` for cached access
+- **Panel states structure**:
+  - `panels.{panelName}.info.*`: Panel connection, firmware version, model
+  - `panels.{panelName}.cmd.*`: Commands (buzzer, TFT updates, navigation)
+  - `panels.{panelName}.pages.*`: Page-specific states and data
+
+### Page Item Configuration & Templates
+- **Template system**: Predefined device configurations in `/src/lib/templates/`
+- **Role-based mapping**: Device templates define roles (`rgbSingle`, `blind`, `text.list`)
+- **Data structure**: Each template defines `icon`, `entity1`, `text`, `dimmer`, etc.
+- **Dynamic configuration**: PageItems can be configured via external scripts or admin interface
+- **Popup handling**: PageItems support popup dialogs for detailed control (light color picker, shutter position)
+
+### Event Handling & Updates
+- **Message flow**: MQTT → Controller → Panel → Page → PageItem → State update
+- **Update throttling**: Pages have `minUpdateInterval` to prevent excessive updates
+- **Event types**: `entityUpd`, button clicks, navigation events
+- **Trigger system**: Pages subscribe to relevant states via StatesController
+- **Auto-refresh**: Pages can have auto-loop functionality for dynamic content
+
+### Page Configuration Patterns
+- **Card-based config**: Each page type has specific configuration schema
+- **External script config**: Pages can be configured via OnMessage handler
+- **Multi-panel support**: Same page types can run on different panels with different configs
+- **Navigation integration**: Pages register with panel navigation system
+- **State synchronization**: Page states sync with ioBroker object tree
+
+## Translation Guidelines
+- All user-facing strings must have translations in `/admin/i18n/*/translations.json`.
+- At minimum, English (`en`) translations are required.
+- Follow existing translation key patterns.
+- Card/popup names should be consistent with Lovelace UI terminology.
+
+## German Documentation Review Requirements
+- **IMPORTANT**: When copilot changes anything in the `doc/de` directory, @tt-tom17 must be requested as a reviewer in the PR.
+- Additionally, mention @tt-tom17 in the PR description with a short summary of the German documentation changes made.
+- This ensures proper review of German language documentation changes.
