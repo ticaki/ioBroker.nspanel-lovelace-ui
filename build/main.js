@@ -31,12 +31,11 @@ var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
-var import_axios = __toESM(require("axios"));
 var import_url = require("url");
 var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_test = require("./lib/const/test");
-import_axios.default.defaults.timeout = 15e3;
+var import_function_and_const = require("./lib/types/function-and-const");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -359,7 +358,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
         if (state && typeof state.val === "number" && state.val >= 100) {
           this.log.debug(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
-          await import_axios.default.get(
+          await this.fetch(
             `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog Restart 1`
           );
         } else {
@@ -367,7 +366,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
       } catch (e) {
         this.log.warn(
-          `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! ${e}`
+          `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! Error: ${e ? e.message : ""}`
         );
       }
     };
@@ -475,7 +474,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -828,8 +827,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 let u = new import_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=status 5`
                 );
-                let r = await import_axios.default.get(u.href);
-                if (!r || !r.data || !r.data.StatusNET || !r.data.StatusNET.Mac) {
+                let r = await this.fetch(u.href);
+                if (!(0, import_function_and_const.isTasmotaStatusNet)(r)) {
                   this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                   if (obj.callback) {
                     this.sendTo(
@@ -841,9 +840,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                let mac = r.data.StatusNET.Mac;
+                if (!r || !r.StatusNET || !r.StatusNET.Mac) {
+                  this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
+                  if (obj.callback) {
+                    this.sendTo(
+                      obj.from,
+                      obj.command,
+                      { error: "sendToDeviceNotFound" },
+                      obj.callback
+                    );
+                  }
+                  break;
+                }
+                let mac = r.StatusNET.Mac;
                 const topic = obj.message.tasmotaTopic;
-                const appendix = r.data.StatusNET.Mac.replace(/:/g, "").slice(-6);
+                const appendix = r.StatusNET.Mac.replace(/:/g, "").slice(-6);
                 const mqttClientId = `${this.library.cleandp(obj.message.tasmotaName)}-${appendix}`;
                 const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${topic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; FriendlyName1 ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}; MqttClient ${mqttClientId}; ${obj.message.mqttServer ? "SetOption132 1; SetOption103 1 " : "SetOption132 0; SetOption103 0"}; Restart 1`;
                 u = new import_url.URL(
@@ -852,20 +863,32 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.log.info(
                   `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
                 );
-                await import_axios.default.get(u.href);
+                await this.fetch(u.href);
                 this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 6e4);
                 u = new import_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog${encodeURIComponent(
                     ` WebLog 2;SetOption111 1; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0;${this.config.timezone ? definition.getTasmotaTimeZone(this.config.timezone) : ""}: restart 1`
                   )}`
                 );
-                await import_axios.default.get(u.href);
+                await this.fetch(u.href);
                 this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 6e4);
                 u = new import_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=status 0`
                 );
-                r = await import_axios.default.get(u.href);
-                if (!r || !r.data || !r.data.StatusNET || !r.data.StatusNET.Mac) {
+                r = await this.fetch(u.href);
+                if (!(0, import_function_and_const.isTasmotaStatusNet)(r)) {
+                  this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
+                  if (obj.callback) {
+                    this.sendTo(
+                      obj.from,
+                      obj.command,
+                      { error: "sendToDeviceNotFound" },
+                      obj.callback
+                    );
+                  }
+                  break;
+                }
+                if (!r || !r.StatusNET || !r.StatusNET.Mac) {
                   this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                   if (obj.callback) {
                     this.sendTo(
@@ -897,18 +920,18 @@ class NspanelLovelaceUi extends utils.Adapter {
                 } else {
                   update = index !== -1;
                 }
-                mac = r.data.StatusNET.Mac;
+                mac = r.StatusNET.Mac;
                 item.model = obj.message.model;
                 item.name = obj.message.tasmotaName;
                 item.topic = topic;
                 item.id = this.library.cleandp(mac);
-                item.ip = r.data.StatusNET.IPAddress;
+                item.ip = r.StatusNET.IPAddress;
                 if (index === -1) {
                   panels.push(item);
                 }
                 let result = void 0;
                 try {
-                  result = await import_axios.default.get(
+                  result = await this.fetch(
                     "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
                   );
                   if (!result || !result.data) {
@@ -923,13 +946,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                   }
-                  const version = obj.message.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
+                  const version = obj.message.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
                   const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                   this.log.info(
                     `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`
                   );
                   this.log.debug(`URL: ${url2}`);
-                  await import_axios.default.get(url2);
+                  await this.fetch(url2);
                   this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 2e4);
                   await this.delay(7e3);
                 } catch (e) {
@@ -1006,7 +1029,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (obj.message.tasmotaIP) {
               try {
                 let result = void 0;
-                result = await import_axios.default.get(
+                result = await this.fetch(
                   "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
                 );
                 if (!result || !result.data) {
@@ -1021,10 +1044,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                const version = obj.message.useBetaTFT ? result.data[`berry-beta`].split("_")[0] : result.data.berry.split("_")[0];
+                const version = obj.message.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
-                await import_axios.default.get(url);
+                await this.fetch(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
@@ -1065,7 +1088,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog ${cmnd}`;
                 this.log.debug(url);
-                await import_axios.default.get(url);
+                await this.fetch(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
@@ -1344,7 +1367,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               try {
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart 1`;
                 this.log.debug(url);
-                await import_axios.default.get(url);
+                await this.fetch(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
@@ -1368,7 +1391,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               try {
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=reset 4`;
                 this.log.debug(`Reset to factory defaults tasmota with IP ${obj.message.tasmotaIP}`);
-                await import_axios.default.get(url);
+                await this.fetch(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
@@ -1561,20 +1584,20 @@ class NspanelLovelaceUi extends utils.Adapter {
         case "updateTasmota": {
           let language = this.library.getLocalLanguage();
           language = language === "zh-cn" ? "en" : language;
-          const result = await import_axios.default.get(
+          const result = await this.fetch(
             "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
           );
-          if (result.status !== 200 || !((_H = result.data) == null ? void 0 : _H.tasmota)) {
-            this.log.warn(`Error getting Tasmota version: ${result.status}`);
-            return;
-          }
-          const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.data.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-          if ((_I = this.controller) == null ? void 0 : _I.panels) {
-            const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
-            if (index !== -1) {
-              const panel = this.controller.panels[index];
-              panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+          if ("tasmota" in result) {
+            const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+            if ((_H = this.controller) == null ? void 0 : _H.panels) {
+              const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
+              if (index !== -1) {
+                const panel = this.controller.panels[index];
+                panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+              }
             }
+          } else {
+            this.log.warn(`Error getting Tasmota version!`);
           }
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1617,7 +1640,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "screensaverNotify": {
-          if (((_J = obj.message) == null ? void 0 : _J.panel) && ((_K = this.controller) == null ? void 0 : _K.panels)) {
+          if (((_I = obj.message) == null ? void 0 : _I.panel) && ((_J = this.controller) == null ? void 0 : _J.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.topic);
             if (panel == null ? void 0 : panel.screenSaver) {
               if (typeof obj.message.heading === "string") {
@@ -1653,7 +1676,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "buzzer": {
-          if (((_L = obj.message) == null ? void 0 : _L.panel) && ((_M = this.controller) == null ? void 0 : _M.panels)) {
+          if (((_K = obj.message) == null ? void 0 : _K.panel) && ((_L = this.controller) == null ? void 0 : _L.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(
@@ -1822,12 +1845,11 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   async getTFTVersionOnline(m, beta, alpha, result) {
     if (!result) {
-      result = await import_axios.default.get(
-        "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
-        { timeout: 1e4 }
+      result = await this.fetch(
+        "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
       );
     }
-    const data = result == null ? void 0 : result.data;
+    const data = result;
     if (!data) {
       this.log.error("No version data received.");
       return null;

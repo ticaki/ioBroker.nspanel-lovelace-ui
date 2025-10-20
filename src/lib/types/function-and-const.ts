@@ -358,3 +358,60 @@ export function isAlarmButtonEvent(value: unknown): value is AlarmButtonEvents {
 }
 const arrayOfModes = arrayOfAll<ScreensaverModeType>();
 export const arrayOfScreensaverModes = arrayOfModes(['standard', 'alternate', 'advanced', 'easyview']);
+
+export function isTasmotaStatusNet(F: any): F is { StatusNET: NSPanel.STATUS0['StatusNET'] } {
+    return F && typeof F === 'object' && 'StatusNET' in F && typeof F.StatusNET === 'object';
+}
+
+export function isTasmotaStatus0Status(F: any): F is { Status: NSPanel.STATUS0['Status'] } {
+    return F && typeof F === 'object' && 'Status' in F && typeof F.Status === 'object';
+}
+
+export function isTasmotaStatusPRM(F: any): F is { StatusPRM: NSPanel.STATUS0['StatusPRM'] } {
+    return F && typeof F === 'object' && 'StatusPRM' in F && typeof F.StatusPRM === 'object';
+}
+
+export function isTasmotaStatusFWR(F: any): F is { StatusFWR: NSPanel.STATUS0['StatusFWR'] } {
+    return F && typeof F === 'object' && 'StatusFWR' in F && typeof F.StatusFWR === 'object';
+}
+
+export function isTasmotaStatusLOG(F: any): F is { StatusLOG: NSPanel.STATUS0['StatusLOG'] } {
+    return F && typeof F === 'object' && 'StatusLOG' in F && typeof F.StatusLOG === 'object';
+}
+
+export function isTasmotaStatusMEM(F: any): F is { StatusMEM: NSPanel.STATUS0['StatusMEM'] } {
+    return F && typeof F === 'object' && 'StatusMEM' in F && typeof F.StatusMEM === 'object';
+}
+
+export function isTasmotaStatusMQT(F: any): F is { StatusMQT: NSPanel.STATUS0['StatusMQT'] } {
+    return F && typeof F === 'object' && 'StatusMQT' in F && typeof F.StatusMQT === 'object';
+}
+
+export function isTasmotaStatusTIM(F: any): F is { StatusTIM: NSPanel.STATUS0['StatusTIM'] } {
+    return F && typeof F === 'object' && 'StatusTIM' in F && typeof F.StatusTIM === 'object';
+}
+
+export function isTasmotaStatusSNS(F: any): F is { StatusSNS: NSPanel.STATUS0['StatusSNS'] } {
+    return F && typeof F === 'object' && 'StatusSNS' in F && typeof F.StatusSNS === 'object';
+}
+
+export function isTasmotaStatusSTS(F: any): F is { StatusSTS: NSPanel.STATUS0['StatusSTS'] } {
+    return F && typeof F === 'object' && 'StatusSTS' in F && typeof F.StatusSTS === 'object';
+}
+
+export function isTasmotaSTATUS0(F: any): F is NSPanel.STATUS0 {
+    return (
+        F &&
+        typeof F === 'object' &&
+        isTasmotaStatus0Status(F) &&
+        isTasmotaStatusPRM(F) &&
+        isTasmotaStatusFWR(F) &&
+        isTasmotaStatusLOG(F) &&
+        isTasmotaStatusMEM(F) &&
+        isTasmotaStatusNet(F) &&
+        isTasmotaStatusMQT(F) &&
+        isTasmotaStatusTIM(F) &&
+        isTasmotaStatusSNS(F) &&
+        isTasmotaStatusSTS(F)
+    );
+}
