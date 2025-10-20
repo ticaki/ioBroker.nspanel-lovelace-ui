@@ -41,7 +41,7 @@ export class PageGrid extends PageMenu {
         ) {
             this.items = options.items;
         }
-        this.minUpdateInterval = 2000;
+        this.minUpdateInterval = 800;
     }
 
     async init(): Promise<void> {
