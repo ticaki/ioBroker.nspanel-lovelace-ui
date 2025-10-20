@@ -75,7 +75,7 @@ class CustomLog {
 export class Library extends BaseClass {
     private stateDataBase: { [key: string]: LibraryStateVal } = {};
     private forbiddenDirs: string[] = [];
-    private translation: { [key: string]: string } = {};
+    private translation: Record<'custom' | 'standard', { [key: string]: string }> = { custom: {}, standard: {} };
     private unknownTokens: Record<string, string> = {};
     private unknownTokensInterval: ioBroker.Interval | undefined;
     defaults = {
@@ -772,8 +772,11 @@ export class Library extends BaseClass {
         if (!key) {
             return '';
         }
-        if (this.translation[key] !== undefined) {
-            return this.translation[key];
+        if (this.translation.standard[key] !== undefined) {
+            return this.translation.standard[key];
+        }
+        if (this.translation.custom[key] !== undefined) {
+            return this.translation.custom[key];
         }
         if (this.adapter.config.logUnknownTokens) {
             this.unknownTokens[key] = '';
@@ -781,7 +784,13 @@ export class Library extends BaseClass {
         return key;
     }
     existTranslation(key: string): boolean {
-        return this.translation[key] !== undefined;
+        if (this.translation.standard[key] !== undefined) {
+            return true;
+        }
+        if (this.translation.custom[key] !== undefined) {
+            return true;
+        }
+        return false;
     }
 
     async getTranslationObj(key: string): Promise<ioBroker.StringOrTranslated> {
@@ -812,9 +821,15 @@ export class Library extends BaseClass {
     async checkLanguage(): Promise<void> {
         try {
             this.log.debug(`Load language ${this.adapter.language}`);
-            this.translation = await import(`../../../admin/i18n/${this.adapter.language}/translations.json`);
+            this.translation.standard = await import(`../../../admin/i18n/${this.adapter.language}/translations.json`);
         } catch {
-            this.log.warn(`Language ${this.adapter.language} not exist!`);
+            this.log.warn(`Standard: Language ${this.adapter.language} not exist!`);
+        }
+        try {
+            this.log.debug(`Load language ${this.adapter.language} from custom`);
+            this.translation.custom = await import(`../../../admin/custom/i18n/${this.adapter.language}.json`);
+        } catch {
+            this.log.warn(`Custom: Language ${this.adapter.language} not exist!`);
         }
     }
     sortText(text: string[]): string[] {

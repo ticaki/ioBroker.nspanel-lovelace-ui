@@ -95,7 +95,7 @@ _prefix = new WeakMap();
 class Library extends BaseClass {
   stateDataBase = {};
   forbiddenDirs = [];
-  translation = {};
+  translation = { custom: {}, standard: {} };
   unknownTokens = {};
   unknownTokensInterval;
   defaults = {
@@ -661,8 +661,11 @@ class Library extends BaseClass {
     if (!key) {
       return "";
     }
-    if (this.translation[key] !== void 0) {
-      return this.translation[key];
+    if (this.translation.standard[key] !== void 0) {
+      return this.translation.standard[key];
+    }
+    if (this.translation.custom[key] !== void 0) {
+      return this.translation.custom[key];
     }
     if (this.adapter.config.logUnknownTokens) {
       this.unknownTokens[key] = "";
@@ -670,7 +673,13 @@ class Library extends BaseClass {
     return key;
   }
   existTranslation(key) {
-    return this.translation[key] !== void 0;
+    if (this.translation.standard[key] !== void 0) {
+      return true;
+    }
+    if (this.translation.custom[key] !== void 0) {
+      return true;
+    }
+    return false;
   }
   async getTranslationObj(key) {
     const language = ["en", "de", "ru", "pt", "nl", "fr", "it", "es", "pl", "uk", "zh-cn"];
@@ -699,9 +708,15 @@ class Library extends BaseClass {
   async checkLanguage() {
     try {
       this.log.debug(`Load language ${this.adapter.language}`);
-      this.translation = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${this.adapter.language}/translations.json`)));
+      this.translation.standard = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${this.adapter.language}/translations.json`)));
     } catch {
-      this.log.warn(`Language ${this.adapter.language} not exist!`);
+      this.log.warn(`Standard: Language ${this.adapter.language} not exist!`);
+    }
+    try {
+      this.log.debug(`Load language ${this.adapter.language} from custom`);
+      this.translation.custom = await Promise.resolve().then(() => __toESM(require(`../../../admin/custom/i18n/${this.adapter.language}.json`)));
+    } catch {
+      this.log.warn(`Custom: Language ${this.adapter.language} not exist!`);
     }
   }
   sortText(text) {

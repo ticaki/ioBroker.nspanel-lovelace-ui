@@ -1603,7 +1603,7 @@ export class Panel extends BaseClass {
                 ? this.buttons.left
                 : this.buttons.right
             : null;
-        await this.library.writedp(`panels.${this.name}.buttons.${button}`, false, null, true, true);
+        await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
         if (action) {
             switch (action.mode) {
                 case 'button': {

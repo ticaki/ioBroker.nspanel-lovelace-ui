@@ -1445,7 +1445,7 @@ class Panel extends import_library.BaseClass {
   }
   onDetachButtonEvent = async (button) => {
     const action = this.buttons ? button === "left" ? this.buttons.left : this.buttons.right : null;
-    await this.library.writedp(`panels.${this.name}.buttons.${button}`, false, null, true, true);
+    await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
     if (action) {
       switch (action.mode) {
         case "button": {
