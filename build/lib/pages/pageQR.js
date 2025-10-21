@@ -33,7 +33,6 @@ __export(pageQR_exports, {
 module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
-var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 var globals = __toESM(require("../types/function-and-const"));
 const PageQRMessageDefault = {
@@ -104,25 +103,25 @@ class PageQR extends import_Page.Page {
       case 0:
         text1 = ssidurltel;
         text = "";
-        icon1 = import_icon_mapping.Icons.GetIcon("qrcode-scan");
+        icon1 = "qrcode-scan";
         icon2 = "";
         break;
       case 1:
         text1 = ssidurltel;
         text = "SSID";
-        icon1 = import_icon_mapping.Icons.GetIcon("wifi");
-        icon2 = import_icon_mapping.Icons.GetIcon("key-wireless");
+        icon1 = "wifi";
+        icon2 = "key-wireless";
         break;
       case 2:
         text1 = ssidurltel;
         text = "URL / Website";
-        icon1 = import_icon_mapping.Icons.GetIcon("web");
+        icon1 = "web";
         icon2 = "";
         break;
       case 3:
         text1 = ssidurltel;
         text = "Telephone";
-        icon1 = import_icon_mapping.Icons.GetIcon("phone");
+        icon1 = "phone";
         icon2 = "";
         break;
       default:

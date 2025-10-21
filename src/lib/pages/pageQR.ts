@@ -1,7 +1,6 @@
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
-import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
@@ -73,25 +72,25 @@ export class PageQR extends Page {
             case 0: // FREE
                 text1 = ssidurltel;
                 text = '';
-                icon1 = Icons.GetIcon('qrcode-scan');
+                icon1 = 'qrcode-scan';
                 icon2 = '';
                 break;
             case 1: // WIFI
                 text1 = ssidurltel;
                 text = 'SSID';
-                icon1 = Icons.GetIcon('wifi');
-                icon2 = Icons.GetIcon('key-wireless');
+                icon1 = 'wifi';
+                icon2 = 'key-wireless';
                 break;
             case 2: // URL
                 text1 = ssidurltel;
                 text = 'URL / Website';
-                icon1 = Icons.GetIcon('web');
+                icon1 = 'web';
                 icon2 = '';
                 break;
             case 3: // Telephone
                 text1 = ssidurltel;
                 text = 'Telephone';
-                icon1 = Icons.GetIcon('phone');
+                icon1 = 'phone';
                 icon2 = '';
                 break;
             default:
