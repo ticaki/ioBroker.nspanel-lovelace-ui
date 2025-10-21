@@ -134,9 +134,13 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                             variant="standard"
                         >
                             <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ mb: 0.5 }}
+                                variant="h6"
+                                sx={{
+                                    mb: 1,
+                                    fontWeight: 600,
+                                    color: 'primary.main',
+                                    fontSize: '1rem',
+                                }}
                             >
                                 {this.getText('page_type')}
                             </Typography>
