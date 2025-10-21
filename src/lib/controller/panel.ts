@@ -2314,7 +2314,7 @@ export class Panel extends BaseClass {
                 }
                 default: {
                     // @ts-expect-error die muß hier stehen und keinen Fehler haben
-                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+                    this.log.warn(`Unsupported card 1type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
                     continue;
                 }
             }

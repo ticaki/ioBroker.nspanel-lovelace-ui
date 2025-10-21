@@ -79,7 +79,7 @@ class PageQR extends import_Page.Page {
     this.minUpdateInterval = 1e3;
   }
   async init() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const config = structuredClone(this.config);
     if (!((config == null ? void 0 : config.card) === "cardQR" && config.data)) {
       throw new Error("PageQR: invalid configuration");
@@ -149,9 +149,7 @@ class PageQR extends import_Page.Page {
         text: {
           true: { type: "const", constVal: text }
         },
-        entity1: this.items.data.setState ? {
-          value: (_h = config.data) == null ? void 0 : _h.setState
-        } : void 0
+        entity1: void 0
       }
     });
     let text1Second = "";
@@ -160,7 +158,7 @@ class PageQR extends import_Page.Page {
       text1Second = password;
       textSecond = "Password";
     }
-    if (this.items.data.setState) {
+    if ((_h = config.data) == null ? void 0 : _h.setState) {
       this.pageItemConfig.push({
         type: "button",
         role: "button",
@@ -183,7 +181,7 @@ class PageQR extends import_Page.Page {
             false: { type: "const", constVal: "WlanOff" }
           },
           entity1: {
-            value: (_i = config.data) == null ? void 0 : _i.setState
+            value: config.data.setState
           }
         }
       });

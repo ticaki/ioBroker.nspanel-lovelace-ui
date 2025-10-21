@@ -118,11 +118,7 @@ export class PageQR extends Page {
                 text: {
                     true: { type: 'const', constVal: text },
                 },
-                entity1: this.items.data.setState
-                    ? {
-                          value: config.data?.setState,
-                      }
-                    : undefined,
+                entity1: undefined,
             },
         });
         let text1Second = '';
@@ -134,7 +130,7 @@ export class PageQR extends Page {
             textSecond = 'Password';
         }
 
-        if (this.items.data.setState) {
+        if (config.data?.setState) {
             // Button variant with state
             this.pageItemConfig.push({
                 type: 'button',
@@ -158,7 +154,7 @@ export class PageQR extends Page {
                         false: { type: 'const', constVal: 'WlanOff' },
                     },
                     entity1: {
-                        value: config.data?.setState,
+                        value: config.data.setState,
                     },
                 },
             });

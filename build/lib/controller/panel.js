@@ -2114,7 +2114,7 @@ ${this.info.tasmota.onlineVersion}`;
           break;
         }
         default: {
-          this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+          this.log.warn(`Unsupported card 1type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
           continue;
         }
       }

@@ -676,7 +676,6 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardEntities' &&
                     page.type !== 'cardThermo' &&
                     page.type !== 'cardThermo2' &&
-                    page.type !== 'cardQR' &&
                     page.type !== 'cardPower' &&
                     page.type !== 'cardChart' &&
                     page.type !== 'cardLChart' &&
