@@ -15,7 +15,7 @@ import {
 import { ArrowBack, Delete } from '@mui/icons-material';
 import type { PageItemButtonEntry } from '../../../src/lib/types/adminShareConfig';
 import ConfirmDialog from './ConfirmDialog';
-import { SelectID } from '@iobroker/adapter-react-v5';
+import { EntitySelector } from './EntitySelector';
 
 export interface PageItemEditorProps {
     item: PageItemButtonEntry | null; // null = create new
@@ -33,8 +33,6 @@ export interface PageItemEditorProps {
 interface PageItemEditorState {
     editedItem: PageItemButtonEntry;
     confirmDeleteOpen: boolean;
-    showSelectDialogEntity1?: boolean;
-    showSelectDialogEntity2?: boolean;
 }
 
 // Icon mapping for modeScr
@@ -278,101 +276,27 @@ export class PageItemEditor extends React.Component<PageItemEditorProps, PageIte
                             helperText={getText('pageItem_data_icon_hint')}
                         />
 
-                        {/* Entity1 - inline TextField + SelectID */}
-                        <Box sx={{ mb: 1 }}>
-                            <Typography
-                                variant="body2"
-                                sx={{ mb: 0.5, color: 'text.secondary', fontSize: '0.875rem' }}
-                            >
-                                {getText('pageItem_data_entity1')}
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                <TextField
-                                    fullWidth
-                                    variant="standard"
-                                    value={editedItem.data.entity1 || ''}
-                                    onChange={e => this.handleDataFieldChange('entity1', e.target.value)}
-                                />
-                                <Button
-                                    variant="outlined"
-                                    onClick={() =>
-                                        this.setState({ showSelectDialogEntity1: true } as PageItemEditorState)
-                                    }
-                                    sx={{ minWidth: 48 }}
-                                >
-                                    ...
-                                </Button>
+                        {/* Entity1 */}
+                        <EntitySelector
+                            label={getText('pageItem_data_entity1')}
+                            value={editedItem.data.entity1}
+                            onChange={value => this.handleDataFieldChange('entity1', value)}
+                            socket={socket}
+                            theme={theme}
+                            themeType={themeType || 'light'}
+                            dialogName="nspanel-pageitem-editor-entity1"
+                        />
 
-                                {this.state.showSelectDialogEntity1 && (
-                                    <SelectID
-                                        socket={socket}
-                                        selected={editedItem.data.entity1 || ''}
-                                        onOk={(selectedId: string | string[] | undefined) => {
-                                            const id = Array.isArray(selectedId) ? selectedId[0] : selectedId;
-                                            this.handleDataFieldChange('entity1', id || '');
-                                            this.setState({ showSelectDialogEntity1: false } as PageItemEditorState);
-                                        }}
-                                        onClose={() =>
-                                            this.setState({ showSelectDialogEntity1: false } as PageItemEditorState)
-                                        }
-                                        filterFunc={(obj: ioBroker.Object): boolean => {
-                                            return !!(obj?.type === 'state');
-                                        }}
-                                        dialogName="nspanel-pageitem-editor-entity1"
-                                        theme={theme}
-                                        themeType={themeType || 'light'}
-                                    />
-                                )}
-                            </Box>
-                        </Box>
-
-                        {/* Entity2 - inline TextField + SelectID */}
-                        <Box sx={{ mb: 1 }}>
-                            <Typography
-                                variant="body2"
-                                sx={{ mb: 0.5, color: 'text.secondary', fontSize: '0.875rem' }}
-                            >
-                                {getText('pageItem_data_entity2')}
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                <TextField
-                                    fullWidth
-                                    variant="standard"
-                                    value={editedItem.data.entity2 || ''}
-                                    onChange={e => this.handleDataFieldChange('entity2', e.target.value)}
-                                />
-                                <Button
-                                    variant="outlined"
-                                    onClick={() =>
-                                        this.setState({ showSelectDialogEntity2: true } as PageItemEditorState)
-                                    }
-                                    sx={{ minWidth: 48 }}
-                                >
-                                    ...
-                                </Button>
-
-                                {this.state.showSelectDialogEntity2 && (
-                                    <SelectID
-                                        socket={socket}
-                                        selected={editedItem.data.entity2 || ''}
-                                        onOk={(selectedId: string | string[] | undefined) => {
-                                            const id = Array.isArray(selectedId) ? selectedId[0] : selectedId;
-                                            this.handleDataFieldChange('entity2', id || '');
-                                            this.setState({ showSelectDialogEntity2: false } as PageItemEditorState);
-                                        }}
-                                        onClose={() =>
-                                            this.setState({ showSelectDialogEntity2: false } as PageItemEditorState)
-                                        }
-                                        filterFunc={(obj: ioBroker.Object): boolean => {
-                                            return !!(obj?.type === 'state');
-                                        }}
-                                        dialogName="nspanel-pageitem-editor-entity2"
-                                        theme={theme}
-                                        themeType={themeType || 'light'}
-                                    />
-                                )}
-                            </Box>
-                        </Box>
+                        {/* Entity2 */}
+                        <EntitySelector
+                            label={getText('pageItem_data_entity2')}
+                            value={editedItem.data.entity2}
+                            onChange={value => this.handleDataFieldChange('entity2', value)}
+                            socket={socket}
+                            theme={theme}
+                            themeType={themeType || 'light'}
+                            dialogName="nspanel-pageitem-editor-entity2"
+                        />
 
                         {/* SetNavi (for navigation) */}
                         <TextField
