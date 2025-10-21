@@ -118,7 +118,6 @@ export type ScreensaverEntry = {
     dateFormat?: string; // JavaScript date format string
     timeFormat?: string; // JavaScript time format string
     customDateFormat?: string; // Custom date format when dateFormat is 'custom'
-    customTimeFormat?: string; // Custom time format when timeFormat is 'custom'
     pageItems?: PageItemButtonEntry[];
     navigation?: NavigationAssignmentList;
     navigationAssignment?: NavigationAssignmentList;

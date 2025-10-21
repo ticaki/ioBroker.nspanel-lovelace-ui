@@ -85,15 +85,6 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     private readonly timeFormats = [
         { value: { hour: '2-digit', minute: '2-digit', hour12: false }, label: 'timeFormat24' },
         { value: { hour: 'numeric', minute: '2-digit', hour12: true }, label: 'timeFormat12' },
-        {
-            value: { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false },
-            label: 'timeFormat24Seconds',
-        },
-        {
-            value: { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true },
-            label: 'timeFormat12Seconds',
-        },
-        { value: 'custom', label: 'Custom' },
     ];
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
@@ -898,7 +889,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                         </FormControl>
 
                                                         {/* Custom Date Format Input */}
-                                                        {ent.dateFormat === 'custom' && (
+                                                        {ent.dateFormat === '"custom"' && (
                                                             <TextField
                                                                 label={this.getText('dateFormatCustom')}
                                                                 value={ent.customDateFormat || ''}
@@ -917,7 +908,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                 }}
                                                                 variant="outlined"
                                                                 fullWidth
-                                                                placeholder="dd.MM.yyyy"
+                                                                placeholder='{ "weekday": "long", "day": "2-digit", "month": "2-digit", "year": "numeric" }'
                                                                 sx={{ mt: 1 }}
                                                             />
                                                         )}
@@ -937,11 +928,15 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                     ent.dateFormat,
                                                                 );
                                                                 try {
-                                                                    if (format === 'custom') {
+                                                                    if (format === '"custom"') {
                                                                         const customFormat = ent.customDateFormat || '';
                                                                         if (!customFormat) {
                                                                             return 'Enter custom format above';
                                                                         }
+                                                                        console.log(
+                                                                            'Formatting date with custom:',
+                                                                            customFormat,
+                                                                        );
                                                                         return this.formatDatePreview(
                                                                             currentDate,
                                                                             customFormat,
@@ -990,38 +985,11 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                         key={format.label}
                                                                         value={JSON.stringify(format.value)}
                                                                     >
-                                                                        {format.value === 'custom'
-                                                                            ? this.getText('timeFormatCustom')
-                                                                            : this.getText(format.label)}
+                                                                        {this.getText(format.label)}
                                                                     </MenuItem>
                                                                 ))}
                                                             </Select>
                                                         </FormControl>
-
-                                                        {/* Custom Time Format Input */}
-                                                        {ent.timeFormat === '"custom"' && (
-                                                            <TextField
-                                                                label={this.getText('timeFormatCustom')}
-                                                                value={ent.customTimeFormat || ''}
-                                                                onChange={e => {
-                                                                    const customTimeFormat = e.target.value;
-                                                                    const updated = entries.map(
-                                                                        (entry: ScreensaverEntry) =>
-                                                                            entry.uniqueName === sel
-                                                                                ? { ...entry, customTimeFormat }
-                                                                                : entry,
-                                                                    );
-                                                                    this.setState({
-                                                                        entries: updated,
-                                                                    } as ScreensaverPageState);
-                                                                    void this.onChange(this.props.attr!, updated);
-                                                                }}
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                placeholder='{"hour":"2-digit","minute":"2-digit","hour12":false}'
-                                                                sx={{ mt: 1 }}
-                                                            />
-                                                        )}
 
                                                         {/* Time Format Example */}
                                                         <Typography
@@ -1040,16 +1008,6 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                         hour12: false,
                                                                     });
                                                                 try {
-                                                                    if (format === '"custom"') {
-                                                                        const customFormat = ent.customTimeFormat || '';
-                                                                        if (!customFormat) {
-                                                                            return 'Enter custom format above';
-                                                                        }
-                                                                        return this.formatTimePreview(
-                                                                            currentTime,
-                                                                            customFormat,
-                                                                        );
-                                                                    }
                                                                     return this.formatTimePreview(currentTime, format);
                                                                 } catch {
                                                                     return 'Invalid format';
