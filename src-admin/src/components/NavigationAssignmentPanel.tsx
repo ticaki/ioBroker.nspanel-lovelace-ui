@@ -721,7 +721,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             <Box>
                                 {this.state.added.length === 0 ? (
                                     <Typography
-                                        variant="body2"
+                                        variant="body1"
                                         color="text.secondary"
                                     >
                                         {I18n.t('No panels added')}
@@ -831,6 +831,14 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                             ? `(${I18n.t('all') || 'All'})`
                                                                             : a.friendlyName
                                                                     }
+                                                                    slotProps={{
+                                                                        primary: {
+                                                                            sx: {
+                                                                                fontSize: '1.05rem', // anpassen: z.B. '1.2rem' oder '16px'
+                                                                                lineHeight: 1.2,
+                                                                            },
+                                                                        },
+                                                                    }}
                                                                     sx={{
                                                                         // Text should use full available width
                                                                         flex: 1,

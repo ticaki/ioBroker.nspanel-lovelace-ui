@@ -101,6 +101,10 @@
 	"qr_wlan_hidden": "Hidden Network",
 	"qr_pwd_hidden": "Hide Password",
 	"qr_set_state": "Switch / state to enable WiFi",
-	"always_on": "Always On"
+	"always_on": "Always On",
+    "page_type": "Page Type",
+    "page_type_all": "All",
+    "page_type_alarm": "Alarm",
+    "page_type_qr": "QR"
 }
 

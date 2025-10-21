@@ -62,7 +62,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 await this.loadPagesList();
             }
         } catch (error) {
-            console.error('[UnlockPage] Failed to get alive state or subscribe:', error);
+            console.error('[PageConfig] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false } as PageConfigManagerState);
         }
     }
@@ -87,7 +87,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     private async loadPagesList(): Promise<void> {
         if (!this.state.alive) {
-            console.log('[UnlockPage] Adapter not alive, skipping pages load');
+            console.log('[PageConfig] Adapter not alive, skipping pages load');
             return;
         }
 
@@ -112,7 +112,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     const retryDelay = 3000;
 
                     console.log(
-                        `[UnlockPage] Got empty pages array, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1})`,
+                        `[PageConfig] Got empty pages array, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1})`,
                     );
 
                     this.setState({ pagesRetryCount: currentRetryCount + 1 } as PageConfigManagerState);
@@ -125,14 +125,14 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         if (this.state.alive) {
                             void this.loadPagesList();
                         } else {
-                            console.log('[UnlockPage] Adapter went offline, cancelling pages retry');
+                            console.log('[PageConfig] Adapter went offline, cancelling pages retry');
                         }
                     }, retryDelay);
 
                     return;
                 } else if (list.length > 0) {
                     console.log(
-                        `[UnlockPage] Successfully loaded ${list.length} pages after ${this.state.pagesRetryCount || 0} retries`,
+                        `[PageConfig] Successfully loaded ${list.length} pages after ${this.state.pagesRetryCount || 0} retries`,
                     );
                     this.setState({ pagesRetryCount: 0 } as PageConfigManagerState);
                     if (this.pagesRetryTimeout) {
@@ -145,7 +145,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 const retryDelay = 3000;
 
                 console.log(
-                    `[UnlockPage] Error loading pages, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1}): ${String(error)}`,
+                    `[PageConfig] Error loading pages, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1}): ${String(error)}`,
                 );
 
                 this.setState({ pagesRetryCount: currentRetryCount + 1 } as PageConfigManagerState);
@@ -158,14 +158,14 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     if (this.state.alive) {
                         void this.loadPagesList();
                     } else {
-                        console.log('[UnlockPage] Adapter went offline, cancelling pages retry after error');
+                        console.log('[PageConfig] Adapter went offline, cancelling pages retry after error');
                     }
                 }, retryDelay);
 
                 return;
             }
         } else {
-            console.log('[UnlockPage] No socket available for sendTo');
+            console.log('[PageConfig] No socket available for sendTo');
             return;
         }
 
