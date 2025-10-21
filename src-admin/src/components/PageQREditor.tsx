@@ -16,7 +16,7 @@ import {
     InputAdornment,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import ObjectIdSelector from './ObjectIdSelector';
+import { EntitySelector } from './EntitySelector';
 import type { QREntry } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageQREditorProps {
@@ -251,21 +251,25 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                             >
                                 {this.getText('qr_set_state')}
                             </Typography>
-                            <ObjectIdSelector
-                                value={entry.setState ?? ''}
+                            <EntitySelector
+                                label={this.getText('qr_set_state')}
+                                value={entry.setState ?? undefined}
                                 onChange={(v: string) => {
                                     this.handleFieldChange('setState', v);
                                 }}
                                 socket={oContext.socket}
-                                themeName={'blue' as any}
-                                themeType={theme?.palette?.mode || 'light'}
                                 theme={theme}
-                                adapterName="nspanel-lovelace-ui"
-                                instance={oContext?.instance || 0}
-                                objectIdConfig={{
-                                    types: 'state',
-                                    filterFunc:
-                                        "return !!(obj && obj.type === 'state' && obj.common && obj.common.type === 'boolean' && obj.common.write && obj.common.read);" as any,
+                                themeType={theme?.palette?.mode || 'light'}
+                                dialogName="selectState"
+                                filterFunc={(obj: ioBroker.Object) => {
+                                    return !!(
+                                        obj &&
+                                        obj.type === 'state' &&
+                                        obj.common &&
+                                        obj.common.type === 'boolean' &&
+                                        obj.common.write &&
+                                        obj.common.read
+                                    );
                                 }}
                             />
                         </Box>
