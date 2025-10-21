@@ -168,7 +168,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                         {/* WLAN Type */}
                         <FormControl
                             variant="standard"
-                            sx={{ mb: 2, minWidth: 120 }}
+                            sx={{ mb: 2, minWidth: 240 }}
                         >
                             <InputLabel>{this.getText('qr_wlan_type')}</InputLabel>
                             <Select

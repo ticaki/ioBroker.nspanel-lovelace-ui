@@ -126,7 +126,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                 >
                     {/* Page Type Selector - oberhalb der Überschrift */}
                     <Paper
-                        sx={{ p: 1, mb: 1, backgroundColor: 'transparent' }}
+                        sx={{ p: 0, mb: 1, backgroundColor: 'transparent' }}
                         elevation={0}
                     >
                         <FormControl
@@ -163,7 +163,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     <Typography
                         variant="h6"
                         sx={{
-                            mb: 1,
+                            mt: 1,
                             fontWeight: 600,
                             color: 'primary.main',
                             fontSize: '1rem',
@@ -174,7 +174,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     {/* Add new page - nur anzeigen wenn nicht 'all' ausgewählt */}
                     {selectedCardType !== 'all' && (
                         <Paper
-                            sx={{ p: 1, backgroundColor: 'transparent' }}
+                            sx={{ p: 0, backgroundColor: 'transparent' }}
                             elevation={0}
                         >
                             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -224,7 +224,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     )}
                     {/* Pages list */}
                     <Paper
-                        sx={{ overflow: 'auto', p: 1, backgroundColor: 'transparent' }}
+                        sx={{ overflow: 'auto', p: 0, backgroundColor: 'transparent' }}
                         elevation={0}
                     >
                         {filteredUniqueNames.length === 0 ? (
