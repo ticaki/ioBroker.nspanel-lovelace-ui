@@ -245,12 +245,6 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
 
                         {/* Set State field */}
                         <Box sx={{ mb: 2 }}>
-                            <Typography
-                                variant="body2"
-                                sx={{ mb: 1, color: 'text.secondary' }}
-                            >
-                                {this.getText('qr_set_state')}
-                            </Typography>
                             <EntitySelector
                                 label={this.getText('qr_set_state')}
                                 value={entry.setState ?? undefined}
