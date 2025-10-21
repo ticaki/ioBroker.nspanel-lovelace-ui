@@ -42,6 +42,8 @@ type NavigationAssignmentPanelProps = {
     // called when assignments change: (uniqueName, assignments)
     onAssign?: (uniqueName: string, assignments: NavigationAssignmentList) => void;
     // optional tooltip texts for next/prev
+    // hide navigation fields (next/prev/home/parent) - for screensaver pages
+    hideNavigationFields?: boolean;
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -851,231 +853,233 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                     <Divider sx={{ my: 1 }} />
 
                     {/* navigation selectors for the selected added panel (labels only, options removed) */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
-                        <Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                <Tooltip title={I18n.t('nav_prev_tooltip')}>
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ mr: 0.5 }}
-                                    >
-                                        prev
-                                    </Typography>
-                                </Tooltip>
+                    {!this.props.hideNavigationFields && (
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
+                            <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                    <Tooltip title={I18n.t('nav_prev_tooltip')}>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ mr: 0.5 }}
+                                        >
+                                            prev
+                                        </Typography>
+                                    </Tooltip>
+                                </Box>
+                                <Select
+                                    size="small"
+                                    displayEmpty
+                                    aria-label="prev"
+                                    value={this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''}
+                                    onOpen={() => {
+                                        if (this.state.selectedAddedTopic) {
+                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                        }
+                                    }}
+                                    onChange={e =>
+                                        this.setNavigationForSelected({ prev: String(e.target.value) || undefined })
+                                    }
+                                    sx={{ width: '100%' }}
+                                    disabled={
+                                        !this.state.alive ||
+                                        (this.state.selectedAddedTopic
+                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                            : false)
+                                    }
+                                    endAdornment={
+                                        this.state.selectedAddedTopic &&
+                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                <CircularProgress size={16} />
+                                            </Box>
+                                        ) : null
+                                    }
+                                >
+                                    <MenuItem value="">
+                                        {this.state.selectedAddedTopic ? (
+                                            <em>—</em>
+                                        ) : (
+                                            <em>{I18n.t('select_panel_first')}</em>
+                                        )}
+                                    </MenuItem>
+                                    {pages
+                                        .filter((p: string) => p !== this.props.uniqueName)
+                                        .map((p: string) => (
+                                            <MenuItem
+                                                key={`prev-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                </Select>
                             </Box>
-                            <Select
-                                size="small"
-                                displayEmpty
-                                aria-label="prev"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''}
-                                onOpen={() => {
-                                    if (this.state.selectedAddedTopic) {
-                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                    }
-                                }}
-                                onChange={e =>
-                                    this.setNavigationForSelected({ prev: String(e.target.value) || undefined })
-                                }
-                                sx={{ width: '100%' }}
-                                disabled={
-                                    !this.state.alive ||
-                                    (this.state.selectedAddedTopic
-                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false)
-                                }
-                                endAdornment={
-                                    this.state.selectedAddedTopic &&
-                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                            <CircularProgress size={16} />
-                                        </Box>
-                                    ) : null
-                                }
-                            >
-                                <MenuItem value="">
-                                    {this.state.selectedAddedTopic ? (
-                                        <em>—</em>
-                                    ) : (
-                                        <em>{I18n.t('select_panel_first')}</em>
-                                    )}
-                                </MenuItem>
-                                {pages
-                                    .filter((p: string) => p !== this.props.uniqueName)
-                                    .map((p: string) => (
-                                        <MenuItem
-                                            key={`prev-${p}`}
-                                            value={p}
+                            <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                    <Tooltip title={I18n.t('nav_next_tooltip')}>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ mr: 0.5 }}
                                         >
-                                            {p}
-                                        </MenuItem>
-                                    ))}
-                            </Select>
-                        </Box>
-                        <Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                <Tooltip title={I18n.t('nav_next_tooltip')}>
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ mr: 0.5 }}
-                                    >
-                                        next
-                                    </Typography>
-                                </Tooltip>
+                                            next
+                                        </Typography>
+                                    </Tooltip>
+                                </Box>
+                                <Select
+                                    size="small"
+                                    displayEmpty
+                                    aria-label="next"
+                                    value={this.getNavValue(this.state.selectedAddedTopic, 'next') || ''}
+                                    onOpen={() => {
+                                        if (this.state.selectedAddedTopic) {
+                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                        }
+                                    }}
+                                    onChange={e =>
+                                        this.setNavigationForSelected({ next: String(e.target.value) || undefined })
+                                    }
+                                    sx={{ width: '100%' }}
+                                    disabled={
+                                        !this.state.alive ||
+                                        (this.state.selectedAddedTopic
+                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                            : false)
+                                    }
+                                    endAdornment={
+                                        this.state.selectedAddedTopic &&
+                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                <CircularProgress size={16} />
+                                            </Box>
+                                        ) : null
+                                    }
+                                >
+                                    <MenuItem value="">
+                                        {this.state.selectedAddedTopic ? (
+                                            <em>—</em>
+                                        ) : (
+                                            <em>{I18n.t('select_panel_first')}</em>
+                                        )}
+                                    </MenuItem>
+                                    {pages
+                                        .filter((p: string) => p !== this.props.uniqueName && !p.startsWith('///'))
+                                        .map((p: string) => (
+                                            <MenuItem
+                                                key={`next-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                </Select>
                             </Box>
-                            <Select
-                                size="small"
-                                displayEmpty
-                                aria-label="next"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'next') || ''}
-                                onOpen={() => {
-                                    if (this.state.selectedAddedTopic) {
-                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                    }
-                                }}
-                                onChange={e =>
-                                    this.setNavigationForSelected({ next: String(e.target.value) || undefined })
-                                }
-                                sx={{ width: '100%' }}
-                                disabled={
-                                    !this.state.alive ||
-                                    (this.state.selectedAddedTopic
-                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false)
-                                }
-                                endAdornment={
-                                    this.state.selectedAddedTopic &&
-                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                            <CircularProgress size={16} />
-                                        </Box>
-                                    ) : null
-                                }
-                            >
-                                <MenuItem value="">
-                                    {this.state.selectedAddedTopic ? (
-                                        <em>—</em>
-                                    ) : (
-                                        <em>{I18n.t('select_panel_first')}</em>
-                                    )}
-                                </MenuItem>
-                                {pages
-                                    .filter((p: string) => p !== this.props.uniqueName && !p.startsWith('///'))
-                                    .map((p: string) => (
-                                        <MenuItem
-                                            key={`next-${p}`}
-                                            value={p}
-                                        >
-                                            {p}
-                                        </MenuItem>
-                                    ))}
-                            </Select>
-                        </Box>
 
-                        <Box>
-                            <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ mb: 0.5, display: 'block' }}
-                            >
-                                home
-                            </Typography>
-                            <Select
-                                size="small"
-                                displayEmpty
-                                aria-label="home"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
-                                onOpen={() => {
-                                    if (this.state.selectedAddedTopic) {
-                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                            <Box>
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ mb: 0.5, display: 'block' }}
+                                >
+                                    home
+                                </Typography>
+                                <Select
+                                    size="small"
+                                    displayEmpty
+                                    aria-label="home"
+                                    value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
+                                    onOpen={() => {
+                                        if (this.state.selectedAddedTopic) {
+                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                        }
+                                    }}
+                                    onChange={e =>
+                                        this.setNavigationForSelected({ home: String(e.target.value) || undefined })
                                     }
-                                }}
-                                onChange={e =>
-                                    this.setNavigationForSelected({ home: String(e.target.value) || undefined })
-                                }
-                                sx={{ width: '100%' }}
-                                disabled={
-                                    !this.state.alive ||
-                                    (this.state.selectedAddedTopic
-                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false)
-                                }
-                                endAdornment={
-                                    this.state.selectedAddedTopic &&
-                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                            <CircularProgress size={16} />
-                                        </Box>
-                                    ) : null
-                                }
-                            >
-                                <MenuItem value="">{<em>—</em>}</MenuItem>
-                                {pages
-                                    .filter((p: string) => p !== this.props.uniqueName)
-                                    .map((p: string) => (
-                                        <MenuItem
-                                            key={`home-${p}`}
-                                            value={p}
-                                        >
-                                            {p}
-                                        </MenuItem>
-                                    ))}
-                            </Select>
-                        </Box>
+                                    sx={{ width: '100%' }}
+                                    disabled={
+                                        !this.state.alive ||
+                                        (this.state.selectedAddedTopic
+                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                            : false)
+                                    }
+                                    endAdornment={
+                                        this.state.selectedAddedTopic &&
+                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                <CircularProgress size={16} />
+                                            </Box>
+                                        ) : null
+                                    }
+                                >
+                                    <MenuItem value="">{<em>—</em>}</MenuItem>
+                                    {pages
+                                        .filter((p: string) => p !== this.props.uniqueName)
+                                        .map((p: string) => (
+                                            <MenuItem
+                                                key={`home-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                </Select>
+                            </Box>
 
-                        <Box>
-                            <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ mb: 0.5, display: 'block' }}
-                            >
-                                parent
-                            </Typography>
-                            <Select
-                                size="small"
-                                displayEmpty
-                                aria-label="parent"
-                                value={this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''}
-                                onOpen={() => {
-                                    if (this.state.selectedAddedTopic) {
-                                        void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                            <Box>
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ mb: 0.5, display: 'block' }}
+                                >
+                                    parent
+                                </Typography>
+                                <Select
+                                    size="small"
+                                    displayEmpty
+                                    aria-label="parent"
+                                    value={this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''}
+                                    onOpen={() => {
+                                        if (this.state.selectedAddedTopic) {
+                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                        }
+                                    }}
+                                    onChange={e =>
+                                        this.setNavigationForSelected({ parent: String(e.target.value) || undefined })
                                     }
-                                }}
-                                onChange={e =>
-                                    this.setNavigationForSelected({ parent: String(e.target.value) || undefined })
-                                }
-                                sx={{ width: '100%' }}
-                                disabled={
-                                    !this.state.alive ||
-                                    (this.state.selectedAddedTopic
-                                        ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                        : false)
-                                }
-                                endAdornment={
-                                    this.state.selectedAddedTopic &&
-                                    this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                            <CircularProgress size={16} />
-                                        </Box>
-                                    ) : null
-                                }
-                            >
-                                <MenuItem value="">{<em>—</em>}</MenuItem>
-                                {pages
-                                    .filter((p: string) => p !== this.props.uniqueName)
-                                    .map((p: string) => (
-                                        <MenuItem
-                                            key={`parent-${p}`}
-                                            value={p}
-                                        >
-                                            {p}
-                                        </MenuItem>
-                                    ))}
-                            </Select>
+                                    sx={{ width: '100%' }}
+                                    disabled={
+                                        !this.state.alive ||
+                                        (this.state.selectedAddedTopic
+                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                            : false)
+                                    }
+                                    endAdornment={
+                                        this.state.selectedAddedTopic &&
+                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                <CircularProgress size={16} />
+                                            </Box>
+                                        ) : null
+                                    }
+                                >
+                                    <MenuItem value="">{<em>—</em>}</MenuItem>
+                                    {pages
+                                        .filter((p: string) => p !== this.props.uniqueName)
+                                        .map((p: string) => (
+                                            <MenuItem
+                                                key={`parent-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                </Select>
+                            </Box>
+                            <Divider sx={{ my: 1 }} />
                         </Box>
-                        <Divider sx={{ my: 1 }} />
-                    </Box>
+                    )}
 
                     {/* Notice when no next/prev is selected */}
                     {/* Für jedes hinzugefügte Panel: Status + nav summary */}

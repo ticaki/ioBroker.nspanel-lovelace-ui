@@ -1178,6 +1178,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                 this.setState({ entries: updated } as ScreensaverPageState);
                                 void this.onChange(this.props.attr!, updated);
                             }}
+                            hideNavigationFields={true}
                         />
                     </Box>
                 </Box>
