@@ -299,6 +299,9 @@ class PagePower extends import_Page.Page {
         unit: { type: "const", constVal: valueUnit[7] }
       };
     }
+    configManager.log.info(
+      `AlwaysOn Display for PagePower ${config.pageName}: ${gridItem.alwaysOn || config.alwaysOnDisplay ? "always" : "none"}`
+    );
     gridItem = {
       ...gridItem,
       uniqueID: config.pageName,

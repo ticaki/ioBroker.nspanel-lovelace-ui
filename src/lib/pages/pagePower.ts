@@ -343,6 +343,9 @@ export class PagePower extends Page {
             };
         }
 
+        configManager.log.info(
+            `AlwaysOn Display for PagePower ${config.pageName}: ${gridItem.alwaysOn || config.alwaysOnDisplay ? 'always' : 'none'}`,
+        );
         gridItem = {
             ...gridItem,
             uniqueID: config.pageName,
