@@ -343,13 +343,11 @@ export class PagePower extends Page {
             };
         }
 
-        configManager.log.info(
-            `AlwaysOn Display for PagePower ${config.pageName}: ${gridItem.alwaysOn || config.alwaysOnDisplay ? 'always' : 'none'}`,
-        );
         gridItem = {
             ...gridItem,
             uniqueID: config.pageName,
-            alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? 'always' : 'none',
+            alwaysOn: gridItem.alwaysOn === 'always' || config.alwaysOnDisplay ? 'always' : 'none',
+
             hidden: gridItem.hidden || config.hiddenByTrigger,
             config: {
                 card: 'cardPower',
