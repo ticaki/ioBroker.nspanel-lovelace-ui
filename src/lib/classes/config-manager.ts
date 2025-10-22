@@ -2493,7 +2493,10 @@ export class ConfigManager extends BaseClass {
             );
             return undefined;
         }
-
+        if (item.targetPage && !itemConfig.data?.setNavi && itemConfig.type === 'button') {
+            itemConfig.data = itemConfig.data || {};
+            itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
+        }
         if (item.filter != null) {
             itemConfig.filter = item.filter;
         }

@@ -1361,7 +1361,7 @@ class ConfigManager extends import_library.BaseClass {
     return !("native" in item);
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     if (this.isNativePageItem(item)) {
       if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
@@ -2182,6 +2182,10 @@ class ConfigManager extends import_library.BaseClass {
         `No configuration generated for item "${item.id}" on page "${page.uniqueName}" (role: ${role}).`
       );
       return void 0;
+    }
+    if (item.targetPage && !((_i = itemConfig.data) == null ? void 0 : _i.setNavi) && itemConfig.type === "button") {
+      itemConfig.data = itemConfig.data || {};
+      itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
     }
     if (item.filter != null) {
       itemConfig.filter = item.filter;
