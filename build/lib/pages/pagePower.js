@@ -230,9 +230,27 @@ class PagePower extends import_Page.Page {
         valueDecimal.push(0);
       }
     }
+    const configUnit = [];
     const valueUnit = [];
     for (let i = 1; i <= 7; i++) {
       const key = `power${i}_valueUnit`;
+      switch (config[key]) {
+        case "W": {
+          configUnit.push(0);
+          break;
+        }
+        case "kW": {
+          configUnit.push(1);
+          break;
+        }
+        case "MW": {
+          configUnit.push(2);
+          break;
+        }
+        default: {
+          configUnit.push(void 0);
+        }
+      }
       if (states[i - 1] != null && states[i - 1] != "" && await configManager.existsState(states[i - 1])) {
         const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
         if (o && o.common && o.common.unit) {
@@ -356,7 +374,8 @@ class PagePower extends import_Page.Page {
             },
             text: {
               true: { type: "const", constVal: entityHeadline[0] }
-            }
+            },
+            targetUnit: configUnit[0] ? { type: "const", constVal: configUnit[0] } : void 0
           },
           leftMiddle: {
             icon: {
@@ -415,7 +434,8 @@ class PagePower extends import_Page.Page {
             },
             text: {
               true: { type: "const", constVal: entityHeadline[1] }
-            }
+            },
+            targetUnit: configUnit[1] ? { type: "const", constVal: configUnit[1] } : void 0
           },
           leftBottom: {
             icon: {
@@ -474,7 +494,8 @@ class PagePower extends import_Page.Page {
             },
             text: {
               true: { type: "const", constVal: entityHeadline[2] }
-            }
+            },
+            targetUnit: configUnit[2] ? { type: "const", constVal: configUnit[2] } : void 0
           },
           rightTop: {
             icon: {
@@ -533,7 +554,8 @@ class PagePower extends import_Page.Page {
             },
             text: {
               true: { type: "const", constVal: entityHeadline[3] }
-            }
+            },
+            targetUnit: configUnit[3] ? { type: "const", constVal: configUnit[3] } : void 0
           },
           rightMiddle: {
             icon: {
@@ -592,7 +614,8 @@ class PagePower extends import_Page.Page {
             },
             text: {
               true: { type: "const", constVal: entityHeadline[4] }
-            }
+            },
+            targetUnit: configUnit[4] ? { type: "const", constVal: configUnit[4] } : void 0
           },
           rightBottom: {
             icon: {
@@ -651,7 +674,8 @@ class PagePower extends import_Page.Page {
             },
             text: {
               true: { type: "const", constVal: entityHeadline[5] }
-            }
+            },
+            targetUnit: configUnit[5] ? { type: "const", constVal: configUnit[5] } : void 0
           }
         }
       },
@@ -694,7 +718,7 @@ class PagePower extends import_Page.Page {
     return value !== null ? value + num : num;
   }
   async getElementUpdate(item, index) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (item === void 0) {
       return void 0;
     }
@@ -703,10 +727,16 @@ class PagePower extends import_Page.Page {
     if (value === null) {
       return void 0;
     }
-    message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
-    message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
-    message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;
-    message.speed = (_d = await (0, import_tools.getScaledNumber)(item.speed)) != null ? _d : void 0;
+    if (this.autoUnit[index] === void 0) {
+      const unitEntry = await ((_a = item.targetUnit) == null ? void 0 : _a.getNumber());
+      if (unitEntry != null) {
+        this.autoUnit[index] = unitEntry;
+      }
+    }
+    message.icon = (_b = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _b : void 0;
+    message.iconColor = (_c = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _c : void 0;
+    message.name = (_d = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _d : void 0;
+    message.speed = (_e = await (0, import_tools.getScaledNumber)(item.speed)) != null ? _e : void 0;
     const {
       value: newValue,
       unit,
