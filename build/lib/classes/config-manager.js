@@ -2179,7 +2179,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (!itemConfig) {
       this.log.warn(
-        `No configuration generat1ed for item "${item.id}" on page "${page.uniqueName}" (role: ${role}).`
+        `No configuration generated for item "${item.id}" on page "${page.uniqueName}" (role: ${role}).`
       );
       return void 0;
     }
