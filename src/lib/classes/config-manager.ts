@@ -2489,14 +2489,11 @@ export class ConfigManager extends BaseClass {
         }
         if (!itemConfig) {
             this.log.warn(
-                `No configuration generated for item "${item.id}" on page "${page.uniqueName}" (role: ${role}).`,
+                `No configuration generat1ed for item "${item.id}" on page "${page.uniqueName}" (role: ${role}).`,
             );
             return undefined;
         }
-        if (item.targetPage && !itemConfig.data?.setNavi && itemConfig.type === 'button') {
-            itemConfig.data = itemConfig.data || {};
-            itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
-        }
+
         if (item.filter != null) {
             itemConfig.filter = item.filter;
         }
@@ -4220,6 +4217,10 @@ export class ConfigManager extends BaseClass {
                 }
                 if (item.filter != null && itemConfig) {
                     itemConfig.filter = item.filter;
+                }
+                if (item.targetPage && itemConfig?.type === 'button' && !itemConfig?.data?.setNavi) {
+                    itemConfig.data = itemConfig.data || {};
+                    itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
                 }
                 if (item.enabled === false && itemConfig) {
                     if (!itemConfig.data) {
