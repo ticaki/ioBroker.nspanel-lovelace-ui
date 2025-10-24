@@ -1122,35 +1122,48 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 let result: Record<string, string> | undefined = undefined;
                                 try {
-                                    result = (await this.fetch(
-                                        'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                                    )) as Record<string, string> | undefined;
-                                    if (!result) {
-                                        this.log.error('No version found!');
-                                        if (obj.callback) {
-                                            this.sendTo(
-                                                obj.from,
-                                                obj.command,
-                                                { error: 'sendToRequestFail1' },
-                                                obj.callback,
-                                            );
-                                        }
-                                        break;
-                                    }
-                                    const version = obj.message.useBetaTFT
-                                        ? result[`berry-beta`].split('_')[0]
-                                        : result.berry.split('_')[0];
                                     const url =
                                         `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                                        `&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
-                                    this.log.info(
-                                        `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
-                                    );
-                                    this.log.debug(`URL: ${url}`);
-                                    await this.fetch(url);
-                                    this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
-                                    await this.delay(7000);
+                                        `&cmnd=GetDriverVersion`;
+
+                                    result = (await this.fetch(url, 3000)) as Record<string, string> | undefined;
+
+                                    if (!result || result.nlui_driver_version !== '-1') {
+                                        result = (await this.fetch(
+                                            'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                                        )) as Record<string, string> | undefined;
+                                        if (!result) {
+                                            this.log.error('No version found!');
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToRequestFail1' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            break;
+                                        }
+                                        const version = obj.message.useBetaTFT
+                                            ? result[`berry-beta`].split('_')[0]
+                                            : result.berry.split('_')[0];
+                                        const url =
+                                            `http://${obj.message.tasmotaIP}/cm?` +
+                                            `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                            `&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                                        this.log.info(
+                                            `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
+                                        );
+                                        this.log.debug(`URL: ${url}`);
+                                        await this.fetch(url);
+                                        this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
+                                        await this.delay(7000);
+                                    } else {
+                                        this.log.debug(
+                                            `Emulator detected on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}, skipping berry install.`,
+                                        );
+                                    }
                                 } catch (e: any) {
                                     this.log.error(`Error: while installing berry - ${e}`);
                                 }
