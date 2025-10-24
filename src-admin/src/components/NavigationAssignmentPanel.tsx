@@ -21,6 +21,9 @@ import {
     Tab,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import NavigationIcon from '@mui/icons-material/Navigation';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ExtensionIcon from '@mui/icons-material/Extension';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/adapter-react-v5';
@@ -761,13 +764,109 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                     <Tabs
                         value={activeTab ?? 0}
                         onChange={this.handleTabChange}
-                        variant="fullWidth"
-                        sx={{ mb: 1 }}
+                        variant="scrollable"
+                        scrollButtons="auto"
+                        sx={{
+                            mb: 1,
+                            minHeight: { xs: 36, md: 48 },
+                            '& .MuiTab-root': {
+                                minHeight: { xs: 36, md: 48 },
+                                py: { xs: 0.5, md: 1.5 },
+                                fontSize: { xs: '0.75rem', md: '0.875rem' },
+                            },
+                        }}
                         aria-label="Navigation assignment tabs"
                     >
-                        <Tab label={I18n.t('navigation') || 'Navigation'} />
-                        <Tab label={I18n.t('pagedetails') || 'Page Details'} />
-                        <Tab label={I18n.t('placeholder') || 'Placeholder'} />
+                        <Tab
+                            icon={<NavigationIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                            iconPosition="start"
+                            label={
+                                <>
+                                    {/* Responsive label: short on mobile */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'inline', md: 'none' },
+                                        }}
+                                    >
+                                        {I18n.t('nav') || 'Nav'}
+                                    </Box>
+                                    {/* Full label on desktop */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'none', md: 'inline' },
+                                        }}
+                                    >
+                                        {I18n.t('navigation') || 'Navigation'}
+                                    </Box>
+                                </>
+                            }
+                            sx={{
+                                minWidth: { xs: 'auto', md: 90 },
+                                px: { xs: 1, md: 2 },
+                            }}
+                        />
+                        <Tab
+                            icon={<SettingsIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                            iconPosition="start"
+                            label={
+                                <>
+                                    {/* Responsive label: short on mobile */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'inline', md: 'none' },
+                                        }}
+                                    >
+                                        {I18n.t('details') || 'Details'}
+                                    </Box>
+                                    {/* Full label on desktop */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'none', md: 'inline' },
+                                        }}
+                                    >
+                                        {I18n.t('pagedetails') || 'Page Details'}
+                                    </Box>
+                                </>
+                            }
+                            sx={{
+                                minWidth: { xs: 'auto', md: 90 },
+                                px: { xs: 1, md: 2 },
+                            }}
+                        />
+                        <Tab
+                            icon={<ExtensionIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                            iconPosition="start"
+                            label={
+                                <>
+                                    {/* Responsive label: short on mobile */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'inline', md: 'none' },
+                                        }}
+                                    >
+                                        {I18n.t('free') || 'Free'}
+                                    </Box>
+                                    {/* Full label on desktop */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'none', md: 'inline' },
+                                        }}
+                                    >
+                                        {I18n.t('placeholder') || 'Placeholder'}
+                                    </Box>
+                                </>
+                            }
+                            sx={{
+                                minWidth: { xs: 'auto', md: 90 },
+                                px: { xs: 1, md: 2 },
+                            }}
+                        />
                     </Tabs>
 
                     {activeTab === 0 && (
