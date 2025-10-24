@@ -932,7 +932,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 let result = void 0;
                 try {
                   const url2 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=GetDriverVersion`;
-                  result = await this.fetch(url2, 3e3);
+                  result = await this.fetch(url2, void 0, 3e3);
                   if (!result || result.nlui_driver_version !== "-1") {
                     result = await this.fetch(
                       "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"

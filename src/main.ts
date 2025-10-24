@@ -1127,7 +1127,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=GetDriverVersion`;
 
-                                    result = (await this.fetch(url, 3000)) as Record<string, string> | undefined;
+                                    result = (await this.fetch(url, undefined, 3000)) as
+                                        | Record<string, string>
+                                        | undefined;
 
                                     if (!result || result.nlui_driver_version !== '-1') {
                                         result = (await this.fetch(
