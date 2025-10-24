@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Error during conversion to fetch prevented adding of panels. Fixed.
+
 ### 0.6.7 (2025-10-22)
 - (ticaki) PagePower: Added favorite unit selection for power display
 - (ticaki) Grid/Entities pages: Improved update performance with reduced minimum update interval
