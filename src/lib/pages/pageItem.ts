@@ -2072,9 +2072,10 @@ export class PageItem extends BaseTriggeredPage {
                         break;
                     }
                     let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
+                    let nav = false;
                     if (value !== null) {
                         await this.parent.basePanel.navigation.setTargetPageByName(value);
-                        break;
+                        nav = true;
                     }
 
                     if (item.entity1 && item.entity1.set && item.entity1.set.writeable) {
@@ -2097,6 +2098,9 @@ export class PageItem extends BaseTriggeredPage {
                     }
                     if (item.setValue2 && item.setValue2.writeable) {
                         await item.setValue2.setStateTrue();
+                        break;
+                    }
+                    if (nav) {
                         break;
                     }
                     if (item.entity1?.value?.writeable) {

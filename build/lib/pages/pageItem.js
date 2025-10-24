@@ -1798,9 +1798,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             break;
           }
           let value2 = (_l = item.setNavi && await item.setNavi.getString()) != null ? _l : null;
+          let nav = false;
           if (value2 !== null) {
             await this.parent.basePanel.navigation.setTargetPageByName(value2);
-            break;
+            nav = true;
           }
           if (item.entity1 && item.entity1.set && item.entity1.set.writeable) {
             await item.entity1.set.setStateFlip();
@@ -1821,6 +1822,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
           if (item.setValue2 && item.setValue2.writeable) {
             await item.setValue2.setStateTrue();
+            break;
+          }
+          if (nav) {
             break;
           }
           if ((_p = (_o = item.entity1) == null ? void 0 : _o.value) == null ? void 0 : _p.writeable) {

@@ -269,9 +269,29 @@ export class PagePower extends Page {
         }
 
         //array of valueUnit
+        const configUnit: (number | undefined)[] = [];
         const valueUnit: string[] = [];
         for (let i = 1; i <= 7; i++) {
             const key = `power${i}_valueUnit` as keyof typeof config;
+            // Erstellt eine Konfiguration für die bevorzuge Unit - funktioniert nur wenn common.unit gesetzt ist, ansonsten keien Änderung.
+            switch (config[key]) {
+                case 'W': {
+                    configUnit.push(0);
+                    break;
+                }
+                case 'kW': {
+                    configUnit.push(1);
+                    break;
+                }
+                case 'MW': {
+                    configUnit.push(2);
+                    break;
+                }
+                default: {
+                    configUnit.push(undefined);
+                }
+            }
+
             if (states[i - 1] != null && states[i - 1] != '' && (await configManager.existsState(states[i - 1]))) {
                 const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
                 if (o && o.common && o.common.unit) {
@@ -326,7 +346,8 @@ export class PagePower extends Page {
         gridItem = {
             ...gridItem,
             uniqueID: config.pageName,
-            alwaysOn: gridItem.alwaysOn || config.alwaysOnDisplay ? 'always' : 'none',
+            alwaysOn: gridItem.alwaysOn === 'always' || config.alwaysOnDisplay ? 'always' : 'none',
+
             hidden: gridItem.hidden || config.hiddenByTrigger,
             config: {
                 card: 'cardPower',
@@ -398,6 +419,7 @@ export class PagePower extends Page {
                         text: {
                             true: { type: 'const', constVal: entityHeadline[0] },
                         },
+                        targetUnit: configUnit[0] ? { type: 'const', constVal: configUnit[0] } : undefined,
                     },
                     leftMiddle: {
                         icon: {
@@ -457,6 +479,7 @@ export class PagePower extends Page {
                         text: {
                             true: { type: 'const', constVal: entityHeadline[1] },
                         },
+                        targetUnit: configUnit[1] ? { type: 'const', constVal: configUnit[1] } : undefined,
                     },
                     leftBottom: {
                         icon: {
@@ -516,6 +539,7 @@ export class PagePower extends Page {
                         text: {
                             true: { type: 'const', constVal: entityHeadline[2] },
                         },
+                        targetUnit: configUnit[2] ? { type: 'const', constVal: configUnit[2] } : undefined,
                     },
                     rightTop: {
                         icon: {
@@ -575,6 +599,7 @@ export class PagePower extends Page {
                         text: {
                             true: { type: 'const', constVal: entityHeadline[3] },
                         },
+                        targetUnit: configUnit[3] ? { type: 'const', constVal: configUnit[3] } : undefined,
                     },
                     rightMiddle: {
                         icon: {
@@ -634,6 +659,7 @@ export class PagePower extends Page {
                         text: {
                             true: { type: 'const', constVal: entityHeadline[4] },
                         },
+                        targetUnit: configUnit[4] ? { type: 'const', constVal: configUnit[4] } : undefined,
                     },
                     rightBottom: {
                         icon: {
@@ -693,6 +719,7 @@ export class PagePower extends Page {
                         text: {
                             true: { type: 'const', constVal: entityHeadline[5] },
                         },
+                        targetUnit: configUnit[5] ? { type: 'const', constVal: configUnit[5] } : undefined,
                     },
                 },
             },
@@ -753,6 +780,13 @@ export class PagePower extends Page {
         const value = await getValueEntryNumber(item.value);
         if (value === null) {
             return undefined;
+        }
+
+        if (this.autoUnit[index] === undefined) {
+            const unitEntry = await item.targetUnit?.getNumber();
+            if (unitEntry != null) {
+                this.autoUnit[index] = unitEntry;
+            }
         }
 
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
