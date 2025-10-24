@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.6.8 (2025-10-24)
 - (ticaki) Error during conversion to fetch prevented adding of panels. Fixed.
 
 ### 0.6.7 (2025-10-22)
