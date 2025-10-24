@@ -553,7 +553,16 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     private renderCommonFields(): React.JSX.Element | null {
         const { commonFields } = this.props;
         if (!commonFields) {
-            return null;
+            return (
+                <Box sx={{ mt: 2 }}>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                    >
+                        {this.getText('select_description')}
+                    </Typography>
+                </Box>
+            );
         }
 
         return (
@@ -1432,7 +1441,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                     {activeTab === 1 && (
                         <>
                             {/* Tab 1: Placeholder content */}
-                            {/* Gemeinsame Felder am Ende des Panels */}
                             {this.renderCommonFields()}
                         </>
                     )}
