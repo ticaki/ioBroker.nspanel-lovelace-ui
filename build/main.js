@@ -959,7 +959,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 2e4);
                     await this.delay(7e3);
                   } else {
-                    this.log.debug(
+                    this.log.info(
                       `Emulator detected on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}, skipping berry install.`
                     );
                   }
