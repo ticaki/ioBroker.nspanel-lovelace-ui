@@ -774,7 +774,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         value={activeTab ?? 0}
                         onChange={this.handleTabChange}
                         variant="scrollable"
-                        scrollButtons="auto"
+                        scrollButtons={false}
                         sx={{
                             mb: 1,
                             minHeight: { xs: 36, md: 48 },
