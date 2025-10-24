@@ -141,7 +141,25 @@ export type QREntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
-export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry;
+// Chart Entry for pageChart configuration
+export type ChartEntry = {
+    card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
+    uniqueName: string;
+    chart_color?: string;
+    selChartType?: 'cardChart' | 'cardLChart';
+    selInstanceDataSource?: number; // 0 = script, 1 = DB adapter
+    selInstance?: string; // Instance ID for DB adapter
+    setStateForTicks?: string;
+    setStateForValues?: string;
+    setStateForDB?: string;
+    txtlabelYAchse?: string;
+    rangeHours?: number;
+    maxXAxisTicks?: number;
+    factorCardChart?: number; // 1, 10, 100, 1000
+    maxXAxisLabels?: number;
+} & PageConfigBaseFields;
+
+export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | ChartEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;
