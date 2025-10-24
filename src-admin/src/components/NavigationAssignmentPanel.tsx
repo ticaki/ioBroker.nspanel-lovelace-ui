@@ -12,6 +12,11 @@ import {
     Typography,
     CircularProgress,
     IconButton,
+    FormControl,
+    FormControlLabel,
+    RadioGroup,
+    Radio,
+    Checkbox,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Tooltip from '@mui/material/Tooltip';
@@ -21,6 +26,7 @@ import type {
     PanelInfo,
     NavigationAssignmentList,
     NavigationAssignment,
+    PageConfigBaseFields,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     // SENDTO_GET_PANELS_COMMAND,
@@ -44,6 +50,9 @@ type NavigationAssignmentPanelProps = {
     // optional tooltip texts for next/prev
     // hide navigation fields (next/prev/home/parent) - for screensaver pages
     hideNavigationFields?: boolean;
+    // Neu: Gemeinsame Felder
+    commonFields?: PageConfigBaseFields;
+    onCommonFieldsChange?: (fields: Partial<PageConfigBaseFields>) => void;
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -522,6 +531,83 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             void this.applyAssignmentsFromProps(this.props.currentAssignments || []);
         }
     };
+
+    private handleCommonFieldChange(field: keyof PageConfigBaseFields, value: any): void {
+        if (this.props.onCommonFieldsChange) {
+            this.props.onCommonFieldsChange({ [field]: value });
+        }
+    }
+
+    private renderCommonFields(): React.JSX.Element | null {
+        const { commonFields } = this.props;
+        if (!commonFields) {
+            return null;
+        }
+
+        return (
+            <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}
+                >
+                    {I18n.t('common_settings')}
+                </Typography>
+
+                {/* Hidden Checkbox */}
+                <Box sx={{ mb: 2 }}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={!!commonFields.hidden}
+                                onChange={(_e, checked) => {
+                                    this.handleCommonFieldChange('hidden', checked);
+                                }}
+                            />
+                        }
+                        label={I18n.t('hidden')}
+                    />
+                </Box>
+
+                {/* AlwaysOn Radio Group */}
+                <Box sx={{ mt: 2 }}>
+                    <FormControl component="fieldset">
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ mb: 1 }}
+                        >
+                            {I18n.t('alwaysOn')}
+                        </Typography>
+                        <RadioGroup
+                            row
+                            value={commonFields.alwaysOn || 'none'}
+                            onChange={(_e, val) => {
+                                this.handleCommonFieldChange(
+                                    'alwaysOn',
+                                    val as 'none' | 'always' | 'action' | 'ignore',
+                                );
+                            }}
+                        >
+                            <FormControlLabel
+                                value="none"
+                                control={<Radio />}
+                                label={I18n.t('alwaysOn_none')}
+                            />
+                            <FormControlLabel
+                                value="always"
+                                control={<Radio />}
+                                label={I18n.t('alwaysOn_always')}
+                            />
+                            <FormControlLabel
+                                value="ignore"
+                                control={<Radio />}
+                                label={I18n.t('alwaysOn_ignore')}
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                </Box>
+            </Box>
+        );
+    }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const { widthPercent } = this.props;
@@ -1181,6 +1267,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         : null}
 
                     {/* children area removed as requested (was rendered below the parent select) */}
+
+                    {/* Gemeinsame Felder am Ende des Panels */}
+                    {this.renderCommonFields()}
                 </Box>
             </Box>
         );

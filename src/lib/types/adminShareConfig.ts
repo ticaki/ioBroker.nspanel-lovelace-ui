@@ -81,6 +81,12 @@ export interface PanelListEntry {
 }
 
 // Shared types for admin UI (typo: file name uses 'Shard')
+export interface PageConfigBaseFields {
+    hidden?: boolean;
+    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+    navigationAssignment?: NavigationAssignmentList;
+}
+
 export type UnlockEntry = {
     card: Extract<AdminCardTypes, 'cardAlarm'>; // Supported card types - will be extended
     alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
@@ -97,11 +103,8 @@ export type UnlockEntry = {
     global?: boolean;
     approved?: boolean;
     setNavi?: string;
-    hidden?: boolean;
-    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
-    navigationAssignment?: NavigationAssignmentList;
     uniqueName: string;
-};
+} & PageConfigBaseFields;
 
 export type PageItemButtonEntry = {
     type: 'text' | 'button';
@@ -135,11 +138,8 @@ export type QREntry = {
     qrPass?: string;
     pwdhidden: boolean;
     setState: string;
-    hidden?: boolean;
-    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
-    navigationAssignment?: NavigationAssignmentList;
     uniqueName: string;
-};
+} & PageConfigBaseFields;
 
 export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel

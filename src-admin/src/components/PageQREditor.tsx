@@ -8,7 +8,6 @@ import {
     RadioGroup,
     Radio,
     Checkbox,
-    Typography,
     InputLabel,
     Select,
     MenuItem,
@@ -270,55 +269,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                     </Box>
                 )}
 
-                {/* Common fields */}
-                <Box sx={{ mt: 2 }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={!!entry.hidden}
-                                onChange={(_e, checked) => {
-                                    this.handleFieldChange('hidden', checked);
-                                }}
-                            />
-                        }
-                        label={this.getText('hidden')}
-                    />
-
-                    {/* alwaysOn radio group */}
-                    <Box sx={{ mt: 2 }}>
-                        <FormControl component="fieldset">
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ mb: 1 }}
-                            >
-                                {this.getText('alwaysOn')}
-                            </Typography>
-                            <RadioGroup
-                                row
-                                value={entry?.alwaysOn || 'none'}
-                                onChange={(_e, val) => {
-                                    this.handleFieldChange('alwaysOn', val as 'none' | 'always' | 'action' | 'ignore');
-                                }}
-                            >
-                                <FormControlLabel
-                                    value="none"
-                                    control={<Radio />}
-                                    label={this.getText('alwaysOn_none')}
-                                />
-                                <FormControlLabel
-                                    value="always"
-                                    control={<Radio />}
-                                    label={this.getText('alwaysOn_always')}
-                                />
-                                <FormControlLabel
-                                    value="ignore"
-                                    control={<Radio />}
-                                    label={this.getText('alwaysOn_ignore')}
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                    </Box>
-                </Box>
+                {/* REMOVED: Common fields (hidden, alwaysOn) - now in NavigationAssignmentPanel */}
             </Box>
         );
     }

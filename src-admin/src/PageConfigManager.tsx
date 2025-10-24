@@ -2,7 +2,11 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { PageConfigEntry, NavigationAssignmentList } from '../../src/lib/types/adminShareConfig';
+import type {
+    PageConfigEntry,
+    NavigationAssignmentList,
+    PageConfigBaseFields,
+} from '../../src/lib/types/adminShareConfig';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
@@ -254,6 +258,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.setState({ selectedCardType: cardType, selected: newSelected } as PageConfigManagerState);
     };
 
+    private handleCommonFieldsChange = (uniqueName: string, fields: Partial<PageConfigBaseFields>): void => {
+        const updated = this.state.entries.map(it => (it.uniqueName === uniqueName ? { ...it, ...fields } : it));
+        this.setState({ entries: updated } as PageConfigManagerState);
+        void this.onChange(this.props.attr!, updated);
+    };
+
     private renderMiddlePanel(): React.JSX.Element {
         const { selected, entries, pagesList } = this.state;
 
@@ -319,6 +329,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
+        const currentEntry = this.state.entries.find(e => e.uniqueName === this.state.selected);
+
         return (
             <PageConfigLayout
                 entries={this.state.entries}
@@ -336,6 +348,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     data: this.props.data,
                     onChange: this.props.onChange,
                     onError: this.props.onError,
+                    // Gemeinsame Felder für aktuellen Eintrag
+                    commonFields: currentEntry
+                        ? {
+                              hidden: (currentEntry as any).hidden,
+                              alwaysOn: (currentEntry as any).alwaysOn,
+                              navigationAssignment: (currentEntry as any).navigationAssignment,
+                          }
+                        : undefined,
+                    onCommonFieldsChange: currentEntry
+                        ? (fields: Partial<PageConfigBaseFields>) => {
+                              this.handleCommonFieldsChange(currentEntry.uniqueName, fields);
+                          }
+                        : undefined,
                 }}
             >
                 {this.renderMiddlePanel()}
