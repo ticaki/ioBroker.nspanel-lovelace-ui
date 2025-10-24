@@ -16,7 +16,7 @@ import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
 import type { NavigationAssignmentList, PageConfigEntry } from '../../../src/lib/types/adminShareConfig';
 
-export type PageCardType = 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
+export type PageCardType = 'cardChart' | 'cardLChart' | 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
 
 export interface PageConfigLayoutProps {
     entries: PageConfigEntry[];
@@ -157,6 +157,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
+                                <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
+                                <MenuItem value="cardLChart">{this.getText('page_type_lchart')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>

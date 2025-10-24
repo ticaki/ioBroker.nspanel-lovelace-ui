@@ -24,6 +24,10 @@ export interface PageChartEditorProps {
 }
 
 export class PageChartEditor extends React.Component<PageChartEditorProps> {
+    constructor(props: PageChartEditorProps) {
+        super(props);
+    }
+
     private getText(key: string): string {
         return this.props.getText(key);
     }
@@ -94,6 +98,23 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                         </RadioGroup>
                     </FormControl>
                 </Box>
+
+                {/* Headline */}
+                <TextField
+                    fullWidth
+                    variant="standard"
+                    type="text"
+                    autoComplete="off"
+                    label={this.getText('headline')}
+                    value={entry.headline ?? ''}
+                    onChange={e => {
+                        this.handleFieldChange('headline', e.target.value);
+                    }}
+                    InputProps={{
+                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                    }}
+                    sx={{ mb: 2 }}
+                />
 
                 {/* Chart Color */}
                 <Box sx={{ mb: 2 }}>

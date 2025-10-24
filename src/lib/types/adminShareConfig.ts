@@ -145,6 +145,7 @@ export type QREntry = {
 export type ChartEntry = {
     card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
     uniqueName: string;
+    headline: string;
     chart_color?: string;
     selChartType?: 'cardChart' | 'cardLChart';
     selInstanceDataSource?: number; // 0 = script, 1 = DB adapter
