@@ -1126,11 +1126,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=GetDriverVersion`;
-
-                                    result = (await this.fetch(url, undefined, 3000)) as
-                                        | Record<string, string>
-                                        | undefined;
-
+                                    try {
+                                        result = (await this.fetch(url, undefined, 3000)) as
+                                            | Record<string, string>
+                                            | undefined;
+                                    } catch {
+                                        //ignore
+                                    }
                                     if (!result || result.nlui_driver_version !== '-1') {
                                         result = (await this.fetch(
                                             'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
