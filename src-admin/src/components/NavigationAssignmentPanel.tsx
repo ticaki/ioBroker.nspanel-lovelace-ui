@@ -12,8 +12,18 @@ import {
     Typography,
     CircularProgress,
     IconButton,
+    FormControl,
+    FormControlLabel,
+    RadioGroup,
+    Radio,
+    Checkbox,
+    Tabs,
+    Tab,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import NavigationIcon from '@mui/icons-material/Navigation';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ExtensionIcon from '@mui/icons-material/Extension';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/adapter-react-v5';
@@ -21,6 +31,7 @@ import type {
     PanelInfo,
     NavigationAssignmentList,
     NavigationAssignment,
+    PageConfigBaseFields,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     // SENDTO_GET_PANELS_COMMAND,
@@ -44,6 +55,9 @@ type NavigationAssignmentPanelProps = {
     // optional tooltip texts for next/prev
     // hide navigation fields (next/prev/home/parent) - for screensaver pages
     hideNavigationFields?: boolean;
+    // Neu: Gemeinsame Felder
+    commonFields?: PageConfigBaseFields;
+    onCommonFieldsChange?: (fields: Partial<PageConfigBaseFields>) => void;
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -69,6 +83,8 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
     retryCount: Record<string, number>;
     // pending delete confirmation (mobile two-step delete)
     pendingDelete?: string;
+    // active tab index
+    activeTab?: number;
 }
 /**
  * Reusable navigation assignment side panel (class-based)
@@ -106,6 +122,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             lastLoadTime: {},
             focusReceived: {},
             retryCount: {},
+            activeTab: 0,
         };
     }
 
@@ -523,9 +540,99 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         }
     };
 
+    handleTabChange = (_: React.SyntheticEvent, newValue: number): void => {
+        this.setState({ activeTab: newValue });
+    };
+
+    private handleCommonFieldChange(field: keyof PageConfigBaseFields, value: any): void {
+        if (this.props.onCommonFieldsChange) {
+            this.props.onCommonFieldsChange({ [field]: value });
+        }
+    }
+
+    private renderCommonFields(): React.JSX.Element | null {
+        const { commonFields } = this.props;
+        if (!commonFields) {
+            return (
+                <Box sx={{ mt: 2 }}>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                    >
+                        {this.getText('select_description')}
+                    </Typography>
+                </Box>
+            );
+        }
+
+        return (
+            <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}
+                >
+                    {I18n.t('common_settings')}
+                </Typography>
+
+                {/* Hidden Checkbox */}
+                <Box sx={{ mb: 2 }}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={!!commonFields.hidden}
+                                onChange={(_e, checked) => {
+                                    this.handleCommonFieldChange('hidden', checked);
+                                }}
+                            />
+                        }
+                        label={I18n.t('hidden')}
+                    />
+                </Box>
+
+                {/* AlwaysOn Radio Group */}
+                <Box sx={{ mt: 2 }}>
+                    <FormControl component="fieldset">
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ mb: 1 }}
+                        >
+                            {I18n.t('alwaysOn')}
+                        </Typography>
+                        <RadioGroup
+                            row
+                            value={commonFields.alwaysOn || 'none'}
+                            onChange={(_e, val) => {
+                                this.handleCommonFieldChange(
+                                    'alwaysOn',
+                                    val as 'none' | 'always' | 'action' | 'ignore',
+                                );
+                            }}
+                        >
+                            <FormControlLabel
+                                value="none"
+                                control={<Radio />}
+                                label={I18n.t('alwaysOn_none')}
+                            />
+                            <FormControlLabel
+                                value="always"
+                                control={<Radio />}
+                                label={I18n.t('alwaysOn_always')}
+                            />
+                            <FormControlLabel
+                                value="ignore"
+                                control={<Radio />}
+                                label={I18n.t('alwaysOn_ignore')}
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                </Box>
+            </Box>
+        );
+    }
+
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const { widthPercent } = this.props;
-        const { isCollapsed } = this.state;
+        const { isCollapsed, activeTab } = this.state;
         const pages: string[] = this.state.selectedAddedTopic
             ? (this.state.pagesMap[this.state.selectedAddedTopic] ?? [])
             : [];
@@ -662,525 +769,693 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         {I18n.t('navigation_panel')}
                     </Typography>
 
-                    {/* controls: select + add button */}
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
-                        <Select
-                            size="small"
-                            variant="standard"
-                            value={this.state.selectedTopic}
-                            onOpen={() => {
-                                void this.loadPanels();
-                            }}
-                            onChange={e => this.setState({ selectedTopic: String(e.target.value) })}
-                            disabled={!this.state.alive}
+                    {/* Tabs */}
+                    <Tabs
+                        value={activeTab ?? 0}
+                        onChange={this.handleTabChange}
+                        variant="scrollable"
+                        scrollButtons="auto"
+                        sx={{
+                            mb: 1,
+                            minHeight: { xs: 36, md: 48 },
+                            '& .MuiTab-root': {
+                                minHeight: { xs: 36, md: 48 },
+                                py: { xs: 0.5, md: 1.5 },
+                                fontSize: { xs: '0.75rem', md: '0.875rem' },
+                            },
+                        }}
+                        aria-label="Navigation assignment tabs"
+                    >
+                        <Tab
+                            icon={<NavigationIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                            iconPosition="start"
+                            label={
+                                <>
+                                    {/* Responsive label: short on mobile */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'inline', md: 'none' },
+                                        }}
+                                    >
+                                        {I18n.t('nav') || 'Nav'}
+                                    </Box>
+                                    {/* Full label on desktop */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'none', md: 'inline' },
+                                        }}
+                                    >
+                                        {I18n.t('navigation') || 'Navigation'}
+                                    </Box>
+                                </>
+                            }
                             sx={{
-                                flex: 1,
-                                backgroundColor: 'transparent',
-                                // make select one row high
-                                minHeight: 40,
-                                '& .MuiSelect-select': {
-                                    backgroundColor: 'transparent',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    height: 40,
-                                },
+                                minWidth: { xs: 'auto', md: 90 },
+                                px: { xs: 1, md: 2 },
                             }}
-                            displayEmpty
-                        >
-                            <MenuItem value="">{<em>—</em>}</MenuItem>
-                            {/* Special "All" option inserted at top (if not already added) */}
-                            {!this.state.added.some(a => a.panelTopic === ALL_PANELS_SPECIAL_ID) && (
-                                <MenuItem value={ALL_PANELS_SPECIAL_ID}>{`(${I18n.t('all') || 'All'})`}</MenuItem>
-                            )}
-                            {/* Only show panels that are not already added */}
-                            {this.state.available
-                                .filter(p => !this.state.added.some(a => a.panelTopic === p.panelTopic))
-                                .map(p => (
-                                    <MenuItem
-                                        key={p.panelTopic}
-                                        value={p.panelTopic}
+                        />
+                        <Tab
+                            icon={<SettingsIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                            iconPosition="start"
+                            label={
+                                <>
+                                    {/* Responsive label: short on mobile */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'inline', md: 'none' },
+                                        }}
                                     >
-                                        {p.friendlyName}
-                                    </MenuItem>
-                                ))}
-                        </Select>
-                        <Button
-                            size="small"
-                            variant="contained"
-                            sx={{ minWidth: 32, padding: '4px 8px' }}
-                            onClick={this.doAddSelected}
-                            disabled={!this.state.selectedTopic || !this.state.alive}
-                        >
-                            +
-                        </Button>
-                    </Box>
+                                        {I18n.t('details') || 'Details'}
+                                    </Box>
+                                    {/* Full label on desktop */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'none', md: 'inline' },
+                                        }}
+                                    >
+                                        {I18n.t('pagedetails') || 'Page Details'}
+                                    </Box>
+                                </>
+                            }
+                            sx={{
+                                minWidth: { xs: 'auto', md: 90 },
+                                px: { xs: 1, md: 2 },
+                            }}
+                        />
+                        <Tab
+                            icon={<ExtensionIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                            iconPosition="start"
+                            label={
+                                <>
+                                    {/* Responsive label: short on mobile */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'inline', md: 'none' },
+                                        }}
+                                    >
+                                        {I18n.t('free') || 'Free'}
+                                    </Box>
+                                    {/* Full label on desktop */}
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: { xs: 'none', md: 'inline' },
+                                        }}
+                                    >
+                                        {I18n.t('placeholder') || 'Placeholder'}
+                                    </Box>
+                                </>
+                            }
+                            sx={{
+                                minWidth: { xs: 'auto', md: 90 },
+                                px: { xs: 1, md: 2 },
+                            }}
+                        />
+                    </Tabs>
 
-                    {/* growing list of added items */}
-                    {(() => {
-                        return (
-                            <Box>
-                                {this.state.added.length === 0 ? (
-                                    <Typography
-                                        variant="body1"
-                                        color="text.secondary"
-                                    >
-                                        {I18n.t('No panels added')}
-                                    </Typography>
-                                ) : (
-                                    <div style={{ overflow: 'auto' }}>
-                                        <List dense>
-                                            {this.state.added.map(a => {
-                                                const topic = a.panelTopic;
-                                                const isPending = this.state.pendingDelete === topic;
-                                                // only render list item here; notices are shown in the lower summary
-                                                return (
-                                                    <React.Fragment key={topic}>
-                                                        <ListItem
-                                                            component="div"
-                                                            disablePadding
-                                                            sx={{
-                                                                '&:hover .delete-icon': {
-                                                                    opacity: 1,
-                                                                },
-                                                            }}
-                                                            secondaryAction={
-                                                                <IconButton
-                                                                    className="delete-icon"
-                                                                    edge="end"
-                                                                    aria-label="delete"
-                                                                    size="small"
-                                                                    onClick={e => {
-                                                                        e.stopPropagation();
-                                                                        // Two-step delete on mobile (touch devices)
-                                                                        if (!isPending) {
-                                                                            // First tap: mark as pending
-                                                                            this.setState({ pendingDelete: topic });
-                                                                            // Auto-clear after 3 seconds
-                                                                            setTimeout(() => {
-                                                                                if (
-                                                                                    this.state.pendingDelete === topic
-                                                                                ) {
+                    {activeTab === 0 && (
+                        <>
+                            {/* controls: select + add button */}
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+                                <Select
+                                    size="small"
+                                    variant="standard"
+                                    value={this.state.selectedTopic}
+                                    onOpen={() => {
+                                        void this.loadPanels();
+                                    }}
+                                    onChange={e => this.setState({ selectedTopic: String(e.target.value) })}
+                                    disabled={!this.state.alive}
+                                    sx={{
+                                        flex: 1,
+                                        backgroundColor: 'transparent',
+                                        // make select one row high
+                                        minHeight: 40,
+                                        '& .MuiSelect-select': {
+                                            backgroundColor: 'transparent',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            height: 40,
+                                        },
+                                    }}
+                                    displayEmpty
+                                >
+                                    <MenuItem value="">{<em>—</em>}</MenuItem>
+                                    {/* Special "All" option inserted at top (if not already added) */}
+                                    {!this.state.added.some(a => a.panelTopic === ALL_PANELS_SPECIAL_ID) && (
+                                        <MenuItem
+                                            value={ALL_PANELS_SPECIAL_ID}
+                                        >{`(${I18n.t('all') || 'All'})`}</MenuItem>
+                                    )}
+                                    {/* Only show panels that are not already added */}
+                                    {this.state.available
+                                        .filter(p => !this.state.added.some(a => a.panelTopic === p.panelTopic))
+                                        .map(p => (
+                                            <MenuItem
+                                                key={p.panelTopic}
+                                                value={p.panelTopic}
+                                            >
+                                                {p.friendlyName}
+                                            </MenuItem>
+                                        ))}
+                                </Select>
+                                <Button
+                                    size="small"
+                                    variant="contained"
+                                    sx={{ minWidth: 32, padding: '4px 8px' }}
+                                    onClick={this.doAddSelected}
+                                    disabled={!this.state.selectedTopic || !this.state.alive}
+                                >
+                                    +
+                                </Button>
+                            </Box>
+
+                            {/* growing list of added items */}
+                            {(() => {
+                                return (
+                                    <Box>
+                                        {this.state.added.length === 0 ? (
+                                            <Typography
+                                                variant="body1"
+                                                color="text.secondary"
+                                            >
+                                                {I18n.t('No panels added')}
+                                            </Typography>
+                                        ) : (
+                                            <div style={{ overflow: 'auto' }}>
+                                                <List dense>
+                                                    {this.state.added.map(a => {
+                                                        const topic = a.panelTopic;
+                                                        const isPending = this.state.pendingDelete === topic;
+                                                        // only render list item here; notices are shown in the lower summary
+                                                        return (
+                                                            <React.Fragment key={topic}>
+                                                                <ListItem
+                                                                    component="div"
+                                                                    disablePadding
+                                                                    sx={{
+                                                                        '&:hover .delete-icon': {
+                                                                            opacity: 1,
+                                                                        },
+                                                                    }}
+                                                                    secondaryAction={
+                                                                        <IconButton
+                                                                            className="delete-icon"
+                                                                            edge="end"
+                                                                            aria-label="delete"
+                                                                            size="small"
+                                                                            onClick={e => {
+                                                                                e.stopPropagation();
+                                                                                // Two-step delete on mobile (touch devices)
+                                                                                if (!isPending) {
+                                                                                    // First tap: mark as pending
                                                                                     this.setState({
+                                                                                        pendingDelete: topic,
+                                                                                    });
+                                                                                    // Auto-clear after 3 seconds
+                                                                                    setTimeout(() => {
+                                                                                        if (
+                                                                                            this.state.pendingDelete ===
+                                                                                            topic
+                                                                                        ) {
+                                                                                            this.setState({
+                                                                                                pendingDelete:
+                                                                                                    undefined,
+                                                                                            });
+                                                                                        }
+                                                                                    }, 3000);
+                                                                                } else {
+                                                                                    // Second tap: confirm delete
+                                                                                    const updated =
+                                                                                        this.state.added.filter(
+                                                                                            p => p.panelTopic !== topic,
+                                                                                        );
+                                                                                    const updatedAssignments =
+                                                                                        this.state.assignments.filter(
+                                                                                            ass => ass.topic !== topic,
+                                                                                        );
+                                                                                    const newSelected =
+                                                                                        updated.length > 0
+                                                                                            ? updated[0]?.panelTopic
+                                                                                            : undefined;
+                                                                                    this.setState({
+                                                                                        added: updated,
+                                                                                        assignments: updatedAssignments,
+                                                                                        selectedAddedTopic: newSelected,
                                                                                         pendingDelete: undefined,
                                                                                     });
+                                                                                    if (
+                                                                                        this.props.onAssign &&
+                                                                                        this.props.uniqueName
+                                                                                    ) {
+                                                                                        this.props.onAssign(
+                                                                                            this.props.uniqueName,
+                                                                                            updatedAssignments,
+                                                                                        );
+                                                                                    }
                                                                                 }
-                                                                            }, 3000);
-                                                                        } else {
-                                                                            // Second tap: confirm delete
-                                                                            const updated = this.state.added.filter(
-                                                                                p => p.panelTopic !== topic,
-                                                                            );
-                                                                            const updatedAssignments =
-                                                                                this.state.assignments.filter(
-                                                                                    ass => ass.topic !== topic,
-                                                                                );
-                                                                            const newSelected =
-                                                                                updated.length > 0
-                                                                                    ? updated[0]?.panelTopic
-                                                                                    : undefined;
-                                                                            this.setState({
-                                                                                added: updated,
-                                                                                assignments: updatedAssignments,
-                                                                                selectedAddedTopic: newSelected,
-                                                                                pendingDelete: undefined,
-                                                                            });
-                                                                            if (
-                                                                                this.props.onAssign &&
-                                                                                this.props.uniqueName
-                                                                            ) {
-                                                                                this.props.onAssign(
-                                                                                    this.props.uniqueName,
-                                                                                    updatedAssignments,
-                                                                                );
-                                                                            }
-                                                                        }
-                                                                    }}
-                                                                    sx={{
-                                                                        color: isPending ? 'error.dark' : 'error.main',
-                                                                        opacity: { xs: 1, md: 0 }, // Always visible on mobile
-                                                                        transition: 'opacity 0.2s',
-                                                                        backgroundColor: isPending
-                                                                            ? 'error.main'
-                                                                            : 'transparent',
-                                                                        '&:hover': {
-                                                                            backgroundColor: isPending
-                                                                                ? 'error.dark'
-                                                                                : 'action.hover',
-                                                                        },
-                                                                    }}
-                                                                >
-                                                                    <DeleteOutlineIcon fontSize="small" />
-                                                                </IconButton>
-                                                            }
-                                                        >
-                                                            <ListItemButton
-                                                                selected={this.state.selectedAddedTopic === topic}
-                                                                onClick={() => {
-                                                                    this.selectAdded(topic);
-                                                                    // Show delete icon on mobile when selecting
-                                                                    this.setState({ pendingDelete: undefined });
-                                                                }}
-                                                                sx={{
-                                                                    // Ensure text takes full width minus icon space
-                                                                    pr: 6,
-                                                                }}
-                                                            >
-                                                                <ListItemText
-                                                                    primary={
-                                                                        topic === ALL_PANELS_SPECIAL_ID
-                                                                            ? `(${I18n.t('all') || 'All'})`
-                                                                            : a.friendlyName
+                                                                            }}
+                                                                            sx={{
+                                                                                color: isPending
+                                                                                    ? 'error.dark'
+                                                                                    : 'error.main',
+                                                                                opacity: { xs: 1, md: 0 }, // Always visible on mobile
+                                                                                transition: 'opacity 0.2s',
+                                                                                backgroundColor: isPending
+                                                                                    ? 'error.main'
+                                                                                    : 'transparent',
+                                                                                '&:hover': {
+                                                                                    backgroundColor: isPending
+                                                                                        ? 'error.dark'
+                                                                                        : 'action.hover',
+                                                                                },
+                                                                            }}
+                                                                        >
+                                                                            <DeleteOutlineIcon fontSize="small" />
+                                                                        </IconButton>
                                                                     }
-                                                                    slotProps={{
-                                                                        primary: {
-                                                                            sx: {
-                                                                                fontSize: '1.05rem', // anpassen: z.B. '1.2rem' oder '16px'
-                                                                                lineHeight: 1.2,
-                                                                            },
-                                                                        },
-                                                                    }}
-                                                                    sx={{
-                                                                        // Text should use full available width
-                                                                        flex: 1,
-                                                                        overflow: 'hidden',
-                                                                        textOverflow: 'ellipsis',
-                                                                    }}
-                                                                />
-                                                            </ListItemButton>
-                                                        </ListItem>
-                                                    </React.Fragment>
-                                                );
-                                            })}
-                                        </List>
-                                    </div>
-                                )}
-                            </Box>
-                        );
-                    })()}
-
-                    <Divider sx={{ my: 1 }} />
-
-                    {/* navigation selectors for the selected added panel (labels only, options removed) */}
-                    {!this.props.hideNavigationFields && (
-                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
-                            <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                    <Tooltip title={I18n.t('nav_prev_tooltip')}>
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                            sx={{ mr: 0.5 }}
-                                        >
-                                            prev
-                                        </Typography>
-                                    </Tooltip>
-                                </Box>
-                                <Select
-                                    size="small"
-                                    displayEmpty
-                                    aria-label="prev"
-                                    value={this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''}
-                                    onOpen={() => {
-                                        if (this.state.selectedAddedTopic) {
-                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                        }
-                                    }}
-                                    onChange={e =>
-                                        this.setNavigationForSelected({ prev: String(e.target.value) || undefined })
-                                    }
-                                    sx={{ width: '100%' }}
-                                    disabled={
-                                        !this.state.alive ||
-                                        (this.state.selectedAddedTopic
-                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                            : false)
-                                    }
-                                    endAdornment={
-                                        this.state.selectedAddedTopic &&
-                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                <CircularProgress size={16} />
-                                            </Box>
-                                        ) : null
-                                    }
-                                >
-                                    <MenuItem value="">
-                                        {this.state.selectedAddedTopic ? (
-                                            <em>—</em>
-                                        ) : (
-                                            <em>{I18n.t('select_panel_first')}</em>
+                                                                >
+                                                                    <ListItemButton
+                                                                        selected={
+                                                                            this.state.selectedAddedTopic === topic
+                                                                        }
+                                                                        onClick={() => {
+                                                                            this.selectAdded(topic);
+                                                                            // Show delete icon on mobile when selecting
+                                                                            this.setState({ pendingDelete: undefined });
+                                                                        }}
+                                                                        sx={{
+                                                                            // Ensure text takes full width minus icon space
+                                                                            pr: 6,
+                                                                        }}
+                                                                    >
+                                                                        <ListItemText
+                                                                            primary={
+                                                                                topic === ALL_PANELS_SPECIAL_ID
+                                                                                    ? `(${I18n.t('all') || 'All'})`
+                                                                                    : a.friendlyName
+                                                                            }
+                                                                            slotProps={{
+                                                                                primary: {
+                                                                                    sx: {
+                                                                                        fontSize: '1.05rem', // anpassen: z.B. '1.2rem' oder '16px'
+                                                                                        lineHeight: 1.2,
+                                                                                    },
+                                                                                },
+                                                                            }}
+                                                                            sx={{
+                                                                                // Text should use full available width
+                                                                                flex: 1,
+                                                                                overflow: 'hidden',
+                                                                                textOverflow: 'ellipsis',
+                                                                            }}
+                                                                        />
+                                                                    </ListItemButton>
+                                                                </ListItem>
+                                                            </React.Fragment>
+                                                        );
+                                                    })}
+                                                </List>
+                                            </div>
                                         )}
-                                    </MenuItem>
-                                    {pages
-                                        .filter((p: string) => p !== this.props.uniqueName)
-                                        .map((p: string) => (
-                                            <MenuItem
-                                                key={`prev-${p}`}
-                                                value={p}
-                                            >
-                                                {p}
-                                            </MenuItem>
-                                        ))}
-                                </Select>
-                            </Box>
-                            <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                    <Tooltip title={I18n.t('nav_next_tooltip')}>
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                            sx={{ mr: 0.5 }}
-                                        >
-                                            next
-                                        </Typography>
-                                    </Tooltip>
-                                </Box>
-                                <Select
-                                    size="small"
-                                    displayEmpty
-                                    aria-label="next"
-                                    value={this.getNavValue(this.state.selectedAddedTopic, 'next') || ''}
-                                    onOpen={() => {
-                                        if (this.state.selectedAddedTopic) {
-                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                        }
-                                    }}
-                                    onChange={e =>
-                                        this.setNavigationForSelected({ next: String(e.target.value) || undefined })
-                                    }
-                                    sx={{ width: '100%' }}
-                                    disabled={
-                                        !this.state.alive ||
-                                        (this.state.selectedAddedTopic
-                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                            : false)
-                                    }
-                                    endAdornment={
-                                        this.state.selectedAddedTopic &&
-                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                <CircularProgress size={16} />
-                                            </Box>
-                                        ) : null
-                                    }
-                                >
-                                    <MenuItem value="">
-                                        {this.state.selectedAddedTopic ? (
-                                            <em>—</em>
-                                        ) : (
-                                            <em>{I18n.t('select_panel_first')}</em>
-                                        )}
-                                    </MenuItem>
-                                    {pages
-                                        .filter((p: string) => p !== this.props.uniqueName && !p.startsWith('///'))
-                                        .map((p: string) => (
-                                            <MenuItem
-                                                key={`next-${p}`}
-                                                value={p}
-                                            >
-                                                {p}
-                                            </MenuItem>
-                                        ))}
-                                </Select>
-                            </Box>
+                                    </Box>
+                                );
+                            })()}
 
-                            <Box>
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ mb: 0.5, display: 'block' }}
-                                >
-                                    home
-                                </Typography>
-                                <Select
-                                    size="small"
-                                    displayEmpty
-                                    aria-label="home"
-                                    value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
-                                    onOpen={() => {
-                                        if (this.state.selectedAddedTopic) {
-                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                        }
-                                    }}
-                                    onChange={e =>
-                                        this.setNavigationForSelected({ home: String(e.target.value) || undefined })
-                                    }
-                                    sx={{ width: '100%' }}
-                                    disabled={
-                                        !this.state.alive ||
-                                        (this.state.selectedAddedTopic
-                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                            : false)
-                                    }
-                                    endAdornment={
-                                        this.state.selectedAddedTopic &&
-                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                <CircularProgress size={16} />
-                                            </Box>
-                                        ) : null
-                                    }
-                                >
-                                    <MenuItem value="">{<em>—</em>}</MenuItem>
-                                    {pages
-                                        .filter((p: string) => p !== this.props.uniqueName)
-                                        .map((p: string) => (
-                                            <MenuItem
-                                                key={`home-${p}`}
-                                                value={p}
-                                            >
-                                                {p}
-                                            </MenuItem>
-                                        ))}
-                                </Select>
-                            </Box>
-
-                            <Box>
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ mb: 0.5, display: 'block' }}
-                                >
-                                    parent
-                                </Typography>
-                                <Select
-                                    size="small"
-                                    displayEmpty
-                                    aria-label="parent"
-                                    value={this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''}
-                                    onOpen={() => {
-                                        if (this.state.selectedAddedTopic) {
-                                            void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                        }
-                                    }}
-                                    onChange={e =>
-                                        this.setNavigationForSelected({ parent: String(e.target.value) || undefined })
-                                    }
-                                    sx={{ width: '100%' }}
-                                    disabled={
-                                        !this.state.alive ||
-                                        (this.state.selectedAddedTopic
-                                            ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                            : false)
-                                    }
-                                    endAdornment={
-                                        this.state.selectedAddedTopic &&
-                                        this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                <CircularProgress size={16} />
-                                            </Box>
-                                        ) : null
-                                    }
-                                >
-                                    <MenuItem value="">{<em>—</em>}</MenuItem>
-                                    {pages
-                                        .filter((p: string) => p !== this.props.uniqueName)
-                                        .map((p: string) => (
-                                            <MenuItem
-                                                key={`parent-${p}`}
-                                                value={p}
-                                            >
-                                                {p}
-                                            </MenuItem>
-                                        ))}
-                                </Select>
-                            </Box>
                             <Divider sx={{ my: 1 }} />
-                        </Box>
+
+                            {/* navigation selectors for the selected added panel (labels only, options removed) */}
+                            {!this.props.hideNavigationFields && (
+                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
+                                    <Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                            <Tooltip title={I18n.t('nav_prev_tooltip')}>
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                    sx={{ mr: 0.5 }}
+                                                >
+                                                    prev
+                                                </Typography>
+                                            </Tooltip>
+                                        </Box>
+                                        <Select
+                                            size="small"
+                                            displayEmpty
+                                            aria-label="prev"
+                                            value={this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''}
+                                            onOpen={() => {
+                                                if (this.state.selectedAddedTopic) {
+                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                                }
+                                            }}
+                                            onChange={e =>
+                                                this.setNavigationForSelected({
+                                                    prev: String(e.target.value) || undefined,
+                                                })
+                                            }
+                                            sx={{ width: '100%' }}
+                                            disabled={
+                                                !this.state.alive ||
+                                                (this.state.selectedAddedTopic
+                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                    : false)
+                                            }
+                                            endAdornment={
+                                                this.state.selectedAddedTopic &&
+                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                        <CircularProgress size={16} />
+                                                    </Box>
+                                                ) : null
+                                            }
+                                        >
+                                            <MenuItem value="">
+                                                {this.state.selectedAddedTopic ? (
+                                                    <em>—</em>
+                                                ) : (
+                                                    <em>{I18n.t('select_panel_first')}</em>
+                                                )}
+                                            </MenuItem>
+                                            {pages
+                                                .filter((p: string) => p !== this.props.uniqueName)
+                                                .map((p: string) => (
+                                                    <MenuItem
+                                                        key={`prev-${p}`}
+                                                        value={p}
+                                                    >
+                                                        {p}
+                                                    </MenuItem>
+                                                ))}
+                                        </Select>
+                                    </Box>
+                                    <Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                            <Tooltip title={I18n.t('nav_next_tooltip')}>
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                    sx={{ mr: 0.5 }}
+                                                >
+                                                    next
+                                                </Typography>
+                                            </Tooltip>
+                                        </Box>
+                                        <Select
+                                            size="small"
+                                            displayEmpty
+                                            aria-label="next"
+                                            value={this.getNavValue(this.state.selectedAddedTopic, 'next') || ''}
+                                            onOpen={() => {
+                                                if (this.state.selectedAddedTopic) {
+                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                                }
+                                            }}
+                                            onChange={e =>
+                                                this.setNavigationForSelected({
+                                                    next: String(e.target.value) || undefined,
+                                                })
+                                            }
+                                            sx={{ width: '100%' }}
+                                            disabled={
+                                                !this.state.alive ||
+                                                (this.state.selectedAddedTopic
+                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                    : false)
+                                            }
+                                            endAdornment={
+                                                this.state.selectedAddedTopic &&
+                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                        <CircularProgress size={16} />
+                                                    </Box>
+                                                ) : null
+                                            }
+                                        >
+                                            <MenuItem value="">
+                                                {this.state.selectedAddedTopic ? (
+                                                    <em>—</em>
+                                                ) : (
+                                                    <em>{I18n.t('select_panel_first')}</em>
+                                                )}
+                                            </MenuItem>
+                                            {pages
+                                                .filter(
+                                                    (p: string) => p !== this.props.uniqueName && !p.startsWith('///'),
+                                                )
+                                                .map((p: string) => (
+                                                    <MenuItem
+                                                        key={`next-${p}`}
+                                                        value={p}
+                                                    >
+                                                        {p}
+                                                    </MenuItem>
+                                                ))}
+                                        </Select>
+                                    </Box>
+
+                                    <Box>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ mb: 0.5, display: 'block' }}
+                                        >
+                                            home
+                                        </Typography>
+                                        <Select
+                                            size="small"
+                                            displayEmpty
+                                            aria-label="home"
+                                            value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
+                                            onOpen={() => {
+                                                if (this.state.selectedAddedTopic) {
+                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                                }
+                                            }}
+                                            onChange={e =>
+                                                this.setNavigationForSelected({
+                                                    home: String(e.target.value) || undefined,
+                                                })
+                                            }
+                                            sx={{ width: '100%' }}
+                                            disabled={
+                                                !this.state.alive ||
+                                                (this.state.selectedAddedTopic
+                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                    : false)
+                                            }
+                                            endAdornment={
+                                                this.state.selectedAddedTopic &&
+                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                        <CircularProgress size={16} />
+                                                    </Box>
+                                                ) : null
+                                            }
+                                        >
+                                            <MenuItem value="">{<em>—</em>}</MenuItem>
+                                            {pages
+                                                .filter((p: string) => p !== this.props.uniqueName)
+                                                .map((p: string) => (
+                                                    <MenuItem
+                                                        key={`home-${p}`}
+                                                        value={p}
+                                                    >
+                                                        {p}
+                                                    </MenuItem>
+                                                ))}
+                                        </Select>
+                                    </Box>
+
+                                    <Box>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ mb: 0.5, display: 'block' }}
+                                        >
+                                            parent
+                                        </Typography>
+                                        <Select
+                                            size="small"
+                                            displayEmpty
+                                            aria-label="parent"
+                                            value={this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''}
+                                            onOpen={() => {
+                                                if (this.state.selectedAddedTopic) {
+                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                                }
+                                            }}
+                                            onChange={e =>
+                                                this.setNavigationForSelected({
+                                                    parent: String(e.target.value) || undefined,
+                                                })
+                                            }
+                                            sx={{ width: '100%' }}
+                                            disabled={
+                                                !this.state.alive ||
+                                                (this.state.selectedAddedTopic
+                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                    : false)
+                                            }
+                                            endAdornment={
+                                                this.state.selectedAddedTopic &&
+                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                        <CircularProgress size={16} />
+                                                    </Box>
+                                                ) : null
+                                            }
+                                        >
+                                            <MenuItem value="">{<em>—</em>}</MenuItem>
+                                            {pages
+                                                .filter((p: string) => p !== this.props.uniqueName)
+                                                .map((p: string) => (
+                                                    <MenuItem
+                                                        key={`parent-${p}`}
+                                                        value={p}
+                                                    >
+                                                        {p}
+                                                    </MenuItem>
+                                                ))}
+                                        </Select>
+                                    </Box>
+                                    <Divider sx={{ my: 1 }} />
+                                </Box>
+                            )}
+
+                            {/* Notice when no next/prev is selected */}
+                            {/* Für jedes hinzugefügte Panel: Status + nav summary */}
+                            {this.state.added.length > 0
+                                ? this.state.added.map(a => {
+                                      const topic = a.panelTopic;
+                                      const hasAll: boolean = this.state.added.some(
+                                          p => p.panelTopic === ALL_PANELS_SPECIAL_ID,
+                                      );
+                                      const nextValue = this.getNavValue(topic, 'next');
+                                      const prevValue = this.getNavValue(topic, 'prev');
+                                      const homeValue = this.getNavValue(topic, 'home');
+                                      const parentValue = this.getNavValue(topic, 'parent');
+
+                                      const anyNavSet = !!(nextValue || prevValue || homeValue || parentValue);
+
+                                      const isAllThis = topic === ALL_PANELS_SPECIAL_ID;
+                                      const showNotice = !nextValue && !prevValue;
+                                      const noticeKey = isAllThis
+                                          ? 'nav_all_requires_prev_next'
+                                          : hasAll
+                                            ? 'nav_remove_from_all_notice'
+                                            : 'nav_target_only_notice';
+
+                                      return (
+                                          <Box
+                                              key={`panel-summary-${topic}`}
+                                              data-has-all={hasAll}
+                                              sx={{ mt: 2, mb: 1 }}
+                                          >
+                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                                  <Box
+                                                      sx={{
+                                                          width: 10,
+                                                          height: 10,
+                                                          borderRadius: '50%',
+                                                          bgcolor: anyNavSet ? 'success.main' : 'error.main',
+                                                      }}
+                                                  />
+                                                  <Typography
+                                                      variant="subtitle2"
+                                                      sx={{ fontWeight: 600 }}
+                                                  >
+                                                      {topic === ALL_PANELS_SPECIAL_ID
+                                                          ? `(${I18n.t('all') || 'All'})`
+                                                          : a.friendlyName || topic}
+                                                  </Typography>
+                                              </Box>
+
+                                              <Box
+                                                  sx={{
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: 1,
+                                                      flexWrap: 'wrap',
+                                                  }}
+                                              >
+                                                  {(['next', 'prev', 'parent', 'home'] as const).map((field, idx) => {
+                                                      const val = this.getNavValue(topic, field);
+                                                      return (
+                                                          <React.Fragment key={`${topic}-${field}`}>
+                                                              <Box
+                                                                  sx={{
+                                                                      display: 'flex',
+                                                                      alignItems: 'center',
+                                                                      gap: 0.5,
+                                                                  }}
+                                                              >
+                                                                  <Typography
+                                                                      variant="caption"
+                                                                      color="text.secondary"
+                                                                  >
+                                                                      {I18n.t(field) || field}
+                                                                  </Typography>
+                                                                  <Typography variant="body2">
+                                                                      {val || <em>—</em>}
+                                                                  </Typography>
+                                                              </Box>
+                                                              {idx < 3 && (
+                                                                  <Divider
+                                                                      orientation="vertical"
+                                                                      flexItem
+                                                                      sx={{ height: 18, mx: 1 }}
+                                                                  />
+                                                              )}
+                                                          </React.Fragment>
+                                                      );
+                                                  })}
+                                              </Box>
+
+                                              {/* per-panel notice: shown here under the panel summary; Divider follows the notice */}
+                                              {showNotice ? (
+                                                  <Box sx={{ mt: 1 }}>
+                                                      <Typography
+                                                          variant="caption"
+                                                          color="text.secondary"
+                                                          sx={{ fontStyle: 'italic' }}
+                                                      >
+                                                          {I18n.t(noticeKey)}
+                                                      </Typography>
+                                                  </Box>
+                                              ) : null}
+                                          </Box>
+                                      );
+                                  })
+                                : null}
+
+                            {/* children area removed as requested (was rendered below the parent select) */}
+                        </>
                     )}
 
-                    {/* Notice when no next/prev is selected */}
-                    {/* Für jedes hinzugefügte Panel: Status + nav summary */}
-                    {this.state.added.length > 0
-                        ? this.state.added.map(a => {
-                              const topic = a.panelTopic;
-                              const hasAll: boolean = this.state.added.some(
-                                  p => p.panelTopic === ALL_PANELS_SPECIAL_ID,
-                              );
-                              const nextValue = this.getNavValue(topic, 'next');
-                              const prevValue = this.getNavValue(topic, 'prev');
-                              const homeValue = this.getNavValue(topic, 'home');
-                              const parentValue = this.getNavValue(topic, 'parent');
+                    {activeTab === 1 && (
+                        <>
+                            {/* Tab 1: Placeholder content */}
+                            {this.renderCommonFields()}
+                        </>
+                    )}
 
-                              const anyNavSet = !!(nextValue || prevValue || homeValue || parentValue);
-
-                              const isAllThis = topic === ALL_PANELS_SPECIAL_ID;
-                              const showNotice = !nextValue && !prevValue;
-                              const noticeKey = isAllThis
-                                  ? 'nav_all_requires_prev_next'
-                                  : hasAll
-                                    ? 'nav_remove_from_all_notice'
-                                    : 'nav_target_only_notice';
-
-                              return (
-                                  <Box
-                                      key={`panel-summary-${topic}`}
-                                      data-has-all={hasAll}
-                                      sx={{ mt: 2, mb: 1 }}
-                                  >
-                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                                          <Box
-                                              sx={{
-                                                  width: 10,
-                                                  height: 10,
-                                                  borderRadius: '50%',
-                                                  bgcolor: anyNavSet ? 'success.main' : 'error.main',
-                                              }}
-                                          />
-                                          <Typography
-                                              variant="subtitle2"
-                                              sx={{ fontWeight: 600 }}
-                                          >
-                                              {topic === ALL_PANELS_SPECIAL_ID
-                                                  ? `(${I18n.t('all') || 'All'})`
-                                                  : a.friendlyName || topic}
-                                          </Typography>
-                                      </Box>
-
-                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                          {(['next', 'prev', 'parent', 'home'] as const).map((field, idx) => {
-                                              const val = this.getNavValue(topic, field);
-                                              return (
-                                                  <React.Fragment key={`${topic}-${field}`}>
-                                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                          <Typography
-                                                              variant="caption"
-                                                              color="text.secondary"
-                                                          >
-                                                              {I18n.t(field) || field}
-                                                          </Typography>
-                                                          <Typography variant="body2">{val || <em>—</em>}</Typography>
-                                                      </Box>
-                                                      {idx < 3 && (
-                                                          <Divider
-                                                              orientation="vertical"
-                                                              flexItem
-                                                              sx={{ height: 18, mx: 1 }}
-                                                          />
-                                                      )}
-                                                  </React.Fragment>
-                                              );
-                                          })}
-                                      </Box>
-
-                                      {/* per-panel notice: shown here under the panel summary; Divider follows the notice */}
-                                      {showNotice ? (
-                                          <Box sx={{ mt: 1 }}>
-                                              <Typography
-                                                  variant="caption"
-                                                  color="text.secondary"
-                                                  sx={{ fontStyle: 'italic' }}
-                                              >
-                                                  {I18n.t(noticeKey)}
-                                              </Typography>
-                                          </Box>
-                                      ) : null}
-                                  </Box>
-                              );
-                          })
-                        : null}
-
-                    {/* children area removed as requested (was rendered below the parent select) */}
+                    {activeTab === 2 && (
+                        <>
+                            {/* Tab 2: Placeholder content */}
+                            <Typography
+                                variant="body1"
+                                color="text.secondary"
+                            >
+                                {I18n.t('Placeholder content for this tab.')}
+                            </Typography>
+                        </>
+                    )}
                 </Box>
             </Box>
         );
