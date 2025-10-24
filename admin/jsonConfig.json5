@@ -1316,21 +1316,6 @@
                 }
             }
         },
-        /*"pageqr": {
-            "type": "panel",
-            "label": "PageQR",
-            "items": {
-                "pageQRConfig": {
-                    "type": "custom",
-                    "i18n": true,
-                    "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/PageConfigManager",
-                    "bundlerType": "module",
-                    "xs": 12
-                    //"label": "test"
-                }
-            }
-        },*/
         "pagePower": {
             "type": "panel",
             "label": "Page Power",
