@@ -1125,13 +1125,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     result = (await this.fetch(
                                         'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
                                     )) as Record<string, string> | undefined;
-                                    if (!result || !result.data) {
+                                    if (!result) {
                                         this.log.error('No version found!');
                                         if (obj.callback) {
                                             this.sendTo(
                                                 obj.from,
                                                 obj.command,
-                                                { error: 'sendToRequestFail' },
+                                                { error: 'sendToRequestFail1' },
                                                 obj.callback,
                                             );
                                         }
@@ -1169,7 +1169,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             this.sendTo(
                                                 obj.from,
                                                 obj.command,
-                                                { error: 'sendToRequestFail' },
+                                                { error: 'sendToRequestFail2' },
                                                 obj.callback,
                                             );
                                         }
@@ -1189,7 +1189,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail3' },
                                             obj.callback,
                                         );
                                     }
@@ -1214,7 +1214,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         } catch (e: any) {
                             this.log.error(`Error: while sending mqtt config & base config to tasmota - ${e}`);
                             if (obj.callback) {
-                                this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail4' }, obj.callback);
                             }
                         }
                         break;
@@ -1236,13 +1236,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 result = (await this.fetch(
                                     'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
                                 )) as Record<string, string> | undefined;
-                                if (!result || !result.data) {
+                                if (!result) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail5' },
                                             obj.callback,
                                         );
                                     }
@@ -1264,7 +1264,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: while installing berry - ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail6' }, obj.callback);
                                 }
                             }
                             break;
@@ -1290,7 +1290,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail7' },
                                             obj.callback,
                                         );
                                     }
@@ -1309,7 +1309,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail8' }, obj.callback);
                                 }
                             }
                             break;
@@ -1335,7 +1335,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail9' },
                                             obj.callback,
                                         );
                                     }
@@ -1358,7 +1358,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail10' }, obj.callback);
                                 }
                             }
                             break;
@@ -1605,7 +1605,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail11' }, obj.callback);
                                 }
                             }
                             break;
@@ -1633,7 +1633,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail12' }, obj.callback);
                                 }
                             }
                             break;
