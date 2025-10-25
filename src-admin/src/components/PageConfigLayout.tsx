@@ -14,12 +14,12 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
-import type { NavigationAssignmentList, PageConfigEntry } from '../../../src/lib/types/adminShareConfig';
+import type { NavigationAssignmentList, PageConfig } from '../../../src/lib/types/adminShareConfig';
 
 export type PageCardType = 'cardChart' | 'cardLChart' | 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
 
 export interface PageConfigLayoutProps {
-    entries: PageConfigEntry[];
+    entries: PageConfig[];
     selected: string;
     selectedCardType: PageCardType;
     onSelectedChange: (name: string) => void;
@@ -104,7 +104,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${selectedCardType && selectedCardType !== 'all' ? encodeURIComponent(selectedCardType) : 'kommt-noch'}`;
+        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${selectedCardType && selectedCardType !== 'all' ? encodeURIComponent(selectedCardType) : 'Page-kommt-noch'}`;
 
         return (
             <Box

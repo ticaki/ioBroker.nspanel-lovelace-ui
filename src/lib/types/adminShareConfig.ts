@@ -160,7 +160,6 @@ export type ChartEntry = {
     maxXAxisLabels?: number;
 } & PageConfigBaseFields;
 
-export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | ChartEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;
@@ -175,4 +174,4 @@ export type NavigationAssignment = {
 
 export type NavigationAssignmentList = NavigationAssignment[];
 
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry;
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | ChartEntry;

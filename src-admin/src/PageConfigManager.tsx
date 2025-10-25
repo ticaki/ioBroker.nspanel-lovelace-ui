@@ -2,11 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type {
-    PageConfigEntry,
-    NavigationAssignmentList,
-    PageConfigBaseFields,
-} from '../../src/lib/types/adminShareConfig';
+import type { PageConfig, NavigationAssignmentList, PageConfigBaseFields } from '../../src/lib/types/adminShareConfig';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
@@ -14,7 +10,7 @@ import { PageQREditor } from './components/PageQREditor';
 import { PageChartEditor } from './components/PageChartEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
-    entries: PageConfigEntry[];
+    entries: PageConfig[];
     selected: string;
     selectedCardType: PageCardType;
     pagesList: string[];
@@ -30,7 +26,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const saved = ConfigGeneric.getValue(props.data, props.attr!);
         this.state = {
             ...(this.state as ConfigGenericState),
-            entries: Array.isArray(saved) ? (saved as PageConfigEntry[]) : [],
+            entries: Array.isArray(saved) ? (saved as PageConfig[]) : [],
             selected: '',
             selectedCardType: 'all', // Default: alle anzeigen
             pagesList: [],
@@ -182,7 +178,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             return; // Sollte nicht vorkommen (Button ist disabled)
         }
 
-        let newEntry: PageConfigEntry;
+        let newEntry: PageConfig;
 
         if (cardType === 'cardAlarm') {
             newEntry = {
@@ -254,7 +250,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         void this.onChange(this.props.attr!, updated);
     };
 
-    private handleEntryChange = (updatedEntry: PageConfigEntry): void => {
+    private handleEntryChange = (updatedEntry: PageConfig): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === updatedEntry.uniqueName ? updatedEntry : it));
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr!, updated);
