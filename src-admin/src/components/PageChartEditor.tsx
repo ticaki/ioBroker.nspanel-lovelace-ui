@@ -88,12 +88,12 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                             <FormControlLabel
                                 value="cardChart"
                                 control={<Radio />}
-                                label={this.getText('chart_type_card')}
+                                label={this.getText('barChart')}
                             />
                             <FormControlLabel
                                 value="cardLChart"
                                 control={<Radio />}
-                                label={this.getText('chart_type_card_l')}
+                                label={this.getText('lineChart')}
                             />
                         </RadioGroup>
                     </FormControl>
@@ -136,7 +136,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                 {/* Data Source Selection */}
                 <Box sx={{ mb: 2 }}>
                     <FormControl component="fieldset">
-                        <FormLabel component="legend">{this.getText('chart_data_source')}</FormLabel>
+                        <FormLabel component="legend">{this.getText('labelSelInstanceDataSource')}</FormLabel>
                         <RadioGroup
                             row
                             value={entry.selInstanceDataSource ?? 0}
@@ -148,12 +148,12 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                             <FormControlLabel
                                 value={0}
                                 control={<Radio />}
-                                label={this.getText('chart_data_source_script')}
+                                label={this.getText('oldScriptVersion')}
                             />
                             <FormControlLabel
                                 value={1}
                                 control={<Radio />}
-                                label={this.getText('chart_data_source_db')}
+                                label={this.getText('dbAdapter')}
                             />
                         </RadioGroup>
                     </FormControl>
@@ -163,7 +163,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                 {entry.selInstanceDataSource === 1 && (
                     <Box sx={{ mb: 2 }}>
                         <EntitySelector
-                            label={this.getText('chart_instance')}
+                            label={this.getText('labelSelInstance')}
                             value={entry.selInstance ?? ''}
                             onChange={(v: string) => {
                                 this.handleFieldChange('selInstance', v);
@@ -185,41 +185,45 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                     </Box>
                 )}
 
-                {/* State for Ticks */}
-                <Box sx={{ mb: 2 }}>
-                    <EntitySelector
-                        label={this.getText('chart_state_ticks')}
-                        value={entry.setStateForTicks ?? undefined}
-                        onChange={(v: string) => {
-                            this.handleFieldChange('setStateForTicks', v);
-                        }}
-                        socket={oContext.socket}
-                        theme={theme}
-                        themeType={theme?.palette?.mode || 'light'}
-                        dialogName="selectStateTicks"
-                        filterFunc={(obj: ioBroker.Object) => {
-                            return !!(obj && obj.type === 'state' && obj.common && obj.common.read);
-                        }}
-                    />
-                </Box>
+                {/* State for Ticks (only for oldScriptVersion) */}
+                {entry.selInstanceDataSource === 0 && (
+                    <Box sx={{ mb: 2 }}>
+                        <EntitySelector
+                            label={this.getText('chart_state_ticks')}
+                            value={entry.setStateForTicks ?? undefined}
+                            onChange={(v: string) => {
+                                this.handleFieldChange('setStateForTicks', v);
+                            }}
+                            socket={oContext.socket}
+                            theme={theme}
+                            themeType={theme?.palette?.mode || 'light'}
+                            dialogName="selectStateTicks"
+                            filterFunc={(obj: ioBroker.Object) => {
+                                return !!(obj && obj.type === 'state' && obj.common && obj.common.read);
+                            }}
+                        />
+                    </Box>
+                )}
 
-                {/* State for Values */}
-                <Box sx={{ mb: 2 }}>
-                    <EntitySelector
-                        label={this.getText('chart_state_values')}
-                        value={entry.setStateForValues ?? undefined}
-                        onChange={(v: string) => {
-                            this.handleFieldChange('setStateForValues', v);
-                        }}
-                        socket={oContext.socket}
-                        theme={theme}
-                        themeType={theme?.palette?.mode || 'light'}
-                        dialogName="selectStateValues"
-                        filterFunc={(obj: ioBroker.Object) => {
-                            return !!(obj && obj.type === 'state' && obj.common && obj.common.read);
-                        }}
-                    />
-                </Box>
+                {/* State for Values (only for oldScriptVersion) */}
+                {entry.selInstanceDataSource === 0 && (
+                    <Box sx={{ mb: 2 }}>
+                        <EntitySelector
+                            label={this.getText('chart_state_values')}
+                            value={entry.setStateForValues ?? undefined}
+                            onChange={(v: string) => {
+                                this.handleFieldChange('setStateForValues', v);
+                            }}
+                            socket={oContext.socket}
+                            theme={theme}
+                            themeType={theme?.palette?.mode || 'light'}
+                            dialogName="selectStateValues"
+                            filterFunc={(obj: ioBroker.Object) => {
+                                return !!(obj && obj.type === 'state' && obj.common && obj.common.read);
+                            }}
+                        />
+                    </Box>
+                )}
 
                 {/* State for DB (only for DB adapter) */}
                 {entry.selInstanceDataSource === 1 && (
@@ -247,7 +251,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                     variant="standard"
                     type="text"
                     autoComplete="off"
-                    label={this.getText('chart_y_axis_label')}
+                    label={this.getText('labelYAchse')}
                     value={entry.txtlabelYAchse ?? ''}
                     onChange={e => {
                         this.handleFieldChange('txtlabelYAchse', e.target.value);
@@ -276,29 +280,13 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                     />
                 )}
 
-                {/* Max X-Axis Ticks */}
-                <TextField
-                    fullWidth
-                    variant="standard"
-                    type="number"
-                    label={this.getText('chart_max_x_ticks')}
-                    value={entry.maxXAxisTicks ?? 10}
-                    onChange={e => {
-                        this.handleFieldChange('maxXAxisTicks', parseInt(e.target.value, 10));
-                    }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
-                    }}
-                    sx={{ mb: 2 }}
-                />
-
-                {/* Factor Card Chart (only for cardChart) */}
-                {entry.selChartType === 'cardChart' && (
+                {/* Factor Card Chart (only for cardLChart) */}
+                {entry.selInstanceDataSource === 1 && entry.selChartType === 'cardLChart' && (
                     <FormControl
                         variant="standard"
                         sx={{ mb: 2, minWidth: 240 }}
                     >
-                        <InputLabel>{this.getText('chart_factor')}</InputLabel>
+                        <InputLabel>{this.getText('labelFactorCardChart')}</InputLabel>
                         <Select
                             value={entry.factorCardChart ?? 1}
                             onChange={e => {
@@ -313,21 +301,41 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                     </FormControl>
                 )}
 
+                {/* Max X-Axis Ticks (only for DB adapter and cardLChart) */}
+                {entry.selInstanceDataSource === 1 && entry.selChartType === 'cardLChart' && (
+                    <TextField
+                        fullWidth
+                        variant="standard"
+                        type="number"
+                        label={this.getText('labelmaxXAxisTicks')}
+                        value={entry.maxXAxisTicks ?? 10}
+                        onChange={e => {
+                            this.handleFieldChange('maxXAxisTicks', parseInt(e.target.value, 10));
+                        }}
+                        InputProps={{
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                        }}
+                        sx={{ mb: 2 }}
+                    />
+                )}
+
                 {/* Max X-Axis Labels */}
-                <TextField
-                    fullWidth
-                    variant="standard"
-                    type="number"
-                    label={this.getText('chart_max_x_labels')}
-                    value={entry.maxXAxisLabels ?? 5}
-                    onChange={e => {
-                        this.handleFieldChange('maxXAxisLabels', parseInt(e.target.value, 10));
-                    }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
-                    }}
-                    sx={{ mb: 2 }}
-                />
+                {entry.selInstanceDataSource === 1 && (
+                    <TextField
+                        fullWidth
+                        variant="standard"
+                        type="number"
+                        label={this.getText('labelmaxXAxisLabels')}
+                        value={entry.maxXAxisLabels ?? 6}
+                        onChange={e => {
+                            this.handleFieldChange('maxXAxisLabels', parseInt(e.target.value, 10));
+                        }}
+                        InputProps={{
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                        }}
+                        sx={{ mb: 2 }}
+                    />
+                )}
             </Box>
         );
     }
