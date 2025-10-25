@@ -111,8 +111,8 @@ class NspanelLovelaceUi extends utils.Adapter {
         delete native.pageUnlockConfig;
         change = true;
       }
-      if (native.pageQRConfig) {
-        native.pageQRConfig.forEach((page) => {
+      if (native.pageQRdata) {
+        native.pageQRdata.forEach((page) => {
           const temp = {
             card: "cardQR",
             uniqueName: page.pageName,
@@ -127,7 +127,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           };
           native.pageConfig.push(temp);
         });
-        delete native.pageQRConfig;
+        delete native.pageQRdata;
         change = true;
       }
       if (change) {
