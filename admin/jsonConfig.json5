@@ -4008,7 +4008,7 @@
             }
         },
 
-        "ScreensaverPage": {
+        /*"ScreensaverPage": {
             "type": "panel",
             "label": "ScreensaverPage",
             "items": {
@@ -4022,7 +4022,7 @@
                     //"label": "test"
                 }
             }
-        },
+        },*/
         "iconOverview": {
             "type": "panel",
             "label": "iconOverview",
