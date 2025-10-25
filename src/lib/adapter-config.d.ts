@@ -273,6 +273,23 @@ declare global {
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
                 navigationAssignment?: navigationAssignment[]
+            }|{
+                card: 'cardChart';
+                headline: string;
+                alwaysOnDisplay: boolean;
+                hiddenByTrigger: boolean;
+                chart_color: string;
+                selChartType: 'cardChart' | 'cardLChart';
+                selInstanceDataSource: 0 | 1;
+                selInstance: string;
+                setStateForTicks: string;
+                setStateForValues: string;
+                setStateForDB: string;
+                txtlabelYAchse: string;
+                rangeHours: number;
+                maxXAxisTicks: number;
+                factorCardChart: number;
+                maxXAxisLabels: number;
             })[];
 
             pageQRConfig: any[];
