@@ -113,10 +113,20 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       if (native.pageQRConfig) {
         native.pageQRConfig.forEach((page) => {
-          page.ssidUrlTel = page.SSIDURLTEL;
-          delete page.SSIDURLTEL;
+          const temp = {
+            card: "cardQR",
+            uniqueName: page.pageName,
+            headline: page.headline,
+            selType: page.selType,
+            ssidUrlTel: page.SSIDURLTEL,
+            setState: page.setState || "",
+            wlanhidden: page.wlanhidden || false,
+            pwdhidden: page.pwdhidden || false,
+            hidden: page.hiddenByTrigger || false,
+            alwaysOn: page.alwaysOnDisplay ? "always" : "none"
+          };
+          native.pageConfig.push(temp);
         });
-        native.pageConfig = (native.pageConfig || []).concat(native.pageQRConfig);
         delete native.pageQRConfig;
         change = true;
       }

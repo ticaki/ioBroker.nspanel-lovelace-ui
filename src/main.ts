@@ -30,8 +30,9 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
-import type { NavigationSavePayload, PanelListEntry, PanelInfo } from './lib/types/adminShareConfig';
+import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
+import type { oldQRType } from './lib/types/types';
 //import fs from 'fs';
 
 class NspanelLovelaceUi extends utils.Adapter {
@@ -124,11 +125,22 @@ class NspanelLovelaceUi extends utils.Adapter {
                 change = true;
             }
             if (native.pageQRConfig) {
-                native.pageQRConfig.forEach((page: any) => {
-                    page.ssidUrlTel = page.SSIDURLTEL;
-                    delete page.SSIDURLTEL;
+                native.pageQRConfig.forEach((page: oldQRType) => {
+                    const temp: PageConfig = {
+                        card: 'cardQR',
+                        uniqueName: page.pageName,
+                        headline: page.headline,
+                        selType: page.selType,
+                        ssidUrlTel: page.SSIDURLTEL,
+                        setState: page.setState || '',
+                        wlanhidden: page.wlanhidden || false,
+                        pwdhidden: page.pwdhidden || false,
+                        hidden: page.hiddenByTrigger || false,
+                        alwaysOn: page.alwaysOnDisplay ? 'always' : 'none',
+                    };
+
+                    native.pageConfig.push(temp);
                 });
-                native.pageConfig = (native.pageConfig || []).concat(native.pageQRConfig);
                 delete native.pageQRConfig;
                 change = true;
             }
