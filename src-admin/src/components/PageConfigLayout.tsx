@@ -104,6 +104,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
+        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${selectedCardType && selectedCardType !== 'all' ? encodeURIComponent(selectedCardType) : 'kommt-noch'}`;
 
         return (
             <Box
@@ -286,7 +287,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     {/* Documentation link */}
                     <Box sx={{ mb: 2 }}>
                         <a
-                            href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/pageUnlock"
+                            href={docUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
