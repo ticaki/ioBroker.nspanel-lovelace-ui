@@ -112,9 +112,11 @@ class NspanelLovelaceUi extends utils.Adapter {
         change = true;
       }
       if (native.pageQRConfig) {
+        native.pageQRConfig.forEach((page) => {
+          page.ssidUrlTel = page.SSIDURLTEL;
+          delete page.SSIDURLTEL;
+        });
         native.pageConfig = (native.pageConfig || []).concat(native.pageQRConfig);
-        native.pageConfig.ssidUrlTel = native.pageConfig.SSIDURLTEL;
-        delete native.pageConfig.SSIDURLTEL;
         delete native.pageQRConfig;
         change = true;
       }
