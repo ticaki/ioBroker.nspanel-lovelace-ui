@@ -1,0 +1,1192 @@
+import React from 'react';
+import {
+    Box,
+    Paper,
+    Typography,
+    Button,
+    TextField,
+    Divider,
+    FormControl,
+    FormLabel,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    Select,
+    MenuItem,
+    InputLabel,
+} from '@mui/material';
+import { withTheme } from '@mui/styles';
+import ConfirmDialog from './components/ConfirmDialog';
+import { SelectID } from '@iobroker/adapter-react-v5';
+import {
+    ConfigGeneric,
+    type ConfigGenericProps,
+    type ConfigGenericState,
+    type ConfigItemPanel,
+    type ConfigItemObjectId,
+    JsonConfigComponent,
+} from '@iobroker/json-config';
+import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
+import type { ScreensaverEntry, ScreensaverEntries, PageItemButtonEntry } from '../../src/lib/types/adminShareConfig';
+import NavigationAssignmentPanel from './components/NavigationAssignmentPanel';
+import { PageItemEditor, MODE_SCR_ICONS } from './components/PageItemEditor';
+
+interface ScreensaverPageState extends ConfigGenericState {
+    entries: ScreensaverEntries;
+    confirmDeleteOpen?: boolean;
+    confirmDeleteName?: string | null;
+    pagesList?: string[];
+    alive?: boolean;
+    pagesRetryCount?: number;
+    objectIdSelectorOpen?: boolean;
+    selectedObjectId?: string;
+    showSelectDialog?: boolean;
+    selectedObjectIdJson?: string;
+    editingPageItem?: PageItemButtonEntry | null; // null = new item, undefined = not editing
+    editingPageItemIndex?: number; // index in pageItems array
+}
+
+interface LocalUIState {
+    newName: string;
+    selected: string;
+}
+
+class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }, ScreensaverPageState> {
+    private _local: LocalUIState | null = null;
+    private pagesRetryTimeout?: NodeJS.Timeout;
+
+    // Filter function for ObjectId selector - only show states with role starting with 'switch'
+
+    // Common date and time format options
+    private readonly dateFormats = [
+        { value: { dateStyle: 'short' }, label: 'dateFormatShort' },
+        { value: { year: 'numeric', month: '2-digit', day: '2-digit' }, label: 'dateFormatYearMonthDay' },
+        { value: { day: '2-digit', month: 'short', year: 'numeric' }, label: 'dateFormatDayShortMonthYear' },
+        { value: { day: '2-digit', month: 'long', year: 'numeric' }, label: 'dateFormatDayLongMonthYear' },
+        {
+            value: { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' },
+            label: 'dateFormatWeekdayShortDate',
+        },
+        {
+            value: { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' },
+            label: 'dateFormatWeekdayLongDate',
+        },
+        {
+            value: { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' },
+            label: 'dateFormatWeekdayShortDayMonthYear',
+        },
+        {
+            value: { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' },
+            label: 'dateFormatWeekdayLongDayMonthYear',
+        },
+        { value: 'custom', label: 'Custom' },
+    ];
+
+    private readonly timeFormats = [
+        { value: { hour: '2-digit', minute: '2-digit', hour12: false }, label: 'timeFormat24' },
+        { value: { hour: 'numeric', minute: '2-digit', hour12: true }, label: 'timeFormat12' },
+    ];
+
+    constructor(props: ConfigGenericProps & { theme?: any }) {
+        super(props);
+        const saved = ConfigGeneric.getValue(props.data, props.attr!);
+        this.state = {
+            ...(this.state as ConfigGenericState),
+            entries: Array.isArray(saved) ? (saved as ScreensaverEntries) : [],
+            confirmDeleteOpen: false,
+            confirmDeleteName: null,
+            alive: false,
+            pagesRetryCount: 0,
+        } as ScreensaverPageState;
+    }
+
+    private formatDatePreview(date: Date, format: string): string {
+        try {
+            return date.toLocaleDateString(undefined, typeof format === 'string' ? JSON.parse(format) : format);
+        } catch {
+            return 'Invalid Format';
+        }
+    }
+
+    private formatTimePreview(date: Date, format: string): string {
+        try {
+            return date.toLocaleTimeString(undefined, typeof format === 'string' ? JSON.parse(format) : format);
+        } catch {
+            return 'Invalid Format';
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.pagesRetryTimeout) {
+            clearTimeout(this.pagesRetryTimeout);
+        }
+        // Unsubscribe from alive state changes
+        const instance = this.props.oContext.instance ?? '0';
+        this.props.oContext.socket.unsubscribeState(
+            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+            this.onAliveChanged,
+        );
+    }
+
+    async componentDidMount(): Promise<void> {
+        super.componentDidMount();
+
+        // Get initial alive state and subscribe to changes
+        const instance = this.props.oContext.instance ?? '0';
+        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            this.setState({ alive: isAlive } as ScreensaverPageState);
+
+            // Subscribe to alive state changes
+            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+
+            // If adapter is alive, start loading pages
+            if (isAlive) {
+                await this.loadPagesList();
+            }
+        } catch (error) {
+            console.error('[ScreensaverPage] Failed to get alive state or subscribe:', error);
+            this.setState({ alive: false } as ScreensaverPageState);
+        }
+    }
+
+    // Callback for alive state changes
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const wasAlive = this.state.alive;
+        const isAlive = state ? !!state.val : false;
+
+        if (wasAlive !== isAlive) {
+            this.setState({ alive: isAlive } as ScreensaverPageState);
+
+            // If adapter just became alive and we don't have pages loaded, start loading
+            if (!wasAlive && isAlive && (!this.state.pagesList || this.state.pagesList.length === 0)) {
+                void this.loadPagesList();
+            }
+
+            // If adapter went offline, clear any pending retry timeout
+            if (wasAlive && !isAlive && this.pagesRetryTimeout) {
+                clearTimeout(this.pagesRetryTimeout);
+                this.pagesRetryTimeout = undefined;
+            }
+        }
+    };
+
+    private async loadPagesList(): Promise<void> {
+        // Don't try to load if adapter is not alive
+        if (!this.state.alive) {
+            console.log('[ScreensaverPage] Adapter not alive, skipping pages load');
+            return;
+        }
+
+        // preload pages list for navigation selects
+        const pages: string[] = [];
+        if (this.props.oContext && this.props.oContext.socket) {
+            const instance = this.props.oContext.instance ?? '0';
+            const target = `${ADAPTER_NAME}.${instance}`;
+            try {
+                const rawPages = await this.props.oContext.socket.sendTo(target, SENDTO_GET_PAGES_All_COMMAND, null);
+                let list: string[] = [];
+                if (Array.isArray(rawPages)) {
+                    list = rawPages;
+                } else if (rawPages && Array.isArray(rawPages.result)) {
+                    list = rawPages.result;
+                }
+                for (const name of list) {
+                    pages.push(name);
+                }
+
+                // Check if we got an empty array - keep retrying every 3 seconds until success
+                if (list.length === 0) {
+                    const currentRetryCount = this.state.pagesRetryCount || 0;
+                    const retryDelay = 3000; // 3 seconds
+
+                    console.log(
+                        `[ScreensaverPage] Got empty pages array, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1})`,
+                    );
+
+                    // Update retry count and schedule next retry
+                    this.setState({ pagesRetryCount: currentRetryCount + 1 } as ScreensaverPageState);
+
+                    // Clear any existing retry timeout
+                    if (this.pagesRetryTimeout) {
+                        clearTimeout(this.pagesRetryTimeout);
+                    }
+
+                    // Schedule retry in 3 seconds, but only if adapter is still alive
+                    this.pagesRetryTimeout = setTimeout(() => {
+                        // Double-check adapter is still alive before retrying
+                        if (this.state.alive) {
+                            void this.loadPagesList();
+                        } else {
+                            console.log('[ScreensaverPage] Adapter went offline, cancelling pages retry');
+                        }
+                    }, retryDelay);
+
+                    return; // Don't update pagesList yet, wait for retry
+                } else if (list.length > 0) {
+                    // Success! Reset retry count and clear any pending timeout
+                    console.log(
+                        `[ScreensaverPage] Successfully loaded ${list.length} pages after ${this.state.pagesRetryCount || 0} retries`,
+                    );
+                    this.setState({ pagesRetryCount: 0 } as ScreensaverPageState);
+                    if (this.pagesRetryTimeout) {
+                        clearTimeout(this.pagesRetryTimeout);
+                        this.pagesRetryTimeout = undefined;
+                    }
+                }
+            } catch (error) {
+                // On error, also retry in 3 seconds, but only if adapter is still alive
+                const currentRetryCount = this.state.pagesRetryCount || 0;
+                const retryDelay = 3000;
+
+                console.log(
+                    `[ScreensaverPage] Error loading pages, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1}): ${String(error)}`,
+                );
+
+                this.setState({ pagesRetryCount: currentRetryCount + 1 } as ScreensaverPageState);
+
+                if (this.pagesRetryTimeout) {
+                    clearTimeout(this.pagesRetryTimeout);
+                }
+
+                this.pagesRetryTimeout = setTimeout(() => {
+                    // Double-check adapter is still alive before retrying
+                    if (this.state.alive) {
+                        void this.loadPagesList();
+                    } else {
+                        console.log('[ScreensaverPage] Adapter went offline, cancelling pages retry after error');
+                    }
+                }, retryDelay);
+
+                return;
+            }
+        } else {
+            console.log('[ScreensaverPage] No socket available for sendTo');
+            return;
+        }
+
+        // remove duplicates and set state
+        this.setState({ pagesList: Array.from(new Set(pages)) } as ScreensaverPageState);
+    }
+
+    renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
+        const entries = this.state.entries || [];
+        const uniqueNames = Array.from(new Set(entries.map(e => e.uniqueName))).filter(Boolean);
+
+        // local UI state for new name + selected
+        // we keep them in component instance to avoid changing global state signature
+        if (!this._local) {
+            this._local = { newName: '', selected: uniqueNames[0] || '' };
+        }
+        const local = this._local;
+
+        const doAdd = (): void => {
+            const name = (local.newName || '').trim();
+            if (!name) {
+                return;
+            }
+            // create a default ScreensaverEntry with provided uniqueName
+            const newEntry: ScreensaverEntry = {
+                card: 'screensaver',
+                uniqueName: name,
+                pageItems: [],
+            };
+            const updated = [...entries, newEntry];
+            this.setState({ entries: updated } as ScreensaverPageState);
+            void this.onChange(this.props.attr!, updated);
+            local.newName = '';
+            local.selected = name;
+        };
+
+        const doRemove = (): void => {
+            const sel = local.selected;
+            if (!sel) {
+                return;
+            }
+            // open confirmation dialog
+            this.setState({ confirmDeleteOpen: true, confirmDeleteName: sel } as ScreensaverPageState);
+        };
+
+        const closeConfirm = (): void => {
+            this.setState({ confirmDeleteOpen: false, confirmDeleteName: null } as ScreensaverPageState);
+        };
+
+        const confirmDelete = (): void => {
+            const name = this.state.confirmDeleteName;
+            if (!name) {
+                closeConfirm();
+                return;
+            }
+            const updated = entries.filter((e: ScreensaverEntry) => e.uniqueName !== name);
+            this.setState({
+                entries: updated,
+                confirmDeleteOpen: false,
+                confirmDeleteName: null,
+            } as ScreensaverPageState);
+            void this.onChange(this.props.attr!, updated);
+            // pick next
+            const remaining = Array.from(new Set(updated.map((e: ScreensaverEntry) => e.uniqueName))).filter(Boolean);
+            if (local) {
+                local.selected = remaining[0] || '';
+            }
+            this.setState({} as ScreensaverPageState);
+        };
+
+        const navCollapsed = this.state.editingPageItem !== undefined;
+        const navWidthPercent = navCollapsed ? 0 : 30;
+
+        return (
+            <Box
+                sx={{
+                    height: 'calc(100vh - 64px)',
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    p: 1,
+                    overflow: 'hidden',
+                }}
+            >
+                {/* left sidebar: 20% width on desktop, full width on mobile */}
+                <Box
+                    sx={{
+                        width: { xs: '100%', md: '20%' },
+                        pr: { xs: 0, md: 1 },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                        minHeight: 100,
+                        overflow: 'auto',
+                    }}
+                >
+                    {/* Screensaver pages header */}
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            mb: 0.5,
+                            fontWeight: 600,
+                            color: 'primary.main',
+                            fontSize: '1rem',
+                            flexShrink: 0,
+                        }}
+                    >
+                        {this.getText('screensaver_pages')}
+                    </Typography>
+
+                    <Paper
+                        sx={{ p: 1, backgroundColor: 'transparent', flexShrink: 0 }}
+                        elevation={0}
+                    >
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <TextField
+                                aria-label="new-screensaver-name"
+                                label={this.getText('new_screensaver')}
+                                value={local?.newName || ''}
+                                onChange={e => {
+                                    if (local) {
+                                        local.newName = e.target.value;
+                                    }
+                                    this.setState({} as ScreensaverPageState);
+                                }}
+                                variant="standard"
+                                placeholder={this.getText('new_screensaver')}
+                                InputProps={{
+                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                }}
+                                sx={{
+                                    flex: 1,
+                                    '& .MuiInput-underline:before': {
+                                        borderBottomColor: 'primary.main',
+                                    },
+                                    '& .MuiInput-underline:hover:before': {
+                                        borderBottomColor: 'primary.main',
+                                    },
+                                    '& .MuiInput-underline:after': {
+                                        borderBottomColor: 'primary.main',
+                                    },
+                                    '& .MuiInputLabel-root': {
+                                        color: 'primary.main',
+                                    },
+                                    '& .MuiInputLabel-root.Mui-focused': {
+                                        color: 'primary.main',
+                                    },
+                                }}
+                            />
+                            {
+                                // disable add when empty or name already exists
+                            }
+                            <Button
+                                size="small"
+                                variant="contained"
+                                onClick={doAdd}
+                                sx={{ minWidth: 32, padding: '4px 8px' }}
+                                disabled={(() => {
+                                    const nameTrim = (local?.newName || '').trim();
+                                    return !nameTrim || uniqueNames.includes(nameTrim);
+                                })()}
+                            >
+                                +
+                            </Button>
+                        </Box>
+                    </Paper>
+
+                    {(() => {
+                        return (
+                            <Paper
+                                sx={{
+                                    overflow: 'auto',
+                                    p: 1,
+                                    backgroundColor: 'transparent',
+                                    flex: 1,
+                                    minHeight: '50px',
+                                    maxHeight: '100px',
+                                }}
+                                elevation={1}
+                            >
+                                {uniqueNames.length === 0 ? (
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                    >
+                                        {this.getText('no_screensavers')}
+                                    </Typography>
+                                ) : (
+                                    uniqueNames.map((name: string) => (
+                                        <Box
+                                            key={name}
+                                            onClick={() => {
+                                                if (local) {
+                                                    local.selected = name;
+                                                }
+                                                this.setState({} as ScreensaverPageState);
+                                            }}
+                                            sx={{
+                                                p: 1,
+                                                borderRadius: 1,
+                                                cursor: 'pointer',
+                                                backgroundColor:
+                                                    local?.selected === name ? 'action.selected' : 'transparent',
+                                                mb: 0.5,
+                                            }}
+                                        >
+                                            <Typography variant="body2">{name}</Typography>
+                                        </Box>
+                                    ))
+                                )}
+                            </Paper>
+                        );
+                    })()}
+
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+                        <Button
+                            size="small"
+                            color="error"
+                            variant="outlined"
+                            sx={{ minWidth: 32, padding: '4px 8px' }}
+                            onClick={doRemove}
+                            disabled={!local?.selected}
+                        >
+                            -
+                        </Button>
+                    </Box>
+
+                    {/* Scrollbarer Bereich für Card Type, Documentation und Tests */}
+                    <Box
+                        sx={{
+                            flex: 1,
+                            //overflow: 'auto',
+                            minHeight: 0,
+                        }}
+                    >
+                        {/* Card Type Selection */}
+                        <Box sx={{ marginTop: 1, marginBottom: 1 }}>
+                            <FormControl
+                                component="fieldset"
+                                disabled={local?.selected === null}
+                            >
+                                <FormLabel
+                                    component="legend"
+                                    sx={{
+                                        color:
+                                            local?.selected === null
+                                                ? this.props.theme?.palette?.text?.disabled || '#999'
+                                                : this.props.theme?.palette?.text?.primary,
+                                    }}
+                                >
+                                    {this.getText('cardType')}
+                                </FormLabel>
+                                <RadioGroup
+                                    value={
+                                        local?.selected
+                                            ? this.state.entries.find(
+                                                  (entry: ScreensaverEntry) => entry.uniqueName === local.selected,
+                                              )?.card || 'screensaver'
+                                            : 'screensaver'
+                                    }
+                                    onChange={event => {
+                                        if (local?.selected) {
+                                            const newCard = event.target.value as
+                                                | 'screensaver'
+                                                | 'screensaver2'
+                                                | 'screensaver3';
+                                            const updatedEntries = [...this.state.entries];
+                                            const index = updatedEntries.findIndex(
+                                                (entry: ScreensaverEntry) => entry.uniqueName === local.selected,
+                                            );
+                                            if (index !== -1) {
+                                                updatedEntries[index] = { ...updatedEntries[index], card: newCard };
+                                                this.setState({ entries: updatedEntries });
+                                                this.props.onChange(this.props.attr || '', updatedEntries);
+                                            }
+                                        }
+                                    }}
+                                    sx={{
+                                        flexDirection: 'column',
+                                        '& .MuiRadio-root.Mui-disabled': {
+                                            color: '#999 !important',
+                                        },
+                                        '& .MuiFormControlLabel-label.Mui-disabled': {
+                                            color: '#999 !important',
+                                        },
+                                    }}
+                                >
+                                    <FormControlLabel
+                                        value="screensaver"
+                                        control={<Radio />}
+                                        label={this.getText('cardTypeStandard')}
+                                    />
+                                    <FormControlLabel
+                                        value="screensaver2"
+                                        control={<Radio />}
+                                        label={this.getText('cardTypeAdvanced')}
+                                    />
+                                    <FormControlLabel
+                                        value="screensaver3"
+                                        control={<Radio />}
+                                        label={this.getText('cardTypeEasyview')}
+                                    />
+                                </RadioGroup>
+                            </FormControl>
+                        </Box>
+
+                        <Divider sx={{ my: 1 }} />
+                        {/* Documentation link */}
+                        <Box sx={{ mb: 2 }}>
+                            <a
+                                href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/screensaver"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    fontSize: '0.875rem',
+                                }}
+                            >
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: 'primary.main',
+                                        textDecoration: 'underline',
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                            opacity: 0.8,
+                                        },
+                                    }}
+                                >
+                                    {this.getText('documentation')}
+                                </Typography>
+                            </a>
+                        </Box>
+
+                        {/* Test 1: SelectID Dialog with filterFunc Zum rumkopieren */}
+                        <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <TextField
+                                fullWidth
+                                label="Select Object ID (custom)"
+                                value={this.state.selectedObjectId || ''}
+                                onChange={e => {
+                                    this.setState({ selectedObjectId: e.target.value });
+                                }}
+                                variant="standard"
+                            />
+                            <Button
+                                variant="outlined"
+                                onClick={() => this.setState({ showSelectDialog: true })}
+                                sx={{ minWidth: 48 }}
+                            >
+                                ...
+                            </Button>
+
+                            {this.state.showSelectDialog && (
+                                <SelectID
+                                    socket={this.props.oContext.socket}
+                                    selected={this.state.selectedObjectId || ''}
+                                    onOk={(selectedId: string | string[] | undefined) => {
+                                        const id = Array.isArray(selectedId) ? selectedId[0] : selectedId;
+                                        this.setState({
+                                            selectedObjectId: id || '',
+                                            showSelectDialog: false,
+                                        });
+                                    }}
+                                    onClose={() => {
+                                        this.setState({ showSelectDialog: false });
+                                    }}
+                                    filterFunc={(obj: ioBroker.Object): boolean => {
+                                        // Only show states with role starting with 'switch'
+                                        return !!(
+                                            obj?.type === 'state' &&
+                                            obj.common?.role &&
+                                            obj.common.role.startsWith('switch')
+                                        );
+                                    }}
+                                    dialogName="nspanel-screensaver"
+                                    theme={this.props.theme}
+                                    themeType={this.props.theme?.palette?.mode || 'light'}
+                                />
+                            )}
+                        </Box>
+
+                        {/* Test 2: JsonConfigComponent with filterFunc as string */}
+                        <Box sx={{ mb: 2 }}>
+                            <Typography
+                                variant="caption"
+                                sx={{ display: 'flex', mb: 1, color: 'text.secondary' }}
+                            >
+                                Test 2: JsonConfigComponent (filterFunc = string compiled with new Function)
+                            </Typography>
+                            <JsonConfigComponent
+                                socket={this.props.oContext.socket}
+                                themeName={this.props.themeName}
+                                themeType={this.props.theme?.palette?.mode || 'light'}
+                                theme={this.props.theme}
+                                schema={(() => {
+                                    const objectIdItem: ConfigItemObjectId = {
+                                        type: 'objectId',
+                                        label: 'Select Object (JsonConfig)',
+                                        sm: 12,
+                                        md: 12,
+                                        lg: 12,
+                                        // filterFunc as string - will be compiled with new Function()
+                                        // TypeScript doesn't allow string, but runtime does - cast to any
+                                        filterFunc:
+                                            "return !!(obj?.type === 'state' && obj.common?.role && obj.common.role.startsWith('switch'));" as any,
+                                    };
+                                    const schema: ConfigItemPanel = {
+                                        type: 'panel',
+                                        label: 'Object Selector',
+                                        items: {
+                                            testObjectId: objectIdItem,
+                                        },
+                                    };
+                                    return schema;
+                                })()}
+                                data={{ testObjectId: this.state.selectedObjectIdJson || '' }}
+                                onChange={(newData: Record<string, any>) => {
+                                    const sel = (newData && (newData as any).testObjectId) || '';
+                                    this.setState({ selectedObjectIdJson: sel });
+                                }}
+                                isFloatComma={false}
+                                dateFormat="DD.MM.YYYY"
+                                onError={() => {}}
+                                adapterName="nspanel-lovelace-ui"
+                                instance={Number(this.props.oContext?.instance || 0)}
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+                <ConfirmDialog
+                    open={!!this.state.confirmDeleteOpen}
+                    onClose={closeConfirm}
+                    onConfirm={confirmDelete}
+                    title={this.getText('screensaver_delete_confirm_title')}
+                    description={
+                        this.getText('screensaver_delete_confirm_text') +
+                        (this.state.confirmDeleteName ? `: ${this.state.confirmDeleteName}` : '')
+                    }
+                    cancelText={this.getText('Cancel')}
+                    confirmText={this.getText('Delete')}
+                    ariaTitleId="screensaver-delete-confirm-title"
+                    ariaDescId="screensaver-delete-confirm-description"
+                />
+
+                {/* right area: main content + optional collapsible side panel */}
+                <Box
+                    sx={{
+                        width: { xs: '100%', md: '100%' },
+                        pl: { xs: 0, md: 2 },
+                        mt: { xs: 2, md: 0 },
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        gap: 1,
+                        position: 'relative',
+                        minHeight: 0,
+                        overflow: 'hidden',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            width: { xs: '100%', md: '100%' },
+                            borderLeft: { xs: 'none', md: '1px solid' },
+                            borderColor: 'divider',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            minHeight: 0,
+                        }}
+                    >
+                        <Paper
+                            sx={{
+                                height: '100%',
+                                p: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'auto',
+                            }}
+                            elevation={1}
+                        >
+                            {!local?.selected ? (
+                                // nothing selected: show only hint
+                                <Box>
+                                    <Typography variant="h6">{this.getText('screensaver_select_item')}</Typography>
+                                    <Box sx={{ mt: 2 }}>
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+                                            {this.getText('screensaver_select_description')}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            ) : (
+                                // item selected: show screensaver config
+                                <Box>
+                                    {(() => {
+                                        const sel = local?.selected;
+                                        const ent = entries.find(e => e.uniqueName === sel);
+                                        if (!ent) {
+                                            return (
+                                                <Typography
+                                                    variant="body2"
+                                                    color="error"
+                                                >
+                                                    {this.getText('screensaver_entry_not_found')}
+                                                </Typography>
+                                            );
+                                        }
+
+                                        return (
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{ mb: 1 }}
+                                                >
+                                                    {this.getText('screensaver_config')}: {sel}
+                                                </Typography>
+
+                                                {/* Check if we're in editing mode for PageItem */}
+                                                {this.state.editingPageItem !== undefined ? (
+                                                    <PageItemEditor
+                                                        item={this.state.editingPageItem}
+                                                        onSave={item => {
+                                                            const pageItems = ent.pageItems || [];
+                                                            let updated: PageItemButtonEntry[];
+
+                                                            if (this.state.editingPageItemIndex !== undefined) {
+                                                                // Edit existing item
+                                                                updated = pageItems.map((pi, idx) =>
+                                                                    idx === this.state.editingPageItemIndex ? item : pi,
+                                                                );
+                                                            } else {
+                                                                // Add new item
+                                                                updated = [...pageItems, item];
+                                                            }
+
+                                                            const updatedEntries = entries.map(
+                                                                (entry: ScreensaverEntry) =>
+                                                                    entry.uniqueName === sel
+                                                                        ? { ...entry, pageItems: updated }
+                                                                        : entry,
+                                                            );
+                                                            this.setState({
+                                                                entries: updatedEntries,
+                                                                editingPageItem: undefined,
+                                                                editingPageItemIndex: undefined,
+                                                            } as ScreensaverPageState);
+                                                            void this.onChange(this.props.attr!, updatedEntries);
+                                                        }}
+                                                        onDelete={() => {
+                                                            if (this.state.editingPageItemIndex !== undefined) {
+                                                                const pageItems = ent.pageItems || [];
+                                                                const updated = pageItems.filter(
+                                                                    (_, idx) => idx !== this.state.editingPageItemIndex,
+                                                                );
+                                                                const updatedEntries = entries.map(
+                                                                    (entry: ScreensaverEntry) =>
+                                                                        entry.uniqueName === sel
+                                                                            ? { ...entry, pageItems: updated }
+                                                                            : entry,
+                                                                );
+                                                                this.setState({
+                                                                    entries: updatedEntries,
+                                                                    editingPageItem: undefined,
+                                                                    editingPageItemIndex: undefined,
+                                                                } as ScreensaverPageState);
+                                                                void this.onChange(this.props.attr!, updatedEntries);
+                                                            }
+                                                        }}
+                                                        onBack={() => {
+                                                            this.setState({
+                                                                editingPageItem: undefined,
+                                                                editingPageItemIndex: undefined,
+                                                            } as ScreensaverPageState);
+                                                        }}
+                                                        getText={key => this.getText(key)}
+                                                        socket={this.props.oContext.socket}
+                                                        theme={this.props.theme}
+                                                        themeName={this.props.themeName}
+                                                        themeType={this.props.theme?.palette?.mode || 'light'}
+                                                        instance={Number(this.props.oContext?.instance || 0)}
+                                                    />
+                                                ) : (
+                                                    <>
+                                                        {/* Screensaver-specific configuration fields */}
+
+                                                        {/* Date Format Selection */}
+                                                        <FormControl
+                                                            variant="outlined"
+                                                            fullWidth
+                                                            sx={{ mt: 2 }}
+                                                        >
+                                                            <InputLabel>{this.getText('dateFormat')}</InputLabel>
+                                                            <Select
+                                                                value={ent.dateFormat || 'dd.MM.yyyy'}
+                                                                onChange={e => {
+                                                                    const dateFormat = e.target.value;
+                                                                    const updated = entries.map(
+                                                                        (entry: ScreensaverEntry) =>
+                                                                            entry.uniqueName === sel
+                                                                                ? { ...entry, dateFormat }
+                                                                                : entry,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as ScreensaverPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                label={this.getText('dateFormat')}
+                                                            >
+                                                                {this.dateFormats.map(format => (
+                                                                    <MenuItem
+                                                                        key={format.label}
+                                                                        value={JSON.stringify(format.value)}
+                                                                    >
+                                                                        {format.value === 'custom'
+                                                                            ? this.getText('dateFormatCustom')
+                                                                            : this.getText(format.label)}
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        </FormControl>
+
+                                                        {/* Custom Date Format Input */}
+                                                        {ent.dateFormat === '"custom"' && (
+                                                            <TextField
+                                                                label={this.getText('dateFormatCustom')}
+                                                                value={ent.customDateFormat || ''}
+                                                                onChange={e => {
+                                                                    const customDateFormat = e.target.value;
+                                                                    const updated = entries.map(
+                                                                        (entry: ScreensaverEntry) =>
+                                                                            entry.uniqueName === sel
+                                                                                ? { ...entry, customDateFormat }
+                                                                                : entry,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as ScreensaverPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                variant="outlined"
+                                                                fullWidth
+                                                                placeholder='{ "weekday": "long", "day": "2-digit", "month": "2-digit", "year": "numeric" }'
+                                                                sx={{ mt: 1 }}
+                                                            />
+                                                        )}
+
+                                                        {/* Date Format Example */}
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                            sx={{ mt: 0.5, display: 'block' }}
+                                                        >
+                                                            {this.getText('dateFormatExample')}:{' '}
+                                                            {(() => {
+                                                                const currentDate = new Date();
+                                                                const format = ent.dateFormat || 'dd.MM.yyyy';
+                                                                console.log(
+                                                                    'Formatting date with format:',
+                                                                    ent.dateFormat,
+                                                                );
+                                                                try {
+                                                                    if (format === '"custom"') {
+                                                                        const customFormat = ent.customDateFormat || '';
+                                                                        if (!customFormat) {
+                                                                            return 'Enter custom format above';
+                                                                        }
+                                                                        console.log(
+                                                                            'Formatting date with custom:',
+                                                                            customFormat,
+                                                                        );
+                                                                        return this.formatDatePreview(
+                                                                            currentDate,
+                                                                            customFormat,
+                                                                        );
+                                                                    }
+                                                                    return this.formatDatePreview(currentDate, format);
+                                                                } catch {
+                                                                    return 'Invalid format';
+                                                                }
+                                                            })()}
+                                                        </Typography>
+
+                                                        {/* Time Format Selection */}
+                                                        <FormControl
+                                                            variant="outlined"
+                                                            fullWidth
+                                                            sx={{ mt: 2 }}
+                                                        >
+                                                            <InputLabel>{this.getText('timeFormat')}</InputLabel>
+                                                            <Select
+                                                                value={
+                                                                    ent.timeFormat ||
+                                                                    JSON.stringify({
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false,
+                                                                    })
+                                                                }
+                                                                onChange={e => {
+                                                                    const timeFormat = e.target.value;
+                                                                    const updated = entries.map(
+                                                                        (entry: ScreensaverEntry) =>
+                                                                            entry.uniqueName === sel
+                                                                                ? { ...entry, timeFormat }
+                                                                                : entry,
+                                                                    );
+                                                                    this.setState({
+                                                                        entries: updated,
+                                                                    } as ScreensaverPageState);
+                                                                    void this.onChange(this.props.attr!, updated);
+                                                                }}
+                                                                label={this.getText('timeFormat')}
+                                                            >
+                                                                {this.timeFormats.map(format => (
+                                                                    <MenuItem
+                                                                        key={format.label}
+                                                                        value={JSON.stringify(format.value)}
+                                                                    >
+                                                                        {this.getText(format.label)}
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        </FormControl>
+
+                                                        {/* Time Format Example */}
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                            sx={{ mt: 0.5, display: 'block' }}
+                                                        >
+                                                            {this.getText('timeFormatExample')}:{' '}
+                                                            {(() => {
+                                                                const currentTime = new Date();
+                                                                const format =
+                                                                    ent.timeFormat ||
+                                                                    JSON.stringify({
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false,
+                                                                    });
+                                                                try {
+                                                                    return this.formatTimePreview(currentTime, format);
+                                                                } catch {
+                                                                    return 'Invalid format';
+                                                                }
+                                                            })()}
+                                                        </Typography>
+
+                                                        {/* PageItems Section */}
+                                                        <Divider sx={{ my: 3 }} />
+                                                        <Typography
+                                                            variant="h6"
+                                                            sx={{ mb: 2 }}
+                                                        >
+                                                            {this.getText('pageItems')}
+                                                        </Typography>
+
+                                                        {/* PageItems Icon Grid */}
+                                                        <Box
+                                                            sx={{
+                                                                display: 'grid',
+                                                                gridTemplateColumns:
+                                                                    'repeat(auto-fill, minmax(80px, 1fr))',
+                                                                gap: 2,
+                                                                mt: 2,
+                                                            }}
+                                                        >
+                                                            {/* Add New Item Button */}
+                                                            <Box
+                                                                onClick={() => {
+                                                                    this.setState({
+                                                                        editingPageItem: null,
+                                                                        editingPageItemIndex: undefined,
+                                                                    } as ScreensaverPageState);
+                                                                }}
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    alignItems: 'center',
+                                                                    cursor: 'pointer',
+                                                                    '&:hover': {
+                                                                        opacity: 0.8,
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <Box
+                                                                    sx={{
+                                                                        width: 60,
+                                                                        height: 60,
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        borderRadius: 1,
+                                                                        backgroundColor: 'success.main',
+                                                                        color: 'white',
+                                                                        fontSize: '2.5rem',
+                                                                        fontWeight: 'bold',
+                                                                        mb: 1,
+                                                                    }}
+                                                                >
+                                                                    +
+                                                                </Box>
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    sx={{
+                                                                        textAlign: 'center',
+                                                                        fontSize: '0.75rem',
+                                                                    }}
+                                                                >
+                                                                    {this.getText('add')}
+                                                                </Typography>
+                                                            </Box>
+
+                                                            {/* Dynamic PageItem Icons */}
+                                                            {(ent.pageItems || []).map((item, index) => {
+                                                                const iconText =
+                                                                    item.modeScr && MODE_SCR_ICONS[item.modeScr]
+                                                                        ? MODE_SCR_ICONS[item.modeScr]
+                                                                        : '?';
+                                                                return (
+                                                                    <Box
+                                                                        key={index}
+                                                                        onClick={() => {
+                                                                            this.setState({
+                                                                                editingPageItem: item,
+                                                                                editingPageItemIndex: index,
+                                                                            } as ScreensaverPageState);
+                                                                        }}
+                                                                        sx={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            alignItems: 'center',
+                                                                            cursor: 'pointer',
+                                                                            '&:hover': {
+                                                                                opacity: 0.8,
+                                                                            },
+                                                                        }}
+                                                                    >
+                                                                        <Box
+                                                                            sx={{
+                                                                                width: 60,
+                                                                                height: 60,
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                borderRadius: 1,
+                                                                                backgroundColor: 'action.hover',
+                                                                                color: 'primary.main',
+                                                                                fontSize: '2rem',
+                                                                                mb: 1,
+                                                                            }}
+                                                                        >
+                                                                            {iconText}
+                                                                        </Box>
+                                                                        <Typography
+                                                                            variant="caption"
+                                                                            sx={{
+                                                                                textAlign: 'center',
+                                                                                fontSize: '0.75rem',
+                                                                            }}
+                                                                        >
+                                                                            {item.headline || 'Item'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                );
+                                                            })}
+                                                        </Box>
+                                                    </>
+                                                )}
+
+                                                {/* Add more screensaver-specific fields here as needed */}
+                                            </Box>
+                                        );
+                                    })()}
+                                </Box>
+                            )}
+                        </Paper>
+                    </Box>
+                    <Box
+                        sx={{
+                            // auf Mobile immer full width, auf Desktop die berechnete Breite (0 = ausgeblendet)
+                            width: { xs: '100%', md: `${navWidthPercent}%` },
+                            // sanfte Übergangsanimation beim ein-/ausklappen
+                            transition: 'width 300ms ease',
+                            // wenn ausgeblendet, verhindern wir Overflow / Fokusprobleme
+                            overflow: navCollapsed ? 'hidden' : 'visible',
+                            // optional: ganz ausblenden bei collapsed, damit auch tab-focus nicht hinein gelangt
+                            display: navCollapsed ? { xs: 'none', md: 'block' } : 'block',
+                        }}
+                    >
+                        {/* NavigationAssignmentPanel */}
+                        <NavigationAssignmentPanel
+                            {...this.props}
+                            widthPercent={30}
+                            oContext={this.props.oContext}
+                            uniqueName={local?.selected || ''}
+                            currentAssignments={(() => {
+                                const sel = local?.selected;
+                                if (!sel) {
+                                    return [];
+                                }
+                                const ent = entries.find((e: ScreensaverEntry) => e.uniqueName === sel);
+                                return ent?.navigation || [];
+                            })()}
+                            onAssign={(uniqueName, assignments) => {
+                                const updated = entries.map((entry: ScreensaverEntry) =>
+                                    entry.uniqueName === uniqueName ? { ...entry, navigation: assignments } : entry,
+                                );
+                                this.setState({ entries: updated } as ScreensaverPageState);
+                                void this.onChange(this.props.attr!, updated);
+                            }}
+                            hideNavigationFields={true}
+                        />
+                    </Box>
+                </Box>
+
+                {/* ObjectIdSelector is embedded in the left sidebar via JsonConfigComponent above. */}
+            </Box>
+        );
+    }
+}
+
+export default withTheme(ScreensaverPage);

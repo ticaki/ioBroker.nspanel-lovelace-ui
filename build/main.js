@@ -68,7 +68,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     await this.extendForeignObjectAsync(this.namespace, {
       type: "meta",
       common: { name: { en: "Nspanel Instance", de: "Nspanel Instanze" }, type: "meta.folder" },
@@ -97,10 +97,53 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         }
       }
-      const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
-      if (o && o.native) {
-        o.native.fixBrokenCommonTypes = false;
-        await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, o);
+    }
+    const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+    if (o && o.native) {
+      let change = false;
+      const native = o.native;
+      if (native.fixBrokenCommonTypes === true) {
+        native.fixBrokenCommonTypes = false;
+        change = true;
+      }
+      if (native.pageUnlockConfig && !native.pageConfig) {
+        native.pageConfig = native.pageUnlockConfig;
+        delete native.pageUnlockConfig;
+        change = true;
+      }
+      if (native.pageQRdata) {
+        native.pageQRdata.forEach((page) => {
+          const temp = {
+            card: "cardQR",
+            uniqueName: page.pageName,
+            headline: page.headline,
+            selType: page.selType,
+            ssidUrlTel: page.SSIDURLTEL,
+            setState: page.setState || "",
+            wlanhidden: page.wlanhidden || false,
+            pwdhidden: page.pwdhidden || false,
+            hidden: page.hiddenByTrigger || false,
+            alwaysOn: page.alwaysOnDisplay ? "always" : "none"
+          };
+          native.pageConfig.push(temp);
+        });
+        delete native.pageQRdata;
+        change = true;
+      }
+      if (change) {
+        const uniquePages = /* @__PURE__ */ new Map();
+        for (const p of (_a = native.pageConfig) != null ? _a : []) {
+          if (p == null ? void 0 : p.uniqueName) {
+            if (uniquePages.has(p.uniqueName)) {
+              this.log.warn(`Duplicate uniqueName '${p.uniqueName}' found in pageConfig!`);
+              continue;
+            }
+            uniquePages.set(p.uniqueName, p);
+          }
+        }
+        native.pageConfig = [...uniquePages.values()];
+        await this.setForeignObject(`system.adapter.${this.namespace}`, o);
+        this.log.warn(`Updated configuration of ${this.namespace} to the latest version. Restart adapter!`);
         return;
       }
     }
@@ -122,7 +165,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       const config = [];
       if (obj.native.scriptConfigRaw || obj.native.scriptConfig) {
         const panelsText = (this.config.panels || []).map((a) => `[${a.name}#${a.topic}]`).join(", ");
-        const configsText = (_a = obj.native.scriptConfigRaw) == null ? void 0 : _a.map((a) => `${a.panelTopic}`).join(", ");
+        const configsText = (_b = obj.native.scriptConfigRaw) == null ? void 0 : _b.map((a) => `${a.panelTopic}`).join(", ");
         this.log.info(`Configured panels: name#topic -> ${panelsText}`);
         this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
         this.log.info(
@@ -138,7 +181,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           let usedConfig = null;
           let rawFound = false;
           let rawConversionFailed = false;
-          const raw = (_b = obj.native.scriptConfigRaw) == null ? void 0 : _b.find(
+          const raw = (_c = obj.native.scriptConfigRaw) == null ? void 0 : _c.find(
             (b) => b.panelTopic === a.topic
           );
           if (raw) {
@@ -319,7 +362,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               if (!("uniqueID" in p)) {
                 continue;
               }
-              if (((_c = p.config) == null ? void 0 : _c.card) === "screensaver" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver2" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver3") {
+              if (((_d = p.config) == null ? void 0 : _d.card) === "screensaver" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver2" || ((_f = p.config) == null ? void 0 : _f.card) === "screensaver3") {
                 p.uniqueID = `#${p.uniqueID}`;
               }
               if (names.indexOf(p.uniqueID) !== -1) {

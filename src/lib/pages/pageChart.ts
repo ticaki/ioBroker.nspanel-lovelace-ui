@@ -36,7 +36,7 @@ export class PageChart extends Page {
             throw new Error('Missing config!');
         }
         this.index = this.config.index;
-        this.minUpdateInterval = 2000;
+        this.minUpdateInterval = 60_000;
         this.adminConfig = this.adapter.config.pageChartdata[this.index];
     }
 
@@ -207,7 +207,7 @@ export class PageChart extends Page {
                 this.log.warn('AdminConfig is not set, cannot check states');
                 this.checkState = false;
             } else {
-                // try-catch blocks klein halten - die fangen auch alle Vertipper ab und suchen ist dann lustig
+                // trys klein halten - die fangen auch alle vertipper ab und suchen ist dann lustig
                 try {
                     const cfg: any = this.adminConfig;
                     const ds = cfg.selInstanceDataSource;
@@ -287,7 +287,7 @@ export class PageChart extends Page {
                     this.log.error(`Error onVisibilityChange: ${error as string}`);
                 }
             }
-            // ich glaube nicht das du updaten willst, wenn das unsichtbar wird, auch wenn es am anfang von this.update() abgefragt wird
+            // ich glaube nicht das du updaten willst, wenn das unsichtbar wird, auch wenns am anfang von this.update() abgefragt wird
             await this.update();
         }
     }

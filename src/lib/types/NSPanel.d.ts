@@ -1129,7 +1129,7 @@ export namespace NSPanel {
         data: pages.ChangeTypeOfKeys<PageItemNumber, dataItem.Dataitem | undefined>;
     };
 
-    type PageItemButton = Pick<
+    export type PageItemButton = Pick<
         PageItemBase,
         | 'filter'
         | 'setValue1'

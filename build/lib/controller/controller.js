@@ -346,23 +346,16 @@ class Controller extends Library.BaseClass {
         panel.navigation = o.native.navigation[panel.topic].data;
       }
     }
-    try {
-      const newPanel = new Panel.Panel(this.adapter, panel);
-      if (await newPanel.isValid()) {
-        await newPanel.init();
-        this.panels.push(newPanel);
-        newPanel.initDone = true;
-        this.log.debug(`Panel ${newPanel.name} created`);
-      } else {
-        await newPanel.delete();
-        this.adapter.testSuccessful = false;
-        this.log.error(`Panel ${panel.name} has a invalid configuration.`);
-      }
-    } catch (e) {
-      this.log.error(
-        `Panel ${panel.name} with topic ${panel.topic} cannot be created: ${e instanceof Error ? e.message : JSON.stringify(e)}`
-      );
-      return;
+    const newPanel = new Panel.Panel(this.adapter, panel);
+    if (await newPanel.isValid()) {
+      await newPanel.init();
+      this.panels.push(newPanel);
+      newPanel.initDone = true;
+      this.log.debug(`Panel ${newPanel.name} created`);
+    } else {
+      await newPanel.delete();
+      this.adapter.testSuccessful = false;
+      this.log.error(`Panel ${panel.name} has a invalid configuration.`);
     }
   };
   removePanel = async (panel) => {
@@ -395,6 +388,15 @@ class Controller extends Library.BaseClass {
     for (const panel of this.panels) {
       if (panel.screenSaver) {
         await panel.screenSaver.setGlobalNotificationDismiss(id);
+      }
+    }
+  }
+  async setGlobalAlarmStatus(name, status) {
+    for (const panel of this.panels) {
+      for (const page of panel.pages) {
+        if ((page == null ? void 0 : page.card) === "cardAlarm" && "isGlobal" in page && page.isGlobal && page.name === name) {
+          await page.setStatusGlobal(status);
+        }
       }
     }
   }

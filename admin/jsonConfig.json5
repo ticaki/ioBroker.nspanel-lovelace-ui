@@ -1316,270 +1316,6 @@
                 }
             }
         },
-        "pageQR": {
-            "type": "panel",
-            "label": "Page QR",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
-            "items": {
-                "pageQRdataErr": {
-                    "type": "staticText",
-                    "text": "ERROR: field 'pageName' must contain unique text",
-                    "newLine": true,
-                    "hidden": "const x={}; for(let ii=0; data.pageQRdata && ii<data.pageQRdata.length; ii++){const t=data.pageQRdata[ii].pageName; if (x[t]==='x') return false; x[t]='x';}; return true;",
-                    "style": {
-                        "color": "red"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "_openLinkWikiPageQR": {
-                    "type": "staticLink",
-                    "text": "openLinkWikiPageQR",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageQR",
-                    "icon": "info",
-                    "button": true,
-                    "style": {
-                        "fontSize": 16,
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "pageQRdata": {
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 12,
-                    "xl": 12,
-                    "type": "accordion",
-                    "label": "pageQRdata",
-                    "titleAttr": "pageName",
-                    "items": [
-                        {
-                            "attr": "pageName",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "type": "text",
-                            "label": "pageName",
-                            "default": "Unique Name",
-                            "validator": "const x={};for (const c of globalData.pageQRdata) {if (x[c.pageName]==='x') return false; x[c.pageName]='x';}; return true;",
-                            "validatorNoSaveOnError": true
-                        },
-                        {
-                            "attr": "headline",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "type": "text",
-                            "label": "headline",
-                            "default": ""
-                        },
-                        {
-                            "attr": "alwaysOnDisplay",
-                            "xs": 12,
-                            "sm": 6,
-                            "md": 3,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "alwaysOnDisplay",
-                            "default": false
-                        },
-                        {
-                            "attr": "hiddenByTrigger",
-                            "xs": 12,
-                            "sm": 6,
-                            "md": 3,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "hiddenByTrigger",
-                            "default": false
-                        },
-                        {
-                            "attr": "selType",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "newLine": true,
-                            "type": "select",
-                            "label": "pageQRselType",
-                            "default": 0,
-                            "options": [
-                                {
-                                    "label": "FREE",
-                                    "value": 0
-                                },
-                                {
-                                    "label": "Wifi",
-                                    "value": 1
-                                },
-                                {
-                                    "label": "URL",
-                                    "value": 2
-                                },
-                                {
-                                    "label": "TEL",
-                                    "value": 3
-                                }
-                            ]
-                        },
-                        {
-                            "attr": "SSIDURLTEL",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "hidden": "data.selType < 1",
-                            "type": "text",
-                            "label": "SSID - URL - TEL",
-                            "default": ""
-                        },
-                        {
-                            "attr": "wlanhidden",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "type": "checkbox",
-                            "label": "wlanhidden",
-                            "hidden": "data.selType !== 1",
-                            "default": false
-                        },
-                        {
-                            "type": "select",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "newLine": true,
-                            "label": "wlantype",
-                            "hidden": "data.selType !== 1",
-                            "attr": "wlantype",
-                            "options": [
-                                {
-                                    "label": "nopass",
-                                    "value": "nopass"
-                                },
-                                {
-                                    "label": "WPA",
-                                    "value": "WPA"
-                                },
-                                {
-                                    "label": "WPA2",
-                                    "value": "WPA2"
-                                },
-                                {
-                                    "label": "WPA3",
-                                    "value": "WPA3"
-                                },
-                                {
-                                    "label": "WEP",
-                                    "value": "WEP"
-                                }
-                            ]
-                        },
-                        {
-                            "attr": "qrPass",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "type": "select",
-                            "label": "qrPass",
-                            "hidden": "data.selType !== 1",
-                            "options": [
-                                {
-                                    "label": "none",
-                                    "value": 0
-                                },
-                                {
-                                    "label": "Password 1",
-                                    "value": 1
-                                },
-                                {
-                                    "label": "Password 2",
-                                    "value": 2
-                                },
-                                {
-                                    "label": "Password 3",
-                                    "value": 3
-                                }
-                            ]
-                        },
-                        {
-                            "attr": "pwdhidden",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "type": "checkbox",
-                            "label": "pwdHidden",
-                            "hidden": "data.selType !== 1",
-                            "default": false
-                        },
-                        {
-                            "attr": "setState",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 8,
-                            "lg": 8,
-                            "xl": 8,
-                            "type": "objectId",
-                            "label": "switchForWifi",
-                            "hidden": "data.selType !== 1",
-                            "filterFunc": "return obj.common.type === 'boolean' && obj.common.role === 'switch' && obj.common.write"
-                        }
-                    ]
-                },
-                "pageQRpwd1": {
-                    "type": "password",
-                    "label": "Password 1",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "pageQRpwd2": {
-                    "type": "password",
-                    "label": "Password 2",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "pageQRpwd3": {
-                    "type": "password",
-                    "label": "Password 3",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                }
-            }
-        },
         "pagePower": {
             "type": "panel",
             "label": "Page Power",
@@ -3432,6 +3168,21 @@
                 }
             }
         },
+        "_pageConfig": {
+            "type": "panel",
+            "label": "PageConfig",
+            "items": {
+                "pageConfig": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/PageConfigManager",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
         "tasmotaTools": {
             "type": "panel",
             "label": "tasmotaTools",
@@ -4256,21 +4007,22 @@
                 }
             }
         },
-        "pageUnlock": {
+
+        /*"ScreensaverPage": {
             "type": "panel",
-            "label": "PageUnlock",
+            "label": "ScreensaverPage",
             "items": {
-                "pageUnlockConfig": {
+                "ScreensaverPageConfig": {
                     "type": "custom",
                     "i18n": true,
                     "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/UnlockPage",
+                    "name": "AdminComponentTemplateSet/Components/ScreensaverPage",
                     "bundlerType": "module",
                     "xs": 12
                     //"label": "test"
                 }
             }
-        },
+        },*/
         "iconOverview": {
             "type": "panel",
             "label": "iconOverview",

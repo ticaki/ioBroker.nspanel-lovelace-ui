@@ -8,6 +8,8 @@ import { getInternalDefaults } from '../const/tools';
 import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
+import type { PageAlarm } from '../pages/pageAlarm';
+import type { AlarmStates } from '../types/pages';
 
 /**
  * Controller Class
@@ -351,25 +353,25 @@ export class Controller extends Library.BaseClass {
                 panel.navigation = o.native.navigation[panel.topic].data;
             }
         }
-        try {
-            const newPanel = new Panel.Panel(this.adapter, panel as Panel.panelConfigPartial);
-            if (await newPanel.isValid()) {
-                await newPanel.init();
+        //try {
+        const newPanel = new Panel.Panel(this.adapter, panel as Panel.panelConfigPartial);
+        if (await newPanel.isValid()) {
+            await newPanel.init();
 
-                this.panels.push(newPanel);
-                newPanel.initDone = true;
-                this.log.debug(`Panel ${newPanel.name} created`);
-            } else {
-                await newPanel.delete();
-                this.adapter.testSuccessful = false;
-                this.log.error(`Panel ${panel.name} has a invalid configuration.`);
-            }
-        } catch (e) {
+            this.panels.push(newPanel);
+            newPanel.initDone = true;
+            this.log.debug(`Panel ${newPanel.name} created`);
+        } else {
+            await newPanel.delete();
+            this.adapter.testSuccessful = false;
+            this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+        }
+        /*} catch (e) {
             this.log.error(
                 `Panel ${panel.name} with topic ${panel.topic} cannot be created: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
             );
             return;
-        }
+        }*/
     };
 
     removePanel = async (panel: Panel.Panel): Promise<void> => {
@@ -407,6 +409,18 @@ export class Controller extends Library.BaseClass {
             }
         }
     }
+
+    async setGlobalAlarmStatus(name: string, status: AlarmStates): Promise<void> {
+        for (const panel of this.panels) {
+            // @ts-expect-error accessing private subclass property
+            for (const page of panel.pages) {
+                if (page?.card === 'cardAlarm' && 'isGlobal' in page && page.isGlobal && page.name === name) {
+                    await (page as PageAlarm).setStatusGlobal(status);
+                }
+            }
+        }
+    }
+
     async delete(): Promise<void> {
         this.unload = true;
         if (this.minuteLoopTimeout) {

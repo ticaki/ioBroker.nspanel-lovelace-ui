@@ -30,8 +30,9 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
-import type { NavigationSavePayload, PanelListEntry, PanelInfo } from './lib/types/adminShareConfig';
+import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
+import type { oldQRType } from './lib/types/types';
 //import fs from 'fs';
 
 class NspanelLovelaceUi extends utils.Adapter {
@@ -109,10 +110,55 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                 }
             }
-            const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
-            if (o && o.native) {
-                o.native.fixBrokenCommonTypes = false;
-                await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, o);
+        }
+        const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+        if (o && o.native) {
+            let change = false;
+            const native = o.native as any;
+            if (native.fixBrokenCommonTypes === true) {
+                native.fixBrokenCommonTypes = false;
+                change = true;
+            }
+            if (native.pageUnlockConfig && !native.pageConfig) {
+                native.pageConfig = native.pageUnlockConfig;
+                delete native.pageUnlockConfig;
+                change = true;
+            }
+            if (native.pageQRdata) {
+                native.pageQRdata.forEach((page: oldQRType) => {
+                    const temp: PageConfig = {
+                        card: 'cardQR',
+                        uniqueName: page.pageName,
+                        headline: page.headline,
+                        selType: page.selType,
+                        ssidUrlTel: page.SSIDURLTEL,
+                        setState: page.setState || '',
+                        wlanhidden: page.wlanhidden || false,
+                        pwdhidden: page.pwdhidden || false,
+                        hidden: page.hiddenByTrigger || false,
+                        alwaysOn: page.alwaysOnDisplay ? 'always' : 'none',
+                    };
+
+                    native.pageConfig.push(temp);
+                });
+                delete native.pageQRdata;
+                change = true;
+            }
+
+            if (change) {
+                const uniquePages = new Map();
+                for (const p of native.pageConfig ?? []) {
+                    if (p?.uniqueName) {
+                        if (uniquePages.has(p.uniqueName)) {
+                            this.log.warn(`Duplicate uniqueName '${p.uniqueName}' found in pageConfig!`);
+                            continue;
+                        }
+                        uniquePages.set(p.uniqueName, p);
+                    }
+                }
+                native.pageConfig = [...uniquePages.values()];
+                await this.setForeignObject(`system.adapter.${this.namespace}`, o);
+                this.log.warn(`Updated configuration of ${this.namespace} to the latest version. Restart adapter!`);
                 return;
             }
         }

@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+ ### **WORK IN PROGRESS**
+- (ticaki) Use of IDs in colour specifications for pageItem icons and screensaver icons enabled.
+- (ticaki) Admin: Screensaver time formats now use toLocaleTimeString for better locale support and consistency with date formats
 ### 0.6.8 (2025-10-24)
 - (ticaki) Error during conversion to fetch prevented adding of panels. Fixed.
 
