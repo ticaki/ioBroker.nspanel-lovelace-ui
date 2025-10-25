@@ -632,6 +632,7 @@ export type PageGridPowerConfigElement =
           value?: NSPanel.ValueEntryType;
           speed?: NSPanel.ScaledNumberType;
           text?: NSPanel.TextEntryType;
+          targetUnit?: string;
       }
     | undefined;
 

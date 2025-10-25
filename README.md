@@ -160,6 +160,16 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
  ### **WORK IN PROGRESS**
 - (ticaki) Use of IDs in colour specifications for pageItem icons and screensaver icons enabled.
 - (ticaki) Admin: Screensaver time formats now use toLocaleTimeString for better locale support and consistency with date formats
+### 0.6.8 (2025-10-24)
+- (ticaki) Error during conversion to fetch prevented adding of panels. Fixed.
+
+### 0.6.7 (2025-10-22)
+- (ticaki) PagePower: Added favorite unit selection for power display
+- (ticaki) Grid/Entities pages: Improved update performance with reduced minimum update interval
+- (ticaki) PageItem icons: Enabled use of state IDs in color specifications
+- (tt-tom17) ChartBar: Fixed display issues
+- (ticaki) Battery template (BYD HVS): Fixed charging status detection (power = 0 is no longer treated as charging)
+- (Armilar) HMI: Fixed cardAlarm icon display and screensaver standard/alternate mode switching
 
 ### 0.6.6 (2025-10-17)
 - (tt-tom17) Chart: Added "NO DATA" label when chart has no data to display - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)

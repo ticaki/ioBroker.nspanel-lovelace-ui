@@ -547,6 +547,21 @@ export type PanelInfo = {
     };
 };
 
+export type oldQRType = {
+    pageName: string;
+    headline: string;
+    alwaysOnDisplay: boolean;
+    hiddenByTrigger: boolean;
+    optionalText: string;
+    SSIDURLTEL: string;
+    selType: 0 | 1 | 2 | 3;
+    wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+    qrPass?: number;
+    wlanhidden?: boolean;
+    pwdhidden?: boolean;
+    setState?: string;
+};
+
 export type TasmotaOnlineResponse = {
     url: string;
     assets_url: string;

@@ -4194,6 +4194,10 @@ export class ConfigManager extends BaseClass {
                 if (item.filter != null && itemConfig) {
                     itemConfig.filter = item.filter;
                 }
+                if (item.targetPage && itemConfig?.type === 'button' && !itemConfig?.data?.setNavi) {
+                    itemConfig.data = itemConfig.data || {};
+                    itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
+                }
                 if (item.enabled === false && itemConfig) {
                     if (!itemConfig.data) {
                         itemConfig.data = {};

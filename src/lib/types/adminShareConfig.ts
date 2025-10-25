@@ -174,3 +174,5 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
+
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry;

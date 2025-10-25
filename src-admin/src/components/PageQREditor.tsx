@@ -98,6 +98,11 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                             }}
                         >
                             <FormControlLabel
+                                value={0}
+                                control={<Radio />}
+                                label={this.getText('qr_type_free')}
+                            />
+                            <FormControlLabel
                                 value={1}
                                 control={<Radio />}
                                 label={this.getText('qr_type_wifi')}
@@ -141,6 +146,8 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                     autoComplete="off"
                     label={(() => {
                         switch (entry.selType) {
+                            case 0:
+                                return this.getText('qr_content_free');
                             case 1:
                                 return this.getText('qr_content_wifi');
                             case 2:

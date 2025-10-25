@@ -567,13 +567,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
         return (
             <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}
-                >
-                    {I18n.t('common_settings')}
-                </Typography>
-
                 {/* Hidden Checkbox */}
                 <Box sx={{ mb: 2 }}>
                     <FormControlLabel

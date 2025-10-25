@@ -2249,7 +2249,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -3498,6 +3498,10 @@ class ConfigManager extends import_library.BaseClass {
         }
         if (item.filter != null && itemConfig) {
           itemConfig.filter = item.filter;
+        }
+        if (item.targetPage && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_x = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _x.setNavi)) {
+          itemConfig.data = itemConfig.data || {};
+          itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
         }
         if (item.enabled === false && itemConfig) {
           if (!itemConfig.data) {

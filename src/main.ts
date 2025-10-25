@@ -30,8 +30,9 @@ import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 import path from 'path';
 import { testScriptConfig } from './lib/const/test';
-import type { NavigationSavePayload, PanelListEntry, PanelInfo } from './lib/types/adminShareConfig';
+import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
+import type { oldQRType } from './lib/types/types';
 //import fs from 'fs';
 
 class NspanelLovelaceUi extends utils.Adapter {
@@ -123,11 +124,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                 delete native.pageUnlockConfig;
                 change = true;
             }
-            if (native.pageQRConfig) {
-                native.pageConfig = (native.pageConfig || []).concat(native.pageQRConfig);
-                native.pageConfig.ssidUrlTel = native.pageConfig.SSIDURLTEL;
-                delete native.pageConfig.SSIDURLTEL;
-                delete native.pageQRConfig;
+            if (native.pageQRdata) {
+                native.pageQRdata.forEach((page: oldQRType) => {
+                    const temp: PageConfig = {
+                        card: 'cardQR',
+                        uniqueName: page.pageName,
+                        headline: page.headline,
+                        selType: page.selType,
+                        ssidUrlTel: page.SSIDURLTEL,
+                        setState: page.setState || '',
+                        wlanhidden: page.wlanhidden || false,
+                        pwdhidden: page.pwdhidden || false,
+                        hidden: page.hiddenByTrigger || false,
+                        alwaysOn: page.alwaysOnDisplay ? 'always' : 'none',
+                    };
+
+                    native.pageConfig.push(temp);
+                });
+                delete native.pageQRdata;
                 change = true;
             }
 
@@ -1154,35 +1168,52 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 let result: Record<string, string> | undefined = undefined;
                                 try {
-                                    result = (await this.fetch(
-                                        'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                                    )) as Record<string, string> | undefined;
-                                    if (!result || !result.data) {
-                                        this.log.error('No version found!');
-                                        if (obj.callback) {
-                                            this.sendTo(
-                                                obj.from,
-                                                obj.command,
-                                                { error: 'sendToRequestFail' },
-                                                obj.callback,
-                                            );
-                                        }
-                                        break;
-                                    }
-                                    const version = obj.message.useBetaTFT
-                                        ? result[`berry-beta`].split('_')[0]
-                                        : result.berry.split('_')[0];
                                     const url =
                                         `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                                        `&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
-                                    this.log.info(
-                                        `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
-                                    );
-                                    this.log.debug(`URL: ${url}`);
-                                    await this.fetch(url);
-                                    this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
-                                    await this.delay(7000);
+                                        `&cmnd=GetDriverVersion`;
+                                    try {
+                                        result = (await this.fetch(url, undefined, 3000)) as
+                                            | Record<string, string>
+                                            | undefined;
+                                    } catch {
+                                        //ignore
+                                    }
+                                    if (!result || result.nlui_driver_version !== '-1') {
+                                        result = (await this.fetch(
+                                            'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                                        )) as Record<string, string> | undefined;
+                                        if (!result) {
+                                            this.log.error('No version found!');
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToRequestFail1' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            break;
+                                        }
+                                        const version = obj.message.useBetaTFT
+                                            ? result[`berry-beta`].split('_')[0]
+                                            : result.berry.split('_')[0];
+                                        const url =
+                                            `http://${obj.message.tasmotaIP}/cm?` +
+                                            `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                            `&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                                        this.log.info(
+                                            `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
+                                        );
+                                        this.log.debug(`URL: ${url}`);
+                                        await this.fetch(url);
+                                        this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
+                                        await this.delay(7000);
+                                    } else {
+                                        this.log.info(
+                                            `Emulator detected on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}, skipping berry install.`,
+                                        );
+                                    }
                                 } catch (e: any) {
                                     this.log.error(`Error: while installing berry - ${e}`);
                                 }
@@ -1201,7 +1232,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             this.sendTo(
                                                 obj.from,
                                                 obj.command,
-                                                { error: 'sendToRequestFail' },
+                                                { error: 'sendToRequestFail2' },
                                                 obj.callback,
                                             );
                                         }
@@ -1221,7 +1252,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail3' },
                                             obj.callback,
                                         );
                                     }
@@ -1246,7 +1277,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         } catch (e: any) {
                             this.log.error(`Error: while sending mqtt config & base config to tasmota - ${e}`);
                             if (obj.callback) {
-                                this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail4' }, obj.callback);
                             }
                         }
                         break;
@@ -1268,13 +1299,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 result = (await this.fetch(
                                     'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
                                 )) as Record<string, string> | undefined;
-                                if (!result || !result.data) {
+                                if (!result) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail5' },
                                             obj.callback,
                                         );
                                     }
@@ -1296,7 +1327,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: while installing berry - ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail6' }, obj.callback);
                                 }
                             }
                             break;
@@ -1322,7 +1353,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail7' },
                                             obj.callback,
                                         );
                                     }
@@ -1341,7 +1372,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail8' }, obj.callback);
                                 }
                             }
                             break;
@@ -1367,7 +1398,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToRequestFail' },
+                                            { error: 'sendToRequestFail9' },
                                             obj.callback,
                                         );
                                     }
@@ -1390,7 +1421,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail10' }, obj.callback);
                                 }
                             }
                             break;
@@ -1637,7 +1668,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail11' }, obj.callback);
                                 }
                             }
                             break;
@@ -1665,7 +1696,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail12' }, obj.callback);
                                 }
                             }
                             break;

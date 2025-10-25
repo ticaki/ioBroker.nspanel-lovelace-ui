@@ -102,5 +102,6 @@
 	"unlock_setnavi_hint": "Optional: NSPanel-Seite, die beim Entsperren geöffnet werden soll – muss der eindeutige Name der Seite sein.",
 	"unlock_setnavi_placeholder": "„UniqueName der zu öffnenden Seite (optional)“",
 	"unlock_type": "Typ",
-	"unlock_unlock": "Entsperren"
+	"unlock_unlock": "Entsperren",
+    "qr_content_free": "QR Zeichenkette"
 }

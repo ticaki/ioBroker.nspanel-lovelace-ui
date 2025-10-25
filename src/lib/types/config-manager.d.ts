@@ -603,6 +603,7 @@ declare namespace ScriptConfig {
                */
               id: string;
               navigate?: false | null | undefined;
+              targetPage?: string | null | undefined;
           }
     ) & {
         uniqueName?: string;
