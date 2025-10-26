@@ -1,12 +1,12 @@
 import * as fs from 'node:fs';
-import path from 'path';
+import * as path from 'node:path';
 
 const args = process.argv.slice(2);
 // npx ts-node tasks.ts copy
 const languages = ['de', 'en', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn'];
 
-const target = path.resolve(__dirname, '../admin/custom');
-const build = path.resolve(__dirname, './build');
+const targetSrcAdmin = '../admin/custom';
+const buildSrcAdmin = './build';
 
 async function main(): Promise<void> {
     switch (args[0]) {
@@ -16,9 +16,9 @@ async function main(): Promise<void> {
                     console.error('Wrong directory! Please run the script from the src-admin directory.');
                     process.exit(1);
                 }
-                removeDir(target);
-                fs.mkdirSync(target, { recursive: true });
-                copyDir(build, target);
+                removeDir(targetSrcAdmin);
+                fs.mkdirSync(targetSrcAdmin, { recursive: true });
+                copyDir(buildSrcAdmin, targetSrcAdmin);
                 for (const lang of languages) {
                     const masterFile = `../admin/i18n/${lang}/translations.json`;
                     const srcFile = `../src-admin/src/i18n/${lang}.json`;
@@ -32,6 +32,8 @@ async function main(): Promise<void> {
                             console.error(`Error parsing ${masterFile}`);
                             continue;
                         }
+                    } else {
+                        console.warn(`Master translation file ${masterFile} does not exist.`);
                     }
                     if (fs.existsSync(srcFile)) {
                         try {
@@ -40,6 +42,8 @@ async function main(): Promise<void> {
                             console.error(`Error parsing ${srcFile}`);
                             continue;
                         }
+                    } else {
+                        console.warn(`Source translation file ${srcFile} does not exist.`);
                     }
                     const result: Record<string, string> = {
                         ...(src || {}),
@@ -51,6 +55,7 @@ async function main(): Promise<void> {
                             acc[key] = result[key];
                             return acc;
                         }, {});
+                    fs.mkdirSync(path.dirname(destFile), { recursive: true });
                     fs.writeFileSync(destFile, JSON.stringify(sorted, null, 2), 'utf-8');
                     fs.writeFileSync(masterFile, JSON.stringify(sorted, null, 2), 'utf-8');
                 }
