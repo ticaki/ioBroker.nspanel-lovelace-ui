@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.6.8",
+    "version": "0.7.0",
     "news": {
+      "0.7.0": {
+        "en": "Enabled use of IDs in color specifications for pageItem and screensaver icons.\nAdmin: Adjust alarm settings\nAdmin: Reconfigure pageQR (BREAKING CHANGE)\nUpdated layout for page configuration",
+        "de": "Verwendung von IDs in Farbangaben für pageItem- und Bildschirmschoner-Icons aktiviert.\nAdmin: Alarmeinstellungen anpassen\nAdmin: pageQR neu konfigurieren (BREAKING CHANGE)\nNeues Layout der Seitenkonfiguration",
+        "ru": "Использование идентификаторов в цветовых спецификациях для значков PageItem и значков заставки включено.\nИсполнитель: Tweak alarm\nАдминистрирование: переделать конфигурацию PageQR (BREAKING)\nНовый макет конфигурации страницы",
+        "pt": "Uso de IDs em especificações de cores para ícones do pageItem e ícones protetor de tela habilitados.\nAdministrador: ajustar o alarme\nAdministrador: refazer a configuração do QR da página (BREAKING)\nNova disposição da configuração da página",
+        "nl": "Gebruik van ID's in kleurspecificaties voor paginaItem pictogrammen en screensaver pictogrammen ingeschakeld.\nBeheerder: tweak alarm\nBeheerder: opnieuw paginaQR-configuratie (BREAKING)\nNieuwe indeling van de paginaconfiguratie",
+        "fr": "Utilisation d'ID dans les spécifications de couleur de la pageIcônes d'éléments et icônes d'écran activées.\nAdmin: alarme de réglage\nAdmin: remodeler la configuration QR de page (BREAKING)\nNouvelle configuration de la page",
+        "it": "Utilizzo di ID nelle specifiche di colore per le icone di pageItem e screensaver abilitate.\nAdmin: Tweak allarme\nAdmin: redo pageQR configurazione (BREAKING)\nNuovo layout della configurazione della pagina",
+        "es": "Uso de IDs en especificaciones de color para los iconos pageItem y salvapantallas habilitados.\nAdmin: alarma tweak\nAdmin: redo pageQR configuración (BREAKING)\nNuevo diseño de la configuración de la página",
+        "pl": "Użycie identyfikatorów w specyfikacjach kolorystycznych dla ikon konkursów i ikon wygaszacza ekranu.\nAdmin: treak alarm\nAdmin: redo configuration paragon (BREAKING)\nNowy układ konfiguracji strony",
+        "uk": "Використання ідентифікаторів у кольорових специфікаціях для сторінкиІдем іконок і екраніввих іконок.\nАдміністратор: сигналізація\nАдміністратор: конфігурація redo pageQR (BREAKING)\nНовий макет конфігурації сторінки",
+        "zh-cn": "启用项目图标和屏幕保护图标在颜色规格中使用ID .\n管理员: 微调提醒\n管理员:重做页面QR配置( BREAKING)\n页面配置的新布局"
+      },
       "0.6.8": {
         "en": "Error during conversion to fetch prevented adding of panels. Fixed.",
         "de": "Fehler bei der Umstellung auf Fetch verhinderte das Hinzufügen von Paneelen. Behoben.",
@@ -80,19 +93,6 @@
         "pl": "alarm i zatwierdzone stałe - statyczne dp do zatwierdzenia",
         "uk": "сигналізація і затверджений фіксований - статичний dp для затвердження",
         "zh-cn": "提醒和核准的固定-静态 dp 核准"
-      },
-      "0.6.2": {
-        "en": "PageUnlock: Config updated — fixed issue where some settings were not applied correctly.\nIconSelect showed a too short list. Fixed.\nAdmin: Added responsive layout for Admin PageUnlock (mobile devices)",
-        "de": "PageUnlock: Config aktualisiert — Problem behoben, bei dem einige Einstellungen nicht korrekt angewendet wurden.\nIconSelect zeigte eine zu kurze Liste. Behoben.\nAdmin: Ansprechlayout für Admin PageUnlock (mobile Geräte) hinzugefügt",
-        "ru": "PageUnlock: Config updated — исправленная проблема, при которой некоторые настройки не были применены правильно.\nIconSelect показал слишком короткий список. Исправлено.\nAdmin: Добавлен адаптивный макет для Admin PageUnlock (мобильные устройства)",
-        "pt": "Desbloquear página: Config updated — problema fixo onde algumas configurações não foram aplicadas corretamente.\nO IconSelect mostrou uma lista muito curta. Consertado.\nAdmin: Adicionado layout responsivo para Admin PageUnlock (dispositivos móveis)",
-        "nl": "PageUnlock: Configureren van een aangepast probleem waarbij sommige instellingen niet correct werden toegepast.\nIconSelect toonde een te korte lijst. Vast.\nBeheerder: Toegevoegd responsieve lay-out voor Admin PageUnlock (mobiele apparaten)",
-        "fr": "Déverrouillage de la page : Config mis à jour — problème corrigé où certains paramètres n'ont pas été appliqués correctement.\nIconSelect a montré une liste trop courte. Corrigé.\nAdmin: Ajout de la mise en page réactive pour Admin PageUnlock (appareils mobiles)",
-        "it": "PageUnlock: Config aggiornato — problema fisso in cui alcune impostazioni non sono state applicate correttamente.\nIconSelect ha mostrato una lista troppo breve. Risolto.\nAdmin: Aggiunto il layout reattivo per Admin PageUnlock (i dispositivi mobili)",
-        "es": "PageUnlock: Config updated — fixed issue where some settings were not applied properly.\nIconSelect mostró una lista muy corta. Arreglado.\nAdmin: Diseño receptivo añadido para Admin PageUnlock (dispositivos móviles)",
-        "pl": "PageUnlock: Aktualizacja konfiguracji - stałe wydanie, w którym niektóre ustawienia nie zostały prawidłowo zastosowane.\nIconSelect pokazał zbyt krótką listę. Naprawione.\nAdmin: Dodano układ reagujący dla Admin PageUnlock (urządzenia mobilne)",
-        "uk": "СторінкаРозблокування: Налаштуйте оновлений — виправлений номер, де деякі налаштування не були застосовані належним чином.\nІкона Селекція показала занадто короткий список. Фіксований.\nАдміністратор: Додано чуйний макет для Admin PageUnlock (мобільні пристрої)",
-        "zh-cn": "页面解锁 : 配置更新——一些设置应用不当的固定问题.\n图标选择显示列表太短 。 固定着.\n管理员: Admin PageUnlock (移动设备) 添加的响应布局"
       }
     },
     "titleLang": {
