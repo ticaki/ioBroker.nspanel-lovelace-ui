@@ -56,8 +56,10 @@ async function main(): Promise<void> {
                             return acc;
                         }, {});
                     fs.mkdirSync(path.dirname(destFile), { recursive: true });
-                    fs.writeFileSync(destFile, JSON.stringify(sorted, null, 2), 'utf-8');
-                    fs.writeFileSync(masterFile, JSON.stringify(sorted, null, 2), 'utf-8');
+                    fs.writeFileSync(destFile, JSON.stringify(sorted, null, 4), 'utf-8');
+                    if (JSON.stringify(sorted) != JSON.stringify(master)) {
+                        fs.writeFileSync(masterFile, JSON.stringify(sorted, null, 4), 'utf-8');
+                    }
                 }
                 console.log('Translation files merged and copied.');
             }
