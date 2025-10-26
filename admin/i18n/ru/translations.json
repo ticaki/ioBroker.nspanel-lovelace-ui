@@ -335,7 +335,6 @@
     "timeFormat": "Формат времени",
     "timeFormat12": "12-часовой",
     "timeFormat24": "24 часа",
-    "timeFormatCustom": "Обычай",
     "timeFormatExample": "Пример",
     "timezone": "Часовой пояс",
     "touch_hint_buttons": "Для работы с кнопками из других потоков требуется двойной тап",

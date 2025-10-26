@@ -335,7 +335,6 @@
     "timeFormat": "Format de l'heure",
     "timeFormat12": "12 heures",
     "timeFormat24": "24 heures",
-    "timeFormatCustom": "Coutume",
     "timeFormatExample": "Exemple",
     "timezone": "Fuseau horaire",
     "touch_hint_buttons": "Pour actionner les boutons d'autres flux, un double appui est nécessaire",
