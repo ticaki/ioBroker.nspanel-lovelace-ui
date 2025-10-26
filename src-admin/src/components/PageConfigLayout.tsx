@@ -104,8 +104,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${selectedCardType && selectedCardType !== 'all' ? encodeURIComponent(selectedCardType) : 'kommt-noch'}`;
-
+        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/admin/add_page/${encodeURIComponent(currentEntry?.card ? currentEntry.card : 'common')}`;
         return (
             <Box
                 sx={{
@@ -285,32 +284,34 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     </Paper>
                     <Divider sx={{ my: 1 }} />
                     {/* Documentation link */}
-                    <Box sx={{ mb: 2 }}>
-                        <a
-                            href={docUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                                textDecoration: 'none',
-                                color: 'inherit',
-                                fontSize: '0.875rem',
-                            }}
-                        >
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: 'primary.main',
-                                    textDecoration: 'underline',
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                        opacity: 0.8,
-                                    },
+                    {docUrl && (
+                        <Box sx={{ mb: 2 }}>
+                            <a
+                                href={docUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    fontSize: '0.875rem',
                                 }}
                             >
-                                {this.getText('documentation')}
-                            </Typography>
-                        </a>
-                    </Box>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: 'primary.main',
+                                        textDecoration: 'underline',
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                            opacity: 0.8,
+                                        },
+                                    }}
+                                >
+                                    {this.getText('documentation')}
+                                </Typography>
+                            </a>
+                        </Box>
+                    )}
                 </Box>
 
                 <ConfirmDialog

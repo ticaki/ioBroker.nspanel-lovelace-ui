@@ -7,7 +7,7 @@
         "start": "vite --port 4173",
         "lint": "eslint -c eslint.config.mjs",
         "build": "tsc && vite build && npm run copy:custom",
-        "copy:custom": "rm -rf ../admin/custom/* && cp -r ./build/* ../admin/custom/ && cp -r ./src/i18n ../admin/custom/"
+        "copy:custom": "ts-node ../tasks.ts admin:copy"
     },
     "devDependencies": {
         "@iobroker/adapter-react-v5": "^7.7.3",
