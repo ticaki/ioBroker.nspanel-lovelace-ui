@@ -159,7 +159,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
  ### **WORK IN PROGRESS**
 - (ticaki) Use of IDs in colour specifications for pageItem icons and screensaver icons enabled.
-- (ticaki) Admin: Screensaver time formats now use toLocaleTimeString for better locale support and consistency with date formats
+- (ticaki) Admin: tweak alarm
+- (tt-tom17) Admin: redo pageQR configuration (BREAKING)
+- (tt-tom17 & ticaki) New layout of the page configuration
+
 ### 0.6.8 (2025-10-24)
 - (ticaki) Error during conversion to fetch prevented adding of panels. Fixed.
 
