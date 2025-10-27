@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) selection disappears - fixed
+
 ### 0.7.1 (2025-10-27)
 - (ticaki) Initialise pageConfig
 
