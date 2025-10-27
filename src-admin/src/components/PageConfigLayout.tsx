@@ -16,7 +16,7 @@ import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
 import type { NavigationAssignmentList, PageConfigEntry } from '../../../src/lib/types/adminShareConfig';
 
-export type PageCardType = 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
+export type PageCardType = 'cardAlarm' | 'cardQR' | 'cardChart' | 'cardLChart' | 'all'; // 'all' = alle Typen anzeigen
 
 export interface PageConfigLayoutProps {
     entries: PageConfigEntry[];

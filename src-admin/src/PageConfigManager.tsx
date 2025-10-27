@@ -11,6 +11,7 @@ import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageQREditor } from './components/PageQREditor';
+import { PageChartEditor } from './components/PageChartEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -209,6 +210,24 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 setState: '',
                 selType: 0,
             };
+        } else if (cardType === 'cardChart') {
+            newEntry = {
+                card: 'cardChart',
+                uniqueName: name,
+                headline: name,
+                chart_color: '#FFFF00',
+                selChartType: 'cardChart',
+                selInstanceDataSource: 0,
+                selInstance: '',
+                setStateForTicks: '',
+                setStateForValues: '',
+                setStateForDB: '',
+                txtlabelYAchse: '',
+                rangeHours: 24,
+                maxXAxisTicks: 2,
+                factorCardChart: 1,
+                maxXAxisLabels: 4,
+            };
         } else {
             return; // Unbekannter Typ
         }
@@ -311,6 +330,18 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardQR') {
             return (
                 <PageQREditor
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+        if (currentEntry.card === 'cardChart' || currentEntry.card === 'cardLChart') {
+            return (
+                <PageChartEditor
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}

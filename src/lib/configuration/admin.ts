@@ -136,8 +136,31 @@ export class AdminConfiguration extends BaseClass {
                     };
                     break;
                 }
+
+                case 'cardChart': {
+                    newPage = {
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn ? 'always' : 'none',
+                        dpInit: '',
+                        config: {
+                            card: entry.selChartType || 'cardChart',
+                            index: 0,
+                            data: {
+                                headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
+                                text: { type: 'const', constVal: entry.txtlabelYAchse || '' },
+                                color: { true: { color: { type: 'const', constVal: entry.chart_color || '#FFFF00' } } },
+                                ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
+                                value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
+                            },
+                        },
+                        pageItems: [],
+                    };
+                    break;
+                }
+
                 default: {
-                    this.log.warn(`Unsupported card 1type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
                     continue;
                 }
             }
