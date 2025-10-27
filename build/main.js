@@ -106,6 +106,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         native.fixBrokenCommonTypes = false;
         change = true;
       }
+      native.pageConfig = native.pageConfig || [];
       if (native.pageUnlockConfig && !native.pageConfig) {
         native.pageConfig = native.pageUnlockConfig;
         delete native.pageUnlockConfig;

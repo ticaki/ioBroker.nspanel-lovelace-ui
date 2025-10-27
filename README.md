@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Initialise pageConfig
+
 ### 0.7.0 (2025-10-26)
 - (ticaki) Use of IDs in colour specifications for pageItem icons and screensaver icons enabled.
 - (ticaki) Admin: tweak alarm
