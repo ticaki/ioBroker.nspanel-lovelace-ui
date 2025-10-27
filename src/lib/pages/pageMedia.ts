@@ -136,7 +136,7 @@ export class PageMedia extends PageMenu {
                     break;
                 default:
                     this.log.warn(
-                        `Media page with id ${this.config.ident} is not supported - only alexa2, spotify-premium, mpd, and sonos!`,
+                        `Media page ${this.name} with id ${this.config.ident} is not supported - only alexa2, spotify-premium, mpd, and sonos!`,
                     );
                     break;
             }
