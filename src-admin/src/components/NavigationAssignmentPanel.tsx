@@ -1,4 +1,5 @@
 import React from 'react';
+import isEqual from 'lodash/isEqual';
 import {
     Box,
     Select,
@@ -231,7 +232,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             void this.loadPanels(false).then(() => {
                 void this.applyAssignmentsFromProps(nextAssignments);
             });
-        } else if (prevProps.currentAssignments !== this.props.currentAssignments && this.props.currentAssignments) {
+        } else if (
+            this.props.currentAssignments &&
+            !isEqual(prevProps.currentAssignments || {}, this.props.currentAssignments || {})
+        ) {
             // props currentAssignments changed (same uniqueName), update internal state
             const nextAssignments = this.props.currentAssignments || [];
             void this.applyAssignmentsFromProps(nextAssignments);
@@ -478,11 +482,24 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                 }
             }
 
-            // Update state with results (even if empty)
-            this.setState(prev => ({
-                pagesMap: { ...prev.pagesMap, [topic]: list },
-                isLoading: { ...prev.isLoading, [topic]: false },
-            }));
+            const prevPages = this.state.pagesMap ? this.state.pagesMap[topic] : undefined;
+            const prevLoading = !!(this.state.isLoading && this.state.isLoading[topic]);
+
+            const pagesEqual =
+                Array.isArray(prevPages) &&
+                prevPages.length === list.length &&
+                prevPages.every((v, i) => v === list[i]);
+
+            // If neither pages nor loading state changed, skip setState
+            if (!pagesEqual || prevLoading !== false) {
+                this.setState(prev => ({
+                    pagesMap: { ...prev.pagesMap, [topic]: list },
+                    isLoading: { ...prev.isLoading, [topic]: false },
+                }));
+            } else {
+                // no-op: pages and loading already equal the new values
+                // (optional) console.debug(`[NavigationAssignmentPanel] No state change for ${topic}`);
+            }
         } catch (error) {
             console.error('[NavigationAssignmentPanel] loadPagesForPanel error', { topic, error });
 
