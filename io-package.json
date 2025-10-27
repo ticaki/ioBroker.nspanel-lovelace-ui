@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.7.1",
+    "version": "0.7.2",
     "news": {
+      "0.7.2": {
+        "en": "selection disappears - fixed",
+        "de": "auswahl verschwindet - fixiert",
+        "ru": "выбор исчезает - фиксированный",
+        "pt": "a seleção desaparece - fixa",
+        "nl": "selectie verdwijnt - vast",
+        "fr": "la sélection disparaît - fixe",
+        "it": "selezione scompare - fisso",
+        "es": "selección desaparece - fijo",
+        "pl": "wybór znika - stałe",
+        "uk": "вибір зникне - фіксована",
+        "zh-cn": "选择消失 - 固定"
+      },
       "0.7.1": {
         "en": "Initialise pageConfig",
         "de": "Initialisiere pageConfig",
@@ -80,19 +93,6 @@
         "pl": "HMI: Naprawiono powiadomienie wygaszacza ekranu w trybie zaawansowanym.\nHMI: Naprawiono problemy z wymiarami cardChart/cardLChart; dodano etykietę \"No Data\" i poprawiono pozycjonowanie opisu osi Y.\nCore: Dodano blokadę zdarzeń dotykowych (400 ms) aby zapobiec przypadkowym podwójnym kliknięciom podczas przejść stron.\nTypeScript: Usunięto przestarzałą właściwość `useColor` z definicji typów.",
         "uk": "HMI: Виправлено повідомлення заставки в розширеному режимі.\nHMI: Виправлено проблеми з розмірами cardChart/cardLChart; додано мітку \"No Data\" і скориговано положення підпису осі Y.\nCore: Додано блокування сенсорних подій (400 мс), щоб уникнути випадкових подвійних клацань під час переходів сторінок.\nTypeScript: Видалено застаріле властивість `useColor` з визначень типів.",
         "zh-cn": "HMI: 修复了高级屏幕保护模式下的屏幕保护通知。\nHMI: 修复了 cardChart/cardLChart 的尺寸问题；添加了“无数据 (No Data)”标签并修正了 Y 轴标签位置。\nCore: 增加触摸事件阻塞（400 毫秒），以避免页面切换时的意外双击。\nTypeScript: 从类型定义中移除已弃用的 `useColor` 属性。"
-      },
-      "0.6.4": {
-        "en": "use tasmota version from version.json\nAdded disarmed buttons (5–8) to UnlockPage, implemented a responsive two-column layout.\nImproved NavigationAssignmentPanel to show per-panel notices in the lower overview, add a per-item trash icon (hover + mobile two-step confirmation)",
-        "de": "Verwende die Tasmota-Version aus version.json\nEntsperrseite: Tasten (5–8) für 'disarmed' hinzugefügt, zweispaltiges responsives Layout implementiert.\nNavigationAssignmentPanel verbessert: zeigt nun panelbezogene Hinweise in der unteren Übersicht an und fügt jedem Element ein Papierkorb-Symbol hinzu (Hover + zweistufige Bestätigung auf Mobilgeräten).",
-        "ru": "использование tasmota версии из версии. джонсон\nДобавлены обезоруженные кнопки (5-8) в UnlockPage, реализована отзывчивая двухколоночная компоновка.\nУлучшенная навигация Панель для отображения уведомлений на панели в нижнем обзоре, добавьте значок мусора для каждого предмета (подтверждение поверх + мобильное двухэтапное подтверждение)",
-        "pt": "use a versão tasmota da versão. json\nAdicionados botões desarmados (5–8) para DesbloquearPage, implementado um layout de duas colunas responsivo.\nMelhor atribuição de navegação Painel para mostrar avisos por painel na visão geral inferior, adicione um ícone de lixo por item (hover + confirmação móvel de dois passos)",
-        "nl": "gebruik tasmota versie van versie. json\nToegevoegd ontwapende knoppen (5.\nVerbeterde navigatieOpdracht Panel om per paneel berichten te tonen in het onderste overzicht, voeg een per-item prullenbak pictogram (hover + mobiele twee-stap bevestiging)",
-        "fr": "utiliser tasmota version de la version. json\nAjout de boutons désarmés (5–8) à UnlockPage, implémenté une mise en page de deux colonnes réactives.\nAmélioration de la navigation Panneau pour afficher les avis par panneau dans l'aperçu inférieur, ajouter une icône de poubelle par élément (hover + confirmation mobile en deux étapes)",
-        "it": "utilizzare la versione tasmota dalla versione. j\nAggiunti pulsanti disarmati (5–8) per sbloccarePage, implementato un layout reattivo a due colonne.\nMiglioramento dell'Assegnazione di Navigazione Pannello per mostrare avvisi per pannello nella panoramica inferiore, aggiungere un'icona del cestino per-item (hover + conferma mobile a due passi)",
-        "es": "use la versión tasmota de la versión. json\nSe agregaron botones desarmados (5-8) a DesbloquearPage, implementó un diseño sensible de dos columnas.\nMejora de la asignación de navegación Panel para mostrar avisos por panel en la descripción inferior, añadir un icono de basura por tema (confirmación móvil de dos pasos)",
-        "pl": "użyj wersji tasmota z wersji. json\nDodano rozbrojone przyciski (5- 8) do UnlockPage, zaimplementowano układ dwóch kolumn.\nLepsza nawigacja Przydział Panel do wyświetlania powiadomień w dolnym przeglądzie, dodaj ikonę typu per- element śmieci (hover + mobilne potwierdzenie dwuetapowe)",
-        "uk": "tasmota version from version. свінгери\nДодано дискриміновані кнопки (5–8) до UnlockPage, впроваджена чуйна двоколірна верстка.\nПокращити Навігацію Панель, щоб показати помітки про пер-панель в нижній огляді, додати піктограму занурення (понад + мобільний двоступеневе підтвердження)",
-        "zh-cn": "使用版本中的 tasmota 版本。 贾森\n将已解除的按钮(5-8)添加到UnlockPage中,实施了响应的两栏布局.\n改进导航任务 在下方概览中显示每组通知的面板, 添加一个每件垃圾图标( hover + 移动双步确认)"
       }
     },
     "titleLang": {
