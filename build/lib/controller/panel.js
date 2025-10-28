@@ -236,6 +236,18 @@ class Panel extends import_library.BaseClass {
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
+      const checkDouble = options.pages.filter((b) => b.uniqueID === options.pages[a].uniqueID);
+      if (checkDouble.length > 1) {
+        this.log.error(
+          `Page with uniqueID ${options.pages[a].uniqueID} is defined ${checkDouble.length} times! Only the first will be used!`
+        );
+        this.log.error(
+          `Important: fix this in your admin configuration! Navigation behavior is 'undefined' until fixed!`
+        );
+        if (checkDouble[0] !== options.pages[a]) {
+          continue;
+        }
+      }
       const pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
       if (!pageConfig || !pageConfig.config) {
         continue;

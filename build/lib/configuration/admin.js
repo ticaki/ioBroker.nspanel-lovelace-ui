@@ -68,6 +68,11 @@ class AdminConfiguration extends import_library.BaseClass {
       if (!entry.navigationAssignment || !entry.card) {
         continue;
       }
+      const uniqueIdExists = option.pages.find((a) => a.uniqueID === entry.uniqueName);
+      if (uniqueIdExists) {
+        this.log.warn(`Page with name ${entry.uniqueName} already exists, skipping!`);
+        continue;
+      }
       const allPanelsAssignment = entry.navigationAssignment.find(
         (a) => a.topic === ShareConfig.ALL_PANELS_SPECIAL_ID
       );
