@@ -41,6 +41,11 @@ export class AdminConfiguration extends BaseClass {
             if (!entry.navigationAssignment || !entry.card) {
                 continue;
             }
+            const uniqueIdExists = option.pages.find((a: PageBase) => a.uniqueID === entry.uniqueName);
+            if (uniqueIdExists) {
+                this.log.warn(`Page with name ${entry.uniqueName} already exists, skipping!`);
+                continue;
+            }
 
             // First pass: Check for ALL_PANELS_SPECIAL_ID assignment
             const allPanelsAssignment = entry.navigationAssignment.find(
