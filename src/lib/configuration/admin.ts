@@ -150,7 +150,6 @@ export class AdminConfiguration extends BaseClass {
                         dpInit: '',
                         config: {
                             card: entry.selChartType || 'cardChart',
-                            index: 0,
                             data: {
                                 headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
                                 text: { type: 'const', constVal: entry.txtlabelYAchse || '' },

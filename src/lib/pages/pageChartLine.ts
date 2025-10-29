@@ -6,7 +6,6 @@ export class PageChartLine extends PageChart {
     constructor(config: PageInterface, options: pages.PageBase) {
         // Aufruf des Konstruktors der Basisklasse
         super(config, options);
-        this.adminConfig = this.adapter.config.pageChartdata[this.index];
     }
 
     async init(): Promise<void> {
@@ -35,10 +34,12 @@ export class PageChartLine extends PageChart {
         let ticksChart: string[] = ['~'];
         let valuesChart = '~';
 
-        if (this.items && this.adminConfig != null) {
+        if (this.items) {
             const items = this.items;
+            const dataSource =
+                this.items.data.instanceDataSource && (await this.items.data.instanceDataSource.getNumber());
 
-            switch (this.adminConfig.selInstanceDataSource) {
+            switch (dataSource) {
                 case 0: {
                     // oldScriptVersion bleibt unverändert
                     const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
@@ -53,13 +54,16 @@ export class PageChartLine extends PageChart {
                 }
                 case 1: {
                     // AdapterVersion
-                    const hoursRangeFromNow = this.adminConfig.rangeHours || 24;
-                    const stateValue = this.adminConfig.setStateForDB;
-                    const instance = this.adminConfig.selInstance;
-                    const xAxisTicksInterval =
-                        this.adminConfig.maxXAxisTicks > 0 ? this.adminConfig.maxXAxisTicks * 60 : 60;
-                    const xAxisLabelInterval =
-                        this.adminConfig.maxXAxisLabels > 0 ? this.adminConfig.maxXAxisLabels * 60 : 120;
+                    const hoursRangeFromNow =
+                        (items.data.rangeHours && (await items.data.rangeHours.getNumber())) || 24;
+                    const stateValue = (items.data.setStateForDB && (await items.data.setStateForDB.getString())) || '';
+                    const instance = (items.data.dbInstance && (await items.data.dbInstance.getString())) || '';
+                    const maxXAxisLabels =
+                        (items.data.maxXAxisLabels && (await items.data.maxXAxisLabels.getNumber())) || 4;
+                    const maxXAxisTicks =
+                        (items.data.maxXAxisTicks && (await items.data.maxXAxisTicks.getNumber())) || 60;
+                    const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60;
+                    const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120;
                     const maxX = 1440; // 24h = 1440min
 
                     const tempScale: number[] = [];

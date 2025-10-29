@@ -21,9 +21,9 @@ const PageChartMessageDefault: pages.PageChartMessage = {
  */
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
-    index: number = 0;
+    //index: number = 0;
     private checkState: boolean = true;
-    protected adminConfig;
+    //protected adminConfig;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
@@ -35,9 +35,9 @@ export class PageChart extends Page {
         } else {
             throw new Error('Missing config!');
         }
-        this.index = this.config.index;
+        //this.index = this.config.index;
         this.minUpdateInterval = 60_000;
-        this.adminConfig = this.adapter.config.pageChartdata[this.index];
+        //this.adminConfig = this.adapter.config.pageChartdata[this.index];
     }
 
     async init(): Promise<void> {
@@ -59,7 +59,7 @@ export class PageChart extends Page {
         message.value = '~';
 
         if (this.checkState) {
-            if (this.items && this.adminConfig != null) {
+            if (this.items) {
                 const items = this.items;
                 const { valuesChart, ticksChart } = await this.getChartData();
 
@@ -117,7 +117,7 @@ export class PageChart extends Page {
                 hidden: page.hiddenByTrigger || config.hiddenByTrigger,
                 config: {
                     card: card,
-                    index: index,
+                    //index: index,
                     data: {
                         headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
                         text: { type: 'const', constVal: config.txtlabelYAchse || '' },
@@ -134,8 +134,9 @@ export class PageChart extends Page {
     }
 
     protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        const ticksChart: string[] = [];
-        const valuesChart = '';
+        const ticksChart: string[] = ['~'];
+        const valuesChart = '~';
+        this.log.warn('getChartData not implemented in base PageChart class');
 
         return { ticksChart, valuesChart };
     }
@@ -203,13 +204,13 @@ export class PageChart extends Page {
         if (val) {
             // Neu: bei Sichtbarkeit immer neu prüfen
             this.checkState = false; // Standardmäßig auf false setzen
-            if (!this.adminConfig) {
+            if (!this.items) {
                 this.log.warn('AdminConfig is not set, cannot check states');
                 this.checkState = false;
             } else {
                 // trys klein halten - die fangen auch alle vertipper ab und suchen ist dann lustig
                 try {
-                    const cfg: any = this.adminConfig;
+                    const cfg: any = this.items.data;
                     const ds = cfg.selInstanceDataSource;
 
                     if (ds === 0) {

@@ -39,9 +39,9 @@ const PageChartMessageDefault = {
 };
 class PageChart extends import_Page.Page {
   items;
-  index = 0;
+  //index: number = 0;
   checkState = true;
-  adminConfig;
+  //protected adminConfig;
   constructor(config, options) {
     if (config.card !== "cardChart" && config.card !== "cardLChart") {
       return;
@@ -52,9 +52,7 @@ class PageChart extends import_Page.Page {
     } else {
       throw new Error("Missing config!");
     }
-    this.index = this.config.index;
     this.minUpdateInterval = 6e4;
-    this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {
     await super.init();
@@ -74,7 +72,7 @@ class PageChart extends import_Page.Page {
     message.ticks = ["~"];
     message.value = "~";
     if (this.checkState) {
-      if (this.items && this.adminConfig != null) {
+      if (this.items) {
         const items = this.items;
         const { valuesChart, ticksChart } = await this.getChartData();
         message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
@@ -120,7 +118,7 @@ class PageChart extends import_Page.Page {
         hidden: page.hiddenByTrigger || config.hiddenByTrigger,
         config: {
           card,
-          index,
+          //index: index,
           data: {
             headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ""),
             text: { type: "const", constVal: config.txtlabelYAchse || "" },
@@ -136,8 +134,9 @@ class PageChart extends import_Page.Page {
     throw new Error("No config for cardChart found");
   }
   async getChartData() {
-    const ticksChart = [];
-    const valuesChart = "";
+    const ticksChart = ["~"];
+    const valuesChart = "~";
+    this.log.warn("getChartData not implemented in base PageChart class");
     return { ticksChart, valuesChart };
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
@@ -199,12 +198,12 @@ class PageChart extends import_Page.Page {
   async onVisibilityChange(val) {
     if (val) {
       this.checkState = false;
-      if (!this.adminConfig) {
+      if (!this.items) {
         this.log.warn("AdminConfig is not set, cannot check states");
         this.checkState = false;
       } else {
         try {
-          const cfg = this.adminConfig;
+          const cfg = this.items.data;
           const ds = cfg.selInstanceDataSource;
           if (ds === 0) {
             if (cfg.setStateForValues != null && cfg.setStateForValues !== "") {

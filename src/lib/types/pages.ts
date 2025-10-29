@@ -342,14 +342,23 @@ type PageChartConfig = {
     headline: string;
     text: string;
     color: NSPanel.ColorEntryTypeBooleanStandard;
-    ticks: string;
-    value: string;
-    entity1: NSPanel.ValueEntryType;
+    ticks: string; // Chart ticks als Array
+    value: string; // Chart value
+    chartType?: string; // 'cardChart' | 'cardLChart'
+    instanceDataSource?: number; // 0 = script, 1 = DB adapter
+    dbInstance?: string; // Instance ID from DB adapter
+    setStateForTicks?: string; // State for ticks from user
+    setStateForValues?: string; // State for values from user
+    setStateForDB?: string; // State for DB Instance
+    labelYAchse?: string; // Label for Y-Axis
+    rangeHours?: number; // Range in hours
+    maxXAxisTicks?: number; // Max ticks on X-Axis
+    maxXAxisLabels?: number; // Max labels on X-Axis
+    factorCardChart?: number; // 1, 10, 100, 1000
 };
 
 export type cardChartDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
-    index: number;
     data: ChangeTypeOfKeys<PageChartConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardChartDataItems = {

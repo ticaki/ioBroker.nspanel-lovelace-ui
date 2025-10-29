@@ -6,7 +6,6 @@ export class PageChartBar extends PageChart {
     constructor(config: PageInterface, options: pages.PageBase) {
         // Aufruf des Konstruktors der Basisklasse
         super(config, options);
-        this.adminConfig = this.adapter.config.pageChartdata[this.index];
     }
 
     async init(): Promise<void> {
@@ -35,14 +34,16 @@ export class PageChartBar extends PageChart {
         let ticksChart: string[] = ['~'];
         let valuesChart = '~';
 
-        if (this.items && this.adminConfig != null) {
+        if (this.items) {
             const items = this.items;
+            const dataSource =
+                this.items.data.instanceDataSource && (await this.items.data.instanceDataSource.getNumber());
 
-            switch (this.adminConfig.selInstanceDataSource) {
+            switch (dataSource) {
                 case 0: {
                     // oldScriptVersion bleibt unverändert
-                    const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
-                    const tempValues = (items.data.value && (await items.data.value.getString())) ?? '';
+                    const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? ['~'];
+                    const tempValues = (items.data.value && (await items.data.value.getString())) ?? '~';
                     if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
                         ticksChart = tempTicks;
                     }
@@ -54,11 +55,12 @@ export class PageChartBar extends PageChart {
                 case 1: {
                     // AdapterVersion
 
-                    const rangeHours = this.adminConfig.rangeHours;
-                    const stateValue = this.adminConfig.setStateForDB;
-                    const instance = this.adminConfig.selInstance;
-                    const maxXAxisLabels = this.adminConfig.maxXAxisLabels;
-                    const factor = this.adminConfig.factorCardChart;
+                    const rangeHours = (items.data.rangeHours && (await items.data.rangeHours.getNumber())) || 24;
+                    const stateValue = (items.data.setStateForDB && (await items.data.setStateForDB.getString())) || '';
+                    const instance = (items.data.dbInstance && (await items.data.dbInstance.getString())) || '';
+                    const maxXAxisLabels =
+                        (items.data.maxXAxisLabels && (await items.data.maxXAxisLabels.getNumber())) || 4;
+                    const factor = (items.data.factorCardChart && (await items.data.factorCardChart.getNumber())) || 1;
                     const tempScale: number[] = [];
 
                     try {

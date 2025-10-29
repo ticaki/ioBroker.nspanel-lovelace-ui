@@ -25,7 +25,6 @@ var import_pageChart = require("./pageChart");
 class PageChartBar extends import_pageChart.PageChart {
   constructor(config, options) {
     super(config, options);
-    this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {
     const config = structuredClone(this.config);
@@ -46,12 +45,13 @@ class PageChartBar extends import_pageChart.PageChart {
     var _a, _b;
     let ticksChart = ["~"];
     let valuesChart = "~";
-    if (this.items && this.adminConfig != null) {
+    if (this.items) {
       const items = this.items;
-      switch (this.adminConfig.selInstanceDataSource) {
+      const dataSource = this.items.data.instanceDataSource && await this.items.data.instanceDataSource.getNumber();
+      switch (dataSource) {
         case 0: {
-          const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
-          const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
+          const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : ["~"];
+          const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "~";
           if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
             ticksChart = tempTicks;
           }
@@ -61,11 +61,11 @@ class PageChartBar extends import_pageChart.PageChart {
           break;
         }
         case 1: {
-          const rangeHours = this.adminConfig.rangeHours;
-          const stateValue = this.adminConfig.setStateForDB;
-          const instance = this.adminConfig.selInstance;
-          const maxXAxisLabels = this.adminConfig.maxXAxisLabels;
-          const factor = this.adminConfig.factorCardChart;
+          const rangeHours = items.data.rangeHours && await items.data.rangeHours.getNumber() || 24;
+          const stateValue = items.data.setStateForDB && await items.data.setStateForDB.getString() || "";
+          const instance = items.data.dbInstance && await items.data.dbInstance.getString() || "";
+          const maxXAxisLabels = items.data.maxXAxisLabels && await items.data.maxXAxisLabels.getNumber() || 4;
+          const factor = items.data.factorCardChart && await items.data.factorCardChart.getNumber() || 1;
           const tempScale = [];
           try {
             const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
