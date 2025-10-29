@@ -41,11 +41,11 @@ class StatesControler extends import_library.BaseClass {
   objectDatabase = {};
   intervalObjectDatabase;
   timespan;
-  constructor(adapter, name = "", timespan = 15e3) {
+  constructor(adapter, name = "", timespan = 500) {
     super(adapter, name || "StatesDB");
     this.timespan = timespan;
     this.deletePageInterval = this.adapter.setInterval(async () => {
-      this.deletePageLoop();
+      void this.deletePageLoop();
     }, 18e4);
     this.intervalObjectDatabase = this.adapter.setInterval(() => {
       if (this.unload || this.adapter.unload) {
@@ -55,7 +55,7 @@ class StatesControler extends import_library.BaseClass {
       this.cleanupStateDB();
     }, 18e4);
   }
-  deletePageLoop = (f) => {
+  deletePageLoop = async (f) => {
     var _a, _b, _c, _d, _e;
     const removeIds = [];
     for (const id in this.triggerDB) {
@@ -95,6 +95,11 @@ class StatesControler extends import_library.BaseClass {
     }
     this.blockedSubscriptions = [];
     for (const id of removeIds) {
+      if (!id.startsWith(this.adapter.namespace)) {
+        if (!id.startsWith(this.adapter.namespace)) {
+          await this.adapter.unsubscribeForeignStatesAsync(id);
+        }
+      }
       delete this.triggerDB[id];
       this.activeTriggerCount.delete(id);
     }
@@ -102,6 +107,10 @@ class StatesControler extends import_library.BaseClass {
       for (let idx = this.blockedSubscriptions.length - 1; idx >= 0; idx--) {
         if (idx >= this.blockedSubscriptions.length) {
           continue;
+        }
+        const id = this.blockedSubscriptions[idx];
+        if (!id.startsWith(this.adapter.namespace)) {
+          await this.adapter.subscribeForeignStatesAsync(id);
         }
         this.blockedSubscriptions.splice(idx, 1);
       }
@@ -234,6 +243,9 @@ class StatesControler extends import_library.BaseClass {
           this.blockedSubscriptions.push(id);
         }
       } else {
+        if (!id.startsWith(this.adapter.namespace)) {
+          await this.adapter.subscribeForeignStatesAsync(id);
+        }
       }
       if (this.adapter.config.debugLogStates) {
         this.log.debug(`Set a new trigger for ${from.basePanel.name}.${from.name} to ${id}`);
@@ -282,6 +294,9 @@ class StatesControler extends import_library.BaseClass {
         if (!hasActiveSubscription) {
           entry.subscribed[index] = true;
           this.incrementActiveTrigger(id);
+          if (!id.startsWith(this.adapter.namespace)) {
+            await this.adapter.subscribeForeignStatesAsync(id);
+          }
           const state = await this.adapter.getForeignStateAsync(id);
           if (state) {
             entry.state = state;
@@ -308,6 +323,9 @@ class StatesControler extends import_library.BaseClass {
       if (!hasActiveSubscription) {
         entry.subscribed[index] = true;
         this.incrementActiveTrigger(id);
+        if (!id.startsWith(this.adapter.namespace)) {
+          await this.adapter.subscribeForeignStatesAsync(id);
+        }
         const state = await this.adapter.getForeignStateAsync(id);
         if (state) {
           entry.state = state;
@@ -356,6 +374,9 @@ class StatesControler extends import_library.BaseClass {
               this.blockedSubscriptions.splice(idx, 1);
             }
           }
+          if (!id.startsWith(this.adapter.namespace)) {
+            await this.adapter.unsubscribeForeignStatesAsync(id);
+          }
         }
       }
     }
@@ -388,6 +409,9 @@ class StatesControler extends import_library.BaseClass {
           if (idx !== -1) {
             this.blockedSubscriptions.splice(idx, 1);
           }
+        }
+        if (!id.startsWith(this.adapter.namespace)) {
+          await this.adapter.unsubscribeForeignStatesAsync(id);
         }
       }
     }
