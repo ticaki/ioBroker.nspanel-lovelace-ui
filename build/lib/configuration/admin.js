@@ -33,6 +33,7 @@ __export(admin_exports, {
 module.exports = __toCommonJS(admin_exports);
 var import_library = require("../controller/library");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
+var import_function_and_const = require("../types/function-and-const");
 class AdminConfiguration extends import_library.BaseClass {
   pageConfig = [];
   constructor(adapter) {
@@ -86,10 +87,13 @@ class AdminConfiguration extends import_library.BaseClass {
       let newPage;
       switch (entry.card) {
         case "cardAlarm": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
           newPage = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
-            alwaysOn: entry.alwaysOn || "none",
+            alwaysOn: entry.alwaysOn,
             dpInit: "",
             config: {
               card: "cardAlarm",
@@ -115,10 +119,13 @@ class AdminConfiguration extends import_library.BaseClass {
           break;
         }
         case "cardQR": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
           newPage = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
-            alwaysOn: entry.alwaysOn ? "always" : "none",
+            alwaysOn: entry.alwaysOn,
             dpInit: "",
             config: {
               card: "cardQR",
@@ -217,6 +224,19 @@ class AdminConfiguration extends import_library.BaseClass {
       option.navigation.push(navigationEntry);
     }
     return option;
+  }
+}
+function isAlwaysOnMode(F) {
+  const R = F;
+  switch (R) {
+    case "always":
+    case "none":
+    case "ignore":
+    case "action":
+      return true;
+    default:
+      (0, import_function_and_const.exhaustiveCheck)(R);
+      return false;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
