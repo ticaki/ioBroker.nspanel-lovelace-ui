@@ -63,7 +63,7 @@ class AdminConfiguration extends import_library.BaseClass {
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
   processentrys(option) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     const entries = this.pageConfig;
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
@@ -153,6 +153,14 @@ class AdminConfiguration extends import_library.BaseClass {
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
+          const dbData = entry.selInstanceDataSource === 1 ? {
+            instance: entry.selInstance || "",
+            state: entry.setStateForDB || "",
+            hours: (_a = entry.rangeHours) != null ? _a : 24,
+            maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : 2,
+            factor: (_c = entry.factorCardChart) != null ? _c : 1,
+            maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : 4
+          } : void 0;
           newPage = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -165,7 +173,9 @@ class AdminConfiguration extends import_library.BaseClass {
                 text: { type: "const", constVal: entry.txtlabelYAchse || "" },
                 color: { true: { color: { type: "const", constVal: entry.chart_color || "#FFFF00" } } },
                 ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
-                value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" }
+                value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
+                dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0,
+                setStateForDB: entry.selInstanceDataSource === 1 && entry.setStateForDB ? { type: "triggered", dp: entry.setStateForDB } : void 0
               }
             },
             pageItems: []
@@ -202,7 +212,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.prev
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldNext = (_a = option.navigation[index].right) == null ? void 0 : _a.single;
+          const oldNext = (_e = option.navigation[index].right) == null ? void 0 : _e.single;
           if (oldNext && oldNext !== newPage.uniqueID) {
             overrwriteNext = true;
             option.navigation[index].right = option.navigation[index].right || {};
@@ -226,7 +236,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.next
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldPrev = (_b = option.navigation[index].left) == null ? void 0 : _b.single;
+          const oldPrev = (_f = option.navigation[index].left) == null ? void 0 : _f.single;
           if (oldPrev && oldPrev !== newPage.uniqueID) {
             option.navigation[index].left = option.navigation[index].left || {};
             option.navigation[index].left.single = newPage.uniqueID;

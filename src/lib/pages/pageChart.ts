@@ -143,10 +143,12 @@ export class PageChart extends Page {
 
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
+            const timeout = this.adapter.setTimeout(() => {
+                reject(
+                    new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`),
+                );
+            }, 15_000);
             try {
-                const timeout = this.adapter.setTimeout(() => {
-                    reject(new Error(`error  in system`));
-                }, 5000);
                 this.adapter.sendTo(
                     _instance,
                     'getHistory',

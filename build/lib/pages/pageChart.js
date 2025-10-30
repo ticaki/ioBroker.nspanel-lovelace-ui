@@ -141,10 +141,12 @@ class PageChart extends import_Page.Page {
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
     return new Promise((resolve, reject) => {
+      const timeout = this.adapter.setTimeout(() => {
+        reject(
+          new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`)
+        );
+      }, 15e3);
       try {
-        const timeout = this.adapter.setTimeout(() => {
-          reject(new Error(`error  in system`));
-        }, 5e3);
         this.adapter.sendTo(
           _instance,
           "getHistory",
