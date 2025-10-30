@@ -345,6 +345,9 @@ type PageChartConfig = {
     ticks: string; // Chart ticks als Array
     value: string; // Chart value
     chartType?: string; // 'cardChart' | 'cardLChart'
+
+    dbData?: string;
+
     instanceDataSource?: number; // 0 = script, 1 = DB adapter
     dbInstance?: string; // Instance ID from DB adapter
     setStateForTicks?: string; // State for ticks from user

@@ -151,17 +151,26 @@ export type ChartEntry = {
 
     selChartType?: 'cardChart' | 'cardLChart';
     selInstanceDataSource?: number; // 0 = script, 1 = DB adapter
-    selInstance?: string; // Instance ID for DB adapter
     // oldScriptVersion
     setStateForTicks?: string;
     setStateForValues?: string;
     // db Version
+    selInstance?: string; // Instance ID for DB adapter
     setStateForDB?: string;
     rangeHours?: number;
     maxXAxisTicks?: number;
     factorCardChart?: number; // 1, 10, 100, 1000
     maxXAxisLabels?: number;
 } & PageConfigBaseFields;
+
+export type ChartDetailsExternal = {
+    instance: string; // Instance ID for DB adapter
+    state: string;
+    hours?: number;
+    maxTicks?: number;
+    factor?: number; // 1, 10, 100, 1000
+    maxLabels?: number;
+};
 
 export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | ChartEntry;
 

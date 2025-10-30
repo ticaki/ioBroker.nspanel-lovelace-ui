@@ -153,6 +153,17 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
+                    const dbData: ShareConfig.ChartDetailsExternal | undefined =
+                        entry.selInstanceDataSource === 1
+                            ? {
+                                  instance: entry.selInstance || '',
+                                  state: entry.setStateForDB || '',
+                                  hours: entry.rangeHours ?? 24,
+                                  maxTicks: entry.maxXAxisTicks ?? 2,
+                                  factor: entry.factorCardChart ?? 1,
+                                  maxLabels: entry.maxXAxisLabels ?? 4,
+                              }
+                            : undefined;
                     newPage = {
                         uniqueID: entry.uniqueName,
                         hidden: !!entry.hidden,
@@ -166,6 +177,11 @@ export class AdminConfiguration extends BaseClass {
                                 color: { true: { color: { type: 'const', constVal: entry.chart_color || '#FFFF00' } } },
                                 ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
                                 value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
+                                dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
+                                setStateForDB:
+                                    entry.selInstanceDataSource === 1 && entry.setStateForDB
+                                        ? { type: 'triggered', dp: entry.setStateForDB }
+                                        : undefined,
                             },
                         },
                         pageItems: [],
