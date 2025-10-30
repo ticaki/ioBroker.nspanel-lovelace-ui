@@ -147,13 +147,16 @@ export type ChartEntry = {
     uniqueName: string;
     headline?: string;
     chart_color?: string;
+    txtlabelYAchse?: string;
+
     selChartType?: 'cardChart' | 'cardLChart';
     selInstanceDataSource?: number; // 0 = script, 1 = DB adapter
     selInstance?: string; // Instance ID for DB adapter
+    // oldScriptVersion
     setStateForTicks?: string;
     setStateForValues?: string;
+    // db Version
     setStateForDB?: string;
-    txtlabelYAchse?: string;
     rangeHours?: number;
     maxXAxisTicks?: number;
     factorCardChart?: number; // 1, 10, 100, 1000

@@ -205,11 +205,11 @@ class PageChart extends import_Page.Page {
       } else {
         try {
           const cfg = this.items.data;
-          const ds = await ((_a = cfg.instanceDataSource) == null ? void 0 : _a.getNumber());
-          const sfv = await ((_b = cfg.setStateForValues) == null ? void 0 : _b.getString());
-          const sft = await ((_c = cfg.setStateForTicks) == null ? void 0 : _c.getString());
-          const sfd = await ((_d = cfg.setStateForDB) == null ? void 0 : _d.getString());
-          const si = await ((_e = cfg.dbInstance) == null ? void 0 : _e.getString());
+          const ds = cfg.instanceDataSource && await ((_a = cfg.instanceDataSource) == null ? void 0 : _a.getNumber());
+          const sfv = cfg.setStateForValues && await ((_b = cfg.setStateForValues) == null ? void 0 : _b.getString());
+          const sft = cfg.setStateForTicks && await ((_c = cfg.setStateForTicks) == null ? void 0 : _c.getString());
+          const sfd = cfg.setStateForDB && await ((_d = cfg.setStateForDB) == null ? void 0 : _d.getString());
+          const si = cfg.dbInstance && await ((_e = cfg.dbInstance) == null ? void 0 : _e.getString());
           this.log.debug(
             `onVisibilityChange checking states with dataSource: ${ds}, setStateForValues: ${sfv}, setStateForTicks: ${sft}, setStateForDB: ${sfd}, selInstance: ${si}`
           );

@@ -211,11 +211,11 @@ export class PageChart extends Page {
                 // trys klein halten - die fangen auch alle vertipper ab und suchen ist dann lustig
                 try {
                     const cfg = this.items.data;
-                    const ds = await cfg.instanceDataSource?.getNumber();
-                    const sfv = await cfg.setStateForValues?.getString();
-                    const sft = await cfg.setStateForTicks?.getString();
-                    const sfd = await cfg.setStateForDB?.getString();
-                    const si = await cfg.dbInstance?.getString();
+                    const ds = cfg.instanceDataSource && (await cfg.instanceDataSource?.getNumber());
+                    const sfv = cfg.setStateForValues && (await cfg.setStateForValues?.getString());
+                    const sft = cfg.setStateForTicks && (await cfg.setStateForTicks?.getString());
+                    const sfd = cfg.setStateForDB && (await cfg.setStateForDB?.getString());
+                    const si = cfg.dbInstance && (await cfg.dbInstance?.getString());
 
                     this.log.debug(
                         `onVisibilityChange checking states with dataSource: ${ds}, setStateForValues: ${sfv}, setStateForTicks: ${sft}, setStateForDB: ${sfd}, selInstance: ${si}`,
