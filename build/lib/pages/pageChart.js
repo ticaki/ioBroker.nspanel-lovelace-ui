@@ -18,7 +18,8 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageChart_exports = {};
 __export(pageChart_exports, {
-  PageChart: () => PageChart
+  PageChart: () => PageChart,
+  isChartDetailsExternal: () => isChartDetailsExternal
 });
 module.exports = __toCommonJS(pageChart_exports);
 var import_Page = require("../classes/Page");
@@ -41,6 +42,7 @@ class PageChart extends import_Page.Page {
   items;
   //index: number = 0;
   checkState = true;
+  dbDetails;
   //protected adminConfig;
   constructor(config, options) {
     if (config.card !== "cardChart" && config.card !== "cardLChart") {
@@ -52,9 +54,16 @@ class PageChart extends import_Page.Page {
     } else {
       throw new Error("Missing config!");
     }
+    this.getChartData = this.getChartDataScript;
     this.minUpdateInterval = 6e4;
   }
   async init() {
+    if (this.items && this.items.data && this.items.data.dbData) {
+      const dbDetails = await this.items.data.dbData.getObject();
+      if (isChartDetailsExternal(dbDetails)) {
+        this.dbDetails = dbDetails;
+      }
+    }
     await super.init();
   }
   /**
@@ -133,15 +142,24 @@ class PageChart extends import_Page.Page {
     }
     throw new Error("No config for cardChart found");
   }
-  async getChartData() {
-    const ticksChart = ["~"];
-    const valuesChart = "~";
+  async getChartData(ticksChart = ["~"], valuesChart = "~") {
     this.log.warn("getChartData not implemented in base PageChart class");
+    return { ticksChart, valuesChart };
+  }
+  async getChartDataScript(ticksChart = ["~"], valuesChart = "~") {
+    this.log.warn("getChartDataScript not implemented in base PageChart class");
+    return { ticksChart, valuesChart };
+  }
+  async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
+    this.log.warn("getChartDataScript not implemented in base PageChart class");
     return { ticksChart, valuesChart };
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
     return new Promise((resolve, reject) => {
       const timeout = this.adapter.setTimeout(() => {
+        if (this.unload || this.adapter.unload) {
+          resolve(null);
+        }
         reject(
           new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`)
         );
@@ -165,6 +183,9 @@ class PageChart extends import_Page.Page {
           (result) => {
             if (timeout) {
               this.adapter.clearTimeout(timeout);
+            }
+            if (this.unload || this.adapter.unload) {
+              resolve(null);
             }
             if (result && "result" in result) {
               if (Array.isArray(result.result)) {
@@ -292,8 +313,12 @@ class PageChart extends import_Page.Page {
   async onButtonEvent(_event) {
   }
 }
+function isChartDetailsExternal(obj) {
+  return obj && typeof obj === "object" && "instance" in obj && typeof obj.instance === "string" && obj.instance && "state" in obj && typeof obj.state === "string" && obj.state;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageChart
+  PageChart,
+  isChartDetailsExternal
 });
 //# sourceMappingURL=pageChart.js.map

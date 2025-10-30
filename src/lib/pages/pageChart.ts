@@ -3,6 +3,7 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { getIconEntryColor, getPayload } from '../const/tools';
+import type { ChartDetailsExternal } from '../types/adminShareConfig';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -23,6 +24,7 @@ export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     //index: number = 0;
     private checkState: boolean = true;
+    protected dbDetails?: ChartDetailsExternal;
     //protected adminConfig;
 
     constructor(config: PageInterface, options: pages.PageBase) {
@@ -35,12 +37,19 @@ export class PageChart extends Page {
         } else {
             throw new Error('Missing config!');
         }
+        this.getChartData = this.getChartDataScript;
         //this.index = this.config.index;
         this.minUpdateInterval = 60_000;
         //this.adminConfig = this.adapter.config.pageChartdata[this.index];
     }
 
     async init(): Promise<void> {
+        if (this.items && this.items.data && this.items.data.dbData) {
+            const dbDetails = await this.items.data.dbData.getObject();
+            if (isChartDetailsExternal(dbDetails)) {
+                this.dbDetails = dbDetails;
+            }
+        }
         await super.init();
     }
 
@@ -133,17 +142,36 @@ export class PageChart extends Page {
         throw new Error('No config for cardChart found');
     }
 
-    protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        const ticksChart: string[] = ['~'];
-        const valuesChart = '~';
+    async getChartData(
+        ticksChart: string[] = ['~'],
+        valuesChart = '~',
+    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
         this.log.warn('getChartData not implemented in base PageChart class');
-
         return { ticksChart, valuesChart };
     }
 
-    protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
+    async getChartDataScript(
+        ticksChart: string[] = ['~'],
+        valuesChart = '~',
+    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
+        this.log.warn('getChartDataScript not implemented in base PageChart class');
+        return { ticksChart, valuesChart };
+    }
+
+    async getChartDataDB(
+        ticksChart: string[] = ['~'],
+        valuesChart = '~',
+    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
+        this.log.warn('getChartDataScript not implemented in base PageChart class');
+        return { ticksChart, valuesChart };
+    }
+
+    protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[] | null> {
         return new Promise((resolve, reject) => {
             const timeout = this.adapter.setTimeout(() => {
+                if (this.unload || this.adapter.unload) {
+                    resolve(null);
+                }
                 reject(
                     new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`),
                 );
@@ -167,6 +195,9 @@ export class PageChart extends Page {
                     result => {
                         if (timeout) {
                             this.adapter.clearTimeout(timeout);
+                        }
+                        if (this.unload || this.adapter.unload) {
+                            resolve(null);
                         }
                         if (result && 'result' in result) {
                             if (Array.isArray(result.result)) {
@@ -308,4 +339,17 @@ export class PageChart extends Page {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
     }
+}
+
+export function isChartDetailsExternal(obj: any): obj is ChartDetailsExternal {
+    return (
+        obj &&
+        typeof obj === 'object' &&
+        'instance' in obj &&
+        typeof obj.instance === 'string' &&
+        obj.instance &&
+        'state' in obj &&
+        typeof obj.state === 'string' &&
+        obj.state
+    );
 }
