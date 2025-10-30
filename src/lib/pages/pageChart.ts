@@ -150,11 +150,23 @@ export class PageChart extends Page {
         return { ticksChart, valuesChart };
     }
 
+    // Überschreiben der getChartData-Methode
     async getChartDataScript(
         ticksChart: string[] = ['~'],
         valuesChart = '~',
     ): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        this.log.warn('getChartDataScript not implemented in base PageChart class');
+        // oldScriptVersion bleibt unverändert
+        if (this.items) {
+            const items = this.items;
+            const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
+            const tempValues = (items.data.value && (await items.data.value.getString())) ?? '';
+            if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
+                ticksChart = tempTicks;
+            }
+            if (tempValues && typeof tempValues === 'string' && tempValues.length > 0) {
+                valuesChart = tempValues;
+            }
+        }
         return { ticksChart, valuesChart };
     }
 

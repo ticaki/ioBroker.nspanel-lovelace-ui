@@ -47,22 +47,6 @@ class PageChartLine extends import_pageChart.PageChart {
     }
     await super.init();
   }
-  // Überschreiben der getChartData-Methode
-  async getChartDataScript(ticksChart = ["~"], valuesChart = "~") {
-    var _a, _b;
-    if (this.items) {
-      const items = this.items;
-      const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
-      const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
-      if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
-        ticksChart = tempTicks;
-      }
-      if (tempValues && typeof tempValues === "string" && tempValues.length > 0) {
-        valuesChart = tempValues;
-      }
-    }
-    return { ticksChart, valuesChart };
-  }
   // Überschreiben der getChartDataDB-Methode
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
     if (this.items) {

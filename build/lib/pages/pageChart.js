@@ -146,8 +146,20 @@ class PageChart extends import_Page.Page {
     this.log.warn("getChartData not implemented in base PageChart class");
     return { ticksChart, valuesChart };
   }
+  // Überschreiben der getChartData-Methode
   async getChartDataScript(ticksChart = ["~"], valuesChart = "~") {
-    this.log.warn("getChartDataScript not implemented in base PageChart class");
+    var _a, _b;
+    if (this.items) {
+      const items = this.items;
+      const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
+      const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
+      if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
+        ticksChart = tempTicks;
+      }
+      if (tempValues && typeof tempValues === "string" && tempValues.length > 0) {
+        valuesChart = tempValues;
+      }
+    }
     return { ticksChart, valuesChart };
   }
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
