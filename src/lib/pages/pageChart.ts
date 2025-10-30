@@ -210,39 +210,42 @@ export class PageChart extends Page {
             } else {
                 // trys klein halten - die fangen auch alle vertipper ab und suchen ist dann lustig
                 try {
-                    const cfg: any = this.items.data;
-                    const ds = cfg.selInstanceDataSource;
+                    const cfg = this.items.data;
+                    const ds = await cfg.instanceDataSource?.getNumber();
+                    const sfv = await cfg.setStateForValues?.getString();
+                    const sft = await cfg.setStateForTicks?.getString();
+                    const sfd = await cfg.setStateForDB?.getString();
+                    const si = await cfg.dbInstance?.getString();
 
+                    this.log.debug(
+                        `onVisibilityChange checking states with dataSource: ${ds}, setStateForValues: ${sfv}, setStateForTicks: ${sft}, setStateForDB: ${sfd}, selInstance: ${si}`,
+                    );
                     if (ds === 0) {
                         // Datenquelle: direkte States (setStateForValues + setStateForTicks)
-                        if (cfg.setStateForValues != null && cfg.setStateForValues !== '') {
-                            const state = await this.adapter.getForeignStateAsync(cfg.setStateForValues);
+                        if (sfv != null && sfv !== '') {
+                            const state = await this.adapter.getForeignStateAsync(sfv);
                             if (state && state.val !== null && state.val !== undefined) {
-                                this.log.debug(
-                                    `State ${cfg.setStateForValues} for Values exists and has value: ${state.val}`,
-                                );
+                                this.log.debug(`State ${sfv} for Values exists and has value: ${state.val}`);
                                 this.checkState = true; // Nur hier auf true setzen, wenn alles passt
                             } else if (state) {
-                                this.log.warn(`State ${cfg.setStateForValues} for Values exists but has no value`);
+                                this.log.warn(`State ${sfv} for Values exists but has no value`);
                             } else {
-                                this.log.error(`State ${cfg.setStateForValues} for Values does not exist`);
+                                this.log.error(`State ${sfv} for Values does not exist`);
                             }
                         } else {
                             this.log.error('No setStateForValues configured');
                         }
 
-                        if (cfg.setStateForTicks != null && cfg.setStateForTicks !== '') {
-                            const state = await this.adapter.getForeignStateAsync(cfg.setStateForTicks);
+                        if (sft != null && sft !== '') {
+                            const state = await this.adapter.getForeignStateAsync(sft);
                             if (state && state.val !== null && state.val !== undefined) {
-                                this.log.debug(
-                                    `State ${cfg.setStateForTicks} for Ticks exists and has value: ${state.val}`,
-                                );
+                                this.log.debug(`State ${sft} for Ticks exists and has value: ${state.val}`);
                                 this.checkState = true;
                             } else if (state) {
-                                this.log.warn(`State ${cfg.setStateForTicks} for Ticks exists but has no value`);
+                                this.log.warn(`State ${sft} for Ticks exists but has no value`);
                                 this.checkState = false;
                             } else {
-                                this.log.error(`State ${cfg.setStateForTicks} for Ticks does not exist`);
+                                this.log.error(`State ${sft} for Ticks does not exist`);
                                 this.checkState = false;
                             }
                         } else {
@@ -251,15 +254,13 @@ export class PageChart extends Page {
                         }
                     } else if (ds === 1) {
                         // Datenquelle: Adapter-Instance (selInstance.alive + setStateForDB)
-                        if (cfg.selInstance != null && cfg.selInstance !== '') {
-                            const alive = await this.adapter.getForeignStateAsync(
-                                `system.adapter.${cfg.selInstance}.alive`,
-                            );
+                        if (si != null && si !== '') {
+                            const alive = await this.adapter.getForeignStateAsync(`system.adapter.${si}.alive`);
                             if (alive && alive.val) {
-                                this.log.debug(`Instance ${cfg.selInstance} is alive`);
+                                this.log.debug(`Instance ${si} is alive`);
                                 this.checkState = true;
                             } else {
-                                this.log.warn(`Instance ${cfg.selInstance} is not alive`);
+                                this.log.warn(`Instance ${si} is not alive`);
                                 this.checkState = false;
                             }
                         } else {
@@ -267,13 +268,13 @@ export class PageChart extends Page {
                             this.checkState = false;
                         }
 
-                        if (cfg.setStateForDB != null && cfg.setStateForDB !== '') {
-                            const state = await this.adapter.getForeignStateAsync(cfg.setStateForDB);
+                        if (sfd != null && sfd !== '') {
+                            const state = await this.adapter.getForeignStateAsync(sfd);
                             if (state) {
-                                this.log.debug(`State ${cfg.setStateForDB} for DB exists`);
+                                this.log.debug(`State ${sfd} for DB exists`);
                                 this.checkState = true;
                             } else {
-                                this.log.warn(`State ${cfg.setStateForDB} for DB does not exist`);
+                                this.log.warn(`State ${sfd} for DB does not exist`);
                                 this.checkState = false;
                             }
                         } else {
@@ -281,7 +282,7 @@ export class PageChart extends Page {
                             this.checkState = false;
                         }
                     } else {
-                        this.log.error('Unknown selInstanceDataSource, skipping specific checks');
+                        this.log.error('Unknown instanceDataSource, skipping specific checks');
                         this.checkState = false;
                     }
                 } catch (error) {

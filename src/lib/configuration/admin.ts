@@ -150,10 +150,13 @@ export class AdminConfiguration extends BaseClass {
                 }
 
                 case 'cardChart': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
                     newPage = {
                         uniqueID: entry.uniqueName,
                         hidden: !!entry.hidden,
-                        alwaysOn: entry.alwaysOn ? 'always' : 'none',
+                        alwaysOn: entry.alwaysOn,
                         dpInit: '',
                         config: {
                             card: entry.selChartType || 'cardChart',
