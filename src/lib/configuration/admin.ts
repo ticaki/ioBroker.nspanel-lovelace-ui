@@ -2,8 +2,10 @@ import type { NavigationItemConfig } from '../classes/navigation';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
 import * as ShareConfig from '../types/adminShareConfig';
+import { exhaustiveCheck } from '../types/function-and-const';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { PageBase } from '../types/pages';
+import type { AlwaysOnMode } from '../types/types';
 
 export class AdminConfiguration extends BaseClass {
     private pageConfig: ShareConfig.PageConfig[] = [];
@@ -89,10 +91,13 @@ export class AdminConfiguration extends BaseClass {
 
             switch (entry.card) {
                 case 'cardAlarm': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
                     newPage = {
                         uniqueID: entry.uniqueName,
                         hidden: !!entry.hidden,
-                        alwaysOn: entry.alwaysOn || 'none',
+                        alwaysOn: entry.alwaysOn,
                         dpInit: '',
                         config: {
                             card: 'cardAlarm',
@@ -117,12 +122,14 @@ export class AdminConfiguration extends BaseClass {
                     };
                     break;
                 }
-
                 case 'cardQR': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
                     newPage = {
                         uniqueID: entry.uniqueName,
                         hidden: !!entry.hidden,
-                        alwaysOn: entry.alwaysOn ? 'always' : 'none',
+                        alwaysOn: entry.alwaysOn,
                         dpInit: '',
                         config: {
                             card: 'cardQR',
@@ -261,5 +268,19 @@ export class AdminConfiguration extends BaseClass {
         }
 
         return option;
+    }
+}
+
+function isAlwaysOnMode(F: any): F is AlwaysOnMode {
+    const R = F as AlwaysOnMode;
+    switch (R) {
+        case 'always':
+        case 'none':
+        case 'ignore':
+        case 'action':
+            return true;
+        default:
+            exhaustiveCheck(R);
+            return false;
     }
 }
