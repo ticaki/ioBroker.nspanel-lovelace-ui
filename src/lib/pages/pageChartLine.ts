@@ -36,7 +36,7 @@ export class PageChartLine extends PageChart {
         await super.init();
     }
 
-    // Überschreiben der getChartDataDB-Methode
+    // Eventuelles überschreiben der getChartData-Methode
     async getChartDataDB(
         ticksChart: string[] = ['~'],
         valuesChart = '~',

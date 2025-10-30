@@ -54,7 +54,6 @@ class PageChart extends import_Page.Page {
     } else {
       throw new Error("Missing config!");
     }
-    this.getChartData = this.getChartDataScript;
     this.minUpdateInterval = 6e4;
   }
   async init() {
@@ -142,12 +141,8 @@ class PageChart extends import_Page.Page {
     }
     throw new Error("No config for cardChart found");
   }
-  async getChartData(ticksChart = ["~"], valuesChart = "~") {
-    this.log.warn("getChartData not implemented in base PageChart class");
-    return { ticksChart, valuesChart };
-  }
   // Überschreiben der getChartData-Methode
-  async getChartDataScript(ticksChart = ["~"], valuesChart = "~") {
+  async getChartData(ticksChart = ["~"], valuesChart = "~") {
     var _a, _b;
     if (this.items) {
       const items = this.items;

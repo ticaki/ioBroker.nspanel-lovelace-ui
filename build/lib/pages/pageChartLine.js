@@ -47,7 +47,7 @@ class PageChartLine extends import_pageChart.PageChart {
     }
     await super.init();
   }
-  // Überschreiben der getChartDataDB-Methode
+  // Eventuelles überschreiben der getChartData-Methode
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
     if (this.items) {
       const items = this.items;

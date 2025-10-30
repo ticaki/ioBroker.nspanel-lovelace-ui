@@ -38,9 +38,16 @@ class PageChartBar extends import_pageChart.PageChart {
       this.log.debug(`init Card: ${this.card}`);
     }
     this.items = tempItem;
+    if (this.items && this.items.data && this.items.data.dbData) {
+      const dbDetails = await this.items.data.dbData.getObject();
+      if ((0, import_pageChart.isChartDetailsExternal)(dbDetails)) {
+        this.dbDetails = dbDetails;
+        this.getChartData = this.getChartDataDB;
+      }
+    }
     await super.init();
   }
-  // Überschreiben der getChartDataDB-Methode
+  // Eventuelles überschreiben der getChartData-Methode
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
     if (this.items) {
       const items = this.items;

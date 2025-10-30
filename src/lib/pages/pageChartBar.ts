@@ -1,6 +1,6 @@
 import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
-import { PageChart } from './pageChart';
+import { isChartDetailsExternal, PageChart } from './pageChart';
 
 export class PageChartBar extends PageChart {
     constructor(config: PageInterface, options: pages.PageBase) {
@@ -26,10 +26,19 @@ export class PageChartBar extends PageChart {
             this.log.debug(`init Card: ${this.card}`);
         }
         this.items = tempItem as pages.cardChartDataItems;
+        // Wenn DB Details vorhanden sind, getChartData auf getChartDataDB setzen
+        // Dies ist notwendig, da PageChart die Methode getChartDataScript als Standardmethode hat
+        if (this.items && this.items.data && this.items.data.dbData) {
+            const dbDetails = await this.items.data.dbData.getObject();
+            if (isChartDetailsExternal(dbDetails)) {
+                this.dbDetails = dbDetails;
+                this.getChartData = this.getChartDataDB;
+            }
+        }
         await super.init();
     }
 
-    // Überschreiben der getChartDataDB-Methode
+    // Eventuelles überschreiben der getChartData-Methode
     async getChartDataDB(
         ticksChart: string[] = ['~'],
         valuesChart = '~',

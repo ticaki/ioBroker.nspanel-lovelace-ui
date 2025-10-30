@@ -37,7 +37,6 @@ export class PageChart extends Page {
         } else {
             throw new Error('Missing config!');
         }
-        this.getChartData = this.getChartDataScript;
         //this.index = this.config.index;
         this.minUpdateInterval = 60_000;
         //this.adminConfig = this.adapter.config.pageChartdata[this.index];
@@ -142,16 +141,8 @@ export class PageChart extends Page {
         throw new Error('No config for cardChart found');
     }
 
-    async getChartData(
-        ticksChart: string[] = ['~'],
-        valuesChart = '~',
-    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        this.log.warn('getChartData not implemented in base PageChart class');
-        return { ticksChart, valuesChart };
-    }
-
     // Überschreiben der getChartData-Methode
-    async getChartDataScript(
+    async getChartData(
         ticksChart: string[] = ['~'],
         valuesChart = '~',
     ): Promise<{ ticksChart: string[]; valuesChart: string }> {
