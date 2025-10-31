@@ -170,14 +170,15 @@ export class PageChart extends Page {
     }
 
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[] | null> {
+        if (this.unload || this.adapter.unload) {
+            return null;
+        }
         return new Promise((resolve, reject) => {
-            if (this.unload || this.adapter.unload) {
-                return;
-            }
             if (this.chartTimeout) {
                 this.adapter.clearTimeout(this.chartTimeout);
             }
             this.chartTimeout = this.adapter.setTimeout(() => {
+                this.chartTimeout = null;
                 if (this.unload || this.adapter.unload) {
                     resolve(null);
                 }
