@@ -25,7 +25,7 @@ export class PageChart extends Page {
     //index: number = 0;
     private checkState: boolean = true;
     protected dbDetails?: ChartDetailsExternal;
-    //protected adminConfig;
+    protected chartTimeout: ioBroker.Timeout | undefined | null;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
@@ -171,7 +171,13 @@ export class PageChart extends Page {
 
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[] | null> {
         return new Promise((resolve, reject) => {
-            const timeout = this.adapter.setTimeout(() => {
+            if (this.unload || this.adapter.unload) {
+                return;
+            }
+            if (this.chartTimeout) {
+                this.adapter.clearTimeout(this.chartTimeout);
+            }
+            this.chartTimeout = this.adapter.setTimeout(() => {
                 if (this.unload || this.adapter.unload) {
                     resolve(null);
                 }
@@ -196,8 +202,8 @@ export class PageChart extends Page {
                         },
                     },
                     result => {
-                        if (timeout) {
-                            this.adapter.clearTimeout(timeout);
+                        if (this.chartTimeout) {
+                            this.adapter.clearTimeout(this.chartTimeout);
                         }
                         if (this.unload || this.adapter.unload) {
                             resolve(null);
