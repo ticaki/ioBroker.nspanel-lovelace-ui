@@ -26,6 +26,7 @@ export class PageChart extends Page {
     private checkState: boolean = true;
     protected dbDetails?: ChartDetailsExternal;
     protected chartTimeout: ioBroker.Timeout | undefined | null;
+    protected oldDatabaseData: any[] | null = null;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
@@ -175,12 +176,14 @@ export class PageChart extends Page {
         }
         return new Promise((resolve, reject) => {
             if (this.chartTimeout) {
-                this.adapter.clearTimeout(this.chartTimeout);
+                resolve(this.oldDatabaseData || null);
+                return;
             }
             this.chartTimeout = this.adapter.setTimeout(() => {
                 this.chartTimeout = null;
                 if (this.unload || this.adapter.unload) {
                     resolve(null);
+                    return;
                 }
                 reject(
                     new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`),
@@ -206,8 +209,10 @@ export class PageChart extends Page {
                         if (this.chartTimeout) {
                             this.adapter.clearTimeout(this.chartTimeout);
                         }
+                        this.chartTimeout = null;
                         if (this.unload || this.adapter.unload) {
                             resolve(null);
+                            return;
                         }
                         if (result && 'result' in result) {
                             if (Array.isArray(result.result)) {
@@ -216,10 +221,13 @@ export class PageChart extends Page {
                                         `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
                                     );
                                 }
+                                this.oldDatabaseData = result.result;
                                 resolve(result.result);
+                                return;
                             }
                         }
                         reject(new Error('No data found'));
+                        return;
                     },
                 );
             } catch (error) {
@@ -348,6 +356,14 @@ export class PageChart extends Page {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
+    }
+
+    async delete(): Promise<void> {
+        if (this.chartTimeout) {
+            this.adapter.clearTimeout(this.chartTimeout);
+        }
+        this.chartTimeout = null;
+        await super.delete();
     }
 }
 
