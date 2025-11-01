@@ -1219,7 +1219,7 @@ class Panel extends import_library.BaseClass {
     }
     await this.panelSend.delete();
     this.controller.mqttClient.removeByFunction(this.onMessage);
-    this.statesControler.deletePageLoop(this.onInternalCommand);
+    await this.statesControler.deletePageLoop(this.onInternalCommand);
     this.persistentPageItems = {};
     this.pages = [];
     this._activePage = void 0;

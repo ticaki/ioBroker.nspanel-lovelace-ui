@@ -467,7 +467,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.log.error(`Error: ${e}`);
                 }
             }
-            await this.subscribeForeignStatesAsync('*');
+            await this.subscribeStatesAsync('*');
 
             if (counter === 0) {
                 return;
