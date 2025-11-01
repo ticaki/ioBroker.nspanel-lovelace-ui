@@ -650,6 +650,8 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         const pages: string[] = this.state.selectedAddedTopic
             ? (this.state.pagesMap[this.state.selectedAddedTopic] ?? [])
             : [];
+        // Strikte Bedingung: Panel darf nur geöffnet sein, wenn eine Card ausgewählt ist
+        const shouldBeCollapsed = isCollapsed || !this.props.uniqueName;
 
         return (
             <Box
@@ -663,12 +665,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                     // Responsive width: full width on mobile, percentage on desktop
                     width: {
                         xs: '100%', // mobile: full width
-                        md: isCollapsed ? '10px' : `${widthPercent}%`, // desktop: collapsible
+                        md: shouldBeCollapsed ? '10px' : `${widthPercent}%`, // desktop: collapsible
                     },
 
                     // Mobile: min height when collapsed, auto when expanded
                     minHeight: {
-                        xs: isCollapsed ? '50px' : 'auto',
+                        xs: shouldBeCollapsed ? '50px' : 'auto',
                         md: 'auto',
                     },
 
@@ -713,13 +715,19 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         borderRadius: '4px 0 0 4px',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        cursor: 'pointer',
+                        cursor: this.props.uniqueName ? 'pointer' : 'not-allowed',
+                        opacity: this.props.uniqueName ? 1 : 0.5,
                         zIndex: 21,
                         '&:hover': {
                             backgroundColor: 'secondary.dark',
                         },
                     }}
-                    onClick={this.togglePanel}
+                    onClick={() => {
+                        // Nur erlauben wenn eine Card ausgewählt ist
+                        if (this.props.uniqueName) {
+                            this.togglePanel();
+                        }
+                    }}
                 >
                     <Typography
                         sx={{
@@ -730,7 +738,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             whiteSpace: 'nowrap',
                         }}
                     >
-                        {isCollapsed ? '⏶' : '⏷'}
+                        {shouldBeCollapsed ? '⏶' : '⏷'}
                     </Typography>
                 </Box>
 
@@ -760,10 +768,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         p: 1,
                         height: '100%',
                         // Mobile: always show, desktop: hide when collapsed
-                        display: { xs: 'flex', md: isCollapsed ? 'none' : 'flex' },
+                        display: { xs: 'flex', md: shouldBeCollapsed ? 'none' : 'flex' },
                         flexDirection: 'column',
                         // Mobile: normal layout, desktop: width animation
-                        width: { xs: '100%', md: isCollapsed ? '0%' : '100%' },
+                        width: { xs: '100%', md: shouldBeCollapsed ? '0%' : '100%' },
                         overflow: 'hidden',
                         transition: { xs: 'none', md: 'width 240ms ease' },
                     }}
