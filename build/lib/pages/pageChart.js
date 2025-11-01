@@ -43,7 +43,8 @@ class PageChart extends import_Page.Page {
   //index: number = 0;
   checkState = true;
   dbDetails;
-  //protected adminConfig;
+  chartTimeout;
+  oldDatabaseData = null;
   constructor(config, options) {
     if (config.card !== "cardChart" && config.card !== "cardLChart") {
       return;
@@ -162,10 +163,19 @@ class PageChart extends import_Page.Page {
     return { ticksChart, valuesChart };
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
+    if (this.unload || this.adapter.unload) {
+      return null;
+    }
     return new Promise((resolve, reject) => {
-      const timeout = this.adapter.setTimeout(() => {
+      if (this.chartTimeout) {
+        resolve(this.oldDatabaseData || null);
+        return;
+      }
+      this.chartTimeout = this.adapter.setTimeout(() => {
+        this.chartTimeout = null;
         if (this.unload || this.adapter.unload) {
           resolve(null);
+          return;
         }
         reject(
           new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`)
@@ -188,11 +198,13 @@ class PageChart extends import_Page.Page {
             }
           },
           (result) => {
-            if (timeout) {
-              this.adapter.clearTimeout(timeout);
+            if (this.chartTimeout) {
+              this.adapter.clearTimeout(this.chartTimeout);
             }
+            this.chartTimeout = null;
             if (this.unload || this.adapter.unload) {
               resolve(null);
+              return;
             }
             if (result && "result" in result) {
               if (Array.isArray(result.result)) {
@@ -201,10 +213,13 @@ class PageChart extends import_Page.Page {
                     `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
                   );
                 }
+                this.oldDatabaseData = result.result;
                 resolve(result.result);
+                return;
               }
             }
             reject(new Error("No data found"));
+            return;
           }
         );
       } catch (error) {
@@ -318,6 +333,13 @@ class PageChart extends import_Page.Page {
     this.adapter.setTimeout(() => this.update(), 50);
   }
   async onButtonEvent(_event) {
+  }
+  async delete() {
+    if (this.chartTimeout) {
+      this.adapter.clearTimeout(this.chartTimeout);
+    }
+    this.chartTimeout = null;
+    await super.delete();
   }
 }
 function isChartDetailsExternal(obj) {

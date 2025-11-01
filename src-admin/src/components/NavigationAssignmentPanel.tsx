@@ -55,7 +55,7 @@ type NavigationAssignmentPanelProps = {
     onAssign?: (uniqueName: string, assignments: NavigationAssignmentList) => void;
     // optional tooltip texts for next/prev
     // hide navigation fields (next/prev/home/parent) - for screensaver pages
-    hideNavigationFields?: boolean;
+    onlyPanelSelection?: boolean;
     // Neu: Gemeinsame Felder
     commonFields?: PageConfigBaseFields;
     onCommonFieldsChange?: (fields: Partial<PageConfigBaseFields>) => void;
@@ -826,66 +826,70 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 px: { xs: 1, md: 2 },
                             }}
                         />
-                        <Tab
-                            icon={<SettingsIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
-                            iconPosition="start"
-                            label={
-                                <>
-                                    {/* Responsive label: short on mobile */}
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            display: { xs: 'inline', md: 'none' },
-                                        }}
-                                    >
-                                        {I18n.t('details') || 'Details'}
-                                    </Box>
-                                    {/* Full label on desktop */}
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            display: { xs: 'none', md: 'inline' },
-                                        }}
-                                    >
-                                        {I18n.t('pagedetails') || 'Page Details'}
-                                    </Box>
-                                </>
-                            }
-                            sx={{
-                                minWidth: { xs: 'auto', md: 90 },
-                                px: { xs: 1, md: 2 },
-                            }}
-                        />
-                        <Tab
-                            icon={<ExtensionIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
-                            iconPosition="start"
-                            label={
-                                <>
-                                    {/* Responsive label: short on mobile */}
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            display: { xs: 'inline', md: 'none' },
-                                        }}
-                                    >
-                                        {I18n.t('free') || 'Free'}
-                                    </Box>
-                                    {/* Full label on desktop */}
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            display: { xs: 'none', md: 'inline' },
-                                        }}
-                                    >
-                                        {I18n.t('placeholder') || 'Placeholder'}
-                                    </Box>
-                                </>
-                            }
-                            sx={{
-                                minWidth: { xs: 'auto', md: 90 },
-                                px: { xs: 1, md: 2 },
-                            }}
-                        />
+                        {!this.props.onlyPanelSelection && (
+                            <Tab
+                                icon={<SettingsIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                                iconPosition="start"
+                                label={
+                                    <>
+                                        {/* Responsive label: short on mobile */}
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                display: { xs: 'inline', md: 'none' },
+                                            }}
+                                        >
+                                            {I18n.t('details') || 'Details'}
+                                        </Box>
+                                        {/* Full label on desktop */}
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                display: { xs: 'none', md: 'inline' },
+                                            }}
+                                        >
+                                            {I18n.t('pagedetails') || 'Page Details'}
+                                        </Box>
+                                    </>
+                                }
+                                sx={{
+                                    minWidth: { xs: 'auto', md: 90 },
+                                    px: { xs: 1, md: 2 },
+                                }}
+                            />
+                        )}
+                        {!this.props.onlyPanelSelection && (
+                            <Tab
+                                icon={<ExtensionIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                                iconPosition="start"
+                                label={
+                                    <>
+                                        {/* Responsive label: short on mobile */}
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                display: { xs: 'inline', md: 'none' },
+                                            }}
+                                        >
+                                            {I18n.t('free') || 'Free'}
+                                        </Box>
+                                        {/* Full label on desktop */}
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                display: { xs: 'none', md: 'inline' },
+                                            }}
+                                        >
+                                            {I18n.t('placeholder') || 'Placeholder'}
+                                        </Box>
+                                    </>
+                                }
+                                sx={{
+                                    minWidth: { xs: 'auto', md: 90 },
+                                    px: { xs: 1, md: 2 },
+                                }}
+                            />
+                        )}
                     </Tabs>
 
                     {activeTab === 0 && (
@@ -1100,7 +1104,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             <Divider sx={{ my: 1 }} />
 
                             {/* navigation selectors for the selected added panel (labels only, options removed) */}
-                            {!this.props.hideNavigationFields && (
+                            {!this.props.onlyPanelSelection && (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
                                     <Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
@@ -1340,7 +1344,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
                             {/* Notice when no next/prev is selected */}
                             {/* Für jedes hinzugefügte Panel: Status + nav summary */}
-                            {this.state.added.length > 0
+                            {!this.props.onlyPanelSelection && this.state.added.length > 0
                                 ? this.state.added.map(a => {
                                       const topic = a.panelTopic;
                                       const hasAll: boolean = this.state.added.some(
