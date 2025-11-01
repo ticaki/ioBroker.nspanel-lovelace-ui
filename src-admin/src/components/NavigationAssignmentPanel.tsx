@@ -118,7 +118,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             assignments: props.currentAssignments || [],
             pagesMap: {},
             alive: false,
-            isCollapsed: false,
+            isCollapsed: !props.uniqueName, // Collapse by default when no card is selected
             isLoading: {},
             lastLoadTime: {},
             focusReceived: {},
@@ -226,6 +226,13 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                 this.setState(prev => ({
                     focusReceived: { ...prev.focusReceived, [this.props.uniqueName!]: true },
                 }));
+            }
+
+            // Auto-collapse/expand based on card selection
+            // Collapse when no card is selected, expand when a card is selected
+            const shouldBeCollapsed = !this.props.uniqueName;
+            if (this.state.isCollapsed !== shouldBeCollapsed) {
+                this.setState({ isCollapsed: shouldBeCollapsed });
             }
 
             // ensure panels are loaded so we can map topics -> friendlyName
