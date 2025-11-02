@@ -103,6 +103,7 @@
     "page_type_all": "All",
     "page_type_alarm": "Alarm",
     "page_type_qr": "QR",
+	"page_type_chart": "Chart",
     "qr_content_free": "QR String"
 }
 

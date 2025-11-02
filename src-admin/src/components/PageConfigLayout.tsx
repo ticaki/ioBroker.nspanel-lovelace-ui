@@ -157,6 +157,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
+                                <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>
