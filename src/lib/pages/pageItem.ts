@@ -1933,7 +1933,7 @@ export class PageItem extends BaseTriggeredPage {
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
-        this.controller.statesControler.deletePageLoop();
+        await this.controller.statesControler.deletePageLoop();
         await super.delete();
     }
 
