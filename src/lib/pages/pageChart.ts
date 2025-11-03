@@ -17,9 +17,6 @@ const PageChartMessageDefault: pages.PageChartMessage = {
     value: '', //Werte x Achse
 };
 
-/**
- * untested
- */
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     //index: number = 0;
@@ -53,10 +50,6 @@ export class PageChart extends Page {
         await super.init();
     }
 
-    /**
-     *
-     * @returns // TODO: remove this
-     */
     public async update(): Promise<void> {
         if (!this.visibility) {
             return;
@@ -260,94 +253,6 @@ export class PageChart extends Page {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         // breche laufenden Timer immer ab wenn sich die Sichtbarkeit ändert
         if (val) {
-            // Neu: bei Sichtbarkeit immer neu prüfen
-            this.checkState = false; // Standardmäßig auf false setzen
-            if (!this.items) {
-                this.log.warn('AdminConfig is not set, cannot check states');
-                this.checkState = false;
-            } else {
-                // trys klein halten - die fangen auch alle vertipper ab und suchen ist dann lustig
-                try {
-                    const cfg = this.items.data;
-                    const ds = cfg.instanceDataSource && (await cfg.instanceDataSource?.getNumber());
-                    const sfv = cfg.setStateForValues && (await cfg.setStateForValues?.getString());
-                    const sft = cfg.setStateForTicks && (await cfg.setStateForTicks?.getString());
-                    const sfd = cfg.setStateForDB && (await cfg.setStateForDB?.getString());
-                    const si = cfg.dbInstance && (await cfg.dbInstance?.getString());
-
-                    this.log.debug(
-                        `onVisibilityChange checking states with dataSource: ${ds}, setStateForValues: ${sfv}, setStateForTicks: ${sft}, setStateForDB: ${sfd}, selInstance: ${si}`,
-                    );
-                    if (ds === 0) {
-                        // Datenquelle: direkte States (setStateForValues + setStateForTicks)
-                        if (sfv != null && sfv !== '') {
-                            const state = await this.adapter.getForeignStateAsync(sfv);
-                            if (state && state.val !== null && state.val !== undefined) {
-                                this.log.debug(`State ${sfv} for Values exists and has value: ${state.val}`);
-                                this.checkState = true; // Nur hier auf true setzen, wenn alles passt
-                            } else if (state) {
-                                this.log.warn(`State ${sfv} for Values exists but has no value`);
-                            } else {
-                                this.log.error(`State ${sfv} for Values does not exist`);
-                            }
-                        } else {
-                            this.log.error('No setStateForValues configured');
-                        }
-
-                        if (sft != null && sft !== '') {
-                            const state = await this.adapter.getForeignStateAsync(sft);
-                            if (state && state.val !== null && state.val !== undefined) {
-                                this.log.debug(`State ${sft} for Ticks exists and has value: ${state.val}`);
-                                this.checkState = true;
-                            } else if (state) {
-                                this.log.warn(`State ${sft} for Ticks exists but has no value`);
-                                this.checkState = false;
-                            } else {
-                                this.log.error(`State ${sft} for Ticks does not exist`);
-                                this.checkState = false;
-                            }
-                        } else {
-                            this.log.error('No setStateForTicks configured');
-                            this.checkState = false;
-                        }
-                    } else if (ds === 1) {
-                        // Datenquelle: Adapter-Instance (selInstance.alive + setStateForDB)
-                        if (si != null && si !== '') {
-                            const alive = await this.adapter.getForeignStateAsync(`system.adapter.${si}.alive`);
-                            if (alive && alive.val) {
-                                this.log.debug(`Instance ${si} is alive`);
-                                this.checkState = true;
-                            } else {
-                                this.log.warn(`Instance ${si} is not alive`);
-                                this.checkState = false;
-                            }
-                        } else {
-                            this.log.error('No selInstance configured');
-                            this.checkState = false;
-                        }
-
-                        if (sfd != null && sfd !== '') {
-                            const state = await this.adapter.getForeignStateAsync(sfd);
-                            if (state) {
-                                this.log.debug(`State ${sfd} for DB exists`);
-                                this.checkState = true;
-                            } else {
-                                this.log.warn(`State ${sfd} for DB does not exist`);
-                                this.checkState = false;
-                            }
-                        } else {
-                            this.log.error('No setStateForDB configured');
-                            this.checkState = false;
-                        }
-                    } else {
-                        this.log.error('Unknown instanceDataSource, skipping specific checks');
-                        this.checkState = false;
-                    }
-                } catch (error) {
-                    this.log.error(`Error onVisibilityChange: ${error as string}`);
-                }
-            }
-            // ich glaube nicht das du updaten willst, wenn das unsichtbar wird, auch wenns am anfang von this.update() abgefragt wird
             await this.update();
         }
     }

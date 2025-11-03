@@ -41,15 +41,15 @@ export class PageChartLine extends PageChart {
         ticksChart: string[] = ['~'],
         valuesChart = '~',
     ): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        if (this.items) {
-            const items = this.items;
+        if (this.dbDetails) {
+            const items = this.dbDetails;
 
             // AdapterVersion
-            const hoursRangeFromNow = (items.data.rangeHours && (await items.data.rangeHours.getNumber())) || 24;
-            const stateValue = (items.data.setStateForDB && (await items.data.setStateForDB.getString())) || '';
-            const instance = (items.data.dbInstance && (await items.data.dbInstance.getString())) || '';
-            const maxXAxisLabels = (items.data.maxXAxisLabels && (await items.data.maxXAxisLabels.getNumber())) || 4;
-            const maxXAxisTicks = (items.data.maxXAxisTicks && (await items.data.maxXAxisTicks.getNumber())) || 60;
+            const hoursRangeFromNow = items.hours || 24;
+            const stateValue = items.state || '';
+            const instance = items.instance || '';
+            const maxXAxisLabels = items.maxLabels || 4;
+            const maxXAxisTicks = items.maxTicks || 2;
             const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60;
             const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120;
             const maxX = 1440; // 24h = 1440min

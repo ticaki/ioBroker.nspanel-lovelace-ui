@@ -49,13 +49,13 @@ class PageChartBar extends import_pageChart.PageChart {
   }
   // Eventuelles überschreiben der getChartData-Methode
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
-    if (this.items) {
-      const items = this.items;
-      const rangeHours = items.data.rangeHours && await items.data.rangeHours.getNumber() || 24;
-      const stateValue = items.data.setStateForDB && await items.data.setStateForDB.getString() || "";
-      const instance = items.data.dbInstance && await items.data.dbInstance.getString() || "";
-      const maxXAxisLabels = items.data.maxXAxisLabels && await items.data.maxXAxisLabels.getNumber() || 4;
-      const factor = items.data.factorCardChart && await items.data.factorCardChart.getNumber() || 1;
+    if (this.dbDetails) {
+      const items = this.dbDetails;
+      const rangeHours = items.hours || 24;
+      const stateValue = items.state || "";
+      const instance = items.instance || "";
+      const maxXAxisLabels = items.maxLabels || 4;
+      const factor = items.factor || 1;
       const tempScale = [];
       try {
         const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);

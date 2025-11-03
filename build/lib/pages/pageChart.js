@@ -66,10 +66,6 @@ class PageChart extends import_Page.Page {
     }
     await super.init();
   }
-  /**
-   *
-   * @returns // TODO: remove this
-   */
   async update() {
     var _a, _b;
     if (!this.visibility) {
@@ -248,88 +244,7 @@ class PageChart extends import_Page.Page {
     );
   }
   async onVisibilityChange(val) {
-    var _a, _b, _c, _d, _e;
     if (val) {
-      this.checkState = false;
-      if (!this.items) {
-        this.log.warn("AdminConfig is not set, cannot check states");
-        this.checkState = false;
-      } else {
-        try {
-          const cfg = this.items.data;
-          const ds = cfg.instanceDataSource && await ((_a = cfg.instanceDataSource) == null ? void 0 : _a.getNumber());
-          const sfv = cfg.setStateForValues && await ((_b = cfg.setStateForValues) == null ? void 0 : _b.getString());
-          const sft = cfg.setStateForTicks && await ((_c = cfg.setStateForTicks) == null ? void 0 : _c.getString());
-          const sfd = cfg.setStateForDB && await ((_d = cfg.setStateForDB) == null ? void 0 : _d.getString());
-          const si = cfg.dbInstance && await ((_e = cfg.dbInstance) == null ? void 0 : _e.getString());
-          this.log.debug(
-            `onVisibilityChange checking states with dataSource: ${ds}, setStateForValues: ${sfv}, setStateForTicks: ${sft}, setStateForDB: ${sfd}, selInstance: ${si}`
-          );
-          if (ds === 0) {
-            if (sfv != null && sfv !== "") {
-              const state = await this.adapter.getForeignStateAsync(sfv);
-              if (state && state.val !== null && state.val !== void 0) {
-                this.log.debug(`State ${sfv} for Values exists and has value: ${state.val}`);
-                this.checkState = true;
-              } else if (state) {
-                this.log.warn(`State ${sfv} for Values exists but has no value`);
-              } else {
-                this.log.error(`State ${sfv} for Values does not exist`);
-              }
-            } else {
-              this.log.error("No setStateForValues configured");
-            }
-            if (sft != null && sft !== "") {
-              const state = await this.adapter.getForeignStateAsync(sft);
-              if (state && state.val !== null && state.val !== void 0) {
-                this.log.debug(`State ${sft} for Ticks exists and has value: ${state.val}`);
-                this.checkState = true;
-              } else if (state) {
-                this.log.warn(`State ${sft} for Ticks exists but has no value`);
-                this.checkState = false;
-              } else {
-                this.log.error(`State ${sft} for Ticks does not exist`);
-                this.checkState = false;
-              }
-            } else {
-              this.log.error("No setStateForTicks configured");
-              this.checkState = false;
-            }
-          } else if (ds === 1) {
-            if (si != null && si !== "") {
-              const alive = await this.adapter.getForeignStateAsync(`system.adapter.${si}.alive`);
-              if (alive && alive.val) {
-                this.log.debug(`Instance ${si} is alive`);
-                this.checkState = true;
-              } else {
-                this.log.warn(`Instance ${si} is not alive`);
-                this.checkState = false;
-              }
-            } else {
-              this.log.error("No selInstance configured");
-              this.checkState = false;
-            }
-            if (sfd != null && sfd !== "") {
-              const state = await this.adapter.getForeignStateAsync(sfd);
-              if (state) {
-                this.log.debug(`State ${sfd} for DB exists`);
-                this.checkState = true;
-              } else {
-                this.log.warn(`State ${sfd} for DB does not exist`);
-                this.checkState = false;
-              }
-            } else {
-              this.log.error("No setStateForDB configured");
-              this.checkState = false;
-            }
-          } else {
-            this.log.error("Unknown instanceDataSource, skipping specific checks");
-            this.checkState = false;
-          }
-        } catch (error) {
-          this.log.error(`Error onVisibilityChange: ${error}`);
-        }
-      }
       await this.update();
     }
   }
