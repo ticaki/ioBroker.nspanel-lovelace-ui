@@ -183,7 +183,7 @@ class AdminConfiguration extends import_library.BaseClass {
           break;
         }
         default: {
-          this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+          this.log.error(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
           continue;
         }
       }

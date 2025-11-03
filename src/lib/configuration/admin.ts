@@ -190,7 +190,7 @@ export class AdminConfiguration extends BaseClass {
                 }
 
                 default: {
-                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+                    this.log.error(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
                     continue;
                 }
             }

@@ -163,6 +163,13 @@ class PageChart extends import_Page.Page {
     return { ticksChart, valuesChart };
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
+    if (!_instance) {
+      return null;
+    }
+    const alive = await this.adapter.getForeignStateAsync(`system.adapter.${_instance}.alive`);
+    if (!alive || !alive.val) {
+      return null;
+    }
     if (this.unload || this.adapter.unload) {
       return null;
     }
