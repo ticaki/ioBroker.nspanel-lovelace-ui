@@ -123,7 +123,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                 {/* Chart Type Selection */}
                 <Box sx={{ mb: 2 }}>
                     <FormControl component="fieldset">
-                        <FormLabel component="legend">{this.getText('labelSelChartType')}</FormLabel>
+                        <FormLabel component="legend">{this.getText('chart_Type')}</FormLabel>
                         <RadioGroup
                             row
                             value={entry.selChartType ?? 'cardChart'}
@@ -134,12 +134,12 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                             <FormControlLabel
                                 value="cardChart"
                                 control={<Radio />}
-                                label={this.getText('barChart')}
+                                label={this.getText('chart_ColumnType')}
                             />
                             <FormControlLabel
                                 value="cardLChart"
                                 control={<Radio />}
-                                label={this.getText('lineChart')}
+                                label={this.getText('chart_LineType')}
                             />
                         </RadioGroup>
                     </FormControl>
@@ -168,7 +168,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                         fullWidth
                         variant="standard"
                         type="color"
-                        label={this.getText('selectColorForChart')}
+                        label={this.getText('chart_Color')}
                         value={entry.chart_color ?? '#FFFFFF'}
                         onChange={e => {
                             this.handleFieldChange('chart_color', e.target.value);
@@ -182,7 +182,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                 {/* Data Source Selection */}
                 <Box sx={{ mb: 2 }}>
                     <FormControl component="fieldset">
-                        <FormLabel component="legend">{this.getText('labelSelInstanceDataSource')}</FormLabel>
+                        <FormLabel component="legend">{this.getText('chart_DataSource')}</FormLabel>
                         <RadioGroup
                             row
                             value={entry.selInstanceDataSource ?? 0}
@@ -194,12 +194,12 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                             <FormControlLabel
                                 value={0}
                                 control={<Radio />}
-                                label={this.getText('oldScriptVersion')}
+                                label={this.getText('chart_ScriptVersion')}
                             />
                             <FormControlLabel
                                 value={1}
                                 control={<Radio />}
-                                label={this.getText('dbAdapter')}
+                                label={this.getText('chart_DB_Adapter')}
                             />
                         </RadioGroup>
                     </FormControl>
@@ -213,7 +213,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                             fullWidth
                             sx={{ width: '50%' }}
                         >
-                            <InputLabel>{this.getText('labelSelInstance')}</InputLabel>
+                            <InputLabel>{this.getText('chart_Instance')}</InputLabel>
                             <Select
                                 value={
                                     entry.selInstance && dbInstances.some(inst => inst.id === entry.selInstance)
@@ -229,7 +229,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                                         value=""
                                         disabled
                                     >
-                                        {this.getText('noDbInstancesFound') || 'Keine Datenbank-Instanzen gefunden'}
+                                        {this.getText('chart_NoInstance')}
                                     </MenuItem>
                                 )}
                                 {dbInstances.map(instance => (
@@ -249,7 +249,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                 {entry.selInstanceDataSource === 0 && (
                     <Box sx={{ mb: 2 }}>
                         <EntitySelector
-                            label={this.getText('stateForTicks')}
+                            label={this.getText('chart_StateTicks')}
                             value={entry.setStateForTicks ?? undefined}
                             onChange={(v: string) => {
                                 this.handleFieldChange('setStateForTicks', v);
@@ -269,7 +269,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                 {entry.selInstanceDataSource === 0 && (
                     <Box sx={{ mb: 2 }}>
                         <EntitySelector
-                            label={this.getText('stateForValues')}
+                            label={this.getText('chart_StateValues')}
                             value={entry.setStateForValues ?? undefined}
                             onChange={(v: string) => {
                                 this.handleFieldChange('setStateForValues', v);
@@ -289,7 +289,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                 {entry.selInstanceDataSource === 1 && (
                     <Box sx={{ mb: 2 }}>
                         <EntitySelector
-                            label={this.getText('stateForDB')}
+                            label={this.getText('chart_StateDB')}
                             value={entry.setStateForDB ?? undefined}
                             onChange={(v: string) => {
                                 this.handleFieldChange('setStateForDB', v);
@@ -311,7 +311,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                     variant="standard"
                     type="text"
                     autoComplete="off"
-                    label={this.getText('labelYAchse')}
+                    label={this.getText('chart_YAxis')}
                     value={entry.txtlabelYAchse ?? ''}
                     onChange={e => {
                         this.handleFieldChange('txtlabelYAchse', e.target.value);
@@ -328,7 +328,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                         fullWidth
                         variant="standard"
                         type="number"
-                        label={this.getText('labelrangeHours')}
+                        label={this.getText('chart_Hours')}
                         value={entry.rangeHours ?? 24}
                         onChange={e => {
                             this.handleFieldChange('rangeHours', parseInt(e.target.value, 10));
@@ -346,7 +346,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                         variant="standard"
                         sx={{ mb: 2, minWidth: 240 }}
                     >
-                        <InputLabel>{this.getText('labelFactorCardChart')}</InputLabel>
+                        <InputLabel>{this.getText('chart_Factor')}</InputLabel>
                         <Select
                             value={entry.factorCardChart ?? 1}
                             onChange={e => {
@@ -367,7 +367,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                         fullWidth
                         variant="standard"
                         type="number"
-                        label={this.getText('labelmaxXAxisTicks')}
+                        label={this.getText('chart_XTicks')}
                         value={entry.maxXAxisTicks ?? 10}
                         onChange={e => {
                             this.handleFieldChange('maxXAxisTicks', parseInt(e.target.value, 10));
@@ -385,7 +385,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                         fullWidth
                         variant="standard"
                         type="number"
-                        label={this.getText('labelmaxXAxisLabels')}
+                        label={this.getText('chart_XLabels')}
                         value={entry.maxXAxisLabels ?? 6}
                         onChange={e => {
                             this.handleFieldChange('maxXAxisLabels', parseInt(e.target.value, 10));

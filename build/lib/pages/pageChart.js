@@ -96,48 +96,57 @@ class PageChart extends import_Page.Page {
     this.sendType(true);
     this.sendToPanel(this.getMessage(message), false);
   }
-  static async getChartPageConfig(configManager, index, gridItem, messages, page) {
-    const adapter = configManager.adapter;
-    const config = adapter.config.pageChartdata[index];
-    let stateExistValue = "";
-    let stateExistTicks = "";
-    if (config) {
-      const card = config.selChartType;
-      adapter.log.debug(`get pageconfig Card: ${card}`);
-      if (config.selInstanceDataSource === 1) {
-        if (await configManager.existsState(config.setStateForDB)) {
-          stateExistValue = config.setStateForDB;
-        }
-      } else {
-        if (await configManager.existsState(config.setStateForValues)) {
-          stateExistValue = config.setStateForValues;
-        }
-      }
-      if (await configManager.existsState(config.setStateForTicks)) {
-        stateExistTicks = config.setStateForTicks;
-      }
-      gridItem = {
-        ...gridItem,
-        uniqueID: config.pageName,
-        alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? "always" : "none",
-        hidden: page.hiddenByTrigger || config.hiddenByTrigger,
-        config: {
-          card,
-          //index: index,
-          data: {
-            headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ""),
-            text: { type: "const", constVal: config.txtlabelYAchse || "" },
-            color: { true: { color: { type: "const", constVal: config.chart_color } } },
-            ticks: { type: "triggered", dp: stateExistTicks },
-            value: { type: "triggered", dp: stateExistValue }
+  /* static async getChartPageConfig(
+          configManager: ConfigManager,
+          index: number,
+          gridItem: pages.PageBase,
+          messages: string[],
+          page: ScriptConfig.PageChart,
+      ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
+          const adapter = configManager.adapter;
+          const config = adapter.config.pageChartdata[index];
+          let stateExistValue = '';
+          let stateExistTicks = '';
+          if (config) {
+              const card = config.selChartType;
+              adapter.log.debug(`get pageconfig Card: ${card}`);
+              if (config.selInstanceDataSource === 1) {
+                  // AdapterVersion
+                  if (await configManager.existsState(config.setStateForDB)) {
+                      stateExistValue = config.setStateForDB;
+                  }
+              } else {
+                  // oldScriptVersion
+                  if (await configManager.existsState(config.setStateForValues)) {
+                      stateExistValue = config.setStateForValues;
+                  }
+              }
+              if (await configManager.existsState(config.setStateForTicks)) {
+                  stateExistTicks = config.setStateForTicks;
+              }
+  
+              gridItem = {
+                  ...gridItem,
+                  uniqueID: config.pageName,
+                  alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? 'always' : 'none',
+                  hidden: page.hiddenByTrigger || config.hiddenByTrigger,
+                  config: {
+                      card: card,
+                      //index: index,
+                      data: {
+                          headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
+                          text: { type: 'const', constVal: config.txtlabelYAchse || '' },
+                          color: { true: { color: { type: 'const', constVal: config.chart_color } } },
+                          ticks: { type: 'triggered', dp: stateExistTicks },
+                          value: { type: 'triggered', dp: stateExistValue },
+                      },
+                  },
+                  pageItems: [],
+              };
+              return { gridItem, messages };
           }
-        },
-        pageItems: []
-      };
-      return { gridItem, messages };
-    }
-    throw new Error("No config for cardChart found");
-  }
+          throw new Error('No config for cardChart found');
+      } */
   // Überschreiben der getChartData-Methode
   async getChartData(ticksChart = ["~"], valuesChart = "~") {
     var _a, _b;

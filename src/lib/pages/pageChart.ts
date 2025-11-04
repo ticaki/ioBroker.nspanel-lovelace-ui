@@ -1,4 +1,4 @@
-import type { ConfigManager } from '../classes/config-manager';
+//import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
@@ -83,7 +83,7 @@ export class PageChart extends Page {
         this.sendToPanel(this.getMessage(message), false);
     }
 
-    static async getChartPageConfig(
+    /* static async getChartPageConfig(
         configManager: ConfigManager,
         index: number,
         gridItem: pages.PageBase,
@@ -133,7 +133,7 @@ export class PageChart extends Page {
             return { gridItem, messages };
         }
         throw new Error('No config for cardChart found');
-    }
+    } */
 
     // Überschreiben der getChartData-Methode
     async getChartData(
