@@ -162,7 +162,7 @@ class PageChart extends import_Page.Page {
     if (!_instance) {
       return null;
     }
-    const alive = await this.adapter.getForeignStateAsync(`system.adapter.${_instance}.alive`);
+    const alive = await this.adapter.getForeignStateAsync(`${_instance}.alive`);
     if (!alive || !alive.val) {
       return null;
     }

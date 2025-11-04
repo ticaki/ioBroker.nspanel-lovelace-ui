@@ -23,9 +23,54 @@ export interface PageChartEditorProps {
     theme?: any;
 }
 
-export class PageChartEditor extends React.Component<PageChartEditorProps> {
+interface PageChartEditorState {
+    dbInstances: Array<{ id: string; name: string }>;
+}
+
+export class PageChartEditor extends React.Component<PageChartEditorProps, PageChartEditorState> {
     constructor(props: PageChartEditorProps) {
         super(props);
+        this.state = {
+            dbInstances: [],
+        };
+    }
+
+    async componentDidMount(): Promise<void> {
+        await this.loadDbInstances();
+    }
+
+    private async loadDbInstances(): Promise<void> {
+        try {
+            const { socket } = this.props.oContext;
+
+            // Lade alle Objekte vom Typ 'instance'
+            const objects = await socket.getObjectViewSystem('instance', 'system.adapter.', 'system.adapter.\u9999');
+
+            const dbInstances: Array<{ id: string; name: string }> = [];
+
+            // Filtere nach Datenbank-Adaptern
+            Object.keys(objects).forEach(id => {
+                const obj = objects[id];
+                if (
+                    obj &&
+                    obj.type === 'instance' &&
+                    (id.startsWith('system.adapter.influxdb.') ||
+                        id.startsWith('system.adapter.history.') ||
+                        id.startsWith('system.adapter.sql.'))
+                ) {
+                    // Extrahiere den Instanznamen
+                    const instanceName = id.replace('system.adapter.', '');
+                    dbInstances.push({
+                        id: id,
+                        name: instanceName,
+                    });
+                }
+            });
+
+            this.setState({ dbInstances });
+        } catch (error) {
+            console.error('Error loading DB instances:', error);
+        }
     }
 
     private getText(key: string): string {
@@ -39,6 +84,7 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
 
     render(): React.JSX.Element {
         const { entry, oContext, theme } = this.props;
+        const { dbInstances } = this.state;
 
         return (
             <Box>
@@ -159,29 +205,43 @@ export class PageChartEditor extends React.Component<PageChartEditorProps> {
                     </FormControl>
                 </Box>
 
-                {/* Instance Selector (for DB adapter) */}
+                {/* Instance Selector (for DB adapter) - Dynamisches Select */}
                 {entry.selInstanceDataSource === 1 && (
                     <Box sx={{ mb: 2 }}>
-                        <EntitySelector
-                            label={this.getText('labelSelInstance')}
-                            value={entry.selInstance ?? ''}
-                            onChange={(v: string) => {
-                                this.handleFieldChange('selInstance', v);
-                            }}
-                            socket={oContext.socket}
-                            theme={theme}
-                            themeType={theme?.palette?.mode || 'light'}
-                            dialogName="selectInstance"
-                            filterFunc={(obj: ioBroker.Object) => {
-                                return !!(
-                                    obj &&
-                                    obj.type === 'instance' &&
-                                    (obj._id.startsWith('system.adapter.influxdb.') ||
-                                        obj._id.startsWith('system.adapter.history.') ||
-                                        obj._id.startsWith('system.adapter.sql.'))
-                                );
-                            }}
-                        />
+                        <FormControl
+                            variant="standard"
+                            fullWidth
+                            sx={{ width: '50%' }}
+                        >
+                            <InputLabel>{this.getText('labelSelInstance')}</InputLabel>
+                            <Select
+                                value={
+                                    entry.selInstance && dbInstances.some(inst => inst.id === entry.selInstance)
+                                        ? entry.selInstance
+                                        : ''
+                                }
+                                onChange={e => {
+                                    this.handleFieldChange('selInstance', e.target.value);
+                                }}
+                            >
+                                {dbInstances.length === 0 && (
+                                    <MenuItem
+                                        value=""
+                                        disabled
+                                    >
+                                        {this.getText('noDbInstancesFound') || 'Keine Datenbank-Instanzen gefunden'}
+                                    </MenuItem>
+                                )}
+                                {dbInstances.map(instance => (
+                                    <MenuItem
+                                        key={instance.id}
+                                        value={instance.id}
+                                    >
+                                        {instance.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </Box>
                 )}
 
