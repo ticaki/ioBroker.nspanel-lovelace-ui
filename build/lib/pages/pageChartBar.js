@@ -26,6 +26,12 @@ class PageChartBar extends import_pageChart.PageChart {
   constructor(config, options) {
     super(config, options);
   }
+  /**
+   * Initialisiert die Balkendiagramm-Seite
+   * - Verarbeitet die Konfiguration (Auto-Modus über Enums oder dpInit)
+   * - Erstellt die Datenelemente
+   * - Prüft ob DB-Details vorhanden sind und setzt ggf. die DB-Datenabruf-Methode
+   */
   async init() {
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
@@ -47,7 +53,14 @@ class PageChartBar extends import_pageChart.PageChart {
     }
     await super.init();
   }
-  // Eventuelles überschreiben der getChartData-Methode
+  /**
+   * Holt Diagrammdaten aus der Datenbank und bereitet sie für die Darstellung auf
+   * Überschreibt die Standard-Methode aus PageChart für den Fall, dass DB-Details konfiguriert sind
+   *
+   * @param ticksChart - Array für die Y-Achsen-Beschriftung (Standard: ['~'])
+   * @param valuesChart - String mit den Diagrammwerten (Standard: '~')
+   * @returns Objekt mit ticksChart (Y-Achsen-Ticks) und valuesChart (Datenpunkte mit optionalen Zeitangaben)
+   */
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
     if (this.dbDetails) {
       const items = this.dbDetails;

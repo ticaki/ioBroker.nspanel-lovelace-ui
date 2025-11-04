@@ -3,7 +3,7 @@ import * as configManagerConst from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
-import { PageChart } from '../pages/pageChart';
+//import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
@@ -823,7 +823,7 @@ export class ConfigManager extends BaseClass {
                     }
                 }
                 // PageChart einlesen
-                if (page.type === 'cardChart' || page.type === 'cardLChart') {
+                /* if (page.type === 'cardChart' || page.type === 'cardLChart') {
                     if (!Array.isArray(this.adapter.config.pageChartdata)) {
                         messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
                         this.log.warn(messages[messages.length - 1]);
@@ -852,7 +852,7 @@ export class ConfigManager extends BaseClass {
                         this.log.warn(messages[messages.length - 1]);
                         continue;
                     }
-                }
+                } */
 
                 if (page.items) {
                     for (let a = 0; a < page.items.length; a++) {
