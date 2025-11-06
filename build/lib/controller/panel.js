@@ -42,7 +42,7 @@ var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
-var import_pageNotification = require("../pages/pageNotification");
+var import_pagePopup = require("../pages/pagePopup");
 var import_system_templates = require("../templates/system-templates");
 var import_pageAlarm = require("../pages/pageAlarm");
 var import_pageQR = require("../pages/pageQR");
@@ -321,7 +321,7 @@ class Panel extends import_library.BaseClass {
       case "popupNotify2":
       case "popupNotify": {
         pageConfig = Panel.getPage(pageConfig, this);
-        return new import_pageNotification.PageNotify(pmconfig, pageConfig);
+        return new import_pagePopup.PagePopup(pmconfig, pageConfig);
       }
       case "screensaver":
       case "screensaver2":
@@ -372,6 +372,34 @@ class Panel extends import_library.BaseClass {
       void 0,
       definition.genericStateObjects.panel.panels.cmd.dim._channel
     );
+    await this.library.writedp(
+      `panels.${this.name}.pagePopup`,
+      void 0,
+      definition.genericStateObjects.panel.panels.pagePopup._channel
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.pagePopup`,
+      void 0,
+      definition.genericStateObjects.panel.panels.cmd.pagePopup._channel
+    );
+    for (const key of Object.keys(definition.genericStateObjects.panel.panels.pagePopup)) {
+      if (key !== "_channel") {
+        await this.library.writedp(
+          `panels.${this.name}.pagePopup.${key}`,
+          void 0,
+          definition.genericStateObjects.panel.panels.pagePopup[key]
+        );
+      }
+    }
+    for (const key of Object.keys(definition.genericStateObjects.panel.panels.cmd.pagePopup)) {
+      if (key !== "_channel") {
+        await this.library.writedp(
+          `panels.${this.name}.cmd.pagePopup.${key}`,
+          void 0,
+          definition.genericStateObjects.panel.panels.cmd.pagePopup[key]
+        );
+      }
+    }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver`,
       void 0,
@@ -879,6 +907,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
+    var _a, _b, _c, _d, _e, _f, _g;
     if (state.ack) {
       return;
     }
@@ -1107,6 +1136,23 @@ class Panel extends import_library.BaseClass {
             this.sendToTasmota(`${this.topic}/cmnd/Buzzer`, state.val.trim());
             await this.statesControler.setInternalState(`${this.name}/cmd/buzzer`, "", true);
           }
+          break;
+        }
+        case "pagePopup.activate": {
+          const details = {
+            id: ((_a = this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)) == null ? void 0 : _a.val) || "test",
+            priority: ((_b = this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)) == null ? void 0 : _b.val) || 50,
+            type: ((_c = this.library.readdb(`panels.${this.name}.cmd.pagePopup.type`)) == null ? void 0 : _c.val) || "information",
+            headline: ((_d = this.library.readdb(`panels.${this.name}.cmd.pagePopup.headline`)) == null ? void 0 : _d.val) || "",
+            text: ((_e = this.library.readdb(`panels.${this.name}.cmd.pagePopup.text`)) == null ? void 0 : _e.val) || "",
+            buttonLeft: ((_f = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeft`)) == null ? void 0 : _f.val) || "",
+            buttonRight: ((_g = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)) == null ? void 0 : _g.val) || ""
+          };
+          await this.statesControler.setInternalState(
+            `${this.name}/cmd/popupNotificationCustom`,
+            JSON.stringify(details),
+            false
+          );
           break;
         }
       }
@@ -1400,8 +1446,20 @@ class Panel extends import_library.BaseClass {
             await this.navigation.setCurrentPage();
             break;
           }
-        } else if (event.action === "bExit" && event.id !== "popupNotify") {
-          await this.setActivePage(true);
+        } else if (event.action === "bExit") {
+          if (event.id !== "popupNotify") {
+            await this.setActivePage(true);
+          } else {
+            const currentPage = this.getActivePage();
+            if ("startReminder" in currentPage && typeof currentPage.startReminder === "function") {
+              currentPage.startReminder();
+            }
+            const page = currentPage.getLastPage();
+            if (page) {
+              currentPage.removeLastPage(page);
+              await this.setActivePage(page);
+            }
+          }
         } else {
           if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
             this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
@@ -1592,30 +1650,75 @@ class Panel extends import_library.BaseClass {
         }
         case "cmd/NotificationCleared2":
         case "cmd/NotificationCleared": {
-          await this.controller.systemNotification.clearNotification(this.notifyIndex);
+          if (typeof state.val !== "number") {
+            if (typeof state.val === "string" && !isNaN(parseInt(state.val))) {
+              state.val = parseInt(state.val);
+            } else {
+              break;
+            }
+          }
+          await this.controller.systemNotification.clearNotification(state.val);
+          break;
         }
-        // eslint-disable-next-line no-fallthrough
         case "cmd/NotificationNext2":
         case "cmd/NotificationNext": {
-          this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);
-          if (this.notifyIndex !== -1) {
-            const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+          let details;
+          let index = -1;
+          while ((index = this.controller.systemNotification.getNotificationIndex(++index)) !== -1) {
+            const val = this.controller.systemNotification.getNotification(index);
             if (val) {
-              await this.statesControler.setInternalState(
-                `${this.name}/cmd/popupNotification${token.endsWith("2") ? "" : "2"}`,
-                JSON.stringify(val),
-                false
-              );
+              details = details || [];
+              details.push({
+                priority: 50,
+                type: "acknowledge",
+                id: `${index}`,
+                headline: val.headline,
+                text: val.text,
+                buttonLeft: "next",
+                buttonRight: "clear"
+              });
             }
+          }
+          if (details) {
+            await this.statesControler.setInternalState(
+              `${this.name}/system/popupNotification`,
+              JSON.stringify(details),
+              false
+            );
+          }
+          break;
+        }
+        case "cmd/NotificationCustomID": {
+          if (typeof state.val === "object") {
             break;
           }
-          await this.HandleIncomingMessage({
-            type: "event",
-            method: "buttonPress2",
-            id: "popupNotify",
-            action: "bExit",
-            opt: ""
-          });
+          await this.library.writedp(
+            `panels.${this.name}.popup.id`,
+            state.val,
+            definition.genericStateObjects.panel.panels.pagePopup.id
+          );
+          break;
+        }
+        case "cmd/NotificationCustomYes": {
+          if (typeof state.val === "object") {
+            break;
+          }
+          await this.library.writedp(
+            `panels.${this.name}.popup.yes`,
+            state.val,
+            definition.genericStateObjects.panel.panels.pagePopup.yes
+          );
+          break;
+        }
+        case "cmd/NotificationCustomNo": {
+          if (typeof state.val === "object") {
+            break;
+          }
+          await this.library.writedp(
+            `panels.${this.name}.popup.no`,
+            state.val,
+            definition.genericStateObjects.panel.panels.pagePopup.no
+          );
           break;
         }
         case "cmd/TasmotaRestart": {

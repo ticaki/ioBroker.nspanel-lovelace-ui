@@ -485,6 +485,9 @@ export class Page extends BaseClassPage {
      */
     removeLastPage(_p: Page | undefined): void {}
 
+    getLastPage(): Page | undefined {
+        return undefined;
+    }
     /**
      * Updates the page content and sends data to the NSPanel.
      * Base implementation logs a warning; all derived page classes MUST override this

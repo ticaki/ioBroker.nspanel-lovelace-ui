@@ -1,6 +1,8 @@
 import type { NSPanel } from '../types/NSPanel';
 import type * as types from '../types/types';
 import * as globals from '../types/function-and-const';
+import type { PagePopupDataDetails } from '../types/pages';
+import type { RGB } from './Color';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -12,7 +14,9 @@ export type ChangeToChannel<Obj, T> = Obj extends object
     : ioBroker.StateObject;
 */
 export type ChangeTypeOfKeysForState<Obj, N> = Obj extends object
-    ? customChannelType & { [K in keyof Obj]: ChangeTypeOfKeysForState<Obj[K], N> }
+    ? Obj extends RGB
+        ? N
+        : customChannelType & { [K in keyof Obj]: ChangeTypeOfKeysForState<Obj[K], N> }
     : N;
 export type customChannelType = {
     _channel: ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.FolderObject;
@@ -57,6 +61,9 @@ export const genericStateObjects: {
                     textNotification: ioBroker.StateObject;
                     activateNotification: ioBroker.StateObject;
                 };
+                pagePopup: customChannelType & {
+                    activate: ioBroker.StateObject;
+                } & ChangeTypeOfKeysForState<PagePopupDataDetails, ioBroker.StateObject>;
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
                 power1: ioBroker.StateObject;
@@ -72,6 +79,11 @@ export const genericStateObjects: {
                 right: ioBroker.StateObject;
                 indicator: ioBroker.StateObject;
                 screensaverGesture: ioBroker.StateObject;
+            };
+            pagePopup: customChannelType & {
+                id: ioBroker.StateObject;
+                yes: ioBroker.StateObject;
+                no: ioBroker.StateObject;
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
@@ -118,6 +130,55 @@ export const genericStateObjects: {
                     },
                 },
                 native: {},
+            },
+            pagePopup: {
+                _channel: {
+                    _id: '',
+                    type: 'channel',
+                    common: {
+                        name: 'StateObjects.pagePopup',
+                    },
+                    native: {},
+                },
+                id: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.popup.id',
+                        type: 'string',
+                        role: 'text',
+                        read: true,
+                        write: false,
+                        def: '',
+                    },
+                    native: {},
+                },
+                yes: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.popup.yes',
+                        type: 'boolean',
+                        role: 'button',
+                        read: false,
+                        write: true,
+                        def: false,
+                    },
+                    native: {},
+                },
+                no: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.popup.no',
+                        type: 'boolean',
+                        role: 'button',
+                        read: false,
+                        write: true,
+                        def: false,
+                    },
+                    native: {},
+                },
             },
             buttons: {
                 _channel: {
@@ -529,6 +590,219 @@ export const genericStateObjects: {
                             unit: 'h',
                             step: 1,
                             def: 7,
+                        },
+                        native: {},
+                    },
+                },
+                pagePopup: {
+                    _channel: {
+                        _id: '',
+                        type: 'folder',
+                        common: {
+                            name: 'StateObjects.popup',
+                        },
+                        native: {},
+                    },
+                    id: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.popup.id',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    activate: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.popup.activate',
+                            type: 'boolean',
+                            role: 'button',
+                            read: false,
+                            write: true,
+                            def: false,
+                        },
+                        native: {},
+                    },
+                    priority: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.popup.priority',
+                            type: 'number',
+                            role: 'level',
+                            read: true,
+                            write: true,
+                            def: 50,
+                        },
+                        native: {},
+                    },
+                    type: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.popup.type',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            states: {
+                                information: 'information',
+                                acknowledge: 'acknowledge',
+                            },
+                            def: 'information',
+                        },
+                        native: {},
+                    },
+                    headline: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'headline',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    colorHeadline: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'colorHeadline',
+                            type: 'string',
+                            role: 'json',
+                            read: true,
+                            write: true,
+                            def: JSON.stringify({ r: 255, g: 255, b: 255 }),
+                        },
+                        native: {},
+                    },
+                    buttonLeft: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'buttonLeft',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    colorButtonLeft: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'colorHeadline',
+                            type: 'string',
+                            role: 'json',
+                            read: true,
+                            write: true,
+                            def: JSON.stringify({ r: 255, g: 255, b: 255 }),
+                        },
+                        native: {},
+                    },
+                    buttonRight: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'buttonRight',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    colorButtonRight: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'colorHeadline',
+                            type: 'string',
+                            role: 'json',
+                            read: true,
+                            write: true,
+                            def: JSON.stringify({ r: 255, g: 255, b: 255 }),
+                        },
+                        native: {},
+                    },
+                    text: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'text',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    colorText: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'colorHeadline',
+                            type: 'string',
+                            role: 'json',
+                            read: true,
+                            write: true,
+                            def: JSON.stringify({ r: 255, g: 255, b: 255 }),
+                        },
+                        native: {},
+                    },
+
+                    textSize: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'textSize',
+                            type: 'number',
+                            role: 'level',
+                            read: true,
+                            write: true,
+                            def: '3',
+                            min: 1,
+                            max: 5,
+                            step: 1,
+                        },
+                        native: {},
+                    },
+                    icon: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'icon',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    iconColor: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'colorHeadline',
+                            type: 'string',
+                            role: 'json',
+                            read: true,
+                            write: true,
+                            def: JSON.stringify({ r: 255, g: 255, b: 255 }),
                         },
                         native: {},
                     },
@@ -1609,7 +1883,7 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 write: true,
             },
         },
-        'cmd/popupNotification2': {
+        'cmd/popupNotification': {
             val: JSON.stringify({}),
             ack: true,
             common: {
@@ -1619,6 +1893,30 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 read: true,
                 write: true,
             },
+        },
+        'cmd/popupNotificationCustom': {
+            val: JSON.stringify({}),
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: true,
+            },
+            noTrigger: true,
+        },
+        'system/popupNotification': {
+            val: JSON.stringify({}),
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: true,
+            },
+            noTrigger: true,
         },
         'cmd/NotificationCleared': {
             val: false,
@@ -1653,7 +1951,7 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 write: true,
             },
         },
-        'cmd/popupNotification': {
+        'cmd/popupNotification2': {
             val: JSON.stringify({}),
             ack: true,
             common: {
@@ -1811,6 +2109,39 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
         },
         'info/PopupInfo': {
             val: true,
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'text',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/NotificationCustomYes': {
+            val: false,
+            ack: true,
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'indicator',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/NotificationCustomNo': {
+            val: false,
+            ack: true,
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'indicator',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/NotificationCustomID': {
+            val: '',
             ack: true,
             common: {
                 name: '',

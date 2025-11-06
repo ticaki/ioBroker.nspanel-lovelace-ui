@@ -450,6 +450,9 @@ class Page extends import_baseClassPage.BaseClassPage {
    */
   removeLastPage(_p) {
   }
+  getLastPage() {
+    return void 0;
+  }
   /**
    * Updates the page content and sends data to the NSPanel.
    * Base implementation logs a warning; all derived page classes MUST override this

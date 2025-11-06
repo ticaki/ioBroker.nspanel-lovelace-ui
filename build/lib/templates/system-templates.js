@@ -23,56 +23,15 @@ __export(system_templates_exports, {
 });
 module.exports = __toCommonJS(system_templates_exports);
 var import_Color = require("../const/Color");
-const popupWelcome = {
-  dpInit: "",
-  alwaysOn: "ignore",
-  uniqueID: "///WelcomePopup",
-  config: {
-    card: "popupNotify",
-    data: {
-      entity1: { value: { type: "const", constVal: "hm" } },
-      headline: { type: "const", constVal: "welcomeHToken" },
-      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
-      buttonLeft: { type: "const", constVal: "" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      buttonRight: { type: "const", constVal: "" },
-      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      text: { type: "const", constVal: "welcomeTToken" },
-      // text: { type: 'const', constVal: 'Text Test ${pl}' },
-      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      timeout: { type: "const", constVal: 3 }
-      // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
-      // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
-      //setValue1: { type: 'const', constVal: true }, // alleine ist es ein switch
-      //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
-    }
-  },
-  pageItems: [],
-  items: void 0
-};
 const popupNotification = {
   dpInit: "",
   alwaysOn: "ignore",
-  uniqueID: "///popupNotification",
+  uniqueID: "///popupNotificationSystem",
   config: {
     card: "popupNotify",
     data: {
-      entity1: { value: { type: "internal", dp: "cmd/popupNotification", read: "return true" } },
-      headline: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).headline" },
-      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
-      buttonLeft: { type: "const", constVal: "nextF" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      buttonRight: { type: "const", constVal: "ok" },
-      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      text: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).text" },
-      // text: { type: 'const', constVal: 'Text Test ${pl}' },
-      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      timeout: { type: "const", constVal: 0 },
-      // {placeholder: {text: '' oder dp: ''}}
-      // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
-      setValue1: { type: "internalState", dp: "cmd/NotificationCleared" },
-      setValue2: { type: "internalState", dp: "cmd/NotificationNext" },
-      closingBehaviour: { type: "const", constVal: "none" }
+      details: { type: "internal", dp: "system/popupNotification", change: "ts" },
+      setStateYes: { type: "internal", dp: "cmd/NotificationCleared" }
     }
   },
   pageItems: [],
@@ -81,190 +40,14 @@ const popupNotification = {
 const popupNotification2 = {
   dpInit: "",
   alwaysOn: "ignore",
-  uniqueID: "///popupNotification2",
-  config: {
-    card: "popupNotify",
-    data: {
-      entity1: { value: { type: "internal", dp: "cmd/popupNotification2", read: "return true" } },
-      headline: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).headline" },
-      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
-      buttonLeft: { type: "const", constVal: "nextF" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      buttonRight: { type: "const", constVal: "ok" },
-      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
-      text: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).text" },
-      // text: { type: 'const', constVal: 'Text Test ${pl}' },
-      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      timeout: { type: "const", constVal: 0 },
-      setValue1: { type: "internalState", dp: "cmd/NotificationCleared2" },
-      setValue2: { type: "internalState", dp: "cmd/NotificationNext2" },
-      closingBehaviour: { type: "const", constVal: "none" }
-    }
-  },
-  pageItems: [],
-  items: void 0
-};
-const popupNotificationCustom = {
-  dpInit: "",
-  alwaysOn: "ignore",
   uniqueID: "///popupNotificationCustom",
   config: {
     card: "popupNotify",
     data: {
-      entity1: { value: { type: "internal", dp: "cmd/popupNotification", read: "return true" } },
-      headline: {
-        type: "internal",
-        dp: "cmd/popupNotification",
-        read: `
-                    try {
-                        const o = typeof val === 'string' ? JSON.parse(val) : val;
-                        return o?.headline ?? '';
-                    } catch { return ''; }
-                    `
-      },
-      colorHeadline: {
-        true: {
-          color: {
-            type: "internal",
-            dp: "cmd/popupNotification",
-            read: `
-                            try {
-                                const o = typeof val === 'string' ? JSON.parse(val) : val;
-                                return o?.colorHeadline ? JSON.stringify(o.colorHeadline) : JSON.stringify(Color.Green);
-                            } catch { return JSON.stringify(Color.Green); }
-                            `
-          }
-        }
-      },
-      buttonLeft: {
-        type: "internal",
-        dp: "cmd/popupNotification",
-        read: `
-                        try {
-                            const o = typeof val === 'string' ? JSON.parse(val) : val;
-                            return o?.buttonLeft ?? 'nextF';
-                        } catch { return 'nextF'; }
-                        `
-      },
-      colorButtonLeft: {
-        true: {
-          color: {
-            type: "internal",
-            dp: "cmd/popupNotification",
-            read: `
-                            try {
-                                const o = typeof val === 'string' ? JSON.parse(val) : val;
-                                return o?.colorButtonLeft ? JSON.stringify(o.colorButtonLeft) : JSON.stringify(Color.White);
-                            } catch { return JSON.stringify(Color.White); }
-                            `
-          }
-        }
-      },
-      buttonRight: {
-        type: "internal",
-        dp: "cmd/popupNotification",
-        read: `
-      try {
-        const o = typeof val === 'string' ? JSON.parse(val) : val;
-        return o?.buttonRight ?? 'ok';
-      } catch { return 'ok'; }
-    `
-      },
-      colorButtonRight: {
-        true: {
-          color: {
-            type: "internal",
-            dp: "cmd/popupNotification",
-            read: `
-                    try {
-                        const o = typeof val === 'string' ? JSON.parse(val) : val;
-                        return o?.colorButtonRight ? JSON.stringify(o.colorButtonRight) : JSON.stringify(Color.White);
-                    } catch { return JSON.stringify(Color.White); }
-                    `
-          }
-        }
-      },
-      text: {
-        type: "internal",
-        dp: "cmd/popupNotification",
-        read: `
-                    try {
-                        const o = typeof val === 'string' ? JSON.parse(val) : val;
-                        return o?.text ?? '';
-                    } catch { return ''; }
-                    `
-      },
-      colorText: {
-        true: {
-          color: {
-            type: "internal",
-            dp: "cmd/popupNotification",
-            read: `
-          try {
-            const o = typeof val === 'string' ? JSON.parse(val) : val;
-            return o?.colorText ? JSON.stringify(o.colorText) : JSON.stringify(Color.White);
-          } catch { return JSON.stringify(Color.White); }
-        `
-          }
-        }
-      },
-      timeout: { type: "const", constVal: 0 },
-      setValue1: { type: "internalState", dp: "cmd/NotificationCleared" },
-      setValue2: { type: "internalState", dp: "cmd/NotificationNext" },
-      closingBehaviour: { type: "const", constVal: "none" }
-    }
-  },
-  pageItems: [],
-  items: void 0
-};
-const popupInfo = {
-  dpInit: "",
-  alwaysOn: "ignore",
-  uniqueID: "///PopupInfo",
-  config: {
-    card: "popupNotify",
-    data: {
-      entity1: { value: { type: "const", constVal: "hm" } },
-      headline: {
-        type: "internal",
-        dp: "info/PopupInfo",
-        read: `{
-                    if (typeof val === 'string') {
-                        try {
-                            return JSON.parse(val).headline;
-                        } catch {
-                            // nothing
-                        }
-                    }
-                    return '';
-                }`
-      },
-      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
-      buttonLeft: { type: "const", constVal: "" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      buttonRight: { type: "const", constVal: "" },
-      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      text: {
-        type: "internal",
-        dp: "info/PopupInfo",
-        read: `{
-                    if (typeof val === 'string') {
-                        try {
-                            return JSON.parse(val).message;
-                        } catch {
-                            // nothing
-                        }
-                    }
-                    return '';
-                }`
-      },
-      // text: { type: 'const', constVal: 'Text Test ${pl}' },
-      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      timeout: { type: "const", constVal: 30 }
-      // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
-      // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
-      //setValue1: { type: 'const', constVal: true }, // alleine ist es ein switch
-      //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
+      details: { type: "internal", dp: "cmd/popupNotificationCustom", change: "ts" },
+      setStateYes: { type: "internal", dp: "cmd/NotificationCustomYes" },
+      setStateNo: { type: "internal", dp: "cmd/NotificationCustomNo" },
+      setStateID: { type: "internal", dp: "cmd/NotificationCustomID" }
     }
   },
   pageItems: [],
@@ -1547,7 +1330,6 @@ const SystemOption = {
   items: void 0
 };
 const systemPages = [
-  popupWelcome,
   popupNotification,
   popupNotification2,
   AdapterInformation,
@@ -1562,9 +1344,7 @@ const systemPages = [
   RelaisOption,
   DeviceOption,
   NetworkOption,
-  SystemOption,
-  popupInfo,
-  popupNotificationCustom
+  SystemOption
 ];
 const systemNavigation = [
   {

@@ -6,7 +6,7 @@ export class SystemNotifications extends BaseClass {
     private language: ioBroker.Languages;
     private notifications: notification[] = [];
     private messageTimeout: ioBroker.Timeout | undefined;
-    private count: number = 0;
+    public count: number = 0;
 
     constructor(adapter: AdapterClassDefinition) {
         super(adapter, 'system-notifications');
@@ -170,7 +170,9 @@ export class SystemNotifications extends BaseClass {
             }
         }, 2500);
     }
-
+    getCount(): number {
+        return this.notifications.filter(a => !a.cleared).length;
+    }
     /**
      * Clear a notification
      *
@@ -197,15 +199,16 @@ export class SystemNotifications extends BaseClass {
             await this.writeConfig();
         }
     }
-    public getNotification(index: number): { headline: string; text: string } | null {
+    public getNotification(index: number): { headline: string; text: string; id: number } | null {
         if (this.notifications[index]) {
             let currentNotify = 0;
             this.notifications.forEach(a => !a.cleared && currentNotify <= index && currentNotify++);
             const { headline, text } = this.notifications[index];
             const line = 46;
             return {
-                headline: `${this.library.getTranslation('Notification')} (${currentNotify}/${this.count})`,
+                headline: `${this.library.getTranslation('Notification')} (${currentNotify}/${this.getCount()})`,
                 text: `${insertLinebreak(headline, line)}\n${insertLinebreak(text, line)}`,
+                id: index,
             };
         }
         return null;
