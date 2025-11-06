@@ -98,7 +98,7 @@ export class PageChartBar extends PageChart {
                             if (valueDate > targetDate) {
                                 // Füge Zeitangabe hinzu, wenn es ein Label-Schritt ist
                                 if (targetDate.getHours() % stepXAchsis == 0) {
-                                    valuesChart += `${targetValue}^${targetDate.getHours()}:00` + `~`;
+                                    valuesChart += `${targetValue}^${targetDate.getHours()}:00~`;
                                 } else {
                                     valuesChart += `${targetValue}~`;
                                 }

@@ -92,7 +92,7 @@ export class PageChartLine extends PageChart {
                     for (let i = 0; i < dbDaten.length; i++) {
                         const time = Math.round((dbDaten[i].ts / 1000 - offSetTime) / counter);
                         const value = Math.round(dbDaten[i].val * 10);
-                        if (value != null && value != 0) {
+                        if (value != null) {
                             list.push(`${time}:${value}`);
                             tempScale.push(value);
                         }
