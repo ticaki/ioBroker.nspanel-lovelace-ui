@@ -74,7 +74,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
     return;
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
-    var _a, _b;
+    var _a;
     if (this.unload || this.adapter.unload) {
       return false;
     }
@@ -110,30 +110,32 @@ class BaseTriggeredPage extends import_library.BaseClass {
       this.doUpdate = true;
       return false;
     }
-    this.updateTimeout = this.adapter.setTimeout(async () => {
-      if (this.unload || this.adapter.unload) {
-        return;
-      }
-      this.updateTimeout = void 0;
-      if (this.doUpdate) {
-        if (this.alwaysOnState) {
-          this.adapter.clearTimeout(this.alwaysOnState);
+    if (this.minUpdateInterval > 0) {
+      this.updateTimeout = this.adapter.setTimeout(async () => {
+        if (this.unload || this.adapter.unload) {
+          return;
         }
-        if (this.alwaysOn === "action") {
-          if (this.unload || this.adapter.unload) {
-            return;
+        this.updateTimeout = void 0;
+        if (this.doUpdate) {
+          if (this.alwaysOnState) {
+            this.adapter.clearTimeout(this.alwaysOnState);
           }
-          this.alwaysOnState = this.adapter.setTimeout(
-            () => {
-              this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
-            },
-            this.basePanel.timeout * 1e3 || 5e3
-          );
+          if (this.alwaysOn === "action") {
+            if (this.unload || this.adapter.unload) {
+              return;
+            }
+            this.alwaysOnState = this.adapter.setTimeout(
+              () => {
+                this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+              },
+              this.basePanel.timeout * 1e3 || 5e3
+            );
+          }
+          this.doUpdate = false;
+          await this.onStateTrigger(dp, from);
         }
-        this.doUpdate = false;
-        await this.onStateTrigger(dp, from);
-      }
-    }, (_b = this.minUpdateInterval) != null ? _b : 50);
+      }, this.minUpdateInterval);
+    }
     if (this.alwaysOnState) {
       this.adapter.clearTimeout(this.alwaysOnState);
     }

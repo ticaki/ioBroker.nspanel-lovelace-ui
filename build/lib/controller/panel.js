@@ -907,7 +907,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
     if (state.ack) {
       return;
     }
@@ -1139,20 +1139,45 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "pagePopup.activate": {
+          const global = (_a = this.library.readdb(`panels.${this.name}.cmd.pagePopup.global`)) == null ? void 0 : _a.val;
           const details = {
-            id: ((_a = this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)) == null ? void 0 : _a.val) || "test",
-            priority: ((_b = this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)) == null ? void 0 : _b.val) || 50,
-            type: ((_c = this.library.readdb(`panels.${this.name}.cmd.pagePopup.type`)) == null ? void 0 : _c.val) || "information",
-            headline: ((_d = this.library.readdb(`panels.${this.name}.cmd.pagePopup.headline`)) == null ? void 0 : _d.val) || "",
-            text: ((_e = this.library.readdb(`panels.${this.name}.cmd.pagePopup.text`)) == null ? void 0 : _e.val) || "",
-            buttonLeft: ((_f = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeft`)) == null ? void 0 : _f.val) || "",
-            buttonRight: ((_g = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)) == null ? void 0 : _g.val) || ""
+            id: ((_b = this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)) == null ? void 0 : _b.val) || "test",
+            priority: ((_c = this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)) == null ? void 0 : _c.val) || 50,
+            global: !!global,
+            type: ((_d = this.library.readdb(`panels.${this.name}.cmd.pagePopup.type`)) == null ? void 0 : _d.val) || "information",
+            headline: ((_e = this.library.readdb(`panels.${this.name}.cmd.pagePopup.headline`)) == null ? void 0 : _e.val) || "",
+            text: ((_f = this.library.readdb(`panels.${this.name}.cmd.pagePopup.text`)) == null ? void 0 : _f.val) || "",
+            buttonLeft: ((_g = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeft`)) == null ? void 0 : _g.val) || "",
+            buttonRight: ((_h = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)) == null ? void 0 : _h.val) || "",
+            colorHeadline: (0, import_tools.getRGBFromValue)(
+              ((_i = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorHeadline`)) == null ? void 0 : _i.val) || "#FFFFFF"
+            ),
+            colorText: (0, import_tools.getRGBFromValue)(
+              ((_j = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorText`)) == null ? void 0 : _j.val) || "#FFFFFF"
+            ),
+            colorButtonLeft: (0, import_tools.getRGBFromValue)(
+              ((_k = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonLeft`)) == null ? void 0 : _k.val) || "#FFFFFF"
+            ),
+            colorButtonRight: (0, import_tools.getRGBFromValue)(
+              ((_l = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonRight`)) == null ? void 0 : _l.val) || "#FFFFFF"
+            ),
+            icon: ((_m = this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)) == null ? void 0 : _m.val) || void 0,
+            textSize: String((_n = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _n.val) || "3",
+            iconColor: (0, import_tools.getRGBFromValue)(
+              ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _o.val) || "#FFFFFF"
+            )
           };
-          await this.statesControler.setInternalState(
-            `${this.name}/cmd/popupNotificationCustom`,
-            JSON.stringify(details),
-            false
-          );
+          let panels = [this];
+          if (global) {
+            panels = this.controller.panels;
+          }
+          for (const panel of panels) {
+            await this.statesControler.setInternalState(
+              `${panel.name}/cmd/popupNotificationCustom`,
+              JSON.stringify(details),
+              false
+            );
+          }
           break;
         }
       }
@@ -1693,7 +1718,7 @@ class Panel extends import_library.BaseClass {
             break;
           }
           await this.library.writedp(
-            `panels.${this.name}.popup.id`,
+            `panels.${this.name}.pagePopup.id`,
             state.val,
             definition.genericStateObjects.panel.panels.pagePopup.id
           );
@@ -1704,7 +1729,7 @@ class Panel extends import_library.BaseClass {
             break;
           }
           await this.library.writedp(
-            `panels.${this.name}.popup.yes`,
+            `panels.${this.name}.pagePopup.yes`,
             state.val,
             definition.genericStateObjects.panel.panels.pagePopup.yes
           );
@@ -1715,7 +1740,7 @@ class Panel extends import_library.BaseClass {
             break;
           }
           await this.library.writedp(
-            `panels.${this.name}.popup.no`,
+            `panels.${this.name}.pagePopup.no`,
             state.val,
             definition.genericStateObjects.panel.panels.pagePopup.no
           );

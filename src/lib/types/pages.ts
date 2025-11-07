@@ -293,7 +293,7 @@ export type PagePopupDataDetails = {
     priority: number;
     type: PopupDetailsType;
     id?: string;
-    //global?: boolean;
+    global?: boolean;
     headline: string;
     colorHeadline?: RGB;
     buttonLeft: string;

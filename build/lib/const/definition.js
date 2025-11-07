@@ -100,7 +100,7 @@ const genericStateObjects = {
           _id: "",
           type: "state",
           common: {
-            name: "StateObjects.popup.id",
+            name: "Id of the popup",
             type: "string",
             role: "text",
             read: true,
@@ -115,9 +115,9 @@ const genericStateObjects = {
           common: {
             name: "StateObjects.popup.yes",
             type: "boolean",
-            role: "button",
-            read: false,
-            write: true,
+            role: "button.sensor",
+            read: true,
+            write: false,
             def: false
           },
           native: {}
@@ -128,9 +128,9 @@ const genericStateObjects = {
           common: {
             name: "StateObjects.popup.no",
             type: "boolean",
-            role: "button",
-            read: false,
-            write: true,
+            role: "button.sensor",
+            read: true,
+            write: false,
             def: false
           },
           native: {}
@@ -568,6 +568,19 @@ const genericStateObjects = {
               read: true,
               write: true,
               def: ""
+            },
+            native: {}
+          },
+          global: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.popup.global",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true,
+              def: false
             },
             native: {}
           },

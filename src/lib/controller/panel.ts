@@ -33,7 +33,7 @@ import { Dataitem } from './data-item';
 import { Color, type RGB } from '../const/Color';
 import { PageSchedule } from '../pages/pageSchedule';
 import { cardTemplates } from '../templates/card';
-import { deepAssign, getRegExp, isVersionGreaterOrEqual } from '../const/tools';
+import { deepAssign, getRegExp, getRGBFromValue, isVersionGreaterOrEqual } from '../const/tools';
 import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 import { PageThermo2 } from '../pages/pageThermo2';
@@ -1275,10 +1275,12 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'pagePopup.activate': {
+                    const global = this.library.readdb(`panels.${this.name}.cmd.pagePopup.global`)?.val;
                     const details: pages.PagePopupDataDetails = {
                         id: (this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)?.val as string) || 'test',
                         priority:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)?.val as number) || 50,
+                        global: !!global,
                         type:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.type`)?.val as string as any) ||
                             'information',
@@ -1289,12 +1291,37 @@ export class Panel extends BaseClass {
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeft`)?.val as string) || '',
                         buttonRight:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)?.val as string) || '',
+                        colorHeadline: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorHeadline`)?.val || '#FFFFFF',
+                        ),
+                        colorText: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorText`)?.val || '#FFFFFF',
+                        ),
+                        colorButtonLeft: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonLeft`)?.val || '#FFFFFF',
+                        ),
+                        colorButtonRight: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonRight`)?.val || '#FFFFFF',
+                        ),
+                        icon:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)?.val as AllIcons) ||
+                            undefined,
+                        textSize: String(this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)?.val) || '3',
+                        iconColor: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)?.val || '#FFFFFF',
+                        ),
                     };
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/popupNotificationCustom`,
-                        JSON.stringify(details),
-                        false,
-                    );
+                    let panels: Panel[] = [this];
+                    if (global) {
+                        panels = this.controller.panels;
+                    }
+                    for (const panel of panels) {
+                        await this.statesControler.setInternalState(
+                            `${panel.name}/cmd/popupNotificationCustom`,
+                            JSON.stringify(details),
+                            false,
+                        );
+                    }
                     break;
                 }
             }
@@ -1862,7 +1889,7 @@ export class Panel extends BaseClass {
                         break;
                     }
                     await this.library.writedp(
-                        `panels.${this.name}.popup.id`,
+                        `panels.${this.name}.pagePopup.id`,
                         state.val,
                         definition.genericStateObjects.panel.panels.pagePopup.id,
                     );
@@ -1873,7 +1900,7 @@ export class Panel extends BaseClass {
                         break;
                     }
                     await this.library.writedp(
-                        `panels.${this.name}.popup.yes`,
+                        `panels.${this.name}.pagePopup.yes`,
                         state.val,
                         definition.genericStateObjects.panel.panels.pagePopup.yes,
                     );
@@ -1884,7 +1911,7 @@ export class Panel extends BaseClass {
                         break;
                     }
                     await this.library.writedp(
-                        `panels.${this.name}.popup.no`,
+                        `panels.${this.name}.pagePopup.no`,
                         state.val,
                         definition.genericStateObjects.panel.panels.pagePopup.no,
                     );

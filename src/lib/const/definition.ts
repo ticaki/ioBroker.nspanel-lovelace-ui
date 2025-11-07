@@ -63,6 +63,7 @@ export const genericStateObjects: {
                 };
                 pagePopup: customChannelType & {
                     activate: ioBroker.StateObject;
+                    global: ioBroker.StateObject;
                 } & ChangeTypeOfKeysForState<PagePopupDataDetails, ioBroker.StateObject>;
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
@@ -144,7 +145,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'StateObjects.popup.id',
+                        name: 'Id of the popup',
                         type: 'string',
                         role: 'text',
                         read: true,
@@ -159,9 +160,9 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.popup.yes',
                         type: 'boolean',
-                        role: 'button',
-                        read: false,
-                        write: true,
+                        role: 'button.sensor',
+                        read: true,
+                        write: false,
                         def: false,
                     },
                     native: {},
@@ -172,9 +173,9 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.popup.no',
                         type: 'boolean',
-                        role: 'button',
-                        read: false,
-                        write: true,
+                        role: 'button.sensor',
+                        read: true,
+                        write: false,
                         def: false,
                     },
                     native: {},
@@ -613,6 +614,19 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: '',
+                        },
+                        native: {},
+                    },
+                    global: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.popup.global',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                            def: false,
                         },
                         native: {},
                     },

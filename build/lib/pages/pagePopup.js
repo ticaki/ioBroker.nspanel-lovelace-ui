@@ -44,7 +44,7 @@ class PagePopup extends import_Page.Page {
     if (options.items && isCardPopupDataItems(options.items)) {
       this.items = options.items;
     }
-    this.minUpdateInterval = 1e3;
+    this.minUpdateInterval = 0;
     this.neverDeactivateTrigger = true;
   }
   async init() {
@@ -93,7 +93,7 @@ class PagePopup extends import_Page.Page {
       this.detailsArray = [];
       const page = this.getLastPage();
       if (page) {
-        await this.basePanel.setActivePage(this.getLastPage());
+        await this.basePanel.setActivePage(page);
         this.removeLastPage(page);
       }
       return;
@@ -149,7 +149,7 @@ ${message.text}`;
       message.timeout = /*details.timeout ??*/
       0;
     }
-    if (details.icon == null) {
+    if (!import_icon_mapping.Icons.GetIcon(this.detailsArray[0].icon || "")) {
       if (this.card !== "popupNotify") {
         this.card = "popupNotify";
         this.sendType();
@@ -162,7 +162,7 @@ ${message.text}`;
       this.sendType();
     }
     message.fontSet = (_a = details.textSize) != null ? _a : "";
-    message.icon = import_icon_mapping.Icons.GetIcon(details.icon);
+    message.icon = import_icon_mapping.Icons.GetIcon(details.icon || "");
     message.iconColor = convertToDec(details.iconColor, import_Color.Color.White);
     this.sendToPanel(this.getMessage2(message), false);
     return;
@@ -235,14 +235,17 @@ ${message.text}`;
     this.debouceUpdateTimeout = void 0;
   }
   async onStateTrigger(_dp) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    if (!((_b = (_a = this.items) == null ? void 0 : _a.data.details) == null ? void 0 : _b.options.dp) || !_dp.endsWith(this.items.data.details.options.dp)) {
+      return;
+    }
     this.step = 0;
     if (this.rotationTimeout) {
       this.adapter.clearTimeout(this.rotationTimeout);
     }
     this.rotationTimeout = void 0;
     this.log.debug(`state trigge1rd ${_dp}`);
-    const detailsArr = await ((_b = (_a = this.items) == null ? void 0 : _a.data.details) == null ? void 0 : _b.getObject());
+    const detailsArr = await ((_d = (_c = this.items) == null ? void 0 : _c.data.details) == null ? void 0 : _d.getObject());
     if (detailsArr && Array.isArray(detailsArr)) {
       this.detailsArray = [];
     }
@@ -253,7 +256,7 @@ ${message.text}`;
           this.detailsArray = this.detailsArray.filter((d) => d.id !== details.id);
           if (this.detailsArray.length > 0) {
             if (!this.reminderTimeout) {
-              this.debouceUpdate(this.detailsArray[0].icon ? "popupNotify2" : "popupNotify");
+              this.debouceUpdate((_f = (_e = this.detailsArray) == null ? void 0 : _e[0]) == null ? void 0 : _f.icon);
             }
             return;
           }
@@ -269,6 +272,9 @@ ${message.text}`;
           this.debouceUpdate();
           return;
         }
+        if (details.type === "acknowledge") {
+          details.type = details.buttonLeft || details.buttonRight ? "acknowledge" : "information";
+        }
         if (index !== -1) {
           this.detailsArray[index] = { ...details, priority: details.priority || 50 };
         } else {
@@ -282,12 +288,13 @@ ${message.text}`;
             this.adapter.clearTimeout(this.reminderTimeout);
           }
           this.reminderTimeout = void 0;
-          this.debouceUpdate(this.detailsArray[0].icon ? "popupNotify2" : "popupNotify");
+          this.debouceUpdate((_h = (_g = this.detailsArray) == null ? void 0 : _g[0]) == null ? void 0 : _h.icon);
         }
       }
     }
   }
-  debouceUpdate(card) {
+  debouceUpdate(icon) {
+    const card = import_icon_mapping.Icons.GetIcon(icon || "") ? "popupNotify2" : "popupNotify";
     if (card && this.visibility) {
       if (this.card !== card) {
         this.card = card;
@@ -301,11 +308,12 @@ ${message.text}`;
       return;
     }
     if (this.detailsArray.length === 0) {
-      const page = this.getLastPage();
-      if (page) {
-        void this.basePanel.setActivePage(page);
-        this.removeLastPage(page);
+      let page = this.getLastPage();
+      if (!page) {
+        page = this.basePanel.navigation.getCurrentMainPage();
       }
+      void this.basePanel.setActivePage(page);
+      this.removeLastPage(page);
       return;
     }
     this.debouceUpdateTimeout = this.adapter.setTimeout(async () => {
@@ -338,7 +346,7 @@ ${message.text}`;
    * @returns Promise that resolves when the event has been handled.
    */
   async onButtonEvent(_event) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     this.log.debug(`Popup notify button event: ${JSON.stringify(_event)}`);
     if (_event.action !== "notifyAction") {
       return;
@@ -353,7 +361,20 @@ ${message.text}`;
           if (((_b = this.items) == null ? void 0 : _b.data.setStateYes) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateYes.setState(entry.id);
           }
-          await this.update();
+          if (entry == null ? void 0 : entry.global) {
+            const panels = this.basePanel.controller.panels;
+            for (const panel of panels) {
+              if (panel === this.basePanel || panel.unload) {
+                continue;
+              }
+              await this.basePanel.statesControler.setInternalState(
+                `${panel.name}/cmd/popupNotificationCustom`,
+                JSON.stringify({ id: "", priority: -1 }),
+                false
+              );
+            }
+          }
+          this.debouceUpdate((_d = (_c = this.detailsArray) == null ? void 0 : _c[0]) == null ? void 0 : _d.icon);
         }
         break;
       case "no":
@@ -362,13 +383,13 @@ ${message.text}`;
           if (entry) {
             this.detailsArray.push(entry);
           }
-          if (((_c = this.items) == null ? void 0 : _c.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_e = this.items) == null ? void 0 : _e.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateID.setState(entry.id);
           }
-          if (((_d = this.items) == null ? void 0 : _d.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_f = this.items) == null ? void 0 : _f.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateNo.setState(entry.id);
           }
-          await this.update();
+          this.debouceUpdate((_h = (_g = this.detailsArray) == null ? void 0 : _g[0]) == null ? void 0 : _h.icon);
         }
         break;
     }
@@ -385,8 +406,9 @@ ${message.text}`;
       }
     }
     this.reminderTimeout = this.adapter.setTimeout(() => {
-      this.debouceUpdate(this.detailsArray[0].icon ? "popupNotify2" : "popupNotify");
-    }, 6e4);
+      var _a2, _b2;
+      this.debouceUpdate((_b2 = (_a2 = this.detailsArray) == null ? void 0 : _a2[0]) == null ? void 0 : _b2.icon);
+    }, 12e4);
   }
   async onVisibilityChange(val) {
     if (val) {
