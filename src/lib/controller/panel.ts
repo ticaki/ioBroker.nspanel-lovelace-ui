@@ -1277,7 +1277,7 @@ export class Panel extends BaseClass {
                 case 'pagePopup.activate': {
                     const global = this.library.readdb(`panels.${this.name}.cmd.pagePopup.global`)?.val;
                     const details: pages.PagePopupDataDetails = {
-                        id: (this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)?.val as string) || 'test',
+                        id: (this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)?.val as string) || '',
                         priority:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)?.val as number) || 50,
                         global: !!global,
