@@ -1278,8 +1278,7 @@ export class Panel extends BaseClass {
                     const global = this.library.readdb(`panels.${this.name}.cmd.pagePopup.global`)?.val;
                     const details: pages.PagePopupDataDetails = {
                         id: (this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)?.val as string) || '',
-                        priority:
-                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)?.val as number) || 50,
+                        priority: this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)?.val as number,
                         global: !!global,
                         type:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.type`)?.val as string as any) ||

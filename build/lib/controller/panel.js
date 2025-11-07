@@ -1142,7 +1142,7 @@ class Panel extends import_library.BaseClass {
           const global = (_a = this.library.readdb(`panels.${this.name}.cmd.pagePopup.global`)) == null ? void 0 : _a.val;
           const details = {
             id: ((_b = this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)) == null ? void 0 : _b.val) || "",
-            priority: ((_c = this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)) == null ? void 0 : _c.val) || 50,
+            priority: (_c = this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)) == null ? void 0 : _c.val,
             global: !!global,
             type: ((_d = this.library.readdb(`panels.${this.name}.cmd.pagePopup.type`)) == null ? void 0 : _d.val) || "information",
             headline: ((_e = this.library.readdb(`panels.${this.name}.cmd.pagePopup.headline`)) == null ? void 0 : _e.val) || "",
