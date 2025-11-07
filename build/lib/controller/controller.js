@@ -169,6 +169,27 @@ class Controller extends Library.BaseClass {
     }
     const token = id.split("///").pop();
     switch (token) {
+      case "cmd/NotificationCustomID": {
+        if (!_state || typeof _state.val === "object") {
+          break;
+        }
+        await this.library.writedp(`pagePopup.id`, _state.val, import_definition.genericStateObjects.panel.panels.pagePopup.id);
+        break;
+      }
+      case "cmd/NotificationCustomYes": {
+        if (!_state || typeof _state.val === "object") {
+          break;
+        }
+        await this.library.writedp(`pagePopup.yes`, _state.val, import_definition.genericStateObjects.panel.panels.pagePopup.yes);
+        break;
+      }
+      case "cmd/NotificationCustomNo": {
+        if (!_state || typeof _state.val === "object") {
+          break;
+        }
+        await this.library.writedp(`pagePopup.no`, _state.val, import_definition.genericStateObjects.panel.panels.pagePopup.no);
+        break;
+      }
       case "AdapterStoppedBoolean":
       case "AdapterNoConnectionBoolean":
       case "AdapterNoConnection":
@@ -310,7 +331,38 @@ class Controller extends Library.BaseClass {
       (0, import_tools.getInternalDefaults)("boolean", "indicator", false),
       this.onInternalCommand
     );
+    await this.statesControler.setInternalState(
+      `///cmd/NotificationCustomNo`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text", false),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `///cmd/NotificationCustomYes`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text", false),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `///cmd/NotificationCustomID`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text", false),
+      this.onInternalCommand
+    );
     await this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
+    await this.library.writedp(`pagePopup`, void 0, import_definition.genericStateObjects.panel.panels.pagePopup._channel);
+    for (const key of Object.keys(import_definition.genericStateObjects.panel.panels.pagePopup)) {
+      if (key !== "_channel") {
+        await this.library.writedp(
+          `pagePopup.${key}`,
+          void 0,
+          import_definition.genericStateObjects.panel.panels.pagePopup[key]
+        );
+      }
+    }
     void this.systemNotification.init();
     const tasks = [];
     for (const panelConfig of panels) {

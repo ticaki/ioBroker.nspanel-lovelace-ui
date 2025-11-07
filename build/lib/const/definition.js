@@ -113,12 +113,12 @@ const genericStateObjects = {
           _id: "",
           type: "state",
           common: {
-            name: "StateObjects.popup.yes",
-            type: "boolean",
-            role: "button.sensor",
+            name: "Button right",
+            type: "string",
+            role: "text",
             read: true,
             write: false,
-            def: false
+            def: ""
           },
           native: {}
         },
@@ -126,12 +126,12 @@ const genericStateObjects = {
           _id: "",
           type: "state",
           common: {
-            name: "StateObjects.popup.no",
-            type: "boolean",
-            role: "button.sensor",
+            name: "Button left",
+            type: "string",
+            role: "text",
             read: true,
             write: false,
-            def: false
+            def: ""
           },
           native: {}
         }
@@ -2086,8 +2086,8 @@ const InternalStates = {
       ack: true,
       common: {
         name: "",
-        type: "boolean",
-        role: "indicator",
+        type: "string",
+        role: "text",
         read: true,
         write: true
       }
@@ -2097,8 +2097,8 @@ const InternalStates = {
       ack: true,
       common: {
         name: "",
-        type: "boolean",
-        role: "indicator",
+        type: "string",
+        role: "text",
         read: true,
         write: true
       }

@@ -269,7 +269,9 @@ ${message.text}`;
           }
           this.reminderTimeout = void 0;
           this.detailsArray = [];
-          this.debouceUpdate();
+          if (this.visibility) {
+            this.debouceUpdate();
+          }
           return;
         }
         if (details.type === "acknowledge") {
@@ -346,7 +348,7 @@ ${message.text}`;
    * @returns Promise that resolves when the event has been handled.
    */
   async onButtonEvent(_event) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     this.log.debug(`Popup notify button event: ${JSON.stringify(_event)}`);
     if (_event.action !== "notifyAction") {
       return;
@@ -357,9 +359,15 @@ ${message.text}`;
           const entry = this.detailsArray.shift();
           if (((_a = this.items) == null ? void 0 : _a.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateID.setState(entry.id);
+            if ((entry == null ? void 0 : entry.global) && ((_b = this.items) == null ? void 0 : _b.data.setGlobalID)) {
+              await this.items.data.setGlobalID.setState(`${this.basePanel.name}.${entry.id}`);
+            }
           }
-          if (((_b = this.items) == null ? void 0 : _b.data.setStateYes) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_c = this.items) == null ? void 0 : _c.data.setStateYes) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateYes.setState(entry.id);
+            if ((entry == null ? void 0 : entry.global) && ((_d = this.items) == null ? void 0 : _d.data.setGlobalYes)) {
+              await this.items.data.setGlobalYes.setState(`${entry.id}`);
+            }
           }
           if (entry == null ? void 0 : entry.global) {
             const panels = this.basePanel.controller.panels;
@@ -374,7 +382,10 @@ ${message.text}`;
               );
             }
           }
-          this.debouceUpdate((_d = (_c = this.detailsArray) == null ? void 0 : _c[0]) == null ? void 0 : _d.icon);
+          this.log.debug(
+            `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`
+          );
+          this.debouceUpdate((_f = (_e = this.detailsArray) == null ? void 0 : _e[0]) == null ? void 0 : _f.icon);
         }
         break;
       case "no":
@@ -383,13 +394,22 @@ ${message.text}`;
           if (entry) {
             this.detailsArray.push(entry);
           }
-          if (((_e = this.items) == null ? void 0 : _e.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_g = this.items) == null ? void 0 : _g.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateID.setState(entry.id);
+            if (entry == null ? void 0 : entry.global) {
+              await this.items.data.setStateID.setState(`${this.basePanel.name}.${entry.id}`);
+            }
           }
-          if (((_f = this.items) == null ? void 0 : _f.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_h = this.items) == null ? void 0 : _h.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateNo.setState(entry.id);
+            if ((entry == null ? void 0 : entry.global) && ((_i = this.items) == null ? void 0 : _i.data.setGlobalNo)) {
+              await this.items.data.setGlobalNo.setState(`${entry.id}`);
+            }
           }
-          this.debouceUpdate((_h = (_g = this.detailsArray) == null ? void 0 : _g[0]) == null ? void 0 : _h.icon);
+          this.log.debug(
+            `Popup notify '${this.name}' no pressed, remaining entries: ${this.detailsArray.length}`
+          );
+          this.debouceUpdate((_k = (_j = this.detailsArray) == null ? void 0 : _j[0]) == null ? void 0 : _k.icon);
         }
         break;
     }

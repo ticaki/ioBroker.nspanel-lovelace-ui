@@ -276,7 +276,9 @@ export class PagePopup extends Page {
                     }
                     this.reminderTimeout = undefined;
                     this.detailsArray = [];
-                    this.debouceUpdate();
+                    if (this.visibility) {
+                        this.debouceUpdate();
+                    }
                     return;
                 }
                 if (details.type === 'acknowledge') {
@@ -371,9 +373,15 @@ export class PagePopup extends Page {
                     const entry = this.detailsArray.shift();
                     if (this.items?.data.setStateID && entry?.id != null) {
                         await this.items.data.setStateID.setState(entry.id);
+                        if (entry?.global && this.items?.data.setGlobalID) {
+                            await this.items.data.setGlobalID.setState(`${this.basePanel.name}.${entry.id}`);
+                        }
                     }
                     if (this.items?.data.setStateYes && entry?.id != null) {
                         await this.items.data.setStateYes.setState(entry.id);
+                        if (entry?.global && this.items?.data.setGlobalYes) {
+                            await this.items.data.setGlobalYes.setState(`${entry.id}`);
+                        }
                     }
                     if (entry?.global) {
                         const panels = this.basePanel.controller.panels;
@@ -388,6 +396,9 @@ export class PagePopup extends Page {
                             );
                         }
                     }
+                    this.log.debug(
+                        `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`,
+                    );
                     this.debouceUpdate(this.detailsArray?.[0]?.icon);
                 }
                 break;
@@ -400,10 +411,19 @@ export class PagePopup extends Page {
                     }
                     if (this.items?.data.setStateID && entry?.id != null) {
                         await this.items.data.setStateID.setState(entry.id);
+                        if (entry?.global) {
+                            await this.items.data.setStateID.setState(`${this.basePanel.name}.${entry.id}`);
+                        }
                     }
                     if (this.items?.data.setStateNo && entry?.id != null) {
                         await this.items.data.setStateNo.setState(entry.id);
+                        if (entry?.global && this.items?.data.setGlobalNo) {
+                            await this.items.data.setGlobalNo.setState(`${entry.id}`);
+                        }
                     }
+                    this.log.debug(
+                        `Popup notify '${this.name}' no pressed, remaining entries: ${this.detailsArray.length}`,
+                    );
                     this.debouceUpdate(this.detailsArray?.[0]?.icon);
                 }
                 break;

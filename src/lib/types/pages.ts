@@ -285,6 +285,9 @@ type PagePopupConfig = {
     setStateYes?: string;
     setStateNo?: string;
     setStateID?: string;
+    setGlobalYes?: string;
+    setGlobalNo?: string;
+    setGlobalID?: string;
 };
 
 type PopupDetailsType = 'information' | 'acknowledge';

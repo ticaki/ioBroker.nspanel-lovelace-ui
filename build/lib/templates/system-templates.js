@@ -47,7 +47,10 @@ const popupNotification2 = {
       details: { type: "internal", dp: "cmd/popupNotificationCustom", change: "ts" },
       setStateYes: { type: "internal", dp: "cmd/NotificationCustomYes" },
       setStateNo: { type: "internal", dp: "cmd/NotificationCustomNo" },
-      setStateID: { type: "internal", dp: "cmd/NotificationCustomID" }
+      setStateID: { type: "internal", dp: "cmd/NotificationCustomID" },
+      setGlobalYes: { type: "internal", dp: "///cmd/NotificationCustomYes" },
+      setGlobalNo: { type: "internal", dp: "///cmd/NotificationCustomNo" },
+      setGlobalID: { type: "internal", dp: "///cmd/NotificationCustomID" }
     }
   },
   pageItems: [],
