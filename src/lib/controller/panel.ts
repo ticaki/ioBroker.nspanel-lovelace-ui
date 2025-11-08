@@ -340,7 +340,6 @@ export class Panel extends BaseClass {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PagePower(pmconfig, pageConfig);
             }
-            case 'popupNotify2':
             case 'popupNotify': {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PagePopup(pmconfig, pageConfig);

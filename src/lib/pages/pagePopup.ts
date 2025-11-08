@@ -142,21 +142,11 @@ export class PagePopup extends Page {
                 this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3000);
             }
         }
+        message.fontSet = details.textSize ?? '';
         if (!Icons.GetIcon(this.detailsArray[0].icon || '')) {
-            if (this.card !== 'popupNotify') {
-                //@ts-expect-error überschreiben von card type
-                this.card = 'popupNotify';
-                this.sendType();
-            }
             this.sendToPanel(this.getMessage(message), false);
             return;
         }
-        if (this.card !== 'popupNotify2') {
-            //@ts-expect-error überschreiben von card type
-            this.card = 'popupNotify2';
-            this.sendType();
-        }
-        message.fontSet = details.textSize ?? '';
         message.icon = Icons.GetIcon(details.icon || '');
         message.iconColor = convertToDec(details.iconColor, Color.White);
         this.sendToPanel(this.getMessage2(message), false);
@@ -238,7 +228,7 @@ export class PagePopup extends Page {
             this.adapter.clearTimeout(this.rotationTimeout);
         }
         this.rotationTimeout = undefined;
-        this.log.debug(`state trigge1rd ${_dp}`);
+        this.log.debug(`state triggerd ${_dp}`);
         const detailsArr: pages.PagePopupDataDetails | pages.PagePopupDataDetails[] | null | undefined =
             (await this.items?.data.details?.getObject()) as
                 | pages.PagePopupDataDetails
@@ -259,7 +249,7 @@ export class PagePopup extends Page {
                     // wenn Eintrag aktiv ist dann neues anzeigen
                     if (this.detailsArray.length > 0) {
                         if (!this.reminderTimeout) {
-                            this.debouceUpdate(this.detailsArray?.[0]?.icon);
+                            this.debouceUpdate();
                         }
                         return;
                     }
@@ -287,7 +277,7 @@ export class PagePopup extends Page {
                     this.detailsArray[index] = { ...details, priority: details.priority || 50 };
                 } else {
                     this.log.debug(`add notification id ${details.id}`);
-                    this.detailsArray.push({ ...details, priority: details.priority || 50 });
+                    this.detailsArray.unshift({ ...details, priority: details.priority || 50 });
                 }
                 this.detailsArray.sort((a, b) => a.priority - b.priority);
                 this.detailsArray.splice(10);
@@ -299,7 +289,7 @@ export class PagePopup extends Page {
                         this.adapter.clearTimeout(this.reminderTimeout);
                     }
                     this.reminderTimeout = undefined;
-                    this.debouceUpdate(this.detailsArray?.[0]?.icon);
+                    this.debouceUpdate();
                 } else {
                     this.log.debug(`notification id ${details.id} not first in queue (${index2}), not updating view`);
                 }
@@ -314,22 +304,13 @@ export class PagePopup extends Page {
                 this.adapter.clearTimeout(this.reminderTimeout);
             }
             this.reminderTimeout = undefined;
-            this.debouceUpdate(this.detailsArray?.[0]?.icon);
+            this.debouceUpdate();
             return true;
         }
         return false;
     }
 
-    debouceUpdate(icon?: string): void {
-        const card = Icons.GetIcon(icon || '') ? 'popupNotify2' : 'popupNotify';
-
-        if (card && this.visibility) {
-            if (this.card !== card) {
-                //@ts-expect-error überschreiben von card type
-                this.card = card;
-                this.sendType();
-            }
-        }
+    debouceUpdate(): void {
         if (this.debouceUpdateTimeout) {
             this.adapter.clearTimeout(this.debouceUpdateTimeout);
         }
@@ -349,6 +330,7 @@ export class PagePopup extends Page {
         }
         this.debouceUpdateTimeout = this.adapter.setTimeout(async () => {
             if (this.basePanel.getActivePage() !== this) {
+                //await this.basePanel.setActivePage(this.basePanel.navigation.getCurrentMainPage());
                 await this.basePanel.setActivePage(this);
             } else {
                 await this.update();
@@ -414,7 +396,7 @@ export class PagePopup extends Page {
                     this.log.debug(
                         `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`,
                     );
-                    this.debouceUpdate(this.detailsArray?.[0]?.icon);
+                    this.debouceUpdate();
                 }
                 break;
             case 'no':
@@ -439,7 +421,7 @@ export class PagePopup extends Page {
                     this.log.debug(
                         `Popup notify '${this.name}' no pressed, remaining entries: ${this.detailsArray.length}`,
                     );
-                    this.debouceUpdate(this.detailsArray?.[0]?.icon);
+                    this.debouceUpdate();
                 }
                 break;
         }
@@ -459,7 +441,7 @@ export class PagePopup extends Page {
 
         if (remind) {
             this.reminderTimeout = this.adapter.setTimeout(() => {
-                this.debouceUpdate(this.detailsArray?.[0]?.icon);
+                this.debouceUpdate();
             }, 15_000);
         }
     }
@@ -481,7 +463,4 @@ export class PagePopup extends Page {
 
 export function isCardPopupDataItems(obj: any): obj is pages.cardPopupDataItems {
     return obj && obj.card === 'popupNotify';
-}
-export function isCardPopup2DataItems(obj: any): obj is pages.cardPopup2DataItems {
-    return obj && obj.card === 'popupNotify2';
 }

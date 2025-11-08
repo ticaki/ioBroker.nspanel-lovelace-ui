@@ -263,7 +263,6 @@ export type PageBase = (
         | cardThermo2DataItems
         | cardAlarmDataItems
         | cardPopupDataItems
-        | cardPopup2DataItems
         | cardQRDataItems
         | cardChartDataItems
         | cardScheduleDataItems;
@@ -341,18 +340,9 @@ export type cardPopupDataItems = {
     data: ChangeTypeOfKeys<PagePopupConfig, dataItem.Dataitem | undefined>;
 };
 
-type PagePopup2Config = {
-    textSize: string;
-    icon: NSPanel.IconEntryType;
-} & PagePopupConfig;
-
 export type cardPopup2DataItemOptions = {
-    card: Extract<AdminCardTypes, 'popupNotify2'>;
-    data: ChangeTypeOfKeys<PagePopup2Config, NSPanel.DataItemsOptions | undefined>;
-};
-export type cardPopup2DataItems = {
-    card: Extract<AdminCardTypes, 'popupNotify2'>;
-    data: ChangeTypeOfKeys<PagePopup2Config, dataItem.Dataitem | undefined>;
+    card: Extract<AdminCardTypes, 'popupNotify'>;
+    data: ChangeTypeOfKeys<PagePopupConfig, NSPanel.DataItemsOptions | undefined>;
 };
 
 type PageChartConfig = {

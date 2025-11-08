@@ -19,7 +19,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var pagePopup_exports = {};
 __export(pagePopup_exports, {
   PagePopup: () => PagePopup,
-  isCardPopup2DataItems: () => isCardPopup2DataItems,
   isCardPopupDataItems: () => isCardPopupDataItems
 });
 module.exports = __toCommonJS(pagePopup_exports);
@@ -147,19 +146,11 @@ ${message.text}`;
         this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3e3);
       }
     }
+    message.fontSet = (_a = details.textSize) != null ? _a : "";
     if (!import_icon_mapping.Icons.GetIcon(this.detailsArray[0].icon || "")) {
-      if (this.card !== "popupNotify") {
-        this.card = "popupNotify";
-        this.sendType();
-      }
       this.sendToPanel(this.getMessage(message), false);
       return;
     }
-    if (this.card !== "popupNotify2") {
-      this.card = "popupNotify2";
-      this.sendType();
-    }
-    message.fontSet = (_a = details.textSize) != null ? _a : "";
     message.icon = import_icon_mapping.Icons.GetIcon(details.icon || "");
     message.iconColor = convertToDec(details.iconColor, import_Color.Color.White);
     this.sendToPanel(this.getMessage2(message), false);
@@ -232,7 +223,7 @@ ${message.text}`;
     this.debouceUpdateTimeout = void 0;
   }
   async onStateTrigger(_dp) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d;
     if (!((_b = (_a = this.items) == null ? void 0 : _a.data.details) == null ? void 0 : _b.options.dp) || !_dp.endsWith(this.items.data.details.options.dp)) {
       return;
     }
@@ -241,7 +232,7 @@ ${message.text}`;
       this.adapter.clearTimeout(this.rotationTimeout);
     }
     this.rotationTimeout = void 0;
-    this.log.debug(`state trigge1rd ${_dp}`);
+    this.log.debug(`state triggerd ${_dp}`);
     const detailsArr = await ((_d = (_c = this.items) == null ? void 0 : _c.data.details) == null ? void 0 : _d.getObject());
     if (detailsArr && Array.isArray(detailsArr)) {
       this.detailsArray = [];
@@ -254,7 +245,7 @@ ${message.text}`;
           this.log.debug(`remove notification id ${details.id}`);
           if (this.detailsArray.length > 0) {
             if (!this.reminderTimeout) {
-              this.debouceUpdate((_f = (_e = this.detailsArray) == null ? void 0 : _e[0]) == null ? void 0 : _f.icon);
+              this.debouceUpdate();
             }
             return;
           }
@@ -280,7 +271,7 @@ ${message.text}`;
           this.detailsArray[index] = { ...details, priority: details.priority || 50 };
         } else {
           this.log.debug(`add notification id ${details.id}`);
-          this.detailsArray.push({ ...details, priority: details.priority || 50 });
+          this.detailsArray.unshift({ ...details, priority: details.priority || 50 });
         }
         this.detailsArray.sort((a, b) => a.priority - b.priority);
         this.detailsArray.splice(10);
@@ -291,7 +282,7 @@ ${message.text}`;
             this.adapter.clearTimeout(this.reminderTimeout);
           }
           this.reminderTimeout = void 0;
-          this.debouceUpdate((_h = (_g = this.detailsArray) == null ? void 0 : _g[0]) == null ? void 0 : _h.icon);
+          this.debouceUpdate();
         } else {
           this.log.debug(`notification id ${details.id} not first in queue (${index2}), not updating view`);
         }
@@ -299,25 +290,17 @@ ${message.text}`;
     }
   }
   showPopup() {
-    var _a, _b;
     if (this.detailsArray.length > 0) {
       if (this.reminderTimeout) {
         this.adapter.clearTimeout(this.reminderTimeout);
       }
       this.reminderTimeout = void 0;
-      this.debouceUpdate((_b = (_a = this.detailsArray) == null ? void 0 : _a[0]) == null ? void 0 : _b.icon);
+      this.debouceUpdate();
       return true;
     }
     return false;
   }
-  debouceUpdate(icon) {
-    const card = import_icon_mapping.Icons.GetIcon(icon || "") ? "popupNotify2" : "popupNotify";
-    if (card && this.visibility) {
-      if (this.card !== card) {
-        this.card = card;
-        this.sendType();
-      }
-    }
+  debouceUpdate() {
     if (this.debouceUpdateTimeout) {
       this.adapter.clearTimeout(this.debouceUpdateTimeout);
     }
@@ -363,7 +346,7 @@ ${message.text}`;
    * @returns Promise that resolves when the event has been handled.
    */
   async onButtonEvent(_event) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g;
     this.log.debug(`Popup notify button event: ${JSON.stringify(_event)}`);
     if (_event.action !== "notifyAction") {
       return;
@@ -400,7 +383,7 @@ ${message.text}`;
           this.log.debug(
             `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`
           );
-          this.debouceUpdate((_f = (_e = this.detailsArray) == null ? void 0 : _e[0]) == null ? void 0 : _f.icon);
+          this.debouceUpdate();
         }
         break;
       case "no":
@@ -409,22 +392,22 @@ ${message.text}`;
           if (entry) {
             this.detailsArray.push(entry);
           }
-          if (((_g = this.items) == null ? void 0 : _g.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_e = this.items) == null ? void 0 : _e.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateID.setState(entry.id);
             if (entry == null ? void 0 : entry.global) {
               await this.items.data.setStateID.setState(`${this.basePanel.name}.${entry.id}`);
             }
           }
-          if (((_h = this.items) == null ? void 0 : _h.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_f = this.items) == null ? void 0 : _f.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateNo.setState(entry.id);
-            if ((entry == null ? void 0 : entry.global) && ((_i = this.items) == null ? void 0 : _i.data.setGlobalNo)) {
+            if ((entry == null ? void 0 : entry.global) && ((_g = this.items) == null ? void 0 : _g.data.setGlobalNo)) {
               await this.items.data.setGlobalNo.setState(`${entry.id}`);
             }
           }
           this.log.debug(
             `Popup notify '${this.name}' no pressed, remaining entries: ${this.detailsArray.length}`
           );
-          this.debouceUpdate((_k = (_j = this.detailsArray) == null ? void 0 : _j[0]) == null ? void 0 : _k.icon);
+          this.debouceUpdate();
         }
         break;
     }
@@ -443,8 +426,7 @@ ${message.text}`;
     const remind = ((_c = this.detailsArray[0]) == null ? void 0 : _c.alwaysOn) && ((_d = this.detailsArray[0]) == null ? void 0 : _d.type) === "acknowledge";
     if (remind) {
       this.reminderTimeout = this.adapter.setTimeout(() => {
-        var _a2, _b2;
-        this.debouceUpdate((_b2 = (_a2 = this.detailsArray) == null ? void 0 : _a2[0]) == null ? void 0 : _b2.icon);
+        this.debouceUpdate();
       }, 15e3);
     }
   }
@@ -464,13 +446,9 @@ ${message.text}`;
 function isCardPopupDataItems(obj) {
   return obj && obj.card === "popupNotify";
 }
-function isCardPopup2DataItems(obj) {
-  return obj && obj.card === "popupNotify2";
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   PagePopup,
-  isCardPopup2DataItems,
   isCardPopupDataItems
 });
 //# sourceMappingURL=pagePopup.js.map

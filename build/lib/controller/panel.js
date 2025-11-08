@@ -318,7 +318,6 @@ class Panel extends import_library.BaseClass {
         pageConfig = Panel.getPage(pageConfig, this);
         return new import_pagePower.PagePower(pmconfig, pageConfig);
       }
-      case "popupNotify2":
       case "popupNotify": {
         pageConfig = Panel.getPage(pageConfig, this);
         return new import_pagePopup.PagePopup(pmconfig, pageConfig);
