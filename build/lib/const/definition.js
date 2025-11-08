@@ -772,6 +772,19 @@ const genericStateObjects = {
               def: JSON.stringify({ r: 255, g: 255, b: 255 })
             },
             native: {}
+          },
+          alwaysOn: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "alwaysOn",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true,
+              def: true
+            },
+            native: {}
           }
         }
       },

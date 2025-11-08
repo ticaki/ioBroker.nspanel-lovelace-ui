@@ -73,7 +73,7 @@ class Panel extends import_library.BaseClass {
   data = {};
   blockStartup = null;
   _isOnline = false;
-  blockTouchEventsForMs = 400;
+  blockTouchEventsForMs = 200;
   // ms
   lastSendTypeDate = 0;
   options;
@@ -907,7 +907,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
     if (state.ack) {
       return;
     }
@@ -1165,7 +1165,8 @@ class Panel extends import_library.BaseClass {
             textSize: String((_n = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _n.val) || "3",
             iconColor: (0, import_tools.getRGBFromValue)(
               ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _o.val) || "#FFFFFF"
-            )
+            ),
+            alwaysOn: !!((_q = (_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _p.val) != null ? _q : true)
           };
           let panels = [this];
           if (global) {
@@ -1469,6 +1470,10 @@ class Panel extends import_library.BaseClass {
             }
             this.navigation.resetPosition();
             await this.navigation.setCurrentPage();
+            const popup = this.pages.find((a) => a && a.name === "///popupNotificationCustom");
+            if (popup && "showPopup" in popup && typeof popup.showPopup === "function") {
+              popup.showPopup();
+            }
             break;
           }
         } else if (event.action === "bExit") {
@@ -1700,7 +1705,8 @@ class Panel extends import_library.BaseClass {
                 headline: val.headline,
                 text: val.text,
                 buttonLeft: "next",
-                buttonRight: "clear"
+                buttonRight: "clear",
+                alwaysOn: true
               });
             }
           }

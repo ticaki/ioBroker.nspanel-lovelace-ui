@@ -83,7 +83,7 @@ export class Panel extends BaseClass {
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
 
-    public blockTouchEventsForMs: number = 400; // ms
+    public blockTouchEventsForMs: number = 200; // ms
     public lastSendTypeDate: number = 0;
 
     options: panelConfigPartial;
@@ -1309,6 +1309,7 @@ export class Panel extends BaseClass {
                         iconColor: getRGBFromValue(
                             this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)?.val || '#FFFFFF',
                         ),
+                        alwaysOn: !!(this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)?.val ?? true),
                     };
                     let panels: Panel[] = [this];
                     if (global) {
@@ -1631,6 +1632,10 @@ export class Panel extends BaseClass {
                         }
                         this.navigation.resetPosition();
                         await this.navigation.setCurrentPage();
+                        const popup = this.pages.find(a => a && a.name === '///popupNotificationCustom');
+                        if (popup && 'showPopup' in popup && typeof popup.showPopup === 'function') {
+                            popup.showPopup();
+                        }
                         break;
                     }
                 } else if (event.action === 'bExit') {
@@ -1871,6 +1876,7 @@ export class Panel extends BaseClass {
                                 text: val.text,
                                 buttonLeft: 'next',
                                 buttonRight: 'clear',
+                                alwaysOn: true,
                             });
                         }
                     }

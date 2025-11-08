@@ -310,6 +310,7 @@ export type PagePopupDataDetails = {
     textSize?: string;
     icon?: AllIcons;
     iconColor?: RGB;
+    alwaysOn: boolean;
 };
 
 export type PopupNotificationVal =

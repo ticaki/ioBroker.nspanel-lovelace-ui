@@ -319,7 +319,9 @@ export class Page extends BaseClassPage {
         }
         if (forceSend || this.basePanel.lastCard !== this.card) {
             this.basePanel.lastSendTypeDate = Date.now();
-            this.log.debug(`Register last send type ${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`);
+            this.log.debug(
+                `Register last send type ${this.basePanel.name}-${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`,
+            );
             this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
         } else {
             if (this.lastCardCounter++ > 31) {

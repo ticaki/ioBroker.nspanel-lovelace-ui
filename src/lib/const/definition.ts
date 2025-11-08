@@ -820,6 +820,19 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
+                    alwaysOn: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'alwaysOn',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                            def: true,
+                        },
+                        native: {},
+                    },
                 },
             },
             info: {

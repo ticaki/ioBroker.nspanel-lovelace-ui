@@ -13,7 +13,6 @@ export class PagePopup extends Page {
     config: pages.PageBase['config'];
     private lastpage: Page[] = [];
     private step: number = 0;
-    private headlinePos: number = 0;
     private rotationTimeout: ioBroker.Timeout | undefined;
     private detailsArray: pages.PagePopupDataDetails[] = [];
     private reminderTimeout: ioBroker.Timeout | undefined;
@@ -105,6 +104,7 @@ export class PagePopup extends Page {
 
         message.text = details.text;
         message.textColor = convertToDec(details.colorText, Color.White);
+        message.timeout = details.alwaysOn ? 0 : this.basePanel.timeout;
 
         if (message.text) {
             message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
@@ -141,8 +141,6 @@ export class PagePopup extends Page {
                 }
                 this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3000);
             }
-
-            message.timeout = /*details.timeout ??*/ 0;
         }
         if (!Icons.GetIcon(this.detailsArray[0].icon || '')) {
             if (this.card !== 'popupNotify') {
@@ -162,7 +160,6 @@ export class PagePopup extends Page {
         message.icon = Icons.GetIcon(details.icon || '');
         message.iconColor = convertToDec(details.iconColor, Color.White);
         this.sendToPanel(this.getMessage2(message), false);
-        return;
     }
     private getMessage(message: Partial<pages.PageNotifyMessage>): string {
         return getPayloadRemoveTilde(
@@ -257,6 +254,7 @@ export class PagePopup extends Page {
                 // wenn priority 0 oder undefined dann entfernen
                 if (details.id && (details.priority == undefined || details.priority <= 0)) {
                     this.detailsArray = this.detailsArray.filter(d => d.id !== details.id);
+                    this.log.debug(`remove notification id ${details.id}`);
 
                     // wenn Eintrag aktiv ist dann neues anzeigen
                     if (this.detailsArray.length > 0) {
@@ -285,24 +283,41 @@ export class PagePopup extends Page {
                     details.type = details.buttonLeft || details.buttonRight ? 'acknowledge' : 'information';
                 }
                 if (index !== -1) {
+                    this.log.debug(`update notification id ${details.id}`);
                     this.detailsArray[index] = { ...details, priority: details.priority || 50 };
                 } else {
+                    this.log.debug(`add notification id ${details.id}`);
                     this.detailsArray.push({ ...details, priority: details.priority || 50 });
                 }
-                this.detailsArray.splice(10);
                 this.detailsArray.sort((a, b) => a.priority - b.priority);
+                this.detailsArray.splice(10);
                 const index2 = this.detailsArray.findIndex(d => d.id === details.id);
                 // wenn neu dann anzeigen, ansonsten sollte ein timeout laufen
                 if (index2 == 0 && index !== index2) {
+                    this.log.debug(`notification id ${details.id} is first in queue, updating view`);
                     if (this.reminderTimeout) {
                         this.adapter.clearTimeout(this.reminderTimeout);
                     }
                     this.reminderTimeout = undefined;
                     this.debouceUpdate(this.detailsArray?.[0]?.icon);
+                } else {
+                    this.log.debug(`notification id ${details.id} not first in queue (${index2}), not updating view`);
                 }
             }
         }
         /*if (_dp.includes('popupNotification'))*/
+    }
+
+    showPopup(): boolean {
+        if (this.detailsArray.length > 0) {
+            if (this.reminderTimeout) {
+                this.adapter.clearTimeout(this.reminderTimeout);
+            }
+            this.reminderTimeout = undefined;
+            this.debouceUpdate(this.detailsArray?.[0]?.icon);
+            return true;
+        }
+        return false;
     }
 
     debouceUpdate(icon?: string): void {
@@ -440,9 +455,13 @@ export class PagePopup extends Page {
                 return;
             }
         }
-        this.reminderTimeout = this.adapter.setTimeout(() => {
-            this.debouceUpdate(this.detailsArray?.[0]?.icon);
-        }, 120_000);
+        const remind = this.detailsArray[0]?.alwaysOn && this.detailsArray[0]?.type === 'acknowledge';
+
+        if (remind) {
+            this.reminderTimeout = this.adapter.setTimeout(() => {
+                this.debouceUpdate(this.detailsArray?.[0]?.icon);
+            }, 15_000);
+        }
     }
 
     protected async onVisibilityChange(val: boolean): Promise<void> {

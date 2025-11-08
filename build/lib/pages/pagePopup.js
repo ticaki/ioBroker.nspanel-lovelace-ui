@@ -31,7 +31,6 @@ class PagePopup extends import_Page.Page {
   config;
   lastpage = [];
   step = 0;
-  headlinePos = 0;
   rotationTimeout;
   detailsArray = [];
   reminderTimeout;
@@ -110,6 +109,7 @@ class PagePopup extends import_Page.Page {
     message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, import_Color.Color.Green) : "";
     message.text = details.text;
     message.textColor = convertToDec(details.colorText, import_Color.Color.White);
+    message.timeout = details.alwaysOn ? 0 : this.basePanel.timeout;
     if (message.text) {
       message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
     }
@@ -146,8 +146,6 @@ ${message.text}`;
         }
         this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3e3);
       }
-      message.timeout = /*details.timeout ??*/
-      0;
     }
     if (!import_icon_mapping.Icons.GetIcon(this.detailsArray[0].icon || "")) {
       if (this.card !== "popupNotify") {
@@ -165,7 +163,6 @@ ${message.text}`;
     message.icon = import_icon_mapping.Icons.GetIcon(details.icon || "");
     message.iconColor = convertToDec(details.iconColor, import_Color.Color.White);
     this.sendToPanel(this.getMessage2(message), false);
-    return;
   }
   getMessage(message) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i;
@@ -254,6 +251,7 @@ ${message.text}`;
         const index = this.detailsArray.findIndex((d) => d.id === details.id);
         if (details.id && (details.priority == void 0 || details.priority <= 0)) {
           this.detailsArray = this.detailsArray.filter((d) => d.id !== details.id);
+          this.log.debug(`remove notification id ${details.id}`);
           if (this.detailsArray.length > 0) {
             if (!this.reminderTimeout) {
               this.debouceUpdate((_f = (_e = this.detailsArray) == null ? void 0 : _e[0]) == null ? void 0 : _f.icon);
@@ -278,22 +276,39 @@ ${message.text}`;
           details.type = details.buttonLeft || details.buttonRight ? "acknowledge" : "information";
         }
         if (index !== -1) {
+          this.log.debug(`update notification id ${details.id}`);
           this.detailsArray[index] = { ...details, priority: details.priority || 50 };
         } else {
+          this.log.debug(`add notification id ${details.id}`);
           this.detailsArray.push({ ...details, priority: details.priority || 50 });
         }
-        this.detailsArray.splice(10);
         this.detailsArray.sort((a, b) => a.priority - b.priority);
+        this.detailsArray.splice(10);
         const index2 = this.detailsArray.findIndex((d) => d.id === details.id);
         if (index2 == 0 && index !== index2) {
+          this.log.debug(`notification id ${details.id} is first in queue, updating view`);
           if (this.reminderTimeout) {
             this.adapter.clearTimeout(this.reminderTimeout);
           }
           this.reminderTimeout = void 0;
           this.debouceUpdate((_h = (_g = this.detailsArray) == null ? void 0 : _g[0]) == null ? void 0 : _h.icon);
+        } else {
+          this.log.debug(`notification id ${details.id} not first in queue (${index2}), not updating view`);
         }
       }
     }
+  }
+  showPopup() {
+    var _a, _b;
+    if (this.detailsArray.length > 0) {
+      if (this.reminderTimeout) {
+        this.adapter.clearTimeout(this.reminderTimeout);
+      }
+      this.reminderTimeout = void 0;
+      this.debouceUpdate((_b = (_a = this.detailsArray) == null ? void 0 : _a[0]) == null ? void 0 : _b.icon);
+      return true;
+    }
+    return false;
   }
   debouceUpdate(icon) {
     const card = import_icon_mapping.Icons.GetIcon(icon || "") ? "popupNotify2" : "popupNotify";
@@ -415,7 +430,7 @@ ${message.text}`;
     }
   }
   startReminder() {
-    var _a, _b;
+    var _a, _b, _c, _d;
     if (this.reminderTimeout) {
       this.adapter.clearTimeout(this.reminderTimeout);
     }
@@ -425,10 +440,13 @@ ${message.text}`;
         return;
       }
     }
-    this.reminderTimeout = this.adapter.setTimeout(() => {
-      var _a2, _b2;
-      this.debouceUpdate((_b2 = (_a2 = this.detailsArray) == null ? void 0 : _a2[0]) == null ? void 0 : _b2.icon);
-    }, 12e4);
+    const remind = ((_c = this.detailsArray[0]) == null ? void 0 : _c.alwaysOn) && ((_d = this.detailsArray[0]) == null ? void 0 : _d.type) === "acknowledge";
+    if (remind) {
+      this.reminderTimeout = this.adapter.setTimeout(() => {
+        var _a2, _b2;
+        this.debouceUpdate((_b2 = (_a2 = this.detailsArray) == null ? void 0 : _a2[0]) == null ? void 0 : _b2.icon);
+      }, 15e3);
+    }
   }
   async onVisibilityChange(val) {
     if (val) {
