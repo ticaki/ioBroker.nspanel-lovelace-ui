@@ -1,12 +1,14 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: "/"
+    directories: 
+      - "/"
+      - "src-admin/"
     schedule:
-      interval: monthly
-      time: "04:00"
+      interval: cron
+      cronjob: 5 4 14 * *
       timezone: Europe/Berlin
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 15
     assignees:
       - ticaki
     versioning-strategy: increase
@@ -14,9 +16,9 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: monthly
-      time: "04:00"
+      interval: cron
+      cronjob: 5 4 14 * *
       timezone: Europe/Berlin
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 15
     assignees:
       - ticaki
