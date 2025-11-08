@@ -4,12 +4,12 @@ import { StatesControler } from './states-controller';
 import * as Panel from './panel';
 import { genericStateObjects } from '../const/definition';
 import { SystemNotifications } from '../classes/system-notifications';
-import { getInternalDefaults } from '../const/tools';
+import { getInternalDefaults, getRGBFromValue } from '../const/tools';
 import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
 import type { PageAlarm } from '../pages/pageAlarm';
-import type { AlarmStates } from '../types/pages';
+import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
 
 /**
  * Controller Class
@@ -504,7 +504,71 @@ export class Controller extends Library.BaseClass {
         this.dataCache = {};
         await super.delete();
     }
-
+    async setPopupNotification(data: unknown): Promise<void> {
+        let temp: any;
+        try {
+            temp = typeof data === 'string' ? JSON.parse(data) : data;
+        } catch {
+            this.log.error('setPopupNotification: Invalid data format, must be valid JSON or object');
+            return;
+        }
+        const global = temp.panel ? false : true;
+        const details: PagePopupDataDetails = {
+            id: typeof temp.id === 'string' ? temp.id : 'missing',
+            priority: typeof temp.priority === 'number' ? temp.priority : 50,
+            alwaysOn: typeof temp.alwaysOn === 'boolean' ? temp.alwaysOn : true,
+            type: typeof temp.type === 'string' ? temp.type : 'info',
+            global: global,
+            headline: typeof temp.headline === 'string' ? temp.headline : 'Missing Headline',
+            text: typeof temp.text === 'string' ? temp.text : 'Missing Text',
+            buttonLeft: typeof temp.buttonLeft === 'string' ? temp.buttonLeft : '',
+            buttonRight: typeof temp.buttonRight === 'string' ? temp.buttonRight : '',
+            icon: typeof temp.icon === 'string' ? temp.icon : undefined,
+            colorHeadline: temp.colorHeadline != null ? getRGBFromValue(temp.colorHeadline) : undefined,
+            colorText: temp.colorText != null ? getRGBFromValue(temp.colorText) : undefined,
+            colorButtonLeft: temp.colorButtonLeft != null ? getRGBFromValue(temp.colorButtonLeft) : undefined,
+            colorButtonRight: temp.colorButtonRight != null ? getRGBFromValue(temp.colorButtonRight) : undefined,
+        };
+        /**
+          type PagePopupDataDetails = {
+             headline: string;
+             text: string;
+             panel?: string;
+             priority?: number;
+             type?: PopupDetailsType;
+             id?: string;
+             global?: boolean;
+             colorHeadline?: RGB | string;
+             buttonLeft?: string;
+             colorButtonLeft?: RGB | string;
+             buttonRight?: string;
+             colorButtonRight?: RGB | string;
+             colorText?: RGB | string;
+             textSize?: string;
+             icon?: string;
+             iconColor?: RGB;
+             alwaysOn?: boolean;
+         };
+         */
+        let panels: Panel.Panel[] = [];
+        if (global) {
+            panels = this.panels;
+        } else {
+            const panel = this.panels.find(p => p.name === temp.panel || p.friendlyName === temp.panel);
+            if (!panel) {
+                this.log.error(`setPopupMessage: Panel ${temp.panel} not found`);
+                return;
+            }
+            panels.push(panel);
+        }
+        for (const panel of panels) {
+            await this.statesControler.setInternalState(
+                `${panel.name}/cmd/popupNotificationCustom`,
+                JSON.stringify(details),
+                false,
+            );
+        }
+    }
     async notificationToPanel(): Promise<void> {
         if (!this.panels) {
             return;

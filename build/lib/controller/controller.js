@@ -480,6 +480,50 @@ class Controller extends Library.BaseClass {
     this.dataCache = {};
     await super.delete();
   }
+  async setPopupNotification(data) {
+    let temp;
+    try {
+      temp = typeof data === "string" ? JSON.parse(data) : data;
+    } catch {
+      this.log.error("setPopupNotification: Invalid data format, must be valid JSON or object");
+      return;
+    }
+    const global = temp.panel ? false : true;
+    const details = {
+      id: typeof temp.id === "string" ? temp.id : "missing",
+      priority: typeof temp.priority === "number" ? temp.priority : 50,
+      alwaysOn: typeof temp.alwaysOn === "boolean" ? temp.alwaysOn : true,
+      type: typeof temp.type === "string" ? temp.type : "info",
+      global,
+      headline: typeof temp.headline === "string" ? temp.headline : "Missing Headline",
+      text: typeof temp.text === "string" ? temp.text : "Missing Text",
+      buttonLeft: typeof temp.buttonLeft === "string" ? temp.buttonLeft : "",
+      buttonRight: typeof temp.buttonRight === "string" ? temp.buttonRight : "",
+      icon: typeof temp.icon === "string" ? temp.icon : void 0,
+      colorHeadline: temp.colorHeadline != null ? (0, import_tools.getRGBFromValue)(temp.colorHeadline) : void 0,
+      colorText: temp.colorText != null ? (0, import_tools.getRGBFromValue)(temp.colorText) : void 0,
+      colorButtonLeft: temp.colorButtonLeft != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonLeft) : void 0,
+      colorButtonRight: temp.colorButtonRight != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonRight) : void 0
+    };
+    let panels = [];
+    if (global) {
+      panels = this.panels;
+    } else {
+      const panel = this.panels.find((p) => p.name === temp.panel || p.friendlyName === temp.panel);
+      if (!panel) {
+        this.log.error(`setPopupMessage: Panel ${temp.panel} not found`);
+        return;
+      }
+      panels.push(panel);
+    }
+    for (const panel of panels) {
+      await this.statesControler.setInternalState(
+        `${panel.name}/cmd/popupNotificationCustom`,
+        JSON.stringify(details),
+        false
+      );
+    }
+  }
   async notificationToPanel() {
     if (!this.panels) {
       return;
