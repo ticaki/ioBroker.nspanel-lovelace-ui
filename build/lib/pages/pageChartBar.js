@@ -97,7 +97,8 @@ class PageChartBar extends import_pageChart.PageChart {
           valuesChart = valuesChart.substring(0, valuesChart.length - 1);
           const max = Math.max(...tempScale);
           const min = 0;
-          const intervall = Math.max(Number(((max - min) / 5).toFixed()), 10);
+          const fixIntervall = max > 50 ? 10 : max > 20 ? 5 : 2;
+          const intervall = Math.max(Number(((max - min) / 5).toFixed()), fixIntervall);
           this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
           const tempTickChart = [];
           let currentTick = min;
@@ -105,6 +106,7 @@ class PageChartBar extends import_pageChart.PageChart {
             tempTickChart.push(String(currentTick));
             currentTick += intervall;
           }
+          tempTickChart.push(String(currentTick));
           ticksChart = tempTickChart;
         } else {
           this.log.warn(`No data found for state ${stateValue} in the last ${rangeHours} hours`);
