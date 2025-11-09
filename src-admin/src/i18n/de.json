@@ -38,7 +38,7 @@
 	"chart_StateValues": "Datenpunkt der Werte",
 	"chart_XLabels": "alle x Std Beschriftung X-Achse",
 	"chart_XTicks": "alle x Std Markierung X-Achse",
-	"chart_yAxis": "Beschriftung Y-Achse",
+	"chart_YAxis": "Beschriftung Y-Achse",
 	"dateFormat": "Datumsformat",
 	"dateFormatCustom": "Brauch",
 	"dateFormatDayLongMonthYear": "Tag lang – Monat, Jahr",

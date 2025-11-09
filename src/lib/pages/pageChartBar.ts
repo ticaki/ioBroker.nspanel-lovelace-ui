@@ -80,7 +80,7 @@ export class PageChartBar extends PageChart {
                     this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
 
                     // Berechne den Abstand zwischen X-Achsen-Beschriftungen
-                    const stepXAchsis = rangeHours / maxXAxisLabels;
+                    //const stepXAchsis = rangeHours / maxXAxisLabels;
 
                     valuesChart = '';
                     // Iteriere über jede Stunde im Zeitbereich
@@ -97,7 +97,8 @@ export class PageChartBar extends PageChart {
                             // Wenn der DB-Eintrag nach der Zielzeit liegt
                             if (valueDate > targetDate) {
                                 // Füge Zeitangabe hinzu, wenn es ein Label-Schritt ist
-                                if (targetDate.getHours() % stepXAchsis == 0) {
+                                //if (targetDate.getHours() % stepXAchsis == 0) {
+                                if (targetDate.getHours() % maxXAxisLabels == 0) {
                                     valuesChart += `${targetValue}^${targetDate.getHours()}:00~`;
                                 } else {
                                     valuesChart += `${targetValue}~`;

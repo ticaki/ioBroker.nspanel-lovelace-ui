@@ -74,7 +74,6 @@ class PageChartBar extends import_pageChart.PageChart {
         const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
         if (dbDaten && Array.isArray(dbDaten) && dbDaten.length > 0) {
           this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
-          const stepXAchsis = rangeHours / maxXAxisLabels;
           valuesChart = "";
           for (let i = 0; i < rangeHours; i++) {
             const deltaHour = rangeHours - i;
@@ -84,7 +83,7 @@ class PageChartBar extends import_pageChart.PageChart {
               const value = Math.round(dbDaten[j].val / factor * 10);
               tempScale.push(value);
               if (valueDate > targetDate) {
-                if (targetDate.getHours() % stepXAchsis == 0) {
+                if (targetDate.getHours() % maxXAxisLabels == 0) {
                   valuesChart += `${targetValue}^${targetDate.getHours()}:00~`;
                 } else {
                   valuesChart += `${targetValue}~`;
