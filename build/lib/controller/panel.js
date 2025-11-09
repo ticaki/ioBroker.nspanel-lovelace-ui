@@ -270,7 +270,7 @@ class Panel extends import_library.BaseClass {
     this.navigation = new import_navigation.Navigation(navConfig);
   }
   newPage(pmconfig, pageConfig) {
-    var _a;
+    var _a, _b, _c;
     switch ((_a = pageConfig.config) == null ? void 0 : _a.card) {
       case "cardChart": {
         pageConfig = Panel.getPage(pageConfig, this);
@@ -334,6 +334,10 @@ class Panel extends import_library.BaseClass {
           adapter: this.adapter,
           dpInit: ""
         };
+        if (!pageConfig.config) {
+          throw new Error(`Page config is missing for page ${pageConfig.uniqueID}`);
+        }
+        pageConfig.config.model = ((_c = (_b = this.adapter.config.panels) == null ? void 0 : _b.find((p) => p.topic === this.topic)) == null ? void 0 : _c.model) || "eu";
         return new import_screensaver.Screensaver(ssconfig, pageConfig);
       }
       default: {
