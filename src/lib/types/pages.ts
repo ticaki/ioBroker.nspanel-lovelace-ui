@@ -818,7 +818,7 @@ export type PageGridMessage = {
     event: 'entityUpd';
     headline: string;
     navigation: string;
-    options: [string?, string?, string?, string?, string?, string?, string?, string?];
+    options: [string?, string?, string?, string?, string?, string?, string?, string?, string?];
 };
 
 export type PageNotifyMessage = {

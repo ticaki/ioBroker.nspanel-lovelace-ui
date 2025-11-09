@@ -565,7 +565,7 @@ export class PageMenu extends Page {
             await this.arrowPageItem.delete();
             this.arrowPageItem = undefined;
         }
-        this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
+        await this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
         this.tempItems = undefined; // statt [] um Referenzen zu lösen
         await super.delete();
     }

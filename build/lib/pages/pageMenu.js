@@ -491,7 +491,7 @@ class PageMenu extends import_Page.Page {
       await this.arrowPageItem.delete();
       this.arrowPageItem = void 0;
     }
-    this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
+    await this.basePanel.statesControler.deletePageLoop(this.onInternalCommand);
     this.tempItems = void 0;
     await super.delete();
   }
