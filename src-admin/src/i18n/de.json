@@ -22,7 +22,7 @@
 	"cardTypeAdvanced": "Fortschrittlich",
 	"cardTypeEasyview": "Easyview",
 	"cardTypeStandard": "Standard/Alternativ",
-	"chart_color": "Diagrammfarbe",
+	"chart_Color": "Diagrammfarbe",
 	"chart_ColumnType": "Säulendiagramm",
 	"chart_DataSource": "Datenquelle",
 	"chart_dbAdapter": "Datenbank-Adapter",
