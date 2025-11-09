@@ -158,6 +158,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Switch from global subscript to individual subscriptions
+- (ticaki) model us-p fixed
 - (ticaki) update deps
 
 ### 0.7.2 (2025-10-27)
