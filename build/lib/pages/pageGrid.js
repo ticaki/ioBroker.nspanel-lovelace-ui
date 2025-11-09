@@ -38,7 +38,7 @@ const PageGrid2USPMessageDefault = {
 };
 const PageGrid3MessageDefault = {
   ...PageGridMessageDefault,
-  options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~"]
+  options: ["~~~~~", "~~~~~", "~~~~~"]
 };
 class PageGrid extends import_pageMenu.PageMenu {
   config;

@@ -1927,7 +1927,7 @@ export const ScreenSaverConst: Record<
             maxEntries: { eu: 0 },
         },
         bottom: {
-            maxEntries: { eu: 3, 'us-p': 5, 'us-l': 3 },
+            maxEntries: { eu: 3, 'us-p': 4, 'us-l': 3 },
         },
         alternate: {
             maxEntries: { eu: 0 },

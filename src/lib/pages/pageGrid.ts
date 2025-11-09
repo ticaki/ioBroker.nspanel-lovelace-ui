@@ -20,7 +20,7 @@ const PageGrid2USPMessageDefault: pages.PageGridMessage = {
 
 const PageGrid3MessageDefault: pages.PageGridMessage = {
     ...PageGridMessageDefault,
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~'],
+    options: ['~~~~~', '~~~~~', '~~~~~'],
 };
 export class PageGrid extends PageMenu {
     config: pages.cardGridDataItemOptions;
