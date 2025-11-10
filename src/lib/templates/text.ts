@@ -2533,11 +2533,13 @@ export const textTemplates: TemplateItems = {
                                 case 'weather-night':
                                     return Color.clearNight;
                                 case 'weather-partly-cloudy':
+                                case 'weather-night-partly-cloudy':
                                     return Color.partlyCloudy;
                                 case 'weather-pouring':
                                     return Color.pouring;
                                 case 'weather-partly-rainy':
                                 case 'weather-lightning-rainy':
+                                case 'weather-rainy':
                                     return Color.rainy;
                                 case 'weather-partly-snowy':
                                 case 'weather-snowy-rainy':
