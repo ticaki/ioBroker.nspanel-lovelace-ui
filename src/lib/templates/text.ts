@@ -2070,7 +2070,7 @@ export const textTemplates: TemplateItems = {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'date.sunrise',
+                    role: 'date.sunrise.forecast.0',
                     dp: '',
                     read: `
             if (new Date().getDate() !== new Date(val).getDate()){
@@ -2089,7 +2089,7 @@ export const textTemplates: TemplateItems = {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'date.sunset',
+                    role: 'date.sunset.forecast.0',
                     dp: '',
                     read: `
             if (new Date().getDate() !== new Date(val).getDate()){
