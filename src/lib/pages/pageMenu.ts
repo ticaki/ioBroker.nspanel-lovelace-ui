@@ -64,7 +64,6 @@ export class PageMenu extends Page {
                 case 'screensaver2':
                 case 'screensaver3':
                 case 'popupNotify':
-                case 'popupNotify2':
                 default:
                     this.log.warn(
                         `PageMenu: ${config.card} is not supported in this class. Please use the correct class for this card.`,

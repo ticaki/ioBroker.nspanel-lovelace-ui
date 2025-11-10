@@ -1,3 +1,4 @@
+import type { RGB } from '../const/Color';
 import type * as dataItem from '../controller/data-item';
 import { type PageItem } from '../pages/pageItem';
 import type { AdminCardTypes } from './adminShareConfig';
@@ -225,7 +226,7 @@ export type PageOthersConfigs =
     | cardThermoDataItemOptions
     | cardAlarmDataItemOptions
     | cardNotifyDataItemOptions
-    | cardNotify2DataItemOptions
+    | cardPopup2DataItemOptions
     | cardQRDataItemOptions
     | cardChartDataItemOptions;
 
@@ -261,8 +262,7 @@ export type PageBase = (
         | cardThermoDataItems
         | cardThermo2DataItems
         | cardAlarmDataItems
-        | cardNotifyDataItems
-        | cardNotify2DataItems
+        | cardPopupDataItems
         | cardQRDataItems
         | cardChartDataItems
         | cardScheduleDataItems;
@@ -279,21 +279,37 @@ export type PageBaseConfigTemplate = {
     items: undefined;
 };
 
-type PageNotifyConfig = {
+type PagePopupConfig = {
+    details: string;
+    setStateYes?: string;
+    setStateNo?: string;
+    setStateID?: string;
+    setGlobalYes?: string;
+    setGlobalNo?: string;
+    setGlobalID?: string;
+};
+
+type PopupDetailsType = 'information' | 'acknowledge';
+
+export type PagePopupDataDetails = {
+    priority: number;
+    type: PopupDetailsType;
+    id?: string;
+    global?: boolean;
     headline: string;
-    entity1?: NSPanel.ValueEntryType;
-    colorHeadline: NSPanel.ColorEntryTypeBooleanStandard;
+    colorHeadline?: RGB;
     buttonLeft: string;
-    colorButtonLeft: NSPanel.ColorEntryTypeBooleanStandard;
+    colorButtonLeft?: RGB;
     buttonRight: string;
-    colorButtonRight: NSPanel.ColorEntryTypeBooleanStandard;
+    colorButtonRight?: RGB;
     text: string;
-    colorText: NSPanel.ColorEntryTypeBooleanStandard;
-    timeout: number;
-    optionalValue?: string;
-    setValue1?: string;
-    setValue2?: string;
-    closingBehaviour?: string;
+    colorText?: RGB;
+    //timeout?: number;
+    //closingBehaviour?: string;
+    textSize?: string;
+    icon?: AllIcons;
+    iconColor?: RGB;
+    alwaysOn: boolean;
 };
 
 export type PopupNotificationVal =
@@ -314,28 +330,19 @@ export type PopupNotificationVal =
 
 export type cardNotifyDataItemOptions = {
     card: Extract<AdminCardTypes, 'popupNotify'>;
-    data: ChangeTypeOfKeys<PageNotifyConfig, NSPanel.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PagePopupConfig, NSPanel.DataItemsOptions | undefined>;
 };
 
 export type closingBehaviour = 'both' | 'yes' | 'no' | 'none';
 
-export type cardNotifyDataItems = {
+export type cardPopupDataItems = {
     card: Extract<AdminCardTypes, 'popupNotify'>;
-    data: ChangeTypeOfKeys<PageNotifyConfig, dataItem.Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PagePopupConfig, dataItem.Dataitem | undefined>;
 };
 
-type PageNotify2Config = {
-    textSize: string;
-    icon: NSPanel.IconEntryType;
-} & PageNotifyConfig;
-
-export type cardNotify2DataItemOptions = {
-    card: Extract<AdminCardTypes, 'popupNotify2'>;
-    data: ChangeTypeOfKeys<PageNotify2Config, NSPanel.DataItemsOptions | undefined>;
-};
-export type cardNotify2DataItems = {
-    card: Extract<AdminCardTypes, 'popupNotify2'>;
-    data: ChangeTypeOfKeys<PageNotify2Config, dataItem.Dataitem | undefined>;
+export type cardPopup2DataItemOptions = {
+    card: Extract<AdminCardTypes, 'popupNotify'>;
+    data: ChangeTypeOfKeys<PagePopupConfig, NSPanel.DataItemsOptions | undefined>;
 };
 
 type PageChartConfig = {

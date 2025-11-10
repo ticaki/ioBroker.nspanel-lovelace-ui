@@ -142,6 +142,7 @@ export type PanelInternalCommand =
     | 'cmd/NotificationNext'
     | 'info/NotificationCounter'
     | 'cmd/popupNotification'
+    | 'system/popupNotification'
     | 'info/modelVersion'
     | 'info/displayVersion'
     | 'info/tasmotaVersion'
@@ -155,7 +156,11 @@ export type PanelInternalCommand =
     | 'cmd/screenSaverDoubleClick'
     | 'cmd/screenSaverLayout'
     | 'cmd/hideCards'
-    | 'cmd/buzzer';
+    | 'cmd/buzzer'
+    | 'cmd/NotificationCustomYes'
+    | 'cmd/NotificationCustomNo'
+    | 'cmd/NotificationCustomID'
+    | 'cmd/popupNotificationCustom';
 
 /**
  * Defines how the panel handles "always on" behavior.

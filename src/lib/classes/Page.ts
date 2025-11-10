@@ -319,7 +319,9 @@ export class Page extends BaseClassPage {
         }
         if (forceSend || this.basePanel.lastCard !== this.card) {
             this.basePanel.lastSendTypeDate = Date.now();
-            this.log.debug(`Register last send type ${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`);
+            this.log.debug(
+                `Register last send type ${this.basePanel.name}-${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`,
+            );
             this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
         } else {
             if (this.lastCardCounter++ > 31) {
@@ -485,6 +487,9 @@ export class Page extends BaseClassPage {
      */
     removeLastPage(_p: Page | undefined): void {}
 
+    getLastPage(): Page | undefined {
+        return undefined;
+    }
     /**
      * Updates the page content and sends data to the NSPanel.
      * Base implementation logs a warning; all derived page classes MUST override this

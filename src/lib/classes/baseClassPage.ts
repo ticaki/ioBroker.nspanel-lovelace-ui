@@ -128,30 +128,32 @@ export class BaseTriggeredPage extends BaseClass {
             return false;
         }
 
-        this.updateTimeout = this.adapter.setTimeout(async () => {
-            if (this.unload || this.adapter.unload) {
-                return;
-            }
-            this.updateTimeout = undefined;
-            if (this.doUpdate) {
-                if (this.alwaysOnState) {
-                    this.adapter.clearTimeout(this.alwaysOnState);
+        if (this.minUpdateInterval > 0) {
+            this.updateTimeout = this.adapter.setTimeout(async () => {
+                if (this.unload || this.adapter.unload) {
+                    return;
                 }
-                if (this.alwaysOn === 'action') {
-                    if (this.unload || this.adapter.unload) {
-                        return;
+                this.updateTimeout = undefined;
+                if (this.doUpdate) {
+                    if (this.alwaysOnState) {
+                        this.adapter.clearTimeout(this.alwaysOnState);
                     }
-                    this.alwaysOnState = this.adapter.setTimeout(
-                        () => {
-                            this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
-                        },
-                        this.basePanel.timeout * 1000 || 5000,
-                    );
+                    if (this.alwaysOn === 'action') {
+                        if (this.unload || this.adapter.unload) {
+                            return;
+                        }
+                        this.alwaysOnState = this.adapter.setTimeout(
+                            () => {
+                                this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+                            },
+                            this.basePanel.timeout * 1000 || 5000,
+                        );
+                    }
+                    this.doUpdate = false;
+                    await this.onStateTrigger(dp, from);
                 }
-                this.doUpdate = false;
-                await this.onStateTrigger(dp, from);
-            }
-        }, this.minUpdateInterval ?? 50);
+            }, this.minUpdateInterval);
+        }
         if (this.alwaysOnState) {
             this.adapter.clearTimeout(this.alwaysOnState);
         }

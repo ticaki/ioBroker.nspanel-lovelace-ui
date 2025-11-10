@@ -492,6 +492,38 @@ export async function getIconEntryColor(
     return String(Color.rgb_dec565(def));
 }
 
+export function getRGBFromValue(val: any, role?: string): RGB | undefined {
+    if (val != null) {
+        if (typeof val === 'string') {
+            try {
+                const value = JSON.parse(val);
+                if (Color.isRGB(value)) {
+                    return value;
+                }
+            } catch {
+                let value = val;
+                if (typeof value === 'string') {
+                    value = value.trim();
+                    if (value.startsWith('#')) {
+                        const v = Color.ConvertWithColordtoRgb(value);
+                        if (Color.isRGB(v)) {
+                            return v;
+                        }
+                    } else if (role === 'level.color.name' || role === 'level.color.rgb') {
+                        return Color.ConvertWithColordtoRgb(value);
+                    }
+                }
+            }
+        } else if (typeof val === 'object') {
+            if (Color.isRGB(val)) {
+                return val;
+            }
+        } else if (typeof val === 'number') {
+            return Color.decToRgb(val);
+        }
+    }
+    return undefined;
+}
 function getLogFromIconScale(i: types.IconColorElement, factor: number): number {
     if (i.log10 !== undefined) {
         if (i.log10 === 'max') {

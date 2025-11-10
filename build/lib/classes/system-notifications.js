@@ -174,6 +174,9 @@ class SystemNotifications extends import_library.BaseClass {
       }
     }, 2500);
   }
+  getCount() {
+    return this.notifications.filter((a) => !a.cleared).length;
+  }
   /**
    * Clear a notification
    *
@@ -208,9 +211,10 @@ class SystemNotifications extends import_library.BaseClass {
       const { headline, text } = this.notifications[index];
       const line = 46;
       return {
-        headline: `${this.library.getTranslation("Notification")} (${currentNotify}/${this.count})`,
+        headline: `${this.library.getTranslation("Notification")} (${currentNotify}/${this.getCount()})`,
         text: `${(0, import_tools.insertLinebreak)(headline, line)}
-${(0, import_tools.insertLinebreak)(text, line)}`
+${(0, import_tools.insertLinebreak)(text, line)}`,
+        id: index
       };
     }
     return null;

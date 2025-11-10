@@ -25,7 +25,7 @@ import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import type { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
-import { PageNotify } from '../pages/pageNotification';
+import { PagePopup } from '../pages/pagePopup';
 import { systemNavigation, systemPages } from '../templates/system-templates';
 import { PageAlarm } from '../pages/pageAlarm';
 import { PageQR } from '../pages/pageQR';
@@ -33,7 +33,7 @@ import { Dataitem } from './data-item';
 import { Color, type RGB } from '../const/Color';
 import { PageSchedule } from '../pages/pageSchedule';
 import { cardTemplates } from '../templates/card';
-import { deepAssign, getRegExp, isVersionGreaterOrEqual } from '../const/tools';
+import { deepAssign, getRegExp, getRGBFromValue, isVersionGreaterOrEqual } from '../const/tools';
 import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 import { PageThermo2 } from '../pages/pageThermo2';
@@ -83,7 +83,7 @@ export class Panel extends BaseClass {
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
 
-    public blockTouchEventsForMs: number = 400; // ms
+    public blockTouchEventsForMs: number = 200; // ms
     public lastSendTypeDate: number = 0;
 
     options: panelConfigPartial;
@@ -340,10 +340,9 @@ export class Panel extends BaseClass {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PagePower(pmconfig, pageConfig);
             }
-            case 'popupNotify2':
             case 'popupNotify': {
                 pageConfig = Panel.getPage(pageConfig, this);
-                return new PageNotify(pmconfig, pageConfig);
+                return new PagePopup(pmconfig, pageConfig);
             }
             case 'screensaver':
             case 'screensaver2':
@@ -404,6 +403,40 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd.dim._channel,
         );
+
+        await this.library.writedp(
+            `panels.${this.name}.pagePopup`,
+            undefined,
+            definition.genericStateObjects.panel.panels.pagePopup._channel,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.pagePopup`,
+            undefined,
+            definition.genericStateObjects.panel.panels.cmd.pagePopup._channel,
+        );
+
+        for (const key of Object.keys(definition.genericStateObjects.panel.panels.pagePopup)) {
+            if (key !== '_channel') {
+                await this.library.writedp(
+                    `panels.${this.name}.pagePopup.${key}`,
+                    undefined,
+                    definition.genericStateObjects.panel.panels.pagePopup[
+                        key as keyof typeof definition.genericStateObjects.panel.panels.pagePopup
+                    ],
+                );
+            }
+        }
+        for (const key of Object.keys(definition.genericStateObjects.panel.panels.cmd.pagePopup)) {
+            if (key !== '_channel') {
+                await this.library.writedp(
+                    `panels.${this.name}.cmd.pagePopup.${key}`,
+                    undefined,
+                    definition.genericStateObjects.panel.panels.cmd.pagePopup[
+                        key as keyof typeof definition.genericStateObjects.panel.panels.cmd.pagePopup
+                    ],
+                );
+            }
+        }
 
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver`,
@@ -787,7 +820,7 @@ export class Panel extends BaseClass {
     }
     getActivePage(): Page {
         if (!this._activePage) {
-            throw new Error(`No active page here, check code!`);
+            throw new Error(`No active page here panel ${this.friendlyName}, check code!`);
         }
         return this._activePage;
     }
@@ -1245,6 +1278,56 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'pagePopup.activate': {
+                    const global = this.library.readdb(`panels.${this.name}.cmd.pagePopup.global`)?.val;
+                    const details: pages.PagePopupDataDetails = {
+                        id: (this.library.readdb(`panels.${this.name}.cmd.pagePopup.id`)?.val as string) || '',
+                        priority: this.library.readdb(`panels.${this.name}.cmd.pagePopup.priority`)?.val as number,
+                        global: !!global,
+                        type:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.type`)?.val as string as any) ||
+                            'information',
+                        headline:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.headline`)?.val as string) || '',
+                        text: (this.library.readdb(`panels.${this.name}.cmd.pagePopup.text`)?.val as string) || '',
+                        buttonLeft:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeft`)?.val as string) || '',
+                        buttonRight:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)?.val as string) || '',
+                        colorHeadline: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorHeadline`)?.val || '#FFFFFF',
+                        ),
+                        colorText: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorText`)?.val || '#FFFFFF',
+                        ),
+                        colorButtonLeft: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonLeft`)?.val || '#FFFFFF',
+                        ),
+                        colorButtonRight: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonRight`)?.val || '#FFFFFF',
+                        ),
+                        icon:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)?.val as AllIcons) ||
+                            undefined,
+                        textSize: String(this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)?.val) || '3',
+                        iconColor: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)?.val || '#FFFFFF',
+                        ),
+                        alwaysOn: !!(this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)?.val ?? true),
+                    };
+                    let panels: Panel[] = [this];
+                    if (global) {
+                        panels = this.controller.panels;
+                    }
+                    for (const panel of panels) {
+                        await this.statesControler.setInternalState(
+                            `${panel.name}/cmd/popupNotificationCustom`,
+                            JSON.stringify(details),
+                            false,
+                        );
+                    }
+                    break;
+                }
             }
         }
     }
@@ -1553,10 +1636,26 @@ export class Panel extends BaseClass {
                         }
                         this.navigation.resetPosition();
                         await this.navigation.setCurrentPage();
+                        const popup = this.pages.find(a => a && a.name === '///popupNotificationCustom');
+                        if (popup && 'showPopup' in popup && typeof popup.showPopup === 'function') {
+                            popup.showPopup();
+                        }
                         break;
                     }
-                } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
-                    await this.setActivePage(true);
+                } else if (event.action === 'bExit') {
+                    if (event.id !== 'popupNotify') {
+                        await this.setActivePage(true);
+                    } else {
+                        const currentPage = this.getActivePage();
+                        if ('startReminder' in currentPage && typeof currentPage.startReminder === 'function') {
+                            (currentPage as PagePopup).startReminder();
+                        }
+                        const page = currentPage.getLastPage();
+                        if (page) {
+                            currentPage.removeLastPage(page);
+                            await this.setActivePage(page);
+                        }
+                    }
                 } else {
                     if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
                         this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
@@ -1755,31 +1854,76 @@ export class Panel extends BaseClass {
                 }
                 case 'cmd/NotificationCleared2':
                 case 'cmd/NotificationCleared': {
-                    await this.controller.systemNotification.clearNotification(this.notifyIndex);
+                    if (typeof state.val !== 'number') {
+                        if (typeof state.val === 'string' && !isNaN(parseInt(state.val))) {
+                            state.val = parseInt(state.val);
+                        } else {
+                            break;
+                        }
+                    }
+                    await this.controller.systemNotification.clearNotification(state.val);
+                    break;
                 }
-                // eslint-disable-next-line no-fallthrough
                 case 'cmd/NotificationNext2':
                 case 'cmd/NotificationNext': {
-                    this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);
-
-                    if (this.notifyIndex !== -1) {
-                        const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+                    let details: pages.PagePopupDataDetails[] | undefined;
+                    let index = -1;
+                    while ((index = this.controller.systemNotification.getNotificationIndex(++index)) !== -1) {
+                        const val = this.controller.systemNotification.getNotification(index);
                         if (val) {
-                            await this.statesControler.setInternalState(
-                                `${this.name}/cmd/popupNotification${token.endsWith('2') ? '' : '2'}`,
-                                JSON.stringify(val),
-                                false,
-                            );
+                            details = details || [];
+                            details.push({
+                                priority: 50,
+                                type: 'acknowledge',
+                                id: `${index}`,
+                                headline: val.headline,
+                                text: val.text,
+                                buttonLeft: 'next',
+                                buttonRight: 'clear',
+                                alwaysOn: true,
+                            });
                         }
+                    }
+                    if (details) {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/system/popupNotification`,
+                            JSON.stringify(details),
+                            false,
+                        );
+                    }
+                    break;
+                }
+                case 'cmd/NotificationCustomID': {
+                    if (typeof state.val === 'object') {
                         break;
                     }
-                    await this.HandleIncomingMessage({
-                        type: 'event',
-                        method: 'buttonPress2',
-                        id: 'popupNotify',
-                        action: 'bExit',
-                        opt: '',
-                    });
+                    await this.library.writedp(
+                        `panels.${this.name}.pagePopup.id`,
+                        state.val,
+                        definition.genericStateObjects.panel.panels.pagePopup.id,
+                    );
+                    break;
+                }
+                case 'cmd/NotificationCustomYes': {
+                    if (typeof state.val === 'object') {
+                        break;
+                    }
+                    await this.library.writedp(
+                        `panels.${this.name}.pagePopup.yes`,
+                        state.val,
+                        definition.genericStateObjects.panel.panels.pagePopup.yes,
+                    );
+                    break;
+                }
+                case 'cmd/NotificationCustomNo': {
+                    if (typeof state.val === 'object') {
+                        break;
+                    }
+                    await this.library.writedp(
+                        `panels.${this.name}.pagePopup.no`,
+                        state.val,
+                        definition.genericStateObjects.panel.panels.pagePopup.no,
+                    );
                     break;
                 }
                 case 'cmd/TasmotaRestart': {

@@ -346,9 +346,9 @@ export class Navigation extends BaseClass {
             return;
         }
         if (nItem.optional === 'notifications') {
-            if (this.panel.controller.systemNotification.getNotificationIndex(this.panel.notifyIndex) !== -1) {
+            if (this.panel.controller.systemNotification.getCount() !== 0) {
                 await this.panel.statesControler.setInternalState(
-                    `${this.panel.name}/cmd/NotificationNext2`,
+                    `${this.panel.name}/cmd/NotificationNext`,
                     true,
                     false,
                 );

@@ -49,6 +49,7 @@ __export(tools_exports, {
   getPayloadArray: () => getPayloadArray,
   getPayloadArrayRemoveTilde: () => getPayloadArrayRemoveTilde,
   getPayloadRemoveTilde: () => getPayloadRemoveTilde,
+  getRGBFromValue: () => getRGBFromValue,
   getRGBfromRGBThree: () => getRGBfromRGBThree,
   getRegExp: () => getRegExp,
   getScaledNumber: () => getScaledNumber,
@@ -493,6 +494,38 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     }
   }
   return String(import_Color.Color.rgb_dec565(def));
+}
+function getRGBFromValue(val, role) {
+  if (val != null) {
+    if (typeof val === "string") {
+      try {
+        const value = JSON.parse(val);
+        if (import_Color.Color.isRGB(value)) {
+          return value;
+        }
+      } catch {
+        let value = val;
+        if (typeof value === "string") {
+          value = value.trim();
+          if (value.startsWith("#")) {
+            const v = import_Color.Color.ConvertWithColordtoRgb(value);
+            if (import_Color.Color.isRGB(v)) {
+              return v;
+            }
+          } else if (role === "level.color.name" || role === "level.color.rgb") {
+            return import_Color.Color.ConvertWithColordtoRgb(value);
+          }
+        }
+      }
+    } else if (typeof val === "object") {
+      if (import_Color.Color.isRGB(val)) {
+        return val;
+      }
+    } else if (typeof val === "number") {
+      return import_Color.Color.decToRgb(val);
+    }
+  }
+  return void 0;
 }
 function getLogFromIconScale(i, factor) {
   if (i.log10 !== void 0) {
@@ -1229,6 +1262,7 @@ var tools_default = formatHMS;
   getPayloadArray,
   getPayloadArrayRemoveTilde,
   getPayloadRemoveTilde,
+  getRGBFromValue,
   getRGBfromRGBThree,
   getRegExp,
   getScaledNumber,

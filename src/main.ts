@@ -999,6 +999,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'setPopupNotification': {
+                    if (this.controller && obj.message) {
+                        void this.controller.setPopupNotification(obj.message);
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
 
                 case 'testCase': {
                     if (obj.callback) {
