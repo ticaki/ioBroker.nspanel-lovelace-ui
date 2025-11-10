@@ -317,10 +317,13 @@ ${message.text}`;
       return;
     }
     this.debouceUpdateTimeout = this.adapter.setTimeout(async () => {
-      if (this.basePanel.getActivePage() !== this) {
-        await this.basePanel.setActivePage(this);
-      } else {
-        await this.update();
+      try {
+        if (this.basePanel.getActivePage() !== this) {
+          await this.basePanel.setActivePage(this);
+        } else {
+          await this.update();
+        }
+      } catch {
       }
     }, 200);
   }

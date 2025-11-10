@@ -815,7 +815,7 @@ export class Panel extends BaseClass {
     }
     getActivePage(): Page {
         if (!this._activePage) {
-            throw new Error(`No active page here, check code!`);
+            throw new Error(`No active page here panel ${this.friendlyName}, check code!`);
         }
         return this._activePage;
     }

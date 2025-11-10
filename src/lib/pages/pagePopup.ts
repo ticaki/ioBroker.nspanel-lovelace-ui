@@ -325,11 +325,17 @@ export class PagePopup extends Page {
             return;
         }
         this.debouceUpdateTimeout = this.adapter.setTimeout(async () => {
-            if (this.basePanel.getActivePage() !== this) {
-                //await this.basePanel.setActivePage(this.basePanel.navigation.getCurrentMainPage());
-                await this.basePanel.setActivePage(this);
-            } else {
-                await this.update();
+            try {
+                // this.basePanel.getActivePage() can be undefined if the panel is not ready yet
+                // in this case we get an error here, so we catch it and do nothing
+                if (this.basePanel.getActivePage() !== this) {
+                    //await this.basePanel.setActivePage(this.basePanel.navigation.getCurrentMainPage());
+                    await this.basePanel.setActivePage(this);
+                } else {
+                    await this.update();
+                }
+            } catch {
+                // do nothing
             }
         }, 200);
     }
