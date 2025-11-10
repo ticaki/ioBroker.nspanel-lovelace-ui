@@ -1022,43 +1022,46 @@ class NspanelLovelaceUi extends utils.Adapter {
                 } catch (e) {
                   this.log.error(`Error: while installing berry - ${e}`);
                 }
-                try {
-                  await this.delay(3e3);
-                  const cmnd = await this.getTFTVersionOnline(
-                    obj.message.model,
-                    obj.message.useBetaTFT,
-                    this.config.forceTFTVersion,
-                    result
-                  );
-                  if (!cmnd) {
-                    this.log.error("No version found!");
+                if ((result == null ? void 0 : result.nlui_driver_version) !== "-1") {
+                  try {
+                    await this.delay(3e3);
+                    const cmnd = await this.getTFTVersionOnline(
+                      obj.message.model,
+                      obj.message.useBetaTFT,
+                      this.config.forceTFTVersion,
+                      result
+                    );
+                    if (!cmnd) {
+                      this.log.error("No version found!");
+                      if (obj.callback) {
+                        this.sendTo(
+                          obj.from,
+                          obj.command,
+                          { error: "sendToRequestFail2" },
+                          obj.callback
+                        );
+                      }
+                      break;
+                    }
+                    if (this.mqttClient) {
+                      await this.mqttClient.publish(`${topic}/cmnd/Backlog`, `${cmnd}`);
+                      await this.delay(100);
+                      await this.mqttClient.publish(`${topic}/cmnd/Backlog`, ``);
+                    }
+                    this.log.info(
+                      `Installing tft on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
+                    );
+                  } catch (e) {
+                    this.log.error(`Error: ${e}`);
                     if (obj.callback) {
                       this.sendTo(
                         obj.from,
                         obj.command,
-                        { error: "sendToRequestFail2" },
+                        { error: "sendToRequestFail3" },
                         obj.callback
                       );
                     }
-                    break;
-                  }
-                  if (this.mqttClient) {
-                    await this.mqttClient.publish(`${topic}/cmnd/Backlog`, `${cmnd}`);
-                    await this.delay(100);
-                    await this.mqttClient.publish(`${topic}/cmnd/Backlog`, ``);
-                  }
-                  this.log.info(
-                    `Installing tft on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
-                  );
-                } catch (e) {
-                  this.log.error(`Error: ${e}`);
-                  if (obj.callback) {
-                    this.sendTo(
-                      obj.from,
-                      obj.command,
-                      { error: "sendToRequestFail3" },
-                      obj.callback
-                    );
+                    throw e;
                   }
                 }
                 await this.createConfigurationScript(item.name, item.topic);
@@ -1920,15 +1923,19 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     data["tft-alpha"] = alpha;
     const modelSuffix = m ? `-${m}` : "";
-    const key = alpha ? `tft${modelSuffix}-alpha` : beta ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
-    const entry = data[key];
+    const alphaKey = alpha ? `tft${modelSuffix}-alpha` : "";
+    const betaKey = beta ? `tft${modelSuffix}-beta` : "";
+    const defaultKey = `tft${modelSuffix}`;
+    let entry = alpha && data[alphaKey] ? data[alphaKey] : "";
+    entry = !entry && beta && data[betaKey] ? data[betaKey] : entry;
+    entry = !entry && data[defaultKey] ? data[defaultKey] : entry;
     if (!entry) {
-      this.log.error(`No version entry for key "${key}".`);
+      this.log.error(`No version entry for key "${defaultKey}".`);
       return null;
     }
     const version = String(entry).split("_")[0];
     if (!version) {
-      this.log.error(`Invalid version in entry for "${key}": ${entry}`);
+      this.log.error(`Invalid version in entry for "${defaultKey}": ${entry}`);
       return null;
     }
     const fileName = `nspanel${modelSuffix}-v${version}.tft`;

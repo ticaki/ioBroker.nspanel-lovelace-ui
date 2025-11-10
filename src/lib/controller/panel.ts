@@ -355,6 +355,11 @@ export class Panel extends BaseClass {
                     adapter: this.adapter,
                     dpInit: '',
                 };
+                if (!pageConfig.config) {
+                    throw new Error(`Page config is missing for page ${pageConfig.uniqueID}`);
+                }
+                pageConfig.config.model = (this.adapter.config.panels?.find(p => p.topic === this.topic)?.model ||
+                    'eu') as typeof pageConfig.config.model;
 
                 return new Screensaver(ssconfig, pageConfig);
             }

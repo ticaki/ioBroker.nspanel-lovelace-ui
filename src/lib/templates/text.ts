@@ -2070,7 +2070,7 @@ export const textTemplates: TemplateItems = {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'date.sunrise',
+                    role: 'date.sunrise.forecast.0',
                     dp: '',
                     read: `
             if (new Date().getDate() !== new Date(val).getDate()){
@@ -2089,7 +2089,7 @@ export const textTemplates: TemplateItems = {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'date.sunset',
+                    role: 'date.sunset.forecast.0',
                     dp: '',
                     read: `
             if (new Date().getDate() !== new Date(val).getDate()){
@@ -2533,11 +2533,13 @@ export const textTemplates: TemplateItems = {
                                 case 'weather-night':
                                     return Color.clearNight;
                                 case 'weather-partly-cloudy':
+                                case 'weather-night-partly-cloudy':
                                     return Color.partlyCloudy;
                                 case 'weather-pouring':
                                     return Color.pouring;
                                 case 'weather-partly-rainy':
                                 case 'weather-lightning-rainy':
+                                case 'weather-rainy':
                                     return Color.rainy;
                                 case 'weather-partly-snowy':
                                 case 'weather-snowy-rainy':
@@ -2638,11 +2640,13 @@ export const textTemplates: TemplateItems = {
                                 case 'weather-night':
                                     return Color.clearNight;
                                 case 'weather-partly-cloudy':
+                                case 'weather-night-partly-cloudy':
                                     return Color.partlyCloudy;
                                 case 'weather-pouring':
                                     return Color.pouring;
                                 case 'weather-partly-rainy':
                                 case 'weather-lightning-rainy':
+                                case 'weather-rainy':
                                     return Color.rainy;
                                 case 'weather-partly-snowy':
                                 case 'weather-snowy-rainy':

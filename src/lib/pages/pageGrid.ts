@@ -9,10 +9,18 @@ const PageGridMessageDefault: pages.PageGridMessage = {
     options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
 const PageGrid2MessageDefault: pages.PageGridMessage = {
-    event: 'entityUpd',
-    headline: 'Page Grid',
-    navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
+    ...PageGridMessageDefault,
     options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
+};
+
+const PageGrid2USPMessageDefault: pages.PageGridMessage = {
+    ...PageGridMessageDefault,
+    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
+};
+
+const PageGrid3MessageDefault: pages.PageGridMessage = {
+    ...PageGridMessageDefault,
+    options: ['~~~~~', '~~~~~', '~~~~~'],
 };
 export class PageGrid extends PageMenu {
     config: pages.cardGridDataItemOptions;
@@ -89,7 +97,13 @@ export class PageGrid extends PageMenu {
         );
         message.navigation = this.getNavigation();
         const msg: pages.PageGridMessage = {
-            ...(this.card === 'cardGrid' ? PageGridMessageDefault : PageGrid2MessageDefault),
+            ...(this.card === 'cardGrid'
+                ? PageGridMessageDefault
+                : this.card === 'cardGrid2'
+                  ? this.basePanel.info.nspanel.model === 'us-p'
+                      ? PageGrid2USPMessageDefault
+                      : PageGrid2MessageDefault
+                  : PageGrid3MessageDefault),
             ...message,
         };
 

@@ -102,9 +102,15 @@ class PanelSend extends import_library.BaseClass {
   addMessage = (payload, ackForType, force, opt) => {
     var _a;
     if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.some((a) => a.payload === payload && a.opt === opt)) {
+      if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`Message ${payload} is already in queue - skip adding`);
+      }
       return;
     }
     if (!((_a = this.panel) == null ? void 0 : _a.isOnline) && force !== true) {
+      if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`Panel is offline - skip adding message ${payload}`);
+      }
       return;
     }
     if (force === true) {
@@ -117,7 +123,15 @@ class PanelSend extends import_library.BaseClass {
   };
   sendMessageLoop = async () => {
     const msg = this.messageDb[0];
+    if (this.adapter.config.debugLogMqtt) {
+      this.log.debug(
+        `sendMessageLoop - messages in queue: ${this.messageDb.length} handling message: ${JSON.stringify(msg)}`
+      );
+    }
     if (msg === void 0 || this.unload) {
+      if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`No message to send or unload - stop send loop`);
+      }
       if (this.messageTimeout) {
         this.adapter.clearTimeout(this.messageTimeout);
       }
@@ -146,10 +160,16 @@ class PanelSend extends import_library.BaseClass {
   };
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {
+      if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`Tasmota Message ${payload} is already in queue - skip adding`);
+      }
       return;
     }
     if (this.unload || this.adapter.unload) {
       this.messageDbTasmota = [];
+    }
+    if (this.adapter.config.debugLogMqtt) {
+      this.log.debug(`add Tasmota message ${payload} to queue`);
     }
     this.messageDbTasmota.push({ topic, payload, opt });
     if (this.messageTimeoutTasmota === void 0) {

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.7.2",
+    "version": "0.7.3",
     "news": {
+      "0.7.3": {
+        "en": "Switch from global subscript to individual subscriptions\nmodel us-p fixed\nupdate deps",
+        "de": "Wechsel vom globalen Subskript zu einzelnen Abonnements\nmodell us-p fixed\nupdate deps",
+        "ru": "Переход от глобальной подписки к индивидуальной подписке\nмодель us-p фиксированная\nобновление deps",
+        "pt": "Mudar de subscrito global para assinaturas individuais\nmodelo us-p fixo\natualizar deps",
+        "nl": "Overschakelen van global subscript naar individuele abonnementen\nmodel us-p vast\nupdate deps",
+        "fr": "Passer d'un abonnement global à un abonnement individuel\nmodèle us-p fixé\nmettre à jour les deps",
+        "it": "Passare dal sottoscritto globale agli abbonamenti individuali\nmodello us-p fisso\naggiornamento dep",
+        "es": "Cambiar de subscript global a suscripciones individuales\nmodelo us-p fijo\nactualización de los deps",
+        "pl": "Przełączenie z subskrypcji globalnej na subskrypcje indywidualne\nmodel us- p stały\naktualizacje deps",
+        "uk": "Переключення з глобального підряду на індивідуальні підписки\nмодель us-p фіксована\nоновлення deps",
+        "zh-cn": "从全球下标切换到个人订阅\n模型我们 -p 固定\n更新代码"
+      },
       "0.7.2": {
         "en": "selection disappears - fixed",
         "de": "auswahl verschwindet - fixiert",
@@ -80,19 +93,6 @@
         "pl": "Wykres: Dodano etykietę \"NO DATA\", gdy wykres nie ma danych do wyświetlenia - poprawki [# 471] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 471)\nPageItem info: Fixed missing scale property - fixes [# 532] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 532)\nSzablony: Dodano szablon mapowania stanu podciśnienia Robock\nPageAlarm: Stałe warunki wyścigu przy ponownym uruchomieniu szybkiego adaptera (czyszczenie timeout, kontrola rozładunku)\nDefinicje typu reaktora",
         "uk": "Графік: Додано тег \"NO DATA\" при діаграмі не має даних для відображення - fixes [#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\nСторінкаItem інформація: Фіксована відсутня вага власності - виправлення [#532] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/products/532)\nШаблони: Додано шаблон вакуумного статусу Roborock\nPageAlarm: Виправлені умови забігу на швидкому перезаряджувачі адаптера (очищення від часу, перевірка вивантаження)\nВизначення типу рефактора",
         "zh-cn": "图:无数据显示时添加的“NO DATA”标签——修正[#471](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/471)\n项目信息:固定缺失比例尺财产 -- -- 修复[#532](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/532)\n模板:添加的Roborock真空状态映射模板\n页面提醒:快速适配器重启的固定赛车条件(超时清理,卸载检查)\n重构类型定义"
-      },
-      "0.6.5": {
-        "en": "HMI: Fix screensaver notification in advanced screensaver mode.\nHMI: Fix cardChart/cardLChart dimension issues; add \"No Data\" label and correct y-axis label positioning.\nCore: Add touch-event blocking (400 ms) to avoid accidental double-clicks during page transitions.\nTypeScript: Remove deprecated `useColor` property from type definitions.\nNote: HMI fixes will be delivered separately via a firmware update and are not tied to this adapter release.",
-        "de": "HMI: Benachrichtigung im erweiterten Bildschirmschoner-Modus behoben.\nHMI: Probleme mit den Abmessungen von cardChart/cardLChart behoben; \"No Data\"-Label hinzugefügt und y-Achsen-Beschriftung korrigiert.\nCore: Touch-Event-Blockierung (400 ms) hinzugefügt, um versehentliche Doppelklicks bei Seitenwechseln zu verhindern.\nTypeScript: Veraltete Eigenschaft `useColor` aus den Typdefinitionen entfernt.\nHinweis: Die HMI-Fixes werden separat per Firmware-Update nachgeliefert und sind nicht an dieses Adapter-Release gebunden.",
-        "ru": "HMI: Исправлено уведомление заставки в расширенном режиме.\nHMI: Исправлены проблемы с размерами cardChart/cardLChart; добавлена метка \"No Data\" и откорректировано положение подписи оси Y.\nCore: Добавлена блокировка сенсорных событий (400 мс) для предотвращения случайных двойных кликов при переходе между страницами.\nTypeScript: Удалено устаревшее свойство `useColor` из определений типов.",
-        "pt": "HMI: Corrigida a notificação do protetor de tela no modo avançado.\nHMI: Corrigidos problemas de dimensões em cardChart/cardLChart; adicionada a etiqueta \"No Data\" e corrigido o posicionamento do rótulo do eixo Y.\nCore: Adicionado bloqueio de eventos de toque (400 ms) para evitar cliques duplos acidentais durante transições de página.\nTypeScript: Removida a propriedade obsoleta `useColor` das definições de tipos.",
-        "nl": "HMI: Hersteld: screensaver-notificatie in de geavanceerde screensaver-modus.\nHMI: Problemen met de afmetingen van cardChart/cardLChart opgelost; \"No Data\" label toegevoegd en y-as label gecorrigeerd.\nCore: Touch-event blokkering (400 ms) toegevoegd om per ongeluk dubbelklikken bij paginaovergangen te voorkomen.\nTypeScript: Verouderde eigenschap `useColor` verwijderd uit de typedefinities.",
-        "fr": "HMI : Correction de la notification de l'écran de veille en mode avancé.\nHMI : Correction des problèmes de dimensions de cardChart/cardLChart ; ajout d'une étiquette \"No Data\" et correction du positionnement du label de l'axe Y.\nCore : Ajout d'un blocage des événements tactiles (400 ms) pour éviter les double-clics accidentels lors des transitions de page.\nTypeScript : Suppression de la propriété obsolète `useColor` des définitions de types.",
-        "it": "HMI: Correzione della notifica dello screensaver in modalità avanzata.\nHMI: Risolti problemi di dimensione di cardChart/cardLChart; aggiunta l'etichetta \"No Data\" e corretto il posizionamento dell'etichetta dell'asse Y.\nCore: Aggiunta la protezione dagli eventi touch (400 ms) per evitare doppi clic accidentali durante le transizioni di pagina.\nTypeScript: Rimossa la proprietà deprecata `useColor` dalle definizioni dei tipi.",
-        "es": "HMI: Corregida la notificación del salvapantallas en el modo avanzado.\nHMI: Corregidos problemas de dimensiones en cardChart/cardLChart; añadida la etiqueta \"No Data\" y corregida la posición de la etiqueta del eje Y.\nCore: Añadido bloqueo de eventos táctiles (400 ms) para evitar clics dobles accidentales durante transiciones de página.\nTypeScript: Eliminada la propiedad obsoleta `useColor` de las definiciones de tipos.",
-        "pl": "HMI: Naprawiono powiadomienie wygaszacza ekranu w trybie zaawansowanym.\nHMI: Naprawiono problemy z wymiarami cardChart/cardLChart; dodano etykietę \"No Data\" i poprawiono pozycjonowanie opisu osi Y.\nCore: Dodano blokadę zdarzeń dotykowych (400 ms) aby zapobiec przypadkowym podwójnym kliknięciom podczas przejść stron.\nTypeScript: Usunięto przestarzałą właściwość `useColor` z definicji typów.",
-        "uk": "HMI: Виправлено повідомлення заставки в розширеному режимі.\nHMI: Виправлено проблеми з розмірами cardChart/cardLChart; додано мітку \"No Data\" і скориговано положення підпису осі Y.\nCore: Додано блокування сенсорних подій (400 мс), щоб уникнути випадкових подвійних клацань під час переходів сторінок.\nTypeScript: Видалено застаріле властивість `useColor` з визначень типів.",
-        "zh-cn": "HMI: 修复了高级屏幕保护模式下的屏幕保护通知。\nHMI: 修复了 cardChart/cardLChart 的尺寸问题；添加了“无数据 (No Data)”标签并修正了 Y 轴标签位置。\nCore: 增加触摸事件阻塞（400 毫秒），以避免页面切换时的意外双击。\nTypeScript: 从类型定义中移除已弃用的 `useColor` 属性。"
       }
     },
     "titleLang": {

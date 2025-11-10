@@ -107,9 +107,15 @@ export class PanelSend extends BaseClass {
             this.messageDb.length > 0 &&
             this.messageDb.some(a => a.payload === payload && a.opt === opt)
         ) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Message ${payload} is already in queue - skip adding`);
+            }
             return;
         }
         if (!this.panel?.isOnline && force !== true) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Panel is offline - skip adding message ${payload}`);
+            }
             return;
         }
         if (force === true) {
@@ -123,7 +129,15 @@ export class PanelSend extends BaseClass {
 
     private readonly sendMessageLoop = async (): Promise<void> => {
         const msg = this.messageDb[0];
+        if (this.adapter.config.debugLogMqtt) {
+            this.log.debug(
+                `sendMessageLoop - messages in queue: ${this.messageDb.length} handling message: ${JSON.stringify(msg)}`,
+            );
+        }
         if (msg === undefined || this.unload) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`No message to send or unload - stop send loop`);
+            }
             if (this.messageTimeout) {
                 this.adapter.clearTimeout(this.messageTimeout);
             }
@@ -158,12 +172,18 @@ export class PanelSend extends BaseClass {
             this.messageDbTasmota.length > 0 &&
             this.messageDbTasmota.some(a => a.topic === topic && a.payload === payload && a.opt === opt)
         ) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Tasmota Message ${payload} is already in queue - skip adding`);
+            }
             return;
         }
         if (this.unload || this.adapter.unload) {
             this.messageDbTasmota = [];
         }
 
+        if (this.adapter.config.debugLogMqtt) {
+            this.log.debug(`add Tasmota message ${payload} to queue`);
+        }
         this.messageDbTasmota.push({ topic: topic, payload: payload, opt: opt });
 
         if (this.messageTimeoutTasmota === undefined) {
