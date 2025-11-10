@@ -512,12 +512,13 @@ export class Controller extends Library.BaseClass {
             this.log.error('setPopupNotification: Invalid data format, must be valid JSON or object');
             return;
         }
+        this.log.debug(`setPopupNotification called with data: ${JSON.stringify(temp)}`);
         const global = temp.panel ? false : true;
         const details: PagePopupDataDetails = {
             id: typeof temp.id === 'string' ? temp.id : 'missing',
             priority: typeof temp.priority === 'number' ? temp.priority : 50,
             alwaysOn: typeof temp.alwaysOn === 'boolean' ? temp.alwaysOn : true,
-            type: typeof temp.type === 'string' ? temp.type : 'info',
+            type: typeof temp.type === 'string' ? temp.type : 'information',
             global: global,
             headline: typeof temp.headline === 'string' ? temp.headline : 'Missing Headline',
             text: typeof temp.text === 'string' ? temp.text : 'Missing Text',
@@ -537,7 +538,6 @@ export class Controller extends Library.BaseClass {
              priority?: number;
              type?: PopupDetailsType;
              id?: string;
-             global?: boolean;
              colorHeadline?: RGB | string;
              buttonLeft?: string;
              colorButtonLeft?: RGB | string;

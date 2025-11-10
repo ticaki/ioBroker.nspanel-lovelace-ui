@@ -276,7 +276,7 @@ ${message.text}`;
         this.detailsArray.sort((a, b) => a.priority - b.priority);
         this.detailsArray.splice(10);
         const index2 = this.detailsArray.findIndex((d) => d.id === details.id);
-        if (index2 == 0 && index !== index2) {
+        if (index2 == 0) {
           this.log.debug(`notification id ${details.id} is first in queue, updating view`);
           if (this.reminderTimeout) {
             this.adapter.clearTimeout(this.reminderTimeout);
@@ -427,7 +427,7 @@ ${message.text}`;
     if (remind) {
       this.reminderTimeout = this.adapter.setTimeout(() => {
         this.debouceUpdate();
-      }, 15e3);
+      }, 3e5);
     }
   }
   async onVisibilityChange(val) {

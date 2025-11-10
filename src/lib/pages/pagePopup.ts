@@ -230,11 +230,7 @@ export class PagePopup extends Page {
         this.rotationTimeout = undefined;
         this.log.debug(`state triggerd ${_dp}`);
         const detailsArr: pages.PagePopupDataDetails | pages.PagePopupDataDetails[] | null | undefined =
-            (await this.items?.data.details?.getObject()) as
-                | pages.PagePopupDataDetails
-                | pages.PagePopupDataDetails[]
-                | null
-                | undefined;
+            (await this.items?.data.details?.getObject()) as any;
         if (detailsArr && Array.isArray(detailsArr)) {
             this.detailsArray = [];
         }
@@ -283,7 +279,7 @@ export class PagePopup extends Page {
                 this.detailsArray.splice(10);
                 const index2 = this.detailsArray.findIndex(d => d.id === details.id);
                 // wenn neu dann anzeigen, ansonsten sollte ein timeout laufen
-                if (index2 == 0 && index !== index2) {
+                if (index2 == 0) {
                     this.log.debug(`notification id ${details.id} is first in queue, updating view`);
                     if (this.reminderTimeout) {
                         this.adapter.clearTimeout(this.reminderTimeout);
@@ -442,7 +438,7 @@ export class PagePopup extends Page {
         if (remind) {
             this.reminderTimeout = this.adapter.setTimeout(() => {
                 this.debouceUpdate();
-            }, 15_000);
+            }, 300_000);
         }
     }
 
