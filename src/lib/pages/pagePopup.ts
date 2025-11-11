@@ -110,7 +110,7 @@ export class PagePopup extends Page {
         message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, Color.Yellow) : '';
 
         message.bmText = details.buttonMid;
-        message.bmColor = details.buttonLeft ? convertToDec(details.colorButtonMid, Color.Red) : '';
+        message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, Color.Red) : '';
 
         message.brText = details.buttonRight;
         message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, Color.Green) : '';
