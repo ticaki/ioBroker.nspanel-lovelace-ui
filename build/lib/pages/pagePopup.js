@@ -114,7 +114,7 @@ class PagePopup extends import_Page.Page {
     message.blText = details.buttonLeft;
     message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, import_Color.Color.Yellow) : "";
     message.bmText = details.buttonMid;
-    message.bmColor = details.buttonLeft ? convertToDec(details.colorButtonMid, import_Color.Color.Red) : "";
+    message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, import_Color.Color.Red) : "";
     message.brText = details.buttonRight;
     message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, import_Color.Color.Green) : "";
     message.text = details.text;
