@@ -1314,6 +1314,7 @@ export class Panel extends BaseClass {
                             this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)?.val || '#FFFFFF',
                         ),
                         alwaysOn: !!(this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)?.val ?? true),
+                        buzzer: !!(this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)?.val ?? false),
                     };
                     let panels: Panel[] = [this];
                     if (global) {

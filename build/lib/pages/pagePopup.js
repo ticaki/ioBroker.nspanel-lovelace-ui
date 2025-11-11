@@ -96,6 +96,13 @@ class PagePopup extends import_Page.Page {
       }
       return;
     }
+    if (details.buzzer) {
+      this.basePanel.sendToTasmota(
+        `${this.basePanel.topic}/cmnd/Buzzer`,
+        details.buzzer === true ? "1,2,3,0xF54" : details.buzzer
+      );
+      details.buzzer = false;
+    }
     const convertToDec = (rgb, def) => {
       return String(rgb ? import_Color.Color.rgb_dec565(rgb) : def ? import_Color.Color.rgb_dec565(def) : "");
     };

@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) pagePopup added
 - (ticaki) color for brightsky favorit fixed
 
 ### 0.7.3 (2025-11-09)

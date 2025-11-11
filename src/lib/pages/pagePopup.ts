@@ -88,6 +88,14 @@ export class PagePopup extends Page {
             }
             return;
         }
+        if (details.buzzer) {
+            this.basePanel.sendToTasmota(
+                `${this.basePanel.topic}/cmnd/Buzzer`,
+                details.buzzer === true ? '1,2,3,0xF54' : details.buzzer,
+            );
+            details.buzzer = false;
+        }
+
         const convertToDec = (rgb: RGB | undefined | null, def: RGB): string => {
             return String(rgb ? Color.rgb_dec565(rgb) : def ? Color.rgb_dec565(def) : '');
         };

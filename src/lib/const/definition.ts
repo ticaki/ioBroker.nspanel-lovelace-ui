@@ -725,6 +725,19 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
+                    buzzer: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'buzzer',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                            def: false,
+                        },
+                        native: {},
+                    },
                     buttonRight: {
                         _id: '',
                         type: 'state',

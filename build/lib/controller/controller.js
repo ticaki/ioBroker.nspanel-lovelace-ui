@@ -504,7 +504,8 @@ class Controller extends Library.BaseClass {
       colorHeadline: temp.colorHeadline != null ? (0, import_tools.getRGBFromValue)(temp.colorHeadline) : void 0,
       colorText: temp.colorText != null ? (0, import_tools.getRGBFromValue)(temp.colorText) : void 0,
       colorButtonLeft: temp.colorButtonLeft != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonLeft) : void 0,
-      colorButtonRight: temp.colorButtonRight != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonRight) : void 0
+      colorButtonRight: temp.colorButtonRight != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonRight) : void 0,
+      buzzer: !temp.buzzer || !(temp.buzzer === true || typeof temp.buzzer === "string") ? false : temp.buzzer
     };
     let panels = [];
     if (global) {

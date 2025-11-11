@@ -910,7 +910,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s;
     if (state.ack) {
       return;
     }
@@ -1169,7 +1169,8 @@ class Panel extends import_library.BaseClass {
             iconColor: (0, import_tools.getRGBFromValue)(
               ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _o.val) || "#FFFFFF"
             ),
-            alwaysOn: !!((_q = (_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _p.val) != null ? _q : true)
+            alwaysOn: !!((_q = (_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _p.val) != null ? _q : true),
+            buzzer: !!((_s = (_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _r.val) != null ? _s : false)
           };
           let panels = [this];
           if (global) {

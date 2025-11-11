@@ -529,6 +529,7 @@ export class Controller extends Library.BaseClass {
             colorText: temp.colorText != null ? getRGBFromValue(temp.colorText) : undefined,
             colorButtonLeft: temp.colorButtonLeft != null ? getRGBFromValue(temp.colorButtonLeft) : undefined,
             colorButtonRight: temp.colorButtonRight != null ? getRGBFromValue(temp.colorButtonRight) : undefined,
+            buzzer: !temp.buzzer || !(temp.buzzer === true || typeof temp.buzzer === 'string') ? false : temp.buzzer,
         };
         /**
          type PagePopupDataDetails = {
@@ -548,6 +549,7 @@ export class Controller extends Library.BaseClass {
              icon?: string;
              iconColor?: {r:number,g:number,b:number};
              alwaysOn?: boolean;
+             buzzer?: boolean | string;
          };
          */
         let panels: Panel.Panel[] = [];
