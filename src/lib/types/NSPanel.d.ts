@@ -120,6 +120,7 @@ export namespace NSPanel {
     };
 
     type PanelInternalCommand =
+        | 'cmd/isBuzzerAllowed'
         | 'cmd/screensaverHeadingNotification'
         | 'cmd/screensaverTextNotification'
         | 'cmd/screensaverActivateNotification'
@@ -141,6 +142,7 @@ export namespace NSPanel {
         | 'cmd/NotificationNext'
         | 'info/NotificationCounter'
         | 'cmd/popupNotification'
+        | 'system/popupNotification'
         | 'info/modelVersion'
         | 'info/displayVersion'
         | 'info/tasmotaVersion'
@@ -154,7 +156,11 @@ export namespace NSPanel {
         | 'cmd/screenSaverDoubleClick'
         | 'cmd/screenSaverLayout'
         | 'cmd/hideCards'
-        | 'cmd/buzzer';
+        | 'cmd/buzzer'
+        | 'cmd/NotificationCustomYes'
+        | 'cmd/NotificationCustomNo'
+        | 'cmd/NotificationCustomID'
+        | 'cmd/popupNotificationCustom';
 
     type AlwaysOnMode = 'always' | 'none' | 'ignore' | 'action';
 

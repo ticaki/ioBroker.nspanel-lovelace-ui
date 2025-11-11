@@ -109,7 +109,7 @@ const genericStateObjects = {
           },
           native: {}
         },
-        yes: {
+        buttonRight: {
           _id: "",
           type: "state",
           common: {
@@ -122,7 +122,7 @@ const genericStateObjects = {
           },
           native: {}
         },
-        no: {
+        buttonLeft: {
           _id: "",
           type: "state",
           common: {
@@ -203,6 +203,19 @@ const genericStateObjects = {
           type: "channel",
           common: {
             name: "StateObjects.cmd"
+          },
+          native: {}
+        },
+        isBuzzerAllowed: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "Allow buzzer from notifications and popups",
+            type: "boolean",
+            role: "switch",
+            read: true,
+            write: true,
+            def: true
           },
           native: {}
         },
@@ -1704,6 +1717,17 @@ const InternalStates = {
         write: true
       },
       noTrigger: true
+    },
+    "cmd/isBuzzerAllowed": {
+      val: true,
+      ack: true,
+      common: {
+        name: "isBuzzerAllowed",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
     },
     "cmd/power1": {
       val: false,

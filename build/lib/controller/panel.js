@@ -76,6 +76,7 @@ class Panel extends import_library.BaseClass {
   blockTouchEventsForMs = 200;
   // ms
   lastSendTypeDate = 0;
+  isBuzzerAllowed = true;
   options;
   flashing = false;
   screenSaver;
@@ -345,7 +346,7 @@ class Panel extends import_library.BaseClass {
     }
   }
   init = async () => {
-    var _a, _b;
+    var _a, _b, _c, _d;
     if (this.unload || this.adapter.unload) {
       return;
     }
@@ -403,6 +404,12 @@ class Panel extends import_library.BaseClass {
         );
       }
     }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.isBuzzerAllowed`,
+      void 0,
+      definition.genericStateObjects.panel.panels.cmd.isBuzzerAllowed
+    );
+    this.isBuzzerAllowed = !!((_b = (_a = this.library.readdb(`panels.${this.name}.cmd.isBuzzerAllowed`)) == null ? void 0 : _a.val) != null ? _b : true);
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver`,
       void 0,
@@ -616,7 +623,7 @@ class Panel extends import_library.BaseClass {
     }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.infoIcon`,
-      (_b = (_a = this.screenSaver) == null ? void 0 : _a.infoIcon) != null ? _b : "",
+      (_d = (_c = this.screenSaver) == null ? void 0 : _c.infoIcon) != null ? _d : "",
       definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon
     );
     if (this.buttons && this.screenSaver) {
@@ -1185,6 +1192,16 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "isBuzzerAllowed": {
+          if (state && state.val != null) {
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/isBuzzerAllowed`,
+              !!state.val,
+              false
+            );
+          }
+          break;
+        }
       }
     }
   }
@@ -1739,9 +1756,9 @@ class Panel extends import_library.BaseClass {
             break;
           }
           await this.library.writedp(
-            `panels.${this.name}.pagePopup.yes`,
+            `panels.${this.name}.pagePopup.buttonRight`,
             state.val,
-            definition.genericStateObjects.panel.panels.pagePopup.yes
+            definition.genericStateObjects.panel.panels.pagePopup.buttonRight
           );
           break;
         }
@@ -1750,9 +1767,9 @@ class Panel extends import_library.BaseClass {
             break;
           }
           await this.library.writedp(
-            `panels.${this.name}.pagePopup.no`,
+            `panels.${this.name}.pagePopup.buttonLeft`,
             state.val,
-            definition.genericStateObjects.panel.panels.pagePopup.no
+            definition.genericStateObjects.panel.panels.pagePopup.buttonLeft
           );
           break;
         }
@@ -1856,6 +1873,13 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "cmd/isBuzzerAllowed": {
+          if (typeof state.val === "boolean") {
+            this.isBuzzerAllowed = state.val;
+            await this.library.writedp(`panels.${this.name}.cmd.isBuzzerAllowed`, state.val);
+          }
+          break;
+        }
       }
     }
     switch (token) {
@@ -1938,6 +1962,9 @@ ${this.info.tasmota.onlineVersion}`;
       }
       case "cmd/hideCards": {
         return this.hideCards;
+      }
+      case "cmd/isBuzzerAllowed": {
+        return this.isBuzzerAllowed;
       }
     }
     return null;

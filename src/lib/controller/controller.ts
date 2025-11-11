@@ -177,14 +177,22 @@ export class Controller extends Library.BaseClass {
                 if (!_state || typeof _state.val === 'object') {
                     break;
                 }
-                await this.library.writedp(`pagePopup.yes`, _state.val, genericStateObjects.panel.panels.pagePopup.yes);
+                await this.library.writedp(
+                    `pagePopup.buttonRight`,
+                    _state.val,
+                    genericStateObjects.panel.panels.pagePopup.buttonRight,
+                );
                 break;
             }
             case 'cmd/NotificationCustomNo': {
                 if (!_state || typeof _state.val === 'object') {
                     break;
                 }
-                await this.library.writedp(`pagePopup.no`, _state.val, genericStateObjects.panel.panels.pagePopup.no);
+                await this.library.writedp(
+                    `pagePopup.buttonLeft`,
+                    _state.val,
+                    genericStateObjects.panel.panels.pagePopup.buttonLeft,
+                );
                 break;
             }
             case 'AdapterStoppedBoolean':

@@ -97,10 +97,12 @@ class PagePopup extends import_Page.Page {
       return;
     }
     if (details.buzzer) {
-      this.basePanel.sendToTasmota(
-        `${this.basePanel.topic}/cmnd/Buzzer`,
-        details.buzzer === true ? "1,2,3,0xF54" : details.buzzer
-      );
+      if (this.basePanel.isBuzzerAllowed) {
+        this.basePanel.sendToTasmota(
+          `${this.basePanel.topic}/cmnd/Buzzer`,
+          details.buzzer === true ? "1,2,3,0xF54" : details.buzzer
+        );
+      }
       details.buzzer = false;
     }
     const convertToDec = (rgb, def) => {

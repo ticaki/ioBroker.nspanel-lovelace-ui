@@ -120,48 +120,6 @@ export type InternalStatesObject = {
     common: ioBroker.StateCommon;
     noTrigger?: boolean;
 };
-export type PanelInternalCommand =
-    | 'cmd/screensaverHeadingNotification'
-    | 'cmd/screensaverTextNotification'
-    | 'cmd/screensaverActivateNotification'
-    | 'cmd/screenSaverInfoIcon'
-    | 'info/PopupInfo'
-    | 'cmd/power2'
-    | 'cmd/power1'
-    | 'cmd/bigIconRight'
-    | 'cmd/detachLeft'
-    | 'cmd/detachRight'
-    | 'cmd/bigIconLeft'
-    | 'cmd/dimActive'
-    | 'cmd/dimStandby'
-    | 'cmd/screenSaverTimeout'
-    | 'cmd/NotificationCleared2'
-    | 'cmd/NotificationNext2'
-    | 'cmd/popupNotification2'
-    | 'cmd/NotificationCleared'
-    | 'cmd/NotificationNext'
-    | 'info/NotificationCounter'
-    | 'cmd/popupNotification'
-    | 'system/popupNotification'
-    | 'info/modelVersion'
-    | 'info/displayVersion'
-    | 'info/tasmotaVersion'
-    | 'info/Tasmota'
-    | 'cmd/TasmotaRestart'
-    | 'cmd/screenSaverRotationTime'
-    | 'cmd/dimNightActive'
-    | 'cmd/dimNightStandby'
-    | 'cmd/dimNightHourStart'
-    | 'cmd/dimNightHourEnd'
-    | 'cmd/screenSaverDoubleClick'
-    | 'cmd/screenSaverLayout'
-    | 'cmd/hideCards'
-    | 'cmd/buzzer'
-    | 'cmd/NotificationCustomYes'
-    | 'cmd/NotificationCustomNo'
-    | 'cmd/NotificationCustomID'
-    | 'cmd/popupNotificationCustom';
-
 /**
  * Defines how the panel handles "always on" behavior.
  *

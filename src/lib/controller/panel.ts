@@ -38,6 +38,7 @@ import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { AdminConfiguration } from '../configuration/admin';
+import type { NSPanel } from '../types/NSPanel';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -85,7 +86,7 @@ export class Panel extends BaseClass {
 
     public blockTouchEventsForMs: number = 200; // ms
     public lastSendTypeDate: number = 0;
-
+    public isBuzzerAllowed: boolean = true;
     options: panelConfigPartial;
     flashing: boolean = false;
     public screenSaver: Screensaver | undefined;
@@ -437,6 +438,13 @@ export class Panel extends BaseClass {
                 );
             }
         }
+
+        await this.library.writedp(
+            `panels.${this.name}.cmd.isBuzzerAllowed`,
+            undefined,
+            definition.genericStateObjects.panel.panels.cmd.isBuzzerAllowed,
+        );
+        this.isBuzzerAllowed = !!(this.library.readdb(`panels.${this.name}.cmd.isBuzzerAllowed`)?.val ?? true);
 
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver`,
@@ -1329,6 +1337,16 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'isBuzzerAllowed': {
+                    if (state && state.val != null) {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/isBuzzerAllowed`,
+                            !!state.val,
+                            false,
+                        );
+                    }
+                    break;
+                }
             }
         }
     }
@@ -1740,7 +1758,7 @@ export class Panel extends BaseClass {
         if (!id.startsWith(this.name)) {
             return null;
         }
-        const token: Types.PanelInternalCommand = id.replace(`${this.name}/`, '') as Types.PanelInternalCommand;
+        const token: NSPanel.PanelInternalCommand = id.replace(`${this.name}/`, '') as NSPanel.PanelInternalCommand;
         if (state && !state.ack && state.val != null) {
             switch (token) {
                 case 'cmd/power1': {
@@ -1910,9 +1928,9 @@ export class Panel extends BaseClass {
                         break;
                     }
                     await this.library.writedp(
-                        `panels.${this.name}.pagePopup.yes`,
+                        `panels.${this.name}.pagePopup.buttonRight`,
                         state.val,
-                        definition.genericStateObjects.panel.panels.pagePopup.yes,
+                        definition.genericStateObjects.panel.panels.pagePopup.buttonRight,
                     );
                     break;
                 }
@@ -1921,9 +1939,9 @@ export class Panel extends BaseClass {
                         break;
                     }
                     await this.library.writedp(
-                        `panels.${this.name}.pagePopup.no`,
+                        `panels.${this.name}.pagePopup.buttonLeft`,
                         state.val,
-                        definition.genericStateObjects.panel.panels.pagePopup.no,
+                        definition.genericStateObjects.panel.panels.pagePopup.buttonLeft,
                     );
                     break;
                 }
@@ -2029,6 +2047,13 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/isBuzzerAllowed': {
+                    if (typeof state.val === 'boolean') {
+                        this.isBuzzerAllowed = state.val;
+                        await this.library.writedp(`panels.${this.name}.cmd.isBuzzerAllowed`, state.val);
+                    }
+                    break;
+                }
             }
         }
         switch (token) {
@@ -2110,6 +2135,9 @@ export class Panel extends BaseClass {
             }
             case 'cmd/hideCards': {
                 return this.hideCards;
+            }
+            case 'cmd/isBuzzerAllowed': {
+                return this.isBuzzerAllowed;
             }
         }
         return null;

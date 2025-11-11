@@ -73,6 +73,7 @@ export const genericStateObjects: {
                 detachLeft: ioBroker.StateObject;
                 hideCards: ioBroker.StateObject;
                 buzzer: ioBroker.StateObject;
+                isBuzzerAllowed: ioBroker.StateObject;
             };
 
             buttons: customChannelType & {
@@ -83,8 +84,8 @@ export const genericStateObjects: {
             };
             pagePopup: customChannelType & {
                 id: ioBroker.StateObject;
-                yes: ioBroker.StateObject;
-                no: ioBroker.StateObject;
+                buttonRight: ioBroker.StateObject;
+                buttonLeft: ioBroker.StateObject;
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
@@ -154,7 +155,7 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                yes: {
+                buttonRight: {
                     _id: '',
                     type: 'state',
                     common: {
@@ -167,7 +168,7 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                no: {
+                buttonLeft: {
                     _id: '',
                     type: 'state',
                     common: {
@@ -248,6 +249,19 @@ export const genericStateObjects: {
                     type: 'channel',
                     common: {
                         name: 'StateObjects.cmd',
+                    },
+                    native: {},
+                },
+                isBuzzerAllowed: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'Allow buzzer from notifications and popups',
+                        type: 'boolean',
+                        role: 'switch',
+                        read: true,
+                        write: true,
+                        def: true,
                     },
                     native: {},
                 },
@@ -1742,7 +1756,7 @@ export const Defaults = {
     },
 };
 
-export const InternalStates: { panel: Record<types.PanelInternalCommand, types.InternalStatesObject> } = {
+export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types.InternalStatesObject> } = {
     panel: {
         'cmd/power2': {
             val: false,
@@ -1755,6 +1769,17 @@ export const InternalStates: { panel: Record<types.PanelInternalCommand, types.I
                 write: true,
             },
             noTrigger: true,
+        },
+        'cmd/isBuzzerAllowed': {
+            val: true,
+            ack: true,
+            common: {
+                name: 'isBuzzerAllowed',
+                type: 'boolean',
+                role: 'switch',
+                read: true,
+                write: true,
+            },
         },
         'cmd/power1': {
             val: false,

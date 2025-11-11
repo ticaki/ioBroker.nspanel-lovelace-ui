@@ -555,7 +555,12 @@ export class Screensaver extends Page {
             const heading = notifyList[0].heading;
             const text = notifyList[0].text;
             if (heading !== '' || text !== '') {
-                if (this.activeNotifyId != notifyList[0].id && notifyList[0].buzzer && this.basePanel.dim.dayMode) {
+                if (
+                    this.activeNotifyId != notifyList[0].id &&
+                    notifyList[0].buzzer &&
+                    this.basePanel.dim.dayMode &&
+                    this.basePanel.isBuzzerAllowed
+                ) {
                     this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
                 }
                 this.activeNotifyId = notifyList[0].id;
