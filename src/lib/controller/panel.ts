@@ -1300,6 +1300,8 @@ export class Panel extends BaseClass {
                         text: (this.library.readdb(`panels.${this.name}.cmd.pagePopup.text`)?.val as string) || '',
                         buttonLeft:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeft`)?.val as string) || '',
+                        buttonMid:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonMid`)?.val as string) || '',
                         buttonRight:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)?.val as string) || '',
                         colorHeadline: getRGBFromValue(
@@ -1310,6 +1312,9 @@ export class Panel extends BaseClass {
                         ),
                         colorButtonLeft: getRGBFromValue(
                             this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonLeft`)?.val || '#FFFFFF',
+                        ),
+                        colorButtonMid: getRGBFromValue(
+                            this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonMid`)?.val || '#FFFFFF',
                         ),
                         colorButtonRight: getRGBFromValue(
                             this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonRight`)?.val || '#FFFFFF',
@@ -1923,7 +1928,7 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
-                case 'cmd/NotificationCustomYes': {
+                case 'cmd/NotificationCustomRight': {
                     if (typeof state.val === 'object') {
                         break;
                     }
@@ -1934,7 +1939,7 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
-                case 'cmd/NotificationCustomNo': {
+                case 'cmd/NotificationCustomLeft': {
                     if (typeof state.val === 'object') {
                         break;
                     }
@@ -1942,6 +1947,17 @@ export class Panel extends BaseClass {
                         `panels.${this.name}.pagePopup.buttonLeft`,
                         state.val,
                         definition.genericStateObjects.panel.panels.pagePopup.buttonLeft,
+                    );
+                    break;
+                }
+                case 'cmd/NotificationCustomMid': {
+                    if (typeof state.val === 'object') {
+                        break;
+                    }
+                    await this.library.writedp(
+                        `panels.${this.name}.pagePopup.buttonMid`,
+                        state.val,
+                        definition.genericStateObjects.panel.panels.pagePopup.buttonMid,
                     );
                     break;
                 }

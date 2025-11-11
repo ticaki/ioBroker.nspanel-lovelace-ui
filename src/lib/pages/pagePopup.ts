@@ -107,7 +107,10 @@ export class PagePopup extends Page {
         message.hColor = convertToDec(details.colorHeadline, Color.Yellow);
 
         message.blText = details.buttonLeft;
-        message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, Color.Red) : '';
+        message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, Color.Yellow) : '';
+
+        message.bmText = details.buttonMid;
+        message.bmColor = details.buttonLeft ? convertToDec(details.colorButtonMid, Color.Red) : '';
 
         message.brText = details.buttonRight;
         message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, Color.Green) : '';
@@ -169,6 +172,8 @@ export class PagePopup extends Page {
             message.hColor ?? '',
             message.blText ?? '',
             message.blColor ?? '',
+            message.bmText ?? '',
+            message.bmColor ?? '',
             message.brText ?? '',
             message.brColor ?? '',
             message.text ?? '',
@@ -184,6 +189,8 @@ export class PagePopup extends Page {
             message.hColor ?? '',
             message.blText ?? '',
             message.blColor ?? '',
+            message.bmText ?? '',
+            message.bmColor ?? '',
             message.brText ?? '',
             message.brColor ?? '',
             message.text ?? '',
@@ -377,7 +384,7 @@ export class PagePopup extends Page {
             return;
         }
         switch (_event.opt) {
-            case 'yes':
+            case 'button3':
                 {
                     const entry = this.detailsArray.shift();
                     if (this.items?.data.setStateID && entry?.id != null) {
@@ -411,7 +418,41 @@ export class PagePopup extends Page {
                     this.debouceUpdate();
                 }
                 break;
-            case 'no':
+            case 'button2':
+                {
+                    const entry = this.detailsArray.shift();
+                    if (this.items?.data.setStateID && entry?.id != null) {
+                        await this.items.data.setStateID.setState(entry.id);
+                        if (entry?.global && this.items?.data.setGlobalID) {
+                            await this.items.data.setGlobalID.setState(`${this.basePanel.name}.${entry.id}`);
+                        }
+                    }
+                    if (this.items?.data.setStateMid && entry?.id != null) {
+                        await this.items.data.setStateMid.setState(entry.id);
+                        if (entry?.global && this.items?.data.setGlobalMid) {
+                            await this.items.data.setGlobalMid.setState(`${entry.id}`);
+                        }
+                    }
+                    if (entry?.global) {
+                        const panels = this.basePanel.controller.panels;
+                        for (const panel of panels) {
+                            if (panel === this.basePanel || panel.unload) {
+                                continue;
+                            }
+                            await this.basePanel.statesControler.setInternalState(
+                                `${panel.name}/cmd/popupNotificationCustom`,
+                                JSON.stringify({ id: '', priority: -1 }),
+                                false,
+                            );
+                        }
+                    }
+                    this.log.debug(
+                        `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`,
+                    );
+                    this.debouceUpdate();
+                }
+                break;
+            case 'button1':
                 {
                     // aktuell ein weiterschalten im array
                     const entry = this.detailsArray.shift();

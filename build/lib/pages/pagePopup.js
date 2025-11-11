@@ -112,7 +112,9 @@ class PagePopup extends import_Page.Page {
     message.headline = details.headline;
     message.hColor = convertToDec(details.colorHeadline, import_Color.Color.Yellow);
     message.blText = details.buttonLeft;
-    message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, import_Color.Color.Red) : "";
+    message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, import_Color.Color.Yellow) : "";
+    message.bmText = details.buttonMid;
+    message.bmColor = details.buttonLeft ? convertToDec(details.colorButtonMid, import_Color.Color.Red) : "";
     message.brText = details.buttonRight;
     message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, import_Color.Color.Green) : "";
     message.text = details.text;
@@ -165,7 +167,7 @@ ${message.text}`;
     this.sendToPanel(this.getMessage2(message), false);
   }
   getMessage(message) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     return (0, import_tools.getPayloadRemoveTilde)(
       "entityUpdateDetail",
       this.id,
@@ -173,15 +175,17 @@ ${message.text}`;
       (_b = message.hColor) != null ? _b : "",
       (_c = message.blText) != null ? _c : "",
       (_d = message.blColor) != null ? _d : "",
-      (_e = message.brText) != null ? _e : "",
-      (_f = message.brColor) != null ? _f : "",
-      (_g = message.text) != null ? _g : "",
-      (_h = message.textColor) != null ? _h : "",
-      String((_i = message.timeout) != null ? _i : 0)
+      (_e = message.bmText) != null ? _e : "",
+      (_f = message.bmColor) != null ? _f : "",
+      (_g = message.brText) != null ? _g : "",
+      (_h = message.brColor) != null ? _h : "",
+      (_i = message.text) != null ? _i : "",
+      (_j = message.textColor) != null ? _j : "",
+      String((_k = message.timeout) != null ? _k : 0)
     );
   }
   getMessage2(message) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
     return (0, import_tools.getPayloadRemoveTilde)(
       "entityUpdateDetail",
       this.id,
@@ -189,14 +193,16 @@ ${message.text}`;
       (_b = message.hColor) != null ? _b : "",
       (_c = message.blText) != null ? _c : "",
       (_d = message.blColor) != null ? _d : "",
-      (_e = message.brText) != null ? _e : "",
-      (_f = message.brColor) != null ? _f : "",
-      (_g = message.text) != null ? _g : "",
-      (_h = message.textColor) != null ? _h : "",
-      String((_i = message.timeout) != null ? _i : 0),
-      (_j = message.fontSet) != null ? _j : "0",
-      (_k = message.icon) != null ? _k : "",
-      (_l = message.iconColor) != null ? _l : ""
+      (_e = message.bmText) != null ? _e : "",
+      (_f = message.bmColor) != null ? _f : "",
+      (_g = message.brText) != null ? _g : "",
+      (_h = message.brColor) != null ? _h : "",
+      (_i = message.text) != null ? _i : "",
+      (_j = message.textColor) != null ? _j : "",
+      String((_k = message.timeout) != null ? _k : 0),
+      (_l = message.fontSet) != null ? _l : "0",
+      (_m = message.icon) != null ? _m : "",
+      (_n = message.iconColor) != null ? _n : ""
     );
   }
   /**
@@ -358,13 +364,13 @@ ${message.text}`;
    * @returns Promise that resolves when the event has been handled.
    */
   async onButtonEvent(_event) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     this.log.debug(`Popup notify button event: ${JSON.stringify(_event)}`);
     if (_event.action !== "notifyAction") {
       return;
     }
     switch (_event.opt) {
-      case "yes":
+      case "button3":
         {
           const entry = this.detailsArray.shift();
           if (((_a = this.items) == null ? void 0 : _a.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
@@ -398,21 +404,55 @@ ${message.text}`;
           this.debouceUpdate();
         }
         break;
-      case "no":
+      case "button2":
+        {
+          const entry = this.detailsArray.shift();
+          if (((_e = this.items) == null ? void 0 : _e.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
+            await this.items.data.setStateID.setState(entry.id);
+            if ((entry == null ? void 0 : entry.global) && ((_f = this.items) == null ? void 0 : _f.data.setGlobalID)) {
+              await this.items.data.setGlobalID.setState(`${this.basePanel.name}.${entry.id}`);
+            }
+          }
+          if (((_g = this.items) == null ? void 0 : _g.data.setStateMid) && (entry == null ? void 0 : entry.id) != null) {
+            await this.items.data.setStateMid.setState(entry.id);
+            if ((entry == null ? void 0 : entry.global) && ((_h = this.items) == null ? void 0 : _h.data.setGlobalMid)) {
+              await this.items.data.setGlobalMid.setState(`${entry.id}`);
+            }
+          }
+          if (entry == null ? void 0 : entry.global) {
+            const panels = this.basePanel.controller.panels;
+            for (const panel of panels) {
+              if (panel === this.basePanel || panel.unload) {
+                continue;
+              }
+              await this.basePanel.statesControler.setInternalState(
+                `${panel.name}/cmd/popupNotificationCustom`,
+                JSON.stringify({ id: "", priority: -1 }),
+                false
+              );
+            }
+          }
+          this.log.debug(
+            `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`
+          );
+          this.debouceUpdate();
+        }
+        break;
+      case "button1":
         {
           const entry = this.detailsArray.shift();
           if (entry) {
             this.detailsArray.push(entry);
           }
-          if (((_e = this.items) == null ? void 0 : _e.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_i = this.items) == null ? void 0 : _i.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateID.setState(entry.id);
             if (entry == null ? void 0 : entry.global) {
               await this.items.data.setStateID.setState(`${this.basePanel.name}.${entry.id}`);
             }
           }
-          if (((_f = this.items) == null ? void 0 : _f.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_j = this.items) == null ? void 0 : _j.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateNo.setState(entry.id);
-            if ((entry == null ? void 0 : entry.global) && ((_g = this.items) == null ? void 0 : _g.data.setGlobalNo)) {
+            if ((entry == null ? void 0 : entry.global) && ((_k = this.items) == null ? void 0 : _k.data.setGlobalNo)) {
               await this.items.data.setGlobalNo.setState(`${entry.id}`);
             }
           }

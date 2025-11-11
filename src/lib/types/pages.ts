@@ -282,9 +282,11 @@ export type PageBaseConfigTemplate = {
 type PagePopupConfig = {
     details: string;
     setStateYes?: string;
+    setStateMid?: string;
     setStateNo?: string;
     setStateID?: string;
     setGlobalYes?: string;
+    setGlobalMid?: string;
     setGlobalNo?: string;
     setGlobalID?: string;
 };
@@ -298,8 +300,10 @@ export type PagePopupDataDetails = {
     global?: boolean;
     headline: string;
     colorHeadline?: RGB;
-    buttonLeft: string;
+    buttonLeft?: string;
     colorButtonLeft?: RGB;
+    buttonMid?: string;
+    colorButtonMid?: RGB;
     buttonRight: string;
     colorButtonRight?: RGB;
     text: string;
@@ -319,6 +323,8 @@ export type PopupNotificationVal =
           colorHeadline?: { r: number; g: number; b: number };
           buttonLeft?: string;
           colorButtonLeft?: { r: number; g: number; b: number };
+          buttonMid?: string;
+          colorButtonMid?: { r: number; g: number; b: number };
           buttonRight?: string;
           colorButtonRight?: { r: number; g: number; b: number };
           text?: string;
@@ -835,6 +841,8 @@ export type PageNotifyMessage = {
     hColor: string;
     blText: string;
     blColor: string;
+    bmText: string;
+    bmColor: string;
     brText: string;
     brColor: string;
     text: string;

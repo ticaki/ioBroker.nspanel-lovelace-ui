@@ -176,7 +176,7 @@ class Controller extends Library.BaseClass {
         await this.library.writedp(`pagePopup.id`, _state.val, import_definition.genericStateObjects.panel.panels.pagePopup.id);
         break;
       }
-      case "cmd/NotificationCustomYes": {
+      case "cmd/NotificationCustomRight": {
         if (!_state || typeof _state.val === "object") {
           break;
         }
@@ -187,7 +187,7 @@ class Controller extends Library.BaseClass {
         );
         break;
       }
-      case "cmd/NotificationCustomNo": {
+      case "cmd/NotificationCustomLeft": {
         if (!_state || typeof _state.val === "object") {
           break;
         }
@@ -195,6 +195,17 @@ class Controller extends Library.BaseClass {
           `pagePopup.buttonLeft`,
           _state.val,
           import_definition.genericStateObjects.panel.panels.pagePopup.buttonLeft
+        );
+        break;
+      }
+      case "cmd/NotificationCustomMid": {
+        if (!_state || typeof _state.val === "object") {
+          break;
+        }
+        await this.library.writedp(
+          `pagePopup.buttonMid`,
+          _state.val,
+          import_definition.genericStateObjects.panel.panels.pagePopup.buttonMid
         );
         break;
       }
@@ -340,14 +351,21 @@ class Controller extends Library.BaseClass {
       this.onInternalCommand
     );
     await this.statesControler.setInternalState(
-      `///cmd/NotificationCustomNo`,
+      `///cmd/NotificationCustomLeft`,
       "",
       true,
       (0, import_tools.getInternalDefaults)("string", "text", false),
       this.onInternalCommand
     );
     await this.statesControler.setInternalState(
-      `///cmd/NotificationCustomYes`,
+      `///cmd/NotificationCustomMid`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text", false),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `///cmd/NotificationCustomRight`,
       "",
       true,
       (0, import_tools.getInternalDefaults)("string", "text", false),
@@ -507,11 +525,13 @@ class Controller extends Library.BaseClass {
       headline: typeof temp.headline === "string" ? temp.headline : "Missing Headline",
       text: typeof temp.text === "string" ? temp.text : "Missing Text",
       buttonLeft: typeof temp.buttonLeft === "string" ? temp.buttonLeft : "",
+      buttonMid: typeof temp.buttonMid === "string" ? temp.buttonMid : "",
       buttonRight: typeof temp.buttonRight === "string" ? temp.buttonRight : "",
       icon: typeof temp.icon === "string" ? temp.icon : void 0,
       colorHeadline: temp.colorHeadline != null ? (0, import_tools.getRGBFromValue)(temp.colorHeadline) : void 0,
       colorText: temp.colorText != null ? (0, import_tools.getRGBFromValue)(temp.colorText) : void 0,
       colorButtonLeft: temp.colorButtonLeft != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonLeft) : void 0,
+      colorButtonMid: temp.colorButtonMid != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonMid) : void 0,
       colorButtonRight: temp.colorButtonRight != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonRight) : void 0,
       buzzer: !temp.buzzer || !(temp.buzzer === true || typeof temp.buzzer === "string") ? false : temp.buzzer
     };

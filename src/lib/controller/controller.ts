@@ -173,7 +173,7 @@ export class Controller extends Library.BaseClass {
                 await this.library.writedp(`pagePopup.id`, _state.val, genericStateObjects.panel.panels.pagePopup.id);
                 break;
             }
-            case 'cmd/NotificationCustomYes': {
+            case 'cmd/NotificationCustomRight': {
                 if (!_state || typeof _state.val === 'object') {
                     break;
                 }
@@ -184,7 +184,7 @@ export class Controller extends Library.BaseClass {
                 );
                 break;
             }
-            case 'cmd/NotificationCustomNo': {
+            case 'cmd/NotificationCustomLeft': {
                 if (!_state || typeof _state.val === 'object') {
                     break;
                 }
@@ -192,6 +192,17 @@ export class Controller extends Library.BaseClass {
                     `pagePopup.buttonLeft`,
                     _state.val,
                     genericStateObjects.panel.panels.pagePopup.buttonLeft,
+                );
+                break;
+            }
+            case 'cmd/NotificationCustomMid': {
+                if (!_state || typeof _state.val === 'object') {
+                    break;
+                }
+                await this.library.writedp(
+                    `pagePopup.buttonMid`,
+                    _state.val,
+                    genericStateObjects.panel.panels.pagePopup.buttonMid,
                 );
                 break;
             }
@@ -339,14 +350,21 @@ export class Controller extends Library.BaseClass {
             this.onInternalCommand,
         );
         await this.statesControler.setInternalState(
-            `///cmd/NotificationCustomNo`,
+            `///cmd/NotificationCustomLeft`,
             '',
             true,
             getInternalDefaults('string', 'text', false),
             this.onInternalCommand,
         );
         await this.statesControler.setInternalState(
-            `///cmd/NotificationCustomYes`,
+            `///cmd/NotificationCustomMid`,
+            '',
+            true,
+            getInternalDefaults('string', 'text', false),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `///cmd/NotificationCustomRight`,
             '',
             true,
             getInternalDefaults('string', 'text', false),
@@ -531,11 +549,13 @@ export class Controller extends Library.BaseClass {
             headline: typeof temp.headline === 'string' ? temp.headline : 'Missing Headline',
             text: typeof temp.text === 'string' ? temp.text : 'Missing Text',
             buttonLeft: typeof temp.buttonLeft === 'string' ? temp.buttonLeft : '',
+            buttonMid: typeof temp.buttonMid === 'string' ? temp.buttonMid : '',
             buttonRight: typeof temp.buttonRight === 'string' ? temp.buttonRight : '',
             icon: typeof temp.icon === 'string' ? temp.icon : undefined,
             colorHeadline: temp.colorHeadline != null ? getRGBFromValue(temp.colorHeadline) : undefined,
             colorText: temp.colorText != null ? getRGBFromValue(temp.colorText) : undefined,
             colorButtonLeft: temp.colorButtonLeft != null ? getRGBFromValue(temp.colorButtonLeft) : undefined,
+            colorButtonMid: temp.colorButtonMid != null ? getRGBFromValue(temp.colorButtonMid) : undefined,
             colorButtonRight: temp.colorButtonRight != null ? getRGBFromValue(temp.colorButtonRight) : undefined,
             buzzer: !temp.buzzer || !(temp.buzzer === true || typeof temp.buzzer === 'string') ? false : temp.buzzer,
         };
@@ -550,6 +570,8 @@ export class Controller extends Library.BaseClass {
              colorHeadline?: {r:number,g:number,b:number} | string;
              buttonLeft?: string;
              colorButtonLeft?: {r:number,g:number,b:number} | string;
+             buttonMid?: string;
+             colorButtonMid?: {r:number,g:number,b:number} | string;
              buttonRight?: string;
              colorButtonRight?: {r:number,g:number,b:number} | string;
              colorText?: {r:number,g:number,b:number} | string;

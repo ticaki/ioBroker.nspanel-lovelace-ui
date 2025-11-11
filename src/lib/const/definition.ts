@@ -85,6 +85,7 @@ export const genericStateObjects: {
             pagePopup: customChannelType & {
                 id: ioBroker.StateObject;
                 buttonRight: ioBroker.StateObject;
+                buttonMid: ioBroker.StateObject;
                 buttonLeft: ioBroker.StateObject;
             };
             info: customChannelType & {
@@ -160,6 +161,19 @@ export const genericStateObjects: {
                     type: 'state',
                     common: {
                         name: 'Button right',
+                        type: 'string',
+                        role: 'text',
+                        read: true,
+                        write: false,
+                        def: '',
+                    },
+                    native: {},
+                },
+                buttonMid: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'Button middle',
                         type: 'string',
                         role: 'text',
                         read: true,
@@ -730,7 +744,33 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'colorHeadline',
+                            name: 'colorButtonLeft',
+                            type: 'string',
+                            role: 'json',
+                            read: true,
+                            write: true,
+                            def: JSON.stringify({ r: 255, g: 255, b: 255 }),
+                        },
+                        native: {},
+                    },
+                    buttonMid: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'buttonMid',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    colorButtonMid: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'colorButtonMid',
                             type: 'string',
                             role: 'json',
                             read: true,
@@ -769,7 +809,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'colorHeadline',
+                            name: 'colorButtonRight',
                             type: 'string',
                             role: 'json',
                             read: true,
@@ -795,7 +835,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'colorHeadline',
+                            name: 'colorText',
                             type: 'string',
                             role: 'json',
                             read: true,
@@ -838,7 +878,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'colorHeadline',
+                            name: 'colorIcon',
                             type: 'string',
                             role: 'json',
                             read: true,
@@ -2183,7 +2223,7 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
                 write: true,
             },
         },
-        'cmd/NotificationCustomYes': {
+        'cmd/NotificationCustomRight': {
             val: false,
             ack: true,
             common: {
@@ -2194,7 +2234,18 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
                 write: true,
             },
         },
-        'cmd/NotificationCustomNo': {
+        'cmd/NotificationCustomLeft': {
+            val: false,
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'text',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/NotificationCustomMid': {
             val: false,
             ack: true,
             common: {

@@ -157,8 +157,9 @@ export namespace NSPanel {
         | 'cmd/screenSaverLayout'
         | 'cmd/hideCards'
         | 'cmd/buzzer'
-        | 'cmd/NotificationCustomYes'
-        | 'cmd/NotificationCustomNo'
+        | 'cmd/NotificationCustomRight'
+        | 'cmd/NotificationCustomMid'
+        | 'cmd/NotificationCustomLeft'
         | 'cmd/NotificationCustomID'
         | 'cmd/popupNotificationCustom';
 
