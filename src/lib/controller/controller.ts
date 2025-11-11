@@ -531,22 +531,22 @@ export class Controller extends Library.BaseClass {
             colorButtonRight: temp.colorButtonRight != null ? getRGBFromValue(temp.colorButtonRight) : undefined,
         };
         /**
-          type PagePopupDataDetails = {
+         type PagePopupDataDetails = {
              headline: string;
              text: string;
              panel?: string;
              priority?: number;
-             type?: PopupDetailsType;
+             type?: 'information' | 'acknowledge';
              id?: string;
-             colorHeadline?: RGB | string;
+             colorHeadline?: {r:number,g:number,b:number} | string;
              buttonLeft?: string;
-             colorButtonLeft?: RGB | string;
+             colorButtonLeft?: {r:number,g:number,b:number} | string;
              buttonRight?: string;
-             colorButtonRight?: RGB | string;
-             colorText?: RGB | string;
+             colorButtonRight?: {r:number,g:number,b:number} | string;
+             colorText?: {r:number,g:number,b:number} | string;
              textSize?: string;
              icon?: string;
-             iconColor?: RGB;
+             iconColor?: {r:number,g:number,b:number};
              alwaysOn?: boolean;
          };
          */
