@@ -249,7 +249,7 @@ export class PagePopup extends Page {
                         }
                         return;
                     }
-                    // sonst alles löschen und letzte Seite anzeigen
+                    // sonst gehe in den alles löschen zweig und letzte Seite anzeigen
                     details.id = '';
                 }
                 // wenn keine id dann alles löschen und letzte Seite anzeigen
