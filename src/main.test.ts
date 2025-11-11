@@ -8,7 +8,6 @@
 import { expect } from 'chai';
 import { getPageSonos } from './lib/pages/tools/getSonos';
 import { genericStateObjects, InternalStates } from './lib/const/definition';
-import type * as types from './lib/types/types';
 import type { NSPanel } from './lib/types/NSPanel';
 // import { functionToTest } from "./moduleToTest";
 
