@@ -9,6 +9,7 @@ import { expect } from 'chai';
 import { getPageSonos } from './lib/pages/tools/getSonos';
 import { genericStateObjects, InternalStates } from './lib/const/definition';
 import type * as types from './lib/types/types';
+import type { NSPanel } from './lib/types/NSPanel';
 // import { functionToTest } from "./moduleToTest";
 
 describe('module to test => function to test', () => {
@@ -46,7 +47,7 @@ describe('Buzzer functionality', () => {
     });
 
     it('should include buzzer in PanelInternalCommand type', () => {
-        const buzzerCommand: types.PanelInternalCommand = 'cmd/buzzer';
+        const buzzerCommand: NSPanel.PanelInternalCommand = 'cmd/buzzer';
         expect(buzzerCommand).to.equal('cmd/buzzer');
     });
 });
