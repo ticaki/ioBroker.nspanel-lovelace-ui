@@ -740,7 +740,7 @@ const genericStateObjects = {
               role: "level",
               read: true,
               write: true,
-              def: "3",
+              def: 3,
               min: 1,
               max: 5,
               step: 1
