@@ -1966,7 +1966,7 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
                 states: globals.arrayOfScreensaverModes,
             },
         },
-        'cmd/NotificationCleared2': {
+        'cmd/NotificationClearedAll': {
             val: false,
             ack: true,
             common: {

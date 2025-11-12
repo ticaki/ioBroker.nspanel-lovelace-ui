@@ -106,13 +106,13 @@ export class PagePopup extends Page {
         message.headline = details.headline;
         message.hColor = convertToDec(details.colorHeadline, Color.Yellow);
 
-        message.blText = details.buttonLeft;
+        message.blText = this.library.getTranslation(details.buttonLeft);
         message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, Color.Yellow) : '';
 
-        message.bmText = details.buttonMid;
+        message.bmText = this.library.getTranslation(details.buttonMid);
         message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, Color.Red) : '';
 
-        message.brText = details.buttonRight;
+        message.brText = this.library.getTranslation(details.buttonRight);
         message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, Color.Green) : '';
 
         message.text = details.text;

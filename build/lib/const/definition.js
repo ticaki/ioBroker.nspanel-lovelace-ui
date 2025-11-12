@@ -1913,7 +1913,7 @@ const InternalStates = {
         states: globals.arrayOfScreensaverModes
       }
     },
-    "cmd/NotificationCleared2": {
+    "cmd/NotificationClearedAll": {
       val: false,
       ack: true,
       common: {

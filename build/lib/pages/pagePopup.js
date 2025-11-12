@@ -111,11 +111,11 @@ class PagePopup extends import_Page.Page {
     this.log.debug("update notification page!");
     message.headline = details.headline;
     message.hColor = convertToDec(details.colorHeadline, import_Color.Color.Yellow);
-    message.blText = details.buttonLeft;
+    message.blText = this.library.getTranslation(details.buttonLeft);
     message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, import_Color.Color.Yellow) : "";
-    message.bmText = details.buttonMid;
+    message.bmText = this.library.getTranslation(details.buttonMid);
     message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, import_Color.Color.Red) : "";
-    message.brText = details.buttonRight;
+    message.brText = this.library.getTranslation(details.buttonRight);
     message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, import_Color.Color.Green) : "";
     message.text = details.text;
     message.textColor = convertToDec(details.colorText, import_Color.Color.White);

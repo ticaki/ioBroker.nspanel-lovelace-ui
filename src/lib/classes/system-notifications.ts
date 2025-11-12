@@ -176,9 +176,15 @@ export class SystemNotifications extends BaseClass {
     /**
      * Clear a notification
      *
-     * @param index index of the notification
+     * @param index index of the notification. If omitted all notifications are cleared
      */
-    public async clearNotification(index: number): Promise<void> {
+    public async clearNotification(index?: number): Promise<void> {
+        if (index === undefined) {
+            for (let i = 0; i < this.notifications.length; i++) {
+                await this.clearNotification(i);
+            }
+            return;
+        }
         if (this.notifications[index] && !this.notifications[index].cleared) {
             if (this.notifications[index].scopeid) {
                 const msg = this.notifications[index];

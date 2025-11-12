@@ -135,7 +135,7 @@ export namespace NSPanel {
         | 'cmd/dimActive'
         | 'cmd/dimStandby'
         | 'cmd/screenSaverTimeout'
-        | 'cmd/NotificationCleared2'
+        | 'cmd/NotificationClearedAll'
         | 'cmd/NotificationNext2'
         | 'cmd/popupNotification2'
         | 'cmd/NotificationCleared'

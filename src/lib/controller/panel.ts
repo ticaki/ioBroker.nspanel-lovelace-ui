@@ -1876,7 +1876,15 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'cmd/NotificationCleared2':
+                case 'cmd/NotificationClearedAll': {
+                    await this.controller.systemNotification.clearNotification();
+                    await this.statesControler.setInternalState(
+                        `${this.name}/system/popupNotification`,
+                        { id: '' },
+                        false,
+                    );
+                    break;
+                }
                 case 'cmd/NotificationCleared': {
                     if (typeof state.val !== 'number') {
                         if (typeof state.val === 'string' && !isNaN(parseInt(state.val))) {
@@ -1903,6 +1911,7 @@ export class Panel extends BaseClass {
                                 headline: val.headline,
                                 text: val.text,
                                 buttonLeft: 'next',
+                                buttonMid: 'clear all',
                                 buttonRight: 'clear',
                                 alwaysOn: true,
                             });
@@ -2108,11 +2117,27 @@ export class Panel extends BaseClass {
             }
             case 'cmd/popupNotification2':
             case 'cmd/popupNotification': {
-                if (this.notifyIndex !== -1) {
-                    const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+                let details: pages.PagePopupDataDetails[] | undefined;
+                let index = -1;
+                while ((index = this.controller.systemNotification.getNotificationIndex(++index)) !== -1) {
+                    const val = this.controller.systemNotification.getNotification(index);
                     if (val) {
-                        return JSON.stringify(val);
+                        details = details || [];
+                        details.push({
+                            priority: 50,
+                            type: 'acknowledge',
+                            id: `${index}`,
+                            headline: val.headline,
+                            text: val.text,
+                            buttonLeft: 'next',
+                            buttonMid: 'clear all',
+                            buttonRight: 'clear',
+                            alwaysOn: true,
+                        });
                     }
+                }
+                if (details) {
+                    return details;
                 }
                 return null;
             }

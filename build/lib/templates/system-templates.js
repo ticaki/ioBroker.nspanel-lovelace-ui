@@ -31,7 +31,8 @@ const popupNotification = {
     card: "popupNotify",
     data: {
       details: { type: "internal", dp: "system/popupNotification", change: "ts" },
-      setStateYes: { type: "internal", dp: "cmd/NotificationCleared" }
+      setStateYes: { type: "internal", dp: "cmd/NotificationCleared" },
+      setStateMid: { type: "internal", dp: "cmd/NotificationClearedAll" }
     }
   },
   pageItems: [],
