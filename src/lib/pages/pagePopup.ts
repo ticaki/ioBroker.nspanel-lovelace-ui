@@ -75,7 +75,7 @@ export class PagePopup extends Page {
     public async update(): Promise<void> {
         const message: Partial<pages.PageNotifyMessage> = {};
         const items = this.items;
-        if (!items) {
+        if (!items || !this.visibility) {
             return;
         }
         const details = this.detailsArray[0];

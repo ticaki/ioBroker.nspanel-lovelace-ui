@@ -83,7 +83,7 @@ class PagePopup extends import_Page.Page {
     var _a;
     const message = {};
     const items = this.items;
-    if (!items) {
+    if (!items || !this.visibility) {
       return;
     }
     const details = this.detailsArray[0];
