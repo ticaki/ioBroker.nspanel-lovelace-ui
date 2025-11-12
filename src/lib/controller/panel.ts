@@ -1910,9 +1910,9 @@ export class Panel extends BaseClass {
                                 id: `${index}`,
                                 headline: val.headline,
                                 text: val.text,
-                                buttonLeft: 'next',
-                                buttonMid: 'clear all',
-                                buttonRight: 'clear',
+                                buttonLeft: 'nextW',
+                                buttonMid: 'Clear all',
+                                buttonRight: 'Clear',
                                 alwaysOn: true,
                             });
                         }
