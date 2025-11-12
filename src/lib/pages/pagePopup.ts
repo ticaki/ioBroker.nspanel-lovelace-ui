@@ -407,7 +407,7 @@ export class PagePopup extends Page {
                             }
                             await this.basePanel.statesControler.setInternalState(
                                 `${panel.name}/cmd/popupNotificationCustom`,
-                                JSON.stringify({ id: '', priority: -1 }),
+                                JSON.stringify({ id: entry.id, priority: -1 }),
                                 false,
                             );
                         }
@@ -441,7 +441,7 @@ export class PagePopup extends Page {
                             }
                             await this.basePanel.statesControler.setInternalState(
                                 `${panel.name}/cmd/popupNotificationCustom`,
-                                JSON.stringify({ id: '', priority: -1 }),
+                                JSON.stringify({ id: entry.id, priority: -1 }),
                                 false,
                             );
                         }

@@ -393,7 +393,7 @@ ${message.text}`;
               }
               await this.basePanel.statesControler.setInternalState(
                 `${panel.name}/cmd/popupNotificationCustom`,
-                JSON.stringify({ id: "", priority: -1 }),
+                JSON.stringify({ id: entry.id, priority: -1 }),
                 false
               );
             }
@@ -427,7 +427,7 @@ ${message.text}`;
               }
               await this.basePanel.statesControler.setInternalState(
                 `${panel.name}/cmd/popupNotificationCustom`,
-                JSON.stringify({ id: "", priority: -1 }),
+                JSON.stringify({ id: entry.id, priority: -1 }),
                 false
               );
             }
