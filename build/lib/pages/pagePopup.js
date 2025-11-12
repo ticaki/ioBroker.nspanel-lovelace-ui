@@ -123,7 +123,30 @@ class PagePopup extends import_Page.Page {
     if (message.text) {
       message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
     }
-    const maxLineCount = 8;
+    let maxLineCount = 7;
+    switch (details.textSize) {
+      case "0":
+        maxLineCount = 7;
+        break;
+      case "1":
+        maxLineCount = 5;
+        break;
+      case "2":
+        maxLineCount = 5;
+        break;
+      case "3":
+        maxLineCount = 4;
+        break;
+      case "4":
+        maxLineCount = 2;
+        break;
+      case "5":
+        maxLineCount = 1;
+        break;
+      default:
+        maxLineCount = 7;
+        break;
+    }
     let lines = 0;
     if (message.text && (lines = message.text.split("\r\n").length) > maxLineCount) {
       let test = 0;
@@ -369,6 +392,11 @@ ${message.text}`;
     if (_event.action !== "notifyAction") {
       return;
     }
+    this.step = 0;
+    if (this.rotationTimeout) {
+      this.adapter.clearTimeout(this.rotationTimeout);
+    }
+    this.rotationTimeout = void 0;
     switch (_event.opt) {
       case "button3":
         {
