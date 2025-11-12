@@ -323,7 +323,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                         this.getText('delete_confirm_text') +
                         (this.state.confirmDeleteName ? `: ${this.state.confirmDeleteName}` : '')
                     }
-                    cancelText={this.getText('Cancel')}
+                    cancelText={this.getText('Cancel1')}
                     confirmText={this.getText('Delete')}
                     ariaTitleId="unlock-delete-confirm-title"
                     ariaDescId="unlock-delete-confirm-description"

@@ -704,7 +704,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         this.getText('screensaver_delete_confirm_text') +
                         (this.state.confirmDeleteName ? `: ${this.state.confirmDeleteName}` : '')
                     }
-                    cancelText={this.getText('Cancel')}
+                    cancelText={this.getText('Cancel1')}
                     confirmText={this.getText('Delete')}
                     ariaTitleId="screensaver-delete-confirm-title"
                     ariaDescId="screensaver-delete-confirm-description"
