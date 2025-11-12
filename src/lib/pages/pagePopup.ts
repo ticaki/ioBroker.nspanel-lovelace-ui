@@ -191,7 +191,7 @@ export class PagePopup extends Page {
         }
         message.icon = Icons.GetIcon(details.icon || '');
         message.iconColor = convertToDec(details.iconColor, Color.White);
-        this.sendToPanel(this.getMessage2(message), false);
+        this.sendToPanel(this.getMessage(message), false);
     }
     private getMessage(message: Partial<pages.PageNotifyMessage>): string {
         return getPayloadRemoveTilde(
@@ -209,6 +209,8 @@ export class PagePopup extends Page {
             message.textColor ?? '',
             String(message.timeout ?? 0),
             message.fontSet ?? '0',
+            message.icon ?? '',
+            message.iconColor ?? '',
         );
     }
     private getMessage2(message: Partial<pages.PageNotifyMessage>): string {
@@ -286,8 +288,14 @@ export class PagePopup extends Page {
                 const index = this.detailsArray.findIndex(d => d.id === details.id);
                 // wenn priority 0 oder undefined dann entfernen
                 if (details.id && (details.priority == undefined || details.priority <= 0)) {
-                    this.detailsArray = this.detailsArray.filter(d => d.id !== details.id);
-                    this.log.debug(`remove notification id ${details.id}`);
+                    const id = details.id;
+                    if (id && details.priority != undefined && details.priority <= -100) {
+                        this.detailsArray = this.detailsArray.filter(d => !d.id?.startsWith(id));
+                        this.log.debug(`remove notification id start with ${details.id}`);
+                    } else {
+                        this.detailsArray = this.detailsArray.filter(d => d.id !== details.id);
+                        this.log.debug(`remove notification id ${details.id}`);
+                    }
 
                     // wenn Eintrag aktiv ist dann neues anzeigen
                     if (this.detailsArray.length > 0) {

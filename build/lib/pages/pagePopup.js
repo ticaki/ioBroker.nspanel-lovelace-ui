@@ -186,10 +186,10 @@ ${message.text}`;
     }
     message.icon = import_icon_mapping.Icons.GetIcon(details.icon || "");
     message.iconColor = convertToDec(details.iconColor, import_Color.Color.White);
-    this.sendToPanel(this.getMessage2(message), false);
+    this.sendToPanel(this.getMessage(message), false);
   }
   getMessage(message) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
     return (0, import_tools.getPayloadRemoveTilde)(
       "entityUpdateDetail",
       this.id,
@@ -204,7 +204,9 @@ ${message.text}`;
       (_i = message.text) != null ? _i : "",
       (_j = message.textColor) != null ? _j : "",
       String((_k = message.timeout) != null ? _k : 0),
-      (_l = message.fontSet) != null ? _l : "0"
+      (_l = message.fontSet) != null ? _l : "0",
+      (_m = message.icon) != null ? _m : "",
+      (_n = message.iconColor) != null ? _n : ""
     );
   }
   getMessage2(message) {
@@ -279,8 +281,17 @@ ${message.text}`;
       if (details) {
         const index = this.detailsArray.findIndex((d) => d.id === details.id);
         if (details.id && (details.priority == void 0 || details.priority <= 0)) {
-          this.detailsArray = this.detailsArray.filter((d) => d.id !== details.id);
-          this.log.debug(`remove notification id ${details.id}`);
+          const id = details.id;
+          if (id && details.priority != void 0 && details.priority <= -100) {
+            this.detailsArray = this.detailsArray.filter((d) => {
+              var _a2;
+              return !((_a2 = d.id) == null ? void 0 : _a2.startsWith(id));
+            });
+            this.log.debug(`remove notification id start with ${details.id}`);
+          } else {
+            this.detailsArray = this.detailsArray.filter((d) => d.id !== details.id);
+            this.log.debug(`remove notification id ${details.id}`);
+          }
           if (this.detailsArray.length > 0) {
             if (!this.reminderTimeout) {
               this.debouceUpdate();
