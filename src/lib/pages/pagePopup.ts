@@ -131,7 +131,7 @@ export class PagePopup extends Page {
             this.step = this.step % (lines + 1);
 
             const currentPos = this.step;
-            const text = `${message.text}\r\n` + `\r\n${message.text}`;
+            const text = `${message.text}\r\n` + `${message.text}`;
             message.text = '';
             while (test++ < 100) {
                 const pos2 = text.indexOf('\r\n', pos) + 2;
@@ -179,6 +179,7 @@ export class PagePopup extends Page {
             message.text ?? '',
             message.textColor ?? '',
             String(message.timeout ?? 0),
+            message.fontSet ?? '0',
         );
     }
     private getMessage2(message: Partial<pages.PageNotifyMessage>): string {

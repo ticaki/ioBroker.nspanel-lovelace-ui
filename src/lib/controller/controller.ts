@@ -552,6 +552,8 @@ export class Controller extends Library.BaseClass {
             buttonMid: typeof temp.buttonMid === 'string' ? temp.buttonMid : '',
             buttonRight: typeof temp.buttonRight === 'string' ? temp.buttonRight : '',
             icon: typeof temp.icon === 'string' ? temp.icon : undefined,
+            iconColor: temp.iconColor != null ? getRGBFromValue(temp.iconColor) : undefined,
+            textSize: typeof temp.textSize === 'string' ? temp.textSize : undefined,
             colorHeadline: temp.colorHeadline != null ? getRGBFromValue(temp.colorHeadline) : undefined,
             colorText: temp.colorText != null ? getRGBFromValue(temp.colorText) : undefined,
             colorButtonLeft: temp.colorButtonLeft != null ? getRGBFromValue(temp.colorButtonLeft) : undefined,

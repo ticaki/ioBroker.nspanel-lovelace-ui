@@ -132,7 +132,6 @@ class PagePopup extends import_Page.Page {
       this.step = this.step % (lines + 1);
       const currentPos = this.step;
       const text = `${message.text}\r
-\r
 ${message.text}`;
       message.text = "";
       while (test++ < 100) {
@@ -167,7 +166,7 @@ ${message.text}`;
     this.sendToPanel(this.getMessage2(message), false);
   }
   getMessage(message) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
     return (0, import_tools.getPayloadRemoveTilde)(
       "entityUpdateDetail",
       this.id,
@@ -181,7 +180,8 @@ ${message.text}`;
       (_h = message.brColor) != null ? _h : "",
       (_i = message.text) != null ? _i : "",
       (_j = message.textColor) != null ? _j : "",
-      String((_k = message.timeout) != null ? _k : 0)
+      String((_k = message.timeout) != null ? _k : 0),
+      (_l = message.fontSet) != null ? _l : "0"
     );
   }
   getMessage2(message) {

@@ -528,6 +528,8 @@ class Controller extends Library.BaseClass {
       buttonMid: typeof temp.buttonMid === "string" ? temp.buttonMid : "",
       buttonRight: typeof temp.buttonRight === "string" ? temp.buttonRight : "",
       icon: typeof temp.icon === "string" ? temp.icon : void 0,
+      iconColor: temp.iconColor != null ? (0, import_tools.getRGBFromValue)(temp.iconColor) : void 0,
+      textSize: typeof temp.textSize === "string" ? temp.textSize : void 0,
       colorHeadline: temp.colorHeadline != null ? (0, import_tools.getRGBFromValue)(temp.colorHeadline) : void 0,
       colorText: temp.colorText != null ? (0, import_tools.getRGBFromValue)(temp.colorText) : void 0,
       colorButtonLeft: temp.colorButtonLeft != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonLeft) : void 0,
