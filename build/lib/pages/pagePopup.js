@@ -314,7 +314,7 @@ ${message.text}`;
           return;
         }
         if (details.type === "acknowledge") {
-          details.type = details.buttonLeft || details.buttonRight ? "acknowledge" : "information";
+          details.buttonRight = details.buttonRight || "ok";
         }
         if (index !== -1) {
           this.log.debug(`update notification id ${details.id}`);
@@ -350,14 +350,14 @@ ${message.text}`;
     }
     return false;
   }
-  debouceUpdate() {
+  debouceUpdate(goLastPage) {
     if (this.debouceUpdateTimeout) {
       this.adapter.clearTimeout(this.debouceUpdateTimeout);
     }
     if (this.unload || this.adapter.unload) {
       return;
     }
-    if (this.detailsArray.length === 0) {
+    if (goLastPage || this.detailsArray.length === 0) {
       let page = this.getLastPage();
       if (!page) {
         page = this.basePanel.navigation.getCurrentMainPage();
@@ -459,13 +459,10 @@ ${message.text}`;
               await this.items.data.setGlobalMid.setState(`${entry.id}`);
             }
           }
-          if (entry == null ? void 0 : entry.global) {
-            await this.removeGlobalNotifications(entry);
-          }
           this.log.debug(
             `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`
           );
-          this.debouceUpdate();
+          this.debouceUpdate(true);
         }
         break;
       case "button1":

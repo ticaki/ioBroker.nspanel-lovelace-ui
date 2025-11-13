@@ -321,7 +321,7 @@ export class PagePopup extends Page {
                     return;
                 }
                 if (details.type === 'acknowledge') {
-                    details.type = details.buttonLeft || details.buttonRight ? 'acknowledge' : 'information';
+                    details.buttonRight = details.buttonRight || 'ok';
                 }
                 if (index !== -1) {
                     this.log.debug(`update notification id ${details.id}`);
@@ -361,7 +361,7 @@ export class PagePopup extends Page {
         return false;
     }
 
-    debouceUpdate(): void {
+    debouceUpdate(goLastPage?: boolean): void {
         if (this.debouceUpdateTimeout) {
             this.adapter.clearTimeout(this.debouceUpdateTimeout);
         }
@@ -369,7 +369,7 @@ export class PagePopup extends Page {
             return;
         }
 
-        if (this.detailsArray.length === 0) {
+        if (goLastPage || this.detailsArray.length === 0) {
             let page = this.getLastPage();
             if (!page) {
                 page = this.basePanel.navigation.getCurrentMainPage();
@@ -476,13 +476,11 @@ export class PagePopup extends Page {
                             await this.items.data.setGlobalMid.setState(`${entry.id}`);
                         }
                     }
-                    if (entry?.global) {
-                        await this.removeGlobalNotifications(entry);
-                    }
+
                     this.log.debug(
                         `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`,
                     );
-                    this.debouceUpdate();
+                    this.debouceUpdate(true);
                 }
                 break;
             case 'button1':
