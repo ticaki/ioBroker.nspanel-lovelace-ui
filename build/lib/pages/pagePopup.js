@@ -113,7 +113,7 @@ class PagePopup extends import_Page.Page {
     message.hColor = convertToDec(details.colorHeadline, import_Color.Color.Yellow);
     const blText = details.buttonLeft || (this.detailsArray.length > 1 ? "next" : "");
     message.blText = this.library.getTranslation(blText);
-    message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, import_Color.Color.Yellow) : "";
+    message.blColor = blText ? convertToDec(details.colorButtonLeft, import_Color.Color.Yellow) : "";
     message.bmText = this.library.getTranslation(details.buttonMid);
     message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, import_Color.Color.Red) : "";
     message.brText = this.library.getTranslation(details.buttonRight);

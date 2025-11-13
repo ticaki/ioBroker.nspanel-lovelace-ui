@@ -107,7 +107,7 @@ export class PagePopup extends Page {
         message.hColor = convertToDec(details.colorHeadline, Color.Yellow);
         const blText = details.buttonLeft || (this.detailsArray.length > 1 ? 'next' : '');
         message.blText = this.library.getTranslation(blText);
-        message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, Color.Yellow) : '';
+        message.blColor = blText ? convertToDec(details.colorButtonLeft, Color.Yellow) : '';
 
         message.bmText = this.library.getTranslation(details.buttonMid);
         message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, Color.Red) : '';
