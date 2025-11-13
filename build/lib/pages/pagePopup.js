@@ -111,7 +111,8 @@ class PagePopup extends import_Page.Page {
     this.log.debug("update notification page!");
     message.headline = details.headline;
     message.hColor = convertToDec(details.colorHeadline, import_Color.Color.Yellow);
-    message.blText = this.library.getTranslation(details.buttonLeft);
+    const blText = details.buttonLeft || (this.detailsArray.length > 1 ? "next" : "");
+    message.blText = this.library.getTranslation(blText);
     message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, import_Color.Color.Yellow) : "";
     message.bmText = this.library.getTranslation(details.buttonMid);
     message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, import_Color.Color.Red) : "";
@@ -459,17 +460,7 @@ ${message.text}`;
             }
           }
           if (entry == null ? void 0 : entry.global) {
-            const panels = this.basePanel.controller.panels;
-            for (const panel of panels) {
-              if (panel === this.basePanel || panel.unload) {
-                continue;
-              }
-              await this.basePanel.statesControler.setInternalState(
-                `${panel.name}/cmd/popupNotificationCustom`,
-                JSON.stringify({ id: entry.id, priority: -1 }),
-                false
-              );
-            }
+            await this.removeGlobalNotifications(entry);
           }
           this.log.debug(
             `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`
@@ -480,8 +471,10 @@ ${message.text}`;
       case "button1":
         {
           const entry = this.detailsArray.shift();
-          if (entry) {
+          if (entry && entry.type !== "information") {
             this.detailsArray.push(entry);
+          } else if (entry) {
+            await this.removeGlobalNotifications(entry);
           }
           if (((_i = this.items) == null ? void 0 : _i.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateID.setState(entry.id);
@@ -501,6 +494,21 @@ ${message.text}`;
           this.debouceUpdate();
         }
         break;
+    }
+  }
+  async removeGlobalNotifications(entry) {
+    if (entry == null ? void 0 : entry.global) {
+      const panels = this.basePanel.controller.panels;
+      for (const panel of panels) {
+        if (panel === this.basePanel || panel.unload) {
+          continue;
+        }
+        await this.basePanel.statesControler.setInternalState(
+          `${panel.name}/cmd/popupNotificationCustom`,
+          JSON.stringify({ id: entry.id, priority: -1 }),
+          false
+        );
+      }
     }
   }
   startReminder() {
