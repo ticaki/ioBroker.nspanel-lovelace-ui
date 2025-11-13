@@ -31,7 +31,8 @@ const popupNotification = {
     card: "popupNotify",
     data: {
       details: { type: "internal", dp: "system/popupNotification", change: "ts" },
-      setStateYes: { type: "internal", dp: "cmd/NotificationCleared" }
+      setStateYes: { type: "internal", dp: "cmd/NotificationCleared" },
+      setStateMid: { type: "internal", dp: "cmd/NotificationClearedAll" }
     }
   },
   pageItems: [],
@@ -45,11 +46,13 @@ const popupNotification2 = {
     card: "popupNotify",
     data: {
       details: { type: "internal", dp: "cmd/popupNotificationCustom", change: "ts" },
-      setStateYes: { type: "internal", dp: "cmd/NotificationCustomYes" },
-      setStateNo: { type: "internal", dp: "cmd/NotificationCustomNo" },
+      setStateYes: { type: "internal", dp: "cmd/NotificationCustomRight" },
+      setStateMid: { type: "internal", dp: "cmd/NotificationCustomMid" },
+      setStateNo: { type: "internal", dp: "cmd/NotificationCustomLeft" },
       setStateID: { type: "internal", dp: "cmd/NotificationCustomID" },
-      setGlobalYes: { type: "internal", dp: "///cmd/NotificationCustomYes" },
-      setGlobalNo: { type: "internal", dp: "///cmd/NotificationCustomNo" },
+      setGlobalYes: { type: "internal", dp: "///cmd/NotificationCustomRight" },
+      setGlobalMid: { type: "internal", dp: "///cmd/NotificationCustomMid" },
+      setGlobalNo: { type: "internal", dp: "///cmd/NotificationCustomLeft" },
       setGlobalID: { type: "internal", dp: "///cmd/NotificationCustomID" }
     }
   },

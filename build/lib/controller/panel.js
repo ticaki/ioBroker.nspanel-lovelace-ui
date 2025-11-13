@@ -917,7 +917,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
     if (state.ack) {
       return;
     }
@@ -1158,26 +1158,30 @@ class Panel extends import_library.BaseClass {
             headline: ((_e = this.library.readdb(`panels.${this.name}.cmd.pagePopup.headline`)) == null ? void 0 : _e.val) || "",
             text: ((_f = this.library.readdb(`panels.${this.name}.cmd.pagePopup.text`)) == null ? void 0 : _f.val) || "",
             buttonLeft: ((_g = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeft`)) == null ? void 0 : _g.val) || "",
-            buttonRight: ((_h = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)) == null ? void 0 : _h.val) || "",
+            buttonMid: ((_h = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonMid`)) == null ? void 0 : _h.val) || "",
+            buttonRight: ((_i = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRight`)) == null ? void 0 : _i.val) || "",
             colorHeadline: (0, import_tools.getRGBFromValue)(
-              ((_i = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorHeadline`)) == null ? void 0 : _i.val) || "#FFFFFF"
+              ((_j = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorHeadline`)) == null ? void 0 : _j.val) || "#FFFFFF"
             ),
             colorText: (0, import_tools.getRGBFromValue)(
-              ((_j = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorText`)) == null ? void 0 : _j.val) || "#FFFFFF"
+              ((_k = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorText`)) == null ? void 0 : _k.val) || "#FFFFFF"
             ),
             colorButtonLeft: (0, import_tools.getRGBFromValue)(
-              ((_k = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonLeft`)) == null ? void 0 : _k.val) || "#FFFFFF"
+              ((_l = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonLeft`)) == null ? void 0 : _l.val) || "#FFFFFF"
+            ),
+            colorButtonMid: (0, import_tools.getRGBFromValue)(
+              ((_m = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonMid`)) == null ? void 0 : _m.val) || "#FFFFFF"
             ),
             colorButtonRight: (0, import_tools.getRGBFromValue)(
-              ((_l = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonRight`)) == null ? void 0 : _l.val) || "#FFFFFF"
+              ((_n = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonRight`)) == null ? void 0 : _n.val) || "#FFFFFF"
             ),
-            icon: ((_m = this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)) == null ? void 0 : _m.val) || void 0,
-            textSize: String((_n = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _n.val) || "3",
+            icon: ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)) == null ? void 0 : _o.val) || void 0,
+            textSize: String((_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _p.val) || "3",
             iconColor: (0, import_tools.getRGBFromValue)(
-              ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _o.val) || "#FFFFFF"
+              ((_q = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _q.val) || "#FFFFFF"
             ),
-            alwaysOn: !!((_q = (_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _p.val) != null ? _q : true),
-            buzzer: !!((_s = (_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _r.val) != null ? _s : false)
+            alwaysOn: !!((_s = (_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _r.val) != null ? _s : true),
+            buzzer: !!((_u = (_t = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _t.val) != null ? _u : false)
           };
           let panels = [this];
           if (global) {
@@ -1699,7 +1703,15 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
-        case "cmd/NotificationCleared2":
+        case "cmd/NotificationClearedAll": {
+          await this.controller.systemNotification.clearNotification();
+          await this.statesControler.setInternalState(
+            `${this.name}/system/popupNotification`,
+            { id: "" },
+            false
+          );
+          break;
+        }
         case "cmd/NotificationCleared": {
           if (typeof state.val !== "number") {
             if (typeof state.val === "string" && !isNaN(parseInt(state.val))) {
@@ -1725,8 +1737,9 @@ class Panel extends import_library.BaseClass {
                 id: `${index}`,
                 headline: val.headline,
                 text: val.text,
-                buttonLeft: "next",
-                buttonRight: "clear",
+                buttonLeft: "nextW",
+                buttonMid: "Clear all",
+                buttonRight: "Clear",
                 alwaysOn: true
               });
             }
@@ -1751,7 +1764,7 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
-        case "cmd/NotificationCustomYes": {
+        case "cmd/NotificationCustomRight": {
           if (typeof state.val === "object") {
             break;
           }
@@ -1762,7 +1775,7 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
-        case "cmd/NotificationCustomNo": {
+        case "cmd/NotificationCustomLeft": {
           if (typeof state.val === "object") {
             break;
           }
@@ -1770,6 +1783,17 @@ class Panel extends import_library.BaseClass {
             `panels.${this.name}.pagePopup.buttonLeft`,
             state.val,
             definition.genericStateObjects.panel.panels.pagePopup.buttonLeft
+          );
+          break;
+        }
+        case "cmd/NotificationCustomMid": {
+          if (typeof state.val === "object") {
+            break;
+          }
+          await this.library.writedp(
+            `panels.${this.name}.pagePopup.buttonMid`,
+            state.val,
+            definition.genericStateObjects.panel.panels.pagePopup.buttonMid
           );
           break;
         }
@@ -1918,11 +1942,27 @@ class Panel extends import_library.BaseClass {
       }
       case "cmd/popupNotification2":
       case "cmd/popupNotification": {
-        if (this.notifyIndex !== -1) {
-          const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+        let details;
+        let index = -1;
+        while ((index = this.controller.systemNotification.getNotificationIndex(++index)) !== -1) {
+          const val = this.controller.systemNotification.getNotification(index);
           if (val) {
-            return JSON.stringify(val);
+            details = details || [];
+            details.push({
+              priority: 50,
+              type: "acknowledge",
+              id: `${index}`,
+              headline: val.headline,
+              text: val.text,
+              buttonLeft: "next",
+              buttonMid: "clear all",
+              buttonRight: "clear",
+              alwaysOn: true
+            });
           }
+        }
+        if (details) {
+          return details;
         }
         return null;
       }

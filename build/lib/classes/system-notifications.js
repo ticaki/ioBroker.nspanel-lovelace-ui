@@ -180,10 +180,16 @@ class SystemNotifications extends import_library.BaseClass {
   /**
    * Clear a notification
    *
-   * @param index index of the notification
+   * @param index index of the notification. If omitted all notifications are cleared
    */
   async clearNotification(index) {
     var _a, _b;
+    if (index === void 0) {
+      for (let i = 0; i < this.notifications.length; i++) {
+        await this.clearNotification(i);
+      }
+      return;
+    }
     if (this.notifications[index] && !this.notifications[index].cleared) {
       if (this.notifications[index].scopeid) {
         const msg = this.notifications[index];

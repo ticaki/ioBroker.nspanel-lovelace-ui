@@ -327,7 +327,7 @@ export class PageItemEditor extends React.Component<PageItemEditorProps, PageIte
                     onConfirm={this.handleDeleteConfirm}
                     title={getText('pageItem_delete_confirm_title')}
                     description={getText('pageItem_delete_confirm_text')}
-                    cancelText={getText('Cancel')}
+                    cancelText={getText('Cancel1')}
                     confirmText={getText('Delete')}
                     ariaTitleId="pageitem-delete-confirm-title"
                     ariaDescId="pageitem-delete-confirm-description"

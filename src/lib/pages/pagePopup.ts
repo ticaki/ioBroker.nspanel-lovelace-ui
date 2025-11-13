@@ -75,7 +75,7 @@ export class PagePopup extends Page {
     public async update(): Promise<void> {
         const message: Partial<pages.PageNotifyMessage> = {};
         const items = this.items;
-        if (!items) {
+        if (!items || !this.visibility) {
             return;
         }
         const details = this.detailsArray[0];
@@ -105,11 +105,14 @@ export class PagePopup extends Page {
 
         message.headline = details.headline;
         message.hColor = convertToDec(details.colorHeadline, Color.Yellow);
+        const blText = details.buttonLeft || (this.detailsArray.length > 1 ? 'next' : '');
+        message.blText = this.library.getTranslation(blText);
+        message.blColor = blText ? convertToDec(details.colorButtonLeft, Color.Yellow) : '';
 
-        message.blText = details.buttonLeft;
-        message.blColor = details.buttonLeft ? convertToDec(details.colorButtonLeft, Color.Red) : '';
+        message.bmText = this.library.getTranslation(details.buttonMid);
+        message.bmColor = details.buttonMid ? convertToDec(details.colorButtonMid, Color.Red) : '';
 
-        message.brText = details.buttonRight;
+        message.brText = this.library.getTranslation(details.buttonRight);
         message.brColor = details.buttonRight ? convertToDec(details.colorButtonRight, Color.Green) : '';
 
         message.text = details.text;
@@ -119,7 +122,36 @@ export class PagePopup extends Page {
         if (message.text) {
             message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
         }
-        const maxLineCount = 8;
+        // 0 -> 7
+        // 1 -> 5
+        // 2 -> 5
+        // 3 -> 4
+        // 4 -> 2
+        // 5 -> 1
+        let maxLineCount = 7;
+        switch (details.textSize) {
+            case '0':
+                maxLineCount = 7;
+                break;
+            case '1':
+                maxLineCount = 5;
+                break;
+            case '2':
+                maxLineCount = 5;
+                break;
+            case '3':
+                maxLineCount = 4;
+                break;
+            case '4':
+                maxLineCount = 2;
+                break;
+            case '5':
+                maxLineCount = 1;
+                break;
+            default:
+                maxLineCount = 7;
+                break;
+        }
         let lines = 0;
         if (message.text && (lines = message.text.split('\r\n').length) > maxLineCount) {
             let test = 0;
@@ -128,7 +160,7 @@ export class PagePopup extends Page {
             this.step = this.step % (lines + 1);
 
             const currentPos = this.step;
-            const text = `${message.text}\r\n` + `\r\n${message.text}`;
+            const text = `${message.text}\r\n` + `${message.text}`;
             message.text = '';
             while (test++ < 100) {
                 const pos2 = text.indexOf('\r\n', pos) + 2;
@@ -159,7 +191,7 @@ export class PagePopup extends Page {
         }
         message.icon = Icons.GetIcon(details.icon || '');
         message.iconColor = convertToDec(details.iconColor, Color.White);
-        this.sendToPanel(this.getMessage2(message), false);
+        this.sendToPanel(this.getMessage(message), false);
     }
     private getMessage(message: Partial<pages.PageNotifyMessage>): string {
         return getPayloadRemoveTilde(
@@ -169,11 +201,16 @@ export class PagePopup extends Page {
             message.hColor ?? '',
             message.blText ?? '',
             message.blColor ?? '',
+            message.bmText ?? '',
+            message.bmColor ?? '',
             message.brText ?? '',
             message.brColor ?? '',
             message.text ?? '',
             message.textColor ?? '',
             String(message.timeout ?? 0),
+            message.fontSet ?? '0',
+            message.icon ?? '',
+            message.iconColor ?? '',
         );
     }
     private getMessage2(message: Partial<pages.PageNotifyMessage>): string {
@@ -184,6 +221,8 @@ export class PagePopup extends Page {
             message.hColor ?? '',
             message.blText ?? '',
             message.blColor ?? '',
+            message.bmText ?? '',
+            message.bmColor ?? '',
             message.brText ?? '',
             message.brColor ?? '',
             message.text ?? '',
@@ -249,8 +288,14 @@ export class PagePopup extends Page {
                 const index = this.detailsArray.findIndex(d => d.id === details.id);
                 // wenn priority 0 oder undefined dann entfernen
                 if (details.id && (details.priority == undefined || details.priority <= 0)) {
-                    this.detailsArray = this.detailsArray.filter(d => d.id !== details.id);
-                    this.log.debug(`remove notification id ${details.id}`);
+                    const id = details.id;
+                    if (id && details.priority != undefined && details.priority <= -100) {
+                        this.detailsArray = this.detailsArray.filter(d => !d.id?.startsWith(id));
+                        this.log.debug(`remove notification id start with ${details.id}`);
+                    } else {
+                        this.detailsArray = this.detailsArray.filter(d => d.id !== details.id);
+                        this.log.debug(`remove notification id ${details.id}`);
+                    }
 
                     // wenn Eintrag aktiv ist dann neues anzeigen
                     if (this.detailsArray.length > 0) {
@@ -276,7 +321,7 @@ export class PagePopup extends Page {
                     return;
                 }
                 if (details.type === 'acknowledge') {
-                    details.type = details.buttonLeft || details.buttonRight ? 'acknowledge' : 'information';
+                    details.buttonRight = details.buttonRight || 'ok';
                 }
                 if (index !== -1) {
                     this.log.debug(`update notification id ${details.id}`);
@@ -316,7 +361,7 @@ export class PagePopup extends Page {
         return false;
     }
 
-    debouceUpdate(): void {
+    debouceUpdate(goLastPage?: boolean): void {
         if (this.debouceUpdateTimeout) {
             this.adapter.clearTimeout(this.debouceUpdateTimeout);
         }
@@ -324,7 +369,7 @@ export class PagePopup extends Page {
             return;
         }
 
-        if (this.detailsArray.length === 0) {
+        if (goLastPage || this.detailsArray.length === 0) {
             let page = this.getLastPage();
             if (!page) {
                 page = this.basePanel.navigation.getCurrentMainPage();
@@ -376,8 +421,13 @@ export class PagePopup extends Page {
         if (_event.action !== 'notifyAction') {
             return;
         }
+        this.step = 0;
+        if (this.rotationTimeout) {
+            this.adapter.clearTimeout(this.rotationTimeout);
+        }
+        this.rotationTimeout = undefined;
         switch (_event.opt) {
-            case 'yes':
+            case 'button3':
                 {
                     const entry = this.detailsArray.shift();
                     if (this.items?.data.setStateID && entry?.id != null) {
@@ -400,7 +450,7 @@ export class PagePopup extends Page {
                             }
                             await this.basePanel.statesControler.setInternalState(
                                 `${panel.name}/cmd/popupNotificationCustom`,
-                                JSON.stringify({ id: '', priority: -1 }),
+                                JSON.stringify({ id: entry.id, priority: -1 }),
                                 false,
                             );
                         }
@@ -411,12 +461,36 @@ export class PagePopup extends Page {
                     this.debouceUpdate();
                 }
                 break;
-            case 'no':
+            case 'button2':
+                {
+                    const entry = this.detailsArray.shift();
+                    if (this.items?.data.setStateID && entry?.id != null) {
+                        await this.items.data.setStateID.setState(entry.id);
+                        if (entry?.global && this.items?.data.setGlobalID) {
+                            await this.items.data.setGlobalID.setState(`${this.basePanel.name}.${entry.id}`);
+                        }
+                    }
+                    if (this.items?.data.setStateMid && entry?.id != null) {
+                        await this.items.data.setStateMid.setState(entry.id);
+                        if (entry?.global && this.items?.data.setGlobalMid) {
+                            await this.items.data.setGlobalMid.setState(`${entry.id}`);
+                        }
+                    }
+
+                    this.log.debug(
+                        `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`,
+                    );
+                    this.debouceUpdate(true);
+                }
+                break;
+            case 'button1':
                 {
                     // aktuell ein weiterschalten im array
                     const entry = this.detailsArray.shift();
-                    if (entry) {
+                    if (entry && entry.type !== 'information') {
                         this.detailsArray.push(entry);
+                    } else if (entry) {
+                        await this.removeGlobalNotifications(entry);
                     }
                     if (this.items?.data.setStateID && entry?.id != null) {
                         await this.items.data.setStateID.setState(entry.id);
@@ -436,6 +510,22 @@ export class PagePopup extends Page {
                     this.debouceUpdate();
                 }
                 break;
+        }
+    }
+
+    async removeGlobalNotifications(entry: pages.PagePopupDataDetails): Promise<void> {
+        if (entry?.global) {
+            const panels = this.basePanel.controller.panels;
+            for (const panel of panels) {
+                if (panel === this.basePanel || panel.unload) {
+                    continue;
+                }
+                await this.basePanel.statesControler.setInternalState(
+                    `${panel.name}/cmd/popupNotificationCustom`,
+                    JSON.stringify({ id: entry.id, priority: -1 }),
+                    false,
+                );
+            }
         }
     }
 

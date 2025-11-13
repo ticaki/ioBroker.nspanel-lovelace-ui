@@ -135,7 +135,7 @@ export namespace NSPanel {
         | 'cmd/dimActive'
         | 'cmd/dimStandby'
         | 'cmd/screenSaverTimeout'
-        | 'cmd/NotificationCleared2'
+        | 'cmd/NotificationClearedAll'
         | 'cmd/NotificationNext2'
         | 'cmd/popupNotification2'
         | 'cmd/NotificationCleared'
@@ -157,8 +157,9 @@ export namespace NSPanel {
         | 'cmd/screenSaverLayout'
         | 'cmd/hideCards'
         | 'cmd/buzzer'
-        | 'cmd/NotificationCustomYes'
-        | 'cmd/NotificationCustomNo'
+        | 'cmd/NotificationCustomRight'
+        | 'cmd/NotificationCustomMid'
+        | 'cmd/NotificationCustomLeft'
         | 'cmd/NotificationCustomID'
         | 'cmd/popupNotificationCustom';
 
