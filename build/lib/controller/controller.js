@@ -514,7 +514,7 @@ class Controller extends Library.BaseClass {
       this.log.error("setPopupNotification: Invalid data format, must be valid JSON or object");
       return;
     }
-    this.log.info(`setPopupNotification called with data: ${JSON.stringify(temp)}`);
+    this.log.debug(`setPopupNotification called with data: ${JSON.stringify(temp)}`);
     const global = temp.panel ? false : true;
     const details = {
       id: typeof temp.id === "string" ? temp.id : "missing",

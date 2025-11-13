@@ -111,7 +111,7 @@ class PagePopup extends import_Page.Page {
     this.log.debug("update notification page!");
     message.headline = details.headline;
     message.hColor = convertToDec(details.colorHeadline, import_Color.Color.Yellow);
-    const blText = details.buttonLeft || (this.detailsArray.length > 1 ? "next" : "");
+    const blText = details.buttonLeft || (this.detailsArray.length > 1 ? "Next" : "");
     message.blText = this.library.getTranslation(blText);
     message.blColor = blText ? convertToDec(details.colorButtonLeft, import_Color.Color.Yellow) : "";
     message.bmText = this.library.getTranslation(details.buttonMid);
