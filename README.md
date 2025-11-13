@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (Armilar) Minimum TFT Version 5.1.0
 - (ticaki) pagePopup added
 - (ticaki) color for brightsky favorit fixed
 
