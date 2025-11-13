@@ -160,7 +160,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (Armilar) IMPORTANT: update to TFT Version 5.1.0
 - (ticaki) pagePopup added
-- (ticaki) color for brightsky favorit fixed
+- (ticaki) color for brightsky favorit/bottom day fixed
+- (ticaki) unlock pin fail fixed
 
 ### 0.7.3 (2025-11-09)
 - (ticaki) Switch from global subscript to individual subscriptions
