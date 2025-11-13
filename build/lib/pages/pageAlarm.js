@@ -300,7 +300,20 @@ class PageAlarm extends import_Page.Page {
         message.flashing = "enable";
       }
     } else if (this.alarmType === "unlock") {
-      if (this.status == "triggered") {
+      if (this.pinFailTimeout) {
+        message.button1 = `${this.library.getTranslation("locked_for")}`;
+        message.status1 = "";
+        message.button2 = ` ${2 ** this.failCount} s`;
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
+        message.icon = import_icon_mapping.Icons.GetIcon("key-alert-outline");
+        message.iconColor = String(import_Color.Color.rgb_dec565({ r: 255, g: 0, b: 0 }));
+        message.numpad = "disable";
+        message.flashing = "enable";
+      } else if (this.status == "triggered") {
         message.button1 = this.library.getTranslation("locked");
         message.status1 = "";
         message.button2 = "";
