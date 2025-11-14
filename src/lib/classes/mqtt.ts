@@ -72,7 +72,7 @@ export class MQTTClientClass extends BaseClass {
 
         this.client.on('error', err => {
             this.ready = false;
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
             this.log.error(`MQTT error: ${String(err)}`);
         });
 
@@ -288,7 +288,7 @@ export class MQTTServerClass extends BaseClass {
         path: string,
         testCase: boolean = false,
     ): Promise<MQTTServerClass> {
-        let keys: Record<string, string> = {};
+        let mqttKeys: Record<'certPem' | 'privateKey' | 'publicKey', string> | undefined;
 
         if (
             (await adapter.fileExistsAsync(adapter.namespace, 'keys/private-key.pem')) &&
@@ -319,16 +319,49 @@ export class MQTTServerClass extends BaseClass {
             }
         }
         if (
-            !(
-                (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'private-key.pem')) &&
-                (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'public-key.pem')) &&
-                (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'certificate.pem'))
-            )
+            (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'private-key.pem')) &&
+            (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'public-key.pem')) &&
+            (await adapter.fileExistsAsync(`${adapter.namespace}.keys`, 'certificate.pem'))
         ) {
+            try {
+                mqttKeys = { privateKey: '', publicKey: '', certPem: '' };
+                mqttKeys.privateKey = (
+                    await adapter.readFileAsync(`${adapter.namespace}.keys`, 'private-key.pem')
+                ).file.toString();
+                mqttKeys.publicKey = (
+                    await adapter.readFileAsync(`${adapter.namespace}.keys`, 'public-key.pem')
+                ).file.toString();
+                mqttKeys.certPem = (
+                    await adapter.readFileAsync(`${adapter.namespace}.keys`, 'certificate.pem')
+                ).file.toString();
+                await adapter.extendObject(`${adapter.namespace}`, {
+                    type: 'meta',
+                    native: {
+                        mqttKeys,
+                    },
+                });
+
+                await adapter.delFileAsync(`${adapter.namespace}.keys`, 'private-key.pem');
+                await adapter.delFileAsync(`${adapter.namespace}.keys`, 'public-key.pem');
+                await adapter.delFileAsync(`${adapter.namespace}.keys`, 'certificate.pem');
+                adapter.log.info(`Moved keys to ${adapter.namespace}.keys`);
+            } catch (err) {
+                adapter.log.error(`Failed to migrate key files: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+        const obj = await adapter.getObjectAsync(`${adapter.namespace}`);
+        if (obj?.native?.mqttKeys) {
+            mqttKeys = obj.native.mqttKeys as keyof typeof mqttKeys;
+        }
+
+        if (!(mqttKeys?.privateKey && mqttKeys?.publicKey && mqttKeys?.certPem)) {
             adapter.log.info(`Create new keys for MQTT server.`);
+            mqttKeys = { privateKey: '', publicKey: '', certPem: '' };
+
+            // Schlüsselpaar generieren
             const prekeys = forge.pki.rsa.generateKeyPair(4096);
-            keys.privateKey = forge.pki.privateKeyToPem(prekeys.privateKey);
-            keys.publicKey = forge.pki.publicKeyToPem(prekeys.publicKey);
+            mqttKeys.privateKey = forge.pki.privateKeyToPem(prekeys.privateKey);
+            mqttKeys.publicKey = forge.pki.publicKeyToPem(prekeys.publicKey);
 
             // Zertifikat erstellen
             const cert = forge.pki.createCertificate();
@@ -351,24 +384,19 @@ export class MQTTServerClass extends BaseClass {
             cert.sign(prekeys.privateKey, forge.md.sha256.create());
 
             // PEM-Format exportieren
-            keys.certPem = forge.pki.certificateToPem(cert);
+            mqttKeys.certPem = forge.pki.certificateToPem(cert);
 
             // In Dateien speichern
 
-            // Schlüssel in Dateien speichern
-            await adapter.writeFileAsync(`${adapter.namespace}.keys`, 'private-key.pem', keys.privateKey);
-            await adapter.writeFileAsync(`${adapter.namespace}.keys`, 'public-key.pem', keys.publicKey);
-            await adapter.writeFileAsync(`${adapter.namespace}.keys`, 'certificate.pem', keys.certPem);
-        } else {
-            keys = {
-                privateKey: (
-                    await adapter.readFileAsync(`${adapter.namespace}.keys`, 'private-key.pem')
-                ).file.toString(),
-                publicKey: (await adapter.readFileAsync(`${adapter.namespace}.keys`, 'public-key.pem')).file.toString(),
-                certPem: (await adapter.readFileAsync(`${adapter.namespace}.keys`, 'certificate.pem')).file.toString(),
-            };
+            // Schlüssel in Objekt speichern
+            await adapter.extendObject(`${adapter.namespace}`, {
+                type: 'meta',
+                native: {
+                    mqttKeys,
+                },
+            });
         }
-        return new MQTTServerClass(adapter, port, username, password, path, keys, testCase);
+        return new MQTTServerClass(adapter, port, username, password, path, mqttKeys, testCase);
     }
 
     constructor(

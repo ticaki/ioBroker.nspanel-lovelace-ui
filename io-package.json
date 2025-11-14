@@ -313,15 +313,6 @@
         "def": false
       },
       "native": {}
-    },
-    {
-      "_id": "keys",
-      "type": "meta",
-      "common": {
-        "name": "keys",
-        "role": "meta.user"
-      },
-      "native": {}
     }
   ]
 }
