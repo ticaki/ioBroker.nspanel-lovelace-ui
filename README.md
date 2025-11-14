@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) New attempt to get MQTT TLS keys into the backup
+
 ### 0.8.0 (2025-11-13)
 - (Armilar) IMPORTANT: update to TFT Version 5.1.0
 - (ticaki) pagePopup added
