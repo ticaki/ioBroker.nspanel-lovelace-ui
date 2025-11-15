@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "news": {
+      "0.8.1": {
+        "en": "First Version at latest\nNew attempt to get MQTT TLS keys into the backup",
+        "de": "Erste Version in latest\nNeuer Versuch, MQTT TLS Schlüssel in das Backup zu bekommen",
+        "ru": "последняя версия\nНовая попытка получить ключи MQTT TLS в резервной копии",
+        "pt": "primeira versão o mais tardar\nNova tentativa de obter chaves TLS MQTT para o backup",
+        "nl": "laatste versie\nNieuwe poging om MQTT TLS-sleutels in de back-up te krijgen",
+        "fr": "première version au plus tard\nNouvelle tentative pour obtenir les clés MQTT TLS dans la sauvegarde",
+        "it": "prima versione al più tardi\nNuovo tentativo di ottenere le chiavi MQTT TLS nel backup",
+        "es": "primera versión a última\nNuevo intento de conseguir las teclas MQTT TLS en la copia de seguridad",
+        "pl": "pierwsza wersja najpóźniej\nNowa próba wprowadzenia klawiszy MQTT TLS do kopii zapasowej",
+        "uk": "перша версія в останні\nНова спроба отримати ключі MQTT TLS у резервну копію",
+        "zh-cn": "最迟第一版\n将 MQTT TLS 密钥输入备份的新尝试"
+      },
       "0.8.0": {
         "en": "IMPORTANT: update to TFT Version 5.1.0\npagePopup added\ncolor for brightsky favorit/bottom day fixed\nunlock pin fail fixed",
         "de": "WICHTIG: Update auf TFT Version 5.1.0\npagePopup hinzugefügt\nFarbe für Brightsky favorit/bottom gefixt\nFehler in Unlock behoben",
@@ -80,19 +93,6 @@
         "pl": "Błąd podczas konwersji do pobierania uniemożliwił dodanie paneli. Naprawione.",
         "uk": "Помилка при перетворенні на кисть, що запобігає доданням панелей. Фіксований.",
         "zh-cn": "在转换以获取时出错, 无法添加面板 。 固定着."
-      },
-      "0.6.7": {
-        "en": "PagePower: Added favorite unit selection for power display\nGrid/Entities pages: Improved update performance with reduced minimum update interval\nPageItem icons: Enabled use of state IDs in color specifications\nChartBar: Fixed display issues\nBattery template (BYD HVS): Fixed charging status detection (power = 0 is no longer treated as charging)\nHMI: Fixed cardAlarm icon display and screensaver standard/alternate mode switching",
-        "de": "PagePower: Favoriteneinheit für Leistungsanzeige hinzugefügt\nGrid/Entities-Seiten: Aktualisierungsleistung verbessert und minimale Aktualisierungsintervalle reduziert\nPageItem-Symbole: Verwendung von Zustands-IDs in Farbangaben aktiviert\nChartBar: Anzeigeprobleme behoben\nBatterievorlage (BYD HVS): Erkennung des Ladestatus korrigiert (Leistung = 0 wird nicht mehr als Laden behandelt)\nHMI: Anzeige des cardAlarm-Symbols und Umschaltung zwischen Standard-/Alternativmodus des Bildschirmschoners behoben",
-        "ru": "PagePower: Добавлен любимый выбор блоков для отображения мощности\nСтраницы Grid/Entities: Улучшенная производительность обновления с минимальным интервалом обновления\nИконки PageItem: Возможность использования идентификаторов состояния в цветовых спецификациях\nChartBar: проблемы с фиксированным дисплеем\nШаблон батареи (BYD HVS): Определение состояния фиксированной зарядки (мощность = 0 больше не рассматривается как зарядка)\nHMI: Фиксированная карта Отображение значков тревоги и заставка стандартного / альтернативного режима переключения",
-        "pt": "PagePower: Adicionado seleção de unidade favorita para exibição de energia\nPáginas de grade/entidades: Melhor desempenho de atualização com intervalo mínimo de atualização reduzido\nÍcones do PageItem: Utilização activa de IDs de estado nas especificações de cores\nBarra de Gráficos: Problemas de visualização corrigidos\nModelo da bateria (BYD HVS): Detecção do estado de carga fixa (potência = 0 já não é tratada como carga)\nHMI: Cartão fixo Exibição de ícones de alarme e screensaver padrão / mudança de modo",
-        "nl": "PagePower: Toegevoegd favoriete eenheid selectie voor power display\nRaster/Entities pagina's: Verbeterde updateprestaties met een verminderd minimum updateinterval\nPageItem pictogrammen: Ingeschakeld gebruik van status ID's in kleurspecificaties\nGrafiekBar: Vaste weergave problemen\nModel batterij (BYD HVS): Detectie van vaste laadstatus (vermogen = 0 wordt niet langer behandeld als opladen)\nHMI: Vaste kaart Alarm pictogram display en screensaver standaard / alternatieve modus schakelen",
-        "fr": "PagePower: Ajout de la sélection d'unité préférée pour l'affichage de puissance\nPages de grille/entités : Amélioration des performances de mise à jour avec un intervalle minimal de mise à jour réduit\nIcônes de page : Utilisation activée des ID d'état dans les spécifications de couleur\nBarre graphique : Correction des problèmes d'affichage\nModèle de batterie (BYD HVS): Détection de l'état de charge fixe (puissance = 0 n'est plus traitée comme charge)\nHMI: Carte fixe Affichage de l'icône d'alarme et commutation en mode standard / alternatif",
-        "it": "PagePower: Aggiunta selezione unità preferita per display di potenza\nPagine di Griglia/Entities: Migliorate le prestazioni di aggiornamento con un ridotto intervallo di aggiornamento minimo\nIcone PageItem: Abilitato uso di ID di stato nelle specifiche di colore\nChartBar: Problemi di visualizzazione fissi\nModello della batteria (BYD HVS): Rilevamento di stato di carica fisso (la potenza = 0 non è più trattata come carica)\nHMI: Scheda fissa Visualizzazione icona di allarme e screensaver standard/alternate modalità di commutazione",
-        "es": "PagePower: Añadido la selección de unidad favorita para la pantalla de energía\nPáginas de parrillas / entradas: Mejora del rendimiento de actualización con intervalo mínimo de actualización reducido\nPageItem iconos: Uso habilitado de IDs estatales en especificaciones de color\nChartBar: Problemas de visualización fijo\nPlantilla de batería (BYD HVS): Detección de estado de carga fija (poder = 0 ya no se trata como carga)\nHMI: Tarjeta fija Alarma icono pantalla y salvapantallas estándar / modo alternativo",
-        "pl": "PagePower: Dodano ulubiony wybór jednostki dla wyświetlacza mocy\nStrony siatki / podmiotów: Lepsza wydajność aktualizacji z ograniczonym minimalnym odstępem aktualizacji\nIkony PageItem: Włączone użycie identyfikatorów stanu w specyfikacjach kolorów\nChartBar: Naprawiono problemy z wyświetlaniem\nWzór akumulatora (BYD HVS): Wykrywanie stanu ładowania stałego (moc = 0 nie jest już traktowana jako ładowanie)\nHMI: Karta stała Wyświetlacz ikon alarmu i wygaszacz ekranu",
-        "uk": "PagePower: Додано вибір улюбленого блоку для дисплея живлення\nCайт: Покращено продуктивність оновлення з зменшеним інтервалом мінімального оновлення\nPageItem іконки: Увімкнено використання державних ідентифікаторів у кольорових специфікаціях\nChartBar: виправлені проблеми відображення\nШаблон батареї (BYD HVS): Виправлено визначення стану зарядки (потужність = 0 більше не лікується як зарядка)\nHMI: Фіксована картка Вимкнення значків сигналізації та екраніввих стандартних / змінних режимів",
-        "zh-cn": "PagePower: 为权力显示添加了最喜欢的单位选择\n网格/实体页: 改进更新工作,缩短最低更新间隔\nPage 项目图标: 在颜色规格中允许使用状态标识\n图巴:固定显示问题\n电池模板( BYD HVS): 固定充电状态检测(功率=0不再作为充电处理)\nHMI:固定卡 提醒图标显示和屏幕保护标准/替换模式切换"
       }
     },
     "titleLang": {

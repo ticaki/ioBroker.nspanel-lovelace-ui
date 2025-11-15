@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.8.1 (2025-11-15)
 - (ticaki) first Version at latest
 - (ticaki) New attempt to get MQTT TLS keys into the backup
 
@@ -166,7 +166,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) pagePopup added
 - (ticaki) color for brightsky favorit/bottom day fixed
 - (ticaki) unlock pin fail fixed
-
 
 ## License
 
