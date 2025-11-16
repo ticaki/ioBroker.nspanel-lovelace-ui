@@ -515,13 +515,12 @@ class Controller extends Library.BaseClass {
       return;
     }
     this.log.debug(`setPopupNotification called with data: ${JSON.stringify(temp)}`);
-    const global = temp.panel ? false : true;
     const details = {
       id: typeof temp.id === "string" ? temp.id : "missing",
       priority: typeof temp.priority === "number" ? temp.priority : 50,
       alwaysOn: typeof temp.alwaysOn === "boolean" ? temp.alwaysOn : true,
       type: typeof temp.type === "string" ? temp.type : "information",
-      global,
+      global: temp.global === true,
       headline: typeof temp.headline === "string" ? temp.headline : "Missing Headline",
       text: typeof temp.text === "string" ? temp.text : "Missing Text",
       buttonLeft: typeof temp.buttonLeft === "string" ? temp.buttonLeft : "",
@@ -538,16 +537,23 @@ class Controller extends Library.BaseClass {
       buzzer: !temp.buzzer || !(temp.buzzer === true || typeof temp.buzzer === "string") ? false : temp.buzzer
     };
     let panels = [];
-    if (global) {
+    if (!temp.panel) {
       panels = this.panels;
+      details.global = temp.global == void 0 && true;
     } else {
-      const panel = this.panels.find((p) => p.name === temp.panel || p.friendlyName === temp.panel);
-      if (!panel) {
-        this.log.error(`setPopupMessage: Panel ${temp.panel} not found`);
-        return;
+      if (!Array.isArray(temp.panel)) {
+        temp.panel = [temp.panel];
       }
-      panels.push(panel);
+      for (const pName of temp.panel) {
+        const panel = this.panels.find((p) => p.name === pName || p.friendlyName === pName);
+        if (!panel) {
+          this.log.error(`setPopupMessage: Panel ${pName} not found`);
+          continue;
+        }
+        panels.push(panel);
+      }
     }
+    temp.global = details.global && panels.length > 1;
     for (const panel of panels) {
       await this.statesControler.setInternalState(
         `${panel.name}/cmd/popupNotificationCustom`,
