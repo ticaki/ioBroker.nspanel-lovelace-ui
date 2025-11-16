@@ -544,7 +544,7 @@ export class Controller extends Library.BaseClass {
             priority: typeof temp.priority === 'number' ? temp.priority : 50,
             alwaysOn: typeof temp.alwaysOn === 'boolean' ? temp.alwaysOn : true,
             type: typeof temp.type === 'string' ? temp.type : 'information',
-            global: temp.global === true,
+            global: temp.global !== false,
             headline: typeof temp.headline === 'string' ? temp.headline : 'Missing Headline',
             text: typeof temp.text === 'string' ? temp.text : 'Missing Text',
             buttonLeft: typeof temp.buttonLeft === 'string' ? temp.buttonLeft : '',
