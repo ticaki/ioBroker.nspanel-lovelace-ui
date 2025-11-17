@@ -2744,7 +2744,7 @@ export class ConfigManager extends BaseClass {
                                                   type: 'const',
                                                   constVal: item.icon2 || 'gesture-tap-button',
                                               },
-                                              color: await this.getIconColor(item.onColor, Color.deactivated),
+                                              color: await this.getIconColor(item.offColor, Color.deactivated),
                                           }
                                         : undefined,
                                     scale: globals.isIconColorScaleElement(item.colorScale)
