@@ -592,7 +592,6 @@ export class Controller extends Library.BaseClass {
         let panels: Panel.Panel[] = [];
         if (!temp.panel) {
             panels = this.panels;
-            details.global = temp.global == undefined && true;
         } else {
             if (!Array.isArray(temp.panel)) {
                 temp.panel = [temp.panel];
