@@ -1383,7 +1383,7 @@ class ConfigManager extends import_library.BaseClass {
                 type: "const",
                 constVal: item.icon2 || "gesture-tap-button"
               },
-              color: await this.getIconColor(item.onColor, import_Color.Color.deactivated)
+              color: await this.getIconColor(item.offColor, import_Color.Color.deactivated)
             } : void 0,
             scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
           },
