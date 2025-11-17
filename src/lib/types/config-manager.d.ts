@@ -396,7 +396,7 @@ declare namespace ScriptConfig {
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'> &
         Partial<Pick<PageBaseType, 'heading' | 'items'>>;
 
-    export type PageItem = PageBaseItem | PageItemNative;
+    export type PageItem = PageBaseItem | PageItemNative | PageBaseCustomItem;
 
     /**
      * Base configuration for page menus.
@@ -588,6 +588,20 @@ declare namespace ScriptConfig {
         native: any;
     } & ({ navigate: boolean; targetPage: string } | { navigate?: undefined; targetPage?: undefined });
 
+    export type PageBaseCustomItem = {
+        type: 'custom';
+        id: string;
+        navigate?: boolean | null | undefined;
+        targetPage?: string | null | undefined;
+        icon?: string;
+        icon2?: string;
+        name?: string;
+        onColor?: RGB | string;
+        offColor?: RGB | string;
+        colorScale?: IconScaleElement;
+        buttonText?: string;
+    };
+
     export type PageBaseItem = (
         | {
               navigate: true;
@@ -606,6 +620,7 @@ declare namespace ScriptConfig {
               targetPage?: string | null | undefined;
           }
     ) & {
+        type?: undefined | null;
         uniqueName?: string;
         role?: string;
         /**
