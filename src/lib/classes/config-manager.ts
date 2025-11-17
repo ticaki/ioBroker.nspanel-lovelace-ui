@@ -1567,6 +1567,51 @@ export class ConfigManager extends BaseClass {
                     : obj.common.name[this.library.getLocalLanguage()]
                 : undefined;
 
+        if (item.type === 'custom') {
+            return {
+                type: 'button',
+                data: {
+                    setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'const',
+                                constVal: item.icon || 'gesture-tap-button',
+                            },
+                            color: await this.getIconColor(item.onColor, Color.activated),
+                        },
+                        false: item.icon2
+                            ? {
+                                  value: {
+                                      type: 'const',
+                                      constVal: item.icon2 || 'gesture-tap-button',
+                                  },
+                                  color: await this.getIconColor(item.onColor, Color.deactivated),
+                              }
+                            : undefined,
+                        scale: globals.isIconColorScaleElement(item.colorScale)
+                            ? { type: 'const', constVal: item.colorScale }
+                            : undefined,
+                    },
+                    text1: {
+                        true: item.buttonText
+                            ? await this.getFieldAsDataItemConfig(item.buttonText ?? '', true)
+                            : {
+                                  type: 'const',
+                                  constVal: 'press',
+                              },
+                    },
+                    text: {
+                        true: item.name
+                            ? await this.getFieldAsDataItemConfig(item.name, true)
+                            : commonName
+                              ? { type: 'const', constVal: commonName }
+                              : { type: 'const', constVal: 'Info' },
+                    },
+                },
+            };
+        }
+
         const getButtonsTextTrue = async (
             item: ScriptConfig.PageBaseItem,
             def1: string,
@@ -2618,7 +2663,115 @@ export class ConfigManager extends BaseClass {
                 if (!(obj.common && obj.common.role)) {
                     throw new Error(`Role missing in^${item.id}!`);
                 }
+                const commonName =
+                    typeof obj.common.name === 'string'
+                        ? obj.common.name
+                        : obj.common.name[this.library.getLocalLanguage()];
+                if (item.type === 'custom') {
+                    const writeable = await this.existsAndWriteableState(`${item.id}`);
+                    if (writeable) {
+                        return {
+                            messages,
+                            itemConfig: {
+                                type: 'button',
+                                data: {
+                                    entity1: {
+                                        value: await this.getFieldAsDataItemConfig(item.id),
+                                        set: writeable ? await this.getFieldAsDataItemConfig(item.id) : undefined,
+                                    },
+
+                                    icon: {
+                                        true: {
+                                            value: {
+                                                type: 'const',
+                                                constVal: item.icon || 'gesture-tap-button',
+                                            },
+                                            color: await this.getIconColor(item.onColor, Color.activated),
+                                        },
+                                        false: item.icon2
+                                            ? {
+                                                  value: {
+                                                      type: 'const',
+                                                      constVal: item.icon2 || 'gesture-tap-button',
+                                                  },
+                                                  color: await this.getIconColor(item.onColor, Color.deactivated),
+                                              }
+                                            : undefined,
+                                        scale: globals.isIconColorScaleElement(item.colorScale)
+                                            ? { type: 'const', constVal: item.colorScale }
+                                            : undefined,
+                                    },
+                                    text1: {
+                                        true: item.buttonText
+                                            ? await this.getFieldAsDataItemConfig(item.buttonText ?? '', true)
+                                            : {
+                                                  type: 'const',
+                                                  constVal: 'press',
+                                              },
+                                    },
+                                    text: {
+                                        true: item.name
+                                            ? await this.getFieldAsDataItemConfig(item.name, true)
+                                            : commonName
+                                              ? { type: 'const', constVal: commonName }
+                                              : { type: 'const', constVal: 'Info' },
+                                    },
+                                },
+                            },
+                        };
+                    }
+                    return {
+                        messages,
+                        itemConfig: {
+                            type: 'text',
+                            data: {
+                                entity1: {
+                                    value: await this.getFieldAsDataItemConfig(item.id),
+                                    set: writeable ? await this.getFieldAsDataItemConfig(item.id) : undefined,
+                                },
+
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon || 'gesture-tap-button',
+                                        },
+                                        color: await this.getIconColor(item.onColor, Color.activated),
+                                    },
+                                    false: item.icon2
+                                        ? {
+                                              value: {
+                                                  type: 'const',
+                                                  constVal: item.icon2 || 'gesture-tap-button',
+                                              },
+                                              color: await this.getIconColor(item.onColor, Color.deactivated),
+                                          }
+                                        : undefined,
+                                    scale: globals.isIconColorScaleElement(item.colorScale)
+                                        ? { type: 'const', constVal: item.colorScale }
+                                        : undefined,
+                                },
+                                text1: {
+                                    true: item.buttonText
+                                        ? await this.getFieldAsDataItemConfig(item.buttonText ?? '', true)
+                                        : {
+                                              type: 'const',
+                                              constVal: 'press',
+                                          },
+                                },
+                                text: {
+                                    true: item.name
+                                        ? await this.getFieldAsDataItemConfig(item.name, true)
+                                        : commonName
+                                          ? { type: 'const', constVal: commonName }
+                                          : { type: 'const', constVal: 'Info' },
+                                },
+                            },
+                        },
+                    };
+                }
                 const role = obj.common.role as ScriptConfig.channelRoles;
+
                 // check if role and types are correct
                 if (!configManagerConst.requiredScriptDataPoints[role]) {
                     this.log.warn(`Channel role ${role} not supported!`);
@@ -2651,11 +2804,6 @@ export class ConfigManager extends BaseClass {
                 this.log.debug(
                     `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`,
                 );
-
-                const commonName =
-                    typeof obj.common.name === 'string'
-                        ? obj.common.name
-                        : obj.common.name[this.library.getLocalLanguage()];
 
                 const getButtonsTextTrue = async (
                     item: ScriptConfig.PageBaseItem,
