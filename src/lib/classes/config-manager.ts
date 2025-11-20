@@ -2559,7 +2559,7 @@ export class ConfigManager extends BaseClass {
                     const expectedId = `${dpInit}.${dp}`;
                     if (!entry.useKey || (await this.existsState(expectedId))) {
                         result[role][dp2] = await this.statesController.getIdbyAuto({
-                            dpInit: entry.useKey ? expectedId : dpInit,
+                            dpInit: entry.useKey ? expectedId : `${dpInit}.`,
                             role: entry.role,
                             enums: '',
                             regexp: entry.useKey ? new RegExp(`\\.${dp}$`) : undefined,
@@ -2578,7 +2578,7 @@ export class ConfigManager extends BaseClass {
                         const entry2 = data[alternate];
                         if (!entry2.useKey || (await this.existsState(expectedAltId))) {
                             result[role][dp2] = await this.statesController.getIdbyAuto({
-                                dpInit: entry2.useKey ? expectedAltId : dpInit,
+                                dpInit: entry2.useKey ? expectedAltId : `${dpInit}.`,
                                 role: entry2.role,
                                 enums: '',
                                 regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : undefined,

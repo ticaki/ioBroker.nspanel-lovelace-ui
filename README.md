@@ -157,6 +157,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) custom pageitem added
+- (ticaki) script ID is found uniquely
+
 ### 0.8.1 (2025-11-15)
 - (ticaki) first Version at latest
 - (ticaki) New attempt to get MQTT TLS keys into the backup
