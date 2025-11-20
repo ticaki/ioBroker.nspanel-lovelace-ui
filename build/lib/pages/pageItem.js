@@ -1678,6 +1678,31 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     await this.controller.statesControler.deletePageLoop();
     await super.delete();
   }
+  async onCommandLongPress(action, value) {
+    var _a;
+    if (value === void 0 || this.dataItems === void 0) {
+      return false;
+    }
+    const entry = this.dataItems;
+    if (action.startsWith("mode-")) {
+      action = "mode";
+    }
+    let done = false;
+    switch (action) {
+      case "button": {
+        if (entry.type === "button" || entry.type === "switch") {
+          this.log.debug(`Button ${this.id} was long pressed!`);
+          const item = entry.data;
+          const value2 = (_a = item.setNaviLongPress && await item.setNaviLongPress.getString()) != null ? _a : null;
+          if (value2 !== null) {
+            await this.parent.basePanel.navigation.setTargetPageByName(value2);
+            done = true;
+          }
+        }
+      }
+    }
+    return done;
+  }
   async onCommand(action, value) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G;
     if (value === void 0 || this.dataItems === void 0) {

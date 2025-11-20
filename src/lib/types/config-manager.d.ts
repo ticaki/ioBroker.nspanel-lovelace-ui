@@ -62,6 +62,7 @@ declare namespace ScriptConfig {
         | 'sleepReached'
         | 'pageOpenDetail'
         | 'buttonPress2'
+        | 'buttonPress3'
         | 'renderCurrentPage'
         | 'button1'
         | 'button2';
@@ -593,6 +594,7 @@ declare namespace ScriptConfig {
         id: string;
         navigate?: boolean | null | undefined;
         targetPage?: string | null | undefined;
+        targetPageLongPress?: string | null | undefined;
         icon?: string;
         icon2?: string;
         name?: string;
@@ -623,6 +625,7 @@ declare namespace ScriptConfig {
         type?: undefined | null;
         uniqueName?: string;
         role?: string;
+        targetPageLongPress?: string;
         /**
          * The icon that is used in the standard case or if ID is true
          */

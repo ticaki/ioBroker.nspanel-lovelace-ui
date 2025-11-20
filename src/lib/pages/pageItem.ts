@@ -1936,6 +1936,30 @@ export class PageItem extends BaseTriggeredPage {
         await this.controller.statesControler.deletePageLoop();
         await super.delete();
     }
+    async onCommandLongPress(action: string, value: string): Promise<boolean> {
+        if (value === undefined || this.dataItems === undefined) {
+            return false;
+        }
+        const entry = this.dataItems;
+        if (action.startsWith('mode-')) {
+            action = 'mode';
+        }
+        let done = false;
+        switch (action) {
+            case 'button': {
+                if (entry.type === 'button' || entry.type === 'switch') {
+                    this.log.debug(`Button ${this.id} was long pressed!`);
+                    const item = entry.data;
+                    const value: any = (item.setNaviLongPress && (await item.setNaviLongPress.getString())) ?? null;
+                    if (value !== null) {
+                        await this.parent.basePanel.navigation.setTargetPageByName(value);
+                        done = true;
+                    }
+                }
+            }
+        }
+        return done;
+    }
 
     async onCommand(action: string, value: string): Promise<boolean> {
         if (value === undefined || this.dataItems === undefined) {

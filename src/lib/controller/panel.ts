@@ -1597,6 +1597,7 @@ export class Panel extends BaseClass {
                 );
                 break;
             }
+            case 'buttonPress3':
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
                     await this.library.writedp(
@@ -1685,6 +1686,7 @@ export class Panel extends BaseClass {
                         this.log.debug(`Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`);
                         break;
                     }
+
                     if (
                         event.action === 'button' &&
                         ['bNext', 'bPrev', 'bUp', 'bHome', 'bSubNext', 'bSubPrev'].indexOf(event.id) != -1
@@ -1695,6 +1697,19 @@ export class Panel extends BaseClass {
                             this.getActivePage().goRight();
                         }
                         break;
+                    }
+                    if (event.method === 'buttonPress3') {
+                        if (
+                            await this.getActivePage().onButtonPress3(
+                                event.id,
+                                event.popup as Types.PopupType,
+                                event.action,
+                                event.opt,
+                                event,
+                            )
+                        ) {
+                            break;
+                        }
                     }
                     await this.getActivePage().onPopupRequest(
                         event.id,

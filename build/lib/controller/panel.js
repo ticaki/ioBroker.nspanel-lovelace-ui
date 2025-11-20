@@ -1432,6 +1432,7 @@ class Panel extends import_library.BaseClass {
         );
         break;
       }
+      case "buttonPress3":
       case "buttonPress2": {
         if (event.id == "screensaver") {
           await this.library.writedp(
@@ -1527,6 +1528,17 @@ class Panel extends import_library.BaseClass {
               this.getActivePage().goRight();
             }
             break;
+          }
+          if (event.method === "buttonPress3") {
+            if (await this.getActivePage().onButtonPress3(
+              event.id,
+              event.popup,
+              event.action,
+              event.opt,
+              event
+            )) {
+              break;
+            }
           }
           await this.getActivePage().onPopupRequest(
             event.id,

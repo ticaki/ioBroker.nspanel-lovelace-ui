@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) pageItem type=button long press added
 - (ticaki) custom pageitem added
 - (ticaki) script ID is found uniquely
 

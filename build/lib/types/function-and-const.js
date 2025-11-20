@@ -123,6 +123,7 @@ function isEventMethod(F) {
     case "sleepReached":
     case "pageOpenDetail":
     case "buttonPress2":
+    case "buttonPress3":
     case "renderCurrentPage":
     case "button1":
     case "button2":

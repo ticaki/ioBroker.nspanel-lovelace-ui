@@ -187,6 +187,7 @@ declare namespace ScriptConfig {
         | 'sleepReached'
         | 'pageOpenDetail'
         | 'buttonPress2'
+        | 'buttonPress3'
         | 'renderCurrentPage'
         | 'button1'
         | 'button2';

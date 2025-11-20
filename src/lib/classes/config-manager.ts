@@ -1532,15 +1532,19 @@ export class ConfigManager extends BaseClass {
             if (!isPageItemDataItemsOptions(item.native)) {
                 throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
             }
-            if (item.navigate && !item.targetPage) {
+            if (
+                item.navigate &&
+                !item.targetPage &&
+                !(item.native.data && 'setNavi' in item.native.data && item.native.data.setNavi)
+            ) {
                 throw new Error(`Navigate true but no targetPage defined in native item`);
             }
 
             return {
                 ...item.native,
                 data: {
-                    ...item.native.data,
                     setNavi: { type: 'const', constVal: item.targetPage },
+                    ...item.native.data,
                 },
             } as NSPanel.PageItemDataItemsOptions;
         }
@@ -1572,6 +1576,9 @@ export class ConfigManager extends BaseClass {
                 type: 'button',
                 data: {
                     setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    setNaviLongPress: item.targetPageLongPress
+                        ? await this.getFieldAsDataItemConfig(item.targetPageLongPress)
+                        : undefined,
                     icon: {
                         true: {
                             value: {
@@ -2513,6 +2520,10 @@ export class ConfigManager extends BaseClass {
                 `No configuration generated for item "${item.id}" on page "${page.uniqueName}" (role: ${role}).`,
             );
             return undefined;
+        }
+        if (item.targetPageLongPress && itemConfig?.type === 'button' && !itemConfig?.data?.setNaviLongPress) {
+            itemConfig.data = itemConfig.data || {};
+            itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
         }
 
         if (item.filter != null) {
@@ -4345,6 +4356,10 @@ export class ConfigManager extends BaseClass {
                 if (item.targetPage && itemConfig?.type === 'button' && !itemConfig?.data?.setNavi) {
                     itemConfig.data = itemConfig.data || {};
                     itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
+                }
+                if (item.targetPageLongPress && itemConfig?.type === 'button' && !itemConfig?.data?.setNaviLongPress) {
+                    itemConfig.data = itemConfig.data || {};
+                    itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
                 }
                 if (item.enabled === false && itemConfig) {
                     if (!itemConfig.data) {

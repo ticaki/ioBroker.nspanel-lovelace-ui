@@ -1338,19 +1338,19 @@ class ConfigManager extends import_library.BaseClass {
     return !("native" in item);
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     if (this.isNativePageItem(item)) {
       if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
       }
-      if (item.navigate && !item.targetPage) {
+      if (item.navigate && !item.targetPage && !(item.native.data && "setNavi" in item.native.data && item.native.data.setNavi)) {
         throw new Error(`Navigate true but no targetPage defined in native item`);
       }
       return {
         ...item.native,
         data: {
-          ...item.native.data,
-          setNavi: { type: "const", constVal: item.targetPage }
+          setNavi: { type: "const", constVal: item.targetPage },
+          ...item.native.data
         }
       };
     }
@@ -1370,6 +1370,7 @@ class ConfigManager extends import_library.BaseClass {
         type: "button",
         data: {
           setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0,
+          setNaviLongPress: item.targetPageLongPress ? await this.getFieldAsDataItemConfig(item.targetPageLongPress) : void 0,
           icon: {
             true: {
               value: {
@@ -2194,6 +2195,10 @@ class ConfigManager extends import_library.BaseClass {
       );
       return void 0;
     }
+    if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_j = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _j.setNaviLongPress)) {
+      itemConfig.data = itemConfig.data || {};
+      itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+    }
     if (item.filter != null) {
       itemConfig.filter = item.filter;
     }
@@ -2283,7 +2288,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -3617,6 +3622,10 @@ class ConfigManager extends import_library.BaseClass {
         if (item.targetPage && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_z = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _z.setNavi)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
+        }
+        if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_A = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _A.setNaviLongPress)) {
+          itemConfig.data = itemConfig.data || {};
+          itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
         }
         if (item.enabled === false && itemConfig) {
           if (!itemConfig.data) {
