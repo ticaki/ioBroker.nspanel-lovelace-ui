@@ -297,13 +297,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             );
             this.config.mqttIp = '127.0.0.1';
         }
-        if (
-            this.config.doubleClickTime === undefined ||
-            typeof this.config.doubleClickTime !== 'number' ||
-            !(this.config.doubleClickTime > 0)
-        ) {
-            this.config.doubleClickTime = 350;
-        }
 
         //check config
         try {

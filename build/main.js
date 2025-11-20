@@ -255,9 +255,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       );
       this.config.mqttIp = "127.0.0.1";
     }
-    if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0)) {
-      this.config.doubleClickTime = 350;
-    }
     try {
       import_icon_mapping.Icons.adapter = this;
       await this.library.init();

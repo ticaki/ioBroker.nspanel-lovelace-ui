@@ -91,7 +91,6 @@ export class Navigation extends BaseClass {
     private database: NavigationItem[] = [];
     private navigationConfig: NavigationItemConfigNonNull[];
     private mainPage = 'main';
-    private doubleClickTimeout: ioBroker.Timeout | undefined;
     private _currentItem: number = 0;
     private initDone = false;
     private infityCounter = 0;
@@ -287,11 +286,11 @@ export class Navigation extends BaseClass {
         }
         return result;
     }
-    goLeft(): void {
-        this.go('left');
+    goLeft(short: boolean): void {
+        this.go('left', short);
     }
-    goRight(): void {
-        this.go('right');
+    goRight(short: boolean): void {
+        this.go('right', short);
     }
     private go(d: 'left' | 'right', single: boolean = false): void {
         const i = this.database[this.currentItem];
@@ -299,35 +298,23 @@ export class Navigation extends BaseClass {
             this.log.warn(`No navigation item found for current index ${this.currentItem}`);
             return;
         }
-        // zweiter Klick
-        if (this.doubleClickTimeout && !single) {
-            this.adapter.clearTimeout(this.doubleClickTimeout);
-            this.doubleClickTimeout = undefined;
-            if (i && i[d] && i[d].double) {
-                const index = i[d].double;
-                void this.setPageByIndex(index, d);
-            }
-            // erster Klick und check obs ein Ziel für den 1. und 2. Klick gibt.
-        } else if (!single && i && i[d] && i[d].double !== undefined && i[d].single !== undefined) {
-            this.doubleClickTimeout = this.adapter.setTimeout(
-                (...arg: any): void => {
-                    this.go(arg[0], arg[1]);
-                },
-                this.adapter.config.doubleClickTime,
-                d,
-                true,
-            );
+        if (!i[d]) {
+            this.log.debug(`No navigation direction ${d} found for current index ${this.currentItem}`);
             return;
-            // erster Klick und timeout ist durch oder forced.
+        }
+        // longpress
+        if (i[d].double !== undefined && i[d].single !== undefined && !single) {
+            const index = i[d].double;
+            void this.setPageByIndex(index, d);
+            // erster Klick und check obs ein Ziel für den 1. und 2. Klick gibt.
         } else {
-            this.adapter.clearTimeout(this.doubleClickTimeout);
-            this.doubleClickTimeout = undefined;
-            if (i && i[d] && i[d].single !== undefined) {
+            // shortpress
+            if (i[d].single !== undefined) {
                 const index = i[d].single;
                 void this.setPageByIndex(index, d);
                 this.log.debug(`Navigation single click with target ${i[d].single} done.`);
                 return;
-            } else if (i && i[d] && i[d].double !== undefined) {
+            } else if (i[d].double !== undefined) {
                 const index = i[d].double;
                 void this.setPageByIndex(index, d);
                 this.log.debug(`Navigation single click (use double target) with target ${i[d].double} done.`);
@@ -363,10 +350,7 @@ export class Navigation extends BaseClass {
         }
         let navigationString = '';
         if (!side || side === 'left') {
-            if (
-                item.left.single !== undefined &&
-                (item.left.double === undefined || this.doubleClickTimeout === undefined)
-            ) {
+            if (item.left.single !== undefined && item.left.double === undefined) {
                 navigationString = getPayloadRemoveTilde(
                     'button',
                     'bSubPrev',
@@ -395,10 +379,7 @@ export class Navigation extends BaseClass {
         let navigationString2 = '';
         //Right icon
         if (!side || side === 'right') {
-            if (
-                item.right.single !== undefined &&
-                (item.right.double === undefined || this.doubleClickTimeout === undefined)
-            ) {
+            if (item.right.single !== undefined && item.right.double === undefined) {
                 navigationString2 = getPayloadRemoveTilde(
                     'button',
                     'bSubNext',
@@ -487,8 +468,5 @@ export class Navigation extends BaseClass {
         this.navigationConfig = [];
         this.database = [];
         this.panel = {} as Panel;
-        if (this.doubleClickTimeout) {
-            this.adapter.clearTimeout(this.doubleClickTimeout);
-        }
     }
 }

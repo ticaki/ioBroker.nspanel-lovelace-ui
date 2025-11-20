@@ -27,8 +27,7 @@ declare global {
 
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
-            doubleClickTime: number;
-
+        
             // tasmota Admin
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;

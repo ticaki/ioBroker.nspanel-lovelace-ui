@@ -381,24 +381,28 @@ class Page extends import_baseClassPage.BaseClassPage {
    * Handles left navigation button press.
    * If a direct parent page exists, navigates to it (for popup/child pages).
    * Otherwise delegates to the panel's navigation controller (history-based navigation).
+   *
+   * @param short - Whether the navigation is a short press (true) or long press (false)
    */
-  goLeft() {
+  goLeft(short) {
     if (this.directParentPage) {
       void this.basePanel.setActivePage(this.directParentPage, false);
       return;
     }
-    this.basePanel.navigation.goLeft();
+    this.basePanel.navigation.goLeft(short);
   }
   /**
    * Handles right navigation button press.
    * If a direct parent page exists, does nothing (right nav disabled for child pages).
    * Otherwise delegates to the panel's navigation controller (forward navigation).
+   *
+   * @param short - Whether the navigation is a short press (true) or long press (false)
    */
-  goRight() {
+  goRight(short) {
     if (this.directParentPage) {
       return;
     }
-    this.basePanel.navigation.goRight();
+    this.basePanel.navigation.goRight(short);
   }
   /**
    * Called when the page becomes visible or hidden.

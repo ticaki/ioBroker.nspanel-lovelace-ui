@@ -18,7 +18,6 @@ export class PageMenu extends Page {
     protected iconRight: string = '';
     protected iconLeftP: string = '';
     protected iconRightP: string = '';
-    protected doubleClick: ioBroker.Timeout | undefined;
     protected lastdirection: null | 'left' | 'right' = null;
 
     /** Optional arrow item used when scrollPresentation === 'arrow'. */
@@ -372,34 +371,18 @@ export class PageMenu extends Page {
         await super.onVisibilityChange(val);
     }
 
-    goLeft(single: boolean = false): void {
+    goLeft(short: boolean = false): void {
         if (this.config.scrollPresentation && ['arrow', 'auto'].indexOf(this.config.scrollPresentation) !== -1) {
-            super.goLeft();
+            super.goLeft(short);
             return;
         }
         if (!this.config || !globals.isPageMenuConfig(this.config)) {
             return;
         }
 
-        if (!single) {
-            if (this.doubleClick) {
-                this.adapter.clearTimeout(this.doubleClick);
-                this.doubleClick = undefined;
-                if (this.lastdirection === 'left') {
-                    super.goLeft();
-                    return;
-                }
-            } else {
-                this.lastdirection = 'left';
-                if (this.unload || this.adapter.unload) {
-                    return;
-                }
-                this.doubleClick = this.adapter.setTimeout(() => {
-                    this.doubleClick = undefined;
-                    this.goLeft(true);
-                }, this.adapter.config.doubleClickTime);
-                return;
-            }
+        if (!short) {
+            super.goLeft(short);
+            return;
         }
 
         const total = (this.tempItems && this.tempItems.length) || (this.pageItems && this.pageItems.length) || 0;
@@ -412,7 +395,7 @@ export class PageMenu extends Page {
 
         // wenn es gar keine weitere Seite gibt, delegiere nach links
         if (stride === 0 || total <= maxItems) {
-            super.goLeft();
+            super.goLeft(short);
             return;
         }
 
@@ -420,41 +403,25 @@ export class PageMenu extends Page {
 
         if (prevStart < 0) {
             // wir sind auf der ersten Seite -> nach außen navigieren
-            super.goLeft();
+            super.goLeft(short);
         } else {
             this.step -= 1;
             void this.update();
         }
     }
 
-    goRight(single: boolean = false): void {
+    goRight(short: boolean = false): void {
         if (this.config.scrollPresentation && ['arrow', 'auto'].indexOf(this.config.scrollPresentation) !== -1) {
-            super.goRight();
+            super.goRight(short);
             return;
         }
         if (!this.config || !globals.isPageMenuConfig(this.config)) {
             return;
         }
 
-        if (!single) {
-            if (this.doubleClick) {
-                this.adapter.clearTimeout(this.doubleClick);
-                this.doubleClick = undefined;
-                if (this.lastdirection === 'right') {
-                    super.goRight();
-                    return;
-                }
-            } else {
-                this.lastdirection = 'right';
-                if (this.unload || this.adapter.unload) {
-                    return;
-                }
-                this.doubleClick = this.adapter.setTimeout(() => {
-                    this.doubleClick = undefined;
-                    this.goRight(true);
-                }, this.adapter.config.doubleClickTime);
-                return;
-            }
+        if (!short) {
+            super.goRight(short);
+            return;
         }
 
         const total = (this.tempItems && this.tempItems.length) || (this.pageItems && this.pageItems.length) || 0;
@@ -467,7 +434,7 @@ export class PageMenu extends Page {
 
         const nextStart = (this.step + 1) * stride;
         if (nextStart >= total) {
-            this.basePanel.navigation.goRight();
+            super.goRight(short);
         } else {
             this.step += 1;
             void this.update();
@@ -552,10 +519,7 @@ export class PageMenu extends Page {
 
     async delete(): Promise<void> {
         this.unload = true;
-        if (this.doubleClick) {
-            this.adapter.clearTimeout(this.doubleClick);
-            this.doubleClick = undefined;
-        }
+
         if (this.autoLoopTimeout) {
             this.adapter.clearTimeout(this.autoLoopTimeout);
             this.autoLoopTimeout = undefined;

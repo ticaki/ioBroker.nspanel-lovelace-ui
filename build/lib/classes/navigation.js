@@ -71,7 +71,6 @@ class Navigation extends import_library.BaseClass {
   database = [];
   navigationConfig;
   mainPage = "main";
-  doubleClickTimeout;
   _currentItem = 0;
   initDone = false;
   infityCounter = 0;
@@ -250,11 +249,11 @@ class Navigation extends import_library.BaseClass {
     }
     return result;
   }
-  goLeft() {
-    this.go("left");
+  goLeft(short) {
+    this.go("left", short);
   }
-  goRight() {
-    this.go("right");
+  goRight(short) {
+    this.go("right", short);
   }
   go(d, single = false) {
     const i = this.database[this.currentItem];
@@ -262,32 +261,20 @@ class Navigation extends import_library.BaseClass {
       this.log.warn(`No navigation item found for current index ${this.currentItem}`);
       return;
     }
-    if (this.doubleClickTimeout && !single) {
-      this.adapter.clearTimeout(this.doubleClickTimeout);
-      this.doubleClickTimeout = void 0;
-      if (i && i[d] && i[d].double) {
-        const index = i[d].double;
-        void this.setPageByIndex(index, d);
-      }
-    } else if (!single && i && i[d] && i[d].double !== void 0 && i[d].single !== void 0) {
-      this.doubleClickTimeout = this.adapter.setTimeout(
-        (...arg) => {
-          this.go(arg[0], arg[1]);
-        },
-        this.adapter.config.doubleClickTime,
-        d,
-        true
-      );
+    if (!i[d]) {
+      this.log.debug(`No navigation direction ${d} found for current index ${this.currentItem}`);
       return;
+    }
+    if (i[d].double !== void 0 && i[d].single !== void 0 && !single) {
+      const index = i[d].double;
+      void this.setPageByIndex(index, d);
     } else {
-      this.adapter.clearTimeout(this.doubleClickTimeout);
-      this.doubleClickTimeout = void 0;
-      if (i && i[d] && i[d].single !== void 0) {
+      if (i[d].single !== void 0) {
         const index = i[d].single;
         void this.setPageByIndex(index, d);
         this.log.debug(`Navigation single click with target ${i[d].single} done.`);
         return;
-      } else if (i && i[d] && i[d].double !== void 0) {
+      } else if (i[d].double !== void 0) {
         const index = i[d].double;
         void this.setPageByIndex(index, d);
         this.log.debug(`Navigation single click (use double target) with target ${i[d].double} done.`);
@@ -321,7 +308,7 @@ class Navigation extends import_library.BaseClass {
     }
     let navigationString = "";
     if (!side || side === "left") {
-      if (item.left.single !== void 0 && (item.left.double === void 0 || this.doubleClickTimeout === void 0)) {
+      if (item.left.single !== void 0 && item.left.double === void 0) {
         navigationString = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bSubPrev",
@@ -345,7 +332,7 @@ class Navigation extends import_library.BaseClass {
     }
     let navigationString2 = "";
     if (!side || side === "right") {
-      if (item.right.single !== void 0 && (item.right.double === void 0 || this.doubleClickTimeout === void 0)) {
+      if (item.right.single !== void 0 && item.right.double === void 0) {
         navigationString2 = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bSubNext",
@@ -429,9 +416,6 @@ class Navigation extends import_library.BaseClass {
     this.navigationConfig = [];
     this.database = [];
     this.panel = {};
-    if (this.doubleClickTimeout) {
-      this.adapter.clearTimeout(this.doubleClickTimeout);
-    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

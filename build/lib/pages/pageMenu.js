@@ -45,7 +45,6 @@ class PageMenu extends import_Page.Page {
   iconRight = "";
   iconLeftP = "";
   iconRightP = "";
-  doubleClick;
   lastdirection = null;
   /** Optional arrow item used when scrollPresentation === 'arrow'. */
   arrowPageItem;
@@ -327,33 +326,17 @@ class PageMenu extends import_Page.Page {
     }
     await super.onVisibilityChange(val);
   }
-  goLeft(single = false) {
+  goLeft(short = false) {
     if (this.config.scrollPresentation && ["arrow", "auto"].indexOf(this.config.scrollPresentation) !== -1) {
-      super.goLeft();
+      super.goLeft(short);
       return;
     }
     if (!this.config || !globals.isPageMenuConfig(this.config)) {
       return;
     }
-    if (!single) {
-      if (this.doubleClick) {
-        this.adapter.clearTimeout(this.doubleClick);
-        this.doubleClick = void 0;
-        if (this.lastdirection === "left") {
-          super.goLeft();
-          return;
-        }
-      } else {
-        this.lastdirection = "left";
-        if (this.unload || this.adapter.unload) {
-          return;
-        }
-        this.doubleClick = this.adapter.setTimeout(() => {
-          this.doubleClick = void 0;
-          this.goLeft(true);
-        }, this.adapter.config.doubleClickTime);
-        return;
-      }
+    if (!short) {
+      super.goLeft(short);
+      return;
     }
     const total = this.tempItems && this.tempItems.length || this.pageItems && this.pageItems.length || 0;
     const maxItems = Math.max(0, this.maxItems | 0);
@@ -361,44 +344,28 @@ class PageMenu extends import_Page.Page {
     const effective = requested === "half" && globals.isCardMenuHalfPageScrollType(this.config.card) ? "half" : "page";
     const stride = effective === "page" ? maxItems : Math.max(1, Math.floor(maxItems / 2));
     if (stride === 0 || total <= maxItems) {
-      super.goLeft();
+      super.goLeft(short);
       return;
     }
     const prevStart = (this.step - 1) * stride;
     if (prevStart < 0) {
-      super.goLeft();
+      super.goLeft(short);
     } else {
       this.step -= 1;
       void this.update();
     }
   }
-  goRight(single = false) {
+  goRight(short = false) {
     if (this.config.scrollPresentation && ["arrow", "auto"].indexOf(this.config.scrollPresentation) !== -1) {
-      super.goRight();
+      super.goRight(short);
       return;
     }
     if (!this.config || !globals.isPageMenuConfig(this.config)) {
       return;
     }
-    if (!single) {
-      if (this.doubleClick) {
-        this.adapter.clearTimeout(this.doubleClick);
-        this.doubleClick = void 0;
-        if (this.lastdirection === "right") {
-          super.goRight();
-          return;
-        }
-      } else {
-        this.lastdirection = "right";
-        if (this.unload || this.adapter.unload) {
-          return;
-        }
-        this.doubleClick = this.adapter.setTimeout(() => {
-          this.doubleClick = void 0;
-          this.goRight(true);
-        }, this.adapter.config.doubleClickTime);
-        return;
-      }
+    if (!short) {
+      super.goRight(short);
+      return;
     }
     const total = this.tempItems && this.tempItems.length || this.pageItems && this.pageItems.length || 0;
     const maxItems = Math.max(0, this.maxItems | 0);
@@ -407,7 +374,7 @@ class PageMenu extends import_Page.Page {
     const stride = effective === "page" ? maxItems : Math.max(1, Math.floor(maxItems / 2));
     const nextStart = (this.step + 1) * stride;
     if (nextStart >= total) {
-      this.basePanel.navigation.goRight();
+      super.goRight(short);
     } else {
       this.step += 1;
       void this.update();
@@ -478,10 +445,6 @@ class PageMenu extends import_Page.Page {
   };
   async delete() {
     this.unload = true;
-    if (this.doubleClick) {
-      this.adapter.clearTimeout(this.doubleClick);
-      this.doubleClick = void 0;
-    }
     if (this.autoLoopTimeout) {
       this.adapter.clearTimeout(this.autoLoopTimeout);
       this.autoLoopTimeout = void 0;

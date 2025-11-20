@@ -1523,9 +1523,9 @@ class Panel extends import_library.BaseClass {
           }
           if (event.action === "button" && ["bNext", "bPrev", "bUp", "bHome", "bSubNext", "bSubPrev"].indexOf(event.id) != -1) {
             if (["bPrev", "bUp", "bSubPrev"].indexOf(event.id) != -1) {
-              this.getActivePage().goLeft();
+              this.getActivePage().goLeft(event.method === "buttonPress2");
             } else if (["bNext", "bHome", "bSubNext"].indexOf(event.id) != -1) {
-              this.getActivePage().goRight();
+              this.getActivePage().goRight(event.method === "buttonPress2");
             }
             break;
           }
