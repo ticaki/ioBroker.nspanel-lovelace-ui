@@ -157,9 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (armilar) HMI: long press added
-- (ticaki) Replace double-click with long press
+### 0.9.0 (2025-11-21)
+- (armilar) HMI: long press added (v5.1.1)
+- (ticaki) Replace double-click with long press 
 - (ticaki) pageItem type=button long press added
 - (ticaki) custom pageitem added
 - (ticaki) script ID is found uniquely

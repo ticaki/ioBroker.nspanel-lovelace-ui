@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.8.1",
+    "version": "0.9.0",
     "news": {
+      "0.9.0": {
+        "en": "HMI: long press added (v5.1.1)\nReplace double-click with long press \npageItem type=button long press added\ncustom pageitem added\nscript ID is found uniquely",
+        "de": "HMI: langer Klick hinzugefügt (v5.1.1)\nDoppelklick ersetzen mit langem Klick (v5.1.1)\nPageitem type=button langer Klick hinzugefügt\nbenutzerdefinierte PageItem hinzugefügt\nID der Pageitems wird eindeutig gefunden",
+        "ru": "HMI: добавлено длинное нажатие (v5.1.1)\nЗамените двойной щелчок длинным нажатием\nстраница Тип элемента = добавлена длинная кнопка\nдобавлен пользовательский pageitem\nидентификатор скрипта найден уникально",
+        "pt": "HMI: longa impressão adicionada (v5.1.1)\nSubstituir o duplo- clique com uma longa imprensa\npágina Tipo de item=botão longa imprensa adicionada\npágina personalizada adicionada\niD do script é encontrado de forma única",
+        "nl": "HMI: lange pers toegevoegd (v5.1.1)\nDubbelklik vervangen door lange druk\nblz. Item type=knop lange druk toegevoegd\naangepast paginaitem toegevoegd\nscript ID wordt uniek gevonden",
+        "fr": "HMI: ajout d'une longue presse (v5.1.1)\nRemplacer le double-clic par une longue pression\npage Type d'article=bouton presse longue ajoutée\npage personnalisée ajouté\niD de script est trouvé uniquement",
+        "it": "HMI: pressa lunga aggiunta (v5.1.1)\nSostituisci il doppio clic con la stampa lunga\npagina Articolo tipo=button lunga stampa aggiunto\npagina personalizzata aggiunto\nscript ID è trovato unico",
+        "es": "HMI: larga prensa agregada (v5.1.1)\nReemplazar el doble clic con la larga prensa\npágina Tipo de artículo= prensa larga de botón añadido\npágina personal añadido\niD de script se encuentra única",
+        "pl": "HMI: dodana długa prasa (v5.1.1)\nZastąp podwójne kliknięcie długim naciśnięciem\nstrona Typ elementu = przycisk długi naciśnij dodany\nniestandardowa pozycja konkursowa\niD skryptu znajduje się unikalnie",
+        "uk": "HMI: доданий довгопрес (v5.1.1)\nЗамініть подвійний клацання з довгою пресою\nновини Тип елемента: доданий прес\nдодано користувацьку сторінку\nідентифікатор сценарію",
+        "zh-cn": "HMI: 长报增加(v5.1.1.1)\n双击改为长按\n页 次 项目类型=按钮长度已添加\n添加自定义页面项目\n唯一找到脚本 ID"
+      },
       "0.8.1": {
         "en": "First Version at latest\nNew attempt to get MQTT TLS keys into the backup",
         "de": "Erste Version in latest\nNeuer Versuch, MQTT TLS Schlüssel in das Backup zu bekommen",
@@ -80,19 +93,6 @@
         "pl": "Użycie identyfikatorów w specyfikacjach kolorystycznych dla ikon konkursów i ikon wygaszacza ekranu.\nAdmin: treak alarm\nAdmin: redo configuration paragon (BREAKING)\nNowy układ konfiguracji strony",
         "uk": "Використання ідентифікаторів у кольорових специфікаціях для сторінкиІдем іконок і екраніввих іконок.\nАдміністратор: сигналізація\nАдміністратор: конфігурація redo pageQR (BREAKING)\nНовий макет конфігурації сторінки",
         "zh-cn": "启用项目图标和屏幕保护图标在颜色规格中使用ID .\n管理员: 微调提醒\n管理员:重做页面QR配置( BREAKING)\n页面配置的新布局"
-      },
-      "0.6.8": {
-        "en": "Error during conversion to fetch prevented adding of panels. Fixed.",
-        "de": "Fehler bei der Umstellung auf Fetch verhinderte das Hinzufügen von Paneelen. Behoben.",
-        "ru": "Ошибка во время преобразования в извлечение предотвратила добавление панелей. Исправлено.",
-        "pt": "Erro durante a conversão para obter impediu a adição de painéis. Consertado.",
-        "nl": "Fout tijdens de conversie naar fetch voorkomen toevoegen van panelen. Vast.",
-        "fr": "Erreur lors de la conversion pour récupérer a empêché l'ajout de panneaux. Corrigé.",
-        "it": "Errore durante la conversione a fetch ha impedito l'aggiunta di pannelli. Risolto.",
-        "es": "Error durante la conversión para buscar evitaba añadir paneles. Arreglado.",
-        "pl": "Błąd podczas konwersji do pobierania uniemożliwił dodanie paneli. Naprawione.",
-        "uk": "Помилка при перетворенні на кисть, що запобігає доданням панелей. Фіксований.",
-        "zh-cn": "在转换以获取时出错, 无法添加面板 。 固定着."
       }
     },
     "titleLang": {
