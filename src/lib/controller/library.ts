@@ -79,7 +79,7 @@ export class Library extends BaseClass {
     private unknownTokens: Record<string, string> = {};
     private unknownTokensInterval: ioBroker.Interval | undefined;
     defaults = {
-        updateStateOnChangeOnly: true,
+        updateStateOnChangeOnly: false,
     };
 
     constructor(adapter: AdapterClassDefinition, _options: any = null) {

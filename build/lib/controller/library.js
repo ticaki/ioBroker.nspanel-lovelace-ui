@@ -99,7 +99,7 @@ class Library extends BaseClass {
   unknownTokens = {};
   unknownTokensInterval;
   defaults = {
-    updateStateOnChangeOnly: true
+    updateStateOnChangeOnly: false
   };
   constructor(adapter, _options = null) {
     super(adapter, "library");
