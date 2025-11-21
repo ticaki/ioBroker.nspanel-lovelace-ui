@@ -358,7 +358,7 @@ class Library extends BaseClass {
     if (node && !(node.type === "state" && val === void 0)) {
       this.setdb(dp, node.type, val, node.stateTyp, false, void 0, void 0, node.init);
     }
-    if (node && val !== void 0 && (this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)) {
+    if (node && val !== void 0 && (!this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)) {
       const targetType = (_c = (_b = obj == null ? void 0 : obj.common) == null ? void 0 : _b.type) != null ? _c : node.stateTyp;
       if (targetType && typeof val !== targetType) {
         val = this.convertToType(val, targetType);

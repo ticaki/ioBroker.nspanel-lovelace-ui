@@ -420,7 +420,7 @@ export class Library extends BaseClass {
         if (
             node &&
             val !== undefined &&
-            (this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)
+            (!this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)
         ) {
             // Convert to target type if necessary
             const targetType = obj?.common?.type ?? node.stateTyp;
