@@ -187,7 +187,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
         this.resetLastMessage();
         this.controller && await this.controller.statesControler.activateTrigger(this);
         this.basePanel.info.nspanel.currentPage = this.name;
-        await this.library.writedp(
+        void this.library.writedp(
           `panels.${this.basePanel.name}.info.nspanel.currentPage`,
           this.name,
           import_definition.genericStateObjects.panel.panels.info.nspanel.currentPage

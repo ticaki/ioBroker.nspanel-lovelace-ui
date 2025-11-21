@@ -209,7 +209,7 @@ export class BaseTriggeredPage extends BaseClass {
                 this.controller && (await this.controller.statesControler.activateTrigger(this));
 
                 this.basePanel.info.nspanel.currentPage = this.name;
-                await this.library.writedp(
+                void this.library.writedp(
                     `panels.${this.basePanel.name}.info.nspanel.currentPage`,
                     this.name,
                     genericStateObjects.panel.panels.info.nspanel.currentPage,
