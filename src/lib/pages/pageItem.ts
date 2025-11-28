@@ -809,7 +809,10 @@ export class PageItem extends BaseTriggeredPage {
                     slider1Translation: '',
                     popup: false,
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
@@ -835,7 +838,10 @@ export class PageItem extends BaseTriggeredPage {
                     currentState: '',
                     list: '',
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail2',
                     result.entityName,
@@ -855,7 +861,10 @@ export class PageItem extends BaseTriggeredPage {
                     currentState: '',
                     list: '',
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     result.headline,
                     result.entityName,
@@ -877,7 +886,10 @@ export class PageItem extends BaseTriggeredPage {
                     mode: '',
                     modeList: '',
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
@@ -907,7 +919,10 @@ export class PageItem extends BaseTriggeredPage {
                     text2: '',
                     text3: '',
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
@@ -949,7 +964,10 @@ export class PageItem extends BaseTriggeredPage {
                     statusR2: 'disable',
                     pos2: 'disable',
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
@@ -999,7 +1017,10 @@ export class PageItem extends BaseTriggeredPage {
                     shutterTyp: 'shutter',
                     shutterClosedIsZero: this.adapter.config.shutterClosedIsZero ? '1' : '0',
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
@@ -1058,7 +1079,10 @@ export class PageItem extends BaseTriggeredPage {
                     hSlider3Step: '',
                     hSlider3Visibility: 'disable',
                 };
-                result = { ...result, ...message };
+                result = {
+                    ...result,
+                    ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== undefined)),
+                };
                 return tools.getPayloadRemoveTilde(
                     'entityUpdateDetail',
                     result.entityName,
