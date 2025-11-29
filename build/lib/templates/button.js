@@ -420,6 +420,7 @@ const buttonTemplates = {
               type: "triggered",
               mode: "auto",
               role: ["value", "level"],
+              regexp: /\.ACTUAL$/,
               dp: ""
             },
             unit: { type: "const", constVal: "%" }
@@ -434,6 +435,7 @@ const buttonTemplates = {
           type: "triggered",
           mode: "auto",
           role: ["value", "level"],
+          regexp: /\.ACTUAL$/,
           dp: ""
         }
       },
@@ -446,6 +448,7 @@ const buttonTemplates = {
           type: "triggered",
           mode: "auto",
           role: ["value", "level"],
+          regexp: /\.ACTUAL$/,
           dp: ""
         },
         false: void 0
