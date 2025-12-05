@@ -317,6 +317,7 @@ export const textTemplates: TemplateItems = {
                             read: `
                             const min = options?.min != null ?  options.min : 0;
                             const max = options?.max != null ?  options.max : 100;
+                            val = Math.min(Math.max(val, min), max);
                             val = (val - min) * 100 / (max - min);
                             return Math.round(val);`,
                         },
@@ -338,6 +339,7 @@ export const textTemplates: TemplateItems = {
                         read: `
                             const min = options?.min != null ?  options.min : 0;
                             const max = options?.max != null ?  options.max : 100;
+                            val = Math.min(Math.max(val, min), max);
                             val = (val - min) * 100 / (max - min);
                             const v = Math.round(val / 10)
                             switch (v) {
@@ -384,6 +386,7 @@ export const textTemplates: TemplateItems = {
                     read: `
                             const min = options?.min != null ?  options.min : 0;
                             const max = options?.max != null ?  options.max : 100;
+                            val = Math.min(Math.max(val, min), max);
                             val = (val - min) * 100 / (max - min);
                             return Math.round(val);`,
                 },
@@ -399,6 +402,7 @@ export const textTemplates: TemplateItems = {
                     read: `
                         const min = options?.min != null ?  options.min : 0;
                         const max = options?.max != null ?  options.max : 100;
+                        val = Math.min(Math.max(val, min), max);
                         val = (val - min) * 100 / (max - min);
                         return val < 0
                         `,
