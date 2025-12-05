@@ -286,6 +286,7 @@ const textTemplates = {
      * entity1 enthält den Füllstand
      * entity2 ebenfalls
      * entity3 ist true für laden und false für entladen. default ist false entity3 wird nicht automatisch gefunden
+     * min und max in options für die Kalibrierung des SOC
      */
     template: "text.battery",
     role: "battery",
@@ -301,7 +302,11 @@ const textTemplates = {
             role: "value.battery",
             dp: "",
             regexp: /\.State\.SOC$/,
-            read: `const v = Math.round(val / 10)
+            read: `
+                        const min = options?.min != null ?  options.min : 0;
+                        const max = options?.max != null ?  options.max : 100;
+                        val = (val - min) * 100 / (max - min);
+                        const v = Math.round(val / 10)
                         switch (v) {
                             case 0:
                                 return 'battery-charging-outline';
@@ -325,7 +330,12 @@ const textTemplates = {
               mode: "auto",
               role: "value.battery",
               dp: "",
-              regexp: /\.State\.SOC$/
+              regexp: /\.State\.SOC$/,
+              read: `
+                            const min = options?.min != null ?  options.min : 0;
+                            const max = options?.max != null ?  options.max : 100;
+                            val = (val - min) * 100 / (max - min);
+                            return Math.round(val);`
             },
             unit: {
               type: "const",
@@ -342,7 +352,11 @@ const textTemplates = {
             role: "value.battery",
             dp: "",
             regexp: /\.State\.SOC$/,
-            read: `const v = Math.round(val / 10)
+            read: `
+                            const min = options?.min != null ?  options.min : 0;
+                            const max = options?.max != null ?  options.max : 100;
+                            val = (val - min) * 100 / (max - min);
+                            const v = Math.round(val / 10)
                             switch (v) {
                                 case 0:
                                     return 'battery-outline';
@@ -383,7 +397,12 @@ const textTemplates = {
           mode: "auto",
           role: "value.battery",
           dp: "",
-          regexp: /\.State\.SOC$/
+          regexp: /\.State\.SOC$/,
+          read: `
+                            const min = options?.min != null ?  options.min : 0;
+                            const max = options?.max != null ?  options.max : 100;
+                            val = (val - min) * 100 / (max - min);
+                            return Math.round(val);`
         },
         unit: { type: "const", constVal: "%" }
       },
@@ -394,7 +413,12 @@ const textTemplates = {
           role: "value.power",
           dp: "",
           regexp: /\.State\.Power$/,
-          read: "return val < 0"
+          read: `
+                        const min = options?.min != null ?  options.min : 0;
+                        const max = options?.max != null ?  options.max : 100;
+                        val = (val - min) * 100 / (max - min);
+                        return val < 0
+                        `
         }
       }
     }
