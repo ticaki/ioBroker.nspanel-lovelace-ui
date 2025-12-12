@@ -225,6 +225,7 @@
     "new_page": "New Page",
     "new_screensaver": "New Page",
     "nextF": "next",
+    "nextW": "Next",
     "no_screensavers": "No Screensavers",
     "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange.",
     "nsPanelInit": "NSPanel initialization",

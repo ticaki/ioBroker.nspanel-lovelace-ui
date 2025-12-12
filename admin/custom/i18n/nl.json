@@ -225,6 +225,7 @@
     "new_page": "Nieuwe pagina",
     "new_screensaver": "Nieuwe pagina",
     "nextF": "volgende",
+    "nextW": "Volgende",
     "no_screensavers": "Geen schermbeveiliging",
     "notifyMqttServer": "We raden aan de interne MQTT -server van de adapter te gebruiken, die rechtstreeks met het paneel werkt. Dit optimaliseert gegevensuitwisseling.",
     "nsPanelInit": "NSPANEL -initialisatie",

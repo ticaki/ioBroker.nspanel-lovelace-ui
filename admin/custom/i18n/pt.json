@@ -225,6 +225,7 @@
     "new_page": "Nova página",
     "new_screensaver": "Nova página",
     "nextF": "próximo",
+    "nextW": "Próximo",
     "no_screensavers": "Sem protetores de tela",
     "notifyMqttServer": "Recomendamos o uso do servidor MQTT interno do adaptador, que funciona diretamente com o painel. Isso otimiza a troca de dados.",
     "nsPanelInit": "Inicialização do NSPALE",

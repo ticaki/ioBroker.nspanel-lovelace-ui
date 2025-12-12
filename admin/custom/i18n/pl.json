@@ -225,6 +225,7 @@
     "new_page": "Nowa strona",
     "new_screensaver": "Nowa strona",
     "nextF": "Następny",
+    "nextW": "Następny",
     "no_screensavers": "Brak wygaszaczy ekranu",
     "notifyMqttServer": "Zalecamy korzystanie z wewnętrznego serwera MQTT adaptera, który działa bezpośrednio z panelem. To optymalizuje wymianę danych.",
     "nsPanelInit": "Inicjalizacja nspanel",

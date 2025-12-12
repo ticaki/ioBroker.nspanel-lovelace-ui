@@ -225,6 +225,7 @@
     "new_page": "新页面",
     "new_screensaver": "新页面",
     "nextF": "下一个",
+    "nextW": "下一个",
     "no_screensavers": "没有屏保",
     "notifyMqttServer": "我们建议使用适配器的内部MQTT服务器，该服务器直接与面板一起使用。这将优化数据交换。",
     "nsPanelInit": "NSPANEL初始化",
