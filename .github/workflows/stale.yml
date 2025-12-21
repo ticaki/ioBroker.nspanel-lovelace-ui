@@ -1,19 +1,57 @@
 name: 'Close stale issues and PRs'
 permissions:
-  #contents: write # only for delete-branch option
-  actions: write
-  issues: write
-  #pull-requests: write
+    #contents: write # only for delete-branch option
+    actions: write
+    issues: write
+    #pull-requests: write
 
 on:
-  schedule:
-    - cron: '30 3 * * *'
+    schedule:
+        - cron: '30 3 * * *'
 
 jobs:
-  stale:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/stale@v10.1.1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          configuration: .github/stale.yml
+    stale:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/stale@v10.1.0
+              with:
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  days-before-stale: 90
+
+                  # Issues or Pull Requests with these labels will never be considered stale. Set to `[]` to disable
+                  exempt-issue-labels: enhancement,security,bug
+
+                  # Comment to post when marking as stale. Set to `false` to disable
+                  stale-issue-message: >
+                      This issue has been automatically marked as stale because it has not had
+                      recent activity. It will be closed if no further activity occurs within the next 14 days.
+                      Please check if the issue is still relevant in the most current version of the adapter
+                      and tell us. Also check that all relevant details, logs and reproduction steps
+                      are included and update them if needed.
+                      Thank you for your contributions.
+
+                      Dieses Problem wurde automatisch als veraltet markiert, da es in letzter Zeit keine Aktivitäten gab.
+                      Es wird geschlossen, wenn nicht innerhalb der nächsten 14 Tage weitere Aktivitäten stattfinden.
+                      Bitte überprüft, ob das Problem auch in der aktuellsten Version des Adapters noch relevant ist,
+                      und teilt uns dies mit. Überprüft auch, ob alle relevanten Details, Logs und Reproduktionsschritte
+                      enthalten sind bzw. aktualisiert diese.
+                      Vielen Dank für Eure Unterstützung.
+
+                  # Comment to post when removing the stale label.
+                  # unmarkComment: >
+                  #   Your comment here.
+
+                  # Comment to post when closing a stale Issue or Pull Request.
+                  close-issue-message: >
+                      This issue has been automatically closed because of inactivity. Please open a new
+                      issue if still relevant and make sure to include all relevant details, logs and
+                      reproduction steps.
+                      Thank you for your contributions.
+
+                      Dieses Problem wurde aufgrund von Inaktivität automatisch geschlossen. Bitte öffnet ein
+                      neues Issue, falls dies noch relevant ist und stellt sicher das alle relevanten Details,
+                      Logs und Reproduktionsschritte enthalten sind.
+                      Vielen Dank für Eure Unterstützung.
+
+                  # Limit the number of actions per hour, from 1-30. Default is 30
+                  operations-per-run: 30

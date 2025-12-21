@@ -569,7 +569,6 @@ class Controller extends Library.BaseClass {
   }
   checkOnlineVersion = async () => {
     await this.getTFTVersion();
-    await this.getTasmotaVersion();
   };
   async getTFTVersion() {
     try {
@@ -583,12 +582,11 @@ class Controller extends Library.BaseClass {
       }
       const version = this.adapter.config.useBetaTFT ? result["tft-beta"].split("_")[0] : result.tft.split("_")[0];
       this.globalPanelInfo.availableTftFirmwareVersion = version.trim();
-      for (const panel of this.panels) {
-        panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
-      }
       this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota.trim();
       for (const panel of this.panels) {
+        panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
         panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
+        await panel.writeInfo();
       }
     } catch {
     }
@@ -603,6 +601,7 @@ class Controller extends Library.BaseClass {
       this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
       for (const panel of this.panels) {
         panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
+        await panel.writeInfo();
       }
     } catch {
     }
