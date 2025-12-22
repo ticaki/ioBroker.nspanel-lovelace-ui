@@ -678,7 +678,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           slider1Translation: "",
           popup: false
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           "entityUpdateDetail",
           result.entityName,
@@ -704,7 +707,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           currentState: "",
           list: ""
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           "entityUpdateDetail2",
           result.entityName,
@@ -724,7 +730,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           currentState: "",
           list: ""
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           result.headline,
           result.entityName,
@@ -746,7 +755,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           mode: "",
           modeList: ""
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           "entityUpdateDetail",
           result.entityName,
@@ -776,7 +788,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           text2: "",
           text3: ""
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           "entityUpdateDetail",
           result.entityName,
@@ -818,7 +833,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           statusR2: "disable",
           pos2: "disable"
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           "entityUpdateDetail",
           result.entityName,
@@ -868,7 +886,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           shutterTyp: "shutter",
           shutterClosedIsZero: this.adapter.config.shutterClosedIsZero ? "1" : "0"
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           "entityUpdateDetail",
           result.entityName,
@@ -927,7 +948,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           hSlider3Step: "",
           hSlider3Visibility: "disable"
         };
-        result = { ...result, ...message };
+        result = {
+          ...result,
+          ...Object.fromEntries(Object.entries(message).filter(([_, v]) => v !== void 0))
+        };
         return tools.getPayloadRemoveTilde(
           "entityUpdateDetail",
           result.entityName,

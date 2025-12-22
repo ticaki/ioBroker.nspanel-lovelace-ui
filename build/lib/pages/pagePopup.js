@@ -358,12 +358,13 @@ ${message.text}`;
       return;
     }
     if (goLastPage || this.detailsArray.length === 0) {
-      let page = this.getLastPage();
+      const page = this.getLastPage();
       if (!page) {
-        page = this.basePanel.navigation.getCurrentMainPage();
+        return;
       }
-      void this.basePanel.setActivePage(page);
+      this.basePanel.log.debug(`Popup notify '${this.name}' going back to last page '${page == null ? void 0 : page.name}'`);
       this.removeLastPage(page);
+      void this.basePanel.setActivePage(page);
       return;
     }
     this.debouceUpdateTimeout = this.adapter.setTimeout(async () => {
@@ -439,7 +440,7 @@ ${message.text}`;
             }
           }
           this.log.debug(
-            `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`
+            `Popup notify '${this.name}' button3 pressed, remaining entries: ${this.detailsArray.length}`
           );
           this.debouceUpdate();
         }
@@ -460,7 +461,7 @@ ${message.text}`;
             }
           }
           this.log.debug(
-            `Popup notify '${this.name}' yes pressed, remaining entries: ${this.detailsArray.length}`
+            `Popup notify '${this.name}' button2 pressed, remaining entries: ${this.detailsArray.length}`
           );
           this.debouceUpdate(true);
         }
@@ -486,7 +487,7 @@ ${message.text}`;
             }
           }
           this.log.debug(
-            `Popup notify '${this.name}' no pressed, remaining entries: ${this.detailsArray.length}`
+            `Popup notify '${this.name}' button1 pressed, remaining entries: ${this.detailsArray.length}`
           );
           this.debouceUpdate();
         }
