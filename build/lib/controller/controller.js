@@ -121,7 +121,9 @@ class Controller extends Library.BaseClass {
     this.minuteLoopTimeout = this.adapter.setTimeout(() => this.minuteLoop(), diff);
   };
   /**
-   * Update Date every day at 0:00:01....
+   * Loop every hour
+   * Update Date every day at hour 0
+   * check every 8 hours for new online version
    *
    * @returns void
    */
@@ -129,7 +131,7 @@ class Controller extends Library.BaseClass {
     const now = /* @__PURE__ */ new Date();
     const next = new Date(now);
     const hourNow = now.getHours();
-    next.setHours(now.getHours() + 1, 0, 4);
+    next.setHours(hourNow + 1, 0, 1, 200);
     const diff = next.getTime() - now.getTime();
     try {
       if (hourNow === 0) {
