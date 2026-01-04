@@ -703,6 +703,8 @@ declare namespace ScriptConfig {
         enabled?: boolean | string;
         // erstmal für media mit id keine erstellung einer mediaCard - nur schalten
         asControl?: boolean;
+        /* role 'button' only */
+        confirm?: string;
     };
 
     type sliderItems = {

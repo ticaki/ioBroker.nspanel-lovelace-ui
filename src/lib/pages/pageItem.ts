@@ -1954,6 +1954,12 @@ export class PageItem extends BaseTriggeredPage {
                 delete this.parent.basePanel.persistentPageItems[this.id];
             }
         }
+        for (const key of Object.keys(this.timeouts)) {
+            if (this.timeouts[key] == undefined) {
+                continue;
+            }
+            this.adapter.clearTimeout(this.timeouts[key]);
+        }
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
@@ -2098,9 +2104,15 @@ export class PageItem extends BaseTriggeredPage {
                         if (this.confirmClick === 'lock') {
                             this.confirmClick = 'unlock';
                             await this.parent.update();
+                            this.timeouts.confirmTimeout = this.adapter.setTimeout(() => {
+                                this.confirmClick = 'lock';
+                            }, 3000);
                             return true;
                         } else if (this.confirmClick === 'unlock' || this.confirmClick - 300 > Date.now()) {
                             return true;
+                        }
+                        if (this.timeouts.confirmTimeout) {
+                            this.adapter.clearTimeout(this.timeouts.confirmTimeout);
                         }
                         this.confirmClick = 'lock';
                         await this.parent.update();

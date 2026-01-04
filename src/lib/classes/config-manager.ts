@@ -3182,6 +3182,7 @@ export class ConfigManager extends BaseClass {
                                     true: { type: 'const', constVal: 'press' },
                                 },
                                 setValue2: foundedStates[role].SET,
+                                confirm: item.confirm ? { type: 'const', constVal: item.confirm } : undefined,
                             },
                         };
                         itemConfig = tempItem;

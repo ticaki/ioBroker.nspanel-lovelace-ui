@@ -2709,7 +2709,8 @@ class ConfigManager extends import_library.BaseClass {
                 text1: {
                   true: { type: "const", constVal: "press" }
                 },
-                setValue2: foundedStates[role].SET
+                setValue2: foundedStates[role].SET,
+                confirm: item.confirm ? { type: "const", constVal: item.confirm } : void 0
               }
             };
             itemConfig = tempItem;
