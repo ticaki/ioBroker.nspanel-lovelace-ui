@@ -1728,6 +1728,13 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             await this.parent.basePanel.navigation.setTargetPageByName(value2);
             done = true;
           }
+          if (item.longPress) {
+            if (entry.type === "button") {
+              await item.longPress.setStateTrue();
+            } else {
+              await item.longPress.setStateFlip();
+            }
+          }
         }
       }
     }

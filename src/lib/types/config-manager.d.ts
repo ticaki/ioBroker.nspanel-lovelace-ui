@@ -595,6 +595,7 @@ declare namespace ScriptConfig {
         navigate?: boolean | null | undefined;
         targetPage?: string | null | undefined;
         targetPageLongPress?: string | null | undefined;
+        longPress?: string | undefined;
         icon?: string;
         icon2?: string;
         name?: string;
@@ -626,6 +627,7 @@ declare namespace ScriptConfig {
         uniqueName?: string;
         role?: string;
         targetPageLongPress?: string;
+        longPress?: string;
         /**
          * The icon that is used in the standard case or if ID is true
          */

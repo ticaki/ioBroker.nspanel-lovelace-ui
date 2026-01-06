@@ -1338,7 +1338,7 @@ class ConfigManager extends import_library.BaseClass {
     return !("native" in item);
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (this.isNativePageItem(item)) {
       if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
@@ -1371,6 +1371,7 @@ class ConfigManager extends import_library.BaseClass {
         data: {
           setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0,
           setNaviLongPress: item.targetPageLongPress ? await this.getFieldAsDataItemConfig(item.targetPageLongPress) : void 0,
+          longPress: item.longPress ? await this.getFieldAsDataItemConfig(item.longPress) : void 0,
           icon: {
             true: {
               value: {
@@ -2195,9 +2196,24 @@ class ConfigManager extends import_library.BaseClass {
       );
       return void 0;
     }
-    if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_j = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _j.setNaviLongPress)) {
-      itemConfig.data = itemConfig.data || {};
-      itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+    if (item.targetPageLongPress && item.longPress) {
+      throw new Error(`You can only use targetPageLongPress or longPress in the same item!`);
+    }
+    if (item.targetPageLongPress && !((_j = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _j.setNaviLongPress)) {
+      if ((itemConfig == null ? void 0 : itemConfig.type) === "button" || (itemConfig == null ? void 0 : itemConfig.type) === "switch") {
+        itemConfig.data = itemConfig.data || {};
+        itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+      } else {
+        throw new Error(`targetPageLongPress is only supported for button and switch items!`);
+      }
+    }
+    if (item.longPress && !((_k = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _k.longPress)) {
+      if ((itemConfig == null ? void 0 : itemConfig.type) === "button" || (itemConfig == null ? void 0 : itemConfig.type) === "switch") {
+        itemConfig.data = itemConfig.data || {};
+        itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
+      } else {
+        throw new Error(`longPress is only supported for button and switch items!`);
+      }
     }
     if (item.filter != null) {
       itemConfig.filter = item.filter;
@@ -2288,7 +2304,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -3627,6 +3643,10 @@ class ConfigManager extends import_library.BaseClass {
         if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_A = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _A.setNaviLongPress)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+        }
+        if (item.longPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_B = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _B.longPress)) {
+          itemConfig.data = itemConfig.data || {};
+          itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
         }
         if (item.enabled === false && itemConfig) {
           if (!itemConfig.data) {

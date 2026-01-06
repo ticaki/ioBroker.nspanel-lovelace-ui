@@ -1579,6 +1579,7 @@ export class ConfigManager extends BaseClass {
                     setNaviLongPress: item.targetPageLongPress
                         ? await this.getFieldAsDataItemConfig(item.targetPageLongPress)
                         : undefined,
+                    longPress: item.longPress ? await this.getFieldAsDataItemConfig(item.longPress) : undefined,
                     icon: {
                         true: {
                             value: {
@@ -2521,9 +2522,24 @@ export class ConfigManager extends BaseClass {
             );
             return undefined;
         }
-        if (item.targetPageLongPress && itemConfig?.type === 'button' && !itemConfig?.data?.setNaviLongPress) {
-            itemConfig.data = itemConfig.data || {};
-            itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+        if (item.targetPageLongPress && item.longPress) {
+            throw new Error(`You can only use targetPageLongPress or longPress in the same item!`);
+        }
+        if (item.targetPageLongPress && !itemConfig?.data?.setNaviLongPress) {
+            if (itemConfig?.type === 'button' || itemConfig?.type === 'switch') {
+                itemConfig.data = itemConfig.data || {};
+                itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+            } else {
+                throw new Error(`targetPageLongPress is only supported for button and switch items!`);
+            }
+        }
+        if (item.longPress && !itemConfig?.data?.longPress) {
+            if (itemConfig?.type === 'button' || itemConfig?.type === 'switch') {
+                itemConfig.data = itemConfig.data || {};
+                itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
+            } else {
+                throw new Error(`longPress is only supported for button and switch items!`);
+            }
         }
 
         if (item.filter != null) {
@@ -4361,6 +4377,10 @@ export class ConfigManager extends BaseClass {
                 if (item.targetPageLongPress && itemConfig?.type === 'button' && !itemConfig?.data?.setNaviLongPress) {
                     itemConfig.data = itemConfig.data || {};
                     itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+                }
+                if (item.longPress && itemConfig?.type === 'button' && !itemConfig?.data?.longPress) {
+                    itemConfig.data = itemConfig.data || {};
+                    itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
                 }
                 if (item.enabled === false && itemConfig) {
                     if (!itemConfig.data) {

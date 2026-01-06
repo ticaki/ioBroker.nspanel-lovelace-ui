@@ -1985,6 +1985,13 @@ export class PageItem extends BaseTriggeredPage {
                         await this.parent.basePanel.navigation.setTargetPageByName(value);
                         done = true;
                     }
+                    if (item.longPress) {
+                        if (entry.type === 'button') {
+                            await item.longPress.setStateTrue();
+                        } else {
+                            await item.longPress.setStateFlip();
+                        }
+                    }
                 }
             }
         }
