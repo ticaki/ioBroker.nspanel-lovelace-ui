@@ -391,8 +391,8 @@ export class PageItem extends BaseTriggeredPage {
                         }
                     });
 
-                    optionalValueC[3] = value === 0 ? 'disable' : optionalValueC[3];
-                    optionalValueC[5] = value === 100 ? 'disable' : optionalValueC[5];
+                    optionalValueC[3] = value === 100 ? 'disable' : optionalValueC[3];
+                    optionalValueC[5] = value === 0 ? 'disable' : optionalValueC[5];
                     message.optionalValue = optionalValueC.join('|');
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.headline, !!value)) ?? message.displayName ?? '',
@@ -419,7 +419,7 @@ export class PageItem extends BaseTriggeredPage {
                     const optionalValue = [
                         item?.up ? 'arrow-up' : '', //up
                         item?.stop ? 'stop' : '', //stop
-                        item?.stop ? 'arrow-down' : '', //down
+                        item?.down ? 'arrow-down' : '', //down
                     ];
                     let optionalValueC =
                         Array.isArray(optionalValue) && optionalValue.every(a => typeof a === 'string')
@@ -435,8 +435,8 @@ export class PageItem extends BaseTriggeredPage {
                         }
                     });
 
-                    optionalValueC[3] = value === 0 ? 'disable' : optionalValueC[3];
-                    optionalValueC[5] = value === 100 ? 'disable' : optionalValueC[5];
+                    optionalValueC[3] = value === 100 ? 'disable' : optionalValueC[3];
+                    optionalValueC[5] = value === 0 ? 'disable' : optionalValueC[5];
                     message.optionalValue = optionalValueC.join('|');
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.headline, !!value)) ?? message.displayName ?? '',
