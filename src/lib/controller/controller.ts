@@ -113,7 +113,9 @@ export class Controller extends Library.BaseClass {
     };
 
     /**
-     * Update Date every day at 0:00:01....
+     * Loop every hour
+     * Update Date every day at hour 0
+     * check every 8 hours for new online version
      *
      * @returns void
      */
@@ -122,7 +124,7 @@ export class Controller extends Library.BaseClass {
         const now = new Date();
         const next = new Date(now);
         const hourNow = now.getHours();
-        next.setHours(now.getHours() + 1, 0, 4);
+        next.setHours(hourNow + 1, 0, 1, 200);
 
         const diff = next.getTime() - now.getTime();
 
@@ -144,9 +146,11 @@ export class Controller extends Library.BaseClass {
         }
         this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
     };
+
     getCurrentTime = async (): Promise<number> => {
         return new Promise(resolve => resolve(Date.now()));
     };
+
     getCurrentTimeString = async (): Promise<string> => {
         return new Promise(resolve =>
             resolve(new Date().toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit' })),
