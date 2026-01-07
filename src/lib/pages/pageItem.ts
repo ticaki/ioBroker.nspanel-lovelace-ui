@@ -1645,17 +1645,18 @@ export class PageItem extends BaseTriggeredPage {
                                 ? 'disable'
                                 : optionalValueC[5];
                         } else {
-                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 0)
+                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 100)
                                 ? 'disable'
                                 : optionalValueC[3];
                             message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
                                 ? 'disable'
                                 : optionalValueC[4];
-                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 100)
+                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 0)
                                 ? 'disable'
                                 : optionalValueC[5];
                         }
                     } else {
+                        // tilt Slider
                         message.pos2 = typeof pos === 'boolean' ? 'disable' : String(pos);
                         message.pos2text = (await tools.getEntryTextOnOff(item.text2, true)) ?? '';
                         message.pos2text = this.library.getTranslation(message.pos2text);
@@ -2534,7 +2535,6 @@ export class PageItem extends BaseTriggeredPage {
                         await tools.setValueEntry(items.entity1, v);
                     }
                 }
-                break;
                 break;
             }
             /**

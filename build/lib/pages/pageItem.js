@@ -1428,9 +1428,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.statusM1 = (typeof pos === "boolean" ? pos : pos === "disabled") ? "disable" : optionalValueC[4];
               message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 0) ? "disable" : optionalValueC[5];
             } else {
-              message.statusL1 = (typeof pos === "boolean" ? false : pos === 0) ? "disable" : optionalValueC[3];
+              message.statusL1 = (typeof pos === "boolean" ? false : pos === 100) ? "disable" : optionalValueC[3];
               message.statusM1 = (typeof pos === "boolean" ? pos : pos === "disabled") ? "disable" : optionalValueC[4];
-              message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 100) ? "disable" : optionalValueC[5];
+              message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 0) ? "disable" : optionalValueC[5];
             }
           } else {
             message.pos2 = typeof pos === "boolean" ? "disable" : String(pos);
@@ -2237,7 +2237,6 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             await tools.setValueEntry(items.entity1, v);
           }
         }
-        break;
         break;
       }
       /**
