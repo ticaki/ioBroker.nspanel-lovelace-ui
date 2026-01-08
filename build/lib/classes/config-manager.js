@@ -2288,7 +2288,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2742,15 +2742,10 @@ class ConfigManager extends import_library.BaseClass {
                         constVal: item.icon3 || "window-shutter-alert"
                       }
                     },
-                    scale: {
+                    scale: globals.isIconColorScaleElement(item.colorScale) ? {
                       type: "const",
-                      constVal: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : {
-                        val_min: 0,
-                        val_max: 100
-                      }
-                    },
-                    maxBri: void 0,
-                    minBri: void 0
+                      constVal: item.colorScale
+                    } : void 0
                   },
                   text: { true: { type: "const", constVal: (_f = item.secondRow) != null ? _f : "" } },
                   headline,
@@ -2810,22 +2805,17 @@ class ConfigManager extends import_library.BaseClass {
                         constVal: item.icon3 || "window-shutter-alert"
                       }
                     },
-                    scale: {
+                    scale: globals.isIconColorScaleElement(item.colorScale) ? {
                       type: "const",
-                      constVal: (_n = globals.isIconColorScaleElement(item.colorScale)) != null ? _n : {
-                        val_min: 0,
-                        val_max: 100
-                      }
-                    },
-                    maxBri: void 0,
-                    minBri: void 0
+                      constVal: item.colorScale
+                    } : void 0
                   },
-                  text: { true: { type: "const", constVal: (_o = item.secondRow) != null ? _o : "" } },
+                  text: { true: { type: "const", constVal: (_n = item.secondRow) != null ? _n : "" } },
                   headline,
                   entity1: {
                     value: foundedStates[role].ACTUAL,
-                    minScale: { type: "const", constVal: (_p = item.minValueLevel) != null ? _p : 0 },
-                    maxScale: { type: "const", constVal: (_q = item.maxValueLevel) != null ? _q : 100 },
+                    minScale: { type: "const", constVal: (_o = item.minValueLevel) != null ? _o : 0 },
+                    maxScale: { type: "const", constVal: (_p = item.maxValueLevel) != null ? _p : 100 },
                     set: foundedStates[role].SET
                   },
                   entity2: R2 ? {
@@ -2934,13 +2924,13 @@ class ConfigManager extends import_library.BaseClass {
                     value: foundedStates[role].ACTUAL
                   },
                   entity2: void 0,
-                  up: ((_r = foundedStates[role].SET) == null ? void 0 : _r.type) === "state" ? {
+                  up: ((_q = foundedStates[role].SET) == null ? void 0 : _q.type) === "state" ? {
                     ...foundedStates[role].SET,
                     type: "state",
                     dp: `${item.id}.SET`,
                     write: "return true;"
                   } : void 0,
-                  down: ((_s = foundedStates[role].SET) == null ? void 0 : _s.type) === "state" ? {
+                  down: ((_r = foundedStates[role].SET) == null ? void 0 : _r.type) === "state" ? {
                     ...foundedStates[role].SET,
                     type: "state",
                     dp: `${item.id}.SET`,
@@ -3229,11 +3219,11 @@ class ConfigManager extends import_library.BaseClass {
             if (!item.modeList && foundedStates[role].SET && foundedStates[role].SET.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].SET.dp);
               if (o && o.common && !o.common.states) {
-                const alias = (_t = o.common.alias) == null ? void 0 : _t.id;
+                const alias = (_s = o.common.alias) == null ? void 0 : _s.id;
                 if (alias) {
                   const aliasObj = await this.adapter.getForeignObjectAsync(alias);
                   if (aliasObj && aliasObj.type === "state" && aliasObj.common && aliasObj.common.states) {
-                    if (foundedStates[role].SET.dp === ((_u = foundedStates[role].ACTUAL) == null ? void 0 : _u.dp)) {
+                    if (foundedStates[role].SET.dp === ((_t = foundedStates[role].ACTUAL) == null ? void 0 : _t.dp)) {
                       foundedStates[role].ACTUAL = { ...foundedStates[role].SET, dp: alias };
                     }
                     foundedStates[role].SET = { ...foundedStates[role].SET, dp: alias };
@@ -3474,9 +3464,9 @@ class ConfigManager extends import_library.BaseClass {
           case "level.mode.fan": {
             let states;
             let keys;
-            if ((_v = foundedStates[role].MODE) == null ? void 0 : _v.dp) {
+            if ((_u = foundedStates[role].MODE) == null ? void 0 : _u.dp) {
               const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_w = o == null ? void 0 : o.common) == null ? void 0 : _w.states) {
+              if ((_v = o == null ? void 0 : o.common) == null ? void 0 : _v.states) {
                 states = Object.values(o.common.states).map(String);
                 keys = Object.keys(o.common.states).map(String);
               }
@@ -3527,7 +3517,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "media": {
             const offIcon = item.icon2 || item.icon;
-            let id = ((_x = foundedStates[role].STATE) == null ? void 0 : _x.dp) || item.id;
+            let id = ((_w = foundedStates[role].STATE) == null ? void 0 : _w.dp) || item.id;
             let defaultColorOn = import_Color.Color.on;
             let defaultColorOff = import_Color.Color.off;
             let defaultIconOn = "pause";
@@ -3538,7 +3528,7 @@ class ConfigManager extends import_library.BaseClass {
             }
             if (!item.asControl) {
               const o = await this.adapter.getForeignObjectAsync(id);
-              if (!o || !((_y = o.common.alias) == null ? void 0 : _y.id)) {
+              if (!o || !((_x = o.common.alias) == null ? void 0 : _x.id)) {
                 throw new Error(`DP: ${item.id} - media STATE ${id} has no alias!`);
               }
               id = o.common.alias.id;
@@ -3619,11 +3609,11 @@ class ConfigManager extends import_library.BaseClass {
         if (item.filter != null && itemConfig) {
           itemConfig.filter = item.filter;
         }
-        if (item.targetPage && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_z = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _z.setNavi)) {
+        if (item.targetPage && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_y = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _y.setNavi)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
         }
-        if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_A = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _A.setNaviLongPress)) {
+        if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_z = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _z.setNaviLongPress)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
         }
