@@ -3313,10 +3313,12 @@ export class ConfigManager extends BaseClass {
                                         },
                                         scale: {
                                             type: 'const',
-                                            constVal: globals.isIconColorScaleElement(item.colorScale) ?? {
-                                                val_min: 0,
-                                                val_max: 100,
-                                            },
+                                            constVal: globals.isIconColorScaleElement(item.colorScale)
+                                                ? item.colorScale
+                                                : {
+                                                      val_min: 0,
+                                                      val_max: 100,
+                                                  },
                                         },
                                         maxBri: undefined,
                                         minBri: undefined,
