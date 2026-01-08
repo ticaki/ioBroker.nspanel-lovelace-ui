@@ -550,7 +550,6 @@ Das `PageItem` wird mit `{},` declariert. Innerhalb der geschweiften Klammern fo
 * `minValue` :  legt den Startwert für den Slider fest
 * `maxValue` :  legt den Endwert für den Slider fest
 * `modeList` :  Ermöglicht ein **InSelPopup** für die Auswahl weiterer Werte. Wird in `[``, ``, ``]` gefasst und enthält eine kommaseparierte Liste an Werten 
-* `inSel_ChoiceState` : definiert, ob ein ausgewählter Wert auf einem **InSelPopup** einen Fokus erhält. Wird mit `true` oder `false`angegeben
 * `monobutton` : wenn als Schalter ein echter Hardware-Taster verbaut ist, wird immer _true/false_ für einen Umschaltvorgang gesendet. In dem Fall wird ein Taster emuliert und es ist `true` zu setzen. Andernfalls wird ein Schalter emuliert nud es ist `false` zu setzen. 
   
 #### Angaben für Licht:  
