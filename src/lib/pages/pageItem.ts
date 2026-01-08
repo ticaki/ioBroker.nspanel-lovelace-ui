@@ -630,12 +630,34 @@ export class PageItem extends BaseTriggeredPage {
 
                         if (entry.type === 'button' && entry.data.confirm) {
                             if (this.confirmClick === 'unlock') {
-                                const newValue = await entry.data.confirm.getString();
-                                if (newValue && typeof newValue === 'string' && newValue.length > 0) {
+                                const newValue: string | { text?: string; color?: RGB | string; icon?: string } | null =
+                                    (await entry.data.confirm.getString()) ?? (await entry.data.confirm.getObject());
+                                if (newValue) {
+                                    const text = typeof newValue === 'string' ? newValue : newValue.text;
+
                                     if (isCardEntitiesType(this.parent.card)) {
-                                        message.optionalValue = newValue ?? message.optionalValue;
+                                        if (text) {
+                                            message.optionalValue = text ?? message.optionalValue;
+                                        }
                                     } else if (isCardGridType(this.parent.card)) {
-                                        message.icon = Icons.GetIcon(newValue);
+                                        if (text) {
+                                            message.icon = Icons.GetIcon(text);
+                                        } else {
+                                            if (typeof newValue === 'object') {
+                                                if (newValue.icon) {
+                                                    message.icon = Icons.GetIcon(newValue.icon);
+                                                }
+                                                if (newValue.color) {
+                                                    let color = Color.White;
+                                                    if (Color.isRGB(newValue.color)) {
+                                                        color = newValue.color;
+                                                    } else if (Color.isHex(newValue.color)) {
+                                                        color = Color.ConvertHexToRgb(newValue.color);
+                                                    }
+                                                    message.iconColor = String(Color.rgb_dec565(color));
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 this.confirmClick = Date.now();

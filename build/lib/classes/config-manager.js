@@ -2698,6 +2698,16 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "button": {
+            if (item.confirm) {
+              if (typeof item.confirm !== "string" && (typeof item.confirm !== "object" || !(item.confirm.text || item.confirm.icon || item.confirm.color))) {
+                throw new Error(`Confirm in item ${item.id} is not valid!`);
+              }
+              if (typeof item.confirm === "object" && item.confirm.color) {
+                if (typeof item.confirm.color !== "string" && import_Color.Color.isScriptRGB(item.confirm.color)) {
+                  item.confirm.color = import_Color.Color.convertScriptRGBtoRGB(item.confirm.color);
+                }
+              }
+            }
             const tempItem = {
               type: "button",
               role: "button",
