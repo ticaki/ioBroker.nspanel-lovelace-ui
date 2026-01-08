@@ -574,17 +574,7 @@ export class PageItem extends BaseTriggeredPage {
                                 }
                             }
                         }
-                        if (entry.type === 'button' && entry.data.confirm) {
-                            if (this.confirmClick === 'unlock') {
-                                if (isCardEntitiesType(this.parent.card)) {
-                                    message.optionalValue =
-                                        (await entry.data.confirm.getString()) ?? message.optionalValue;
-                                }
-                                this.confirmClick = Date.now();
-                            } else {
-                                this.confirmClick = 'lock';
-                            }
-                        }
+
                         /*if (
                             
                             !this.parent.card.startsWith('screensaver') &&
@@ -637,6 +627,23 @@ export class PageItem extends BaseTriggeredPage {
                         const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : '';
 
                         message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
+
+                        if (entry.type === 'button' && entry.data.confirm) {
+                            if (this.confirmClick === 'unlock') {
+                                if (isCardEntitiesType(this.parent.card)) {
+                                    message.optionalValue =
+                                        (await entry.data.confirm.getString()) ?? message.optionalValue;
+                                } else {
+                                    const newIcon = await entry.data.confirm.getString();
+                                    if (isCardGridType(this.parent.card) && typeof newIcon === 'string') {
+                                        message.icon = Icons.GetIcon(newIcon);
+                                    }
+                                }
+                                this.confirmClick = Date.now();
+                            } else {
+                                this.confirmClick = 'lock';
+                            }
+                        }
                         return tools.getPayloadRemoveTilde(
                             entry.type,
                             message.intNameEntity + additionalId,
@@ -2113,6 +2120,7 @@ export class PageItem extends BaseTriggeredPage {
                             await this.parent.update();
                             this.timeouts.confirmTimeout = this.adapter.setTimeout(() => {
                                 this.confirmClick = 'lock';
+                                void this.parent.update();
                             }, 3000);
                             return true;
                         } else if (this.confirmClick === 'unlock' || this.confirmClick - 300 > Date.now()) {

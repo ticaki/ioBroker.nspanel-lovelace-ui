@@ -1412,7 +1412,7 @@ declare namespace ScriptConfig {
             enabled?: boolean | string;
             // erstmal für media mit id keine erstellung einer mediaCard - nur schalten
             asControl?: boolean;
-             /* role 'button' only */
+             /* role 'button' only: Text for cardEntities - Icon for cardGrid */
             confirm?: string;
         });
 

@@ -483,48 +483,53 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 }
               }
             }
+            message.icon = await tools.getIconEntryValue(item.icon, value, "home");
+            switch (entry.role) {
+              case "textNotIcon": {
+                message.icon = (_K = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _K : "";
+                break;
+              }
+              case "iconNotText": {
+                message.icon = (_L = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _L : "";
+                break;
+              }
+              case "battery": {
+                const val = (_M = await tools.getValueEntryBoolean(item.entity3)) != null ? _M : false;
+                message.icon = (_N = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _N : "";
+                break;
+              }
+              case "combined": {
+                message.icon = (_O = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _O : "";
+                message.icon += (_P = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _P : "";
+                break;
+              }
+              default: {
+                message.icon = (_R = await tools.getIconEntryValue(
+                  item.icon,
+                  !!value,
+                  "",
+                  null,
+                  (_Q = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _Q : false
+                )) != null ? _R : "";
+              }
+            }
+            const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
+            message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
                 if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
-                  message.optionalValue = (_K = await entry.data.confirm.getString()) != null ? _K : message.optionalValue;
+                  message.optionalValue = (_S = await entry.data.confirm.getString()) != null ? _S : message.optionalValue;
+                } else {
+                  const newIcon = await entry.data.confirm.getString();
+                  if ((0, import_function_and_const.isCardGridType)(this.parent.card) && typeof newIcon === "string") {
+                    message.icon = import_icon_mapping.Icons.GetIcon(newIcon);
+                  }
                 }
                 this.confirmClick = Date.now();
               } else {
                 this.confirmClick = "lock";
               }
             }
-            message.icon = await tools.getIconEntryValue(item.icon, value, "home");
-            switch (entry.role) {
-              case "textNotIcon": {
-                message.icon = (_L = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _L : "";
-                break;
-              }
-              case "iconNotText": {
-                message.icon = (_M = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _M : "";
-                break;
-              }
-              case "battery": {
-                const val = (_N = await tools.getValueEntryBoolean(item.entity3)) != null ? _N : false;
-                message.icon = (_O = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _O : "";
-                break;
-              }
-              case "combined": {
-                message.icon = (_P = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _P : "";
-                message.icon += (_Q = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _Q : "";
-                break;
-              }
-              default: {
-                message.icon = (_S = await tools.getIconEntryValue(
-                  item.icon,
-                  !!value,
-                  "",
-                  null,
-                  (_R = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _R : false
-                )) != null ? _S : "";
-              }
-            }
-            const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
-            message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             return tools.getPayloadRemoveTilde(
               entry.type,
               message.intNameEntity + additionalId,
@@ -1841,6 +1846,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               await this.parent.update();
               this.timeouts.confirmTimeout = this.adapter.setTimeout(() => {
                 this.confirmClick = "lock";
+                void this.parent.update();
               }, 3e3);
               return true;
             } else if (this.confirmClick === "unlock" || this.confirmClick - 300 > Date.now()) {
