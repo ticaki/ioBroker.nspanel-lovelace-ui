@@ -3218,17 +3218,12 @@ export class ConfigManager extends BaseClass {
                                                 constVal: item.icon3 || 'window-shutter-alert',
                                             },
                                         },
-                                        scale: {
-                                            type: 'const',
-                                            constVal: globals.isIconColorScaleElement(item.colorScale)
-                                                ? item.colorScale
-                                                : {
-                                                      val_min: 0,
-                                                      val_max: 100,
-                                                  },
-                                        },
-                                        maxBri: undefined,
-                                        minBri: undefined,
+                                        scale: globals.isIconColorScaleElement(item.colorScale)
+                                            ? {
+                                                  type: 'const',
+                                                  constVal: item.colorScale,
+                                              }
+                                            : undefined,
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
@@ -3311,17 +3306,12 @@ export class ConfigManager extends BaseClass {
                                                 constVal: item.icon3 || 'window-shutter-alert',
                                             },
                                         },
-                                        scale: {
-                                            type: 'const',
-                                            constVal: globals.isIconColorScaleElement(item.colorScale)
-                                                ? item.colorScale
-                                                : {
-                                                      val_min: 0,
-                                                      val_max: 100,
-                                                  },
-                                        },
-                                        maxBri: undefined,
-                                        minBri: undefined,
+                                        scale: globals.isIconColorScaleElement(item.colorScale)
+                                            ? {
+                                                  type: 'const',
+                                                  constVal: item.colorScale,
+                                              }
+                                            : undefined,
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,

@@ -2742,15 +2742,10 @@ class ConfigManager extends import_library.BaseClass {
                         constVal: item.icon3 || "window-shutter-alert"
                       }
                     },
-                    scale: {
+                    scale: globals.isIconColorScaleElement(item.colorScale) ? {
                       type: "const",
-                      constVal: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : {
-                        val_min: 0,
-                        val_max: 100
-                      }
-                    },
-                    maxBri: void 0,
-                    minBri: void 0
+                      constVal: item.colorScale
+                    } : void 0
                   },
                   text: { true: { type: "const", constVal: (_f = item.secondRow) != null ? _f : "" } },
                   headline,
@@ -2810,15 +2805,10 @@ class ConfigManager extends import_library.BaseClass {
                         constVal: item.icon3 || "window-shutter-alert"
                       }
                     },
-                    scale: {
+                    scale: globals.isIconColorScaleElement(item.colorScale) ? {
                       type: "const",
-                      constVal: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : {
-                        val_min: 0,
-                        val_max: 100
-                      }
-                    },
-                    maxBri: void 0,
-                    minBri: void 0
+                      constVal: item.colorScale
+                    } : void 0
                   },
                   text: { true: { type: "const", constVal: (_n = item.secondRow) != null ? _n : "" } },
                   headline,
