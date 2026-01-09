@@ -631,16 +631,16 @@ export class PageItem extends BaseTriggeredPage {
                         if (entry.type === 'button' && entry.data.confirm) {
                             if (this.confirmClick === 'unlock') {
                                 const newValue: string | { text?: string; color?: RGB | string; icon?: string } | null =
-                                    (await entry.data.confirm.getString()) ?? (await entry.data.confirm.getObject());
+                                    (await entry.data.confirm.getObject()) ?? (await entry.data.confirm.getString());
                                 if (newValue) {
-                                    const text = typeof newValue === 'string' ? newValue : newValue.text;
+                                    const text = typeof newValue === 'object' ? newValue.text : newValue;
 
                                     if (isCardEntitiesType(this.parent.card)) {
                                         if (text) {
                                             message.optionalValue = text ?? message.optionalValue;
                                         }
                                     } else if (isCardGridType(this.parent.card)) {
-                                        if (text) {
+                                        if (typeof newValue === 'string' && text) {
                                             message.icon = Icons.GetIcon(text);
                                         } else {
                                             if (typeof newValue === 'object') {

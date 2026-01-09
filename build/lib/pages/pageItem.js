@@ -517,15 +517,15 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                const newValue = (_S = await entry.data.confirm.getString()) != null ? _S : await entry.data.confirm.getObject();
+                const newValue = (_S = await entry.data.confirm.getObject()) != null ? _S : await entry.data.confirm.getString();
                 if (newValue) {
-                  const text = typeof newValue === "string" ? newValue : newValue.text;
+                  const text = typeof newValue === "object" ? newValue.text : newValue;
                   if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
                     if (text) {
                       message.optionalValue = text != null ? text : message.optionalValue;
                     }
                   } else if ((0, import_function_and_const.isCardGridType)(this.parent.card)) {
-                    if (text) {
+                    if (typeof newValue === "string" && text) {
                       message.icon = import_icon_mapping.Icons.GetIcon(text);
                     } else {
                       if (typeof newValue === "object") {
