@@ -2598,6 +2598,11 @@ class ConfigManager extends import_library.BaseClass {
             }
             let valueList2 = void 0;
             const selectExist = item.inSel_Alias && await this.existsState(item.inSel_Alias);
+            if (!selectExist && item.inSel_Alias) {
+              this.log.warn(
+                `DP: ${page.uniqueName}.${item.id} - inSel_Alias: ${item.inSel_Alias} does not exist!`
+              );
+            }
             if (selectExist && item.inSel_Alias) {
               const select = await this.adapter.getForeignObjectAsync(item.inSel_Alias);
               if (select && select.common && select.common.type === "string") {
