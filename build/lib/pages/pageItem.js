@@ -483,48 +483,73 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 }
               }
             }
+            message.icon = await tools.getIconEntryValue(item.icon, value, "home");
+            switch (entry.role) {
+              case "textNotIcon": {
+                message.icon = (_K = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _K : "";
+                break;
+              }
+              case "iconNotText": {
+                message.icon = (_L = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _L : "";
+                break;
+              }
+              case "battery": {
+                const val = (_M = await tools.getValueEntryBoolean(item.entity3)) != null ? _M : false;
+                message.icon = (_N = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _N : "";
+                break;
+              }
+              case "combined": {
+                message.icon = (_O = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _O : "";
+                message.icon += (_P = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _P : "";
+                break;
+              }
+              default: {
+                message.icon = (_R = await tools.getIconEntryValue(
+                  item.icon,
+                  !!value,
+                  "",
+                  null,
+                  (_Q = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _Q : false
+                )) != null ? _R : "";
+              }
+            }
+            const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
+            message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
-                  message.optionalValue = (_K = await entry.data.confirm.getString()) != null ? _K : message.optionalValue;
+                const newValue = (_S = await entry.data.confirm.getObject()) != null ? _S : await entry.data.confirm.getString();
+                if (newValue) {
+                  const text = typeof newValue === "object" ? newValue.text : newValue;
+                  if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
+                    if (text) {
+                      message.optionalValue = text != null ? text : message.optionalValue;
+                    }
+                  } else if ((0, import_function_and_const.isCardGridType)(this.parent.card)) {
+                    if (typeof newValue === "string" && text) {
+                      message.icon = import_icon_mapping.Icons.GetIcon(text);
+                    } else {
+                      if (typeof newValue === "object") {
+                        if (newValue.icon) {
+                          message.icon = import_icon_mapping.Icons.GetIcon(newValue.icon);
+                        }
+                        if (newValue.color) {
+                          let color = import_Color.Color.White;
+                          if (import_Color.Color.isRGB(newValue.color)) {
+                            color = newValue.color;
+                          } else if (import_Color.Color.isHex(newValue.color)) {
+                            color = import_Color.Color.ConvertHexToRgb(newValue.color);
+                          }
+                          message.iconColor = String(import_Color.Color.rgb_dec565(color));
+                        }
+                      }
+                    }
+                  }
                 }
                 this.confirmClick = Date.now();
               } else {
                 this.confirmClick = "lock";
               }
             }
-            message.icon = await tools.getIconEntryValue(item.icon, value, "home");
-            switch (entry.role) {
-              case "textNotIcon": {
-                message.icon = (_L = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _L : "";
-                break;
-              }
-              case "iconNotText": {
-                message.icon = (_M = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _M : "";
-                break;
-              }
-              case "battery": {
-                const val = (_N = await tools.getValueEntryBoolean(item.entity3)) != null ? _N : false;
-                message.icon = (_O = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _O : "";
-                break;
-              }
-              case "combined": {
-                message.icon = (_P = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _P : "";
-                message.icon += (_Q = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _Q : "";
-                break;
-              }
-              default: {
-                message.icon = (_S = await tools.getIconEntryValue(
-                  item.icon,
-                  !!value,
-                  "",
-                  null,
-                  (_R = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _R : false
-                )) != null ? _S : "";
-              }
-            }
-            const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
-            message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             return tools.getPayloadRemoveTilde(
               entry.type,
               message.intNameEntity + additionalId,
@@ -1696,6 +1721,12 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         delete this.parent.basePanel.persistentPageItems[this.id];
       }
     }
+    for (const key of Object.keys(this.timeouts)) {
+      if (this.timeouts[key] == void 0) {
+        continue;
+      }
+      this.adapter.clearTimeout(this.timeouts[key]);
+    }
     this.visibility = false;
     this.unload = true;
     await this.controller.statesControler.deactivateTrigger(this);
@@ -1721,6 +1752,13 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (value2 !== null) {
             await this.parent.basePanel.navigation.setTargetPageByName(value2);
             done = true;
+          }
+          if (item.longPress) {
+            if (entry.type === "button") {
+              await item.longPress.setStateTrue();
+            } else {
+              await item.longPress.setStateFlip();
+            }
           }
         }
       }
@@ -1826,9 +1864,16 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (this.confirmClick === "lock") {
               this.confirmClick = "unlock";
               await this.parent.update();
+              this.timeouts.confirmTimeout = this.adapter.setTimeout(() => {
+                this.confirmClick = "lock";
+                void this.parent.update();
+              }, 3e3);
               return true;
             } else if (this.confirmClick === "unlock" || this.confirmClick - 300 > Date.now()) {
               return true;
+            }
+            if (this.timeouts.confirmTimeout) {
+              this.adapter.clearTimeout(this.timeouts.confirmTimeout);
             }
             this.confirmClick = "lock";
             await this.parent.update();
