@@ -637,7 +637,7 @@ export class PageItem extends BaseTriggeredPage {
 
                                     if (isCardEntitiesType(this.parent.card)) {
                                         if (text) {
-                                            message.optionalValue = text ?? message.optionalValue;
+                                            message.optionalValue = text;
                                         }
                                     } else if (isCardGridType(this.parent.card)) {
                                         if (typeof newValue === 'string' && text) {
