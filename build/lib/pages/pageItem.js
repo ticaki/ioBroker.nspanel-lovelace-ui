@@ -325,8 +325,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               optionalValueC[i + 3] = "disable";
             }
           });
-          optionalValueC[3] = value === 0 ? "disable" : optionalValueC[3];
-          optionalValueC[5] = value === 100 ? "disable" : optionalValueC[5];
+          optionalValueC[3] = value === 100 ? "disable" : optionalValueC[3];
+          optionalValueC[5] = value === 0 ? "disable" : optionalValueC[5];
           message.optionalValue = optionalValueC.join("|");
           message.displayName = this.library.getTranslation(
             (_r = (_q = await tools.getEntryTextOnOff(item.headline, !!value)) != null ? _q : message.displayName) != null ? _r : ""
@@ -353,7 +353,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             //up
             (item == null ? void 0 : item.stop) ? "stop" : "",
             //stop
-            (item == null ? void 0 : item.stop) ? "arrow-down" : ""
+            (item == null ? void 0 : item.down) ? "arrow-down" : ""
             //down
           ];
           let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
@@ -366,8 +366,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               optionalValueC[i + 3] = "disable";
             }
           });
-          optionalValueC[3] = value === 0 ? "disable" : optionalValueC[3];
-          optionalValueC[5] = value === 100 ? "disable" : optionalValueC[5];
+          optionalValueC[3] = value === 100 ? "disable" : optionalValueC[3];
+          optionalValueC[5] = value === 0 ? "disable" : optionalValueC[5];
           message.optionalValue = optionalValueC.join("|");
           message.displayName = this.library.getTranslation(
             (_t = (_s = await tools.getEntryTextOnOff(item.headline, !!value)) != null ? _s : message.displayName) != null ? _t : ""
@@ -1453,9 +1453,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.statusM1 = (typeof pos === "boolean" ? pos : pos === "disabled") ? "disable" : optionalValueC[4];
               message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 0) ? "disable" : optionalValueC[5];
             } else {
-              message.statusL1 = (typeof pos === "boolean" ? false : pos === 0) ? "disable" : optionalValueC[3];
+              message.statusL1 = (typeof pos === "boolean" ? false : pos === 100) ? "disable" : optionalValueC[3];
               message.statusM1 = (typeof pos === "boolean" ? pos : pos === "disabled") ? "disable" : optionalValueC[4];
-              message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 100) ? "disable" : optionalValueC[5];
+              message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 0) ? "disable" : optionalValueC[5];
             }
           } else {
             message.pos2 = typeof pos === "boolean" ? "disable" : String(pos);
@@ -2282,7 +2282,6 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             await tools.setValueEntry(items.entity1, v);
           }
         }
-        break;
         break;
       }
       /**

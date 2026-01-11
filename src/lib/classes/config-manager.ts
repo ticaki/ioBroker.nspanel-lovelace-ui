@@ -3050,6 +3050,11 @@ export class ConfigManager extends BaseClass {
                         }
                         let valueList2: any = undefined;
                         const selectExist = item.inSel_Alias && (await this.existsState(item.inSel_Alias));
+                        if (!selectExist && item.inSel_Alias) {
+                            const msg = `DP: ${page.uniqueName}.${item.id} - inSel_Alias: ${item.inSel_Alias} does not exist!`;
+                            messages.push(msg);
+                            this.log.warn(msg);
+                        }
                         if (selectExist && item.inSel_Alias) {
                             const select = await this.adapter.getForeignObjectAsync(item.inSel_Alias);
                             if (select && select.common && select.common.type === 'string') {
@@ -3249,17 +3254,12 @@ export class ConfigManager extends BaseClass {
                                                 constVal: item.icon3 || 'window-shutter-alert',
                                             },
                                         },
-                                        scale: {
-                                            type: 'const',
-                                            constVal: globals.isIconColorScaleElement(item.colorScale)
-                                                ? item.colorScale
-                                                : {
-                                                      val_min: 0,
-                                                      val_max: 100,
-                                                  },
-                                        },
-                                        maxBri: undefined,
-                                        minBri: undefined,
+                                        scale: globals.isIconColorScaleElement(item.colorScale)
+                                            ? {
+                                                  type: 'const',
+                                                  constVal: item.colorScale,
+                                              }
+                                            : undefined,
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
@@ -3342,15 +3342,12 @@ export class ConfigManager extends BaseClass {
                                                 constVal: item.icon3 || 'window-shutter-alert',
                                             },
                                         },
-                                        scale: {
-                                            type: 'const',
-                                            constVal: globals.isIconColorScaleElement(item.colorScale) ?? {
-                                                val_min: 0,
-                                                val_max: 100,
-                                            },
-                                        },
-                                        maxBri: undefined,
-                                        minBri: undefined,
+                                        scale: globals.isIconColorScaleElement(item.colorScale)
+                                            ? {
+                                                  type: 'const',
+                                                  constVal: item.colorScale,
+                                              }
+                                            : undefined,
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
