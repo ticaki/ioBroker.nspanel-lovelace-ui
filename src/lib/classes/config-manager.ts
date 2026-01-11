@@ -512,14 +512,16 @@ export class ConfigManager extends BaseClass {
         }
         const names: string[] = [];
         let double = false;
-        for (const page of config.pages) {
-            if (page && page.type !== undefined) {
-                if (names.includes(page.uniqueName)) {
-                    double = true;
-                    messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
-                    this.log.error(messages[messages.length - 1]);
-                } else {
-                    names.push(page.uniqueName);
+        for (const pages of [config.subPages, config.pages]) {
+            for (const page of pages) {
+                if (page && page.type !== undefined) {
+                    if (names.includes(page.uniqueName)) {
+                        double = true;
+                        messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
+                        this.log.error(messages[messages.length - 1]);
+                    } else {
+                        names.push(page.uniqueName);
+                    }
                 }
             }
         }

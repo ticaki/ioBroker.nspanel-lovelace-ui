@@ -953,7 +953,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         r.messages.push(`No config found after conversion`);
                                     }
                                 } else {
-                                    r.messages.push(`Please send more as 0, '', false, null or undefined!`);
+                                    r.messages.push(`Invalid configuration!`);
                                 }
                                 /*} catch (e: any) {
                                         this.log.error(`Error in configuration: ${e.message}`);
