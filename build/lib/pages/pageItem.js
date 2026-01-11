@@ -522,7 +522,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   const text = typeof newValue === "object" ? newValue.text : newValue;
                   if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
                     if (text) {
-                      message.optionalValue = text != null ? text : message.optionalValue;
+                      message.optionalValue = text;
                     }
                   } else if ((0, import_function_and_const.isCardGridType)(this.parent.card)) {
                     if (typeof newValue === "string" && text) {

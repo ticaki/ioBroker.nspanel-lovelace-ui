@@ -2306,7 +2306,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -3651,7 +3651,7 @@ class ConfigManager extends import_library.BaseClass {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
         }
-        if (item.longPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_B = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _B.longPress)) {
+        if (item.longPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_A = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _A.longPress)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
         }
