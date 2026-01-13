@@ -153,6 +153,12 @@ export type TrashEntry = {
     textTrash4: string;
     textTrash5: string;
     textTrash6: string;
+    customTrash1: string;
+    customTrash2: string;
+    customTrash3: string;
+    customTrash4: string;
+    customTrash5: string;
+    customTrash6: string;
 } & PageConfigBaseFields;
 
 export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | TrashEntry;

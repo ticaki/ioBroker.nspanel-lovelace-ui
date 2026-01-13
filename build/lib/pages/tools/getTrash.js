@@ -214,7 +214,7 @@ const data = [
     }
   }
 ];
-async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customEventName1 = "test", customEventName2 = "test2", customEventName3 = "test3", customEventName4 = "", customEventName5 = "", customEventName6 = "") {
+async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "") {
   var _a;
   const messages = [];
   const pageTrashMessage = { ...PageTrashMessageDefault };
@@ -248,14 +248,7 @@ async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", tra
         continue;
       }
       const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
-      const customNames = [
-        customEventName1,
-        customEventName2,
-        customEventName3,
-        customEventName4,
-        customEventName5,
-        customEventName6
-      ];
+      const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
       let trashIndex = -1;
       for (let i = 0; i < trashTypes.length; i++) {
         if (trashTypes[i] && trashTypes[i].trim() !== "" && trashTypes[i].includes(eventName)) {
@@ -266,7 +259,7 @@ async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", tra
       if (trashIndex !== -1) {
         entryCount++;
         pageTrashMessage[`icon${entryCount}`] = "trash_can";
-        pageTrashMessage[`trashType${entryCount}`] = customNames[trashIndex] && customNames[trashIndex] !== "" ? customNames[trashIndex] : eventName;
+        pageTrashMessage[`trashType${entryCount}`] = customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : eventName;
         pageTrashMessage[`trashDate${entryCount}`] = eventDatum;
         if (entryCount >= 6) {
           break;

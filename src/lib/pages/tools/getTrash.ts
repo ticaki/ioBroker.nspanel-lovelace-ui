@@ -204,12 +204,12 @@ export async function getPageTrash(
     trashtype4: string = '',
     trashtype5: string = '',
     trashtype6: string = '',
-    customEventName1: string = 'test',
-    customEventName2: string = 'test2',
-    customEventName3: string = 'test3',
-    customEventName4: string = '',
-    customEventName5: string = '',
-    customEventName6: string = '',
+    customTrash1: string = '',
+    customTrash2: string = '',
+    customTrash3: string = '',
+    customTrash4: string = '',
+    customTrash5: string = '',
+    customTrash6: string = '',
 ): Promise<{ messages: string[]; error?: any }> {
     const messages: string[] = [];
     const pageTrashMessage = { ...PageTrashMessageDefault };
@@ -259,14 +259,7 @@ export async function getPageTrash(
 
             // Prüfe ob Event zu einem der Trash-Types gehört
             const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
-            const customNames = [
-                customEventName1,
-                customEventName2,
-                customEventName3,
-                customEventName4,
-                customEventName5,
-                customEventName6,
-            ];
+            const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
 
             // Finde passenden Trash-Type (case-insensitive und nur nicht-leere)
             let trashIndex = -1;
@@ -283,7 +276,7 @@ export async function getPageTrash(
                 // Mapping auf pageTrashMessage
                 pageTrashMessage[`icon${entryCount}` as keyof typeof pageTrashMessage] = 'trash_can';
                 pageTrashMessage[`trashType${entryCount}` as keyof typeof pageTrashMessage] =
-                    customNames[trashIndex] && customNames[trashIndex] !== '' ? customNames[trashIndex] : eventName;
+                    customTrash[trashIndex] && customTrash[trashIndex] !== '' ? customTrash[trashIndex] : eventName;
                 pageTrashMessage[`trashDate${entryCount}` as keyof typeof pageTrashMessage] = eventDatum;
 
                 // Maximal 6 Einträge

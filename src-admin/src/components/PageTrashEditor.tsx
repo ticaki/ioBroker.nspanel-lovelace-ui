@@ -126,25 +126,51 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                     />
                 </Box>
 
-                {/* 6 Textfelder */}
-                {[1, 2, 3, 4, 5, 6].map(num => (
-                    <TextField
-                        key={num}
-                        fullWidth
-                        variant="standard"
-                        type="text"
-                        autoComplete="off"
-                        label={this.getText(`trash_text_field_${num}`)}
-                        value={entry[`textTrash${num}` as keyof TrashEntry] ?? ''}
-                        onChange={e => {
-                            this.handleFieldChange(`textTrash${num}` as keyof TrashEntry, e.target.value);
-                        }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1 },
-                        }}
-                        sx={{ mb: 2 }}
-                    />
-                ))}
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Box sx={{ mb: 2 }}>
+                        {/* 6 Textfelder Trashname*/}
+                        {[1, 2, 3, 4, 5, 6].map(num => (
+                            <TextField
+                                key={num}
+                                fullWidth
+                                variant="standard"
+                                type="text"
+                                autoComplete="off"
+                                label={this.getText(`trash_text_field_${num}`)}
+                                value={entry[`textTrash${num}` as keyof TrashEntry] ?? ''}
+                                onChange={e => {
+                                    this.handleFieldChange(`textTrash${num}` as keyof TrashEntry, e.target.value);
+                                }}
+                                InputProps={{
+                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                }}
+                                sx={{ mb: 2 }}
+                            />
+                        ))}
+                    </Box>
+
+                    <Box sx={{ mb: 2 }}>
+                        {/* 6 Textfelder Customname*/}
+                        {[1, 2, 3, 4, 5, 6].map(num => (
+                            <TextField
+                                key={num}
+                                fullWidth
+                                variant="standard"
+                                type="text"
+                                autoComplete="off"
+                                label={this.getText(`custom_text_field_${num}`)}
+                                value={entry[`customTrash${num}` as keyof TrashEntry] ?? ''}
+                                onChange={e => {
+                                    this.handleFieldChange(`customTrash${num}` as keyof TrashEntry, e.target.value);
+                                }}
+                                InputProps={{
+                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                }}
+                                sx={{ mb: 2 }}
+                            />
+                        ))}
+                    </Box>
+                </Box>
             </Box>
         );
     }

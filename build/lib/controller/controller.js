@@ -658,12 +658,20 @@ class Controller extends Library.BaseClass {
           const left = entry.leftNumber || 0;
           const right = entry.rightNumber || 0;
           const trashTypes = [
-            entry.textTrash1,
-            entry.textTrash2,
-            entry.textTrash3,
-            entry.textTrash4,
-            entry.textTrash5,
-            entry.textTrash6
+            entry.textTrash1 || "",
+            entry.textTrash2 || "",
+            entry.textTrash3 || "",
+            entry.textTrash4 || "",
+            entry.textTrash5 || "",
+            entry.textTrash6 || ""
+          ];
+          const customTrash = [
+            entry.customTrash1 || "",
+            entry.customTrash2 || "",
+            entry.customTrash3 || "",
+            entry.customTrash4 || "",
+            entry.customTrash5 || "",
+            entry.customTrash6 || ""
           ];
           if (!state) {
             this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
@@ -675,7 +683,7 @@ class Controller extends Library.BaseClass {
             return;
           }
           this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
-          const result = await (0, import_getTrash.getPageTrash)(daten.val, left, right, ...trashTypes);
+          const result = await (0, import_getTrash.getPageTrash)(daten.val, left, right, ...trashTypes, ...customTrash);
           if (result.error) {
             this.log.error(
               `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`

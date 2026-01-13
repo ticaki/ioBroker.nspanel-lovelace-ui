@@ -224,6 +224,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 textTrash4: '',
                 textTrash5: '',
                 textTrash6: '',
+                customTrash1: '',
+                customTrash2: '',
+                customTrash3: '',
+                customTrash4: '',
+                customTrash5: '',
+                customTrash6: '',
             };
         } else {
             return; // Unbekannter Typ

@@ -284,6 +284,12 @@ declare global {
                 textTrash4: string;
                 textTrash5: string;
                 textTrash6: string;
+                customTrash1: string;
+                customTrash2: string;
+                customTrash3: string;
+                customTrash4: string;
+                customTrash5: string;
+                customTrash6: string;
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
