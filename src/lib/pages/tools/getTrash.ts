@@ -2,145 +2,302 @@ const PageTrashMessageDefault = {
     event: 'entityUpd',
     headline: 'Trash Page',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    icon1: 'trash_can',
+    icon1: '',
     trashType1: '',
     trashDate1: '',
-    icon2: 'trash_can',
+    icon2: '',
     trashType2: '',
     trashDate2: '',
-    icon3: 'trash_can',
+    icon3: '',
     trashType3: '',
     trashDate3: '',
-    icon4: 'trash_can',
+    icon4: '',
     trashType4: '',
     trashDate4: '',
-    icon5: 'trash_can',
+    icon5: '',
     trashType5: '',
     trashDate5: '',
-    icon6: 'trash_can',
+    icon6: '',
     trashType6: '',
     trashDate6: '',
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const data = [
+    {
+        date: 'Heute  ',
+        event: 'Welsestraße - Gelber Sack',
+        _class: 'ical_Abfall ical_today',
+        _date: '2026-01-12T23:00:00.000Z',
+        _end: '2026-01-13T23:00:00.000Z',
+        _IDID: '593336@mymuell.de',
+        _allDay: true,
+        _private: false,
+        _rule: ' ',
+        location: '',
+        _calName: 'Abfall',
+        _calColor: '#000000',
+        _object: {
+            type: 'VEVENT',
+            params: [],
+            uid: '593336@mymuell.de',
+            summary: 'Welsestraße - Gelber Sack',
+            dtstamp: '2025-12-23T23:53:02.000Z',
+            start: '2026-01-12T23:00:00.000Z',
+            datetype: 'date',
+            end: '2026-01-13T23:00:00.000Z',
+        },
+    },
+    {
+        date: 'In einer Woche  ',
+        event: 'Welsestraße - Hausmüll',
+        _class: 'ical_Abfall ical_oneweek',
+        _date: '2026-01-19T23:00:00.000Z',
+        _end: '2026-01-20T23:00:00.000Z',
+        _IDID: '377046@mymuell.de',
+        _allDay: true,
+        _private: false,
+        _rule: ' ',
+        location: '',
+        _calName: 'Abfall',
+        _calColor: '#000000',
+        _object: {
+            type: 'VEVENT',
+            params: [],
+            uid: '377046@mymuell.de',
+            summary: 'Welsestraße - Hausmüll',
+            dtstamp: '2025-12-23T23:53:02.000Z',
+            start: '2026-01-19T23:00:00.000Z',
+            datetype: 'date',
+            end: '2026-01-20T23:00:00.000Z',
+        },
+    },
+    {
+        date: '23.01.2026  ',
+        event: 'Welsestraße - Biomüll',
+        _class: 'ical_Abfall ',
+        _date: '2026-01-22T23:00:00.000Z',
+        _end: '2026-01-23T23:00:00.000Z',
+        _IDID: '401187@mymuell.de',
+        _allDay: true,
+        _private: false,
+        _rule: ' ',
+        location: '',
+        _calName: 'Abfall',
+        _calColor: '#000000',
+        _object: {
+            type: 'VEVENT',
+            params: [],
+            uid: '401187@mymuell.de',
+            summary: 'Welsestraße - Biomüll',
+            dtstamp: '2025-12-23T23:53:02.000Z',
+            start: '2026-01-22T23:00:00.000Z',
+            datetype: 'date',
+            end: '2026-01-23T23:00:00.000Z',
+        },
+    },
+    {
+        date: '03.02.2026  ',
+        event: 'Welsestraße - Papier',
+        _class: 'ical_Abfall ',
+        _date: '2026-02-02T23:00:00.000Z',
+        _end: '2026-02-03T23:00:00.000Z',
+        _IDID: '591845@mymuell.de',
+        _allDay: true,
+        _private: false,
+        _rule: ' ',
+        location: '',
+        _calName: 'Abfall',
+        _calColor: '#000000',
+        _object: {
+            type: 'VEVENT',
+            params: [],
+            uid: '591845@mymuell.de',
+            summary: 'Welsestraße - Papier',
+            dtstamp: '2025-12-23T23:53:02.000Z',
+            start: '2026-02-02T23:00:00.000Z',
+            datetype: 'date',
+            end: '2026-02-03T23:00:00.000Z',
+        },
+    },
+    {
+        date: '03.02.2026  ',
+        event: 'Welsestraße - Gelber Sack',
+        _class: 'ical_Abfall ',
+        _date: '2026-02-02T23:00:00.000Z',
+        _end: '2026-02-03T23:00:00.000Z',
+        _IDID: '405421@mymuell.de',
+        _allDay: true,
+        _private: false,
+        _rule: ' ',
+        location: '',
+        _calName: 'Abfall',
+        _calColor: '#000000',
+        _object: {
+            type: 'VEVENT',
+            params: [],
+            uid: '405421@mymuell.de',
+            summary: 'Welsestraße - Gelber Sack',
+            dtstamp: '2025-12-23T23:53:02.000Z',
+            start: '2026-02-02T23:00:00.000Z',
+            datetype: 'date',
+            end: '2026-02-03T23:00:00.000Z',
+        },
+    },
+    {
+        date: '06.02.2026  ',
+        event: 'Welsestraße - Biomüll',
+        _class: 'ical_Abfall ',
+        _date: '2026-02-05T23:00:00.000Z',
+        _end: '2026-02-06T23:00:00.000Z',
+        _IDID: '862129@mymuell.de',
+        _allDay: true,
+        _private: false,
+        _rule: ' ',
+        location: '',
+        _calName: 'Abfall',
+        _calColor: '#000000',
+        _object: {
+            type: 'VEVENT',
+            params: [],
+            uid: '862129@mymuell.de',
+            summary: 'Welsestraße - Biomüll',
+            dtstamp: '2025-12-23T23:53:02.000Z',
+            start: '2026-02-05T23:00:00.000Z',
+            datetype: 'date',
+            end: '2026-02-06T23:00:00.000Z',
+        },
+    },
+    {
+        date: '10.02.2026  ',
+        event: 'Welsestraße - Hausmüll',
+        _class: 'ical_Abfall ',
+        _date: '2026-02-09T23:00:00.000Z',
+        _end: '2026-02-10T23:00:00.000Z',
+        _IDID: '651257@mymuell.de',
+        _allDay: true,
+        _private: false,
+        _rule: ' ',
+        location: '',
+        _calName: 'Abfall',
+        _calColor: '#000000',
+        _object: {
+            type: 'VEVENT',
+            params: [],
+            uid: '651257@mymuell.de',
+            summary: 'Welsestraße - Hausmüll',
+            dtstamp: '2025-12-23T23:53:02.000Z',
+            start: '2026-02-09T23:00:00.000Z',
+            datetype: 'date',
+            end: '2026-02-10T23:00:00.000Z',
+        },
+    },
+];
+
 export async function getPageTrash(
-    trashJSON: string,
+    trashJSON: any,
     leftChar: number,
     rightChar: number,
-    trashtype1: string,
-    trashtype2: string,
-    trashtype3: string,
-    trashtype4: string,
-    trashtype5: string,
-    trashtype6: string,
-    customEventName1?: string,
-    customEventName2?: string,
-    customEventName3?: string,
-    customEventName4?: string,
-    customEventName5?: string,
-    customEventName6?: string,
+    trashtype1: string = '',
+    trashtype2: string = '',
+    trashtype3: string = '',
+    trashtype4: string = '',
+    trashtype5: string = '',
+    trashtype6: string = '',
+    customEventName1: string = 'test',
+    customEventName2: string = 'test2',
+    customEventName3: string = 'test3',
+    customEventName4: string = '',
+    customEventName5: string = '',
+    customEventName6: string = '',
 ): Promise<{ messages: string[]; error?: any }> {
     const messages: string[] = [];
     const pageTrashMessage = { ...PageTrashMessageDefault };
-    let trashNumberOfEntries = 6;
-    let farbNummer = 0;
-    const datenJSON: any = {};
+
     try {
-        for (let i = 0; i < trashJSON.length; i++) {
-            if (trashNumberOfEntries === 7) {
-                //if (debug) log('Alle Abfall-Datenpunkte gefüllt', 'warn');
-                break;
+        // Parse trashJSON wenn es ein String ist
+        let trashData: any[];
+        if (typeof trashJSON === 'string') {
+            trashData = JSON.parse(trashJSON);
+        } else if (Array.isArray(trashJSON)) {
+            trashData = trashJSON;
+        } else {
+            return { messages: [], error: new Error('trashJSON must be a string or array ') };
+        }
+
+        // Prüfen ob trashData ein Array ist
+        if (!Array.isArray(trashData)) {
+            return { messages: [], error: new Error('trashData is not an array') };
+        }
+
+        const currentDate = new Date();
+        let entryCount = 0;
+
+        // Direkt über das Array iterieren, nicht über Object.entries()
+        for (const trashObject of trashData) {
+            let eventName = trashObject.event;
+
+            // Prüfen ob event existiert
+            if (!eventName) {
+                continue;
             }
 
-            //if (debug) log('Daten vom ical Adapter werden ausgewertet', 'info');
-            let eventName = getAttr(trashJSON, `${String(i)}.event`);
-            eventName = eventName.substring(leftChar, eventName.length - rightChar);
-            // Leerzeichen vorne und hinten löschen
-            eventName = eventName.trimEnd();
-            eventName = eventName.trimStart();
-            const eventDatum = getAttr(trashJSON, `${String(i)}.date`);
-            const eventStartdatum = getAttr(trashJSON, `${String(i)}._date`);
+            // String-Verarbeitung mit Sicherheitsprüfung
+            if (leftChar > 0 || rightChar > 0) {
+                const endPos = rightChar > 0 ? eventName.length - rightChar : eventName.length;
+                eventName = eventName.substring(leftChar, endPos);
+            }
+            eventName = eventName.trim();
 
-            const d: Date = new Date();
-            const d1: Date = new Date(eventStartdatum);
+            const eventDatum = trashObject.date?.trim() || '';
+            const eventStartdatum = new Date(trashObject._date);
 
-            //if (debug) log('--------- Nächster Termin wird geprüft ---------', 'info');
-            //if (debug)  log(d + ' ' + d1, 'info');
-            //if (debug) log('Startdatum UTC: ' + eventStartdatum, 'info');
-            //if (debug) log('Datum: ' + eventDatum, 'info');
-            //if (debug) log('Event: ' + eventName, 'info');
-            //if (debug) log('Kontrolle Leerzeichen %' + eventName + '%', 'info');
+            // Nur zukünftige Events
+            if (currentDate.getTime() > eventStartdatum.getTime()) {
+                continue;
+            }
 
-            if (d.getTime() <= d1.getTime()) {
-                if (
-                    eventName == trashtype1 ||
-                    eventName == trashtype2 ||
-                    eventName == trashtype3 ||
-                    eventName == trashtype4 ||
-                    eventName == trashtype5 ||
-                    eventName == trashtype6
-                ) {
-                    switch (eventName) {
-                        case trashtype1:
-                            farbNummer = 33_840;
-                            if (customEventName1 != '') {
-                                eventName = customEventName1;
-                                //if (debug) log('Event customName: ' + eventName, 'info');
-                            }
-                            break;
-                        case trashtype2:
-                            farbNummer = 65_504;
-                            if (customEventName2 != '') {
-                                eventName = customEventName2;
-                                //if (debug) log('Event customName: ' + eventName, 'info');
-                            }
-                            break;
-                        case trashtype3:
-                            farbNummer = 31;
-                            if (customEventName3 != '') {
-                                eventName = customEventName3;
-                                //if (debug) log('Event customName: ' + eventName, 'info');
-                            }
-                            break;
-                        case trashtype4:
-                            farbNummer = 2016;
-                            if (customEventName4 != '') {
-                                eventName = customEventName4;
-                                //if (debug) log('Event customName: ' + eventName, 'info');
-                            }
-                            break;
-                        case trashtype5:
-                            farbNummer = 2016;
-                            if (customEventName5 != '') {
-                                eventName = customEventName5;
-                                //if (debug) log('Event customName: ' + eventName, 'info');
-                            }
-                            break;
-                        case trashtype6:
-                            farbNummer = 2016;
-                            if (customEventName6 != '') {
-                                eventName = customEventName6;
-                                //if (debug) log('Event customName: ' + eventName, 'info');
-                            }
-                            break;
-                    }
+            // Prüfe ob Event zu einem der Trash-Types gehört
+            const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
+            const customNames = [
+                customEventName1,
+                customEventName2,
+                customEventName3,
+                customEventName4,
+                customEventName5,
+                customEventName6,
+            ];
 
-                    //if (debug) log('Abfallnummer: ' + trashNumberOfEntries, 'info');
-
-                    datenJSON[i] = {};
-                    datenJSON[i].date = eventDatum;
-                    datenJSON[i].event = eventName;
-                    datenJSON[i].color = farbNummer;
-
-                    trashNumberOfEntries += 1;
-                } else {
-                    //if (debug) log('Kein Abfalltermin => Event passt mit keinem Abfallnamen überein.', 'warn');
+            // Finde passenden Trash-Type (case-insensitive und nur nicht-leere)
+            let trashIndex = -1;
+            for (let i = 0; i < trashTypes.length; i++) {
+                if (trashTypes[i] && trashTypes[i].trim() !== '' && trashTypes[i].includes(eventName)) {
+                    trashIndex = i;
+                    break;
                 }
-            } else {
-                //if (debug) log('Termin liegt vor dem heutigen Tag', 'warn');
+            }
+
+            if (trashIndex !== -1) {
+                entryCount++;
+
+                // Mapping auf pageTrashMessage
+                pageTrashMessage[`icon${entryCount}` as keyof typeof pageTrashMessage] = 'trash_can';
+                pageTrashMessage[`trashType${entryCount}` as keyof typeof pageTrashMessage] =
+                    customNames[trashIndex] && customNames[trashIndex] !== '' ? customNames[trashIndex] : eventName;
+                pageTrashMessage[`trashDate${entryCount}` as keyof typeof pageTrashMessage] = eventDatum;
+
+                // Maximal 6 Einträge
+                if (entryCount >= 6) {
+                    break;
+                }
             }
         }
+
+        // pageTrashMessage zu messages hinzufügen (als JSON-String)
+        messages.push(JSON.stringify(pageTrashMessage));
+
         return { messages };
     } catch (error) {
-        return { messages, error };
+        return { messages: [], error };
     }
 }

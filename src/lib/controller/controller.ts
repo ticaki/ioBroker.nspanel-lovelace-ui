@@ -10,6 +10,7 @@ import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
 import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
+import { getPageTrash } from '../pages/tools/getTrash';
 
 /**
  * Controller Class
@@ -412,6 +413,8 @@ export class Controller extends Library.BaseClass {
         void this.minuteLoop();
         void this.hourLoop();
         await this.checkOnlineVersion();
+        await this.getTrashDaten();
+        this.log.info(`${this.panels.length} Panels initialized`);
     }
 
     addPanel = async (panel: Partial<Panel.panelConfigPartial>): Promise<void> => {
@@ -680,6 +683,7 @@ export class Controller extends Library.BaseClass {
     /**
      * Baut ein zusammengefasstes Farb-Objekt aus allen Color-Accordion Arrays.
      * Nimmt Color.defaultTheme als Basis und überschreibt nur definierte Werte.
+     *
      */
     private buildCustomColorTheme(): ColorThemenInterface {
         const cfg = this.adapter.config as unknown as {
@@ -731,22 +735,59 @@ export class Controller extends Library.BaseClass {
 
     async getTrashDaten(): Promise<void> {
         try {
-            // to be implemented
             const trashEntries = this.adapter.config.pageConfig.filter(e => e.card === 'cardTrash');
-            trashEntries.forEach(entry => {
-                const state = entry.trashState;
-                const left = entry.leftNumber;
-                const right = entry.rightNumber;
-                const trashType1 = entry.textTrash1;
-                const trashType2 = entry.textTrash2;
-                const trashType3 = entry.textTrash3;
-                const trashType4 = entry.textTrash4;
-                const trashType5 = entry.textTrash5;
-                const trashType6 = entry.textTrash6;
-            });
-        } catch (error) {
-            // Fehlerbehandlung
-            this.log.error(`getTrashDaten error: ${JSON.stringify(error)}`);
+            this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
+
+            for (const entry of trashEntries) {
+                try {
+                    const state = entry.trashState;
+                    const left = entry.leftNumber || 0;
+                    const right = entry.rightNumber || 0;
+                    const trashTypes = [
+                        entry.textTrash1,
+                        entry.textTrash2,
+                        entry.textTrash3,
+                        entry.textTrash4,
+                        entry.textTrash5,
+                        entry.textTrash6,
+                    ];
+
+                    if (!state) {
+                        this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
+                        return;
+                    }
+
+                    const daten = await this.adapter.getForeignStateAsync(state);
+                    if (!daten || !daten.val) {
+                        this.log.warn(`Trash state ${state} has no data .`);
+                        return;
+                    }
+
+                    this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
+
+                    const result = await getPageTrash(daten.val, left, right, ...trashTypes);
+
+                    if (result.error) {
+                        this.log.error(
+                            `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`,
+                        );
+                        return;
+                    }
+
+                    this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
+
+                    // Speichern der Ergebnisse (falls benötigt)
+                    /* await this.statesControler.setInternalState(
+                        `${entry.uniqueName}/trashMessages`,
+                        JSON.stringify(result.messages),
+                        false,
+                    ); */
+                } catch (error: any) {
+                    this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);
+                }
+            }
+        } catch (error: any) {
+            this.log.error(`getTrashDaten error: ${error.message}`);
         }
     }
 }
