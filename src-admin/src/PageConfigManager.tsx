@@ -11,6 +11,7 @@ import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageQREditor } from './components/PageQREditor';
+import { PageTrashEditor } from './components/PageTrashEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -209,6 +210,21 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 setState: '',
                 selType: 0,
             };
+        } else if (cardType === 'cardTrash') {
+            newEntry = {
+                card: 'cardTrash',
+                uniqueName: name,
+                headline: name,
+                trashState: '',
+                leftNumber: 0,
+                rightNumber: 0,
+                textTrash1: '',
+                textTrash2: '',
+                textTrash3: '',
+                textTrash4: '',
+                textTrash5: '',
+                textTrash6: '',
+            };
         } else {
             return; // Unbekannter Typ
         }
@@ -311,6 +327,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardQR') {
             return (
                 <PageQREditor
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardTrash') {
+            return (
+                <PageTrashEditor
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}

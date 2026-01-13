@@ -140,7 +140,22 @@ export type QREntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
-export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry;
+export type TrashEntry = {
+    card: 'cardTrash';
+    uniqueName: string;
+    headline: string;
+    trashState: string; // Object ID Selector
+    leftNumber: number; // Zahl links
+    rightNumber: number; // Zahl rechts
+    textTrash1: string; // 6 Textfelder
+    textTrash2: string;
+    textTrash3: string;
+    textTrash4: string;
+    textTrash5: string;
+    textTrash6: string;
+} & PageConfigBaseFields;
+
+export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | TrashEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;
@@ -155,4 +170,4 @@ export type NavigationAssignment = {
 
 export type NavigationAssignmentList = NavigationAssignment[];
 
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry;
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;

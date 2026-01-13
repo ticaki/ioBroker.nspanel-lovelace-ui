@@ -728,4 +728,25 @@ export class Controller extends Library.BaseClass {
 
         return result;
     }
+
+    async getTrashDaten(): Promise<void> {
+        try {
+            // to be implemented
+            const trashEntries = this.adapter.config.pageConfig.filter(e => e.card === 'cardTrash');
+            trashEntries.forEach(entry => {
+                const state = entry.trashState;
+                const left = entry.leftNumber;
+                const right = entry.rightNumber;
+                const trashType1 = entry.textTrash1;
+                const trashType2 = entry.textTrash2;
+                const trashType3 = entry.textTrash3;
+                const trashType4 = entry.textTrash4;
+                const trashType5 = entry.textTrash5;
+                const trashType6 = entry.textTrash6;
+            });
+        } catch (error) {
+            // Fehlerbehandlung
+            this.log.error(`getTrashDaten error: ${JSON.stringify(error)}`);
+        }
+    }
 }

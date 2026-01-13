@@ -644,6 +644,24 @@ class Controller extends Library.BaseClass {
     merge(cfg.colorCardMedia);
     return result;
   }
+  async getTrashDaten() {
+    try {
+      const trashEntries = this.adapter.config.pageConfig.filter((e) => e.card === "cardTrash");
+      trashEntries.forEach((entry) => {
+        const state = entry.trashState;
+        const left = entry.leftNumber;
+        const right = entry.rightNumber;
+        const trashType1 = entry.textTrash1;
+        const trashType2 = entry.textTrash2;
+        const trashType3 = entry.textTrash3;
+        const trashType4 = entry.textTrash4;
+        const trashType5 = entry.textTrash5;
+        const trashType6 = entry.textTrash6;
+      });
+    } catch (error) {
+      this.log.error(`getTrashDaten error: ${JSON.stringify(error)}`);
+    }
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

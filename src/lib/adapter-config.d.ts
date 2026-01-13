@@ -272,6 +272,22 @@ declare global {
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
                 navigationAssignment?: navigationAssignment[]
+            }|{
+                card: 'cardTrash';
+                headline: string;
+                trashState: string;
+                leftNumber: 0;
+                rightNumber: 0;
+                textTrash1: string;
+                textTrash2: string;
+                textTrash3: string;
+                textTrash4: string;
+                textTrash5: string;
+                textTrash6: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                uniqueName: string;
+                navigationAssignment?: navigationAssignment[];
             })[];
 
             pageQRConfig: any[];
