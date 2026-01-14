@@ -3,21 +3,27 @@ const PageTrashMessageDefault = {
     headline: 'Trash Page',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
     icon1: '',
+    iconColor1: '',
     trashType1: '',
     trashDate1: '',
     icon2: '',
+    iconColor2: '',
     trashType2: '',
     trashDate2: '',
     icon3: '',
+    iconColor3: '',
     trashType3: '',
     trashDate3: '',
     icon4: '',
+    iconColor4: '',
     trashType4: '',
     trashDate4: '',
     icon5: '',
+    iconColor5: '',
     trashType5: '',
     trashDate5: '',
     icon6: '',
+    iconColor6: '',
     trashType6: '',
     trashDate6: '',
 };
@@ -210,6 +216,12 @@ export async function getPageTrash(
     customTrash4: string = '',
     customTrash5: string = '',
     customTrash6: string = '',
+    iconColor1: string = '',
+    iconColor2: string = '',
+    iconColor3: string = '',
+    iconColor4: string = '',
+    iconColor5: string = '',
+    iconColor6: string = '',
 ): Promise<{ messages: string[]; error?: any }> {
     const messages: string[] = [];
     const pageTrashMessage = { ...PageTrashMessageDefault };
@@ -260,6 +272,7 @@ export async function getPageTrash(
             // Prüfe ob Event zu einem der Trash-Types gehört
             const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
             const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
+            const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
 
             // Finde passenden Trash-Type (case-insensitive und nur nicht-leere)
             let trashIndex = -1;
@@ -275,6 +288,7 @@ export async function getPageTrash(
 
                 // Mapping auf pageTrashMessage
                 pageTrashMessage[`icon${entryCount}` as keyof typeof pageTrashMessage] = 'trash_can';
+                pageTrashMessage[`iconColor${entryCount}` as keyof typeof pageTrashMessage] = iconColor[trashIndex];
                 pageTrashMessage[`trashType${entryCount}` as keyof typeof pageTrashMessage] =
                     customTrash[trashIndex] && customTrash[trashIndex] !== '' ? customTrash[trashIndex] : eventName;
                 pageTrashMessage[`trashDate${entryCount}` as keyof typeof pageTrashMessage] = eventDatum;

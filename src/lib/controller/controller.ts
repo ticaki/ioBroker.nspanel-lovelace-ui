@@ -759,6 +759,14 @@ export class Controller extends Library.BaseClass {
                         entry.customTrash5 || '',
                         entry.customTrash6 || '',
                     ];
+                    const iconColors: string[] = [
+                        entry.iconColor1 || '',
+                        entry.iconColor2 || '',
+                        entry.iconColor3 || '',
+                        entry.iconColor4 || '',
+                        entry.iconColor5 || '',
+                        entry.iconColor6 || '',
+                    ];
 
                     if (!state) {
                         this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
@@ -773,7 +781,14 @@ export class Controller extends Library.BaseClass {
 
                     this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
 
-                    const result = await getPageTrash(daten.val, left, right, ...trashTypes, ...customTrash);
+                    const result = await getPageTrash(
+                        daten.val,
+                        left,
+                        right,
+                        ...trashTypes,
+                        ...customTrash,
+                        ...iconColors,
+                    );
 
                     if (result.error) {
                         this.log.error(

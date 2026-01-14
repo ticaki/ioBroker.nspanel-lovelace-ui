@@ -290,6 +290,13 @@ declare global {
                 customTrash4: string;
                 customTrash5: string;
                 customTrash6: string;
+                iconColor1: string;
+                iconColor2: string;
+                iconColor3: string;
+                iconColor4: string;
+                iconColor5: string;
+                iconColor6: string;
+                setState: string;
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
