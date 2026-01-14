@@ -128,6 +128,24 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
 
                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                     <Box sx={{ mb: 2 }}>
+                        {[1, 2, 3, 4, 5, 6].map(num => (
+                            <TextField
+                                key={num}
+                                fullWidth
+                                variant="standard"
+                                type="color"
+                                label={this.getText(`trash_icon_color_${num}`)}
+                                value={entry[`iconColor${num}` as keyof TrashEntry] ?? '#FFFFFF'}
+                                onChange={e => {
+                                    this.handleFieldChange(`iconColor${num}` as keyof TrashEntry, e.target.value);
+                                }}
+                                InputProps={{
+                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                }}
+                            />
+                        ))}
+                    </Box>
+                    <Box sx={{ mb: 2 }}>
                         {/* 6 Textfelder Trashname*/}
                         {[1, 2, 3, 4, 5, 6].map(num => (
                             <TextField

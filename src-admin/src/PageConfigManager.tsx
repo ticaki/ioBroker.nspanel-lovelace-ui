@@ -230,6 +230,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 customTrash4: '',
                 customTrash5: '',
                 customTrash6: '',
+                iconColor1: '',
+                iconColor2: '',
+                iconColor3: '',
+                iconColor4: '',
+                iconColor5: '',
+                iconColor6: '',
             };
         } else {
             return; // Unbekannter Typ

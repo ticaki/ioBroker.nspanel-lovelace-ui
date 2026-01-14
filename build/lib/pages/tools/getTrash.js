@@ -26,21 +26,27 @@ const PageTrashMessageDefault = {
   headline: "Trash Page",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   icon1: "",
+  iconColor1: "",
   trashType1: "",
   trashDate1: "",
   icon2: "",
+  iconColor2: "",
   trashType2: "",
   trashDate2: "",
   icon3: "",
+  iconColor3: "",
   trashType3: "",
   trashDate3: "",
   icon4: "",
+  iconColor4: "",
   trashType4: "",
   trashDate4: "",
   icon5: "",
+  iconColor5: "",
   trashType5: "",
   trashDate5: "",
   icon6: "",
+  iconColor6: "",
   trashType6: "",
   trashDate6: ""
 };
@@ -214,7 +220,7 @@ const data = [
     }
   }
 ];
-async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "") {
+async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
   var _a;
   const messages = [];
   const pageTrashMessage = { ...PageTrashMessageDefault };
@@ -249,6 +255,7 @@ async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", tra
       }
       const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
       const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
+      const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
       let trashIndex = -1;
       for (let i = 0; i < trashTypes.length; i++) {
         if (trashTypes[i] && trashTypes[i].trim() !== "" && trashTypes[i].includes(eventName)) {
@@ -259,6 +266,7 @@ async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", tra
       if (trashIndex !== -1) {
         entryCount++;
         pageTrashMessage[`icon${entryCount}`] = "trash_can";
+        pageTrashMessage[`iconColor${entryCount}`] = iconColor[trashIndex];
         pageTrashMessage[`trashType${entryCount}`] = customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : eventName;
         pageTrashMessage[`trashDate${entryCount}`] = eventDatum;
         if (entryCount >= 6) {
