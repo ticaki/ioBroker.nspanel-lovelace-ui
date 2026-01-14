@@ -801,7 +801,7 @@ export class Controller extends Library.BaseClass {
 
                     // Speichern der Ergebnisse (falls benötigt)
                     /* await this.statesControler.setInternalState(
-                        `${entry.uniqueName}/trashMessages`,
+                        `///trashMessages/${entry.uniqueName}`,
                         JSON.stringify(result.messages),
                         false,
                     ); */
