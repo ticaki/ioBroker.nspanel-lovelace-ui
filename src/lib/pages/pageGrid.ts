@@ -75,6 +75,7 @@ export class PageGrid extends PageMenu {
         if (!this.visibility) {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageGridMessage> = {};
         message.options = [];
         if (

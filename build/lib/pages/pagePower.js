@@ -688,6 +688,7 @@ class PagePower extends import_Page.Page {
     if (!this.visibility) {
       return;
     }
+    await super.update();
     const message = {};
     const config = this.adapter.config.pagePowerdata[this.index];
     if (this.items && config != null) {

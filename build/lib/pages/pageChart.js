@@ -68,6 +68,7 @@ class PageChart extends import_Page.Page {
     if (!this.visibility) {
       return;
     }
+    await super.update();
     const message = {};
     message.navigation = this.getNavigation();
     message.headline = `Error`;

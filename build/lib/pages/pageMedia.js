@@ -269,6 +269,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (!this.visibility || this.sleep) {
       return;
     }
+    await super.update();
     if (this.updateViewTimeout) {
       this.adapter.clearTimeout(this.updateViewTimeout);
     }

@@ -223,6 +223,7 @@ export class PageAlarm extends Page {
         if (!this.visibility || this.unload || this.adapter.unload) {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageAlarmMessage> = {};
         const items = this.items;
         if (!items || items.card !== 'cardAlarm') {

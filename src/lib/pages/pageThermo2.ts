@@ -179,6 +179,7 @@ export class PageThermo2 extends PageMenu {
         if (!this?.visibility) {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageThermo2Message> = {};
         message.options = [];
         message.navigation = this.getNavigation();

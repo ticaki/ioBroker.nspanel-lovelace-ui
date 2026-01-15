@@ -86,6 +86,7 @@ class PagePopup extends import_Page.Page {
     if (!items || !this.visibility) {
       return;
     }
+    await super.update();
     const details = this.detailsArray[0];
     if (!details) {
       this.detailsArray = [];

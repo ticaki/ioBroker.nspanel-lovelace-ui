@@ -345,6 +345,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (!this.visibility) {
       return;
     }
+    await super.update();
     const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
     if (message === null) {
       return;
