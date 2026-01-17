@@ -157,8 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.10.0 (2026-01-17)
 - (ticaki) Confirmation click for role button
 - (ticaki) Some duplicate unique names were overlooked during script transfer.
 - (tt-tom17) bug fixes for role 'blind'
