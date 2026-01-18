@@ -222,6 +222,7 @@ class PageAlarm extends import_Page.Page {
     if (!this.visibility || this.unload || this.adapter.unload) {
       return;
     }
+    await super.update();
     const message = {};
     const items = this.items;
     if (!items || items.card !== "cardAlarm") {

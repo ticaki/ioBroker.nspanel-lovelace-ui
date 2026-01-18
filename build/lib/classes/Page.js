@@ -60,6 +60,17 @@ class Page extends import_baseClassPage.BaseClassPage {
   config;
   //config: Card['config'];
   /**
+   * Refresh interval in milliseconds.
+   * Determines how often the page should at least refresh its content automatically.
+   * Default is 30 minutes (1800000 ms).
+   */
+  refreshInterval = 30 * 60 * 1e3;
+  /**
+   * Timeout handle for periodic page refresh.
+   * Used to schedule automatic updates of the page content.
+   */
+  refreshTimeout = null;
+  /**
    * Constructs a new Page instance.
    * Initializes page properties, processes device and dpInit patterns, and sets up the configuration.
    * This is the base constructor for all page types (Grid, Media, Entities, etc.).
@@ -420,6 +431,10 @@ class Page extends import_baseClassPage.BaseClassPage {
       this.sendType();
       await this.update();
     } else {
+      if (this.refreshTimeout) {
+        this.adapter.clearTimeout(this.refreshTimeout);
+        this.refreshTimeout = null;
+      }
       if (this.pageItems) {
         for (const item of this.pageItems) {
           item && await item.delete();
@@ -461,14 +476,17 @@ class Page extends import_baseClassPage.BaseClassPage {
   }
   /**
    * Updates the page content and sends data to the NSPanel.
-   * Base implementation logs a warning; all derived page classes MUST override this
-   * to implement page-specific rendering logic (e.g., grid items, media player state, chart data).
    * Called when the page becomes visible or when subscribed states change.
    */
   async update() {
-    this.adapter.log.warn(
-      `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
-    );
+    if (this.refreshTimeout) {
+      this.adapter.clearTimeout(this.refreshTimeout);
+    }
+    this.refreshTimeout = this.adapter.setTimeout(async () => {
+      this.refreshTimeout = null;
+      this.log.debug(`Refresh interval reached for page ${this.name}, updating...`);
+      await this.update();
+    }, this.refreshInterval);
   }
   /**
    * Handles popup requests from the NSPanel (e.g., light color picker, shutter position).

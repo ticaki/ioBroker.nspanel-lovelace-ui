@@ -75,6 +75,7 @@ class PageGrid extends import_pageMenu.PageMenu {
     if (!this.visibility) {
       return;
     }
+    await super.update();
     const message = {};
     message.options = [];
     if (!this.items || this.items.card !== "cardGrid" && this.items.card !== "cardGrid2" && this.items.card !== "cardGrid3") {

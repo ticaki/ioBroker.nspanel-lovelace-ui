@@ -176,6 +176,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
     if (!(this == null ? void 0 : this.visibility)) {
       return;
     }
+    await super.update();
     const message = {};
     message.options = [];
     message.navigation = this.getNavigation();

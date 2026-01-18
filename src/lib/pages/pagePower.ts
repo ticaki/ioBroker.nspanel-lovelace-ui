@@ -732,6 +732,7 @@ export class PagePower extends Page {
         if (!this.visibility) {
             return;
         }
+        await super.update();
         const message: Partial<pages.PagePowerMessage> = {};
         const config = this.adapter.config.pagePowerdata[this.index];
         if (this.items && config != null) {

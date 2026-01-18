@@ -53,6 +53,7 @@ export class PageSchedule extends PageMenu {
         if (!this.visibility || this.items?.card !== 'cardSchedule') {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageScheduleMessage> = {};
         const arr = (await this.getOptions([])).slice(0, this.maxItems);
         message.options = arr as typeof message.options;
