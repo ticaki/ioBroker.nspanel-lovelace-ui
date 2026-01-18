@@ -1,6 +1,8 @@
+import { Color } from '../../const/Color';
+
 interface ItemObject {
     icon: string;
-    color: string;
+    color: { r: number; g: number; b: number };
     text: string;
     text1: string;
 }
@@ -261,7 +263,7 @@ export async function getTrash(
             if (trashIndex !== -1) {
                 items.push({
                     icon: 'trash_can',
-                    color: iconColor[trashIndex],
+                    color: Color.ConvertHexToRgb(iconColor[trashIndex]),
                     text:
                         customTrash[trashIndex] && customTrash[trashIndex] !== '' ? customTrash[trashIndex] : eventName,
                     text1: eventDatum,

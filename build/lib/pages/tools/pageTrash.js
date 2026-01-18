@@ -21,6 +21,7 @@ __export(pageTrash_exports, {
   getTrash: () => getTrash
 });
 module.exports = __toCommonJS(pageTrash_exports);
+var import_Color = require("../../const/Color");
 const data = [
   {
     date: "Heute  ",
@@ -236,7 +237,7 @@ async function getTrash(trashJSON = data, leftChar, rightChar, trashtype1 = "", 
       if (trashIndex !== -1) {
         items.push({
           icon: "trash_can",
-          color: iconColor[trashIndex],
+          color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
           text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : eventName,
           text1: eventDatum
         });
