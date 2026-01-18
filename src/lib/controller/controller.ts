@@ -10,7 +10,7 @@ import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
 import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
-import { getPageTrash } from '../pages/tools/getTrash';
+import { getTrash } from '../pages/tools/pageTrash';
 
 /**
  * Controller Class
@@ -781,14 +781,7 @@ export class Controller extends Library.BaseClass {
 
                     this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
 
-                    const result = await getPageTrash(
-                        daten.val,
-                        left,
-                        right,
-                        ...trashTypes,
-                        ...customTrash,
-                        ...iconColors,
-                    );
+                    const result = await getTrash(daten.val, left, right, ...trashTypes, ...customTrash, ...iconColors);
 
                     if (result.error) {
                         this.log.error(
@@ -796,6 +789,28 @@ export class Controller extends Library.BaseClass {
                         );
                         return;
                     }
+
+                    await this.library.writedp(
+                        `pageTrash`,
+                        undefined,
+                        genericStateObjects.panel.panels.pageTrash._channel,
+                    );
+
+                    const channelObj = structuredClone(genericStateObjects.panel.panels.pageTrash.page_id._channel);
+                    channelObj.common.name = `${entry.uniqueName}`;
+                    await this.library.writedp(`pageTrash.${entry.uniqueName}`, undefined, channelObj);
+
+                    for (let i = 0; i < Object.keys(result.messages).length; i++) {
+                        const itemObj = structuredClone(genericStateObjects.panel.panels.pageTrash.page_id.pageItem);
+                        itemObj.common.name = `pageItem${i}`;
+                        const messageData = result.messages[i];
+                        await this.library.writedp(
+                            `pageTrash.${entry.uniqueName}.pageItem${i}`,
+                            JSON.stringify(messageData),
+                            itemObj,
+                        );
+                    }
+                    this.log.debug(`länge der nachrichten: ${Object.keys(result.messages).length}`);
 
                     this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
 

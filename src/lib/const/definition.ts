@@ -98,6 +98,11 @@ export const genericStateObjects: {
                     approve: ioBroker.StateObject;
                 };
             };
+            pageTrash: customChannelType & {
+                page_id: customChannelType & {
+                    pageItem: ioBroker.StateObject;
+                };
+            };
         };
     };
 } = {
@@ -1754,6 +1759,38 @@ export const genericStateObjects: {
                         type: 'state',
                         common: {
                             name: 'StateObjects.alarmmode',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                },
+            },
+            pageTrash: {
+                _channel: {
+                    _id: '',
+                    type: 'channel',
+                    common: {
+                        name: 'pageTrash',
+                    },
+                    native: {},
+                },
+                page_id: {
+                    _channel: {
+                        _id: '',
+                        type: 'channel',
+                        common: {
+                            name: 'page_id',
+                        },
+                        native: {},
+                    },
+                    pageItem: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'pageItem',
                             type: 'string',
                             role: 'text',
                             read: true,

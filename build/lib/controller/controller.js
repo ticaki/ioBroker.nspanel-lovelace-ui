@@ -38,7 +38,7 @@ var import_definition = require("../const/definition");
 var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
 var import_Color = require("../const/Color");
-var import_getTrash = require("../pages/tools/getTrash");
+var import_pageTrash = require("../pages/tools/pageTrash");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -691,20 +691,32 @@ class Controller extends Library.BaseClass {
             return;
           }
           this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
-          const result = await (0, import_getTrash.getPageTrash)(
-            daten.val,
-            left,
-            right,
-            ...trashTypes,
-            ...customTrash,
-            ...iconColors
-          );
+          const result = await (0, import_pageTrash.getTrash)(daten.val, left, right, ...trashTypes, ...customTrash, ...iconColors);
           if (result.error) {
             this.log.error(
               `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`
             );
             return;
           }
+          await this.library.writedp(
+            `pageTrash`,
+            void 0,
+            import_definition.genericStateObjects.panel.panels.pageTrash._channel
+          );
+          const channelObj = structuredClone(import_definition.genericStateObjects.panel.panels.pageTrash.page_id._channel);
+          channelObj.common.name = `${entry.uniqueName}`;
+          await this.library.writedp(`pageTrash.${entry.uniqueName}`, void 0, channelObj);
+          for (let i = 0; i < Object.keys(result.messages).length; i++) {
+            const itemObj = structuredClone(import_definition.genericStateObjects.panel.panels.pageTrash.page_id.pageItem);
+            itemObj.common.name = `pageItem${i}`;
+            const messageData = result.messages[i];
+            await this.library.writedp(
+              `pageTrash.${entry.uniqueName}.pageItem${i}`,
+              JSON.stringify(messageData),
+              itemObj
+            );
+          }
+          this.log.debug(`l\xE4nge der nachrichten: ${Object.keys(result.messages).length}`);
           this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
         } catch (error) {
           this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);

@@ -16,40 +16,11 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var getTrash_exports = {};
-__export(getTrash_exports, {
-  getPageTrash: () => getPageTrash
+var pageTrash_exports = {};
+__export(pageTrash_exports, {
+  getTrash: () => getTrash
 });
-module.exports = __toCommonJS(getTrash_exports);
-const PageTrashMessageDefault = {
-  event: "entityUpd",
-  headline: "Trash Page",
-  navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-  icon1: "",
-  iconColor1: "",
-  trashType1: "",
-  trashDate1: "",
-  icon2: "",
-  iconColor2: "",
-  trashType2: "",
-  trashDate2: "",
-  icon3: "",
-  iconColor3: "",
-  trashType3: "",
-  trashDate3: "",
-  icon4: "",
-  iconColor4: "",
-  trashType4: "",
-  trashDate4: "",
-  icon5: "",
-  iconColor5: "",
-  trashType5: "",
-  trashDate5: "",
-  icon6: "",
-  iconColor6: "",
-  trashType6: "",
-  trashDate6: ""
-};
+module.exports = __toCommonJS(pageTrash_exports);
 const data = [
   {
     date: "Heute  ",
@@ -220,10 +191,9 @@ const data = [
     }
   }
 ];
-async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
+async function getTrash(trashJSON = data, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
   var _a;
-  const messages = [];
-  const pageTrashMessage = { ...PageTrashMessageDefault };
+  const items = [];
   try {
     let trashData;
     if (typeof trashJSON === "string") {
@@ -231,10 +201,10 @@ async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", tra
     } else if (Array.isArray(trashJSON)) {
       trashData = trashJSON;
     } else {
-      return { messages: [], error: new Error("trashJSON must be a string or array ") };
+      return { messages: items, error: new Error("trashJSON must be a string or array ") };
     }
     if (!Array.isArray(trashData)) {
-      return { messages: [], error: new Error("trashData is not an array") };
+      return { messages: items, error: new Error("trashData is not an array") };
     }
     const currentDate = /* @__PURE__ */ new Date();
     let entryCount = 0;
@@ -264,24 +234,25 @@ async function getPageTrash(trashJSON, leftChar, rightChar, trashtype1 = "", tra
         }
       }
       if (trashIndex !== -1) {
+        items.push({
+          icon: "trash_can",
+          color: iconColor[trashIndex],
+          text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : eventName,
+          text1: eventDatum
+        });
         entryCount++;
-        pageTrashMessage[`icon${entryCount}`] = "trash_can";
-        pageTrashMessage[`iconColor${entryCount}`] = iconColor[trashIndex];
-        pageTrashMessage[`trashType${entryCount}`] = customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : eventName;
-        pageTrashMessage[`trashDate${entryCount}`] = eventDatum;
         if (entryCount >= 6) {
           break;
         }
       }
     }
-    messages.push(JSON.stringify(pageTrashMessage));
-    return { messages };
+    return { messages: items };
   } catch (error) {
-    return { messages: [], error };
+    return { messages: items, error };
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  getPageTrash
+  getTrash
 });
-//# sourceMappingURL=getTrash.js.map
+//# sourceMappingURL=pageTrash.js.map

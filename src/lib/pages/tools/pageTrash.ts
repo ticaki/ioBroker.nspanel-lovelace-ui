@@ -1,34 +1,10 @@
-const PageTrashMessageDefault = {
-    event: 'entityUpd',
-    headline: 'Trash Page',
-    navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    icon1: '',
-    iconColor1: '',
-    trashType1: '',
-    trashDate1: '',
-    icon2: '',
-    iconColor2: '',
-    trashType2: '',
-    trashDate2: '',
-    icon3: '',
-    iconColor3: '',
-    trashType3: '',
-    trashDate3: '',
-    icon4: '',
-    iconColor4: '',
-    trashType4: '',
-    trashDate4: '',
-    icon5: '',
-    iconColor5: '',
-    trashType5: '',
-    trashDate5: '',
-    icon6: '',
-    iconColor6: '',
-    trashType6: '',
-    trashDate6: '',
-};
+interface ItemObject {
+    icon: string;
+    color: string;
+    text: string;
+    text1: string;
+}
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const data = [
     {
         date: 'Heute  ',
@@ -200,8 +176,8 @@ const data = [
     },
 ];
 
-export async function getPageTrash(
-    trashJSON: any,
+export async function getTrash(
+    trashJSON: any = data,
     leftChar: number,
     rightChar: number,
     trashtype1: string = '',
@@ -222,9 +198,8 @@ export async function getPageTrash(
     iconColor4: string = '',
     iconColor5: string = '',
     iconColor6: string = '',
-): Promise<{ messages: string[]; error?: any }> {
-    const messages: string[] = [];
-    const pageTrashMessage = { ...PageTrashMessageDefault };
+): Promise<{ messages: ItemObject[]; error?: any }> {
+    const items: ItemObject[] = [];
 
     try {
         // Parse trashJSON wenn es ein String ist
@@ -234,12 +209,12 @@ export async function getPageTrash(
         } else if (Array.isArray(trashJSON)) {
             trashData = trashJSON;
         } else {
-            return { messages: [], error: new Error('trashJSON must be a string or array ') };
+            return { messages: items, error: new Error('trashJSON must be a string or array ') };
         }
 
         // Prüfen ob trashData ein Array ist
         if (!Array.isArray(trashData)) {
-            return { messages: [], error: new Error('trashData is not an array') };
+            return { messages: items, error: new Error('trashData is not an array') };
         }
 
         const currentDate = new Date();
@@ -284,14 +259,15 @@ export async function getPageTrash(
             }
 
             if (trashIndex !== -1) {
-                entryCount++;
+                items.push({
+                    icon: 'trash_can',
+                    color: iconColor[trashIndex],
+                    text:
+                        customTrash[trashIndex] && customTrash[trashIndex] !== '' ? customTrash[trashIndex] : eventName,
+                    text1: eventDatum,
+                });
 
-                // Mapping auf pageTrashMessage
-                pageTrashMessage[`icon${entryCount}` as keyof typeof pageTrashMessage] = 'trash_can';
-                pageTrashMessage[`iconColor${entryCount}` as keyof typeof pageTrashMessage] = iconColor[trashIndex];
-                pageTrashMessage[`trashType${entryCount}` as keyof typeof pageTrashMessage] =
-                    customTrash[trashIndex] && customTrash[trashIndex] !== '' ? customTrash[trashIndex] : eventName;
-                pageTrashMessage[`trashDate${entryCount}` as keyof typeof pageTrashMessage] = eventDatum;
+                entryCount++;
 
                 // Maximal 6 Einträge
                 if (entryCount >= 6) {
@@ -300,11 +276,8 @@ export async function getPageTrash(
             }
         }
 
-        // pageTrashMessage zu messages hinzufügen (als JSON-String)
-        messages.push(JSON.stringify(pageTrashMessage));
-
-        return { messages };
+        return { messages: items };
     } catch (error) {
-        return { messages: [], error };
+        return { messages: items, error };
     }
 }

@@ -1713,6 +1713,38 @@ const genericStateObjects = {
             native: {}
           }
         }
+      },
+      pageTrash: {
+        _channel: {
+          _id: "",
+          type: "channel",
+          common: {
+            name: "pageTrash"
+          },
+          native: {}
+        },
+        page_id: {
+          _channel: {
+            _id: "",
+            type: "channel",
+            common: {
+              name: "page_id"
+            },
+            native: {}
+          },
+          pageItem: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "pageItem",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          }
+        }
       }
     }
   },
