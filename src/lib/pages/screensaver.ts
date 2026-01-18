@@ -309,6 +309,7 @@ export class Screensaver extends Page {
         if (!this.visibility) {
             return;
         }
+        await super.update();
 
         const message = await this.getData(['left', 'bottom', 'indicator', 'alternate', 'favorit']);
         if (message === null) {

@@ -53,6 +53,7 @@ export class PageEntities extends PageMenu {
         if (!this.visibility || this.items?.card !== 'cardEntities') {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageEntitiesMessage> = {};
         const arr = (await this.getOptions([])).slice(0, this.maxItems);
         message.options = arr as typeof message.options;

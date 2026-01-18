@@ -62,6 +62,7 @@ class PageEntities extends import_pageMenu.PageMenu {
     if (!this.visibility || ((_a = this.items) == null ? void 0 : _a.card) !== "cardEntities") {
       return;
     }
+    await super.update();
     const message = {};
     const arr = (await this.getOptions([])).slice(0, this.maxItems);
     message.options = arr;

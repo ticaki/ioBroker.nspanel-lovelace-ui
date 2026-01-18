@@ -290,6 +290,7 @@ export class PageMedia extends PageMenu {
         if (!this.visibility || this.sleep) {
             return;
         }
+        await super.update();
         // update all 5 seconds
         if (this.updateViewTimeout) {
             this.adapter.clearTimeout(this.updateViewTimeout);

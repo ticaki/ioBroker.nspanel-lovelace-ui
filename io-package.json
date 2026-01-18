@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.9.1",
+    "version": "0.10.0",
     "news": {
+      "0.10.0": {
+        "en": "Confirmation click for role button\nSome duplicate unique names were overlooked during script transfer.\nbug fixes for role 'blind'\nminor bug fixes",
+        "de": "Bestätigungsklick für Role button hinzugefügt\nEinige doppelte Eindeutigenamen wurden während der Scriptübertragung übersehen.\nFehlerbehebungen für rolle 'blind'\nkleine Fehlerbehebungen",
+        "ru": "Клик подтверждения для кнопки «Роль»\nНекоторые повторяющиеся уникальные имена были упущены из виду во время передачи сценария.\nрешения для роли «слепой»\nнезначительные исправления ошибок",
+        "pt": "Clique de confirmação para o botão de função\nAlguns nomes únicos duplicados foram ignorados durante a transferência do script.\ncorreções de erros para o papel 'cego'\ncorreções de erros menores",
+        "nl": "Bevestigingsklik voor rolknop\nSommige dubbele unieke namen werden over het hoofd gezien tijdens scriptoverdracht.\nbugfixes voor rol 'blind'\nkleine foutherstel",
+        "fr": "Cliquez sur confirmation pour le bouton rôle\nCertains noms uniques dupliqués ont été négligés lors du transfert de script.\ncorrection du bug pour le rôle 'aveugle'\ncorrection de bugs mineurs",
+        "it": "Fare clic su Conferma per il pulsante ruolo\nAlcuni nomi unici duplicati sono stati trascurati durante il trasferimento di script.\ncorrezioni di bug per il ruolo 'blind'\ncorrezioni di bug minori",
+        "es": "Clic de confirmación para el botón de rol\nAlgunos nombres únicos duplicados fueron pasados por alto durante la transferencia de script.\nbug fixes for role 'blind'\ncorrecciones de errores menores",
+        "pl": "Klikając na przycisk potwierdzania roli\nNiektóre unikalne nazwy zostały pominięte podczas transferu skryptu.\npoprawki błędów dla roli 'ślepota'\ndrobne poprawki błędów",
+        "uk": "Підтвердження кнопки для ролі\nДеякі дублікати унікальних імен були отримані під час передачі сценарію.\nвиправлення помилок для ролі 'blind'\nнезначні виправлення помилок",
+        "zh-cn": "确认点击角色按钮\n一些重复的独特名称在脚本传输过程中被忽略.\n角色“ 盲目” 的错误修正\n小错误修正"
+      },
       "0.9.1": {
         "en": "Fixed: Under certain circumstances, the adapter crashes when a pop-up is called.",
         "de": "Behoben: Unter bestimmten Umständen stürzt der Adapter ab, wenn ein Pop-up aufgerufen wird.",
@@ -80,19 +93,6 @@
         "pl": "wybór znika - stałe",
         "uk": "вибір зникне - фіксована",
         "zh-cn": "选择消失 - 固定"
-      },
-      "0.7.1": {
-        "en": "Initialise pageConfig",
-        "de": "Initialisiere pageConfig",
-        "ru": "Инициировать PageConfig",
-        "pt": "Inicializar a páginaConfig",
-        "nl": "Pagina initialiserenConfig",
-        "fr": "Initialiser la pageConfig",
-        "it": "Pagina inizialeConfig",
-        "es": "Página inicialConfig",
-        "pl": "Inicjalizować prezentację",
-        "uk": "Початкова сторінкаConfig",
-        "zh-cn": "初始化页面"
       }
     },
     "titleLang": {

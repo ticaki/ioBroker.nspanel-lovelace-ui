@@ -1150,6 +1150,7 @@ export namespace NSPanel {
         | 'entity3'
         | 'setNavi'
         | 'setNaviLongPress'
+        | 'longPress'
         | 'confirm'
         | 'entity4'
         | 'popup'
@@ -1358,6 +1359,7 @@ export namespace NSPanel {
         valueList2?: number;
         setNavi?: number;
         setNaviLongPress?: number;
+        longPress?: boolean;
         confirm?: string;
         setList?: number;
         popup?: PopupEntryType;

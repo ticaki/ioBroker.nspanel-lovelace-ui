@@ -391,8 +391,8 @@ export class PageItem extends BaseTriggeredPage {
                         }
                     });
 
-                    optionalValueC[3] = value === 0 ? 'disable' : optionalValueC[3];
-                    optionalValueC[5] = value === 100 ? 'disable' : optionalValueC[5];
+                    optionalValueC[3] = value === 100 ? 'disable' : optionalValueC[3];
+                    optionalValueC[5] = value === 0 ? 'disable' : optionalValueC[5];
                     message.optionalValue = optionalValueC.join('|');
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.headline, !!value)) ?? message.displayName ?? '',
@@ -419,7 +419,7 @@ export class PageItem extends BaseTriggeredPage {
                     const optionalValue = [
                         item?.up ? 'arrow-up' : '', //up
                         item?.stop ? 'stop' : '', //stop
-                        item?.stop ? 'arrow-down' : '', //down
+                        item?.down ? 'arrow-down' : '', //down
                     ];
                     let optionalValueC =
                         Array.isArray(optionalValue) && optionalValue.every(a => typeof a === 'string')
@@ -435,8 +435,8 @@ export class PageItem extends BaseTriggeredPage {
                         }
                     });
 
-                    optionalValueC[3] = value === 0 ? 'disable' : optionalValueC[3];
-                    optionalValueC[5] = value === 100 ? 'disable' : optionalValueC[5];
+                    optionalValueC[3] = value === 100 ? 'disable' : optionalValueC[3];
+                    optionalValueC[5] = value === 0 ? 'disable' : optionalValueC[5];
                     message.optionalValue = optionalValueC.join('|');
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.headline, !!value)) ?? message.displayName ?? '',
@@ -574,17 +574,7 @@ export class PageItem extends BaseTriggeredPage {
                                 }
                             }
                         }
-                        if (entry.type === 'button' && entry.data.confirm) {
-                            if (this.confirmClick === 'unlock') {
-                                if (isCardEntitiesType(this.parent.card)) {
-                                    message.optionalValue =
-                                        (await entry.data.confirm.getString()) ?? message.optionalValue;
-                                }
-                                this.confirmClick = Date.now();
-                            } else {
-                                this.confirmClick = 'lock';
-                            }
-                        }
+
                         /*if (
                             
                             !this.parent.card.startsWith('screensaver') &&
@@ -637,6 +627,44 @@ export class PageItem extends BaseTriggeredPage {
                         const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : '';
 
                         message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
+
+                        if (entry.type === 'button' && entry.data.confirm) {
+                            if (this.confirmClick === 'unlock') {
+                                const newValue: string | { text?: string; color?: RGB | string; icon?: string } | null =
+                                    (await entry.data.confirm.getObject()) ?? (await entry.data.confirm.getString());
+                                if (newValue) {
+                                    const text = typeof newValue === 'object' ? newValue.text : newValue;
+
+                                    if (isCardEntitiesType(this.parent.card)) {
+                                        if (text) {
+                                            message.optionalValue = text;
+                                        }
+                                    } else if (isCardGridType(this.parent.card)) {
+                                        if (typeof newValue === 'string' && text) {
+                                            message.icon = Icons.GetIcon(text);
+                                        } else {
+                                            if (typeof newValue === 'object') {
+                                                if (newValue.icon) {
+                                                    message.icon = Icons.GetIcon(newValue.icon);
+                                                }
+                                                if (newValue.color) {
+                                                    let color = Color.White;
+                                                    if (Color.isRGB(newValue.color)) {
+                                                        color = newValue.color;
+                                                    } else if (Color.isHex(newValue.color)) {
+                                                        color = Color.ConvertHexToRgb(newValue.color);
+                                                    }
+                                                    message.iconColor = String(Color.rgb_dec565(color));
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                this.confirmClick = Date.now();
+                            } else {
+                                this.confirmClick = 'lock';
+                            }
+                        }
                         return tools.getPayloadRemoveTilde(
                             entry.type,
                             message.intNameEntity + additionalId,
@@ -1645,17 +1673,18 @@ export class PageItem extends BaseTriggeredPage {
                                 ? 'disable'
                                 : optionalValueC[5];
                         } else {
-                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 0)
+                            message.statusL1 = (typeof pos === 'boolean' ? false : pos === 100)
                                 ? 'disable'
                                 : optionalValueC[3];
                             message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
                                 ? 'disable'
                                 : optionalValueC[4];
-                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 100)
+                            message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 0)
                                 ? 'disable'
                                 : optionalValueC[5];
                         }
                     } else {
+                        // tilt Slider
                         message.pos2 = typeof pos === 'boolean' ? 'disable' : String(pos);
                         message.pos2text = (await tools.getEntryTextOnOff(item.text2, true)) ?? '';
                         message.pos2text = this.library.getTranslation(message.pos2text);
@@ -1954,6 +1983,12 @@ export class PageItem extends BaseTriggeredPage {
                 delete this.parent.basePanel.persistentPageItems[this.id];
             }
         }
+        for (const key of Object.keys(this.timeouts)) {
+            if (this.timeouts[key] == undefined) {
+                continue;
+            }
+            this.adapter.clearTimeout(this.timeouts[key]);
+        }
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
@@ -1978,6 +2013,13 @@ export class PageItem extends BaseTriggeredPage {
                     if (value !== null) {
                         await this.parent.basePanel.navigation.setTargetPageByName(value);
                         done = true;
+                    }
+                    if (item.longPress) {
+                        if (entry.type === 'button') {
+                            await item.longPress.setStateTrue();
+                        } else {
+                            await item.longPress.setStateFlip();
+                        }
                     }
                 }
             }
@@ -2098,9 +2140,16 @@ export class PageItem extends BaseTriggeredPage {
                         if (this.confirmClick === 'lock') {
                             this.confirmClick = 'unlock';
                             await this.parent.update();
+                            this.timeouts.confirmTimeout = this.adapter.setTimeout(() => {
+                                this.confirmClick = 'lock';
+                                void this.parent.update();
+                            }, 3000);
                             return true;
                         } else if (this.confirmClick === 'unlock' || this.confirmClick - 300 > Date.now()) {
                             return true;
+                        }
+                        if (this.timeouts.confirmTimeout) {
+                            this.adapter.clearTimeout(this.timeouts.confirmTimeout);
                         }
                         this.confirmClick = 'lock';
                         await this.parent.update();
@@ -2534,7 +2583,6 @@ export class PageItem extends BaseTriggeredPage {
                         await tools.setValueEntry(items.entity1, v);
                     }
                 }
-                break;
                 break;
             }
             /**

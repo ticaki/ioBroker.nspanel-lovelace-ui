@@ -512,14 +512,16 @@ export class ConfigManager extends BaseClass {
         }
         const names: string[] = [];
         let double = false;
-        for (const page of config.pages) {
-            if (page && page.type !== undefined) {
-                if (names.includes(page.uniqueName)) {
-                    double = true;
-                    messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
-                    this.log.error(messages[messages.length - 1]);
-                } else {
-                    names.push(page.uniqueName);
+        for (const pages of [config.subPages, config.pages]) {
+            for (const page of pages) {
+                if (page && page.type !== undefined) {
+                    if (names.includes(page.uniqueName)) {
+                        double = true;
+                        messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
+                        this.log.error(messages[messages.length - 1]);
+                    } else {
+                        names.push(page.uniqueName);
+                    }
                 }
             }
         }
@@ -1579,6 +1581,7 @@ export class ConfigManager extends BaseClass {
                     setNaviLongPress: item.targetPageLongPress
                         ? await this.getFieldAsDataItemConfig(item.targetPageLongPress)
                         : undefined,
+                    longPress: item.longPress ? await this.getFieldAsDataItemConfig(item.longPress) : undefined,
                     icon: {
                         true: {
                             value: {
@@ -2521,9 +2524,24 @@ export class ConfigManager extends BaseClass {
             );
             return undefined;
         }
-        if (item.targetPageLongPress && itemConfig?.type === 'button' && !itemConfig?.data?.setNaviLongPress) {
-            itemConfig.data = itemConfig.data || {};
-            itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+        if (item.targetPageLongPress && item.longPress) {
+            throw new Error(`You can only use targetPageLongPress or longPress in the same item!`);
+        }
+        if (item.targetPageLongPress && !itemConfig?.data?.setNaviLongPress) {
+            if (itemConfig?.type === 'button' || itemConfig?.type === 'switch') {
+                itemConfig.data = itemConfig.data || {};
+                itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+            } else {
+                throw new Error(`targetPageLongPress is only supported for button and switch items!`);
+            }
+        }
+        if (item.longPress && !itemConfig?.data?.longPress) {
+            if (itemConfig?.type === 'button' || itemConfig?.type === 'switch') {
+                itemConfig.data = itemConfig.data || {};
+                itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
+            } else {
+                throw new Error(`longPress is only supported for button and switch items!`);
+            }
         }
 
         if (item.filter != null) {
@@ -3034,6 +3052,11 @@ export class ConfigManager extends BaseClass {
                         }
                         let valueList2: any = undefined;
                         const selectExist = item.inSel_Alias && (await this.existsState(item.inSel_Alias));
+                        if (!selectExist && item.inSel_Alias) {
+                            const msg = `DP: ${page.uniqueName}.${item.id} - inSel_Alias: ${item.inSel_Alias} does not exist!`;
+                            messages.push(msg);
+                            this.log.warn(msg);
+                        }
                         if (selectExist && item.inSel_Alias) {
                             const select = await this.adapter.getForeignObjectAsync(item.inSel_Alias);
                             if (select && select.common && select.common.type === 'string') {
@@ -3151,6 +3174,20 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'button': {
+                        if (item.confirm) {
+                            if (
+                                typeof item.confirm !== 'string' &&
+                                (typeof item.confirm !== 'object' ||
+                                    !(item.confirm.text || item.confirm.icon || item.confirm.color))
+                            ) {
+                                throw new Error(`Confirm in item ${item.id} is not valid!`);
+                            }
+                            if (typeof item.confirm === 'object' && item.confirm.color) {
+                                if (typeof item.confirm.color !== 'string' && Color.isScriptRGB(item.confirm.color)) {
+                                    item.confirm.color = Color.convertScriptRGBtoRGB(item.confirm.color);
+                                }
+                            }
+                        }
                         const tempItem: NSPanel.PageItemDataItemsOptions = {
                             type: 'button',
                             role: 'button',
@@ -3182,6 +3219,7 @@ export class ConfigManager extends BaseClass {
                                     true: { type: 'const', constVal: 'press' },
                                 },
                                 setValue2: foundedStates[role].SET,
+                                confirm: item.confirm ? { type: 'const', constVal: item.confirm } : undefined,
                             },
                         };
                         itemConfig = tempItem;
@@ -3218,17 +3256,12 @@ export class ConfigManager extends BaseClass {
                                                 constVal: item.icon3 || 'window-shutter-alert',
                                             },
                                         },
-                                        scale: {
-                                            type: 'const',
-                                            constVal: globals.isIconColorScaleElement(item.colorScale)
-                                                ? item.colorScale
-                                                : {
-                                                      val_min: 0,
-                                                      val_max: 100,
-                                                  },
-                                        },
-                                        maxBri: undefined,
-                                        minBri: undefined,
+                                        scale: globals.isIconColorScaleElement(item.colorScale)
+                                            ? {
+                                                  type: 'const',
+                                                  constVal: item.colorScale,
+                                              }
+                                            : undefined,
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
@@ -3311,15 +3344,12 @@ export class ConfigManager extends BaseClass {
                                                 constVal: item.icon3 || 'window-shutter-alert',
                                             },
                                         },
-                                        scale: {
-                                            type: 'const',
-                                            constVal: globals.isIconColorScaleElement(item.colorScale) ?? {
-                                                val_min: 0,
-                                                val_max: 100,
-                                            },
-                                        },
-                                        maxBri: undefined,
-                                        minBri: undefined,
+                                        scale: globals.isIconColorScaleElement(item.colorScale)
+                                            ? {
+                                                  type: 'const',
+                                                  constVal: item.colorScale,
+                                              }
+                                            : undefined,
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
@@ -4360,6 +4390,10 @@ export class ConfigManager extends BaseClass {
                 if (item.targetPageLongPress && itemConfig?.type === 'button' && !itemConfig?.data?.setNaviLongPress) {
                     itemConfig.data = itemConfig.data || {};
                     itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
+                }
+                if (item.longPress && itemConfig?.type === 'button' && !itemConfig?.data?.longPress) {
+                    itemConfig.data = itemConfig.data || {};
+                    itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
                 }
                 if (item.enabled === false && itemConfig) {
                     if (!itemConfig.data) {

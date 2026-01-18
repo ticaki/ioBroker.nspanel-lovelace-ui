@@ -54,6 +54,7 @@ export class PageChart extends Page {
         if (!this.visibility) {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageChartMessage> = {};
         message.navigation = this.getNavigation();
         message.headline = `Error`;

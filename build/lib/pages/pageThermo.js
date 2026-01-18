@@ -109,6 +109,7 @@ class PageThermo extends import_Page.Page {
     if (!this.visibility) {
       return;
     }
+    await super.update();
     const message = {};
     message.options = ["~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~"];
     if (this.items) {

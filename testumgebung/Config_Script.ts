@@ -1521,7 +1521,7 @@ declare namespace ScriptConfig {
             xAxisDecorationId?: string;
             useValue?: boolean;
             monobutton?: boolean;
-            inSel_ChoiceState?: boolean;
+            inSel_ChoiceState?: boolean; // deprecated
             inSel_Alias?: string;
             iconArray?: string[];
             customIcons?: any[];

@@ -220,6 +220,7 @@ class PageQR extends import_Page.Page {
     if (!this.visibility) {
       return;
     }
+    await super.update();
     const message = {};
     if (this.items && this.items.card === "cardQR") {
       const items = this.items;

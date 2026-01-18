@@ -105,6 +105,7 @@ export class PageThermo extends Page {
         if (!this.visibility) {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageThermoMessage> = {};
         message.options = ['~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~'];
         if (this.items) {

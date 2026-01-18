@@ -194,6 +194,7 @@ export class PageQR extends Page {
         if (!this.visibility) {
             return;
         }
+        await super.update();
         const message: Partial<pages.PageQRMessage> = {};
 
         if (this.items && this.items.card === 'cardQR') {
