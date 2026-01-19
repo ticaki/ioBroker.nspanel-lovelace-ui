@@ -800,8 +800,8 @@ export class Controller extends Library.BaseClass {
                     channelObj.common.name = `${entry.uniqueName}`;
                     await this.library.writedp(`pageTrash.${entry.uniqueName}`, undefined, channelObj);
 
+                    const itemObj = structuredClone(genericStateObjects.panel.panels.pageTrash.page_id.pageItem);
                     for (let i = 0; i < Object.keys(result.messages).length; i++) {
-                        const itemObj = structuredClone(genericStateObjects.panel.panels.pageTrash.page_id.pageItem);
                         itemObj.common.name = `pageItem${i}`;
                         const messageData = result.messages[i];
                         await this.library.writedp(
@@ -810,16 +810,8 @@ export class Controller extends Library.BaseClass {
                             itemObj,
                         );
                     }
-                    this.log.debug(`länge der nachrichten: ${Object.keys(result.messages).length}`);
-
+                    this.log.debug(`count of messages: ${Object.keys(result.messages).length}`);
                     this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
-
-                    // Speichern der Ergebnisse (falls benötigt)
-                    /* await this.statesControler.setInternalState(
-                        `///trashMessages/${entry.uniqueName}`,
-                        JSON.stringify(result.messages),
-                        false,
-                    ); */
                 } catch (error: any) {
                     this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);
                 }

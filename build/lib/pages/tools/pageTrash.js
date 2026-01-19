@@ -192,7 +192,7 @@ const data = [
     }
   }
 ];
-async function getTrash(trashJSON = data, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
+async function getTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
   var _a;
   const items = [];
   try {

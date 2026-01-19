@@ -7,6 +7,7 @@ interface ItemObject {
     text1: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const data = [
     {
         date: 'Heute  ',
@@ -179,7 +180,7 @@ const data = [
 ];
 
 export async function getTrash(
-    trashJSON: any = data,
+    trashJSON: any,
     leftChar: number,
     rightChar: number,
     trashtype1: string = '',
