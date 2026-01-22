@@ -143,6 +143,13 @@ export class AdminConfiguration extends BaseClass {
                     };
                     break;
                 }
+                case 'cardTrash': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = dataForcardTrash(entry, this.adapter);
+                    break;
+                }
                 default: {
                     this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
                     continue;
@@ -256,4 +263,192 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
             exhaustiveCheck(R);
             return false;
     }
+}
+
+function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelaceUi): PageBase {
+    const pageItem0 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem0`;
+    const pageItem1 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem1`;
+    const pageItem2 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem2`;
+    const pageItem3 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem3`;
+    const pageItem4 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem4`;
+    const pageItem5 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem5`;
+
+    const newPage: PageBase = {
+        uniqueID: entry.uniqueName,
+        hidden: !!entry.hidden,
+        alwaysOn: entry.alwaysOn,
+        dpInit: '',
+        template: 'entities.waste-calendar',
+        config: {
+            card: 'cardSchedule',
+            data: {
+                headline: { type: 'const', constVal: entry.headline || 'Trash' },
+            },
+        },
+        pageItems: [
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'triggered',
+                                dp: pageItem0,
+                                read: 'return JSON.parse(val).icon;',
+                            },
+                            color: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).color;' },
+                        },
+                    },
+                    entity1: {
+                        value: { type: 'const', constVal: true },
+                    },
+                    text: {
+                        true: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).text;' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).text1;' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'triggered',
+                                dp: pageItem1,
+                                read: 'return JSON.parse(val).icon;',
+                            },
+                            color: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).color;' },
+                        },
+                    },
+                    entity1: {
+                        value: { type: 'const', constVal: true },
+                    },
+                    text: {
+                        true: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).text;' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).text1;' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'triggered',
+                                dp: pageItem2,
+                                read: 'return JSON.parse(val).icon;',
+                            },
+                            color: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).color;' },
+                        },
+                    },
+                    entity1: {
+                        value: { type: 'const', constVal: true },
+                    },
+                    text: {
+                        true: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).text;' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).text1;' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'triggered',
+                                dp: pageItem3,
+                                read: 'return JSON.parse(val).icon;',
+                            },
+                            color: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).color;' },
+                        },
+                    },
+                    entity1: {
+                        value: { type: 'const', constVal: true },
+                    },
+                    text: {
+                        true: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).text;' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).text1;' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'triggered',
+                                dp: pageItem4,
+                                read: 'return JSON.parse(val).icon;',
+                            },
+                            color: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).color;' },
+                        },
+                    },
+                    entity1: {
+                        value: { type: 'const', constVal: true },
+                    },
+                    text: {
+                        true: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).text;' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).text1;' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'triggered',
+                                dp: pageItem5,
+                                read: 'return JSON.parse(val).icon;',
+                            },
+                            color: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).color;' },
+                        },
+                    },
+                    entity1: {
+                        value: { type: 'const', constVal: true },
+                    },
+                    text: {
+                        true: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).text;' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).text1;' },
+                        false: undefined,
+                    },
+                },
+            },
+        ],
+    };
+    return newPage;
 }

@@ -236,7 +236,7 @@ async function getTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashty
       }
       if (trashIndex !== -1) {
         items.push({
-          icon: "trash_can",
+          icon: "trash-can",
           color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
           text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : eventName,
           text1: eventDatum

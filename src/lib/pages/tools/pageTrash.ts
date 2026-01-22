@@ -263,7 +263,7 @@ export async function getTrash(
 
             if (trashIndex !== -1) {
                 items.push({
-                    icon: 'trash_can',
+                    icon: 'trash-can',
                     color: Color.ConvertHexToRgb(iconColor[trashIndex]),
                     text:
                         customTrash[trashIndex] && customTrash[trashIndex] !== '' ? customTrash[trashIndex] : eventName,
