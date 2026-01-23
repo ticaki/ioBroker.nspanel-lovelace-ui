@@ -774,7 +774,7 @@ export class Controller extends Library.BaseClass {
                     }
 
                     const daten = await this.adapter.getForeignStateAsync(state);
-                    if (!daten || !daten.val) {
+                    if (!daten || !daten.val || daten.val === null || daten.val === '') {
                         this.log.warn(`Trash state ${state} has no data .`);
                         return;
                     }

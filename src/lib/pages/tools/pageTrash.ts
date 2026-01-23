@@ -270,9 +270,8 @@ export async function getTrash(
                     text1: eventDatum,
                 });
 
-                entryCount++;
-
                 // Maximal 6 Einträge
+                entryCount++;
                 if (entryCount >= 6) {
                     break;
                 }
