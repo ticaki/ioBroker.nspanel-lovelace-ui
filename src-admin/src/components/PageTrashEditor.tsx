@@ -111,11 +111,12 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                                 InputProps={{
                                     sx: { backgroundColor: 'transparent', px: 1 },
                                 }}
+                                sx={{ mb: 2 }}
                             />
                         ))}
                     </Box>
+                    {/* 6 Textfelder Trashname*/}
                     <Box sx={{ mb: 2 }}>
-                        {/* 6 Textfelder Trashname*/}
                         {[1, 2, 3, 4, 5, 6].map(num => (
                             <TextField
                                 key={num}
@@ -135,9 +136,8 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                             />
                         ))}
                     </Box>
-
+                    {/* 6 Textfelder Customname*/}
                     <Box sx={{ mb: 2 }}>
-                        {/* 6 Textfelder Customname*/}
                         {[1, 2, 3, 4, 5, 6].map(num => (
                             <TextField
                                 key={num}
