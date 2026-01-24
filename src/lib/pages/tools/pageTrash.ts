@@ -181,8 +181,6 @@ const data = [
 
 export async function getTrash(
     trashJSON: any,
-    leftChar: number,
-    rightChar: number,
     trashtype1: string = '',
     trashtype2: string = '',
     trashtype3: string = '',
@@ -217,7 +215,7 @@ export async function getTrash(
 
         // Prüfen ob trashData ein Array ist
         if (!Array.isArray(trashData)) {
-            return { messages: items, error: new Error('trashData is not an array') };
+            return { messages: items, error: new Error('trashData is not an  array') };
         }
 
         const currentDate = new Date();
@@ -225,19 +223,12 @@ export async function getTrash(
 
         // Direkt über das Array iterieren, nicht über Object.entries()
         for (const trashObject of trashData) {
-            let eventName = trashObject.event;
+            const eventName = trashObject.event;
 
             // Prüfen ob event existiert
             if (!eventName) {
                 continue;
             }
-
-            // String-Verarbeitung mit Sicherheitsprüfung
-            if (leftChar > 0 || rightChar > 0) {
-                const endPos = rightChar > 0 ? eventName.length - rightChar : eventName.length;
-                eventName = eventName.substring(leftChar, endPos);
-            }
-            eventName = eventName.trim();
 
             const eventDatum = trashObject.date?.trim() || '';
             const eventStartdatum = new Date(trashObject._date);
@@ -255,7 +246,7 @@ export async function getTrash(
             // Finde passenden Trash-Type (case-insensitive und nur nicht-leere)
             let trashIndex = -1;
             for (let i = 0; i < trashTypes.length; i++) {
-                if (trashTypes[i] && trashTypes[i].trim() !== '' && trashTypes[i].includes(eventName)) {
+                if (trashTypes[i] && trashTypes[i].trim() !== '' && eventName.includes(trashTypes[i])) {
                     trashIndex = i;
                     break;
                 }
@@ -266,7 +257,9 @@ export async function getTrash(
                     icon: 'trash-can',
                     color: Color.ConvertHexToRgb(iconColor[trashIndex]),
                     text:
-                        customTrash[trashIndex] && customTrash[trashIndex] !== '' ? customTrash[trashIndex] : eventName,
+                        customTrash[trashIndex] && customTrash[trashIndex] !== ''
+                            ? customTrash[trashIndex]
+                            : trashTypes[trashIndex],
                     text1: eventDatum,
                 });
 

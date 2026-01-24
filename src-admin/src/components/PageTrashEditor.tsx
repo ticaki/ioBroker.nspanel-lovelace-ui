@@ -94,39 +94,8 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                     />
                 </Box>
 
-                {/* Zahlenfelder: Links und Rechts */}
                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                    <TextField
-                        variant="standard"
-                        type="number"
-                        label={this.getText('trash_left_number')}
-                        value={entry.leftNumber ?? 0}
-                        onChange={e => {
-                            const value = parseFloat(e.target.value) || 0;
-                            this.handleFieldChange('leftNumber', value);
-                        }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1 },
-                        }}
-                        sx={{ flex: 1 }}
-                    />
-                    <TextField
-                        variant="standard"
-                        type="number"
-                        label={this.getText('trash_right_number')}
-                        value={entry.rightNumber ?? 0}
-                        onChange={e => {
-                            const value = parseFloat(e.target.value) || 0;
-                            this.handleFieldChange('rightNumber', value);
-                        }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1 },
-                        }}
-                        sx={{ flex: 1 }}
-                    />
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    {/* 6 Farbwahlfelder für Icons */}
                     <Box sx={{ mb: 2 }}>
                         {[1, 2, 3, 4, 5, 6].map(num => (
                             <TextField
@@ -134,7 +103,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                                 fullWidth
                                 variant="standard"
                                 type="color"
-                                label={this.getText(`trash_icon_color_${num}`)}
+                                label={this.getText(`${num}`)}
                                 value={entry[`iconColor${num}` as keyof TrashEntry] ?? '#FFFFFF'}
                                 onChange={e => {
                                     this.handleFieldChange(`iconColor${num}` as keyof TrashEntry, e.target.value);
@@ -176,7 +145,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                                 variant="standard"
                                 type="text"
                                 autoComplete="off"
-                                label={this.getText(`custom_text_field_${num}`)}
+                                label={this.getText(`trash_custom_text_field_${num}`)}
                                 value={entry[`customTrash${num}` as keyof TrashEntry] ?? ''}
                                 onChange={e => {
                                     this.handleFieldChange(`customTrash${num}` as keyof TrashEntry, e.target.value);

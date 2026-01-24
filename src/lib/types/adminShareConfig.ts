@@ -145,8 +145,6 @@ export type TrashEntry = {
     uniqueName: string;
     headline: string;
     trashState: string; // Object ID Selector
-    leftNumber: number; // Zahl links
-    rightNumber: number; // Zahl rechts
     textTrash1: string; // 6 Textfelder
     textTrash2: string;
     textTrash3: string;

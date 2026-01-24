@@ -216,8 +216,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 uniqueName: name,
                 headline: name,
                 trashState: '',
-                leftNumber: 0,
-                rightNumber: 0,
                 textTrash1: '',
                 textTrash2: '',
                 textTrash3: '',

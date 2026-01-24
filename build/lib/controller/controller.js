@@ -655,8 +655,6 @@ class Controller extends Library.BaseClass {
       for (const entry of trashEntries) {
         try {
           const state = entry.trashState;
-          const left = entry.leftNumber || 0;
-          const right = entry.rightNumber || 0;
           const trashTypes = [
             entry.textTrash1 || "",
             entry.textTrash2 || "",
@@ -691,7 +689,7 @@ class Controller extends Library.BaseClass {
             return;
           }
           this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
-          const result = await (0, import_pageTrash.getTrash)(daten.val, left, right, ...trashTypes, ...customTrash, ...iconColors);
+          const result = await (0, import_pageTrash.getTrash)(daten.val, ...trashTypes, ...customTrash, ...iconColors);
           if (result.error) {
             this.log.error(
               `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`

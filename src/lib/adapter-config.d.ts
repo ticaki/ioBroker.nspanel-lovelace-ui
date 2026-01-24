@@ -276,8 +276,6 @@ declare global {
                 card: 'cardTrash';
                 headline: string;
                 trashState: string;
-                leftNumber: 0;
-                rightNumber: 0;
                 textTrash1: string;
                 textTrash2: string;
                 textTrash3: string;

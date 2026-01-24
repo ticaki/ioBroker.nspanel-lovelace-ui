@@ -192,7 +192,7 @@ const data = [
     }
   }
 ];
-async function getTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
+async function getTrash(trashJSON, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
   var _a;
   const items = [];
   try {
@@ -205,20 +205,15 @@ async function getTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashty
       return { messages: items, error: new Error("trashJSON must be a string or array ") };
     }
     if (!Array.isArray(trashData)) {
-      return { messages: items, error: new Error("trashData is not an array") };
+      return { messages: items, error: new Error("trashData is not an  array") };
     }
     const currentDate = /* @__PURE__ */ new Date();
     let entryCount = 0;
     for (const trashObject of trashData) {
-      let eventName = trashObject.event;
+      const eventName = trashObject.event;
       if (!eventName) {
         continue;
       }
-      if (leftChar > 0 || rightChar > 0) {
-        const endPos = rightChar > 0 ? eventName.length - rightChar : eventName.length;
-        eventName = eventName.substring(leftChar, endPos);
-      }
-      eventName = eventName.trim();
       const eventDatum = ((_a = trashObject.date) == null ? void 0 : _a.trim()) || "";
       const eventStartdatum = new Date(trashObject._date);
       if (currentDate.getTime() > eventStartdatum.getTime()) {
@@ -229,7 +224,7 @@ async function getTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashty
       const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
       let trashIndex = -1;
       for (let i = 0; i < trashTypes.length; i++) {
-        if (trashTypes[i] && trashTypes[i].trim() !== "" && trashTypes[i].includes(eventName)) {
+        if (trashTypes[i] && trashTypes[i].trim() !== "" && eventName.includes(trashTypes[i])) {
           trashIndex = i;
           break;
         }
@@ -238,7 +233,7 @@ async function getTrash(trashJSON, leftChar, rightChar, trashtype1 = "", trashty
         items.push({
           icon: "trash-can",
           color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
-          text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : eventName,
+          text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
           text1: eventDatum
         });
         entryCount++;
