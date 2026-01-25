@@ -969,6 +969,21 @@ class Color extends ColorBase {
     }
     return { r, g, b };
   }
+  /**
+   * Adjusts the interpolation factor to anchor the gradient into one half
+   * of the quadri-gradient scale before delegating to `quadriGradColorScale`.
+   *
+   * Depending on the `anchorHigh` option, the factor is remapped either into
+   * the lower half (0 → 0.5) or the upper half (0.5 → 1) of the gradient range.
+   * This is useful for emphasizing either the low or high end of the color scale
+   * while keeping the input factor normalized (0..1).
+   *
+   * @param _from - Base RGB color passed through to the underlying gradient function.
+   * @param _to - Target RGB color passed through to the underlying gradient function.
+   * @param factor - Normalized value (0..1) indicating the position within the anchored half.
+   * @param _options - Optional configuration.
+   * @returns An RGB color corresponding to the anchored position in the quadri-gradient.
+   */
   static quadriGradAnchor(_from, _to, factor, _options) {
     factor = (_options == null ? void 0 : _options.anchorHigh) ? (1 - factor) / 2 + 0.5 : factor / 2;
     return Color.quadriGradColorScale(_from, _to, factor, { ..._options });

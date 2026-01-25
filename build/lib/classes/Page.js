@@ -510,7 +510,7 @@ class Page extends import_baseClassPage.BaseClassPage {
     let item;
     if (isNaN(Number(id)) && typeof id === "string") {
       this.log.error(
-        `onPopupRequest: id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`
+        `onPopupRequest: PageItem id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`
       );
     } else {
       const i = typeof id === "number" ? id : parseInt(id);
@@ -534,14 +534,14 @@ class Page extends import_baseClassPage.BaseClassPage {
   async onButtonPress3(id, _popup, action, value, _event = null) {
     if (!this.pageItems || id == "") {
       this.log.debug(
-        `onPopupRequest: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`
+        `onButtonPress3: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`
       );
       return false;
     }
     let item;
     if (isNaN(Number(id)) && typeof id === "string") {
       this.log.error(
-        `onPopupRequest: id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`
+        `onButtonPress3: PageItem id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`
       );
     } else {
       const i = typeof id === "number" ? id : parseInt(id);
