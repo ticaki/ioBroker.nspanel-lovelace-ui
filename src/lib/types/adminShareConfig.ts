@@ -144,7 +144,9 @@ export type TrashEntry = {
     card: 'cardTrash';
     uniqueName: string;
     headline: string;
+    trashImport: boolean; // true = Import from iCal Adapter, false = Import from .ics file
     trashState: string; // Object ID Selector
+    trashFile: string; // textfield for file name incl. path
     textTrash1: string; // 6 Textfelder
     textTrash2: string;
     textTrash3: string;

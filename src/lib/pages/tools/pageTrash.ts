@@ -230,13 +230,19 @@ export async function getTrash(
                 continue;
             }
 
-            const eventDatum = trashObject.date?.trim() || '';
+            //const eventDatum = trashObject.date?.trim() || '';
             const eventStartdatum = new Date(trashObject._date);
 
             // Nur zukünftige Events
             if (currentDate.getTime() > eventStartdatum.getTime()) {
                 continue;
             }
+
+            // Datum im Format dd.mm.yy formatieren
+            const day = String(eventStartdatum.getDate()).padStart(2, '0');
+            const month = String(eventStartdatum.getMonth() + 1).padStart(2, '0');
+            const year = String(eventStartdatum.getFullYear()).slice(-2);
+            const eventDatumFormatted = `${day}.${month}.${year}`;
 
             // Prüfe ob Event zu einem der Trash-Types gehört
             const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
@@ -260,7 +266,7 @@ export async function getTrash(
                         customTrash[trashIndex] && customTrash[trashIndex] !== ''
                             ? customTrash[trashIndex]
                             : trashTypes[trashIndex],
-                    text1: eventDatum,
+                    text1: eventDatumFormatted,
                 });
 
                 // Maximal 6 Einträge

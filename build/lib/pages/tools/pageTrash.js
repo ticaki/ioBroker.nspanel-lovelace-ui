@@ -193,7 +193,6 @@ const data = [
   }
 ];
 async function getTrash(trashJSON, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
-  var _a;
   const items = [];
   try {
     let trashData;
@@ -214,11 +213,14 @@ async function getTrash(trashJSON, trashtype1 = "", trashtype2 = "", trashtype3 
       if (!eventName) {
         continue;
       }
-      const eventDatum = ((_a = trashObject.date) == null ? void 0 : _a.trim()) || "";
       const eventStartdatum = new Date(trashObject._date);
       if (currentDate.getTime() > eventStartdatum.getTime()) {
         continue;
       }
+      const day = String(eventStartdatum.getDate()).padStart(2, "0");
+      const month = String(eventStartdatum.getMonth() + 1).padStart(2, "0");
+      const year = String(eventStartdatum.getFullYear()).slice(-2);
+      const eventDatumFormatted = `${day}.${month}.${year}`;
       const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
       const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
       const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
@@ -234,7 +236,7 @@ async function getTrash(trashJSON, trashtype1 = "", trashtype2 = "", trashtype3 
           icon: "trash-can",
           color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
           text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
-          text1: eventDatum
+          text1: eventDatumFormatted
         });
         entryCount++;
         if (entryCount >= 6) {

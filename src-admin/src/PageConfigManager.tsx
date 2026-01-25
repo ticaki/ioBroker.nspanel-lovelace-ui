@@ -215,7 +215,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 card: 'cardTrash',
                 uniqueName: name,
                 headline: name,
+                trashImport: true, // Default: Import from iCal Adapter
                 trashState: '',
+                trashFile: '',
                 textTrash1: '',
                 textTrash2: '',
                 textTrash3: '',

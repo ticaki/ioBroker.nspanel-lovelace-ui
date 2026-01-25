@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, TextField } from '@mui/material';
+import { Box, TextField, FormControl, FormLabel, FormControlLabel, RadioGroup, Radio } from '@mui/material';
 import { EntitySelector } from './EntitySelector';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
 
@@ -76,23 +76,71 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                     sx={{ mb: 2 }}
                 />
 
-                {/* Object ID Selector */}
+                {/* Option to choose between import via .ics file or ioBroker state */}
                 <Box sx={{ mb: 2 }}>
-                    <EntitySelector
-                        label={this.getText('trash_state')}
-                        value={entry.trashState ?? ''}
-                        onChange={(v: string) => {
-                            this.handleFieldChange('trashState', v);
-                        }}
-                        socket={oContext.socket}
-                        theme={theme}
-                        themeType={theme?.palette?.mode || 'light'}
-                        dialogName="selectTrashState"
-                        filterFunc={(obj: ioBroker.Object) => {
-                            return !!(obj && obj.type === 'state');
-                        }}
-                    />
+                    <FormControl component="fieldset">
+                        <FormLabel component="legend">{this.getText('trash_import_type')}</FormLabel>
+                        <RadioGroup
+                            row
+                            value={entry.trashImport}
+                            onChange={e => {
+                                const value = e.target.value === 'true';
+                                this.handleFieldChange('trashImport', value);
+                            }}
+                        >
+                            <FormControlLabel
+                                value={true}
+                                control={<Radio />}
+                                label={this.getText('trash_import_state')}
+                            />
+                            <FormControlLabel
+                                value={false}
+                                control={<Radio />}
+                                label={this.getText('trash_import_ics_file')}
+                            />
+                        </RadioGroup>
+                    </FormControl>
                 </Box>
+
+                {/* Object ID Selector */}
+                {entry.trashImport && (
+                    <Box sx={{ mb: 2 }}>
+                        <EntitySelector
+                            label={this.getText('trash_state')}
+                            value={entry.trashState ?? ''}
+                            onChange={(v: string) => {
+                                this.handleFieldChange('trashState', v);
+                            }}
+                            socket={oContext.socket}
+                            theme={theme}
+                            themeType={theme?.palette?.mode || 'light'}
+                            dialogName="selectTrashState"
+                            filterFunc={(obj: ioBroker.Object) => {
+                                return !!(obj && obj.type === 'state');
+                            }}
+                        />
+                    </Box>
+                )}
+
+                {/* Textfield for .ics file incl. path */}
+                {!entry.trashImport && (
+                    <Box sx={{ mb: 2 }}>
+                        <TextField
+                            fullWidth
+                            variant="standard"
+                            type="text"
+                            autoComplete="off"
+                            label={this.getText('trash_ics_file_path')}
+                            value={entry.trashFile ?? ''}
+                            onChange={e => {
+                                this.handleFieldChange('trashFile', e.target.value);
+                            }}
+                            InputProps={{
+                                sx: { backgroundColor: 'transparent', px: 1 },
+                            }}
+                        />
+                    </Box>
+                )}
 
                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                     {/* 6 Farbwahlfelder für Icons */}
