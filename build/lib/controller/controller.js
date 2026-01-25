@@ -150,6 +150,7 @@ class Controller extends Library.BaseClass {
       return;
     }
     this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
+    await this.getTrashDaten();
   };
   getCurrentTime = async () => {
     return new Promise((resolve) => resolve(Date.now()));
