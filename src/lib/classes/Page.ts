@@ -554,7 +554,7 @@ export class Page extends BaseClassPage {
         let item: PageItem | undefined;
         if (isNaN(Number(id)) && typeof id === 'string') {
             this.log.error(
-                `onPopupRequest: id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`,
+                `onPopupRequest: PageItem id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`,
             );
         } else {
             const i = typeof id === 'number' ? id : parseInt(id);
@@ -586,14 +586,14 @@ export class Page extends BaseClassPage {
     ): Promise<boolean> {
         if (!this.pageItems || id == '') {
             this.log.debug(
-                `onPopupRequest: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`,
+                `onButtonPress3: No pageItems or id this is only a warning if u used a pageitem except: 'arrow': ${id}`,
             );
             return false;
         }
         let item: PageItem | undefined;
         if (isNaN(Number(id)) && typeof id === 'string') {
             this.log.error(
-                `onPopupRequest: id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`,
+                `onButtonPress3: PageItem id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`,
             );
         } else {
             const i = typeof id === 'number' ? id : parseInt(id);
