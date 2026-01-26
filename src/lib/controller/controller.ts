@@ -10,7 +10,7 @@ import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
 import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
-import { getTrash } from '../pages/tools/pageTrash';
+import { getTrashDataFromFile, getTrashDataFromState } from '../pages/tools/pageTrash';
 
 /**
  * Controller Class
@@ -741,7 +741,7 @@ export class Controller extends Library.BaseClass {
 
             for (const entry of trashEntries) {
                 try {
-                    const state = entry.trashState;
+                    const state = entry.trashState || '';
                     const trashTypes = [
                         entry.textTrash1 || '',
                         entry.textTrash2 || '',
@@ -767,21 +767,29 @@ export class Controller extends Library.BaseClass {
                         entry.iconColor6 || '',
                     ];
 
-                    if (!state) {
-                        this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
-                        return;
+                    let result: any;
+                    if (entry.trashImport) {
+                        if (!state) {
+                            this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
+                            return;
+                        }
+
+                        const daten = await this.adapter.getForeignStateAsync(state);
+                        if (!daten || !daten.val || daten.val === null || daten.val === '') {
+                            this.log.warn(`Trash state ${state} has no data .`);
+                            return;
+                        }
+
+                        this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
+                        result = await getTrashDataFromState(daten.val, ...trashTypes, ...customTrash, ...iconColors);
+                    } else {
+                        result = await getTrashDataFromFile(
+                            entry.trashFile || '',
+                            ...trashTypes,
+                            ...customTrash,
+                            ...iconColors,
+                        );
                     }
-
-                    const daten = await this.adapter.getForeignStateAsync(state);
-                    if (!daten || !daten.val || daten.val === null || daten.val === '') {
-                        this.log.warn(`Trash state ${state} has no data .`);
-                        return;
-                    }
-
-                    this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
-
-                    const result = await getTrash(daten.val, ...trashTypes, ...customTrash, ...iconColors);
-
                     if (result.error) {
                         this.log.error(
                             `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`,
@@ -809,7 +817,7 @@ export class Controller extends Library.BaseClass {
                             itemObj,
                         );
                     }
-                    this.log.debug(`count of messages: ${Object.keys(result.messages).length}`);
+                    this.log.debug(`count of trash messages: ${Object.keys(result.messages).length}`);
                     this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
                 } catch (error: any) {
                     this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);

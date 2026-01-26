@@ -655,7 +655,7 @@ class Controller extends Library.BaseClass {
       this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
       for (const entry of trashEntries) {
         try {
-          const state = entry.trashState;
+          const state = entry.trashState || "";
           const trashTypes = [
             entry.textTrash1 || "",
             entry.textTrash2 || "",
@@ -680,17 +680,27 @@ class Controller extends Library.BaseClass {
             entry.iconColor5 || "",
             entry.iconColor6 || ""
           ];
-          if (!state) {
-            this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
-            return;
+          let result;
+          if (entry.trashImport) {
+            if (!state) {
+              this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
+              return;
+            }
+            const daten = await this.adapter.getForeignStateAsync(state);
+            if (!daten || !daten.val || daten.val === null || daten.val === "") {
+              this.log.warn(`Trash state ${state} has no data .`);
+              return;
+            }
+            this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
+            result = await (0, import_pageTrash.getTrashDataFromState)(daten.val, ...trashTypes, ...customTrash, ...iconColors);
+          } else {
+            result = await (0, import_pageTrash.getTrashDataFromFile)(
+              entry.trashFile || "",
+              ...trashTypes,
+              ...customTrash,
+              ...iconColors
+            );
           }
-          const daten = await this.adapter.getForeignStateAsync(state);
-          if (!daten || !daten.val || daten.val === null || daten.val === "") {
-            this.log.warn(`Trash state ${state} has no data .`);
-            return;
-          }
-          this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
-          const result = await (0, import_pageTrash.getTrash)(daten.val, ...trashTypes, ...customTrash, ...iconColors);
           if (result.error) {
             this.log.error(
               `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`
@@ -715,7 +725,7 @@ class Controller extends Library.BaseClass {
               itemObj
             );
           }
-          this.log.debug(`count of messages: ${Object.keys(result.messages).length}`);
+          this.log.debug(`count of trash messages: ${Object.keys(result.messages).length}`);
           this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
         } catch (error) {
           this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);
