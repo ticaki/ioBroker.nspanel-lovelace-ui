@@ -351,6 +351,7 @@
     "trash_custom_text_field_4": "eigene Bezeichnung 4",
     "trash_custom_text_field_5": "eigene Bezeichnung 5",
     "trash_custom_text_field_6": "eigene Bezeichnung 6",
+    "trash_ics_file_path": ".ics-Datei inkl. Pfad",
     "trash_import_ics_file": "Import über .ics-Datei",
     "trash_import_state": "Import über iCal Adapter State",
     "trash_import_type": "Importtyp",
