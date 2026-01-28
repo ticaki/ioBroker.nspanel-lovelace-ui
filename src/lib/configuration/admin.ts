@@ -293,22 +293,22 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                     icon: {
                         true: {
                             value: {
-                                type: 'triggered',
+                                type: 'state',
                                 dp: pageItem0,
                                 read: 'return JSON.parse(val).icon;',
                             },
-                            color: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).color;' },
+                            color: { type: 'state', dp: pageItem0, read: 'return JSON.parse(val).color;' },
                         },
                     },
                     entity1: {
                         value: { type: 'const', constVal: true },
                     },
                     text: {
-                        true: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).text;' },
+                        true: { type: 'state', dp: pageItem0, read: 'return JSON.parse(val).text;' },
                         false: undefined,
                     },
                     text1: {
-                        true: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).text1;' },
+                        true: { type: 'state', dp: pageItem0, read: 'return JSON.parse(val).text1;' },
                         false: undefined,
                     },
                 },
@@ -320,22 +320,22 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                     icon: {
                         true: {
                             value: {
-                                type: 'triggered',
+                                type: 'state',
                                 dp: pageItem1,
                                 read: 'return JSON.parse(val).icon;',
                             },
-                            color: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).color;' },
+                            color: { type: 'state', dp: pageItem1, read: 'return JSON.parse(val).color;' },
                         },
                     },
                     entity1: {
                         value: { type: 'const', constVal: true },
                     },
                     text: {
-                        true: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).text;' },
+                        true: { type: 'state', dp: pageItem1, read: 'return JSON.parse(val).text;' },
                         false: undefined,
                     },
                     text1: {
-                        true: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).text1;' },
+                        true: { type: 'state', dp: pageItem1, read: 'return JSON.parse(val).text1;' },
                         false: undefined,
                     },
                 },
@@ -347,22 +347,22 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                     icon: {
                         true: {
                             value: {
-                                type: 'triggered',
+                                type: 'state',
                                 dp: pageItem2,
                                 read: 'return JSON.parse(val).icon;',
                             },
-                            color: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).color;' },
+                            color: { type: 'state', dp: pageItem2, read: 'return JSON.parse(val).color;' },
                         },
                     },
                     entity1: {
                         value: { type: 'const', constVal: true },
                     },
                     text: {
-                        true: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).text;' },
+                        true: { type: 'state', dp: pageItem2, read: 'return JSON.parse(val).text;' },
                         false: undefined,
                     },
                     text1: {
-                        true: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).text1;' },
+                        true: { type: 'state', dp: pageItem2, read: 'return JSON.parse(val).text1;' },
                         false: undefined,
                     },
                 },
@@ -374,22 +374,22 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                     icon: {
                         true: {
                             value: {
-                                type: 'triggered',
+                                type: 'state',
                                 dp: pageItem3,
                                 read: 'return JSON.parse(val).icon;',
                             },
-                            color: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).color;' },
+                            color: { type: 'state', dp: pageItem3, read: 'return JSON.parse(val).color;' },
                         },
                     },
                     entity1: {
                         value: { type: 'const', constVal: true },
                     },
                     text: {
-                        true: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).text;' },
+                        true: { type: 'state', dp: pageItem3, read: 'return JSON.parse(val).text;' },
                         false: undefined,
                     },
                     text1: {
-                        true: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).text1;' },
+                        true: { type: 'state', dp: pageItem3, read: 'return JSON.parse(val).text1;' },
                         false: undefined,
                     },
                 },
@@ -401,22 +401,22 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                     icon: {
                         true: {
                             value: {
-                                type: 'triggered',
+                                type: 'state',
                                 dp: pageItem4,
                                 read: 'return JSON.parse(val).icon;',
                             },
-                            color: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).color;' },
+                            color: { type: 'state', dp: pageItem4, read: 'return JSON.parse(val).color;' },
                         },
                     },
                     entity1: {
                         value: { type: 'const', constVal: true },
                     },
                     text: {
-                        true: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).text;' },
+                        true: { type: 'state', dp: pageItem4, read: 'return JSON.parse(val).text;' },
                         false: undefined,
                     },
                     text1: {
-                        true: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).text1;' },
+                        true: { type: 'state', dp: pageItem4, read: 'return JSON.parse(val).text1;' },
                         false: undefined,
                     },
                 },
@@ -428,22 +428,22 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                     icon: {
                         true: {
                             value: {
-                                type: 'triggered',
+                                type: 'state',
                                 dp: pageItem5,
                                 read: 'return JSON.parse(val).icon;',
                             },
-                            color: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).color;' },
+                            color: { type: 'state', dp: pageItem5, read: 'return JSON.parse(val).color;' },
                         },
                     },
                     entity1: {
                         value: { type: 'const', constVal: true },
                     },
                     text: {
-                        true: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).text;' },
+                        true: { type: 'state', dp: pageItem5, read: 'return JSON.parse(val).text;' },
                         false: undefined,
                     },
                     text1: {
-                        true: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).text1;' },
+                        true: { type: 'state', dp: pageItem5, read: 'return JSON.parse(val).text1;' },
                         false: undefined,
                     },
                 },
