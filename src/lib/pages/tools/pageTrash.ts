@@ -7,6 +7,7 @@ interface ItemObject {
     color: { r: number; g: number; b: number };
     text: string;
     text1: string;
+    text2?: string;
 }
 
 export async function getTrashDataFromState(
@@ -62,7 +63,7 @@ export async function getTrashDataFromState(
                 continue;
             }
 
-            //const eventDatum = trashObject.date?.trim() || '';
+            const eventDatum = trashObject.date?.trim() || '';
             const eventStartdatum = new Date(trashObject._date);
 
             // Nur zukünftige Events
@@ -93,7 +94,8 @@ export async function getTrashDataFromState(
                         customTrash[trashIndex] && customTrash[trashIndex] !== ''
                             ? customTrash[trashIndex]
                             : trashTypes[trashIndex],
-                    text1: eventDatumFormatted,
+                    text1: eventDatum,
+                    text2: eventDatumFormatted,
                 });
 
                 // Maximal 6 Einträge
@@ -199,7 +201,12 @@ export async function getTrashDataFromFile(
                             customTrash[trashIndex] && customTrash[trashIndex] !== ''
                                 ? customTrash[trashIndex]
                                 : trashTypes[trashIndex],
-                        text1: eventDatumFormatted,
+                        text1: eventStartdatum.toLocaleString('de-DE', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                        }),
+                        text2: eventDatumFormatted,
                     });
 
                     entryCount++;

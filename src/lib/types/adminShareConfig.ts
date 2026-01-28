@@ -144,6 +144,7 @@ export type TrashEntry = {
     card: 'cardTrash';
     uniqueName: string;
     headline: string;
+    countItems: number; // Anzahl der anzuzeigenden Müllarten
     trashImport: boolean; // true = Import from iCal Adapter, false = Import from .ics file
     trashState: string; // Object ID Selector
     trashFile: string; // textfield for file name incl. path

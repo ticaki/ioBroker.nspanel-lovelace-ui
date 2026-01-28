@@ -215,6 +215,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 card: 'cardTrash',
                 uniqueName: name,
                 headline: name,
+                countItems: 4, // Default: 4 Müllarten
                 trashImport: true, // Default: Import from iCal Adapter
                 trashState: '',
                 trashFile: '',
@@ -230,12 +231,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 customTrash4: '',
                 customTrash5: '',
                 customTrash6: '',
-                iconColor1: '',
-                iconColor2: '',
-                iconColor3: '',
-                iconColor4: '',
-                iconColor5: '',
-                iconColor6: '',
+                iconColor1: '#d2d2d2',
+                iconColor2: '#d2d2d2',
+                iconColor3: '#d2d2d2',
+                iconColor4: '#d2d2d2',
+                iconColor5: '#d2d2d2',
+                iconColor6: '#d2d2d2',
             };
         } else {
             return; // Unbekannter Typ

@@ -36,6 +36,7 @@ var import_Color = require("../../const/Color");
 var fs = __toESM(require("node:fs"));
 var import_node_ical = __toESM(require("node-ical"));
 async function getTrashDataFromState(trashJSON, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
+  var _a;
   const items = [];
   const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
   const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
@@ -59,6 +60,7 @@ async function getTrashDataFromState(trashJSON, trashtype1 = "", trashtype2 = ""
       if (!eventName || eventName.trim() === "") {
         continue;
       }
+      const eventDatum = ((_a = trashObject.date) == null ? void 0 : _a.trim()) || "";
       const eventStartdatum = new Date(trashObject._date);
       if (currentDate.getTime() > eventStartdatum.getTime()) {
         continue;
@@ -79,7 +81,8 @@ async function getTrashDataFromState(trashJSON, trashtype1 = "", trashtype2 = ""
           icon: "trash-can",
           color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
           text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
-          text1: eventDatumFormatted
+          text1: eventDatum,
+          text2: eventDatumFormatted
         });
         entryCount++;
         if (entryCount >= 6) {
@@ -139,7 +142,12 @@ async function getTrashDataFromFile(trashFile = "", trashtype1 = "", trashtype2 
             icon: "trash-can",
             color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
             text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
-            text1: eventDatumFormatted
+            text1: eventStartdatum.toLocaleString("de-DE", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit"
+            }),
+            text2: eventDatumFormatted
           });
           entryCount++;
           if (entryCount >= 6) {
