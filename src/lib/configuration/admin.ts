@@ -266,189 +266,93 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
 }
 
 function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelaceUi): PageBase {
-    const pageItem0 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem0`;
-    const pageItem1 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem1`;
-    const pageItem2 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem2`;
-    const pageItem3 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem3`;
-    const pageItem4 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem4`;
-    const pageItem5 = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem5`;
+    let text = 'return JSON.parse(val).text2;';
+    let newPage: PageBase;
 
-    const newPage: PageBase = {
-        uniqueID: entry.uniqueName,
-        hidden: !!entry.hidden,
-        alwaysOn: entry.alwaysOn,
-        dpInit: '',
-        template: 'entities.waste-calendar',
-        config: {
-            card: 'cardSchedule',
+    if (entry.countItems < 6) {
+        text = `return JSON.parse(val).text1;`;
+    }
+
+    const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
+        const pageItemDp = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem${i}`;
+        return {
+            id: `pageItem${i}`,
+            role: 'text.list' as const,
+            type: 'text' as const,
             data: {
-                headline: { type: 'const', constVal: entry.headline || 'Trash' },
-            },
-        },
-        pageItems: [
-            {
-                role: 'text.list',
-                type: 'text',
-                data: {
-                    icon: {
-                        true: {
-                            value: {
-                                type: 'triggered',
-                                dp: pageItem0,
-                                read: 'return JSON.parse(val).icon;',
-                            },
-                            color: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).color;' },
+                icon: {
+                    true: {
+                        value: {
+                            type: 'state' as const,
+                            dp: pageItemDp,
+                            read: 'return JSON.parse(val).icon;',
+                        },
+                        color: {
+                            type: 'state' as const,
+                            dp: pageItemDp,
+                            read: 'return JSON.parse(val).color;',
                         },
                     },
-                    entity1: {
-                        value: { type: 'const', constVal: true },
+                },
+                entity1: {
+                    value: { type: 'const' as const, constVal: true },
+                },
+                text: {
+                    true: {
+                        type: 'state' as const,
+                        dp: pageItemDp,
+                        read: 'return JSON.parse(val).text;',
                     },
-                    text: {
-                        true: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).text;' },
-                        false: undefined,
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'state' as const,
+                        dp: pageItemDp,
+                        read: text,
                     },
-                    text1: {
-                        true: { type: 'triggered', dp: pageItem0, read: 'return JSON.parse(val).text1;' },
-                        false: undefined,
-                    },
+                    false: undefined,
                 },
             },
-            {
-                role: 'text.list',
-                type: 'text',
+        };
+    });
+
+    if (entry.countItems < 1 || entry.countItems > 6) {
+        entry.countItems = 6;
+    }
+    if (entry.countItems < 6) {
+        newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: '',
+            template: 'entities.waste-calendar',
+            config: {
+                card: 'cardEntities',
                 data: {
-                    icon: {
-                        true: {
-                            value: {
-                                type: 'triggered',
-                                dp: pageItem1,
-                                read: 'return JSON.parse(val).icon;',
-                            },
-                            color: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).color;' },
-                        },
-                    },
-                    entity1: {
-                        value: { type: 'const', constVal: true },
-                    },
-                    text: {
-                        true: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).text;' },
-                        false: undefined,
-                    },
-                    text1: {
-                        true: { type: 'triggered', dp: pageItem1, read: 'return JSON.parse(val).text1;' },
-                        false: undefined,
-                    },
+                    headline: { type: 'const', constVal: entry.headline || 'Trash' },
                 },
             },
-            {
-                role: 'text.list',
-                type: 'text',
+            pageItems: pageItems,
+        };
+    } else {
+        newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: '',
+            template: 'entities.waste-calendar',
+            config: {
+                card: 'cardSchedule',
                 data: {
-                    icon: {
-                        true: {
-                            value: {
-                                type: 'triggered',
-                                dp: pageItem2,
-                                read: 'return JSON.parse(val).icon;',
-                            },
-                            color: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).color;' },
-                        },
-                    },
-                    entity1: {
-                        value: { type: 'const', constVal: true },
-                    },
-                    text: {
-                        true: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).text;' },
-                        false: undefined,
-                    },
-                    text1: {
-                        true: { type: 'triggered', dp: pageItem2, read: 'return JSON.parse(val).text1;' },
-                        false: undefined,
-                    },
+                    headline: { type: 'const', constVal: entry.headline || 'Trash' },
                 },
             },
-            {
-                role: 'text.list',
-                type: 'text',
-                data: {
-                    icon: {
-                        true: {
-                            value: {
-                                type: 'triggered',
-                                dp: pageItem3,
-                                read: 'return JSON.parse(val).icon;',
-                            },
-                            color: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).color;' },
-                        },
-                    },
-                    entity1: {
-                        value: { type: 'const', constVal: true },
-                    },
-                    text: {
-                        true: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).text;' },
-                        false: undefined,
-                    },
-                    text1: {
-                        true: { type: 'triggered', dp: pageItem3, read: 'return JSON.parse(val).text1;' },
-                        false: undefined,
-                    },
-                },
-            },
-            {
-                role: 'text.list',
-                type: 'text',
-                data: {
-                    icon: {
-                        true: {
-                            value: {
-                                type: 'triggered',
-                                dp: pageItem4,
-                                read: 'return JSON.parse(val).icon;',
-                            },
-                            color: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).color;' },
-                        },
-                    },
-                    entity1: {
-                        value: { type: 'const', constVal: true },
-                    },
-                    text: {
-                        true: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).text;' },
-                        false: undefined,
-                    },
-                    text1: {
-                        true: { type: 'triggered', dp: pageItem4, read: 'return JSON.parse(val).text1;' },
-                        false: undefined,
-                    },
-                },
-            },
-            {
-                role: 'text.list',
-                type: 'text',
-                data: {
-                    icon: {
-                        true: {
-                            value: {
-                                type: 'triggered',
-                                dp: pageItem5,
-                                read: 'return JSON.parse(val).icon;',
-                            },
-                            color: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).color;' },
-                        },
-                    },
-                    entity1: {
-                        value: { type: 'const', constVal: true },
-                    },
-                    text: {
-                        true: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).text;' },
-                        false: undefined,
-                    },
-                    text1: {
-                        true: { type: 'triggered', dp: pageItem5, read: 'return JSON.parse(val).text1;' },
-                        false: undefined,
-                    },
-                },
-            },
-        ],
-    };
+            pageItems: pageItems,
+        };
+    }
+
+    // Generiere PageItems dynamisch
+
     return newPage;
 }

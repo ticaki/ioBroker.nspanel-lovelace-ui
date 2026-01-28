@@ -275,7 +275,10 @@ declare global {
             }|{
                 card: 'cardTrash';
                 headline: string;
+                countItems: number; // Anzahl der anzuzeigenden Müllarten
+                trashImport: boolean; // true = Import from iCal Adapter, false = Import from .ics file
                 trashState: string;
+                trashFile: string;
                 textTrash1: string;
                 textTrash2: string;
                 textTrash3: string;

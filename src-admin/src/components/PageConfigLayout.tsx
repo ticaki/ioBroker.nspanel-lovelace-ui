@@ -104,7 +104,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(selectedCardType === 'all' ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : 'PageConfig')}`;
+        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(selectedCardType === 'all' ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : selectedCardType)}`;
         return (
             <Box
                 sx={{
