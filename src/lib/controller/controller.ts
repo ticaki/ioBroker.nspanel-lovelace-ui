@@ -90,6 +90,8 @@ export class Controller extends Library.BaseClass {
                 for (const panel of this.panels) {
                     panel.requestStatusTasmota();
                 }
+                // für Test cardTrash Standardmäßig deaktiviert Update erfolgt in hourLoop
+                //await this.getTrashDaten();
             }
 
             const currentTime = await this.getCurrentTime();
@@ -138,15 +140,18 @@ export class Controller extends Library.BaseClass {
         } catch (err: any) {
             this.log.error(`dateUpdateLoop failed: ${err}`);
         }
-
+        // every 8 hours check online version
         if (hourNow % 8 === 0) {
             await this.checkOnlineVersion();
+        }
+        // every 6 hours trash data update
+        if (hourNow % 6 === 0) {
+            await this.getTrashDaten();
         }
         if (this.unload || this.adapter.unload) {
             return;
         }
         this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
-        await this.getTrashDaten();
     };
 
     getCurrentTime = async (): Promise<number> => {
@@ -805,27 +810,16 @@ export class Controller extends Library.BaseClass {
                         );
                         return;
                     }
-
-                    await this.library.writedp(
-                        `pageTrash`,
-                        undefined,
-                        genericStateObjects.panel.panels.pageTrash._channel,
-                    );
-
-                    const channelObj = structuredClone(genericStateObjects.panel.panels.pageTrash.page_id._channel);
-                    channelObj.common.name = `${entry.uniqueName}`;
-                    await this.library.writedp(`pageTrash.${entry.uniqueName}`, undefined, channelObj);
-
-                    const itemObj = structuredClone(genericStateObjects.panel.panels.pageTrash.page_id.pageItem);
                     for (let i = 0; i < Object.keys(result.messages).length; i++) {
-                        itemObj.common.name = `pageItem${i}`;
                         const messageData = result.messages[i];
-                        await this.library.writedp(
-                            `pageTrash.${entry.uniqueName}.pageItem${i}`,
+                        await this.statesControler.setInternalState(
+                            `///pageTrash_${entry.uniqueName}_pageItem${i}`,
                             JSON.stringify(messageData),
-                            itemObj,
+                            false,
+                            getInternalDefaults('string', 'text', false),
                         );
                     }
+
                     this.log.debug(`count of trash messages: ${Object.keys(result.messages).length}`);
                     this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
                 } catch (error: any) {

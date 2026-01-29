@@ -147,7 +147,7 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    newPage = dataForcardTrash(entry, this.adapter);
+                    newPage = dataForcardTrash(entry);
                     break;
                 }
                 default: {
@@ -265,16 +265,14 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
     }
 }
 
-function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelaceUi): PageBase {
-    let text = 'return JSON.parse(val).text2;';
+function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
     let newPage: PageBase;
-
+    let text = `return JSON.parse(val).text2;`;
     if (entry.countItems < 6) {
         text = `return JSON.parse(val).text1;`;
     }
 
     const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
-        const pageItemDp = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem${i}`;
         return {
             id: `pageItem${i}`,
             role: 'text.list' as const,
@@ -283,14 +281,14 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                 icon: {
                     true: {
                         value: {
-                            type: 'state' as const,
-                            dp: pageItemDp,
-                            read: 'return JSON.parse(val).icon;',
+                            type: 'internal' as const,
+                            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
+                            read: `return JSON.parse(val).icon;`,
                         },
                         color: {
-                            type: 'state' as const,
-                            dp: pageItemDp,
-                            read: 'return JSON.parse(val).color;',
+                            type: 'internal' as const,
+                            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
+                            read: `return JSON.parse(val).color;`,
                         },
                     },
                 },
@@ -299,16 +297,16 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry, adapter: NspanelLovelac
                 },
                 text: {
                     true: {
-                        type: 'state' as const,
-                        dp: pageItemDp,
-                        read: 'return JSON.parse(val).text;',
+                        type: 'internal' as const,
+                        dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
+                        read: `return JSON.parse(val).text;`,
                     },
                     false: undefined,
                 },
                 text1: {
                     true: {
-                        type: 'state' as const,
-                        dp: pageItemDp,
+                        type: 'internal' as const,
+                        dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
                         read: text,
                     },
                     false: undefined,

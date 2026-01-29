@@ -103,6 +103,7 @@ class Controller extends Library.BaseClass {
         for (const panel of this.panels) {
           panel.requestStatusTasmota();
         }
+        await this.getTrashDaten();
       }
       const currentTime = await this.getCurrentTime();
       await this.statesControler.setInternalState("///time", currentTime, true);
@@ -698,8 +699,13 @@ class Controller extends Library.BaseClass {
             this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
             result = await (0, import_pageTrash.getTrashDataFromState)(daten.val, ...trashTypes, ...customTrash, ...iconColors);
           } else {
+            if (!entry.trashFile || entry.trashFile.trim() === "") {
+              this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
+              return;
+            }
+            this.log.debug(`Processing trash data from file ${entry.trashFile}`);
             result = await (0, import_pageTrash.getTrashDataFromFile)(
-              entry.trashFile || "",
+              entry.trashFile,
               ...trashTypes,
               ...customTrash,
               ...iconColors
@@ -711,22 +717,13 @@ class Controller extends Library.BaseClass {
             );
             return;
           }
-          await this.library.writedp(
-            `pageTrash`,
-            void 0,
-            import_definition.genericStateObjects.panel.panels.pageTrash._channel
-          );
-          const channelObj = structuredClone(import_definition.genericStateObjects.panel.panels.pageTrash.page_id._channel);
-          channelObj.common.name = `${entry.uniqueName}`;
-          await this.library.writedp(`pageTrash.${entry.uniqueName}`, void 0, channelObj);
-          const itemObj = structuredClone(import_definition.genericStateObjects.panel.panels.pageTrash.page_id.pageItem);
           for (let i = 0; i < Object.keys(result.messages).length; i++) {
-            itemObj.common.name = `pageItem${i}`;
             const messageData = result.messages[i];
-            await this.library.writedp(
-              `pageTrash.${entry.uniqueName}.pageItem${i}`,
+            await this.statesControler.setInternalState(
+              `///pageTrash_${entry.uniqueName}_pageItem${i}`,
               JSON.stringify(messageData),
-              itemObj
+              false,
+              (0, import_tools.getInternalDefaults)("string", "text", false)
             );
           }
           this.log.debug(`count of trash messages: ${Object.keys(result.messages).length}`);

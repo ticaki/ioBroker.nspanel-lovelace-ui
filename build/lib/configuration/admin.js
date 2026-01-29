@@ -148,7 +148,7 @@ class AdminConfiguration extends import_library.BaseClass {
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
-          newPage = dataForcardTrash(entry, this.adapter);
+          newPage = dataForcardTrash(entry);
           break;
         }
         default: {
@@ -246,14 +246,13 @@ function isAlwaysOnMode(F) {
       return false;
   }
 }
-function dataForcardTrash(entry, adapter) {
-  let text = "return JSON.parse(val).text2;";
+function dataForcardTrash(entry) {
   let newPage;
-  if (entry.countItems < 6) {
-    text = `return JSON.parse(val).text1;`;
-  }
   const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
-    const pageItemDp = `${adapter.name}.${adapter.instance}.pageTrash.${entry.uniqueName}.pageItem${i}`;
+    let text = `return JSON.parse(val).text2;`;
+    if (entry.countItems < 6) {
+      text = `return JSON.parse(val).text1;`;
+    }
     return {
       id: `pageItem${i}`,
       role: "text.list",
@@ -262,14 +261,15 @@ function dataForcardTrash(entry, adapter) {
         icon: {
           true: {
             value: {
-              type: "state",
-              dp: pageItemDp,
-              read: "return JSON.parse(val).icon;"
+              type: "internal",
+              dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
+              //pageItemDp,
+              read: `return JSON.parse(val).icon;`
             },
             color: {
-              type: "state",
-              dp: pageItemDp,
-              read: "return JSON.parse(val).color;"
+              type: "internal",
+              dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
+              read: `return JSON.parse(val).color;`
             }
           }
         },
@@ -278,16 +278,16 @@ function dataForcardTrash(entry, adapter) {
         },
         text: {
           true: {
-            type: "state",
-            dp: pageItemDp,
-            read: "return JSON.parse(val).text;"
+            type: "internal",
+            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
+            read: `return JSON.parse(val).text;`
           },
           false: void 0
         },
         text1: {
           true: {
-            type: "state",
-            dp: pageItemDp,
+            type: "internal",
+            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
             read: text
           },
           false: void 0
