@@ -297,6 +297,7 @@
     "qr_wlan_hidden": "Hidden Network",
     "qr_wlan_type": "WiFi Encryption",
     "refresh": "Refresh",
+    "rememberLastSite": "Remember last page",
     "resetTasmota": "Factory MQTT reset Tasmota",
     "screenSaverTimeout": "Dimming time",
     "screensaver_config": "Screensaver Configuration",

@@ -132,59 +132,65 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const shutterClosedIsZero = data.shutterClosedIsZero ?? false;
         const defaultValueCardThermo = data.defaultValueCardThermo ?? false;
         const pw1 = data.pw1 ?? '';
+        const rememberLastSite = data.rememberLastSite ?? false;
+
+        // Gemeinsame Styles für alle Boxen
+        const boxStyle = {
+            p: 2,
+            border: 2,
+            borderColor: 'divider',
+            borderRadius: 1,
+            height: '100%',
+        };
 
         return (
-            <Box sx={{ p: 2 }}>
+            <Box
+                sx={{
+                    p: 2,
+                    display: 'grid',
+                    gridTemplateColumns: {
+                        xs: '1fr', // Mobile: 1 Spalte
+                        sm: 'repeat(2, 1fr)', // Tablet: 2 Spalten
+                        md: 'repeat(2, 1fr)', // Desktop: 2 Spalten
+                        lg: 'repeat(3, 1fr)', // Large Desktop: 3 Spalten
+                    },
+                    gap: 2,
+                    width: '100%',
+                }}
+            >
                 {/* Use Beta TFT Checkbox */}
-                <Box
-                    sx={{
-                        mb: 3,
-                        p: 2,
-                        minWidth: 200,
-                        maxWidth: 400,
-                        border: 2,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                    }}
-                >
+                <Box sx={boxStyle}>
                     <Typography
                         variant="h6"
                         gutterBottom
                     >
                         {this.getText('headeruseBetaTFT')}
                     </Typography>
-                    <Box sx={{ mb: 3 }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={useBetaTFT}
-                                    onChange={this.handleCheckboxChange('useBetaTFT')}
-                                    disabled={!this.state.alive}
-                                />
-                            }
-                            label={this.getText('useBetaVersion')}
-                        />
-                    </Box>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={useBetaTFT}
+                                onChange={this.handleCheckboxChange('useBetaTFT')}
+                                disabled={!this.state.alive}
+                            />
+                        }
+                        label={this.getText('useBetaVersion')}
+                    />
                 </Box>
 
                 {/* Color Theme Select */}
-                <Box
-                    sx={{
-                        mb: 3,
-                        p: 2,
-                        minWidth: 200,
-                        maxWidth: 400,
-                        border: 2,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                    }}
-                >
+                <Box sx={boxStyle}>
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headerColorTheme')}
+                    </Typography>
                     <FormControl
                         sx={{ m: 1, minWidth: 120 }}
                         size="small"
                         disabled={!this.state.alive}
                     >
-                        <InputLabel id="color-theme-label">{this.getText('headerColorTheme')}</InputLabel>
                         <Select
                             labelId="color-theme-label"
                             id="color-theme-select"
@@ -203,196 +209,129 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                 </Box>
 
                 {/* Date Format Settings */}
-                <Box
-                    sx={{
-                        mb: 3,
-                        p: 2,
-                        minWidth: 200,
-                        maxWidth: 400,
-                        border: 2,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                    }}
-                >
+                <Box sx={boxStyle}>
                     <Typography
                         variant="h6"
                         gutterBottom
                     >
                         {this.getText('headerDateFormat')}
                     </Typography>
-                    {/* Weekday Format Checkbox */}
-                    <Box sx={{ mb: 3 }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={weekdayFormat}
-                                    onChange={this.handleCheckboxChange('weekdayFormat')}
-                                    disabled={!this.state.alive}
-                                />
-                            }
-                            label={this.getText('longWeekdayName')}
-                        />
-                        <FormControl
-                            sx={{ m: 1, minWidth: 120 }}
-                            size="small"
-                            disabled={!this.state.alive}
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={weekdayFormat}
+                                onChange={this.handleCheckboxChange('weekdayFormat')}
+                                disabled={!this.state.alive}
+                            />
+                        }
+                        label={this.getText('longWeekdayName')}
+                    />
+                    <FormControl
+                        sx={{ m: 1, minWidth: 120 }}
+                        size="small"
+                        disabled={!this.state.alive}
+                    >
+                        <InputLabel id="MonthFormat-label">{this.getText('MonthFormat')}</InputLabel>
+                        <Select
+                            labelId="MonthFormat-label"
+                            id="MonthFormat-select"
+                            value={monthFormat}
+                            label={this.getText('MonthFormat')}
+                            onChange={this.handleNumberChange('monthFormat') as any}
                         >
-                            <InputLabel id="MonthFormat-label">{this.getText('MonthFormat')}</InputLabel>
-                            <Select
-                                labelId="MonthFormat-label"
-                                id="MonthFormat-select"
-                                value={monthFormat}
-                                label={this.getText('MonthFormat')}
-                                onChange={this.handleNumberChange('monthFormat') as any}
-                            >
-                                <MenuItem value={0}>{this.getText('long')}</MenuItem>
-                                <MenuItem value={1}>{this.getText('short')}</MenuItem>
-                                <MenuItem value={2}>{this.getText('numeric')}</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={yearFormat}
-                                    onChange={this.handleCheckboxChange('yearFormat')}
-                                    disabled={!this.state.alive}
-                                />
-                            }
-                            label={this.getText('longYear')}
-                        />
-                    </Box>
+                            <MenuItem value={0}>{this.getText('long')}</MenuItem>
+                            <MenuItem value={1}>{this.getText('short')}</MenuItem>
+                            <MenuItem value={2}>{this.getText('numeric')}</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={yearFormat}
+                                onChange={this.handleCheckboxChange('yearFormat')}
+                                disabled={!this.state.alive}
+                            />
+                        }
+                        label={this.getText('longYear')}
+                    />
                 </Box>
 
                 {/* Shutter Closed Is Zero Checkbox */}
-                <Box
-                    sx={{
-                        mb: 3,
-                        p: 2,
-                        minWidth: 200,
-                        maxWidth: 400,
-                        border: 2,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                    }}
-                >
+                <Box sx={boxStyle}>
                     <Typography
                         variant="h6"
                         gutterBottom
                     >
                         {this.getText('headerShutter')}
                     </Typography>
-                    <Box sx={{ mb: 3 }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={shutterClosedIsZero}
-                                    onChange={this.handleCheckboxChange('shutterClosedIsZero')}
-                                    disabled={!this.state.alive}
-                                />
-                            }
-                            label={this.getText('shutterClosedIsZero')}
-                        />
-                    </Box>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={shutterClosedIsZero}
+                                onChange={this.handleCheckboxChange('shutterClosedIsZero')}
+                                disabled={!this.state.alive}
+                            />
+                        }
+                        label={this.getText('shutterClosedIsZero')}
+                    />
                 </Box>
 
                 {/* Card Thermo2 Value Checkbox */}
-                <Box
-                    sx={{
-                        mb: 3,
-                        p: 2,
-                        minWidth: 200,
-                        maxWidth: 400,
-                        border: 2,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                    }}
-                >
+                <Box sx={boxStyle}>
                     <Typography
                         variant="h6"
                         gutterBottom
                     >
                         {this.getText('headerCardThermo')}
                     </Typography>
-                    <Box sx={{ mb: 3 }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={defaultValueCardThermo}
-                                    onChange={this.handleCheckboxChange('defaultValueCardThermo')}
-                                    disabled={!this.state.alive}
-                                />
-                            }
-                            label={this.getText('defaultValueCardThermo')}
-                        />
-                        <FormHelperText>{this.getText('defaultValueCardThermoHint')}</FormHelperText>
-                    </Box>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={defaultValueCardThermo}
+                                onChange={this.handleCheckboxChange('defaultValueCardThermo')}
+                                disabled={!this.state.alive}
+                            />
+                        }
+                        label={this.getText('defaultValueCardThermo')}
+                    />
+                    <FormHelperText>{this.getText('defaultValueCardThermoHint')}</FormHelperText>
                 </Box>
 
                 {/* Service Pin Textfeld */}
-                <Box
-                    sx={{
-                        mb: 3,
-                        p: 2,
-                        minWidth: 200,
-                        maxWidth: 400,
-                        border: 2,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                    }}
-                >
+                <Box sx={boxStyle}>
                     <Typography
                         variant="h6"
                         gutterBottom
                     >
                         Service-Pin
                     </Typography>
-                    <Box sx={{ mb: 3 }}>
-                        <TextField
-                            id="service-pin-input"
-                            type="password"
-                            value={pw1}
-                            onChange={this.handleServicePinChange}
-                            disabled={!this.state.alive}
-                            helperText={this.getText('mustBeNumber')}
-                            error={!this.validateServicePin(pw1)}
-                            inputProps={{
-                                inputMode: 'numeric',
-                                pattern: '[0-9]*',
-                            }}
-                        />
-                    </Box>
+                    <TextField
+                        id="service-pin-input"
+                        type="password"
+                        value={pw1}
+                        onChange={this.handleServicePinChange}
+                        disabled={!this.state.alive}
+                        helperText={this.getText('mustBeNumber')}
+                        error={!this.validateServicePin(pw1)}
+                        inputProps={{
+                            inputMode: 'numeric',
+                            pattern: '[0-9]*',
+                        }}
+                    />
                 </Box>
 
-                {/* Card Thermo2 Value Checkbox */}
-                <Box
-                    sx={{
-                        mb: 3,
-                        p: 2,
-                        minWidth: 200,
-                        maxWidth: 400,
-                        border: 2,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                    }}
-                >
-                    <Typography
-                        variant="h6"
-                        gutterBottom
-                    >
-                        {this.getText('headerRememberLastSite')}
-                    </Typography>
-                    <Box sx={{ mb: 3 }}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={defaultValueCardThermo}
-                                    onChange={this.handleCheckboxChange('rememberLastSite')}
-                                    disabled={!this.state.alive}
-                                />
-                            }
-                            label={this.getText('rememberLastSite')}
-                        />
-                    </Box>
+                {/* Remember Last Site Checkbox */}
+                <Box sx={boxStyle}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={rememberLastSite}
+                                onChange={this.handleCheckboxChange('rememberLastSite')}
+                                disabled={!this.state.alive}
+                            />
+                        }
+                        label={this.getText('rememberLastSite')}
+                    />
                 </Box>
             </Box>
         );

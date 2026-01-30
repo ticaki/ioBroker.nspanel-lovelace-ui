@@ -297,6 +297,7 @@
     "qr_wlan_hidden": "Verstecktes Netzwerk",
     "qr_wlan_type": "WLAN-Verschlüsselung",
     "refresh": "Aktualisieren",
+    "rememberLastSite": "Letzte Seite merken",
     "resetTasmota": "Tasmota MQTT zurücksetzen",
     "screenSaverTimeout": "Abblendzeit",
     "screensaver_config": "Bildschirmschoner-Konfiguration",
