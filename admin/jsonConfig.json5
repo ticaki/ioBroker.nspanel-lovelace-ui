@@ -447,6 +447,21 @@
                 }
             }
         },
+        "_pageglobalSettings": {
+            "type": "panel",
+            "label": "Global Settings React",
+            "items": {
+                "pageGlobalSettings": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/PageGlobalSettings",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
         "colorThemen": {
             "type": "panel",
             "label": "colorTheme",
