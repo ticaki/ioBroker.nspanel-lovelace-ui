@@ -1,7 +1,18 @@
 import React from 'react';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import { Checkbox, FormControlLabel, Select, MenuItem, FormControl, InputLabel, Box } from '@mui/material';
+import {
+    Checkbox,
+    FormControlLabel,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Box,
+    Typography,
+    FormHelperText,
+    TextField,
+} from '@mui/material';
 import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
 
 interface PageGlobalSettingsState extends ConfigGenericState {
@@ -73,16 +84,41 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         }
     };
 
-    private handleUseBetaTFTChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const useBetaTFT = event.target.checked;
-        // Verwende this.props.data für den aktuellen Config-Wert
-        void this.onChange('useBetaTFT', useBetaTFT);
+    // Generische Handler-Funktion für Checkbox-Änderungen
+    private handleCheckboxChange =
+        (key: string) =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            void this.onChange(key, event.target.checked);
+        };
+
+    // Generische Handler-Funktion für Zahl/Number-Änderungen (genutzt für Select-Komponenten da dort value ein number ist)
+    private handleNumberChange =
+        (key: string) =>
+        (event: React.ChangeEvent<{ value: unknown }>): void => {
+            void this.onChange(key, event.target.value as number);
+        };
+
+    // Generische Handler-Funktion für Text-Änderungen
+    private handleTextChange =
+        (key: string) =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            void this.onChange(key, event.target.value);
+        };
+
+    // Validierungsfunktion
+    private validateServicePin = (value: string): boolean => {
+        // Prüft, ob der String nur aus Ziffern besteht (oder leer ist)
+        return value === '' || /^[0-9]+$/.test(value);
     };
 
-    private handleColorThemeChange = (event: React.ChangeEvent<{ value: unknown }>): void => {
-        const colorTheme = event.target.value as number;
-        // Verwende this.props.data für den aktuellen Config-Wert
-        void this.onChange('colorTheme', colorTheme);
+    // Handler für Service-Pin-Änderungen mit Validierung
+    private handleServicePinChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const value = event.target.value;
+
+        // Erlaube die Änderung nur, wenn der Wert valide ist
+        if (this.validateServicePin(value)) {
+            void this.onChange('pw1', value);
+        }
     };
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
@@ -90,27 +126,62 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const data = this.props.data || {};
         const useBetaTFT = data.useBetaTFT ?? false;
         const colorTheme = data.colorTheme ?? 0;
+        const weekdayFormat = data.weekdayFormat ?? false;
+        const monthFormat = data.monthFormat ?? 0;
+        const yearFormat = data.yearFormat ?? false;
+        const shutterClosedIsZero = data.shutterClosedIsZero ?? false;
+        const defaultValueCardThermo = data.defaultValueCardThermo ?? false;
+        const pw1 = data.pw1 ?? '';
 
         return (
             <Box sx={{ p: 2 }}>
                 {/* Use Beta TFT Checkbox */}
-                <Box sx={{ mb: 3 }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={useBetaTFT}
-                                onChange={this.handleUseBetaTFTChange}
-                                disabled={!this.state.alive}
-                            />
-                        }
-                        label={this.getText('useBetaVersion')}
-                    />
+                <Box
+                    sx={{
+                        mb: 3,
+                        p: 2,
+                        minWidth: 200,
+                        maxWidth: 400,
+                        border: 2,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                    }}
+                >
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headeruseBetaTFT')}
+                    </Typography>
+                    <Box sx={{ mb: 3 }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={useBetaTFT}
+                                    onChange={this.handleCheckboxChange('useBetaTFT')}
+                                    disabled={!this.state.alive}
+                                />
+                            }
+                            label={this.getText('useBetaVersion')}
+                        />
+                    </Box>
                 </Box>
 
                 {/* Color Theme Select */}
-                <Box sx={{ mb: 3, minWidth: 200 }}>
+                <Box
+                    sx={{
+                        mb: 3,
+                        p: 2,
+                        minWidth: 200,
+                        maxWidth: 400,
+                        border: 2,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                    }}
+                >
                     <FormControl
-                        fullWidth
+                        sx={{ m: 1, minWidth: 120 }}
+                        size="small"
                         disabled={!this.state.alive}
                     >
                         <InputLabel id="color-theme-label">{this.getText('headerColorTheme')}</InputLabel>
@@ -119,7 +190,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             id="color-theme-select"
                             value={colorTheme}
                             label={this.getText('colorTheme')}
-                            onChange={this.handleColorThemeChange as any}
+                            onChange={this.handleNumberChange('colorTheme') as any}
                         >
                             <MenuItem value={0}>{this.getText('default')}</MenuItem>
                             <MenuItem value={1}>{this.getText('tropical')}</MenuItem>
@@ -129,6 +200,199 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <MenuItem value={5}>{this.getText('userColors')}</MenuItem>
                         </Select>
                     </FormControl>
+                </Box>
+
+                {/* Date Format Settings */}
+                <Box
+                    sx={{
+                        mb: 3,
+                        p: 2,
+                        minWidth: 200,
+                        maxWidth: 400,
+                        border: 2,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                    }}
+                >
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headerDateFormat')}
+                    </Typography>
+                    {/* Weekday Format Checkbox */}
+                    <Box sx={{ mb: 3 }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={weekdayFormat}
+                                    onChange={this.handleCheckboxChange('weekdayFormat')}
+                                    disabled={!this.state.alive}
+                                />
+                            }
+                            label={this.getText('longWeekdayName')}
+                        />
+                        <FormControl
+                            sx={{ m: 1, minWidth: 120 }}
+                            size="small"
+                            disabled={!this.state.alive}
+                        >
+                            <InputLabel id="MonthFormat-label">{this.getText('MonthFormat')}</InputLabel>
+                            <Select
+                                labelId="MonthFormat-label"
+                                id="MonthFormat-select"
+                                value={monthFormat}
+                                label={this.getText('MonthFormat')}
+                                onChange={this.handleNumberChange('monthFormat') as any}
+                            >
+                                <MenuItem value={0}>{this.getText('long')}</MenuItem>
+                                <MenuItem value={1}>{this.getText('short')}</MenuItem>
+                                <MenuItem value={2}>{this.getText('numeric')}</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={yearFormat}
+                                    onChange={this.handleCheckboxChange('yearFormat')}
+                                    disabled={!this.state.alive}
+                                />
+                            }
+                            label={this.getText('longYear')}
+                        />
+                    </Box>
+                </Box>
+
+                {/* Shutter Closed Is Zero Checkbox */}
+                <Box
+                    sx={{
+                        mb: 3,
+                        p: 2,
+                        minWidth: 200,
+                        maxWidth: 400,
+                        border: 2,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                    }}
+                >
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headerShutter')}
+                    </Typography>
+                    <Box sx={{ mb: 3 }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={shutterClosedIsZero}
+                                    onChange={this.handleCheckboxChange('shutterClosedIsZero')}
+                                    disabled={!this.state.alive}
+                                />
+                            }
+                            label={this.getText('shutterClosedIsZero')}
+                        />
+                    </Box>
+                </Box>
+
+                {/* Card Thermo2 Value Checkbox */}
+                <Box
+                    sx={{
+                        mb: 3,
+                        p: 2,
+                        minWidth: 200,
+                        maxWidth: 400,
+                        border: 2,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                    }}
+                >
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headerCardThermo')}
+                    </Typography>
+                    <Box sx={{ mb: 3 }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={defaultValueCardThermo}
+                                    onChange={this.handleCheckboxChange('defaultValueCardThermo')}
+                                    disabled={!this.state.alive}
+                                />
+                            }
+                            label={this.getText('defaultValueCardThermo')}
+                        />
+                        <FormHelperText>{this.getText('defaultValueCardThermoHint')}</FormHelperText>
+                    </Box>
+                </Box>
+
+                {/* Service Pin Textfeld */}
+                <Box
+                    sx={{
+                        mb: 3,
+                        p: 2,
+                        minWidth: 200,
+                        maxWidth: 400,
+                        border: 2,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                    }}
+                >
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        Service-Pin
+                    </Typography>
+                    <Box sx={{ mb: 3 }}>
+                        <TextField
+                            id="service-pin-input"
+                            type="password"
+                            value={pw1}
+                            onChange={this.handleServicePinChange}
+                            disabled={!this.state.alive}
+                            helperText={this.getText('mustBeNumber')}
+                            error={!this.validateServicePin(pw1)}
+                            inputProps={{
+                                inputMode: 'numeric',
+                                pattern: '[0-9]*',
+                            }}
+                        />
+                    </Box>
+                </Box>
+
+                {/* Card Thermo2 Value Checkbox */}
+                <Box
+                    sx={{
+                        mb: 3,
+                        p: 2,
+                        minWidth: 200,
+                        maxWidth: 400,
+                        border: 2,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                    }}
+                >
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headerRememberLastSite')}
+                    </Typography>
+                    <Box sx={{ mb: 3 }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={defaultValueCardThermo}
+                                    onChange={this.handleCheckboxChange('rememberLastSite')}
+                                    disabled={!this.state.alive}
+                                />
+                            }
+                            label={this.getText('rememberLastSite')}
+                        />
+                    </Box>
                 </Box>
             </Box>
         );
