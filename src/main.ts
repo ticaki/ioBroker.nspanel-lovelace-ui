@@ -180,6 +180,16 @@ class NspanelLovelaceUi extends utils.Adapter {
             );
             this.config.weatherEntity = '';
         }
+        if (this.config.panels && Array.isArray(this.config.panels)) {
+            for (const panel of this.config.panels) {
+                let msg = '';
+                if (panel.advParam) {
+
+                }
+                if (panel.tasmotaSleep) {
+                    
+                }
+        }
 
         //try {
         this.mainConfiguration = [];

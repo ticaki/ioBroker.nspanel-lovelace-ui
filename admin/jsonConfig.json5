@@ -3512,6 +3512,20 @@
                             "label": "panelTopic",
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
+                        },
+                        {
+                            "type": "checkbox",
+                            "attr": "advParam",
+                            "label": "ADV",
+                            "default": false,
+                            "expertMode": true
+                        },
+                        {
+                            "type": "checkbox",
+                            "attr": "tasmotaSleep",
+                            "label": "sleep",
+                            "default": false,
+                            "expertMode": true
                         }
                     ]
                 },

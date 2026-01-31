@@ -32,7 +32,7 @@ declare global {
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
             tasmotaAdminPassword: string;
-            panels: {name: string, topic: string, id: string, ip: string, model: string}[];
+            panels: {name: string, topic: string, id: string, ip: string, model: string, advParam: boolean, tasmotaSleep: boolean}[];
             pw1: string;
 
             // PagePower
