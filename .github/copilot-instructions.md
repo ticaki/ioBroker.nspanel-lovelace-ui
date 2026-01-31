@@ -289,7 +289,6 @@ Notes
 ## Documentation References
 - [ioBroker adapter development documentation](https://www.iobroker.net/#en/documentation/dev/adapterdev.md)
 - [NSPanel Adapter Wiki](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki) - **Primary source for NSPanel-specific behavior**
-- [NSPanel Icon list](../src-admin/src/icons.json) - **Complete list of available icons for NSPanel**
 - Hardware compatibility: Sonoff NSPanel with Tasmota firmware
 - UI Design: Based on Home Assistant Lovelace UI principles
 
