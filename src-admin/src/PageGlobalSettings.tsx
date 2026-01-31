@@ -12,14 +12,24 @@ import {
     Typography,
     FormHelperText,
     TextField,
+    CircularProgress,
+    type SelectChangeEvent,
 } from '@mui/material';
 import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
+
+interface WeatherEntity {
+    label: string;
+    value: string;
+}
 
 interface PageGlobalSettingsState extends ConfigGenericState {
     // Define any additional state properties if needed
     useBetaTFT?: boolean;
     colorTheme?: number;
     weatherEntity?: string;
+    weatherEntities?: WeatherEntity[];
+    loadingWeather?: boolean;
+    lastWeatherLoad?: number;
     weekdayFormat?: boolean;
     monthFormat?: number;
     yearFormat?: boolean;
@@ -35,6 +45,12 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
+        this.state = {
+            ...this.state,
+            alive: false,
+            weatherEntities: [],
+            loadingWeather: false,
+        };
     }
 
     componentWillUnmount(): void {
@@ -59,7 +75,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         try {
             const state = await this.props.oContext.socket.getState(aliveStateId);
             const isAlive = !!state?.val;
-            this.setState({ alive: isAlive } as PageGlobalSettingsState);
+            this.setState({ alive: isAlive });
 
             // Subscribe to alive state changes
             await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
@@ -67,10 +83,11 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
             // If adapter is alive, start loading pages
             if (isAlive) {
                 console.log('[PageGlobalSettings] Adapter is alive, ready to load settings.');
+                await this.loadWeatherEntities(false);
             }
         } catch (error) {
             console.error('[PageGlobalSettings] Failed to get alive state or subscribe:', error);
-            this.setState({ alive: false } as PageGlobalSettingsState);
+            this.setState({ alive: false });
         }
     }
 
@@ -80,10 +97,70 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const isAlive = state ? !!state.val : false;
 
         if (wasAlive !== isAlive) {
-            this.setState({ alive: isAlive } as PageGlobalSettingsState);
+            this.setState({ alive: isAlive });
         }
     };
 
+    // Lade Wetter-Entities
+    async loadWeatherEntities(forceReload = false): Promise<void> {
+        if (!this.state.alive) {
+            console.log(`[PageGlobalSettings] Adapter not alive, skipping pages load for weather entities`);
+            return;
+        }
+
+        const now = Date.now();
+        const lastLoad = this.state.lastWeatherLoad || 0;
+
+        if (!forceReload && now - lastLoad < 60000 && this.state.weatherEntities?.length) {
+            return;
+        }
+
+        this.setState({ loadingWeather: true });
+
+        if (this.props.oContext.socket) {
+            const instance = this.props.oContext.instance ?? '0';
+            const target = `${ADAPTER_NAME}.${instance}`;
+            const payload = {
+                internalServerIp: this.props.data?.internalServerIp,
+            };
+
+            try {
+                const timeoutPromise = new Promise<never>((_, reject) => {
+                    setTimeout(() => reject(new Error('sendTo timeout after 2 seconds')), 2000);
+                });
+
+                const sendToPromise = this.props.oContext.socket.sendTo(target, 'getWeatherEntity', payload);
+
+                const raw = await Promise.race([sendToPromise, timeoutPromise]);
+
+                let entities: WeatherEntity[] = [];
+                if (Array.isArray(raw)) {
+                    entities = raw;
+                } else if (raw && Array.isArray(raw.result)) {
+                    entities = raw.result;
+                }
+
+                console.log('[PageGlobalSettings] sendTo successful', { target, entities });
+
+                this.setState({
+                    weatherEntities: entities,
+                    lastWeatherLoad: now,
+                    loadingWeather: false,
+                });
+            } catch (e) {
+                console.error('[PageGlobalSettings] Failed to load weather entities', {
+                    target,
+                    cmd: 'getWeatherEntity',
+                    payload,
+                    error: e,
+                });
+                this.setState({
+                    weatherEntities: [],
+                    loadingWeather: false,
+                });
+            }
+        }
+    }
     // Generische Handler-Funktion für Checkbox-Änderungen
     private handleCheckboxChange =
         (key: string) =>
@@ -91,11 +168,18 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
             void this.onChange(key, event.target.checked);
         };
 
-    // Generische Handler-Funktion für Zahl/Number-Änderungen (genutzt für Select-Komponenten da dort value ein number ist)
-    private handleNumberChange =
+    // Generische Handler-Funktion für Select-String-Änderungen
+    private handleSelectStringChange =
         (key: string) =>
-        (event: React.ChangeEvent<{ value: unknown }>): void => {
-            void this.onChange(key, event.target.value as number);
+        (event: SelectChangeEvent<string>): void => {
+            void this.onChange(key, event.target.value);
+        };
+
+    // Generische Handler-Funktion für Select-Number-Änderungen
+    private handleSelectNumberChange =
+        (key: string) =>
+        (event: SelectChangeEvent<number>): void => {
+            void this.onChange(key, event.target.value);
         };
 
     // Generische Handler-Funktion für Text-Änderungen
@@ -133,6 +217,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const defaultValueCardThermo = data.defaultValueCardThermo ?? false;
         const pw1 = data.pw1 ?? '';
         const rememberLastSite = data.rememberLastSite ?? false;
+        const weatherEntity = data.weatherEntity ?? '';
 
         // Gemeinsame Styles für alle Boxen
         const boxStyle = {
@@ -192,11 +277,10 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         disabled={!this.state.alive}
                     >
                         <Select
-                            labelId="color-theme-label"
                             id="color-theme-select"
                             value={colorTheme}
                             label={this.getText('colorTheme')}
-                            onChange={this.handleNumberChange('colorTheme') as any}
+                            onChange={this.handleSelectNumberChange('colorTheme')}
                         >
                             <MenuItem value={0}>{this.getText('default')}</MenuItem>
                             <MenuItem value={1}>{this.getText('tropical')}</MenuItem>
@@ -204,6 +288,52 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <MenuItem value={3}>{this.getText('sunset')}</MenuItem>
                             <MenuItem value={4}>{this.getText('vulcano')}</MenuItem>
                             <MenuItem value={5}>{this.getText('userColors')}</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+
+                {/* Weather Entity TextField */}
+                <Box sx={boxStyle}>
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headerWeatherEntity')}
+                    </Typography>
+                    <FormControl
+                        sx={{ m: 1, minWidth: 200 }}
+                        size="small"
+                        disabled={!this.state.alive}
+                    >
+                        <InputLabel id="weather-entity-label">{this.getText('weatherEntityLabel')}</InputLabel>
+                        <Select
+                            labelId="weather-entity-label"
+                            id="weather-entity-select"
+                            value={weatherEntity}
+                            label={this.getText('weatherEntityLabel')}
+                            onOpen={() => {
+                                // Lade Daten wenn Select geöffnet wird
+                                void this.loadWeatherEntities(true);
+                            }}
+                            onChange={this.handleSelectStringChange('weatherEntity')}
+                            disabled={!this.state.alive || this.state.loadingWeather}
+                        >
+                            {this.state.loadingWeather && (
+                                <MenuItem
+                                    disabled
+                                    value=""
+                                >
+                                    <CircularProgress size={16} />
+                                </MenuItem>
+                            )}
+                            {(this.state.weatherEntities || []).map(entity => (
+                                <MenuItem
+                                    key={entity.value || entity.label}
+                                    value={entity.value}
+                                >
+                                    {entity.label}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
                 </Box>
@@ -237,7 +367,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             id="MonthFormat-select"
                             value={monthFormat}
                             label={this.getText('MonthFormat')}
-                            onChange={this.handleNumberChange('monthFormat') as any}
+                            onChange={this.handleSelectNumberChange('monthFormat')}
                         >
                             <MenuItem value={0}>{this.getText('long')}</MenuItem>
                             <MenuItem value={1}>{this.getText('short')}</MenuItem>
