@@ -231,10 +231,10 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 customTrash4: '',
                 customTrash5: '',
                 customTrash6: '',
-                iconColor1: '#d2d2d2',
-                iconColor2: '#d2d2d2',
+                iconColor1: '#3c3fff',
+                iconColor2: '#fffd77',
                 iconColor3: '#d2d2d2',
-                iconColor4: '#d2d2d2',
+                iconColor4: '#de8900',
                 iconColor5: '#d2d2d2',
                 iconColor6: '#d2d2d2',
             };

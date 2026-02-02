@@ -36,6 +36,7 @@ var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
+var import_node_ical = __toESM(require("node-ical"));
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -1774,8 +1775,32 @@ class NspanelLovelaceUi extends utils.Adapter {
               this.log.debug(`ICS-Datei Pfad: ${filePath}`);
               fs.writeFileSync(filePath, content, "utf8");
               this.log.info(`ICS-Datei gespeichert: ${filePath}`);
+              const data = import_node_ical.default.parseICS(content);
+              let entryCount = 0;
+              const eventNames = /* @__PURE__ */ new Set();
+              for (const k in data) {
+                if (data[k].type === "VEVENT") {
+                  const eventName = data[k].summary;
+                  if (eventName && eventName.trim() !== "") {
+                    eventNames.add(eventName);
+                  }
+                }
+                entryCount++;
+                if (entryCount >= 6) {
+                  break;
+                }
+              }
+              const events = Array.from(eventNames).map((name) => ({ summary: name }));
+              this.log.debug(
+                `ICS-Datei verarbeitet. Folgende Ereignisse gefunden: ${JSON.stringify(events)}`
+              );
               if (obj.callback) {
-                this.sendTo(obj.from, obj.command, { success: true, path: filePath }, obj.callback);
+                this.sendTo(
+                  obj.from,
+                  obj.command,
+                  { success: true, path: filePath, events },
+                  obj.callback
+                );
               }
             } catch (error) {
               this.log.error(`Fehler beim ICS-Upload: ${error}`);

@@ -103,7 +103,6 @@ class Controller extends Library.BaseClass {
         for (const panel of this.panels) {
           panel.requestStatusTasmota();
         }
-        await this.getTrashDaten();
       }
       const currentTime = await this.getCurrentTime();
       await this.statesControler.setInternalState("///time", currentTime, true);
@@ -147,11 +146,13 @@ class Controller extends Library.BaseClass {
     if (hourNow % 8 === 0) {
       await this.checkOnlineVersion();
     }
+    if (hourNow % 6 === 0) {
+      await this.getTrashDaten();
+    }
     if (this.unload || this.adapter.unload) {
       return;
     }
     this.dateUpdateTimeout = this.adapter.setTimeout(() => this.hourLoop(), diff);
-    await this.getTrashDaten();
   };
   getCurrentTime = async () => {
     return new Promise((resolve) => resolve(Date.now()));

@@ -16,7 +16,7 @@ import * as utils from '@iobroker/adapter-core';
 import { Library } from './lib/controller/library';
 import 'source-map-support/register';
 // Load your modules here, e.g.:
-// import * as fs from "fs";
+
 import * as MQTT from './lib/classes/mqtt';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
@@ -33,7 +33,7 @@ import { testScriptConfig } from './lib/const/test';
 import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { oldQRType } from './lib/types/types';
-//import fs from 'fs';
+import iCal from 'node-ical';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -2056,10 +2056,36 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                             // Optional: ICS-Datei verarbeiten
                             //await this.processIcsFile(filePath);
+                            const data = iCal.parseICS(content);
+
+                            let entryCount = 0;
+
+                            const eventNames = new Set<string>();
+                            for (const k in data) {
+                                if (data[k].type === 'VEVENT') {
+                                    const eventName = data[k].summary;
+                                    if (eventName && eventName.trim() !== '') {
+                                        eventNames.add(eventName);
+                                    }
+                                }
+                                entryCount++;
+                                if (entryCount >= 6) {
+                                    break;
+                                }
+                            }
+                            const events = Array.from(eventNames).map(name => ({ summary: name }));
+                            this.log.debug(
+                                `ICS-Datei verarbeitet. Folgende Ereignisse gefunden: ${JSON.stringify(events)}`,
+                            );
 
                             // Antwort senden
                             if (obj.callback) {
-                                this.sendTo(obj.from, obj.command, { success: true, path: filePath }, obj.callback);
+                                this.sendTo(
+                                    obj.from,
+                                    obj.command,
+                                    { success: true, path: filePath, events: events },
+                                    obj.callback,
+                                );
                             }
                         } catch (error: any) {
                             this.log.error(`Fehler beim ICS-Upload: ${error}`);

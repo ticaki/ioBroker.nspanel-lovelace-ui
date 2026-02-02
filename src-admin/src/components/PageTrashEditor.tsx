@@ -13,7 +13,7 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { Upload as UploadIcon } from '@mui/icons-material';
+import { Upload as UploadIcon, SearchOutlined as SearchIcon } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
 
@@ -26,8 +26,19 @@ export interface PageTrashEditorProps {
     theme?: any;
 }
 
-export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
+interface PageTrashEditorState {
+    uploadedEvents: Array<{ summary: string }>;
+}
+
+export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageTrashEditorState> {
     private fileInputRef = React.createRef<HTMLInputElement>();
+
+    constructor(props: PageTrashEditorProps) {
+        super(props);
+        this.state = {
+            uploadedEvents: [],
+        };
+    }
 
     private getText(key: string): string {
         return this.props.getText(key);
@@ -70,6 +81,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                         console.log('ICS-Datei erfolgreich hochgeladen:', result.path);
                         // Speichere relativen Pfad im Entry
                         this.handleFieldChange('trashFile', result.path);
+                        // Speichere Events im State
+                        if (result.events && Array.isArray(result.events)) {
+                            this.setState({ uploadedEvents: result.events });
+                        }
                     } else {
                         throw new Error(result?.error);
                     }
@@ -99,6 +114,49 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
 
     private handleUploadClick = (): void => {
         this.fileInputRef.current?.click();
+    };
+
+    private handleSearchClick = async (): Promise<void> => {
+        const { entry, oContext } = this.props;
+
+        if (!entry.trashState) {
+            alert('Bitte wählen Sie zuerst einen State aus');
+            return;
+        }
+
+        try {
+            // State aus ioBroker lesen
+            const state = await oContext.socket.getState(entry.trashState);
+
+            if (!state || !state.val) {
+                alert('State enthält keine Daten');
+                return;
+            }
+
+            // Parse das Array
+            const data = typeof state.val === 'string' ? JSON.parse(state.val) : state.val;
+
+            if (!Array.isArray(data)) {
+                alert('State enthält kein Array');
+                return;
+            }
+
+            // Extrahiere die Events (nur unique event-Namen)
+            const uniqueEvents = new Set<string>();
+            data.forEach(item => {
+                if (item.event && typeof item.event === 'string') {
+                    uniqueEvents.add(item.event);
+                }
+            });
+
+            const events = Array.from(uniqueEvents).map(name => ({ summary: name }));
+
+            // Speichere Events im State
+            this.setState({ uploadedEvents: events });
+        } catch (error: any) {
+            console.error('Fehler beim Lesen des States:', error);
+            alert(`Fehler: ${error.message}`);
+        }
     };
 
     render(): React.JSX.Element {
@@ -182,6 +240,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                         <MenuItem value={6}>{this.getText('trash_6_entities')}</MenuItem>
                     </Select>
                 </Box>
+
                 {/* Option to choose between import via .ics file or ioBroker state */}
                 <Box sx={{ mb: 2 }}>
                     <FormControl component="fieldset">
@@ -192,6 +251,8 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                             onChange={e => {
                                 const value = e.target.value === 'true';
                                 this.handleFieldChange('trashImport', value);
+                                // Lösche die Events beim Wechsel der Import-Option
+                                this.setState({ uploadedEvents: [] });
                             }}
                         >
                             <FormControlLabel
@@ -222,9 +283,36 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                             themeType={theme?.palette?.mode || 'light'}
                             dialogName="selectTrashState"
                             filterFunc={(obj: ioBroker.Object) => {
-                                return !!(obj && obj.type === 'state');
+                                return !!(obj && obj.type === 'state' && obj._id && obj._id.startsWith('ical.'));
                             }}
                         />
+                        <Button
+                            variant="text"
+                            startIcon={<SearchIcon />}
+                            onClick={this.handleSearchClick}
+                            sx={{ minWidth: 120, mt: 1 }}
+                        >
+                            {this.getText('trash_search_events')}
+                        </Button>
+                        {this.state.uploadedEvents.length > 0 && (
+                            <Box sx={{ mt: 2, p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ mb: 1, display: 'block' }}
+                                >
+                                    {this.getText('trash_found_events')}
+                                </Typography>
+                                {this.state.uploadedEvents.map((e, index) => (
+                                    <Typography
+                                        key={index}
+                                        variant="body2"
+                                    >
+                                        {e.summary}
+                                    </Typography>
+                                ))}
+                            </Box>
+                        )}
                     </Box>
                 )}
 
@@ -263,19 +351,46 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                             style={{ display: 'none' }}
                             onChange={this.handleFileSelect}
                         />
+                        {this.state.uploadedEvents.length > 0 && (
+                            <Box sx={{ mt: 2, p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ mb: 1, display: 'block' }}
+                                >
+                                    {this.getText('trash_found_events')}
+                                </Typography>
+                                {this.state.uploadedEvents.map((e, index) => (
+                                    <Typography
+                                        key={index}
+                                        variant="body2"
+                                    >
+                                        {e.summary}
+                                    </Typography>
+                                ))}
+                            </Box>
+                        )}
                     </Box>
                 )}
 
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                    {/* 6 Farbwahlfelder für Icons */}
-                    <Box sx={{ mb: 2 }}>
-                        {[1, 2, 3, 4, 5, 6].map(num => (
+                {/* Trash entry fields (color, trash name, custom name) */}
+                <Box sx={{ mb: 2 }}>
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                        <Box
+                            key={num}
+                            sx={{
+                                display: 'flex',
+                                gap: 2,
+                                mb: 2,
+                                flexWrap: 'wrap',
+                                alignItems: 'flex-end',
+                            }}
+                        >
+                            {/* Farbfeld */}
                             <TextField
-                                key={num}
-                                fullWidth
                                 variant="standard"
                                 type="color"
-                                label={this.getText(`${num}`)}
+                                label={this.getText(`trash_color_field_${num}`)}
                                 value={entry[`iconColor${num}` as keyof TrashEntry] ?? '#d2d2d2'}
                                 onChange={e => {
                                     this.handleFieldChange(`iconColor${num}` as keyof TrashEntry, e.target.value);
@@ -283,16 +398,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                                 InputProps={{
                                     sx: { backgroundColor: 'transparent', px: 1 },
                                 }}
-                                sx={{ mb: 2 }}
+                                sx={{ minWidth: 100, flexShrink: 0 }}
                             />
-                        ))}
-                    </Box>
-                    {/* 6 Textfelder Trashname*/}
-                    <Box sx={{ mb: 2 }}>
-                        {[1, 2, 3, 4, 5, 6].map(num => (
+                            {/* Trashname */}
                             <TextField
-                                key={num}
-                                fullWidth
                                 variant="standard"
                                 type="text"
                                 autoComplete="off"
@@ -304,16 +413,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                                 InputProps={{
                                     sx: { backgroundColor: 'transparent', px: 1 },
                                 }}
-                                sx={{ mb: 2 }}
+                                sx={{ flex: 1, minWidth: 200 }}
                             />
-                        ))}
-                    </Box>
-                    {/* 6 Textfelder Customname*/}
-                    <Box sx={{ mb: 2 }}>
-                        {[1, 2, 3, 4, 5, 6].map(num => (
+                            {/* Customname */}
                             <TextField
-                                key={num}
-                                fullWidth
                                 variant="standard"
                                 type="text"
                                 autoComplete="off"
@@ -325,10 +428,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps> {
                                 InputProps={{
                                     sx: { backgroundColor: 'transparent', px: 1 },
                                 }}
-                                sx={{ mb: 2 }}
+                                sx={{ flex: 1, minWidth: 200 }}
                             />
-                        ))}
-                    </Box>
+                        </Box>
+                    ))}
                 </Box>
             </Box>
         );

@@ -248,11 +248,11 @@ function isAlwaysOnMode(F) {
 }
 function dataForcardTrash(entry) {
   let newPage;
+  let text = `return JSON.parse(val).text2;`;
+  if (entry.countItems < 6) {
+    text = `return JSON.parse(val).text1;`;
+  }
   const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
-    let text = `return JSON.parse(val).text2;`;
-    if (entry.countItems < 6) {
-      text = `return JSON.parse(val).text1;`;
-    }
     return {
       id: `pageItem${i}`,
       role: "text.list",
@@ -263,7 +263,6 @@ function dataForcardTrash(entry) {
             value: {
               type: "internal",
               dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-              //pageItemDp,
               read: `return JSON.parse(val).icon;`
             },
             color: {
