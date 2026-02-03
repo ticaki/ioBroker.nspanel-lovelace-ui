@@ -12,6 +12,12 @@ import {
     MenuItem,
     Tooltip,
     Typography,
+    Checkbox,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
 } from '@mui/material';
 import { Upload as UploadIcon, SearchOutlined as SearchIcon } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
@@ -28,6 +34,7 @@ export interface PageTrashEditorProps {
 
 interface PageTrashEditorState {
     uploadedEvents: Array<{ summary: string }>;
+    selectedEvents: string[];
 }
 
 export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageTrashEditorState> {
@@ -37,6 +44,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
         super(props);
         this.state = {
             uploadedEvents: [],
+            selectedEvents: [],
         };
     }
 
@@ -114,6 +122,42 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
 
     private handleUploadClick = (): void => {
         this.fileInputRef.current?.click();
+    };
+
+    private handleToggleEvent = (eventName: string): void => {
+        const { selectedEvents } = this.state;
+        const currentIndex = selectedEvents.indexOf(eventName);
+        const newSelected = [...selectedEvents];
+
+        if (currentIndex === -1) {
+            if (newSelected.length < 6) {
+                newSelected.push(eventName);
+            }
+        } else {
+            newSelected.splice(currentIndex, 1);
+        }
+
+        this.setState({ selectedEvents: newSelected });
+    };
+
+    private handleApplySelection = (): void => {
+        const { selectedEvents } = this.state;
+        const { entry } = this.props;
+
+        // Erstelle updated entry mit allen Änderungen
+        const updated = { ...entry };
+
+        // Verteile auf die 6 Felder
+        for (let i = 1; i <= 6; i++) {
+            const eventName = selectedEvents[i - 1] || '';
+            (updated as any)[`textTrash${i}`] = eventName;
+        }
+
+        // Sende einmal alle Änderungen
+        this.props.onEntryChange(updated);
+
+        // Auswahl zurücksetzen
+        this.setState({ selectedEvents: [], uploadedEvents: [] });
     };
 
     private handleSearchClick = async (): Promise<void> => {
@@ -295,22 +339,49 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                             {this.getText('trash_search_events')}
                         </Button>
                         {this.state.uploadedEvents.length > 0 && (
-                            <Box sx={{ mt: 2, p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ mb: 1, display: 'block' }}
+                            <Box sx={{ mt: 2 }}>
+                                <FormLabel>{this.getText('trash_found_events')}</FormLabel>
+                                <List
+                                    sx={{
+                                        maxHeight: 300,
+                                        overflow: 'auto',
+                                        border: 1,
+                                        borderColor: 'divider',
+                                        borderRadius: 1,
+                                        mt: 1,
+                                    }}
                                 >
-                                    {this.getText('trash_found_events')}
-                                </Typography>
-                                {this.state.uploadedEvents.map((e, index) => (
-                                    <Typography
-                                        key={index}
-                                        variant="body2"
-                                    >
-                                        {e.summary}
-                                    </Typography>
-                                ))}
+                                    {this.state.uploadedEvents.map(e => (
+                                        <ListItem
+                                            key={e.summary}
+                                            disablePadding
+                                        >
+                                            <ListItemButton
+                                                onClick={() => this.handleToggleEvent(e.summary)}
+                                                disabled={
+                                                    !this.state.selectedEvents.includes(e.summary) &&
+                                                    this.state.selectedEvents.length >= 6
+                                                }
+                                            >
+                                                <ListItemIcon>
+                                                    <Checkbox
+                                                        checked={this.state.selectedEvents.includes(e.summary)}
+                                                        edge="start"
+                                                    />
+                                                </ListItemIcon>
+                                                <ListItemText primary={e.summary} />
+                                            </ListItemButton>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                                <Button
+                                    variant="contained"
+                                    onClick={this.handleApplySelection}
+                                    disabled={this.state.selectedEvents.length === 0}
+                                    sx={{ mt: 1 }}
+                                >
+                                    {this.getText('trash_apply_selection')}
+                                </Button>
                             </Box>
                         )}
                     </Box>
@@ -352,22 +423,49 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                             onChange={this.handleFileSelect}
                         />
                         {this.state.uploadedEvents.length > 0 && (
-                            <Box sx={{ mt: 2, p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ mb: 1, display: 'block' }}
+                            <Box sx={{ mt: 2 }}>
+                                <FormLabel>{this.getText('trash_select_events')}</FormLabel>
+                                <List
+                                    sx={{
+                                        maxHeight: 300,
+                                        overflow: 'auto',
+                                        border: 1,
+                                        borderColor: 'divider',
+                                        borderRadius: 1,
+                                        mt: 1,
+                                    }}
                                 >
-                                    {this.getText('trash_found_events')}
-                                </Typography>
-                                {this.state.uploadedEvents.map((e, index) => (
-                                    <Typography
-                                        key={index}
-                                        variant="body2"
-                                    >
-                                        {e.summary}
-                                    </Typography>
-                                ))}
+                                    {this.state.uploadedEvents.map(e => (
+                                        <ListItem
+                                            key={e.summary}
+                                            disablePadding
+                                        >
+                                            <ListItemButton
+                                                onClick={() => this.handleToggleEvent(e.summary)}
+                                                disabled={
+                                                    !this.state.selectedEvents.includes(e.summary) &&
+                                                    this.state.selectedEvents.length >= 6
+                                                }
+                                            >
+                                                <ListItemIcon>
+                                                    <Checkbox
+                                                        checked={this.state.selectedEvents.includes(e.summary)}
+                                                        edge="start"
+                                                    />
+                                                </ListItemIcon>
+                                                <ListItemText primary={e.summary} />
+                                            </ListItemButton>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                                <Button
+                                    variant="contained"
+                                    onClick={this.handleApplySelection}
+                                    disabled={this.state.selectedEvents.length === 0}
+                                    sx={{ mt: 1 }}
+                                >
+                                    {this.getText('trash_apply_selection')}
+                                </Button>
                             </Box>
                         )}
                     </Box>
