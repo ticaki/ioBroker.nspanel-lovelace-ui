@@ -348,10 +348,19 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                             width: { xs: '100%', md: '95%' },
                             borderLeft: { xs: 'none', md: '1px solid' },
                             borderColor: 'divider',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
                         }}
                     >
                         <Paper
-                            sx={{ height: '100%', p: 2 }}
+                            sx={{
+                                height: '100%',
+                                p: 2,
+                                overflow: 'auto',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
                             elevation={1}
                         >
                             {children}

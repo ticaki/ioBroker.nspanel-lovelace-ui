@@ -482,6 +482,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 mb: 2,
                                 flexWrap: 'wrap',
                                 alignItems: 'flex-end',
+                                p: 2,
+                                border: 1,
+                                borderColor: 'divider',
+                                borderRadius: 1,
                             }}
                         >
                             {/* Farbfeld */}

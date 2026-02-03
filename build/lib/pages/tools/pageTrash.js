@@ -100,7 +100,6 @@ async function getTrashDataFromFile(trashFile = "", trashtype1 = "", trashtype2 
   const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
   const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
   const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
-  const currentDate = /* @__PURE__ */ new Date();
   try {
     if (!fs.existsSync(trashFile)) {
       console.warn(`.ics file ${trashFile} does not exist.`);
@@ -130,9 +129,6 @@ async function getTrashDataFromFile(trashFile = "", trashtype1 = "", trashtype2 
           continue;
         }
         const eventStartdatum = new Date(event.start);
-        if (currentDate.getTime() > eventStartdatum.getTime()) {
-          continue;
-        }
         const day = String(eventStartdatum.getDate()).padStart(2, "0");
         const month = String(eventStartdatum.getMonth() + 1).padStart(2, "0");
         const year = String(eventStartdatum.getFullYear()).slice(-2);

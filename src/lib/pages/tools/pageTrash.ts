@@ -137,7 +137,6 @@ export async function getTrashDataFromFile(
     const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
     const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
     const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
-    const currentDate = new Date();
 
     try {
         // Prüfe ob Datei existiert
@@ -186,11 +185,6 @@ export async function getTrashDataFromFile(
                 }
 
                 const eventStartdatum = new Date(event.start);
-
-                // Nur zukünftige Events
-                if (currentDate.getTime() > eventStartdatum.getTime()) {
-                    continue;
-                }
 
                 // Datum im Format dd.mm.yy formatieren
                 const day = String(eventStartdatum.getDate()).padStart(2, '0');
