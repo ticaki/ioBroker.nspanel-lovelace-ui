@@ -148,6 +148,7 @@ export class AdminConfiguration extends BaseClass {
                         entry.alwaysOn = 'none';
                     }
                     newPage = dataForcardTrash(entry);
+                    this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
                     break;
                 }
                 default: {

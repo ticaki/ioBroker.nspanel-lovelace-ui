@@ -655,10 +655,6 @@ class Controller extends Library.BaseClass {
     try {
       const trashEntries = this.adapter.config.pageConfig.filter((e) => e.card === "cardTrash");
       this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
-      if (trashEntries.length === 0) {
-        await this.adapter.delObjectAsync(`pageTrash`, { recursive: true });
-        return;
-      }
       for (const entry of trashEntries) {
         try {
           const state = entry.trashState || "";
