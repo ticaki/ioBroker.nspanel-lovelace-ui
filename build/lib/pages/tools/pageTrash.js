@@ -114,10 +114,17 @@ async function getTrashDataFromFile(trashFile = "", trashtype1 = "", trashtype2 
       return { messages: items, error: readError };
     }
     const data = import_node_ical.default.parseICS(fileData);
+    const arrayData = Object.values(data).filter(
+      (entry) => entry && typeof entry === "object" && entry.type === "VEVENT" && new Date(entry.start).getTime() > Date.now()
+    );
+    arrayData.sort((a, b) => {
+      const dateA = new Date(a.start).getTime();
+      const dateB = new Date(b.start).getTime();
+      return dateA - dateB;
+    });
     let entryCount = 0;
-    for (const k in data) {
-      if (data[k].type === "VEVENT") {
-        const event = data[k];
+    for (const event of arrayData) {
+      if (event.type === "VEVENT") {
         const eventName = event.summary;
         if (!eventName || eventName.trim() === "") {
           continue;

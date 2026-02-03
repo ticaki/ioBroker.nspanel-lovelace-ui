@@ -158,12 +158,26 @@ export async function getTrashDataFromFile(
         // Parse ICS-Daten (synchron mit parseICS statt parseFile)
         const data = iCal.parseICS(fileData);
 
+        // Filter und sortiere Events nach Startdatum
+        const arrayData = Object.values(data).filter(
+            entry =>
+                entry &&
+                typeof entry === 'object' &&
+                entry.type === 'VEVENT' &&
+                new Date(entry.start).getTime() > Date.now(),
+        );
+
+        arrayData.sort((a: any, b: any) => {
+            const dateA = new Date(a.start).getTime();
+            const dateB = new Date(b.start).getTime();
+            return dateA - dateB;
+        });
+
         let entryCount = 0; // HIER: Außerhalb der Schleife deklarieren
 
         // Iteriere über Events
-        for (const k in data) {
-            if (data[k].type === 'VEVENT') {
-                const event = data[k];
+        for (const event of arrayData) {
+            if (event.type === 'VEVENT') {
                 const eventName = event.summary;
 
                 // Prüfen ob event existiert
