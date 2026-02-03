@@ -722,6 +722,12 @@ class Controller extends Library.BaseClass {
               false,
               (0, import_tools.getInternalDefaults)("string", "text", false)
             );
+            await this.adapter.delay(10);
+            await this.statesControler.setInternalState(
+              `///pageTrash_${entry.uniqueName}_pageItem${i}`,
+              JSON.stringify(messageData),
+              false
+            );
           }
           this.log.debug(`count of trash messages: ${Object.keys(result.messages).length}`);
           this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
