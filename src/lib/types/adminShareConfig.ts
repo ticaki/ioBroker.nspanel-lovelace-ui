@@ -140,6 +140,12 @@ export type QREntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
+export type TrashItem = {
+    textTrash: string;
+    customTrash: string;
+    iconColor: string;
+};
+
 export type TrashEntry = {
     card: 'cardTrash';
     uniqueName: string;
@@ -148,24 +154,7 @@ export type TrashEntry = {
     trashImport: boolean; // true = Import from iCal Adapter, false = Import from .ics file
     trashState: string; // Object ID Selector
     trashFile: string; // textfield for file name incl. path
-    textTrash1: string; // 6 Textfelder
-    textTrash2: string;
-    textTrash3: string;
-    textTrash4: string;
-    textTrash5: string;
-    textTrash6: string;
-    customTrash1: string;
-    customTrash2: string;
-    customTrash3: string;
-    customTrash4: string;
-    customTrash5: string;
-    customTrash6: string;
-    iconColor1: string;
-    iconColor2: string;
-    iconColor3: string;
-    iconColor4: string;
-    iconColor5: string;
-    iconColor6: string;
+    items: TrashItem[]; // Array statt 6 einzelne Felder pro Typ
 } & PageConfigBaseFields;
 
 export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | TrashEntry;

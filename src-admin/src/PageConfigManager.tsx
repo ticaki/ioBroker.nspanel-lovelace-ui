@@ -219,24 +219,14 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 trashImport: true, // Default: Import from iCal Adapter
                 trashState: '',
                 trashFile: '',
-                textTrash1: '',
-                textTrash2: '',
-                textTrash3: '',
-                textTrash4: '',
-                textTrash5: '',
-                textTrash6: '',
-                customTrash1: '',
-                customTrash2: '',
-                customTrash3: '',
-                customTrash4: '',
-                customTrash5: '',
-                customTrash6: '',
-                iconColor1: '#3c3fff',
-                iconColor2: '#fffd77',
-                iconColor3: '#d2d2d2',
-                iconColor4: '#de8900',
-                iconColor5: '#d2d2d2',
-                iconColor6: '#d2d2d2',
+                items: [
+                    { textTrash: '', customTrash: '', iconColor: '#3c3fff' },
+                    { textTrash: '', customTrash: '', iconColor: '#fffd77' },
+                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2' },
+                    { textTrash: '', customTrash: '', iconColor: '#de8900' },
+                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2' },
+                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2' },
+                ],
             };
         } else {
             return; // Unbekannter Typ

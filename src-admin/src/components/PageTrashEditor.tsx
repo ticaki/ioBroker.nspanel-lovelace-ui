@@ -147,11 +147,11 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
         // Erstelle updated entry mit allen Änderungen
         const updated = { ...entry };
 
-        // Verteile auf die 6 Felder
-        for (let i = 1; i <= 6; i++) {
-            const eventName = selectedEvents[i - 1] || '';
-            (updated as any)[`textTrash${i}`] = eventName;
-        }
+        // Verteile auf die items im Array
+        updated.items = entry.items.map((item, index) => ({
+            ...item,
+            textTrash: selectedEvents[index] || '',
+        }));
 
         // Sende einmal alle Änderungen
         this.props.onEntryChange(updated);
@@ -159,6 +159,13 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
         // Auswahl zurücksetzen
         this.setState({ selectedEvents: [], uploadedEvents: [] });
     };
+
+    private handleItemChange(index: number, field: keyof (typeof this.props.entry.items)[0], value: string): void {
+        const updated = { ...this.props.entry };
+        updated.items = [...updated.items];
+        updated.items[index] = { ...updated.items[index], [field]: value };
+        this.props.onEntryChange(updated);
+    }
 
     private handleSearchClick = async (): Promise<void> => {
         const { entry, oContext } = this.props;
@@ -473,9 +480,9 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
 
                 {/* Trash entry fields (color, trash name, custom name) */}
                 <Box sx={{ mb: 2 }}>
-                    {[1, 2, 3, 4, 5, 6].map(num => (
+                    {entry.items.map((item, index) => (
                         <Box
-                            key={num}
+                            key={index}
                             sx={{
                                 display: 'flex',
                                 gap: 2,
@@ -492,10 +499,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                             <TextField
                                 variant="standard"
                                 type="color"
-                                label={this.getText(`trash_color_field_${num}`)}
-                                value={entry[`iconColor${num}` as keyof TrashEntry] ?? '#d2d2d2'}
+                                label={this.getText(`trash_color_field_${index + 1}`)}
+                                value={item.iconColor || '#d2d2d2'}
                                 onChange={e => {
-                                    this.handleFieldChange(`iconColor${num}` as keyof TrashEntry, e.target.value);
+                                    this.handleItemChange(index, 'iconColor', e.target.value);
                                 }}
                                 InputProps={{
                                     sx: { backgroundColor: 'transparent', px: 1 },
@@ -507,10 +514,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 variant="standard"
                                 type="text"
                                 autoComplete="off"
-                                label={this.getText(`trash_text_field_${num}`)}
-                                value={entry[`textTrash${num}` as keyof TrashEntry] ?? ''}
+                                label={this.getText(`trash_text_field_${index + 1}`)}
+                                value={item.textTrash || ''}
                                 onChange={e => {
-                                    this.handleFieldChange(`textTrash${num}` as keyof TrashEntry, e.target.value);
+                                    this.handleItemChange(index, 'textTrash', e.target.value);
                                 }}
                                 InputProps={{
                                     sx: { backgroundColor: 'transparent', px: 1 },
@@ -522,10 +529,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 variant="standard"
                                 type="text"
                                 autoComplete="off"
-                                label={this.getText(`trash_custom_text_field_${num}`)}
-                                value={entry[`customTrash${num}` as keyof TrashEntry] ?? ''}
+                                label={this.getText(`trash_custom_text_field_${index + 1}`)}
+                                value={item.customTrash || ''}
                                 onChange={e => {
-                                    this.handleFieldChange(`customTrash${num}` as keyof TrashEntry, e.target.value);
+                                    this.handleItemChange(index, 'customTrash', e.target.value);
                                 }}
                                 InputProps={{
                                     sx: { backgroundColor: 'transparent', px: 1 },

@@ -747,32 +747,11 @@ export class Controller extends Library.BaseClass {
             for (const entry of trashEntries) {
                 try {
                     const state = entry.trashState || '';
-                    const trashTypes = [
-                        entry.textTrash1 || '',
-                        entry.textTrash2 || '',
-                        entry.textTrash3 || '',
-                        entry.textTrash4 || '',
-                        entry.textTrash5 || '',
-                        entry.textTrash6 || '',
-                    ];
-                    const customTrash: string[] = [
-                        entry.customTrash1 || '',
-                        entry.customTrash2 || '',
-                        entry.customTrash3 || '',
-                        entry.customTrash4 || '',
-                        entry.customTrash5 || '',
-                        entry.customTrash6 || '',
-                    ];
-                    const iconColors: string[] = [
-                        entry.iconColor1 || '',
-                        entry.iconColor2 || '',
-                        entry.iconColor3 || '',
-                        entry.iconColor4 || '',
-                        entry.iconColor5 || '',
-                        entry.iconColor6 || '',
-                    ];
+                    const trashTypes = entry.items.map(item => item.textTrash || '');
+                    const customTrash = entry.items.map(item => item.customTrash || '');
+                    const iconColors = entry.items.map(item => item.iconColor || '');
 
-                    let result: any;
+                    let result: { error?: unknown; messages: unknown[] };
                     if (entry.trashImport) {
                         if (!state) {
                             this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
@@ -806,7 +785,9 @@ export class Controller extends Library.BaseClass {
                         );
                         return;
                     }
-                    for (let i = 0; i < Object.keys(result.messages).length; i++) {
+
+                    const messageCount = result.messages.length;
+                    for (let i = 0; i < messageCount; i++) {
                         const messageData = result.messages[i];
                         await this.statesControler.setInternalState(
                             `///pageTrash_${entry.uniqueName}_pageItem${i}`,
@@ -822,7 +803,7 @@ export class Controller extends Library.BaseClass {
                         );
                     }
 
-                    this.log.debug(`count of trash messages: ${Object.keys(result.messages).length}`);
+                    this.log.debug(`count of trash messages: ${messageCount}`);
                     this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
                 } catch (error: any) {
                     this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);

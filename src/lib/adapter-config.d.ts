@@ -279,24 +279,11 @@ declare global {
                 trashImport: boolean; // true = Import from iCal Adapter, false = Import from .ics file
                 trashState: string;
                 trashFile: string;
-                textTrash1: string;
-                textTrash2: string;
-                textTrash3: string;
-                textTrash4: string;
-                textTrash5: string;
-                textTrash6: string;
-                customTrash1: string;
-                customTrash2: string;
-                customTrash3: string;
-                customTrash4: string;
-                customTrash5: string;
-                customTrash6: string;
-                iconColor1: string;
-                iconColor2: string;
-                iconColor3: string;
-                iconColor4: string;
-                iconColor5: string;
-                iconColor6: string;
+                items: {
+                    textTrash: string;
+                    customTrash: string;
+                    iconColor: string;
+                }[];
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
