@@ -249,10 +249,6 @@ function isAlwaysOnMode(F) {
 }
 function dataForcardTrash(entry) {
   let newPage;
-  let text = `return JSON.parse(val).text2;`;
-  if (entry.countItems < 6) {
-    text = `return JSON.parse(val).text1;`;
-  }
   const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
     return {
       id: `pageItem${i}`,
@@ -288,7 +284,7 @@ function dataForcardTrash(entry) {
           true: {
             type: "internal",
             dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-            read: text
+            read: `return JSON.parse(val).text1;`
           },
           false: void 0
         }

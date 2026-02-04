@@ -268,10 +268,6 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
 
 function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
     let newPage: PageBase;
-    let text = `return JSON.parse(val).text2;`;
-    if (entry.countItems < 6) {
-        text = `return JSON.parse(val).text1;`;
-    }
 
     const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
         return {
@@ -308,7 +304,7 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
                     true: {
                         type: 'internal' as const,
                         dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-                        read: text,
+                        read: `return JSON.parse(val).text1;`,
                     },
                     false: undefined,
                 },

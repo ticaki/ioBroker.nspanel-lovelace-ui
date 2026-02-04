@@ -15,6 +15,7 @@ export async function getTrashDataFromState(
     trashTypes: string[] = [],
     customTrash: string[] = [],
     iconColors: string[] = [],
+    countItems: number = 6,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
     const currentDate = new Date();
@@ -76,8 +77,7 @@ export async function getTrashDataFromState(
                         customTrash[trashIndex] && customTrash[trashIndex] !== ''
                             ? customTrash[trashIndex]
                             : trashTypes[trashIndex],
-                    text1: eventDatum,
-                    text2: eventDatumFormatted,
+                    text1: countItems < 6 ? eventDatum : eventDatumFormatted,
                 });
 
                 // Maximal 6 Einträge
@@ -99,6 +99,7 @@ export async function getTrashDataFromFile(
     trashTypes: string[] = [],
     customTrash: string[] = [],
     iconColors: string[] = [],
+    countItems: number = 6,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
 
@@ -106,7 +107,7 @@ export async function getTrashDataFromFile(
         // Prüfe ob Datei existiert
         if (!fs.existsSync(trashFile)) {
             console.warn(`.ics file ${trashFile} does not exist.`);
-            return { messages: items, error: new Error(`File ${trashFile} does not exist`) };
+            return { messages: items, error: `File ${trashFile} does not exist` };
         }
 
         // Lese Datei
@@ -173,12 +174,14 @@ export async function getTrashDataFromFile(
                             customTrash[trashIndex] && customTrash[trashIndex] !== ''
                                 ? customTrash[trashIndex]
                                 : trashTypes[trashIndex],
-                        text1: eventStartdatum.toLocaleString('de-DE', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                        }),
-                        text2: eventDatumFormatted,
+                        text1:
+                            countItems < 6
+                                ? eventStartdatum.toLocaleString('de-DE', {
+                                      year: 'numeric',
+                                      month: '2-digit',
+                                      day: '2-digit',
+                                  })
+                                : eventDatumFormatted,
                     });
 
                     entryCount++;

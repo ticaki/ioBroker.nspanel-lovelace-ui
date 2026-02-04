@@ -35,7 +35,7 @@ module.exports = __toCommonJS(pageTrash_exports);
 var import_Color = require("../../const/Color");
 var fs = __toESM(require("node:fs"));
 var import_node_ical = __toESM(require("node-ical"));
-async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [], iconColors = []) {
+async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [], iconColors = [], countItems = 6) {
   var _a;
   const items = [];
   const currentDate = /* @__PURE__ */ new Date();
@@ -78,8 +78,7 @@ async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [
           icon: "trash-can",
           color: import_Color.Color.ConvertHexToRgb(iconColors[trashIndex]),
           text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
-          text1: eventDatum,
-          text2: eventDatumFormatted
+          text1: countItems < 6 ? eventDatum : eventDatumFormatted
         });
         entryCount++;
         if (entryCount >= 6) {
@@ -92,12 +91,12 @@ async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [
     return { messages: items, error };
   }
 }
-async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash = [], iconColors = []) {
+async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash = [], iconColors = [], countItems = 6) {
   const items = [];
   try {
     if (!fs.existsSync(trashFile)) {
       console.warn(`.ics file ${trashFile} does not exist.`);
-      return { messages: items, error: new Error(`File ${trashFile} does not exist`) };
+      return { messages: items, error: `File ${trashFile} does not exist` };
     }
     let fileData;
     try {
@@ -139,12 +138,11 @@ async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash
             icon: "trash-can",
             color: import_Color.Color.ConvertHexToRgb(iconColors[trashIndex]),
             text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
-            text1: eventStartdatum.toLocaleString("de-DE", {
+            text1: countItems < 6 ? eventStartdatum.toLocaleString("de-DE", {
               year: "numeric",
               month: "2-digit",
               day: "2-digit"
-            }),
-            text2: eventDatumFormatted
+            }) : eventDatumFormatted
           });
           entryCount++;
           if (entryCount >= 6) {

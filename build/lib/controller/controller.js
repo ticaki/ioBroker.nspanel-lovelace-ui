@@ -673,14 +673,26 @@ class Controller extends Library.BaseClass {
               return;
             }
             this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
-            result = await (0, import_pageTrash.getTrashDataFromState)(daten.val, trashTypes, customTrash, iconColors);
+            result = await (0, import_pageTrash.getTrashDataFromState)(
+              daten.val,
+              trashTypes,
+              customTrash,
+              iconColors,
+              entry.countItems
+            );
           } else {
             if (!entry.trashFile || entry.trashFile.trim() === "") {
               this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
               return;
             }
             this.log.debug(`Processing trash data from file ${entry.trashFile}`);
-            result = await (0, import_pageTrash.getTrashDataFromFile)(entry.trashFile, trashTypes, customTrash, iconColors);
+            result = await (0, import_pageTrash.getTrashDataFromFile)(
+              entry.trashFile,
+              trashTypes,
+              customTrash,
+              iconColors,
+              entry.countItems
+            );
           }
           if (result.error) {
             this.log.error(
