@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import type { UnlockEntry } from '../../../src/lib/types/adminShareConfig';
+import { type UnlockEntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageAlarmEditorProps {
     entry: UnlockEntry;
@@ -23,10 +23,13 @@ export interface PageAlarmEditorProps {
     onEntryChange: (updated: UnlockEntry) => void;
     onUniqueNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
+    oContext: any;
+    theme: any;
 }
 
 interface PageAlarmEditorState {
     showPin: boolean;
+    alive: boolean;
 }
 
 export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageAlarmEditorState> {
@@ -34,8 +37,47 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
         super(props);
         this.state = {
             showPin: false,
+            alive: false,
         };
     }
+
+    componentWillUnmount(): void {
+        // Unsubscribe from alive state changes
+        const instance = this.props.oContext.instance ?? '0';
+        this.props.oContext.socket.unsubscribeState(
+            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+            this.onAliveChanged,
+        );
+    }
+
+    async componentDidMount(): Promise<void> {
+        // Get initial alive state and subscribe to changes
+        const instance = this.props.oContext.instance ?? '0';
+        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            this.setState({ alive: isAlive });
+
+            // Subscribe to alive state changes
+            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+        } catch (error) {
+            console.error('[PageAlarmEditor] Failed to get alive state or subscribe:', error);
+            this.setState({ alive: false });
+        }
+    }
+
+    // Callback for alive state changes
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const wasAlive = this.state.alive;
+        const isAlive = state ? !!state.val : false;
+
+        if (wasAlive !== isAlive) {
+            console.log('[PageAlarmEditor] Alive state changed:', { wasAlive, isAlive });
+            this.setState({ alive: isAlive });
+        }
+    };
 
     private getText(key: string): string {
         return this.props.getText(key);
@@ -80,12 +122,16 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 width: '50%',
                             },
                         }}
+                        disabled={!this.state.alive}
                     />
                 </Box>
 
                 {/* Radio for Alarm vs Unlock */}
                 <Box sx={{ mb: 1 }}>
-                    <FormControl component="fieldset">
+                    <FormControl
+                        component="fieldset"
+                        disabled={!this.state.alive}
+                    >
                         <Typography
                             variant="subtitle2"
                             sx={{ mb: 1 }}
@@ -128,6 +174,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
                     }}
                     sx={{ mb: 2 }}
+                    disabled={!this.state.alive}
                 />
 
                 {/* PIN field */}
@@ -164,6 +211,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 </InputAdornment>
                             ),
                         }}
+                        disabled={!this.state.alive}
                     />
                 </Box>
 
@@ -218,6 +266,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                                             },
                                                         },
                                                     }}
+                                                    disabled={!this.state.alive}
                                                 />
                                             </Box>
                                         );
@@ -254,6 +303,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                                     onChange={e => {
                                                         this.handleFieldChange(key, e.target.value);
                                                     }}
+                                                    disabled={!this.state.alive}
                                                     InputProps={{
                                                         disableUnderline: true,
                                                         sx: {
@@ -281,6 +331,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                         onChange={(_e, checked) => {
                                             this.handleFieldChange('approved', checked);
                                         }}
+                                        disabled={!this.state.alive}
                                     />
                                 }
                                 label={this.getText('unlock_approved')}
@@ -294,6 +345,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                         onChange={(_e, checked) => {
                                             this.handleFieldChange('global', checked);
                                         }}
+                                        disabled={!this.state.alive}
                                     />
                                 }
                                 label={this.getText('unlock_global')}
@@ -320,6 +372,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 this.handleFieldChange('setNavi', String((e.target as HTMLInputElement).value));
                             }}
                             sx={{ backgroundColor: 'transparent', px: 1, width: '60%' }}
+                            disabled={!this.state.alive}
                         >
                             <MenuItem value="">
                                 <em>{this.getText('unlock_setnavi_placeholder')}</em>

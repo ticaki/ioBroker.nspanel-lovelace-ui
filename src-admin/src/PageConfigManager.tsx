@@ -304,6 +304,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
                 />
             );
         }

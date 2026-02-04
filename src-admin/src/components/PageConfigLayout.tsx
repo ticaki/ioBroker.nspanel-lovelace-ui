@@ -14,7 +14,11 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
-import type { NavigationAssignmentList, PageConfigEntry } from '../../../src/lib/types/adminShareConfig';
+import {
+    type NavigationAssignmentList,
+    type PageConfigEntry,
+    ADAPTER_NAME,
+} from '../../../src/lib/types/adminShareConfig';
 
 export type PageCardType = 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
 
@@ -37,6 +41,7 @@ interface PageConfigLayoutState {
     newName: string;
     confirmDeleteOpen: boolean;
     confirmDeleteName: string | null;
+    alive?: boolean;
 }
 
 export class PageConfigLayout extends React.Component<PageConfigLayoutProps, PageConfigLayoutState> {
@@ -46,8 +51,47 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
             newName: '',
             confirmDeleteOpen: false,
             confirmDeleteName: null,
+            alive: false,
         };
     }
+
+    componentWillUnmount(): void {
+        // Unsubscribe from alive state changes
+        const instance = this.props.oContext.instance ?? '0';
+        this.props.oContext.socket.unsubscribeState(
+            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+            this.onAliveChanged,
+        );
+    }
+
+    async componentDidMount(): Promise<void> {
+        // Get initial alive state and subscribe to changes
+        const instance = this.props.oContext.instance ?? '0';
+        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            this.setState({ alive: isAlive });
+
+            // Subscribe to alive state changes
+            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+        } catch (error) {
+            console.error('[PageConfigLayout] Failed to get alive state or subscribe:', error);
+            this.setState({ alive: false });
+        }
+    }
+
+    // Callback for alive state changes
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const wasAlive = this.state.alive;
+        const isAlive = state ? !!state.val : false;
+
+        if (wasAlive !== isAlive) {
+            console.log('[PageConfigLayout] Alive state changed:', { wasAlive, isAlive });
+            this.setState({ alive: isAlive });
+        }
+    };
 
     private getText(key: string): string {
         return this.props.getText(key);
@@ -145,6 +189,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 {this.getText('page_type')}
                             </Typography>
                             <Select
+                                disabled={!this.state.alive}
                                 value={selectedCardType}
                                 onChange={e => {
                                     onCardTypeChange(e.target.value as PageCardType);
@@ -179,6 +224,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                         >
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 <TextField
+                                    disabled={!this.state.alive}
                                     aria-label="new-name"
                                     label={this.getText('new_page')}
                                     value={this.state.newName}
@@ -214,7 +260,9 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     variant="contained"
                                     onClick={this.handleAdd}
                                     disabled={
-                                        !this.state.newName.trim() || uniqueNames.includes(this.state.newName.trim())
+                                        !this.state.alive ||
+                                        !this.state.newName.trim() ||
+                                        uniqueNames.includes(this.state.newName.trim())
                                     }
                                 >
                                     +
@@ -262,11 +310,15 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                         {name}
                                     </Typography>
                                     <IconButton
+                                        disabled={!this.state.alive}
                                         className="delete-icon"
                                         edge="end"
                                         aria-label="delete"
                                         size="small"
                                         onClick={e => {
+                                            if (!this.state.alive) {
+                                                return;
+                                            }
                                             e.stopPropagation();
                                             this.handleDeleteClick(name);
                                         }}
@@ -274,6 +326,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                             color: 'error.main',
                                             opacity: { xs: 1, md: 0 },
                                             transition: 'opacity 0.2s',
+                                            pointerEvents: this.state.alive ? 'auto' : 'none',
                                         }}
                                     >
                                         <DeleteOutlineIcon fontSize="small" />
