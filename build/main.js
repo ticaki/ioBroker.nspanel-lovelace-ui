@@ -1776,7 +1776,6 @@ class NspanelLovelaceUi extends utils.Adapter {
               fs.writeFileSync(filePath, content, "utf8");
               this.log.info(`ICS-Datei gespeichert: ${filePath}`);
               const data = import_node_ical.default.parseICS(content);
-              let entryCount = 0;
               const eventNames = /* @__PURE__ */ new Set();
               for (const k in data) {
                 if (data[k].type === "VEVENT") {
@@ -1784,10 +1783,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                   if (eventName && eventName.trim() !== "") {
                     eventNames.add(eventName);
                   }
-                }
-                entryCount++;
-                if (entryCount >= 6) {
-                  break;
                 }
               }
               const events = Array.from(eventNames).map((name) => ({ summary: name }));
