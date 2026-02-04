@@ -765,19 +765,14 @@ export class Controller extends Library.BaseClass {
                         }
 
                         this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
-                        result = await getTrashDataFromState(daten.val, ...trashTypes, ...customTrash, ...iconColors);
+                        result = await getTrashDataFromState(daten.val, trashTypes, customTrash, iconColors);
                     } else {
                         if (!entry.trashFile || entry.trashFile.trim() === '') {
                             this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
                             return;
                         }
                         this.log.debug(`Processing trash data from file ${entry.trashFile}`);
-                        result = await getTrashDataFromFile(
-                            entry.trashFile,
-                            ...trashTypes,
-                            ...customTrash,
-                            ...iconColors,
-                        );
+                        result = await getTrashDataFromFile(entry.trashFile, trashTypes, customTrash, iconColors);
                     }
                     if (result.error) {
                         this.log.error(
@@ -789,6 +784,9 @@ export class Controller extends Library.BaseClass {
                     const messageCount = result.messages.length;
                     for (let i = 0; i < messageCount; i++) {
                         const messageData = result.messages[i];
+                        this.log.debug(
+                            `Trash message ${i} for entry ${entry.uniqueName}: ${JSON.stringify(messageData)}`,
+                        );
                         await this.statesControler.setInternalState(
                             `///pageTrash_${entry.uniqueName}_pageItem${i}`,
                             JSON.stringify(messageData),

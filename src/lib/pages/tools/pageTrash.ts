@@ -12,29 +12,11 @@ interface ItemObject {
 
 export async function getTrashDataFromState(
     trashJSON: any,
-    trashtype1: string = '',
-    trashtype2: string = '',
-    trashtype3: string = '',
-    trashtype4: string = '',
-    trashtype5: string = '',
-    trashtype6: string = '',
-    customTrash1: string = '',
-    customTrash2: string = '',
-    customTrash3: string = '',
-    customTrash4: string = '',
-    customTrash5: string = '',
-    customTrash6: string = '',
-    iconColor1: string = '',
-    iconColor2: string = '',
-    iconColor3: string = '',
-    iconColor4: string = '',
-    iconColor5: string = '',
-    iconColor6: string = '',
+    trashTypes: string[] = [],
+    customTrash: string[] = [],
+    iconColors: string[] = [],
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
-    const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
-    const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
-    const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
     const currentDate = new Date();
 
     try {
@@ -89,7 +71,7 @@ export async function getTrashDataFromState(
             if (trashIndex !== -1) {
                 items.push({
                     icon: 'trash-can',
-                    color: Color.ConvertHexToRgb(iconColor[trashIndex]),
+                    color: Color.ConvertHexToRgb(iconColors[trashIndex]),
                     text:
                         customTrash[trashIndex] && customTrash[trashIndex] !== ''
                             ? customTrash[trashIndex]
@@ -114,29 +96,11 @@ export async function getTrashDataFromState(
 
 export async function getTrashDataFromFile(
     trashFile: string = '',
-    trashtype1: string = '',
-    trashtype2: string = '',
-    trashtype3: string = '',
-    trashtype4: string = '',
-    trashtype5: string = '',
-    trashtype6: string = '',
-    customTrash1: string = '',
-    customTrash2: string = '',
-    customTrash3: string = '',
-    customTrash4: string = '',
-    customTrash5: string = '',
-    customTrash6: string = '',
-    iconColor1: string = '',
-    iconColor2: string = '',
-    iconColor3: string = '',
-    iconColor4: string = '',
-    iconColor5: string = '',
-    iconColor6: string = '',
+    trashTypes: string[] = [],
+    customTrash: string[] = [],
+    iconColors: string[] = [],
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
-    const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
-    const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
-    const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
 
     try {
         // Prüfe ob Datei existiert
@@ -204,7 +168,7 @@ export async function getTrashDataFromFile(
                 if (trashIndex !== -1) {
                     items.push({
                         icon: 'trash-can',
-                        color: Color.ConvertHexToRgb(iconColor[trashIndex]),
+                        color: Color.ConvertHexToRgb(iconColors[trashIndex]),
                         text:
                             customTrash[trashIndex] && customTrash[trashIndex] !== ''
                                 ? customTrash[trashIndex]

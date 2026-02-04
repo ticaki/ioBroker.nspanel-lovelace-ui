@@ -35,12 +35,9 @@ module.exports = __toCommonJS(pageTrash_exports);
 var import_Color = require("../../const/Color");
 var fs = __toESM(require("node:fs"));
 var import_node_ical = __toESM(require("node-ical"));
-async function getTrashDataFromState(trashJSON, trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
+async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [], iconColors = []) {
   var _a;
   const items = [];
-  const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
-  const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
-  const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
   const currentDate = /* @__PURE__ */ new Date();
   try {
     let trashData;
@@ -79,7 +76,7 @@ async function getTrashDataFromState(trashJSON, trashtype1 = "", trashtype2 = ""
       if (trashIndex !== -1) {
         items.push({
           icon: "trash-can",
-          color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
+          color: import_Color.Color.ConvertHexToRgb(iconColors[trashIndex]),
           text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
           text1: eventDatum,
           text2: eventDatumFormatted
@@ -95,11 +92,8 @@ async function getTrashDataFromState(trashJSON, trashtype1 = "", trashtype2 = ""
     return { messages: items, error };
   }
 }
-async function getTrashDataFromFile(trashFile = "", trashtype1 = "", trashtype2 = "", trashtype3 = "", trashtype4 = "", trashtype5 = "", trashtype6 = "", customTrash1 = "", customTrash2 = "", customTrash3 = "", customTrash4 = "", customTrash5 = "", customTrash6 = "", iconColor1 = "", iconColor2 = "", iconColor3 = "", iconColor4 = "", iconColor5 = "", iconColor6 = "") {
+async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash = [], iconColors = []) {
   const items = [];
-  const trashTypes = [trashtype1, trashtype2, trashtype3, trashtype4, trashtype5, trashtype6];
-  const customTrash = [customTrash1, customTrash2, customTrash3, customTrash4, customTrash5, customTrash6];
-  const iconColor = [iconColor1, iconColor2, iconColor3, iconColor4, iconColor5, iconColor6];
   try {
     if (!fs.existsSync(trashFile)) {
       console.warn(`.ics file ${trashFile} does not exist.`);
@@ -143,7 +137,7 @@ async function getTrashDataFromFile(trashFile = "", trashtype1 = "", trashtype2 
         if (trashIndex !== -1) {
           items.push({
             icon: "trash-can",
-            color: import_Color.Color.ConvertHexToRgb(iconColor[trashIndex]),
+            color: import_Color.Color.ConvertHexToRgb(iconColors[trashIndex]),
             text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
             text1: eventStartdatum.toLocaleString("de-DE", {
               year: "numeric",
