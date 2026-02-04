@@ -665,12 +665,12 @@ class Controller extends Library.BaseClass {
           if (entry.trashImport) {
             if (!state) {
               this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
-              return;
+              continue;
             }
             const daten = await this.adapter.getForeignStateAsync(state);
             if (!daten || !daten.val || daten.val === null || daten.val === "") {
               this.log.warn(`Trash state ${state} has no data .`);
-              return;
+              continue;
             }
             this.log.debug(
               `Processing trash data from state ${state} for entry ${entry.uniqueName}: ${JSON.stringify(daten.val)}`
@@ -685,7 +685,7 @@ class Controller extends Library.BaseClass {
           } else {
             if (!entry.trashFile || entry.trashFile.trim() === "") {
               this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
-              return;
+              continue;
             }
             this.log.debug(
               `Processing trash data from file ${entry.trashFile} for entry ${entry.uniqueName}`
@@ -702,7 +702,7 @@ class Controller extends Library.BaseClass {
             this.log.error(
               `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`
             );
-            return;
+            continue;
           }
           await this.statesControler.setInternalState(
             `///pageTrash_${entry.uniqueName}`,

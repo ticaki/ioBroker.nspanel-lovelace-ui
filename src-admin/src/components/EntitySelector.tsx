@@ -11,6 +11,7 @@ interface EntitySelectorProps {
     themeType: string;
     dialogName: string;
     filterFunc?: (obj: ioBroker.Object) => boolean;
+    disabled?: boolean;
 }
 
 interface EntitySelectorState {
@@ -30,7 +31,7 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
     }
 
     render(): React.ReactNode {
-        const { label, value, onChange, socket, theme, themeType, dialogName, filterFunc } = this.props;
+        const { label, value, onChange, socket, theme, themeType, dialogName, filterFunc, disabled } = this.props;
         const { showSelectDialog } = this.state;
 
         return (
@@ -47,11 +48,13 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
                         variant="standard"
                         value={value || ''}
                         onChange={e => onChange(e.target.value)}
+                        disabled={disabled}
                     />
                     <Button
                         variant="outlined"
                         onClick={() => this.setState({ showSelectDialog: true })}
                         sx={{ minWidth: 48 }}
+                        disabled={disabled}
                     >
                         ...
                     </Button>

@@ -35,6 +35,7 @@ export interface PageTrashEditorProps {
 interface PageTrashEditorState {
     uploadedEvents: Array<{ summary: string }>;
     selectedEvents: string[];
+    alive: boolean;
 }
 
 export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageTrashEditorState> {
@@ -45,8 +46,40 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
         this.state = {
             uploadedEvents: [],
             selectedEvents: [],
+            alive: false,
         };
     }
+
+    async componentDidMount(): Promise<void> {
+        const { oContext } = this.props;
+        const instance = oContext.instance ?? '0';
+        const aliveStateId = `system.adapter.${oContext.adapterName}.${instance}.alive`;
+
+        try {
+            const state = await oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            this.setState({ alive: isAlive });
+
+            await oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+        } catch (error) {
+            console.error('[PageTrashEditor] Failed to get alive state:', error);
+            this.setState({ alive: false });
+        }
+    }
+
+    componentWillUnmount(): void {
+        const { oContext } = this.props;
+        const instance = oContext.instance ?? '0';
+        oContext.socket.unsubscribeState(
+            `system.adapter.${oContext.adapterName}.${instance}.alive`,
+            this.onAliveChanged,
+        );
+    }
+
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const isAlive = state ? !!state.val : false;
+        this.setState({ alive: isAlive });
+    };
 
     private getText(key: string): string {
         return this.props.getText(key);
@@ -212,6 +245,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
 
     render(): React.JSX.Element {
         const { entry, oContext, theme } = this.props;
+        const { alive } = this.state;
 
         return (
             <Box>
@@ -230,6 +264,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
+                        disabled={!alive}
                         onChange={e => {
                             const newUniqueName = e.target.value;
                             if (newUniqueName.trim()) {
@@ -255,6 +290,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                     autoComplete="off"
                     label={this.getText('headline')}
                     value={entry.headline ?? ''}
+                    disabled={!alive}
                     onChange={e => {
                         this.handleFieldChange('headline', e.target.value);
                     }}
@@ -279,6 +315,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                     <Select
                         size="small"
                         value={entry.countItems || 4}
+                        disabled={!alive}
                         onChange={e => {
                             this.handleFieldChange('countItems', e.target.value);
                         }}
@@ -310,11 +347,13 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 value={true}
                                 control={<Radio />}
                                 label={this.getText('trash_import_state')}
+                                disabled={!alive}
                             />
                             <FormControlLabel
                                 value={false}
                                 control={<Radio />}
                                 label={this.getText('trash_import_ics_file')}
+                                disabled={!alive}
                             />
                         </RadioGroup>
                     </FormControl>
@@ -336,11 +375,13 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                             filterFunc={(obj: ioBroker.Object) => {
                                 return !!(obj && obj.type === 'state' && obj._id && obj._id.startsWith('ical.'));
                             }}
+                            disabled={!alive}
                         />
                         <Button
                             variant="text"
                             startIcon={<SearchIcon />}
                             onClick={this.handleSearchClick}
+                            disabled={!alive}
                             sx={{ minWidth: 120, mt: 1 }}
                         >
                             {this.getText('trash_search_events')}
@@ -384,7 +425,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 <Button
                                     variant="contained"
                                     onClick={this.handleApplySelection}
-                                    disabled={this.state.selectedEvents.length === 0}
+                                    disabled={!alive || this.state.selectedEvents.length === 0}
                                     sx={{ mt: 1 }}
                                 >
                                     {this.getText('trash_apply_selection')}
@@ -405,6 +446,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 autoComplete="off"
                                 label={this.getText('trash_ics_file_path')}
                                 value={entry.trashFile ?? ''}
+                                disabled={!alive}
                                 onChange={e => {
                                     this.handleFieldChange('trashFile', e.target.value);
                                 }}
@@ -417,6 +459,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 variant="text"
                                 startIcon={<UploadIcon />}
                                 onClick={this.handleUploadClick}
+                                disabled={!alive}
                                 sx={{ minWidth: 120, mb: 0.5 }}
                             >
                                 {this.getText('upload_file')}
@@ -468,7 +511,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 <Button
                                     variant="contained"
                                     onClick={this.handleApplySelection}
-                                    disabled={this.state.selectedEvents.length === 0}
+                                    disabled={!alive || this.state.selectedEvents.length === 0}
                                     sx={{ mt: 1 }}
                                 >
                                     {this.getText('trash_apply_selection')}
@@ -501,6 +544,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 type="color"
                                 label={this.getText(`trash_color_field_${index + 1}`)}
                                 value={item.iconColor || '#d2d2d2'}
+                                disabled={!alive}
                                 onChange={e => {
                                     this.handleItemChange(index, 'iconColor', e.target.value);
                                 }}
@@ -516,6 +560,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 autoComplete="off"
                                 label={this.getText(`trash_text_field_${index + 1}`)}
                                 value={item.textTrash || ''}
+                                disabled={!alive}
                                 onChange={e => {
                                     this.handleItemChange(index, 'textTrash', e.target.value);
                                 }}
@@ -531,6 +576,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 autoComplete="off"
                                 label={this.getText(`trash_custom_text_field_${index + 1}`)}
                                 value={item.customTrash || ''}
+                                disabled={!alive}
                                 onChange={e => {
                                     this.handleItemChange(index, 'customTrash', e.target.value);
                                 }}
