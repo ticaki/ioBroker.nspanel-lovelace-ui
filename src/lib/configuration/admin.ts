@@ -279,13 +279,13 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
                     true: {
                         value: {
                             type: 'internal' as const,
-                            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-                            read: `return JSON.parse(val).icon;`,
+                            dp: `///pageTrash_${entry.uniqueName}`,
+                            read: `return val[${i}].icon;`,
                         },
                         color: {
                             type: 'internal' as const,
-                            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-                            read: `return JSON.parse(val).color;`,
+                            dp: `///pageTrash_${entry.uniqueName}`,
+                            read: `return val[${i}].color;`,
                         },
                     },
                 },
@@ -295,16 +295,16 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
                 text: {
                     true: {
                         type: 'internal' as const,
-                        dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-                        read: `return JSON.parse(val).text;`,
+                        dp: `///pageTrash_${entry.uniqueName}`,
+                        read: `return val[${i}].text;`,
                     },
                     false: undefined,
                 },
                 text1: {
                     true: {
                         type: 'internal' as const,
-                        dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-                        read: `return JSON.parse(val).text1;`,
+                        dp: `///pageTrash_${entry.uniqueName}`,
+                        read: `return val[${i}].text1;`,
                     },
                     false: undefined,
                 },

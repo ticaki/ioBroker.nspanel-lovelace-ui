@@ -764,7 +764,9 @@ export class Controller extends Library.BaseClass {
                             return;
                         }
 
-                        this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
+                        this.log.debug(
+                            `Processing trash data from state ${state} for entry ${entry.uniqueName}: ${JSON.stringify(daten.val)}`,
+                        );
                         result = await getTrashDataFromState(
                             daten.val,
                             trashTypes,
@@ -777,7 +779,9 @@ export class Controller extends Library.BaseClass {
                             this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
                             return;
                         }
-                        this.log.debug(`Processing trash data from file ${entry.trashFile}`);
+                        this.log.debug(
+                            `Processing trash data from file ${entry.trashFile} for entry ${entry.uniqueName}`,
+                        );
                         result = await getTrashDataFromFile(
                             entry.trashFile,
                             trashTypes,
@@ -793,28 +797,21 @@ export class Controller extends Library.BaseClass {
                         return;
                     }
 
-                    const messageCount = result.messages.length;
-                    for (let i = 0; i < messageCount; i++) {
-                        const messageData = result.messages[i];
-                        this.log.debug(
-                            `Trash message ${i} for entry ${entry.uniqueName}: ${JSON.stringify(messageData)}`,
-                        );
-                        await this.statesControler.setInternalState(
-                            `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-                            JSON.stringify(messageData),
-                            false,
-                            getInternalDefaults('string', 'text', false),
-                        );
-                        await this.adapter.delay(10);
-                        await this.statesControler.setInternalState(
-                            `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-                            JSON.stringify(messageData),
-                            false,
-                        );
-                    }
+                    await this.statesControler.setInternalState(
+                        `///pageTrash_${entry.uniqueName}`,
+                        result.messages,
+                        false,
+                        getInternalDefaults('string', 'text', false),
+                    );
+                    await this.adapter.delay(10);
+                    await this.statesControler.setInternalState(
+                        `///pageTrash_${entry.uniqueName}`,
+                        result.messages,
+                        false,
+                    );
 
-                    this.log.debug(`count of trash messages: ${messageCount}`);
-                    this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
+                    this.log.debug(`count of trash messages : ${result.messages.length}`);
+                    this.log.debug(`Trash message for entry ${entry.uniqueName}: ${JSON.stringify(result.messages)}`);
                 } catch (error: any) {
                     this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);
                 }

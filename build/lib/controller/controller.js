@@ -672,7 +672,9 @@ class Controller extends Library.BaseClass {
               this.log.warn(`Trash state ${state} has no data .`);
               return;
             }
-            this.log.debug(`Processing trash data from state ${state}: ${JSON.stringify(daten.val)}`);
+            this.log.debug(
+              `Processing trash data from state ${state} for entry ${entry.uniqueName}: ${JSON.stringify(daten.val)}`
+            );
             result = await (0, import_pageTrash.getTrashDataFromState)(
               daten.val,
               trashTypes,
@@ -685,7 +687,9 @@ class Controller extends Library.BaseClass {
               this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
               return;
             }
-            this.log.debug(`Processing trash data from file ${entry.trashFile}`);
+            this.log.debug(
+              `Processing trash data from file ${entry.trashFile} for entry ${entry.uniqueName}`
+            );
             result = await (0, import_pageTrash.getTrashDataFromFile)(
               entry.trashFile,
               trashTypes,
@@ -700,27 +704,20 @@ class Controller extends Library.BaseClass {
             );
             return;
           }
-          const messageCount = result.messages.length;
-          for (let i = 0; i < messageCount; i++) {
-            const messageData = result.messages[i];
-            this.log.debug(
-              `Trash message ${i} for entry ${entry.uniqueName}: ${JSON.stringify(messageData)}`
-            );
-            await this.statesControler.setInternalState(
-              `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-              JSON.stringify(messageData),
-              false,
-              (0, import_tools.getInternalDefaults)("string", "text", false)
-            );
-            await this.adapter.delay(10);
-            await this.statesControler.setInternalState(
-              `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-              JSON.stringify(messageData),
-              false
-            );
-          }
-          this.log.debug(`count of trash messages: ${messageCount}`);
-          this.log.debug(`Trash data processed successfully: ${JSON.stringify(result.messages)}`);
+          await this.statesControler.setInternalState(
+            `///pageTrash_${entry.uniqueName}`,
+            result.messages,
+            false,
+            (0, import_tools.getInternalDefaults)("string", "text", false)
+          );
+          await this.adapter.delay(10);
+          await this.statesControler.setInternalState(
+            `///pageTrash_${entry.uniqueName}`,
+            result.messages,
+            false
+          );
+          this.log.debug(`count of trash messages : ${result.messages.length}`);
+          this.log.debug(`Trash message for entry ${entry.uniqueName}: ${JSON.stringify(result.messages)}`);
         } catch (error) {
           this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);
         }

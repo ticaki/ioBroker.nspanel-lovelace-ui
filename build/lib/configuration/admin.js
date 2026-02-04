@@ -259,13 +259,13 @@ function dataForcardTrash(entry) {
           true: {
             value: {
               type: "internal",
-              dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-              read: `return JSON.parse(val).icon;`
+              dp: `///pageTrash_${entry.uniqueName}`,
+              read: `return val[${i}].icon;`
             },
             color: {
               type: "internal",
-              dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-              read: `return JSON.parse(val).color;`
+              dp: `///pageTrash_${entry.uniqueName}`,
+              read: `return val[${i}].color;`
             }
           }
         },
@@ -275,16 +275,16 @@ function dataForcardTrash(entry) {
         text: {
           true: {
             type: "internal",
-            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-            read: `return JSON.parse(val).text;`
+            dp: `///pageTrash_${entry.uniqueName}`,
+            read: `return val[${i}].text;`
           },
           false: void 0
         },
         text1: {
           true: {
             type: "internal",
-            dp: `///pageTrash_${entry.uniqueName}_pageItem${i}`,
-            read: `return JSON.parse(val).text1;`
+            dp: `///pageTrash_${entry.uniqueName}`,
+            read: `return val[${i}].text1;`
           },
           false: void 0
         }
