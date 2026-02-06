@@ -369,6 +369,7 @@
     "trash_import_type": "Import type",
     "trash_number_of_entities": "Number of trash entries on the page",
     "trash_search_events": "Search events",
+    "trash_select_events": "Select events",
     "trash_state": "JSON State",
     "trash_text_field_1": "Trash type 1",
     "trash_text_field_2": "Trash type 2",

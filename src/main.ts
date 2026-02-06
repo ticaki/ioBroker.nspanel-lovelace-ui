@@ -2039,23 +2039,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                         try {
                             const { filename, content } = obj.message as { filename: string; content: string };
 
-                            // Speicherpfad definieren (z.B. im Adapter-Verzeichnis)
-                            const uploadDir = path.join(this.adapterDir, 'ics-files');
-                            this.log.debug(`ICS-Datei Upload Verzeichnis: ${uploadDir}`);
+                            // Speichern der Datei im ioBroker-Dateisystem
+                            await this.writeFileAsync(this.namespace, filename, content);
+                            this.log.info(`ICS-Datei in ioBroker-Dateisystem gespeichert : ${filename}`);
 
-                            // Verzeichnis erstellen falls nicht vorhanden
-                            if (!fs.existsSync(uploadDir)) {
-                                fs.mkdirSync(uploadDir, { recursive: true });
-                            }
-
-                            const filePath = path.join(uploadDir, filename);
-                            this.log.debug(`ICS-Datei Pfad: ${filePath}`);
-                            fs.writeFileSync(filePath, content, 'utf8');
-
-                            this.log.info(`ICS-Datei gespeichert: ${filePath}`);
-
-                            // Optional: ICS-Datei verarbeiten
-                            //await this.processIcsFile(filePath);
                             const data = iCal.parseICS(content);
 
                             const eventNames = new Set<string>();
@@ -2077,7 +2064,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 this.sendTo(
                                     obj.from,
                                     obj.command,
-                                    { success: true, path: filePath, events: events },
+                                    { success: true, path: filename, events: events },
                                     obj.callback,
                                 );
                             }

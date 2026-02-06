@@ -33,7 +33,6 @@ __export(pageTrash_exports, {
 });
 module.exports = __toCommonJS(pageTrash_exports);
 var import_Color = require("../../const/Color");
-var fs = __toESM(require("node:fs"));
 var import_node_ical = __toESM(require("node-ical"));
 async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [], iconColors = [], countItems = 6) {
   var _a;
@@ -91,18 +90,17 @@ async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [
     return { messages: items, error };
   }
 }
-async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash = [], iconColors = [], countItems = 6) {
+async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash = [], iconColors = [], countItems = 6, adapter) {
   const items = [];
   try {
-    if (!fs.existsSync(trashFile)) {
-      console.warn(`.ics file ${trashFile} does not exist.`);
-      return { messages: items, error: `File ${trashFile} does not exist` };
+    if (!await adapter.fileExistsAsync(adapter.namespace, trashFile)) {
+      return { messages: items, error: `File ${trashFile} does not exist in ioBroker files` };
     }
     let fileData;
     try {
-      fileData = fs.readFileSync(trashFile, "utf-8");
+      fileData = (await adapter.readFileAsync(adapter.namespace, trashFile)).file.toString("utf-8");
     } catch (readError) {
-      console.error(`Error reading ${trashFile}:`, readError);
+      console.error(`Error reading ${trashFile} from ioBroker files:`, readError);
       return { messages: items, error: readError };
     }
     const data = import_node_ical.default.parseICS(fileData);

@@ -788,6 +788,7 @@ export class Controller extends Library.BaseClass {
                             customTrash,
                             iconColors,
                             entry.countItems,
+                            this.adapter,
                         );
                     }
                     if (result.error) {

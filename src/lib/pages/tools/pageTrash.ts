@@ -1,6 +1,7 @@
 import { Color } from '../../const/Color';
-import * as fs from 'node:fs';
+//import * as fs from 'node:fs';
 import iCal from 'node-ical';
+import { type AdapterClassDefinition } from '../../controller/library';
 
 interface ItemObject {
     icon: string;
@@ -100,22 +101,22 @@ export async function getTrashDataFromFile(
     customTrash: string[] = [],
     iconColors: string[] = [],
     countItems: number = 6,
+    adapter: AdapterClassDefinition,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
 
     try {
         // Prüfe ob Datei existiert
-        if (!fs.existsSync(trashFile)) {
-            console.warn(`.ics file ${trashFile} does not exist.`);
-            return { messages: items, error: `File ${trashFile} does not exist` };
+        if (!(await adapter.fileExistsAsync(adapter.namespace, trashFile))) {
+            return { messages: items, error: `File ${trashFile} does not exist in ioBroker files` };
         }
 
         // Lese Datei
-        let fileData: string;
+        let fileData: any;
         try {
-            fileData = fs.readFileSync(trashFile, 'utf-8');
+            fileData = (await adapter.readFileAsync(adapter.namespace, trashFile)).file.toString('utf-8');
         } catch (readError) {
-            console.error(`Error reading ${trashFile}:`, readError);
+            console.error(`Error reading ${trashFile} from ioBroker files:`, readError);
             return { messages: items, error: readError };
         }
 

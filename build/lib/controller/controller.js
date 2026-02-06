@@ -695,7 +695,8 @@ class Controller extends Library.BaseClass {
               trashTypes,
               customTrash,
               iconColors,
-              entry.countItems
+              entry.countItems,
+              this.adapter
             );
           }
           if (result.error) {

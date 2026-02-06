@@ -1766,15 +1766,8 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (obj.command === "uploadIcs") {
             try {
               const { filename, content } = obj.message;
-              const uploadDir = import_path.default.join(this.adapterDir, "ics-files");
-              this.log.debug(`ICS-Datei Upload Verzeichnis: ${uploadDir}`);
-              if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-              }
-              const filePath = import_path.default.join(uploadDir, filename);
-              this.log.debug(`ICS-Datei Pfad: ${filePath}`);
-              fs.writeFileSync(filePath, content, "utf8");
-              this.log.info(`ICS-Datei gespeichert: ${filePath}`);
+              await this.writeFileAsync(this.namespace, filename, content);
+              this.log.info(`ICS-Datei in ioBroker gespeichert : ${filename}`);
               const data = import_node_ical.default.parseICS(content);
               const eventNames = /* @__PURE__ */ new Set();
               for (const k in data) {
@@ -1793,7 +1786,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.sendTo(
                   obj.from,
                   obj.command,
-                  { success: true, path: filePath, events },
+                  { success: true, path: filename, events },
                   obj.callback
                 );
               }

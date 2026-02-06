@@ -369,6 +369,7 @@
     "trash_import_type": "Importtyp",
     "trash_number_of_entities": "Anzahl der Abfalltemine auf der Seite",
     "trash_search_events": "Ereignisse suchen",
+    "trash_select_events": "Ereignisse auswählen",
     "trash_state": "JSON State",
     "trash_text_field_1": "Abfallart 1",
     "trash_text_field_2": "Abfallart 2",
