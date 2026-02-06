@@ -653,6 +653,10 @@ class Controller extends Library.BaseClass {
   }
   async getTrashDaten(init = false) {
     try {
+      if (!this.adapter.config.pageConfig) {
+        this.log.debug("No pageConfig available, skipping trash data update.");
+        return;
+      }
       const trashEntries = this.adapter.config.pageConfig.filter((e) => e.card === "cardTrash");
       this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
       for (const entry of trashEntries) {

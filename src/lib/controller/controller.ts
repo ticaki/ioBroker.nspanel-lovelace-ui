@@ -741,6 +741,10 @@ export class Controller extends Library.BaseClass {
 
     async getTrashDaten(init: boolean = false): Promise<void> {
         try {
+            if (!this.adapter.config.pageConfig) {
+                this.log.debug('No pageConfig available, skipping trash data update.');
+                return;
+            }
             const trashEntries = this.adapter.config.pageConfig.filter(e => e.card === 'cardTrash');
             this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
 
@@ -751,7 +755,7 @@ export class Controller extends Library.BaseClass {
                     const customTrash = entry.items.map(item => item.customTrash || '');
                     const iconColors = entry.items.map(item => item.iconColor || '');
 
-                    let result: { error?: unknown; messages: unknown[] };
+                    let result: { messages: unknown[]; error?: unknown };
                     if (entry.trashImport) {
                         if (!state) {
                             this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
