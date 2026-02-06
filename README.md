@@ -158,7 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**  
-- (tt-tom17) add Trashpage to Admin-Tab ConfigPages 
+- (tt-tom17) add PageTrash to Admin-Tab PageConfig 
   
 ### 0.10.0 (2026-01-17)
 - (ticaki) Confirmation click for role button
