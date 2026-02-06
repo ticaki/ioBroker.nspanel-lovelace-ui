@@ -1767,7 +1767,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             try {
               const { filename, content } = obj.message;
               await this.writeFileAsync(this.namespace, filename, content);
-              this.log.info(`ICS-Datei in ioBroker gespeichert : ${filename}`);
+              this.log.info(`ICS-Datei in ioBroker-Dateisystem gespeichert : ${filename}`);
               const data = import_node_ical.default.parseICS(content);
               const eventNames = /* @__PURE__ */ new Set();
               for (const k in data) {

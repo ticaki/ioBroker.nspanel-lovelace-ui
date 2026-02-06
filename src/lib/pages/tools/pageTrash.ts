@@ -8,18 +8,18 @@ interface ItemObject {
     color: { r: number; g: number; b: number };
     text: string;
     text1: string;
-    text2?: string;
 }
 
 export async function getTrashDataFromState(
     trashJSON: any,
+    entry: any,
     trashTypes: string[] = [],
     customTrash: string[] = [],
     iconColors: string[] = [],
-    countItems: number = 6,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
     const currentDate = new Date();
+    const countItems = entry.countItems ?? 6;
 
     try {
         // Parse trashJSON wenn es ein String ist
@@ -96,14 +96,15 @@ export async function getTrashDataFromState(
 }
 
 export async function getTrashDataFromFile(
-    trashFile: string = '',
+    entry: any,
     trashTypes: string[] = [],
     customTrash: string[] = [],
     iconColors: string[] = [],
-    countItems: number = 6,
     adapter: AdapterClassDefinition,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
+    const trashFile = entry.trashFile;
+    const countItems = entry.countItems ?? 6;
 
     try {
         // Prüfe ob Datei existiert

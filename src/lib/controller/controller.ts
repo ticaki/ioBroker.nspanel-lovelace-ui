@@ -419,7 +419,7 @@ export class Controller extends Library.BaseClass {
         void this.minuteLoop();
         void this.hourLoop();
         await this.checkOnlineVersion();
-        await this.getTrashDaten();
+        await this.getTrashDaten(true);
         this.log.info(`${this.panels.length} Panels initialized`);
     }
 
@@ -739,7 +739,7 @@ export class Controller extends Library.BaseClass {
         return result;
     }
 
-    async getTrashDaten(): Promise<void> {
+    async getTrashDaten(init: boolean = false): Promise<void> {
         try {
             const trashEntries = this.adapter.config.pageConfig.filter(e => e.card === 'cardTrash');
             this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
@@ -764,16 +764,8 @@ export class Controller extends Library.BaseClass {
                             continue;
                         }
 
-                        this.log.debug(
-                            `Processing trash data from state ${state} for entry ${entry.uniqueName}: ${JSON.stringify(daten.val)}`,
-                        );
-                        result = await getTrashDataFromState(
-                            daten.val,
-                            trashTypes,
-                            customTrash,
-                            iconColors,
-                            entry.countItems,
-                        );
+                        this.log.debug(`Processing trash data from state ${state} for entry ${entry.uniqueName}`);
+                        result = await getTrashDataFromState(daten.val, entry, trashTypes, customTrash, iconColors);
                     } else {
                         if (!entry.trashFile || entry.trashFile.trim() === '') {
                             this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
@@ -782,14 +774,7 @@ export class Controller extends Library.BaseClass {
                         this.log.debug(
                             `Processing trash data from file ${entry.trashFile} for entry ${entry.uniqueName}`,
                         );
-                        result = await getTrashDataFromFile(
-                            entry.trashFile,
-                            trashTypes,
-                            customTrash,
-                            iconColors,
-                            entry.countItems,
-                            this.adapter,
-                        );
+                        result = await getTrashDataFromFile(entry, trashTypes, customTrash, iconColors, this.adapter);
                     }
                     if (result.error) {
                         this.log.error(
@@ -798,13 +783,16 @@ export class Controller extends Library.BaseClass {
                         continue;
                     }
 
-                    await this.statesControler.setInternalState(
-                        `///pageTrash_${entry.uniqueName}`,
-                        result.messages,
-                        false,
-                        getInternalDefaults('string', 'text', false),
-                    );
-                    await this.adapter.delay(10);
+                    if (init) {
+                        await this.statesControler.setInternalState(
+                            `///pageTrash_${entry.uniqueName}`,
+                            '',
+                            false,
+                            getInternalDefaults('string', 'text', false),
+                        );
+                        await this.adapter.delay(10);
+                        this.log.debug(`Set InternalState for ///pageTrash_${entry.uniqueName}`);
+                    }
                     await this.statesControler.setInternalState(
                         `///pageTrash_${entry.uniqueName}`,
                         result.messages,

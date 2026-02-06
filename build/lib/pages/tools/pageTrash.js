@@ -34,10 +34,11 @@ __export(pageTrash_exports, {
 module.exports = __toCommonJS(pageTrash_exports);
 var import_Color = require("../../const/Color");
 var import_node_ical = __toESM(require("node-ical"));
-async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [], iconColors = [], countItems = 6) {
-  var _a;
+async function getTrashDataFromState(trashJSON, entry, trashTypes = [], customTrash = [], iconColors = []) {
+  var _a, _b;
   const items = [];
   const currentDate = /* @__PURE__ */ new Date();
+  const countItems = (_a = entry.countItems) != null ? _a : 6;
   try {
     let trashData;
     if (typeof trashJSON === "string") {
@@ -56,7 +57,7 @@ async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [
       if (!eventName || eventName.trim() === "") {
         continue;
       }
-      const eventDatum = ((_a = trashObject.date) == null ? void 0 : _a.trim()) || "";
+      const eventDatum = ((_b = trashObject.date) == null ? void 0 : _b.trim()) || "";
       const eventStartdatum = new Date(trashObject._date);
       if (currentDate.getTime() > eventStartdatum.getTime()) {
         continue;
@@ -90,8 +91,11 @@ async function getTrashDataFromState(trashJSON, trashTypes = [], customTrash = [
     return { messages: items, error };
   }
 }
-async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash = [], iconColors = [], countItems = 6, adapter) {
+async function getTrashDataFromFile(entry, trashTypes = [], customTrash = [], iconColors = [], adapter) {
+  var _a;
   const items = [];
+  const trashFile = entry.trashFile;
+  const countItems = (_a = entry.countItems) != null ? _a : 6;
   try {
     if (!await adapter.fileExistsAsync(adapter.namespace, trashFile)) {
       return { messages: items, error: `File ${trashFile} does not exist in ioBroker files` };
@@ -105,7 +109,7 @@ async function getTrashDataFromFile(trashFile = "", trashTypes = [], customTrash
     }
     const data = import_node_ical.default.parseICS(fileData);
     const arrayData = Object.values(data).filter(
-      (entry) => entry && typeof entry === "object" && entry.type === "VEVENT" && new Date(entry.start).getTime() > Date.now()
+      (entry2) => entry2 && typeof entry2 === "object" && entry2.type === "VEVENT" && new Date(entry2.start).getTime() > Date.now()
     );
     arrayData.sort((a, b) => {
       const dateA = new Date(a.start).getTime();
