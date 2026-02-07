@@ -16,7 +16,7 @@ import * as utils from '@iobroker/adapter-core';
 import { Library } from './lib/controller/library';
 import 'source-map-support/register';
 // Load your modules here, e.g.:
-// import * as fs from "fs";
+
 import * as MQTT from './lib/classes/mqtt';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
@@ -33,7 +33,7 @@ import { testScriptConfig } from './lib/const/test';
 import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { oldQRType } from './lib/types/types';
-//import fs from 'fs';
+import iCal from 'node-ical';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -2031,6 +2031,54 @@ class NspanelLovelaceUi extends utils.Adapter {
                     // Send response in callback if required
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
+                case 'uploadIcs': {
+                    if (obj.command === 'uploadIcs') {
+                        try {
+                            const { filename, content } = obj.message as { filename: string; content: string };
+
+                            // Speichern der Datei im ioBroker-Dateisystem
+                            await this.writeFileAsync(this.namespace, filename, content);
+                            this.log.info(`ICS-Datei in ioBroker-Dateisystem gespeichert : ${filename}`);
+
+                            const data = iCal.parseICS(content);
+
+                            const eventNames = new Set<string>();
+                            for (const k in data) {
+                                if (data[k].type === 'VEVENT') {
+                                    const eventName = data[k].summary;
+                                    if (eventName && eventName.trim() !== '') {
+                                        eventNames.add(eventName);
+                                    }
+                                }
+                            }
+                            const events = Array.from(eventNames).map(name => ({ summary: name }));
+                            this.log.debug(
+                                `ICS-Datei verarbeitet. Folgende Ereignisse gefunden: ${JSON.stringify(events)}`,
+                            );
+
+                            // Antwort senden
+                            if (obj.callback) {
+                                this.sendTo(
+                                    obj.from,
+                                    obj.command,
+                                    { success: true, path: filename, events: events },
+                                    obj.callback,
+                                );
+                            }
+                        } catch (error: any) {
+                            this.log.error(`Fehler beim ICS-Upload: ${error}`);
+                            if (obj.callback) {
+                                this.sendTo(
+                                    obj.from,
+                                    obj.command,
+                                    { success: false, error: error.message },
+                                    obj.callback,
+                                );
+                            }
+                        }
                     }
                     break;
                 }

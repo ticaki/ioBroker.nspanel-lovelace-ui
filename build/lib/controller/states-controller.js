@@ -180,6 +180,9 @@ class StatesControler extends import_library.BaseClass {
       this.log.debug(`Cleaned up ${expiredIds.length} expired stateDB entries`);
     }
   }
+  existsState(id) {
+    return this.triggerDB[id] !== void 0 || this.stateDB[id] !== void 0;
+  }
   /**
    * Registriert einen Trigger auf einen *fremden* State (nicht im eigenen Namespace)
    * und initialisiert die Trigger-Datenbank inkl. Abo & aktuellem Wert.

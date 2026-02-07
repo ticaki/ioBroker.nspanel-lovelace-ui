@@ -73,7 +73,7 @@ export class MQTTClientClass extends BaseClass {
         this.client.on('error', err => {
             this.ready = false;
 
-            this.log.error(`MQTT error: ${String(err)}`);
+            this.log.error(`MQTT error: ${JSON.stringify(err)}`);
         });
 
         this.client.on('close', () => {

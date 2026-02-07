@@ -38,6 +38,7 @@ var import_definition = require("../const/definition");
 var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
 var import_Color = require("../const/Color");
+var import_pageTrash = require("../pages/tools/pageTrash");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -144,6 +145,9 @@ class Controller extends Library.BaseClass {
     }
     if (hourNow % 8 === 0) {
       await this.checkOnlineVersion();
+    }
+    if (hourNow % 6 === 0) {
+      await this.getTrashDaten();
     }
     if (this.unload || this.adapter.unload) {
       return;
@@ -403,6 +407,8 @@ class Controller extends Library.BaseClass {
     void this.minuteLoop();
     void this.hourLoop();
     await this.checkOnlineVersion();
+    await this.getTrashDaten(true);
+    this.log.info(`${this.panels.length} Panels initialized`);
   }
   addPanel = async (panel) => {
     let index = this.panels.findIndex((p) => p.topic === panel.topic);
@@ -612,6 +618,7 @@ class Controller extends Library.BaseClass {
   /**
    * Baut ein zusammengefasstes Farb-Objekt aus allen Color-Accordion Arrays.
    * Nimmt Color.defaultTheme als Basis und überschreibt nur definierte Werte.
+   *
    */
   buildCustomColorTheme() {
     const cfg = this.adapter.config;
@@ -643,6 +650,74 @@ class Controller extends Library.BaseClass {
     merge(cfg.colorScreensaver);
     merge(cfg.colorCardMedia);
     return result;
+  }
+  async getTrashDaten(init = false) {
+    try {
+      if (!this.adapter.config.pageConfig) {
+        this.log.debug("No pageConfig available, skipping trash data update.");
+        return;
+      }
+      const trashEntries = this.adapter.config.pageConfig.filter((e) => e.card === "cardTrash");
+      this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
+      for (const entry of trashEntries) {
+        try {
+          const state = entry.trashState || "";
+          const trashTypes = entry.items.map((item) => item.textTrash || "");
+          const customTrash = entry.items.map((item) => item.customTrash || "");
+          const iconColors = entry.items.map((item) => item.iconColor || "");
+          let result;
+          if (entry.trashImport) {
+            if (!state) {
+              this.log.warn(`No trash state defined for entry: ${entry.uniqueName}`);
+              continue;
+            }
+            const daten = await this.adapter.getForeignStateAsync(state);
+            if (!daten || !daten.val || daten.val === null || daten.val === "") {
+              this.log.warn(`Trash state ${state} has no data .`);
+              continue;
+            }
+            this.log.debug(`Processing trash data from state ${state} for entry ${entry.uniqueName}`);
+            result = await (0, import_pageTrash.getTrashDataFromState)(daten.val, entry, trashTypes, customTrash, iconColors);
+          } else {
+            if (!entry.trashFile || entry.trashFile.trim() === "") {
+              this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
+              continue;
+            }
+            this.log.debug(
+              `Processing trash data from file ${entry.trashFile} for entry ${entry.uniqueName}`
+            );
+            result = await (0, import_pageTrash.getTrashDataFromFile)(entry, trashTypes, customTrash, iconColors, this.adapter);
+          }
+          if (result.error) {
+            this.log.error(
+              `Error processing trash data for ${entry.uniqueName}: ${JSON.stringify(result.error)}`
+            );
+            continue;
+          }
+          if (init) {
+            await this.statesControler.setInternalState(
+              `///pageTrash_${entry.uniqueName}`,
+              "",
+              false,
+              (0, import_tools.getInternalDefaults)("string", "text", false)
+            );
+            await this.adapter.delay(10);
+            this.log.debug(`Set InternalState for ///pageTrash_${entry.uniqueName}`);
+          }
+          await this.statesControler.setInternalState(
+            `///pageTrash_${entry.uniqueName}`,
+            result.messages,
+            false
+          );
+          this.log.debug(`count of trash messages : ${result.messages.length}`);
+          this.log.debug(`Trash message for entry ${entry.uniqueName}: ${JSON.stringify(result.messages)}`);
+        } catch (error) {
+          this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);
+        }
+      }
+    } catch (error) {
+      this.log.error(`getTrashDaten error: ${error.message}`);
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

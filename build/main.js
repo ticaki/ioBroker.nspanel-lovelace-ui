@@ -36,6 +36,7 @@ var fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
+var import_node_ical = __toESM(require("node-ical"));
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -1758,6 +1759,48 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, [], obj.callback);
+          }
+          break;
+        }
+        case "uploadIcs": {
+          if (obj.command === "uploadIcs") {
+            try {
+              const { filename, content } = obj.message;
+              await this.writeFileAsync(this.namespace, filename, content);
+              this.log.info(`ICS-Datei in ioBroker-Dateisystem gespeichert : ${filename}`);
+              const data = import_node_ical.default.parseICS(content);
+              const eventNames = /* @__PURE__ */ new Set();
+              for (const k in data) {
+                if (data[k].type === "VEVENT") {
+                  const eventName = data[k].summary;
+                  if (eventName && eventName.trim() !== "") {
+                    eventNames.add(eventName);
+                  }
+                }
+              }
+              const events = Array.from(eventNames).map((name) => ({ summary: name }));
+              this.log.debug(
+                `ICS-Datei verarbeitet. Folgende Ereignisse gefunden: ${JSON.stringify(events)}`
+              );
+              if (obj.callback) {
+                this.sendTo(
+                  obj.from,
+                  obj.command,
+                  { success: true, path: filename, events },
+                  obj.callback
+                );
+              }
+            } catch (error) {
+              this.log.error(`Fehler beim ICS-Upload: ${error}`);
+              if (obj.callback) {
+                this.sendTo(
+                  obj.from,
+                  obj.command,
+                  { success: false, error: error.message },
+                  obj.callback
+                );
+              }
+            }
           }
           break;
         }

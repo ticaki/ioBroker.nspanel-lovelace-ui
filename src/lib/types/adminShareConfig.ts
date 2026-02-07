@@ -140,7 +140,24 @@ export type QREntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
-export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry;
+export type TrashItem = {
+    textTrash: string;
+    customTrash: string;
+    iconColor: string;
+};
+
+export type TrashEntry = {
+    card: 'cardTrash';
+    uniqueName: string;
+    headline: string;
+    countItems: number; // Anzahl der anzuzeigenden Müllarten
+    trashImport: boolean; // true = Import from iCal Adapter, false = Import from .ics file
+    trashState: string; // Object ID Selector
+    trashFile: string; // textfield for file name incl. path
+    items: TrashItem[]; // Array statt 6 einzelne Felder pro Typ
+} & PageConfigBaseFields;
+
+export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | TrashEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;
@@ -155,4 +172,4 @@ export type NavigationAssignment = {
 
 export type NavigationAssignmentList = NavigationAssignment[];
 
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry;
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
