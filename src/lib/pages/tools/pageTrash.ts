@@ -47,7 +47,6 @@ export async function getTrashDataFromState(
                 continue;
             }
 
-            const eventDatum = trashObject.date?.trim() || '';
             const eventStartdatum = new Date(trashObject._date);
 
             // Nur zukünftige Events
@@ -55,11 +54,20 @@ export async function getTrashDataFromState(
                 continue;
             }
 
-            // Datum im Format dd.mm.yy formatieren
-            const day = String(eventStartdatum.getDate()).padStart(2, '0');
+            let eventDatum = '';
+            const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
+            if (tempDate === new Date().setHours(0, 0, 0, 0)) {
+                eventDatum = 'today';
+            } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0)) {
+                eventDatum = 'tomorrow';
+            } else {
+                eventDatum = trashObject.date?.trim() || '';
+            }
+
+            /*const day = String(eventStartdatum.getDate()).padStart(2, '0');
             const month = String(eventStartdatum.getMonth() + 1).padStart(2, '0');
             const year = String(eventStartdatum.getFullYear()).slice(-2);
-            const eventDatumFormatted = `${day}.${month}.${year}`;
+            const eventDatumFormatted = `${day}.${month}.${year}`;*/
 
             // Finde passenden Trash-Type (case-insensitive)
             let trashIndex = -1;
@@ -78,7 +86,14 @@ export async function getTrashDataFromState(
                         customTrash[trashIndex] && customTrash[trashIndex] !== ''
                             ? customTrash[trashIndex]
                             : trashTypes[trashIndex],
-                    text1: countItems < 6 ? eventDatum : eventDatumFormatted,
+                    text1:
+                        countItems < 6
+                            ? eventDatum
+                            : eventStartdatum.toLocaleString('de-DE', {
+                                  year: '2-digit',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                              }),
                 });
 
                 // Maximal 6 Einträge
