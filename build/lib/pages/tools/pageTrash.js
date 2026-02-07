@@ -37,7 +37,6 @@ var import_node_ical = __toESM(require("node-ical"));
 async function getTrashDataFromState(trashJSON, entry, trashTypes = [], customTrash = [], iconColors = []) {
   var _a, _b;
   const items = [];
-  const currentDate = /* @__PURE__ */ new Date();
   const countItems = (_a = entry.countItems) != null ? _a : 6;
   try {
     let trashData;
@@ -58,11 +57,11 @@ async function getTrashDataFromState(trashJSON, entry, trashTypes = [], customTr
         continue;
       }
       const eventStartdatum = new Date(trashObject._date);
-      if (currentDate.getTime() > eventStartdatum.getTime()) {
+      const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
+      if ((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0) > tempDate) {
         continue;
       }
       let eventDatum = "";
-      const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
       if (tempDate === (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
         eventDatum = "today";
       } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1e3).setHours(0, 0, 0, 0)) {
@@ -117,7 +116,7 @@ async function getTrashDataFromFile(entry, trashTypes = [], customTrash = [], ic
     }
     const data = import_node_ical.default.parseICS(fileData);
     const arrayData = Object.values(data).filter(
-      (entry2) => entry2 && typeof entry2 === "object" && entry2.type === "VEVENT" && new Date(entry2.start).getTime() > Date.now()
+      (entry2) => entry2 && typeof entry2 === "object" && entry2.type === "VEVENT" && new Date(entry2.start).setHours(0, 0, 0, 0) >= (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)
     );
     arrayData.sort((a, b) => {
       const dateA = new Date(a.start).getTime();

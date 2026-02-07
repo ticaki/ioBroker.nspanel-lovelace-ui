@@ -344,6 +344,8 @@
     "timeFormat24": "24-Hour",
     "timeFormatExample": "Example",
     "timezone": "Timezone",
+    "today": "today",
+    "tomorrow": "tomorrow",
     "touch_hint_buttons": "For operating buttons from other flows a double tap is required",
     "trackList": "Track list",
     "trash_4_entities": "4 trash entries",
@@ -419,7 +421,5 @@
     "welcomeTToken": "  Have a nice day,/r/n wish you/r/n  Armilar, TT-Tom, ticaki/r/n   & Kuckuckmann",
     "window": "window",
     "wlanhidden": "hidden wifi",
-    "wlantype": "Wifi encryption",
-    "today": "today",
-    "tomorrow": "tomorrow"
+    "wlantype": "Wifi encryption"
 }

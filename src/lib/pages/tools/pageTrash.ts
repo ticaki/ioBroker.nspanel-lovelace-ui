@@ -18,7 +18,6 @@ export async function getTrashDataFromState(
     iconColors: string[] = [],
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
-    const currentDate = new Date();
     const countItems = entry.countItems ?? 6;
 
     try {
@@ -48,14 +47,14 @@ export async function getTrashDataFromState(
             }
 
             const eventStartdatum = new Date(trashObject._date);
-
+            const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
             // Nur zukünftige Events
-            if (currentDate.getTime() > eventStartdatum.getTime()) {
+            if (new Date().setHours(0, 0, 0, 0) > tempDate) {
                 continue;
             }
 
             let eventDatum = '';
-            const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
+
             if (tempDate === new Date().setHours(0, 0, 0, 0)) {
                 eventDatum = 'today';
             } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0)) {
@@ -145,7 +144,7 @@ export async function getTrashDataFromFile(
                 entry &&
                 typeof entry === 'object' &&
                 entry.type === 'VEVENT' &&
-                new Date(entry.start).getTime() > Date.now(),
+                new Date(entry.start).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0),
         );
 
         arrayData.sort((a: any, b: any) => {
