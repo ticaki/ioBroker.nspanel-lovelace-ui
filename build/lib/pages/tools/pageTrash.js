@@ -51,6 +51,9 @@ async function getTrashDataFromState(trashJSON, entry) {
       return { messages: items, error: new Error("trashData is not an  array") };
     }
     for (const trashObject of trashData) {
+      if (new Date(trashObject._date).setHours(0, 0, 0, 0) < (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
+        continue;
+      }
       const result = getTrashItem(
         { start: trashObject._date, summary: trashObject.event },
         countItems,
@@ -134,7 +137,7 @@ function getTrashItem(event, countItems, items) {
   const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
   if (tempDate === (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
     eventDatum = "today";
-  } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1e3).setHours(0, 0, 0, 0)) {
+  } else if (tempDate === new Date((/* @__PURE__ */ new Date()).setDate((/* @__PURE__ */ new Date()).getDate() + 1)).setHours(0, 0, 0, 0)) {
     eventDatum = "tomorrow";
   } else {
     eventDatum = (countItems < 6 ? eventStartdatum.toLocaleString("de-DE", {

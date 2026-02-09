@@ -11,13 +11,13 @@ interface ItemObject {
     text1: string;
 }
 
-type entry = {
+type TrashEntry = {
     trashFile: string;
     countItems?: number;
-    items: item[];
+    items: TrashItem[];
 };
 
-type item = {
+type TrashItem = {
     textTrash: string;
     customTrash: string;
     iconColor: string;
@@ -25,7 +25,7 @@ type item = {
 
 export async function getTrashDataFromState(
     trashJSON: any,
-    entry: entry,
+    entry: TrashEntry,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
     const countItems = entry.countItems ?? 6;
@@ -47,11 +47,15 @@ export async function getTrashDataFromState(
         }
 
         for (const trashObject of trashData) {
+            if (new Date(trashObject._date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                continue;
+            }
             const result = getTrashItem(
                 { start: trashObject._date, summary: trashObject.event },
                 countItems,
                 entry.items,
             );
+
             if (result) {
                 items.push(result);
             }
@@ -68,7 +72,7 @@ export async function getTrashDataFromState(
 }
 
 export async function getTrashDataFromFile(
-    entry: entry,
+    entry: TrashEntry,
     adapter: AdapterClassDefinition,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
@@ -129,7 +133,7 @@ export async function getTrashDataFromFile(
     }
 }
 
-function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: item[]): ItemObject | null {
+function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: TrashItem[]): ItemObject | null {
     const eventName = event.summary;
 
     // Prüfen ob event existiert
@@ -155,7 +159,7 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: it
     const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
     if (tempDate === new Date().setHours(0, 0, 0, 0)) {
         eventDatum = 'today';
-    } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0)) {
+    } else if (tempDate === new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)) {
         eventDatum = 'tomorrow';
     } else {
         eventDatum =
