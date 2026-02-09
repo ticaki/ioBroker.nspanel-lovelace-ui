@@ -344,6 +344,8 @@
     "timeFormat24": "24 Stunden",
     "timeFormatExample": "Beispiel",
     "timezone": "Zeitzone",
+    "today": "Heute",
+    "tomorrow": "morgen",
     "touch_hint_buttons": "Zum Bedienen von Schaltflächen aus anderen Flows ist ein Doppeltippen erforderlich",
     "trackList": "Titelübersicht",
     "trash_4_entities": "4 Abfalltermine",
