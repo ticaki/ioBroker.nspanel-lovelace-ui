@@ -158,7 +158,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**  
-- (tt-tom17) Admin-Tab globalSetting convert to React
+- (tt-tom17) Admin-Tab globalSetting convert to React  
+- (tt-tom17) Admin-Tab Maintain convert to React  
   
 ### 0.10.0 (2026-01-17)
 - (ticaki) Confirmation click for role button

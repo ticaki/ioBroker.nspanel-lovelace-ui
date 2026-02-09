@@ -3,10 +3,7 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import {
     Box,
     Button,
-    Card,
-    CardContent,
     Typography,
-    Grid2,
     TextField,
     CircularProgress,
     Alert,
@@ -19,7 +16,7 @@ import {
 import { green, grey, orange, red } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
 
-import RefreshIcon from '@mui/icons-material/Refresh';
+//import RefreshIcon from '@mui/icons-material/Refresh';
 import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
 
 interface MaintainPanelInfo {
@@ -196,6 +193,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             this.setState({ processingPanel: panel._name });
 
             try {
+                this.onPanelOnlineChanged('', null); // Trigger immediate refresh to update online status
                 const result = await this.props.oContext.socket.sendTo(
                     `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
                     'updateTasmota',
@@ -224,6 +222,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
                 try {
                     console.log('[Maintain] Sending TFT install command to MQTT for panel:', panel._name);
+                    this.onPanelOnlineChanged('', null);
                     const result = await this.props.oContext.socket.sendTo(
                         `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
                         'tftInstallSendToMQTT',
@@ -329,7 +328,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
-        const { panels, loading, error, processingPanel } = this.state;
+        const { panels, error, processingPanel } = this.state;
         const confirmDialog = this.confirmDialog;
 
         return (
@@ -337,14 +336,14 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 {/* Header with refresh button */}
                 <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="h5">{this.getText('headerMaintain')}</Typography>
-                    <Button
+                    {/* <Button
                         variant="outlined"
                         startIcon={loading ? <CircularProgress size={20} /> : <RefreshIcon />}
                         onClick={() => this.refreshPanels()}
                         disabled={loading}
                     >
                         {this.getText('RefreshMaintainTable')}
-                    </Button>
+                    </Button> */}
                 </Box>
 
                 {/* Beta warning */}
@@ -381,165 +380,142 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     </Alert>
                 )}
 
-                {/* Panels as Cards */}
-                <Grid2
-                    container
-                    spacing={2}
-                >
+                {/* Panels as Boxes */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                     {panels.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
                         return (
-                            <Grid2
-                                size={{ xs: 12, md: 6, lg: 4 }}
+                            <Box
                                 key={panel._id || index}
+                                sx={{
+                                    width: 'fit-content',
+                                    maxWidth: '100%',
+                                    minWidth: 320,
+                                    border: 3,
+                                    borderColor: cardStyle.borderColor,
+                                    backgroundColor: cardStyle.backgroundColor,
+                                    opacity: !this.state.alive ? 0.6 : 1,
+                                    p: 2,
+                                    borderRadius: 1,
+                                }}
                             >
-                                <Card
+                                <Typography
+                                    variant="h6"
                                     sx={{
-                                        border: 3,
-                                        borderColor: cardStyle.borderColor,
-                                        backgroundColor: cardStyle.backgroundColor,
-                                        opacity: !this.state.alive ? 0.6 : 1,
+                                        fontWeight: panel._check ? 'bold' : 'normal',
+                                        mb: 2,
                                     }}
                                 >
-                                    <CardContent>
-                                        <Typography
-                                            variant="h6"
-                                            sx={{
-                                                fontWeight: panel._check ? 'bold' : 'normal',
-                                                mb: 2,
-                                            }}
+                                    {panel._Headline}
+                                </Typography>
+
+                                {/* Version Info with Flexbox */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    {/* Tasmota */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('vTasmota')}
+                                            value={panel._tasmotaVersion}
+                                            InputProps={{ readOnly: true }}
+                                            size="small"
+                                            error={panel._tasmotaVersion.includes(')')}
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => this.handleTasmotaUpdate(panel)}
+                                            disabled={
+                                                !this.isPanelUpdateable(panel) ||
+                                                processingPanel === panel._name ||
+                                                !this.state.alive
+                                            }
+                                            size="small"
+                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
                                         >
-                                            {panel._Headline}
-                                        </Typography>
+                                            {processingPanel === panel._name ? (
+                                                <CircularProgress size={20} />
+                                            ) : (
+                                                this.getText('tasmotaUpdate')
+                                            )}
+                                        </Button>
+                                    </Box>
 
-                                        {/* Version Info */}
-                                        <Box sx={{ mb: 2 }}>
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: { xs: 'column', sm: 'row' },
-                                                    gap: 1,
-                                                    mb: 1,
-                                                    alignItems: { xs: 'stretch', sm: 'center' },
-                                                }}
-                                            >
-                                                <TextField
-                                                    label={this.getText('vTasmota')}
-                                                    value={panel._tasmotaVersion}
-                                                    InputProps={{ readOnly: true }}
-                                                    size="small"
-                                                    error={panel._tasmotaVersion.includes(')')}
-                                                    sx={{ minWidth: { xs: 'auto', sm: 200 } }}
-                                                />
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={() => this.handleTasmotaUpdate(panel)}
-                                                    disabled={
-                                                        !this.isPanelUpdateable(panel) ||
-                                                        processingPanel === panel._name ||
-                                                        !this.state.alive
-                                                    }
-                                                    size="small"
-                                                    sx={{ minWidth: { xs: 'auto', sm: 200 } }}
-                                                >
-                                                    {processingPanel === panel._name ? (
-                                                        <CircularProgress size={20} />
-                                                    ) : (
-                                                        this.getText('tasmotaUpdate')
-                                                    )}
-                                                </Button>
-                                            </Box>
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: { xs: 'column', sm: 'row' },
-                                                    gap: 1,
-                                                    mb: 1,
-                                                    alignItems: { xs: 'stretch', sm: 'center' },
-                                                }}
-                                            >
-                                                <TextField
-                                                    label={this.getText('vTFT')}
-                                                    value={panel._tftVersion}
-                                                    InputProps={{ readOnly: true }}
-                                                    size="small"
-                                                    error={panel._tftVersion.includes(')')}
-                                                    sx={{ minWidth: { xs: 'auto', sm: 200 } }}
-                                                />
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={() => this.handleTftInstall(panel)}
-                                                    disabled={
-                                                        panel._online === 'no' ||
-                                                        !panel._ip ||
-                                                        processingPanel === panel._name ||
-                                                        !this.state.alive
-                                                    }
-                                                    size="small"
-                                                    sx={{ minWidth: { xs: 'auto', sm: 200 } }}
-                                                >
-                                                    {processingPanel === panel._name ? (
-                                                        <CircularProgress size={20} />
-                                                    ) : (
-                                                        this.getText('tftInstallSendToMQTT')
-                                                    )}
-                                                </Button>
-                                            </Box>
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: { xs: 'column', sm: 'row' },
-                                                    gap: 1,
-                                                    alignItems: { xs: 'stretch', sm: 'center' },
-                                                }}
-                                            >
-                                                <TextField
-                                                    label={this.getText('vScript')}
-                                                    value={panel._ScriptVersion}
-                                                    InputProps={{ readOnly: true }}
-                                                    size="small"
-                                                    error={panel._ScriptVersion.includes(')')}
-                                                    sx={{ minWidth: { xs: 'auto', sm: 200 } }}
-                                                />
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={() => this.handleCreateScript(panel)}
-                                                    disabled={
-                                                        !panel._name ||
-                                                        !panel._topic ||
-                                                        processingPanel === panel._name ||
-                                                        !this.state.alive
-                                                    }
-                                                    size="small"
-                                                    sx={{ minWidth: { xs: 'auto', sm: 200 } }}
-                                                >
-                                                    {processingPanel === panel._name ? (
-                                                        <CircularProgress size={20} />
-                                                    ) : (
-                                                        this.getText('createScript')
-                                                    )}
-                                                </Button>
-                                            </Box>
-                                        </Box>
+                                    {/* TFT */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('vTFT')}
+                                            value={panel._tftVersion}
+                                            InputProps={{ readOnly: true }}
+                                            size="small"
+                                            error={panel._tftVersion.includes(')')}
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => this.handleTftInstall(panel)}
+                                            disabled={
+                                                panel._online === 'no' ||
+                                                !panel._ip ||
+                                                processingPanel === panel._name ||
+                                                !this.state.alive
+                                            }
+                                            size="small"
+                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
+                                        >
+                                            {processingPanel === panel._name ? (
+                                                <CircularProgress size={20} />
+                                            ) : (
+                                                this.getText('tftInstallSendToMQTT')
+                                            )}
+                                        </Button>
+                                    </Box>
 
-                                        {/* Action Buttons */}
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                            <Button
-                                                variant="contained"
-                                                fullWidth
-                                                onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                                disabled={!panel._ip || !this.state.alive}
-                                                size="small"
-                                            >
-                                                {this.getText('openTasmotaConsole')}
-                                            </Button>
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            </Grid2>
+                                    {/* Script */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('vScript')}
+                                            value={panel._ScriptVersion}
+                                            InputProps={{ readOnly: true }}
+                                            size="small"
+                                            error={panel._ScriptVersion.includes(')')}
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => this.handleCreateScript(panel)}
+                                            disabled={
+                                                !panel._name ||
+                                                !panel._topic ||
+                                                processingPanel === panel._name ||
+                                                !this.state.alive
+                                            }
+                                            size="small"
+                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
+                                        >
+                                            {processingPanel === panel._name ? (
+                                                <CircularProgress size={20} />
+                                            ) : (
+                                                this.getText('createScript')
+                                            )}
+                                        </Button>
+                                    </Box>
+
+                                    {/* Console Button */}
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={() => this.handleOpenTasmotaConsole(panel)}
+                                        disabled={!panel._ip || !this.state.alive}
+                                        size="small"
+                                        sx={{ mt: 1 }}
+                                    >
+                                        {this.getText('openTasmotaConsole')}
+                                    </Button>
+                                </Box>
+                            </Box>
                         );
                     })}
-                </Grid2>
+                </Box>
 
                 {/* Confirmation Dialog */}
                 {confirmDialog && (
