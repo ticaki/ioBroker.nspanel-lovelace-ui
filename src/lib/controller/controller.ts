@@ -751,9 +751,9 @@ export class Controller extends Library.BaseClass {
             for (const entry of trashEntries) {
                 try {
                     const state = entry.trashState || '';
-                    const trashTypes = entry.items.map(item => item.textTrash || '');
+                    /*const trashTypes = entry.items.map(item => item.textTrash || '');
                     const customTrash = entry.items.map(item => item.customTrash || '');
-                    const iconColors = entry.items.map(item => item.iconColor || '');
+                    const iconColors = entry.items.map(item => item.iconColor || '');*/
 
                     let result: { messages: unknown[]; error?: unknown };
                     if (entry.trashImport) {
@@ -769,7 +769,7 @@ export class Controller extends Library.BaseClass {
                         }
 
                         this.log.debug(`Processing trash data from state ${state} for entry ${entry.uniqueName}`);
-                        result = await getTrashDataFromState(daten.val, entry, trashTypes, customTrash, iconColors);
+                        result = await getTrashDataFromState(daten.val, entry);
                     } else {
                         if (!entry.trashFile || entry.trashFile.trim() === '') {
                             this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
@@ -778,7 +778,7 @@ export class Controller extends Library.BaseClass {
                         this.log.debug(
                             `Processing trash data from file ${entry.trashFile} for entry ${entry.uniqueName}`,
                         );
-                        result = await getTrashDataFromFile(entry, trashTypes, customTrash, iconColors, this.adapter);
+                        result = await getTrashDataFromFile(entry, this.adapter);
                     }
                     if (result.error) {
                         this.log.error(

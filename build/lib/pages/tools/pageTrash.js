@@ -34,8 +34,8 @@ __export(pageTrash_exports, {
 module.exports = __toCommonJS(pageTrash_exports);
 var import_Color = require("../../const/Color");
 var import_node_ical = __toESM(require("node-ical"));
-async function getTrashDataFromState(trashJSON, entry, trashTypes = [], customTrash = [], iconColors = []) {
-  var _a, _b;
+async function getTrashDataFromState(trashJSON, entry) {
+  var _a;
   const items = [];
   const countItems = (_a = entry.countItems) != null ? _a : 6;
   try {
@@ -50,47 +50,17 @@ async function getTrashDataFromState(trashJSON, entry, trashTypes = [], customTr
     if (!Array.isArray(trashData)) {
       return { messages: items, error: new Error("trashData is not an  array") };
     }
-    let entryCount = 0;
     for (const trashObject of trashData) {
-      const eventName = trashObject.event;
-      if (!eventName || eventName.trim() === "") {
-        continue;
+      const result = getTrashItem(
+        { start: trashObject._date, summary: trashObject.event },
+        countItems,
+        entry.items
+      );
+      if (result) {
+        items.push(result);
       }
-      const eventStartdatum = new Date(trashObject._date);
-      const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
-      if ((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0) > tempDate) {
-        continue;
-      }
-      let eventDatum = "";
-      if (tempDate === (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
-        eventDatum = "today";
-      } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1e3).setHours(0, 0, 0, 0)) {
-        eventDatum = "tomorrow";
-      } else {
-        eventDatum = ((_b = trashObject.date) == null ? void 0 : _b.trim()) || "";
-      }
-      let trashIndex = -1;
-      for (let i = 0; i < trashTypes.length; i++) {
-        if (trashTypes[i] && trashTypes[i].trim() !== "" && eventName.includes(trashTypes[i])) {
-          trashIndex = i;
-          break;
-        }
-      }
-      if (trashIndex !== -1) {
-        items.push({
-          icon: "trash-can",
-          color: import_Color.Color.ConvertHexToRgb(iconColors[trashIndex]),
-          text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
-          text1: countItems < 6 ? eventDatum : eventStartdatum.toLocaleString("de-DE", {
-            year: "2-digit",
-            month: "2-digit",
-            day: "2-digit"
-          })
-        });
-        entryCount++;
-        if (entryCount >= 6) {
-          break;
-        }
+      if (items.length >= 6) {
+        break;
       }
     }
     return { messages: items };
@@ -98,7 +68,7 @@ async function getTrashDataFromState(trashJSON, entry, trashTypes = [], customTr
     return { messages: items, error };
   }
 }
-async function getTrashDataFromFile(entry, trashTypes = [], customTrash = [], iconColors = [], adapter) {
+async function getTrashDataFromFile(entry, adapter) {
   var _a;
   const items = [];
   const trashFile = entry.trashFile;
@@ -123,49 +93,14 @@ async function getTrashDataFromFile(entry, trashTypes = [], customTrash = [], ic
       const dateB = new Date(b.start).getTime();
       return dateA - dateB;
     });
-    let entryCount = 0;
     for (const event of arrayData) {
       if (event.type === "VEVENT") {
-        const eventName = event.summary;
-        if (!eventName || eventName.trim() === "") {
-          continue;
+        const result = getTrashItem(event, countItems, entry.items);
+        if (result) {
+          items.push(result);
         }
-        const eventStartdatum = new Date(event.start);
-        let eventDatum = "";
-        const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
-        if (tempDate === (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
-          eventDatum = "today";
-        } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1e3).setHours(0, 0, 0, 0)) {
-          eventDatum = "tomorrow";
-        } else {
-          eventDatum = (countItems < 6 ? eventStartdatum.toLocaleString("de-DE", {
-            year: "2-digit",
-            month: "2-digit",
-            day: "2-digit"
-          }) : eventStartdatum.toLocaleString("de-DE", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit"
-          })) || "";
-        }
-        let trashIndex = -1;
-        for (let i = 0; i < trashTypes.length; i++) {
-          if (trashTypes[i] && trashTypes[i].trim() !== "" && eventName.includes(trashTypes[i])) {
-            trashIndex = i;
-            break;
-          }
-        }
-        if (trashIndex !== -1) {
-          items.push({
-            icon: "trash-can",
-            color: import_Color.Color.ConvertHexToRgb(iconColors[trashIndex]),
-            text: customTrash[trashIndex] && customTrash[trashIndex] !== "" ? customTrash[trashIndex] : trashTypes[trashIndex],
-            text1: eventDatum
-          });
-          entryCount++;
-          if (entryCount >= 6) {
-            break;
-          }
+        if (items.length >= 6) {
+          break;
         }
       }
     }
@@ -174,6 +109,50 @@ async function getTrashDataFromFile(entry, trashTypes = [], customTrash = [], ic
     console.error("Error in getTrashDataFromFile:", error);
     return { messages: items, error };
   }
+}
+function getTrashItem(event, countItems, items) {
+  const eventName = event.summary;
+  if (!eventName || eventName.trim() === "") {
+    return null;
+  }
+  let trashIndex = -1;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].textTrash && items[i].textTrash.trim() !== "" && eventName.includes(items[i].textTrash)) {
+      trashIndex = i;
+      break;
+    }
+  }
+  if (trashIndex === -1) {
+    return null;
+  }
+  const item = items[trashIndex];
+  const trashType = item.textTrash || "";
+  const customTrash = item.customTrash || "";
+  const iconColor = item.iconColor || "";
+  const eventStartdatum = new Date(event.start || 1);
+  let eventDatum = "";
+  const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
+  if (tempDate === (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
+    eventDatum = "today";
+  } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1e3).setHours(0, 0, 0, 0)) {
+    eventDatum = "tomorrow";
+  } else {
+    eventDatum = (countItems < 6 ? eventStartdatum.toLocaleString("de-DE", {
+      year: "2-digit",
+      month: "2-digit",
+      day: "2-digit"
+    }) : eventStartdatum.toLocaleString("de-DE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    })) || "";
+  }
+  return {
+    icon: "trash-can",
+    color: import_Color.Color.ConvertHexToRgb(iconColor),
+    text: customTrash && customTrash !== "" ? customTrash : trashType,
+    text1: eventDatum
+  };
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

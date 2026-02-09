@@ -1,5 +1,6 @@
 import { Color } from '../../const/Color';
 //import * as fs from 'node:fs';
+import type { CalendarComponent } from 'node-ical';
 import iCal from 'node-ical';
 import { type AdapterClassDefinition } from '../../controller/library';
 
@@ -10,12 +11,21 @@ interface ItemObject {
     text1: string;
 }
 
+type entry = {
+    trashFile: string;
+    countItems?: number;
+    items: item[];
+};
+
+type item = {
+    textTrash: string;
+    customTrash: string;
+    iconColor: string;
+};
+
 export async function getTrashDataFromState(
     trashJSON: any,
-    entry: any,
-    trashTypes: string[] = [],
-    customTrash: string[] = [],
-    iconColors: string[] = [],
+    entry: entry,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
     const countItems = entry.countItems ?? 6;
@@ -36,70 +46,18 @@ export async function getTrashDataFromState(
             return { messages: items, error: new Error('trashData is not an  array') };
         }
 
-        let entryCount = 0;
-
         for (const trashObject of trashData) {
-            const eventName = trashObject.event;
-
-            // Prüfen ob event existiert
-            if (!eventName || eventName.trim() === '') {
-                continue;
+            const result = getTrashItem(
+                { start: trashObject._date, summary: trashObject.event },
+                countItems,
+                entry.items,
+            );
+            if (result) {
+                items.push(result);
             }
 
-            const eventStartdatum = new Date(trashObject._date);
-            const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
-            // Nur zukünftige Events
-            if (new Date().setHours(0, 0, 0, 0) > tempDate) {
-                continue;
-            }
-
-            let eventDatum = '';
-
-            if (tempDate === new Date().setHours(0, 0, 0, 0)) {
-                eventDatum = 'today';
-            } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0)) {
-                eventDatum = 'tomorrow';
-            } else {
-                eventDatum = trashObject.date?.trim() || '';
-            }
-
-            /*const day = String(eventStartdatum.getDate()).padStart(2, '0');
-            const month = String(eventStartdatum.getMonth() + 1).padStart(2, '0');
-            const year = String(eventStartdatum.getFullYear()).slice(-2);
-            const eventDatumFormatted = `${day}.${month}.${year}`;*/
-
-            // Finde passenden Trash-Type (case-insensitive)
-            let trashIndex = -1;
-            for (let i = 0; i < trashTypes.length; i++) {
-                if (trashTypes[i] && trashTypes[i].trim() !== '' && eventName.includes(trashTypes[i])) {
-                    trashIndex = i;
-                    break;
-                }
-            }
-
-            if (trashIndex !== -1) {
-                items.push({
-                    icon: 'trash-can',
-                    color: Color.ConvertHexToRgb(iconColors[trashIndex]),
-                    text:
-                        customTrash[trashIndex] && customTrash[trashIndex] !== ''
-                            ? customTrash[trashIndex]
-                            : trashTypes[trashIndex],
-                    text1:
-                        countItems < 6
-                            ? eventDatum
-                            : eventStartdatum.toLocaleString('de-DE', {
-                                  year: '2-digit',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                              }),
-                });
-
-                // Maximal 6 Einträge
-                entryCount++;
-                if (entryCount >= 6) {
-                    break;
-                }
+            if (items.length >= 6) {
+                break;
             }
         }
 
@@ -110,10 +68,7 @@ export async function getTrashDataFromState(
 }
 
 export async function getTrashDataFromFile(
-    entry: any,
-    trashTypes: string[] = [],
-    customTrash: string[] = [],
-    iconColors: string[] = [],
+    entry: entry,
     adapter: AdapterClassDefinition,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
@@ -139,7 +94,7 @@ export async function getTrashDataFromFile(
         const data = iCal.parseICS(fileData);
 
         // Filter und sortiere Events nach Startdatum
-        const arrayData = Object.values(data).filter(
+        const arrayData: CalendarComponent[] = Object.values(data).filter(
             entry =>
                 entry &&
                 typeof entry === 'object' &&
@@ -153,64 +108,16 @@ export async function getTrashDataFromFile(
             return dateA - dateB;
         });
 
-        let entryCount = 0; // HIER: Außerhalb der Schleife deklarieren
-
         // Iteriere über Events
         for (const event of arrayData) {
             if (event.type === 'VEVENT') {
-                const eventName = event.summary;
-
-                // Prüfen ob event existiert
-                if (!eventName || eventName.trim() === '') {
-                    continue;
+                const result = getTrashItem(event, countItems, entry.items);
+                if (result) {
+                    items.push(result);
                 }
 
-                const eventStartdatum = new Date(event.start);
-                let eventDatum = '';
-                const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
-                if (tempDate === new Date().setHours(0, 0, 0, 0)) {
-                    eventDatum = 'today';
-                } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0)) {
-                    eventDatum = 'tomorrow';
-                } else {
-                    eventDatum =
-                        (countItems < 6
-                            ? eventStartdatum.toLocaleString('de-DE', {
-                                  year: '2-digit',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                              })
-                            : eventStartdatum.toLocaleString('de-DE', {
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                              })) || '';
-                }
-
-                // Finde passenden Trash-Type
-                let trashIndex = -1;
-                for (let i = 0; i < trashTypes.length; i++) {
-                    if (trashTypes[i] && trashTypes[i].trim() !== '' && eventName.includes(trashTypes[i])) {
-                        trashIndex = i;
-                        break;
-                    }
-                }
-
-                if (trashIndex !== -1) {
-                    items.push({
-                        icon: 'trash-can',
-                        color: Color.ConvertHexToRgb(iconColors[trashIndex]),
-                        text:
-                            customTrash[trashIndex] && customTrash[trashIndex] !== ''
-                                ? customTrash[trashIndex]
-                                : trashTypes[trashIndex],
-                        text1: eventDatum,
-                    });
-
-                    entryCount++;
-                    if (entryCount >= 6) {
-                        break;
-                    }
+                if (items.length >= 6) {
+                    break;
                 }
             }
         }
@@ -220,4 +127,55 @@ export async function getTrashDataFromFile(
         console.error('Error in getTrashDataFromFile:', error);
         return { messages: items, error };
     }
+}
+
+function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: item[]): ItemObject | null {
+    const eventName = event.summary;
+
+    // Prüfen ob event existiert
+    if (!eventName || eventName.trim() === '') {
+        return null;
+    }
+    let trashIndex = -1;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].textTrash && items[i].textTrash.trim() !== '' && eventName.includes(items[i].textTrash)) {
+            trashIndex = i;
+            break;
+        }
+    }
+    if (trashIndex === -1) {
+        return null;
+    }
+    const item = items[trashIndex];
+    const trashType = item.textTrash || '';
+    const customTrash = item.customTrash || '';
+    const iconColor = item.iconColor || '';
+    const eventStartdatum = new Date(event.start || 1);
+    let eventDatum = '';
+    const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
+    if (tempDate === new Date().setHours(0, 0, 0, 0)) {
+        eventDatum = 'today';
+    } else if (tempDate === new Date(Date.now() + 24 * 60 * 60 * 1000).setHours(0, 0, 0, 0)) {
+        eventDatum = 'tomorrow';
+    } else {
+        eventDatum =
+            (countItems < 6
+                ? eventStartdatum.toLocaleString('de-DE', {
+                      year: '2-digit',
+                      month: '2-digit',
+                      day: '2-digit',
+                  })
+                : eventStartdatum.toLocaleString('de-DE', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                  })) || '';
+    }
+
+    return {
+        icon: 'trash-can',
+        color: Color.ConvertHexToRgb(iconColor),
+        text: customTrash && customTrash !== '' ? customTrash : trashType,
+        text1: eventDatum,
+    };
 }

@@ -662,9 +662,6 @@ class Controller extends Library.BaseClass {
       for (const entry of trashEntries) {
         try {
           const state = entry.trashState || "";
-          const trashTypes = entry.items.map((item) => item.textTrash || "");
-          const customTrash = entry.items.map((item) => item.customTrash || "");
-          const iconColors = entry.items.map((item) => item.iconColor || "");
           let result;
           if (entry.trashImport) {
             if (!state) {
@@ -677,7 +674,7 @@ class Controller extends Library.BaseClass {
               continue;
             }
             this.log.debug(`Processing trash data from state ${state} for entry ${entry.uniqueName}`);
-            result = await (0, import_pageTrash.getTrashDataFromState)(daten.val, entry, trashTypes, customTrash, iconColors);
+            result = await (0, import_pageTrash.getTrashDataFromState)(daten.val, entry);
           } else {
             if (!entry.trashFile || entry.trashFile.trim() === "") {
               this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
@@ -686,7 +683,7 @@ class Controller extends Library.BaseClass {
             this.log.debug(
               `Processing trash data from file ${entry.trashFile} for entry ${entry.uniqueName}`
             );
-            result = await (0, import_pageTrash.getTrashDataFromFile)(entry, trashTypes, customTrash, iconColors, this.adapter);
+            result = await (0, import_pageTrash.getTrashDataFromFile)(entry, this.adapter);
           }
           if (result.error) {
             this.log.error(
