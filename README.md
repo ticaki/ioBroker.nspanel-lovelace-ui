@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**  
+- (ticaki) Fixed incorrect error logs for cardThermo and cardThermo2
 - (tt-tom17) add PageTrash to Admin-Tab PageConfig 
   
 ### 0.10.0 (2026-01-17)
