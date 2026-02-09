@@ -255,6 +255,21 @@
                 }
             }
         },
+        "_tabMaintain": {
+            "type": "panel",
+            "label": "Maintain",
+            "items": {
+                "pageGlobalSettings": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/TabMaintain",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
         "_pageGlobalSettings": {
             "type": "panel",
             "label": "Global Settings",

@@ -14,6 +14,7 @@ import {
     TextField,
     CircularProgress,
     type SelectChangeEvent,
+    Tooltip,
 } from '@mui/material';
 import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
 
@@ -38,12 +39,10 @@ interface PageGlobalSettingsState extends ConfigGenericState {
     pw1?: string;
     rememberLastSite?: boolean;
     alive?: boolean;
-    expertMode?: boolean;
 }
 
 class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PageGlobalSettingsState> {
     private pagesRetryTimeout?: NodeJS.Timeout;
-    private expertModeCheckInterval?: NodeJS.Timeout;
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
@@ -52,17 +51,12 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
             alive: false,
             weatherEntities: [],
             loadingWeather: false,
-            expertMode: false,
         };
-        console.log('[PageGlobalSettings] Constructor initialized with expertMode:', false);
     }
 
     componentWillUnmount(): void {
         if (this.pagesRetryTimeout) {
             clearTimeout(this.pagesRetryTimeout);
-        }
-        if (this.expertModeCheckInterval) {
-            clearInterval(this.expertModeCheckInterval);
         }
         // Unsubscribe from alive state changes
         const instance = this.props.oContext.instance ?? '0';
@@ -70,8 +64,6 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
             `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
             this.onAliveChanged,
         );
-        // Unsubscribe from system.config changes
-        void this.props.oContext.socket.unsubscribeObject('system.config', this.onSystemConfigChanged);
     }
 
     async componentDidMount(): Promise<void> {
@@ -91,47 +83,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
 
             // If adapter is alive, start loading pages
             if (isAlive) {
-                console.log('[PageGlobalSettings] Adapter is alive, ready to load settings.');
                 await this.loadWeatherEntities(false);
-            }
-
-            // Load expert mode from systemConfig
-            try {
-                const systemConfig = await this.props.oContext.socket.getObject('system.config');
-
-                // Check SessionStorage first (like ioBroker Admin does)
-                const storedExpertMode = window.sessionStorage.getItem('App.expertMode');
-
-                let expertMode: boolean;
-                if (storedExpertMode) {
-                    expertMode = storedExpertMode === 'true';
-                    console.log(
-                        '[PageGlobalSettings] Using expertMode from SessionStorage:',
-                        expertMode,
-                        '(stored:',
-                        storedExpertMode,
-                        ')',
-                    );
-                } else {
-                    expertMode = systemConfig?.common?.expertMode ?? false;
-                    console.log('[PageGlobalSettings] Using expertMode from systemConfig:', expertMode);
-                }
-
-                console.log('[PageGlobalSettings] Final expertMode:', expertMode);
-                this.setState({ expertMode });
-
-                // Subscribe to system.config changes for live updates
-                await this.props.oContext.socket.subscribeObject('system.config', this.onSystemConfigChanged);
-                console.log('[PageGlobalSettings] Subscribed to system.config changes');
-
-                // Start polling SessionStorage for changes (as fallback)
-                this.expertModeCheckInterval = setInterval(() => {
-                    this.checkExpertModeChange();
-                }, 1000);
-                console.log('[PageGlobalSettings] Started SessionStorage polling');
-            } catch (error) {
-                console.error('[PageGlobalSettings] Failed to get expert mode:', error);
-                this.setState({ expertMode: false });
             }
         } catch (error) {
             console.error('[PageGlobalSettings] Failed to get alive state or subscribe:', error);
@@ -145,67 +97,13 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const isAlive = state ? !!state.val : false;
 
         if (wasAlive !== isAlive) {
-            console.log('[PageGlobalSettings] Alive state changed:', { wasAlive, isAlive });
             this.setState({ alive: isAlive });
-        }
-    };
-
-    // Callback for system.config changes (expert mode)
-    onSystemConfigChanged = (_id: string, obj: ioBroker.Object | null | undefined): void => {
-        console.log('[PageGlobalSettings] onSystemConfigChanged called', { id: _id, obj: obj?.type });
-
-        if (obj && obj.type === 'config') {
-            const systemConfigExpertMode = (obj as ioBroker.SystemConfigObject).common?.expertMode ?? false;
-
-            // Check SessionStorage first (like ioBroker Admin does)
-            const storedExpertMode = window.sessionStorage.getItem('App.expertMode');
-
-            let expertMode: boolean;
-            if (storedExpertMode) {
-                expertMode = storedExpertMode === 'true';
-                console.log(
-                    '[PageGlobalSettings] Using expertMode from SessionStorage:',
-                    expertMode,
-                    '(ignoring systemConfig:',
-                    systemConfigExpertMode,
-                    ')',
-                );
-            } else {
-                expertMode = systemConfigExpertMode;
-                console.log('[PageGlobalSettings] Using expertMode from systemConfig:', expertMode);
-            }
-
-            console.log('[PageGlobalSettings] ExpertMode change detected:', {
-                old: this.state.expertMode,
-                new: expertMode,
-                systemConfig: systemConfigExpertMode,
-                sessionStorage: storedExpertMode,
-            });
-
-            if (this.state.expertMode !== expertMode) {
-                this.setState({ expertMode });
-            }
-        }
-    };
-
-    // Check SessionStorage for expert mode changes (polling fallback)
-    private checkExpertModeChange = (): void => {
-        const storedExpertMode = window.sessionStorage.getItem('App.expertMode');
-        const expertMode = storedExpertMode === 'true';
-
-        if (this.state.expertMode !== expertMode) {
-            console.log('[PageGlobalSettings] ExpertMode changed via SessionStorage polling:', {
-                old: this.state.expertMode,
-                new: expertMode,
-            });
-            this.setState({ expertMode });
         }
     };
 
     // Lade Wetter-Entities
     async loadWeatherEntities(forceReload = false): Promise<void> {
         if (!this.state.alive) {
-            console.log('[PageGlobalSettings] Adapter not alive, skipping weather entities load');
             return;
         }
 
@@ -322,8 +220,8 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const rememberLastSite = data.rememberLastSite ?? false;
         const weatherEntity = data.weatherEntity ?? '';
 
-        // Expert Mode Prüfung
-        const isExpertMode = this.state.expertMode ?? false;
+        // Expert Mode from props (provided by json-config system)
+        const isExpertMode = this.props.expertMode ?? false;
 
         // Gemeinsame Styles für alle Boxen
         const boxStyle = {
@@ -363,17 +261,25 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                     >
                         {this.getText('headeruseBetaTFT')}
                     </Typography>
-                    <FormControlLabel
-                        sx={{ color: useBetaTFT ? 'error.main' : 'inherit' }}
-                        control={
-                            <Checkbox
-                                checked={useBetaTFT}
-                                onChange={this.handleCheckboxChange('useBetaTFT')}
-                                disabled={!this.state.alive || !isExpertMode}
+                    <Tooltip
+                        title={this.getText('useBetaVersionTooltip')}
+                        arrow
+                        placement="top"
+                    >
+                        <span>
+                            <FormControlLabel
+                                sx={{ color: useBetaTFT ? 'error.main' : 'inherit' }}
+                                control={
+                                    <Checkbox
+                                        checked={useBetaTFT}
+                                        onChange={this.handleCheckboxChange('useBetaTFT')}
+                                        disabled={!this.state.alive || !isExpertMode}
+                                    />
+                                }
+                                label={this.getText('useBetaVersion')}
                             />
-                        }
-                        label={this.getText('useBetaVersion')}
-                    />
+                        </span>
+                    </Tooltip>
                 </Box>
 
                 {/* Color Theme Select */}
