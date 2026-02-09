@@ -135,10 +135,12 @@ function getTrashItem(event, countItems, items) {
   const eventStartdatum = new Date(event.start || 1);
   let eventDatum = "";
   const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
-  if (tempDate === (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
+  if (tempDate == (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)) {
     eventDatum = "today";
   } else if (tempDate === new Date((/* @__PURE__ */ new Date()).setDate((/* @__PURE__ */ new Date()).getDate() + 1)).setHours(0, 0, 0, 0)) {
     eventDatum = "tomorrow";
+  } else if (tempDate > new Date((/* @__PURE__ */ new Date()).setDate((/* @__PURE__ */ new Date()).getDate() + 1)).setHours(0, 0, 0, 0) && tempDate < new Date((/* @__PURE__ */ new Date()).setDate((/* @__PURE__ */ new Date()).getDate() + 8)).setHours(0, 0, 0, 0)) {
+    eventDatum = countItems < 6 ? eventStartdatum.toLocaleString("de-DE", { weekday: "long" }) : eventStartdatum.toLocaleString("de-DE", { weekday: "short" });
   } else {
     eventDatum = (countItems < 6 ? eventStartdatum.toLocaleString("de-DE", {
       year: "2-digit",

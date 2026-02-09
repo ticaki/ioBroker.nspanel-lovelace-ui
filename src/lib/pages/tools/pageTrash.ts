@@ -157,10 +157,18 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
     const eventStartdatum = new Date(event.start || 1);
     let eventDatum = '';
     const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
-    if (tempDate === new Date().setHours(0, 0, 0, 0)) {
+    if (tempDate == new Date().setHours(0, 0, 0, 0)) {
         eventDatum = 'today';
     } else if (tempDate === new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)) {
         eventDatum = 'tomorrow';
+    } else if (
+        tempDate > new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0) &&
+        tempDate < new Date(new Date().setDate(new Date().getDate() + 8)).setHours(0, 0, 0, 0)
+    ) {
+        eventDatum =
+            countItems < 6
+                ? eventStartdatum.toLocaleString('de-DE', { weekday: 'long' })
+                : eventStartdatum.toLocaleString('de-DE', { weekday: 'short' });
     } else {
         eventDatum =
             (countItems < 6
