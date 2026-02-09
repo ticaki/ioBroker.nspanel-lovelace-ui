@@ -751,9 +751,6 @@ export class Controller extends Library.BaseClass {
             for (const entry of trashEntries) {
                 try {
                     const state = entry.trashState || '';
-                    /*const trashTypes = entry.items.map(item => item.textTrash || '');
-                    const customTrash = entry.items.map(item => item.customTrash || '');
-                    const iconColors = entry.items.map(item => item.iconColor || '');*/
 
                     let result: { messages: unknown[]; error?: unknown };
                     if (entry.trashImport) {
