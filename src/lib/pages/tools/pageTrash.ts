@@ -155,7 +155,7 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
     const trashType = item.textTrash || '';
     const customTrash = item.customTrash || '';
     const iconColor = item.iconColor || '';
-    const icon = item.icon || 'trash-can';
+    const icon = item.icon || 'calendar-month';
     const eventStartdatum = new Date(event.start || 1);
     let eventDatum = '';
     const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
