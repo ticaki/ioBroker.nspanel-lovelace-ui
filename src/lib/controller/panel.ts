@@ -229,7 +229,7 @@ export class Panel extends BaseClass {
         }
         this.info.nspanel.scriptVersion = options.scriptVersion || 'unknown';
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-        this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
+        //this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
         // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
@@ -1492,7 +1492,17 @@ export class Panel extends BaseClass {
 
     async writeInfo(): Promise<void> {
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-        this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
+        if (this.info.nspanel.model == null) {
+            this.info.nspanel.model = this.adapter.library.readdb(`panels.${this.name}.info.nspanel.model`)?.val as
+                | string
+                | null;
+        }
+        if (this.info.nspanel.model) {
+            const modelSuffix = `-${this.info.nspanel.model}`;
+            const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
+            this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
+        }
+
         await this.library.writeFromJson(
             `panels.${this.name}.info`,
             'panel.panels.info',
