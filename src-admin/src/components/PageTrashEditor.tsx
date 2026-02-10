@@ -521,7 +521,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                     </Box>
                 )}
 
-                {/* Trash entry fields (color, trash name, custom name) */}
+                {/* Trash entry fields (color, icon, trash name, custom name) */}
                 <Box sx={{ mb: 2 }}>
                     {entry.items.map((item, index) => (
                         <Box

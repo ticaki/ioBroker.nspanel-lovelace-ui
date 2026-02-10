@@ -283,6 +283,7 @@ declare global {
                     textTrash: string;
                     customTrash: string;
                     iconColor: string;
+                    icon: string;
                 }[];
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';

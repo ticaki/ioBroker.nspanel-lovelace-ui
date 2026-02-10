@@ -144,6 +144,7 @@ export type TrashItem = {
     textTrash: string;
     customTrash: string;
     iconColor: string;
+    icon: string;
 };
 
 export type TrashEntry = {
