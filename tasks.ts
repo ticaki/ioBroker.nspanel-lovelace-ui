@@ -86,7 +86,7 @@ function removeDir(dir: string): void {
  *
  * @param source Source path
  * @param destination Destination path
- * @param logging
+ * @param logging Whether to log the operation
  */
 function copyDir(source: string, destination: string, logging: boolean = true): void {
     if (!fs.existsSync(destination)) {

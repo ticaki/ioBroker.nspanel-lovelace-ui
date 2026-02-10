@@ -272,6 +272,22 @@ declare global {
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
                 navigationAssignment?: navigationAssignment[]
+            }|{
+                card: 'cardTrash';
+                headline: string;
+                countItems: number; // Anzahl der anzuzeigenden Müllarten
+                trashImport: boolean; // true = Import from iCal Adapter, false = Import from .ics file
+                trashState: string;
+                trashFile: string;
+                items: {
+                    textTrash: string;
+                    customTrash: string;
+                    iconColor: string;
+                }[];
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                uniqueName: string;
+                navigationAssignment?: navigationAssignment[];
             })[];
 
             pageQRConfig: any[];

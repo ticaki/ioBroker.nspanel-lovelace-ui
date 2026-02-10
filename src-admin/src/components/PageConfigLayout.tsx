@@ -20,7 +20,7 @@ import {
     ADAPTER_NAME,
 } from '../../../src/lib/types/adminShareConfig';
 
-export type PageCardType = 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
+export type PageCardType = 'cardTrash' | 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
 
 export interface PageConfigLayoutProps {
     entries: PageConfigEntry[];
@@ -148,7 +148,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/admin/add_page/${encodeURIComponent(selectedCardType === 'all' ? (currentEntry?.card ? currentEntry.card : 'common') : 'common')}`;
+        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(selectedCardType === 'all' ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : selectedCardType)}`;
         return (
             <Box
                 sx={{
@@ -202,6 +202,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
+                                <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>
@@ -400,10 +401,19 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                             width: { xs: '100%', md: '95%' },
                             borderLeft: { xs: 'none', md: '1px solid' },
                             borderColor: 'divider',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
                         }}
                     >
                         <Paper
-                            sx={{ height: '100%', p: 2 }}
+                            sx={{
+                                height: '100%',
+                                p: 2,
+                                overflow: 'auto',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
                             elevation={1}
                         >
                             {children}

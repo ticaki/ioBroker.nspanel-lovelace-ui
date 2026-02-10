@@ -143,8 +143,16 @@ export class AdminConfiguration extends BaseClass {
                     };
                     break;
                 }
+                case 'cardTrash': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = dataForcardTrash(entry);
+                    this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
+                    break;
+                }
                 default: {
-                    this.log.warn(`Unsupported card 1type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
                     continue;
                 }
             }
@@ -256,4 +264,90 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
             exhaustiveCheck(R);
             return false;
     }
+}
+
+function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
+    let newPage: PageBase;
+
+    const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
+        return {
+            id: `pageItem${i}`,
+            role: 'text.list' as const,
+            type: 'text' as const,
+            data: {
+                icon: {
+                    true: {
+                        value: {
+                            type: 'internal' as const,
+                            dp: `///pageTrash_${entry.uniqueName}`,
+                            read: `return val[${i}].icon;`,
+                        },
+                        color: {
+                            type: 'internal' as const,
+                            dp: `///pageTrash_${entry.uniqueName}`,
+                            read: `return val[${i}].color;`,
+                        },
+                    },
+                },
+                entity1: {
+                    value: { type: 'const' as const, constVal: true },
+                },
+                text: {
+                    true: {
+                        type: 'internal' as const,
+                        dp: `///pageTrash_${entry.uniqueName}`,
+                        read: `return val[${i}].text;`,
+                    },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internal' as const,
+                        dp: `///pageTrash_${entry.uniqueName}`,
+                        read: `return val[${i}].text1;`,
+                    },
+                    false: undefined,
+                },
+            },
+        };
+    });
+
+    if (entry.countItems < 1 || entry.countItems > 6) {
+        entry.countItems = 6;
+    }
+    if (entry.countItems < 6) {
+        newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: '',
+            template: 'entities.waste-calendar',
+            config: {
+                card: 'cardEntities',
+                data: {
+                    headline: { type: 'const', constVal: entry.headline || 'Trash' },
+                },
+            },
+            pageItems: pageItems,
+        };
+    } else {
+        newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: '',
+            template: 'entities.waste-calendar',
+            config: {
+                card: 'cardSchedule',
+                data: {
+                    headline: { type: 'const', constVal: entry.headline || 'Trash' },
+                },
+            },
+            pageItems: pageItems,
+        };
+    }
+
+    // Generiere PageItems dynamisch
+
+    return newPage;
 }

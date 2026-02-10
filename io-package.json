@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.10.0",
+    "version": "0.11.0",
     "news": {
+      "0.11.0": {
+        "en": "Fixed incorrect error logs for cardThermo and cardThermo2\nadd PageTrash to Admin-Tab PageConfig",
+        "de": "Fehlerprotokolle für die Karte Thermo und Karte Thermo2 behoben\npageTrash zu Admin-Tab PageConfig hinzufügen",
+        "ru": "Исправлены неправильные журналы ошибок для карты Термо и карточка Термо2\nдобавить PageTrash в Admin-Tab PageConfig",
+        "pt": "Registros de erro incorretos corrigidos para o cartão Termo e cartão Termo2\nadd PageTrash to Admin-Tab PageConfig",
+        "nl": "Onjuiste fout logs voor kaart Thermo en kaart Thermo2\npageTrash toevoegen aan Admin-Tab PageConfig",
+        "fr": "Correction des journaux d'erreurs incorrectes pour la carte Thermo et carte Thermo2\najouter PageTrash à Admin-Tab PageConfig",
+        "it": "Log di errore non corretti per la scheda Termo e scheda Termocoppia\naggiungi PageTrash a Admin-Tab PageConfig",
+        "es": "Registros de errores corregidos para tarjeta Termo y tarjeta Thermo2\nagregar PageTrash a Admin-Tab PageConfig",
+        "pl": "Naprawiono nieprawidłowe dzienniki błędów karty Termo i karta Termo2\ndodaj PageTrash do Admin- Tab PageConfig",
+        "uk": "Виправлені неправильні журнали помилок для картки Термо-карта Термо2\nдодати сторінкуПерейти в Admin-Tab PageConfig",
+        "zh-cn": "卡片的固定错误日志 热和卡 热量2\n将页面回收站添加到管理员- Tab 页面配置"
+      },
       "0.10.0": {
         "en": "Confirmation click for role button\nSome duplicate unique names were overlooked during script transfer.\nbug fixes for role 'blind'\nminor bug fixes",
         "de": "Bestätigungsklick für Role button hinzugefügt\nEinige doppelte Eindeutigenamen wurden während der Scriptübertragung übersehen.\nFehlerbehebungen für rolle 'blind'\nkleine Fehlerbehebungen",
@@ -80,19 +93,6 @@
         "pl": "Przełączenie z subskrypcji globalnej na subskrypcje indywidualne\nmodel us- p stały\naktualizacje deps",
         "uk": "Переключення з глобального підряду на індивідуальні підписки\nмодель us-p фіксована\nоновлення deps",
         "zh-cn": "从全球下标切换到个人订阅\n模型我们 -p 固定\n更新代码"
-      },
-      "0.7.2": {
-        "en": "selection disappears - fixed",
-        "de": "auswahl verschwindet - fixiert",
-        "ru": "выбор исчезает - фиксированный",
-        "pt": "a seleção desaparece - fixa",
-        "nl": "selectie verdwijnt - vast",
-        "fr": "la sélection disparaît - fixe",
-        "it": "selezione scompare - fisso",
-        "es": "selección desaparece - fijo",
-        "pl": "wybór znika - stałe",
-        "uk": "вибір зникне - фіксована",
-        "zh-cn": "选择消失 - 固定"
       }
     },
     "titleLang": {
