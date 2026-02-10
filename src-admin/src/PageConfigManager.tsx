@@ -220,12 +220,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 trashState: '',
                 trashFile: '',
                 items: [
-                    { textTrash: '', customTrash: '', iconColor: '#3c3fff' },
-                    { textTrash: '', customTrash: '', iconColor: '#fffd77' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2' },
-                    { textTrash: '', customTrash: '', iconColor: '#de8900' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2' },
+                    { textTrash: '', customTrash: '', iconColor: '#3c3fff', icon: '' },
+                    { textTrash: '', customTrash: '', iconColor: '#fffd77', icon: '' },
+                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
+                    { textTrash: '', customTrash: '', iconColor: '#de8900', icon: '' },
+                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
+                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
                 ],
             };
         } else {
