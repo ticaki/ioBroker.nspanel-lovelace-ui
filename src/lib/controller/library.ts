@@ -247,6 +247,7 @@ export class Library extends BaseClass {
                 this.log.debug(`No definition for ${key}!`);
                 result = genericStateObjects.default;
                 result = structuredClone(result);
+                result.common.name = key.replace('.', '');
                 switch (typeof data) {
                     case 'number':
                     case 'bigint':
