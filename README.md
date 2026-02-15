@@ -161,6 +161,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) Admin-Tab globalSetting convert to React  
 - (tt-tom17) Admin-Tab Maintain convert to React  
 - (tt-tom17) Add icon selector to trash entries  
+- (ticaki / tt-tom17) write Tasmota Tele in States
   
 ### 0.10.0 (2026-01-17)
 - (ticaki) Confirmation click for role button
