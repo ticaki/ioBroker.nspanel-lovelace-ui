@@ -490,10 +490,10 @@ export type PanelInfo = {
     isOnline?: boolean;
     nspanel: {
         displayVersion: string;
-        model: string;
+        model: string | null;
         bigIconLeft: boolean;
         bigIconRight: boolean;
-        onlineVersion: string;
+        onlineVersion: string | null;
         firmwareUpdate: number;
         currentPage: string;
         scriptVersion: string;

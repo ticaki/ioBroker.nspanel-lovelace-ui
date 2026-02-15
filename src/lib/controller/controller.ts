@@ -24,8 +24,11 @@ export class Controller extends Library.BaseClass {
     private dailyIntervalTimeout: ioBroker.Interval | undefined;
     private dataCache: Record<string, { time: number; data: any }> = {};
     private options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] };
-    public globalPanelInfo: { availableTftFirmwareVersion: string; availableTasmotaFirmwareVersion: string } = {
-        availableTftFirmwareVersion: '',
+    public globalPanelInfo: {
+        availableTftFirmwareVersion: { [key: string]: string };
+        availableTasmotaFirmwareVersion: string;
+    } = {
+        availableTftFirmwareVersion: {},
         availableTasmotaFirmwareVersion: '',
     };
 
@@ -651,16 +654,11 @@ export class Controller extends Library.BaseClass {
                 return;
             }
 
-            const version = this.adapter.config.useBetaTFT
-                ? result['tft-beta'].split('_')[0]
-                : result.tft.split('_')[0];
-            this.globalPanelInfo.availableTftFirmwareVersion = version.trim();
+            this.globalPanelInfo.availableTftFirmwareVersion = result;
 
             this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota.trim();
 
             for (const panel of this.panels) {
-                panel.info.nspanel.onlineVersion = this.globalPanelInfo.availableTftFirmwareVersion;
-                panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
                 await panel.writeInfo();
             }
         } catch {

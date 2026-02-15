@@ -219,7 +219,6 @@ class Panel extends import_library.BaseClass {
     }
     this.info.nspanel.scriptVersion = options.scriptVersion || "unknown";
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-    this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
     this.statesControler = options.controller.statesControler;
     const admin = new import_admin.AdminConfiguration(this.adapter);
     admin.processentrys(options);
@@ -843,6 +842,8 @@ class Panel extends import_library.BaseClass {
       }
     } else if (topic.endsWith("/tele/INFO1")) {
       this.restartLoops();
+    } else if (topic.includes("/tele/")) {
+      await this.library.writeFromJson(`panels.${this.name}.info.tasmota.sts`, "", {}, JSON.parse(message));
     } else {
       const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
       if (command) {
@@ -1338,8 +1339,16 @@ class Panel extends import_library.BaseClass {
     return this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
   }
   async writeInfo() {
+    var _a;
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-    this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
+    if (this.info.nspanel.model == null) {
+      this.info.nspanel.model = (_a = this.adapter.library.readdb(`panels.${this.name}.info.nspanel.model`)) == null ? void 0 : _a.val;
+    }
+    if (this.info.nspanel.model) {
+      const modelSuffix = `-${this.info.nspanel.model}`;
+      const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
+      this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
+    }
     await this.library.writeFromJson(
       `panels.${this.name}.info`,
       "panel.panels.info",
