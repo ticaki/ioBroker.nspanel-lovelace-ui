@@ -24,6 +24,7 @@ declare global {
             weatherEntity: string;
             fixBrokenCommonTypes: boolean;
             hideDeveloperSymbols: boolean;
+            writeTasmotaTele:boolean;
 
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;

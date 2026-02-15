@@ -441,5 +441,6 @@
     "welcomeTToken": "  Einen schönen Tag,/r/n    wünschen dir/r/n Armilar, TT-Tom, ticaki/r/n   & Kuckuckmann",
     "window": "Fenster",
     "wlanhidden": "verstecktes Wlan",
-    "wlantype": "Wlan Verschlüsselung"
+    "wlantype": "Wlan Verschlüsselung",
+    "writeTasmotaTele": "Tasmota Telemetriedaten schreiben"
 }

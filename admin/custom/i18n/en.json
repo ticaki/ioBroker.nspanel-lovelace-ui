@@ -441,5 +441,6 @@
     "welcomeTToken": "  Have a nice day,/r/n wish you/r/n  Armilar, TT-Tom, ticaki/r/n   & Kuckuckmann",
     "window": "window",
     "wlanhidden": "hidden wifi",
-    "wlantype": "Wifi encryption"
+    "wlantype": "Wifi encryption",
+    "writeTasmotaTele": "Write Tasmota telemetry data"
 }

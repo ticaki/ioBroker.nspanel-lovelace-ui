@@ -38,6 +38,7 @@ interface PageGlobalSettingsState extends ConfigGenericState {
     defaultValueCardThermo?: boolean;
     pw1?: string;
     rememberLastSite?: boolean;
+    writeTasmotaTele?: boolean;
     alive?: boolean;
 }
 
@@ -219,6 +220,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const pw1 = data.pw1 ?? '';
         const rememberLastSite = data.rememberLastSite ?? false;
         const weatherEntity = data.weatherEntity ?? '';
+        const writeTasmotaTele = data.writeTasmotaTele ?? false;
 
         // Expert Mode from props (provided by json-config system)
         const isExpertMode = this.props.expertMode ?? false;
@@ -480,6 +482,20 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             />
                         }
                         label={this.getText('rememberLastSite')}
+                    />
+                </Box>
+
+                {/* Write Tasmota Telemetry Checkbox */}
+                <Box sx={boxStyle}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={writeTasmotaTele}
+                                onChange={this.handleCheckboxChange('writeTasmotaTele')}
+                                disabled={!this.state.alive}
+                            />
+                        }
+                        label={this.getText('writeTasmotaTele')}
                     />
                 </Box>
             </Box>

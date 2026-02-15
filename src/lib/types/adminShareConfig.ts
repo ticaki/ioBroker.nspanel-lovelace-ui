@@ -158,7 +158,6 @@ export type TrashEntry = {
     items: TrashItem[]; // Array statt 6 einzelne Felder pro Typ
 } & PageConfigBaseFields;
 
-export type PageConfigEntry = UnlockEntry | QREntry | ScreensaverEntry | TrashEntry;
 // Rückgabewert-Typ für das Navigation Assignment Panel
 export type NavigationAssignment = {
     topic: string;
@@ -172,5 +171,5 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-
+export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
 export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
