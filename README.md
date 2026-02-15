@@ -157,10 +157,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### 0.11.0 (2026-02-09)  
-- (ticaki) Fixed incorrect error logs for cardThermo and cardThermo2
-- (tt-tom17) add PageTrash to Admin-Tab PageConfig
-
+### **WORK IN PROGRESS**  
+- (tt-tom17) Admin-Tab globalSetting convert to React  
+- (tt-tom17) Admin-Tab Maintain convert to React  
+- (tt-tom17) Add icon selector to trash entries  
+- (ticaki / tt-tom17) write Tasmota Tele in States
+  
 ### 0.10.0 (2026-01-17)
 - (ticaki) Confirmation click for role button
 - (ticaki) Some duplicate unique names were overlooked during script transfer.

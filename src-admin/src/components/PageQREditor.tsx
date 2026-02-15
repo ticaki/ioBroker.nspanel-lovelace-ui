@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
-import type { QREntry } from '../../../src/lib/types/adminShareConfig';
+import { type QREntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageQREditorProps {
     entry: QREntry;
@@ -29,6 +29,7 @@ export interface PageQREditorProps {
 
 interface PageQREditorState {
     showPassword: boolean;
+    alive: boolean;
 }
 
 export class PageQREditor extends React.Component<PageQREditorProps, PageQREditorState> {
@@ -36,8 +37,47 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
         super(props);
         this.state = {
             showPassword: false,
+            alive: false,
         };
     }
+
+    componentWillUnmount(): void {
+        // Unsubscribe from alive state changes
+        const instance = this.props.oContext.instance ?? '0';
+        this.props.oContext.socket.unsubscribeState(
+            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+            this.onAliveChanged,
+        );
+    }
+
+    async componentDidMount(): Promise<void> {
+        // Get initial alive state and subscribe to changes
+        const instance = this.props.oContext.instance ?? '0';
+        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            this.setState({ alive: isAlive });
+
+            // Subscribe to alive state changes
+            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+        } catch (error) {
+            console.error('[PageQREditor] Failed to get alive state or subscribe:', error);
+            this.setState({ alive: false });
+        }
+    }
+
+    // Callback for alive state changes
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const wasAlive = this.state.alive;
+        const isAlive = state ? !!state.val : false;
+
+        if (wasAlive !== isAlive) {
+            console.log('[PageQREditor] Alive state changed:', { wasAlive, isAlive });
+            this.setState({ alive: isAlive });
+        }
+    };
 
     private getText(key: string): string {
         return this.props.getText(key);
@@ -82,12 +122,16 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                                 width: '50%',
                             },
                         }}
+                        disabled={!this.state.alive}
                     />
                 </Box>
 
                 {/* QR Type Selection */}
                 <Box sx={{ mb: 2 }}>
-                    <FormControl component="fieldset">
+                    <FormControl
+                        component="fieldset"
+                        disabled={!this.state.alive}
+                    >
                         <FormLabel component="legend">{this.getText('qr_type')}</FormLabel>
                         <RadioGroup
                             row
@@ -136,6 +180,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                         sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
                     }}
                     sx={{ mb: 2 }}
+                    disabled={!this.state.alive}
                 />
 
                 {/* SSID/URL/TEL field */}
@@ -166,6 +211,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                         sx: { backgroundColor: 'transparent', px: 1 },
                     }}
                     sx={{ mb: 2 }}
+                    disabled={!this.state.alive}
                 />
 
                 {/* WiFi-specific fields */}
@@ -175,6 +221,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                         <FormControl
                             variant="standard"
                             sx={{ mb: 2, minWidth: 240 }}
+                            disabled={!this.state.alive}
                         >
                             <InputLabel>{this.getText('qr_wlan_type')}</InputLabel>
                             <Select
@@ -220,6 +267,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                                     ),
                                 }}
                                 sx={{ mb: 2 }}
+                                disabled={!this.state.alive}
                             />
                         )}
 
@@ -235,6 +283,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                                     />
                                 }
                                 label={this.getText('qr_wlan_hidden')}
+                                disabled={!this.state.alive}
                             />
                             <FormControlLabel
                                 control={
@@ -246,6 +295,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                                     />
                                 }
                                 label={this.getText('qr_pwd_hidden')}
+                                disabled={!this.state.alive}
                             />
                         </Box>
 
@@ -271,6 +321,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
                                         obj.common.read
                                     );
                                 }}
+                                disabled={!this.state.alive}
                             />
                         </Box>
                     </Box>

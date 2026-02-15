@@ -21,6 +21,7 @@ type TrashItem = {
     textTrash: string;
     customTrash: string;
     iconColor: string;
+    icon: string;
 };
 
 export async function getTrashDataFromState(
@@ -154,6 +155,7 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
     const trashType = item.textTrash || '';
     const customTrash = item.customTrash || '';
     const iconColor = item.iconColor || '';
+    const icon = item.icon || 'calendar-month';
     const eventStartdatum = new Date(event.start || 1);
     let eventDatum = '';
     const tempDate = new Date(eventStartdatum).setHours(0, 0, 0, 0);
@@ -185,7 +187,7 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
     }
 
     return {
-        icon: 'trash-can',
+        icon: icon,
         color: Color.ConvertHexToRgb(iconColor),
         text: customTrash && customTrash !== '' ? customTrash : trashType,
         text1: eventDatum,

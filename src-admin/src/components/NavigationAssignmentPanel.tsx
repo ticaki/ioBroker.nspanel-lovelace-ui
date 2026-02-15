@@ -597,6 +597,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 onChange={(_e, checked) => {
                                     this.handleCommonFieldChange('hidden', checked);
                                 }}
+                                disabled={!this.state.alive}
                             />
                         }
                         label={I18n.t('hidden')}
@@ -605,7 +606,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
                 {/* AlwaysOn Radio Group */}
                 <Box sx={{ mt: 2 }}>
-                    <FormControl component="fieldset">
+                    <FormControl
+                        component="fieldset"
+                        disabled={!this.state.alive}
+                    >
                         <Typography
                             variant="subtitle2"
                             sx={{ mb: 1 }}
@@ -837,6 +841,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 minWidth: { xs: 'auto', md: 90 },
                                 px: { xs: 1, md: 2 },
                             }}
+                            disabled={!this.state.alive}
                         />
                         <Tab
                             icon={<SettingsIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
@@ -867,6 +872,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 minWidth: { xs: 'auto', md: 90 },
                                 px: { xs: 1, md: 2 },
                             }}
+                            disabled={!this.state.alive}
                         />
                         <Tab
                             icon={<ExtensionIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
@@ -897,6 +903,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 minWidth: { xs: 'auto', md: 90 },
                                 px: { xs: 1, md: 2 },
                             }}
+                            disabled={!this.state.alive}
                         />
                     </Tabs>
 
@@ -987,11 +994,15 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                     }}
                                                                     secondaryAction={
                                                                         <IconButton
+                                                                            disabled={!this.state.alive}
                                                                             className="delete-icon"
                                                                             edge="end"
                                                                             aria-label="delete"
                                                                             size="small"
                                                                             onClick={e => {
+                                                                                if (!this.state.alive) {
+                                                                                    return;
+                                                                                }
                                                                                 e.stopPropagation();
                                                                                 // Two-step delete on mobile (touch devices)
                                                                                 if (!isPending) {
@@ -1056,6 +1067,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                                         ? 'error.dark'
                                                                                         : 'action.hover',
                                                                                 },
+                                                                                pointerEvents: this.state.alive
+                                                                                    ? 'auto'
+                                                                                    : 'none',
                                                                             }}
                                                                         >
                                                                             <DeleteOutlineIcon fontSize="small" />
@@ -1075,6 +1089,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                             // Ensure text takes full width minus icon space
                                                                             pr: 6,
                                                                         }}
+                                                                        disabled={!this.state.alive}
                                                                     >
                                                                         <ListItemText
                                                                             primary={
