@@ -157,6 +157,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) NSPanel TFT version is displayed correctly depending on the model.
+- (ticaki)(tt-tom17) Option to write Tasmota telemetry data into states.
+
 ### 0.11.0 (2026-02-09)  
 - (ticaki) Fixed incorrect error logs for cardThermo and cardThermo2
 - (tt-tom17) add PageTrash to Admin-Tab PageConfig
