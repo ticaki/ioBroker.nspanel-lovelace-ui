@@ -195,6 +195,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               }
             }
             if (c && c.panelConfig) {
+              c.panelConfig.model = a.model || "eu";
               config.push(c.panelConfig);
               usedConfig = "raw";
             } else {
@@ -206,6 +207,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               (b) => b.topic === a.topic
             );
             if (conv) {
+              conv.model = a.model || "eu";
               config.push(conv);
               usedConfig = "converted";
             }
@@ -972,7 +974,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   update = index !== -1;
                 }
                 mac = r.StatusNET.Mac;
-                item.model = obj.message.model;
+                item.model = obj.message.model || "eu";
                 item.name = obj.message.tasmotaName;
                 item.topic = topic;
                 item.id = this.library.cleandp(mac);

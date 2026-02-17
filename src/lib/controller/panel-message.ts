@@ -145,12 +145,12 @@ export class PanelSend extends BaseClass {
             return;
         }
 
-        if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
+        if (this.losingMessageCount > 0 && this.adapter.config.additionalLog && this.panel?.isOnline) {
             this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
         }
         if (this.losingMessageCount++ > 5) {
             if (this.panel) {
-                if (this.adapter.config.additionalLog) {
+                if (this.adapter.config.additionalLog && this.panel?.isOnline) {
                     this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
                 }
                 this.panel.isOnline = false;

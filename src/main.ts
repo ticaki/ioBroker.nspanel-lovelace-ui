@@ -32,7 +32,7 @@ import path from 'path';
 import { testScriptConfig } from './lib/const/test';
 import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
-import type { oldQRType } from './lib/types/types';
+import type { NSpanelModel, oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 
 class NspanelLovelaceUi extends utils.Adapter {
@@ -224,6 +224,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             }
                         }
                         if (c && c.panelConfig) {
+                            c.panelConfig.model = (a.model as NSpanelModel) || 'eu';
                             config.push(c.panelConfig);
                             usedConfig = 'raw';
                         } else {
@@ -237,6 +238,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             (b: { topic: string }) => b.topic === a.topic,
                         );
                         if (conv) {
+                            conv.model = (a.model as NSpanelModel) || 'eu';
                             config.push(conv);
                             usedConfig = 'converted';
                         }
@@ -1160,7 +1162,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     update = index !== -1;
                                 }
                                 mac = r.StatusNET.Mac;
-                                item.model = obj.message.model;
+                                item.model = obj.message.model || 'eu';
                                 item.name = obj.message.tasmotaName;
                                 item.topic = topic;
                                 item.id = this.library.cleandp(mac);
