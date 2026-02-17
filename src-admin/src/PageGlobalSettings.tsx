@@ -483,6 +483,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         }
                         label={this.getText('rememberLastSite')}
                     />
+                    <FormHelperText>{this.getText('rememberLastSiteHint')}</FormHelperText>
                 </Box>
 
                 {/* Write Tasmota Telemetry Checkbox */}
@@ -497,6 +498,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         }
                         label={this.getText('writeTasmotaTele')}
                     />
+                    <FormHelperText>{this.getText('writeTasmotaTeleHint')}</FormHelperText>
                 </Box>
             </Box>
         );

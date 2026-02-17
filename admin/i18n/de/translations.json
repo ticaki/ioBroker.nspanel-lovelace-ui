@@ -304,6 +304,7 @@
     "qr_wlan_type": "WLAN-Verschlüsselung",
     "refresh": "Aktualisieren",
     "rememberLastSite": "Letzte Seite merken",
+    "rememberLastSiteHint": "Optional: Merke die zuletzt geöffnete Seite und öffne diese beim nächsten Laden der Oberfläche. Wenn deaktiviert, wird die Seite geöffnet, die in den Einstellungen als Startseite definiert ist.",
     "resetTasmota": "Tasmota MQTT zurücksetzen",
     "screenSaverTimeout": "Abblendzeit",
     "screensaver_config": "Bildschirmschoner-Konfiguration",
@@ -442,5 +443,6 @@
     "window": "Fenster",
     "wlanhidden": "verstecktes Wlan",
     "wlantype": "Wlan Verschlüsselung",
-    "writeTasmotaTele": "Tasmota Telemetriedaten schreiben"
+    "writeTasmotaTele": "Tasmota Telemetriedaten schreiben",
+    "writeTasmotaTeleHint": "Wenn aktiviert, werden die Telemetriedaten des Panels in den Datenpunkten gespeichert. (Panels/XXXXX/info/tasmota/sts....)"
 }

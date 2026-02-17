@@ -304,6 +304,7 @@
     "qr_wlan_type": "WiFi Encryption",
     "refresh": "Refresh",
     "rememberLastSite": "Remember last page",
+    "rememberLastSiteHint": "Optional: Remember the last opened page and open it the next time the interface is loaded. If disabled, the page defined as the start page in the settings will be opened.",
     "resetTasmota": "Factory MQTT reset Tasmota",
     "screenSaverTimeout": "Dimming time",
     "screensaver_config": "Screensaver Configuration",
@@ -442,5 +443,6 @@
     "window": "window",
     "wlanhidden": "hidden wifi",
     "wlantype": "Wifi encryption",
-    "writeTasmotaTele": "Write Tasmota telemetry data"
+    "writeTasmotaTele": "Write Tasmota telemetry data",
+    "writeTasmotaTeleHint": "When enabled, the telemetry data of the panel will be stored in the data points (panels/XXXXX/info/tasmota/sts....)."
 }
