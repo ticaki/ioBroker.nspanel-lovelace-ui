@@ -55,6 +55,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
     fetchs: Map<AbortController, ioBroker.Timeout | undefined> = new Map();
 
+    paused: boolean = false;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -427,6 +428,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 await this.delay(100);
                 await this.mqttClient.destroy();
                 await this.delay(100);
+                this.paused = true;
                 this.log.error('No configuration - adapter on hold!');
                 return;
             }
@@ -890,6 +892,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } else {
                                 let reloaded = false;
                                 //try {
+
                                 if (r.panelConfig) {
                                     const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
                                     if (arr && arr.length > 0) {
@@ -898,50 +901,64 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             const topic = config.topic;
 
                                             if (topic) {
-                                                const index = this.controller.panels.findIndex(a => a.topic === topic);
+                                                const index = this.config.panels.findIndex(p => p.topic === topic);
                                                 if (index !== -1) {
-                                                    const name =
-                                                        this.controller.panels[index].friendlyName ||
-                                                        config.name ||
-                                                        config.topic;
-                                                    await this.controller.removePanel(this.controller.panels[index]);
-                                                    if (this.unload) {
-                                                        if (obj.callback) {
-                                                            this.sendTo(
-                                                                obj.from,
-                                                                obj.command,
-                                                                'Adapter is stopping',
-                                                                obj.callback,
-                                                            );
-                                                        }
-                                                        return;
-                                                    }
-                                                    await this.delay(1500);
-                                                    if (this.unload) {
-                                                        if (obj.callback) {
-                                                            this.sendTo(
-                                                                obj.from,
-                                                                obj.command,
-                                                                'Adapter is stopping',
-                                                                obj.callback,
-                                                            );
-                                                        }
-                                                        return;
-                                                    }
-                                                    await this.controller.addPanel(config);
+                                                    const index = this.controller.panels.findIndex(
+                                                        a => a.topic === topic,
+                                                    );
+                                                    if (index !== -1) {
+                                                        await this.controller.removePanel(
+                                                            this.controller.panels[index],
+                                                        );
 
-                                                    const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
-                                                    this.log.info(msg);
-                                                    r.messages.push(msg);
-                                                    reloaded = true;
+                                                        if (this.unload) {
+                                                            if (obj.callback) {
+                                                                this.sendTo(
+                                                                    obj.from,
+                                                                    obj.command,
+                                                                    'Adapter is stopping',
+                                                                    obj.callback,
+                                                                );
+                                                            }
+                                                            return;
+                                                        }
+                                                        await this.delay(1000);
+
+                                                        if (this.unload) {
+                                                            if (obj.callback) {
+                                                                this.sendTo(
+                                                                    obj.from,
+                                                                    obj.command,
+                                                                    'Adapter is stopping',
+                                                                    obj.callback,
+                                                                );
+                                                            }
+                                                            return;
+                                                        }
+                                                    }
+                                                    const done = await this.controller.addPanel(config);
+                                                    if (done) {
+                                                        const name =
+                                                            this.controller.panels[index].friendlyName ||
+                                                            config.name ||
+                                                            config.topic;
+                                                        const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
+                                                        this.log.info(msg);
+                                                        r.messages.push(msg);
+                                                        reloaded = true;
+                                                    } else {
+                                                        const msg = `Panel ${topic} found but could not be reloaded. Check log for details.`;
+                                                        this.log.error(msg);
+                                                        r.messages.push(msg);
+                                                    }
                                                 } else {
                                                     r.messages.push(
-                                                        `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`,
+                                                        `Panel ${topic} not found in Adapter configuration. Check Admin configuration for correct panel topic.`,
                                                     );
                                                 }
                                             } else {
                                                 r.messages.push(
-                                                    `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`,
+                                                    `Panel ${topic} not found in script. Configuration saved. Adapter restart required!`,
                                                 );
                                             }
                                         } else {
@@ -961,7 +978,20 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.log.error(`Error in configuration: ${e.message}`);
                                     }*/
                                 if (!reloaded) {
-                                    const msg = `❌ Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
+                                    let msg = '';
+                                    if (this.paused) {
+                                        msg = `❌ Adapter is paused try to restart it by itself. Check logs for more details.`;
+                                        this.log.info(msg);
+                                        result = r.messages;
+                                        if (obj.callback) {
+                                            this.sendTo(obj.from, obj.command, result, obj.callback);
+                                        }
+                                        await manager.delete();
+                                        this.restart();
+                                        return;
+                                    }
+                                    msg = `❌ Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
+
                                     this.log.info(msg);
                                     r.messages.push(msg);
                                 }

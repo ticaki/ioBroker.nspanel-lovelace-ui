@@ -415,13 +415,13 @@ class Controller extends Library.BaseClass {
     if (index !== -1) {
       this.adapter.testSuccessful = false;
       this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} already exists`);
-      return;
+      return false;
     }
     index = this.adapter.config.panels.findIndex((p) => p.topic === panel.topic);
     if (index === -1) {
       this.adapter.testSuccessful = false;
       this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} not found in config`);
-      return;
+      return false;
     }
     panel.name = this.adapter.config.panels[index].id;
     panel.friendlyName = this.adapter.config.panels[index].name;
@@ -438,11 +438,12 @@ class Controller extends Library.BaseClass {
       this.panels.push(newPanel);
       newPanel.initDone = true;
       this.log.debug(`Panel ${newPanel.name} created`);
-    } else {
-      await newPanel.delete();
-      this.adapter.testSuccessful = false;
-      this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+      return true;
     }
+    await newPanel.delete();
+    this.adapter.testSuccessful = false;
+    this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+    return false;
   };
   removePanel = async (panel) => {
     const index = this.panels.findIndex((p) => p.topic === panel.topic);

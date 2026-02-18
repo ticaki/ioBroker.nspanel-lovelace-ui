@@ -410,7 +410,7 @@ export class Controller extends Library.BaseClass {
         }
         void this.systemNotification.init();
 
-        const tasks: Promise<void>[] = [];
+        const tasks: Promise<boolean>[] = [];
         for (const panelConfig of panels) {
             if (panelConfig === undefined) {
                 continue;
@@ -426,18 +426,18 @@ export class Controller extends Library.BaseClass {
         this.log.info(`${this.panels.length} Panels initialized`);
     }
 
-    addPanel = async (panel: Partial<Panel.panelConfigPartial>): Promise<void> => {
+    addPanel = async (panel: Partial<Panel.panelConfigPartial>): Promise<boolean> => {
         let index = this.panels.findIndex(p => p.topic === panel.topic);
         if (index !== -1) {
             this.adapter.testSuccessful = false;
             this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} already exists`);
-            return;
+            return false;
         }
         index = this.adapter.config.panels.findIndex(p => p.topic === panel.topic);
         if (index === -1) {
             this.adapter.testSuccessful = false;
             this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} not found in config`);
-            return;
+            return false;
         }
 
         panel.name = this.adapter.config.panels[index].id;
@@ -450,7 +450,7 @@ export class Controller extends Library.BaseClass {
                 panel.navigation = o.native.navigation[panel.topic].data;
             }
         }
-        //try {
+
         const newPanel = new Panel.Panel(this.adapter, panel as Panel.panelConfigPartial);
         if (await newPanel.isValid()) {
             await newPanel.init();
@@ -458,17 +458,12 @@ export class Controller extends Library.BaseClass {
             this.panels.push(newPanel);
             newPanel.initDone = true;
             this.log.debug(`Panel ${newPanel.name} created`);
-        } else {
-            await newPanel.delete();
-            this.adapter.testSuccessful = false;
-            this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+            return true;
         }
-        /*} catch (e) {
-            this.log.error(
-                `Panel ${panel.name} with topic ${panel.topic} cannot be created: ${e instanceof Error ? e.message : JSON.stringify(e)}`,
-            );
-            return;
-        }*/
+        await newPanel.delete();
+        this.adapter.testSuccessful = false;
+        this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+        return false;
     };
 
     removePanel = async (panel: Panel.Panel): Promise<void> => {
