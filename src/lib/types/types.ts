@@ -490,7 +490,7 @@ export type PanelInfo = {
     isOnline?: boolean;
     nspanel: {
         displayVersion: string;
-        model: string | null;
+        model: NSpanelModel;
         bigIconLeft: boolean;
         bigIconRight: boolean;
         onlineVersion: string | null;

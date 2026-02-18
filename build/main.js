@@ -53,6 +53,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   // just for testing
   scriptConfigBacklog = [];
   fetchs = /* @__PURE__ */ new Map();
+  paused = false;
   constructor(options = {}) {
     super({
       ...options,
@@ -195,6 +196,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               }
             }
             if (c && c.panelConfig) {
+              c.panelConfig.model = a.model || "eu";
               config.push(c.panelConfig);
               usedConfig = "raw";
             } else {
@@ -206,6 +208,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               (b) => b.topic === a.topic
             );
             if (conv) {
+              conv.model = a.model || "eu";
               config.push(conv);
               usedConfig = "converted";
             }
@@ -347,6 +350,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         await this.delay(100);
         await this.mqttClient.destroy();
         await this.delay(100);
+        this.paused = true;
         this.log.error("No configuration - adapter on hold!");
         return;
       }
@@ -757,46 +761,59 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (this.controller && config) {
                       const topic = config.topic;
                       if (topic) {
-                        const index = this.controller.panels.findIndex((a) => a.topic === topic);
+                        const index = this.config.panels.findIndex((p) => p.topic === topic);
                         if (index !== -1) {
-                          const name = this.controller.panels[index].friendlyName || config.name || config.topic;
-                          await this.controller.removePanel(this.controller.panels[index]);
-                          if (this.unload) {
-                            if (obj2.callback) {
-                              this.sendTo(
-                                obj2.from,
-                                obj2.command,
-                                "Adapter is stopping",
-                                obj2.callback
-                              );
+                          const index2 = this.controller.panels.findIndex(
+                            (a) => a.topic === topic
+                          );
+                          if (index2 !== -1) {
+                            await this.controller.removePanel(
+                              this.controller.panels[index2]
+                            );
+                            if (this.unload) {
+                              if (obj2.callback) {
+                                this.sendTo(
+                                  obj2.from,
+                                  obj2.command,
+                                  "Adapter is stopping",
+                                  obj2.callback
+                                );
+                              }
+                              return;
                             }
-                            return;
-                          }
-                          await this.delay(1500);
-                          if (this.unload) {
-                            if (obj2.callback) {
-                              this.sendTo(
-                                obj2.from,
-                                obj2.command,
-                                "Adapter is stopping",
-                                obj2.callback
-                              );
+                            await this.delay(1e3);
+                            if (this.unload) {
+                              if (obj2.callback) {
+                                this.sendTo(
+                                  obj2.from,
+                                  obj2.command,
+                                  "Adapter is stopping",
+                                  obj2.callback
+                                );
+                              }
+                              return;
                             }
-                            return;
                           }
-                          await this.controller.addPanel(config);
-                          const msg = `\u2705 Panel "${name}" reloaded with updated configuration.`;
-                          this.log.info(msg);
-                          r.messages.push(msg);
-                          reloaded = true;
+                          const done = await this.controller.addPanel(config);
+                          if (done) {
+                            const name = this.controller.panels[index2].friendlyName || config.name || config.topic;
+                            const msg = `\u2705 Panel "${name}" reloaded with updated configuration.`;
+                            this.log.info(msg);
+                            r.messages.push(msg);
+                            reloaded = true;
+                          } else {
+                            const msg = `Panel ${topic} found but could not be reloaded. Check log for details.`;
+                            this.log.error(msg);
+                            r.messages.push(msg);
+                          }
                         } else {
                           r.messages.push(
-                            `Panel ${topic} not found in controller. Configuration saved. Adapter restart required!`
+                            `Panel ${topic} not found in Adapter configuration. Check Admin configuration for correct panel topic.`
                           );
                         }
                       } else {
                         r.messages.push(
-                          `Panel ${topic} not found in script.   Configuration saved. Adapter restart required!`
+                          `Panel ${topic} not found in script. Configuration saved. Adapter restart required!`
                         );
                       }
                     } else {
@@ -811,7 +828,19 @@ class NspanelLovelaceUi extends utils.Adapter {
                   r.messages.push(`Invalid configuration!`);
                 }
                 if (!reloaded) {
-                  const msg = `\u274C Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
+                  let msg = "";
+                  if (this.paused) {
+                    msg = `\u274C Adapter is paused try to restart it by itself. Check logs for more details.`;
+                    this.log.info(msg);
+                    result = r.messages;
+                    if (obj2.callback) {
+                      this.sendTo(obj2.from, obj2.command, result, obj2.callback);
+                    }
+                    await manager.delete();
+                    this.restart();
+                    return;
+                  }
+                  msg = `\u274C Panel was not restarted due to configuration errors or missing panel instance. Please verify the panel topic and base configuration.`;
                   this.log.info(msg);
                   r.messages.push(msg);
                 }
@@ -972,7 +1001,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   update = index !== -1;
                 }
                 mac = r.StatusNET.Mac;
-                item.model = obj.message.model;
+                item.model = obj.message.model || "eu";
                 item.name = obj.message.tasmotaName;
                 item.topic = topic;
                 item.id = this.library.cleandp(mac);

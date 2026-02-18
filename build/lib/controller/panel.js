@@ -116,7 +116,7 @@ class Panel extends import_library.BaseClass {
   info = {
     nspanel: {
       displayVersion: "",
-      model: "",
+      model: "eu",
       bigIconLeft: false,
       bigIconRight: false,
       onlineVersion: "",
@@ -211,6 +211,7 @@ class Panel extends import_library.BaseClass {
     this.format = { ...DefaultOptions.format, ...options.format };
     this.controller = options.controller;
     this.topic = options.topic;
+    this.info.nspanel.model = options.model || "eu";
     if (typeof this.panelSend.addMessage === "function") {
       this.sendToPanelClass = this.panelSend.addMessage;
     }
@@ -270,7 +271,7 @@ class Panel extends import_library.BaseClass {
     this.navigation = new import_navigation.Navigation(navConfig);
   }
   newPage(pmconfig, pageConfig) {
-    var _a, _b, _c;
+    var _a;
     switch ((_a = pageConfig.config) == null ? void 0 : _a.card) {
       case "cardChart": {
         pageConfig = Panel.getPage(pageConfig, this);
@@ -336,7 +337,7 @@ class Panel extends import_library.BaseClass {
         if (!pageConfig.config) {
           throw new Error(`Page config is missing for page ${pageConfig.uniqueID}`);
         }
-        pageConfig.config.model = ((_c = (_b = this.adapter.config.panels) == null ? void 0 : _b.find((p) => p.topic === this.topic)) == null ? void 0 : _c.model) || "eu";
+        pageConfig.config.model = this.info.nspanel.model;
         return new import_screensaver.Screensaver(ssconfig, pageConfig);
       }
       default: {
@@ -1339,16 +1340,10 @@ class Panel extends import_library.BaseClass {
     return this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
   }
   async writeInfo() {
-    var _a;
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-    if (this.info.nspanel.model == null) {
-      this.info.nspanel.model = (_a = this.adapter.library.readdb(`panels.${this.name}.info.nspanel.model`)) == null ? void 0 : _a.val;
-    }
-    if (this.info.nspanel.model) {
-      const modelSuffix = `-${this.info.nspanel.model}`;
-      const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
-      this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
-    }
+    const modelSuffix = `-${this.info.nspanel.model}`;
+    const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
+    this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
     await this.library.writeFromJson(
       `panels.${this.name}.info`,
       "panel.panels.info",
@@ -1390,7 +1385,13 @@ class Panel extends import_library.BaseClass {
         }, 1e4);
         this.isOnline = true;
         this.info.nspanel.displayVersion = event.opt;
-        this.info.nspanel.model = event.action;
+        if (this.info.nspanel.model !== event.action) {
+          this.log.error(
+            `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`
+          );
+          await this.controller.removePanel(this);
+          return;
+        }
         this.requestStatusTasmota();
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, "");
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");

@@ -54,6 +54,7 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     navigation: NavigationConfig['navigationConfig'];
     updated: boolean;
     scriptVersion?: string;
+    model?: Types.NSpanelModel;
 }
 
 const DefaultOptions = {
@@ -96,7 +97,6 @@ export class Panel extends BaseClass {
     public lightPopupV2: boolean = true; //  Enable Light Popup v2, created in 2025.
     public overrideLightPopup: boolean = true; //  Override light popup config type.
     public hideCards: boolean = false;
-
     readonly buttons: panelConfigPartial['buttons'];
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
@@ -126,7 +126,7 @@ export class Panel extends BaseClass {
     info: Types.PanelInfo = {
         nspanel: {
             displayVersion: '',
-            model: '',
+            model: 'eu',
             bigIconLeft: false,
             bigIconRight: false,
             onlineVersion: '',
@@ -221,6 +221,7 @@ export class Panel extends BaseClass {
         this.format = { ...DefaultOptions.format, ...(options.format as any) };
         this.controller = options.controller;
         this.topic = options.topic;
+        this.info.nspanel.model = options.model || 'eu';
         if (typeof this.panelSend.addMessage === 'function') {
             this.sendToPanelClass = this.panelSend.addMessage;
         }
@@ -359,8 +360,7 @@ export class Panel extends BaseClass {
                 if (!pageConfig.config) {
                     throw new Error(`Page config is missing for page ${pageConfig.uniqueID}`);
                 }
-                pageConfig.config.model = (this.adapter.config.panels?.find(p => p.topic === this.topic)?.model ||
-                    'eu') as typeof pageConfig.config.model;
+                pageConfig.config.model = this.info.nspanel.model;
 
                 return new Screensaver(ssconfig, pageConfig);
             }
@@ -1498,16 +1498,9 @@ export class Panel extends BaseClass {
 
     async writeInfo(): Promise<void> {
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-        if (this.info.nspanel.model == null) {
-            this.info.nspanel.model = this.adapter.library.readdb(`panels.${this.name}.info.nspanel.model`)?.val as
-                | string
-                | null;
-        }
-        if (this.info.nspanel.model) {
-            const modelSuffix = `-${this.info.nspanel.model}`;
-            const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
-            this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
-        }
+        const modelSuffix = `-${this.info.nspanel.model}`;
+        const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
+        this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
 
         await this.library.writeFromJson(
             `panels.${this.name}.info`,
@@ -1551,7 +1544,13 @@ export class Panel extends BaseClass {
                 }, 10_000);
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
-                this.info.nspanel.model = event.action;
+                if (this.info.nspanel.model !== event.action) {
+                    this.log.error(
+                        `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`,
+                    );
+                    await this.controller.removePanel(this);
+                    return;
+                }
 
                 this.requestStatusTasmota();
                 this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
