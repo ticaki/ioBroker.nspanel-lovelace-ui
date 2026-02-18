@@ -24,6 +24,7 @@ declare global {
             weatherEntity: string;
             fixBrokenCommonTypes: boolean;
             hideDeveloperSymbols: boolean;
+            writeTasmotaTele:boolean;
 
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
@@ -283,6 +284,7 @@ declare global {
                     textTrash: string;
                     customTrash: string;
                     iconColor: string;
+                    icon: string;
                 }[];
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';

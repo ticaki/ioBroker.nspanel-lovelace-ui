@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { Upload as UploadIcon, SearchOutlined as SearchIcon } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
+import IconSelect from '../IconSelect';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageTrashEditorProps {
@@ -40,6 +41,7 @@ interface PageTrashEditorState {
 
 export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageTrashEditorState> {
     private fileInputRef = React.createRef<HTMLInputElement>();
+    private readonly emptyCommon: Record<string, any> = {};
 
     constructor(props: PageTrashEditorProps) {
         super(props);
@@ -198,6 +200,14 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
         updated.items = [...updated.items];
         updated.items[index] = { ...updated.items[index], [field]: value };
         this.props.onEntryChange(updated);
+    }
+
+    private getIconValueFromChange(attrOrData: string | Record<string, any>, value?: unknown): string {
+        if (typeof attrOrData === 'string') {
+            return typeof value === 'string' ? value : '';
+        }
+
+        return typeof attrOrData.icon === 'string' ? attrOrData.icon : '';
     }
 
     private handleSearchClick = async (): Promise<void> => {
@@ -521,11 +531,11 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                     </Box>
                 )}
 
-                {/* Trash entry fields (color, trash name, custom name) */}
+                {/* Trash entry fields (color, icon, trash name, custom name) */}
                 <Box sx={{ mb: 2 }}>
                     {entry.items.map((item, index) => (
                         <Box
-                            key={index}
+                            key={`${entry.uniqueName}-${index}`}
                             sx={{
                                 display: 'flex',
                                 gap: 2,
@@ -553,6 +563,35 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 }}
                                 sx={{ minWidth: 100, flexShrink: 0 }}
                             />
+                            <Box sx={{ flex: 1, minWidth: 220 }}>
+                                <IconSelect
+                                    oContext={oContext}
+                                    alive={alive}
+                                    changed={false}
+                                    themeName={theme?.palette?.mode === 'dark' ? 'dark' : 'light'}
+                                    common={this.emptyCommon}
+                                    attr="icon"
+                                    data={{ icon: item.icon ?? '' }}
+                                    originalData={{ icon: item.icon ?? '' }}
+                                    onError={(): void => {}}
+                                    schema={{
+                                        type: 'custom',
+                                        name: 'IconSelect',
+                                        url: '',
+                                        label: `trash_icon_field_${index + 1}`,
+                                        i18n: true,
+                                    }}
+                                    custom
+                                    onChange={(attrOrData, val, cb): void => {
+                                        const newIcon = this.getIconValueFromChange(attrOrData, val);
+                                        this.handleItemChange(index, 'icon', newIcon);
+                                        if (cb) {
+                                            cb();
+                                        }
+                                    }}
+                                    theme={theme}
+                                />
+                            </Box>
                             {/* Trashname */}
                             <TextField
                                 variant="standard"

@@ -843,7 +843,7 @@ class Panel extends import_library.BaseClass {
       }
     } else if (topic.endsWith("/tele/INFO1")) {
       this.restartLoops();
-    } else if (topic.includes("/tele/")) {
+    } else if (topic.includes("/tele/") && this.adapter.config.writeTasmotaTele != void 0 && this.adapter.config.writeTasmotaTele) {
       await this.library.writeFromJson(`panels.${this.name}.info.tasmota.sts`, "", {}, JSON.parse(message));
     } else {
       const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
