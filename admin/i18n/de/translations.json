@@ -444,5 +444,5 @@
     "wlanhidden": "verstecktes Wlan",
     "wlantype": "Wlan Verschlüsselung",
     "writeTasmotaTele": "Tasmota Telemetriedaten schreiben",
-    "writeTasmotaTeleHint": "Wenn aktiviert, werden die Telemetriedaten des Panels in den Datenpunkten gespeichert. (Panels/XXXXX/info/tasmota/sts....)"
+    "writeTasmotaTeleHint": "Wenn aktiviert, werden die Telemetriedaten des Panels in den Datenpunkten gespeichert. (panels/XXXXX/info/tasmota/sts....)"
 }
