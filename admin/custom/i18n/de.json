@@ -304,7 +304,7 @@
     "qr_wlan_type": "WLAN-Verschlüsselung",
     "refresh": "Aktualisieren",
     "rememberLastSite": "Letzte Seite merken",
-    "rememberLastSiteHint": "Optional: Merke die zuletzt geöffnete Seite und öffne diese beim nächsten Laden der Oberfläche. Wenn deaktiviert, wird die Seite geöffnet, die in den Einstellungen als Startseite definiert ist.",
+    "rememberLastSiteHint": "Optional: Merke die zuletzt geöffnete Seite und nutze diese als neue Startseite - bis zum Restart des Panels",
     "resetTasmota": "Tasmota MQTT zurücksetzen",
     "screenSaverTimeout": "Abblendzeit",
     "screensaver_config": "Bildschirmschoner-Konfiguration",
