@@ -1,1 +1,0 @@
-import{A as n}from"./AdminComponentEasyAccessSet__loadShare__react__loadShare__-CJmceRyn.js";import{Y as s,h as o,T as a,$ as m}from"./defaultTheme-CMlCaT4z.js";function r(e){return Object.keys(e).length===0}function u(e=null){const t=n.useContext(s);return!t||r(t)?e:t}const c=o();function h(e=c){return u(e)}function f(){const e=h(m);return e[a]||e}export{h as a,u as b,f as u};
