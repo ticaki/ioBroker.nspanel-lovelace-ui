@@ -6,6 +6,7 @@ import ScreensaverPage from './ScreensaverPage';
 import PageGlobalSettings from './PageGlobalSettings';
 import TabMaintain from './TabMaintain';
 import PageMQTTSetting from './PageMQTTSetting';
+import PagePanelOverview from './PagePanelOverview';
 
 export default {
     NavigationView,
@@ -16,4 +17,5 @@ export default {
     PageGlobalSettings,
     TabMaintain,
     PageMQTTSetting,
+    PagePanelOverview,
 };

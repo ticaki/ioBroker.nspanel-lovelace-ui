@@ -3122,6 +3122,22 @@
                 }
             }
         },
+        "_overview": {
+            "type": "panel",
+            "label": "nsPanelSettings",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "items": {
+                "pagePanelOverview": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/PagePanelOverview",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
         "general": {
             "type": "panel",
             "label": "mqttServerSetting",

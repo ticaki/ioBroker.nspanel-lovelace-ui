@@ -2,6 +2,7 @@ import React from 'react';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { Checkbox, FormControlLabel, Box, Typography, TextField, type SelectChangeEvent, Button } from '@mui/material';
+import PasswordField from './components/PasswordField';
 
 interface PageMQTTSettingState extends ConfigGenericState {
     // Define any additional state properties if needed
@@ -121,6 +122,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             borderColor: 'divider',
             borderRadius: 1,
             height: '100%',
+            maxWidth: '50%',
         };
 
         return (
@@ -179,11 +181,11 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         onChange={this.handleTextChange('mqttUsername')}
                         disabled={!this.state.alive || data.mqttServer}
                     />
-                    <TextField
-                        type="password"
+                    <PasswordField
                         label={this.getText('mqttPassword')}
                         value={data.mqttPassword ?? ''}
-                        onChange={this.handleTextChange('mqttPassword')}
+                        onChange={value => this.props.onChange({ mqttPassword: value })}
+                        placeholder="••••••••"
                         disabled={!this.state.alive || data.mqttServer}
                     />
                 </Box>
@@ -200,12 +202,12 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         label={this.getText('useTasmotaAdmin')}
                     />
                     {data.useTasmotaAdmin && (
-                        <TextField
-                            type="password"
+                        <PasswordField
                             label={this.getText('tasmotaAdminPassword')}
-                            value={data.tasmotaAdminPassword ?? ''}
-                            onChange={this.handleTextChange('tasmotaAdminPassword')}
-                            disabled={!this.state.alive || !data.useTasmotaAdmin}
+                            value={data.tasmotaAdminPassword}
+                            onChange={value => this.props.onChange({ tasmotaAdminPassword: value })}
+                            placeholder="••••••••"
+                            disabled={!this.state.alive}
                         />
                     )}
                 </Box>

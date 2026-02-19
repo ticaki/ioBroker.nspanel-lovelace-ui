@@ -333,19 +333,6 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
         return (
             <Box sx={{ p: 2 }}>
-                {/* Header with refresh button */}
-                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h5">{this.getText('headerMaintain')}</Typography>
-                    {/* <Button
-                        variant="outlined"
-                        startIcon={loading ? <CircularProgress size={20} /> : <RefreshIcon />}
-                        onClick={() => this.refreshPanels()}
-                        disabled={loading}
-                    >
-                        {this.getText('RefreshMaintainTable')}
-                    </Button> */}
-                </Box>
-
                 {/* Beta warning */}
                 {this.props.data.useBetaTFT && (
                     <Alert
