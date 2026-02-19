@@ -1530,6 +1530,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             const temp = [];
             for (const a of this.controller.panels) {
               let check = false;
+              let check_tasmota = false;
+              let check_tft = false;
+              let check_script = false;
               let tv = "";
               let nv = "";
               let sv = "";
@@ -1542,6 +1545,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const temp2 = (_s = (_r = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _r[1]) != null ? _s : "";
                 if (temp2 !== version) {
                   check = true;
+                  check_script = true;
                   sv = `${temp2} (${updateText}: v${version})`;
                 } else {
                   sv = temp2;
@@ -1559,6 +1563,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   if (temp2 && temp2[1] && temp2[1] !== tv) {
                     tv += ` (${updateText})`;
                     check = true;
+                    check_tasmota = true;
                   }
                 }
                 tv = tv ? `v${tv}` : "";
@@ -1577,6 +1582,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                       nv += ` (${updateText})`;
                     }
                     check = true;
+                    check_tft = true;
                   }
                 }
                 nv = nv ? `v${nv}` : "";
@@ -1584,6 +1590,9 @@ class NspanelLovelaceUi extends utils.Adapter {
               added.push(a.topic);
               temp.push({
                 _check: check,
+                _check_tasmota: check_tasmota,
+                _check_tft: check_tft,
+                _check_script: check_script,
                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? "online" : "offline"}`}`})`,
                 _name: a.friendlyName,
                 _ip: ((_z = (_y = (_x = a.info) == null ? void 0 : _x.tasmota) == null ? void 0 : _y.net) == null ? void 0 : _z.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",

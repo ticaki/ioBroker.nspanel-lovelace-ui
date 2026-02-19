@@ -13,7 +13,7 @@ import {
     DialogContentText,
     DialogActions,
 } from '@mui/material';
-import { green, grey, orange, red } from '@mui/material/colors';
+import { green, grey, orange, red, blue } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
 
 //import RefreshIcon from '@mui/icons-material/Refresh';
@@ -31,6 +31,9 @@ interface MaintainPanelInfo {
     _ScriptVersion: string;
     _nsPanelModel: string;
     _check?: boolean;
+    _check_tasmota?: boolean;
+    _check_tft?: boolean;
+    _check_script?: boolean;
 }
 
 interface MaintainPanelProps {
@@ -298,7 +301,13 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         return !!(hasValidIp && hasValidTopic && hasValidData && hasValidServer && panel._online !== 'no');
     }
 
-    private getPanelCardStyle(panel: MaintainPanelInfo): { backgroundColor: string; borderColor: string } {
+    private getPanelCardStyle(panel: MaintainPanelInfo): {
+        backgroundColor: string;
+        borderColor: string;
+        buttonTasmotaColor: string;
+        buttonTftColor: string;
+        buttonScriptColor: string;
+    } {
         // Use state.themeName which is updated via interval
         console.log(`[Maintain] themeType: ${this.props.themeType}, themeName: ${this.props.themeName}`);
         const isDark = this.props.themeName === 'dark';
@@ -307,23 +316,35 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             return {
                 backgroundColor: isDark ? grey[800] : grey[300],
                 borderColor: isDark ? grey[700] : grey[400],
+                buttonTasmotaColor: 'primary',
+                buttonTftColor: 'primary',
+                buttonScriptColor: 'primary',
             };
         }
         if (panel._online === 'no') {
             return {
                 backgroundColor: isDark ? red[900] : red[100],
                 borderColor: red[700],
+                buttonTasmotaColor: 'primary',
+                buttonTftColor: 'primary',
+                buttonScriptColor: 'primary',
             };
         }
         if (panel._check) {
             return {
                 backgroundColor: isDark ? orange[900] : orange[100],
                 borderColor: orange[700],
+                buttonTasmotaColor: panel._check_tasmota ? blue[600] : blue[200],
+                buttonTftColor: panel._check_tft ? blue[600] : blue[200],
+                buttonScriptColor: panel._check_script ? blue[600] : blue[200],
             };
         }
         return {
             backgroundColor: isDark ? green[900] : green[100],
             borderColor: green[700],
+            buttonTasmotaColor: 'primary',
+            buttonTftColor: 'primary',
+            buttonScriptColor: 'primary',
         };
     }
 
@@ -403,9 +424,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                         <TextField
                                             label={this.getText('vTasmota')}
                                             value={panel._tasmotaVersion}
-                                            InputProps={{ readOnly: true }}
+                                            slotProps={{ input: { readOnly: true } }}
                                             size="small"
-                                            error={panel._tasmotaVersion.includes(')')}
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
                                         />
                                         <Button
@@ -417,7 +437,17 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 !this.state.alive
                                             }
                                             size="small"
-                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
+                                            sx={{
+                                                flex: '0 0 auto',
+                                                minWidth: 200,
+                                                ...(cardStyle.buttonTasmotaColor !== 'primary' && {
+                                                    backgroundColor: cardStyle.buttonTasmotaColor,
+                                                    '&:hover': {
+                                                        backgroundColor: cardStyle.buttonTasmotaColor,
+                                                        filter: 'brightness(0.9)',
+                                                    },
+                                                }),
+                                            }}
                                         >
                                             {processingPanel === panel._name ? (
                                                 <CircularProgress size={20} />
@@ -432,9 +462,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                         <TextField
                                             label={this.getText('vTFT')}
                                             value={panel._tftVersion}
-                                            InputProps={{ readOnly: true }}
+                                            slotProps={{ input: { readOnly: true } }}
                                             size="small"
-                                            error={panel._tftVersion.includes(')')}
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
                                         />
                                         <Button
@@ -447,7 +476,17 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 !this.state.alive
                                             }
                                             size="small"
-                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
+                                            sx={{
+                                                flex: '0 0 auto',
+                                                minWidth: 200,
+                                                ...(cardStyle.buttonTftColor !== 'primary' && {
+                                                    backgroundColor: cardStyle.buttonTftColor,
+                                                    '&:hover': {
+                                                        backgroundColor: cardStyle.buttonTftColor,
+                                                        filter: 'brightness(0.9)',
+                                                    },
+                                                }),
+                                            }}
                                         >
                                             {processingPanel === panel._name ? (
                                                 <CircularProgress size={20} />
@@ -462,9 +501,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                         <TextField
                                             label={this.getText('vScript')}
                                             value={panel._ScriptVersion}
-                                            InputProps={{ readOnly: true }}
+                                            slotProps={{ input: { readOnly: true } }}
                                             size="small"
-                                            error={panel._ScriptVersion.includes(')')}
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
                                         />
                                         <Button
@@ -477,7 +515,17 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 !this.state.alive
                                             }
                                             size="small"
-                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
+                                            sx={{
+                                                flex: '0 0 auto',
+                                                minWidth: 200,
+                                                ...(cardStyle.buttonScriptColor !== 'primary' && {
+                                                    backgroundColor: cardStyle.buttonScriptColor,
+                                                    '&:hover': {
+                                                        backgroundColor: cardStyle.buttonScriptColor,
+                                                        filter: 'brightness(0.9)',
+                                                    },
+                                                }),
+                                            }}
                                         >
                                             {processingPanel === panel._name ? (
                                                 <CircularProgress size={20} />
