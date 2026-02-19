@@ -1776,6 +1776,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                         const temp = [];
                         for (const a of this.controller.panels) {
                             let check = false;
+                            let check_tasmota = false;
+                            let check_tft = false;
+                            let check_script = false;
                             let tv = '';
                             let nv = '';
                             let sv = '';
@@ -1788,6 +1791,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const temp = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)?.[1] ?? '';
                                 if (temp !== version) {
                                     check = true;
+                                    check_script = true;
                                     sv = `${temp} (${updateText}: v${version})`;
                                 } else {
                                     sv = temp;
@@ -1805,6 +1809,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     if (temp && temp[1] && temp[1] !== tv) {
                                         tv += ` (${updateText})`;
                                         check = true;
+                                        check_tasmota = true;
                                     }
                                 }
                                 tv = tv ? `v${tv}` : '';
@@ -1823,6 +1828,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             nv += ` (${updateText})`;
                                         }
                                         check = true;
+                                        check_tft = true;
                                     }
                                 }
                                 nv = nv ? `v${nv}` : '';
@@ -1831,6 +1837,9 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                             temp.push({
                                 _check: check,
+                                _check_tasmota: check_tasmota,
+                                _check_tft: check_tft,
+                                _check_script: check_script,
                                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : 'offline'}`}`})`,
                                 _name: a.friendlyName,
                                 _ip: a.info?.tasmota?.net?.IPAddress
