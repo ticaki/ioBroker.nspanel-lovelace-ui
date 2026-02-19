@@ -157,13 +157,13 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.12.0 (2026-02-19)
 - (ticaki) NSPanel TFT version is displayed correctly depending on the model.
 - (ticaki)(tt-tom17) Option to write Tasmota telemetry data into states.  
 - (tt-tom17) Admin-Tab globalSetting convert to React  
 - (tt-tom17) Admin-Tab Maintain convert to React  
-- (tt-tom17) Add icon selector to trash entries  
-  
+- (tt-tom17) Add icon selector to trash entries
+
 ### 0.10.0 (2026-01-17)
 - (ticaki) Confirmation click for role button
 - (ticaki) Some duplicate unique names were overlooked during script transfer.
