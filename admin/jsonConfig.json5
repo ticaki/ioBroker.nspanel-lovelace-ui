@@ -3278,6 +3278,21 @@
                 }
             }
         },
+        "_general": {
+            "type": "panel",
+            "label": "mqttServerSetting",
+            "items": {
+                "pageMQTTSetting": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/PageMQTTSetting",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        },
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
