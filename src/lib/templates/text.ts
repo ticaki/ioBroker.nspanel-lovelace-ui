@@ -2610,7 +2610,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature_min$/,
+                    regexp: /[0-9]\.temperature_min$/,
                 },
                 decimal: {
                     type: 'const',
@@ -2628,7 +2628,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature_max$/,
+                    regexp: /[0-9]\.temperature_max$/,
                 },
                 decimal: {
                     type: 'const',
