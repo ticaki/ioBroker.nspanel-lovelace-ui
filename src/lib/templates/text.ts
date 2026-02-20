@@ -2703,7 +2703,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /(?<!\b(day|night))0-9]\.timestamp$/,
+                    regexp: /(?<!\b(day|night))\.timestamp$/,
                     read: `{
                         if (!val) {
                             return null;
