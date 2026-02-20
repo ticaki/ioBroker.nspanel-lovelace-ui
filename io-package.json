@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.11.0",
+    "version": "0.12.0",
     "news": {
+      "0.12.0": {
+        "en": "NSPanel TFT version is displayed correctly depending on the model.\n(tt-tom17) Option to write Tasmota telemetry data into states.  \nAdmin-Tab globalSetting convert to React  \nAdmin-Tab Maintain convert to React  \nAdd icon selector to trash entries",
+        "de": "Die NSPanel TFT-Version wird je nach Modell korrekt angezeigt.\n(tt-tom17) Option zum Schreiben von Tasmota-Telemetriedaten in Zustände.\nAdmin-Tab globalSetting konvertiert in React\nAdmin-Tab Maintain in React konvertieren\nFügen Sie Icon-Selektor zum Mülleintrag hinzu",
+        "ru": "Версия NSPanel TFT отображается правильно в зависимости от модели.\n(tt-tom17) Возможность записи данных телеметрии Tasmota в состояния.\nAdmin-Tab GlobalSetting преобразуется в React\nAdmin-Tab преобразуется в React\nДобавить селектор значков для мусорных записей",
+        "pt": "A versão do NSPanel TFT é exibida corretamente dependendo do modelo.\n(tt-tom17) Opção para escrever dados de telemetria Tasmota em estados.\nAdmin-Tab globalSetting converter para React\nAdmin-Tab Manter converter para React\nAdicionar o seletor de ícones aos itens de lixo",
+        "nl": "NSPanel TFT versie wordt correct weergegeven, afhankelijk van het model.\n(tt-tom17) Optie om Tasmota telemetrie gegevens in staten te schrijven.\nAdmin-Tab globalSetting convert to React\nAdmin-Tab handhaven converteren naar React\nPictogramselectie toevoegen aan prullenbakitems",
+        "fr": "La version NSPanel TFT s'affiche correctement selon le modèle.\n(tt-tom17) Option pour écrire les données de télémétrie de Tasmota dans les états.\nAdmin-Tab globalSetting convertir pour Réagir\nAdmin-Tab Maintenez la conversion pour réagir\nAjouter le sélecteur d'icônes aux entrées de déchets",
+        "it": "La versione TFT NSPanel viene visualizzata correttamente a seconda del modello.\n(t-tom17) Opzione per scrivere dati di telemetria Tasmota in stati.\nAdmin-Tab GlobalSetting convertire in React\nAdmin-Tab Maintain convertire in React\nAggiungere il selettore icona alle voci di cestino",
+        "es": "La versión NSPanel TFT se muestra correctamente dependiendo del modelo.\n(tt-tom17) Opción de escribir datos de telemetría de Tasmota en estados.\nAdmin-Tab globalConversor de configuración para React\nAdmin-Tab Maintain convertir a React\nAñadir selector de iconos a las entradas de basura",
+        "pl": "Wersja NSPanel TFT jest wyświetlana poprawnie w zależności od modelu.\n(tt- tom17) Opcja zapisu danych telemetrycznych Tasmota do państw.\nAdministrat- Tab globalSetting konwertuj do React\nAdmin- Tab Utrzymanie konwersji do reakcji\nDodaj ikonę do wpisów śmieci",
+        "uk": "Версія NSPanel TFT відображається правильно в залежності від моделі.\n(т-том17) Для запису даних телеметрії Тасмота в штати.\nСтатус на сервери\nПеретворення домену-Tab в React\nДодавання ікони selector до записів сміття",
+        "zh-cn": "NSPanel TFT版本根据模型显示正确.\n(吨) 选择将 Tasmota 遥测数据写入状态 .\nAdmin-Tab 全球设置转换为React\n维持转换为反应\n向垃圾项添加图标选择器"
+      },
       "0.11.0": {
         "en": "Fixed incorrect error logs for cardThermo and cardThermo2\nadd PageTrash to Admin-Tab PageConfig",
         "de": "Fehlerprotokolle für die Karte Thermo und Karte Thermo2 behoben\npageTrash zu Admin-Tab PageConfig hinzufügen",
@@ -80,19 +93,6 @@
         "pl": "WAŻNE: aktualizacja do wersji 5.1.0 TFT\nspektakl dodany\nkolor dla brightsky favorit / dolny dzień stałe\nodblokować pin awaria stałe",
         "uk": "IMPORTANT: оновлення до версії TFT 5.1.0\npagePopup додано\nколір для яскраво-справи/знижнього дня фіксований\nрозблокування шпильки не фіксована",
         "zh-cn": "重要:更新到TFT版本5.1.0\n页面页已添加\n亮天空偏好颜色/ 底日固定\n解锁失败已修复"
-      },
-      "0.7.3": {
-        "en": "Switch from global subscript to individual subscriptions\nmodel us-p fixed\nupdate deps",
-        "de": "Wechsel vom globalen Subskript zu einzelnen Abonnements\nmodell us-p fixed\nupdate deps",
-        "ru": "Переход от глобальной подписки к индивидуальной подписке\nмодель us-p фиксированная\nобновление deps",
-        "pt": "Mudar de subscrito global para assinaturas individuais\nmodelo us-p fixo\natualizar deps",
-        "nl": "Overschakelen van global subscript naar individuele abonnementen\nmodel us-p vast\nupdate deps",
-        "fr": "Passer d'un abonnement global à un abonnement individuel\nmodèle us-p fixé\nmettre à jour les deps",
-        "it": "Passare dal sottoscritto globale agli abbonamenti individuali\nmodello us-p fisso\naggiornamento dep",
-        "es": "Cambiar de subscript global a suscripciones individuales\nmodelo us-p fijo\nactualización de los deps",
-        "pl": "Przełączenie z subskrypcji globalnej na subskrypcje indywidualne\nmodel us- p stały\naktualizacje deps",
-        "uk": "Переключення з глобального підряду на індивідуальні підписки\nмодель us-p фіксована\nоновлення deps",
-        "zh-cn": "从全球下标切换到个人订阅\n模型我们 -p 固定\n更新代码"
       }
     },
     "titleLang": {
