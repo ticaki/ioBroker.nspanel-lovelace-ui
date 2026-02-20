@@ -220,6 +220,7 @@
     "mqttServer": "Use the adapter's own MQTT server",
     "mqttServerSetting": "MQTT server settings",
     "mqttUser": "MQTT username",
+    "mustBeIp": "Must be a valid IP address",
     "mustBeNumber": "Must be a number",
     "mustBeUnique": "must be unique",
     "nav_all_requires_prev_next": "For (all) prev or next must be set",

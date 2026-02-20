@@ -289,14 +289,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     private isPanelUpdateable(panel: MaintainPanelInfo): boolean {
+        const data = this.props.data;
         const hasValidIp = panel._ip && /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(panel._ip);
         const hasValidTopic = panel._topic && /^[a-zA-Z][\w/]+$/.test(panel._topic);
-        const hasValidData = this.props.data.mqttPort && this.props.data.mqttUsername && this.props.data.mqttPassword;
-        const hasValidServer = this.props.data.mqttServer
-            ? this.props.data.internalServerIp &&
-              /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(this.props.data.internalServerIp) &&
-              this.props.data.internalServerIp !== '127.0.0.1'
-            : this.props.data.mqttIp;
+        const hasValidData = data.mqttPort && data.mqttUsername && data.mqttPassword;
+        const hasValidServer = data.mqttServer
+            ? data.internalServerIp &&
+              /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(data.internalServerIp) &&
+              data.internalServerIp !== '127.0.0.1'
+            : data.mqttIp;
 
         return !!(hasValidIp && hasValidTopic && hasValidData && hasValidServer && panel._online !== 'no');
     }
