@@ -15,8 +15,6 @@ import {
 } from '@mui/material';
 import { green, grey, orange, red, blue, yellow } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
-
-//import RefreshIcon from '@mui/icons-material/Refresh';
 import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
 
 interface MaintainPanelInfo {

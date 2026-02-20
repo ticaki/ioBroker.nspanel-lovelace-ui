@@ -22,6 +22,14 @@ import {
     FormControl,
 } from '@mui/material';
 
+interface PanelInfo {
+    _id?: string;
+    _ip?: string;
+    _name?: string;
+    _topic?: string;
+    _model?: string;
+}
+
 interface TimezoneEntity {
     value: string;
     label: string;
@@ -37,6 +45,9 @@ interface PagePanelOverviewState extends ConfigGenericState {
     // State for confirmation dialog
     showConfirm: boolean;
     processing: boolean;
+
+    error: string | null;
+    panels: PanelInfo[];
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -53,6 +64,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             lastTimezoneLoad: 0,
             showConfirm: false,
             processing: false,
+            error: null,
+            panels: [],
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
@@ -82,7 +95,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
         } catch (error) {
             console.error('[PagePanelOverview] Failed to get alive state or subscribe:', error);
-            this.setState({ alive: false });
+            this.setState({ alive: false, error: String(error) });
         }
     }
     // Callback for alive state changes
@@ -91,7 +104,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const isAlive = state ? !!state.val : false;
 
         if (wasAlive !== isAlive) {
-            this.setState({ alive: isAlive });
+            this.setState({ alive: isAlive, error: isAlive ? null : this.getText('adapterNotAlive') });
         }
     };
     // Lade Timezone-Entities
@@ -109,7 +122,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
 
         console.log('[PagePanelOverview] Loading timezone entities, forceReload:', forceReload);
-        this.setState({ loadingTimezone: true });
+        this.setState({ loadingTimezone: true, error: null });
 
         if (this.props.oContext.socket) {
             const target = `${this.adapterName}.${this.instance}`;
@@ -150,6 +163,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 this.setState({
                     timezoneEntities: [],
                     loadingTimezone: false,
+                    error: String(e),
                 });
             }
         }
@@ -285,7 +299,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
             this.setState({ processing: false });
         } catch (error) {
-            console.error('[PageNSPanelInit] Init failed:', error);
+            console.error('[PageNSPanelOverview] Init failed:', error);
             this.setState({ processing: false });
         }
     };
@@ -340,6 +354,22 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
     }
 
+    private async handleOpenTasmotaConsole(panel: PanelInfo): Promise<void> {
+        try {
+            const result = await this.props.oContext.socket.sendTo(
+                `${this.adapterName}.${this.instance ?? '0'}`,
+                'openTasmotaConsole',
+                { ip: panel._ip },
+            );
+
+            if (result && typeof result === 'object' && 'openUrl' in result) {
+                window.open(result.openUrl as string, '_blank');
+            }
+        } catch (err) {
+            this.setState({ error: String(err) });
+        }
+    }
+
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
@@ -347,6 +377,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
         const data = this.props.data || {};
         const isUpdate = this.isPanelAlreadyConfigured();
+        const panels: PanelInfo[] = data.panels || [];
 
         // Setze Standardwert für nsPanelModel, falls nicht vorhanden (EU als Standard)
         const panelModel = data.nsPanelModel ?? '';
@@ -370,6 +401,18 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         {this.getText('useBetaVersionText')}
                     </Alert>
                 )}
+                {/* Link to wiki */}
+                <Box sx={{ mb: 2 }}>
+                    <Button
+                        variant="text"
+                        color="primary"
+                        href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation"
+                        target="_blank"
+                        sx={{ color: 'red' }}
+                    >
+                        {this.getText('openLinkAdapterInsatllation')}
+                    </Button>
+                </Box>
                 <Box
                     component="fieldset"
                     sx={boxStyle}
@@ -506,6 +549,94 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         this.getText('nsPanelInit')
                     )}
                 </Button>
+
+                {/* Panels as Boxes */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                    {panels.map((panel, index) => {
+                        return (
+                            <Box
+                                key={panel._id || index}
+                                sx={{
+                                    width: 'fit-content',
+                                    maxWidth: '100%',
+                                    minWidth: 320,
+                                    border: 3,
+                                    opacity: !this.state.alive ? 0.6 : 1,
+                                    p: 2,
+                                    borderRadius: 1,
+                                }}
+                            >
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        mb: 2,
+                                    }}
+                                >
+                                    {panel._name}
+                                </Typography>
+
+                                {/* Version Info with Flexbox */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    {/* mac */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('macAdressOfPanel')}
+                                            value={panel._id}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* ip - Address */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('ipFromPanel')}
+                                            value={panel._ip}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* topic */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('panelTopic')}
+                                            value={panel._topic}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* Model*/}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('panelModel')}
+                                            value={panel._model}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* Console Button */}
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={() => this.handleOpenTasmotaConsole(panel)}
+                                        disabled={!panel._ip || !this.state.alive}
+                                        size="small"
+                                        sx={{ mt: 1 }}
+                                    >
+                                        {this.getText('openTasmotaConsole')}
+                                    </Button>
+                                </Box>
+                            </Box>
+                        );
+                    })}
+                </Box>
 
                 {/* Confirm Dialog */}
                 <Dialog
