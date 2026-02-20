@@ -2640,14 +2640,14 @@ const textTemplates = {
           value: {
             type: "state",
             role: "",
-            regexp: /.icon_special$/,
+            regexp: /[0-9]\.icon_special$/,
             mode: "auto",
             dp: ""
           },
           color: {
             type: "triggered",
             role: "",
-            regexp: /.icon_special$/,
+            regexp: /[0-9]\.icon_special$/,
             mode: "auto",
             dp: "",
             read: `
@@ -2698,7 +2698,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.timestamp$/,
+          regexp: /[0-9]\.timestamp$/,
           read: `{
                         if (!val) {
                             return null;
@@ -2761,8 +2761,8 @@ const textTemplates = {
         true: {
           value: {
             type: "state",
-            role: "",
-            regexp: /.icon$/,
+            role: "weather.icon.name",
+            regexp: /\.icon$/,
             mode: "auto",
             dp: "",
             /**
@@ -2843,8 +2843,8 @@ const textTemplates = {
           },
           color: {
             type: "triggered",
-            role: "",
-            regexp: /.icon$/,
+            role: "weather.icon.name",
+            regexp: /\.icon$/,
             mode: "auto",
             dp: "",
             read: `
@@ -2914,7 +2914,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.timestamp$/,
+          regexp: /[0-9]\.timestamp$/,
           read: `{
                         if (!val) {
                             return null;

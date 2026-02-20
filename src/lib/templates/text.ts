@@ -2645,14 +2645,14 @@ export const textTemplates: TemplateItems = {
                     value: {
                         type: 'state',
                         role: '',
-                        regexp: /.icon_special$/,
+                        regexp: /[0-9]\.icon_special$/,
                         mode: 'auto',
                         dp: '',
                     },
                     color: {
                         type: 'triggered',
                         role: '',
-                        regexp: /.icon_special$/,
+                        regexp: /[0-9]\.icon_special$/,
                         mode: 'auto',
                         dp: '',
                         read: `
@@ -2703,7 +2703,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.timestamp$/,
+                    regexp: /[0-9]\.timestamp$/,
                     read: `{
                         if (!val) {
                             return null;
@@ -2766,8 +2766,8 @@ export const textTemplates: TemplateItems = {
                 true: {
                     value: {
                         type: 'state',
-                        role: '',
-                        regexp: /.icon$/,
+                        role: 'weather.icon.name',
+                        regexp: /\.icon$/,
                         mode: 'auto',
                         dp: '',
                         /**
@@ -2848,8 +2848,8 @@ export const textTemplates: TemplateItems = {
                     },
                     color: {
                         type: 'triggered',
-                        role: '',
-                        regexp: /.icon$/,
+                        role: 'weather.icon.name',
+                        regexp: /\.icon$/,
                         mode: 'auto',
                         dp: '',
                         read: `
@@ -2919,7 +2919,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.timestamp$/,
+                    regexp: /[0-9]\.timestamp$/,
                     read: `{
                         if (!val) {
                             return null;
