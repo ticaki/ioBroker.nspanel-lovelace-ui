@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.12.0",
+    "version": "0.12.1",
     "news": {
+      "0.12.1": {
+        "en": "fixed: brightsky template\nfixed: malfunction of the update icon in the screensaver\nfixed: When sending the script, the restart was confirmed with the wrong panel name.",
+        "de": "Behoben: brightsky Vorlage\nBehoben: Fehlfunktion des Aktualisierungssymbols im Bildschirmschoner\nBehoben: Beim Senden des Skripts wurde der Neustart mit dem falschen Panelnamen bestätigt.",
+        "ru": "фиксированный: яркий шаблон\nисправлено: неисправность значка обновления в заставке\nфиксированный: При отправке сценария перезапуск был подтвержден неправильным названием панели.",
+        "pt": "fixo: modelo brightsky\ncorrigido: mau funcionamento do ícone de atualização no protetor de tela\nfixado: Ao enviar o script, o reinício foi confirmado com o nome errado do painel.",
+        "nl": "vast: helder sjabloon\nvast: storing van de update pictogram in de screensaver\nvast: Bij het versturen van het script werd de herstart bevestigd met de verkeerde paneelnaam.",
+        "fr": "corrigé: modèle brightsky\ncorrigé : dysfonctionnement de l'icône de mise à jour dans l'économiseur d'écran\nfixe: Lors de l'envoi du script, le redémarrage a été confirmé avec le mauvais nom de panneau.",
+        "it": "fisso: modello luminososky\nfisso: malfunzionamento dell'icona di aggiornamento nel salvaschermo\nfisso: Quando si invia lo script, il riavvio è stato confermato con il nome del pannello sbagliato.",
+        "es": "fijo: plantilla brillante\nfijo: mal funcionamiento del icono de actualización en el salvapantallas\nfijo: Al enviar el guión, el reinicio fue confirmado con el nombre del panel equivocado.",
+        "pl": "stałe: szablon brightsky\nstałe: nieprawidłowe działanie ikony aktualizacji w wygaszaczu ekranu\nstałe: Podczas wysyłania skryptu, restart został potwierdzony złą nazwą panelu.",
+        "uk": "фіксована: яскравий шаблон\nфіксована: несправність іконки оновлення в екранахaver\nфіксована: При надсиланні сценарію перезавантаження було підтверджено невірною назвою панелі.",
+        "zh-cn": "固定:亮天空模板\n固定: 屏幕保护中更新图标的故障\n固定 : 在发送脚本时,重新启动以错误的面板名称被确认."
+      },
       "0.12.0": {
         "en": "NSPanel TFT version is displayed correctly depending on the model.\n(tt-tom17) Option to write Tasmota telemetry data into states.  \nAdmin-Tab globalSetting convert to React  \nAdmin-Tab Maintain convert to React  \nAdd icon selector to trash entries",
         "de": "Die NSPanel TFT-Version wird je nach Modell korrekt angezeigt.\n(tt-tom17) Option zum Schreiben von Tasmota-Telemetriedaten in Zustände.\nAdmin-Tab globalSetting konvertiert in React\nAdmin-Tab Maintain in React konvertieren\nIcon-Selektor zum Kalender (pageTrash) hinzugefügt",
@@ -80,19 +93,6 @@
         "pl": "pierwsza wersja najpóźniej\nNowa próba wprowadzenia klawiszy MQTT TLS do kopii zapasowej",
         "uk": "перша версія в останні\nНова спроба отримати ключі MQTT TLS у резервну копію",
         "zh-cn": "最迟第一版\n将 MQTT TLS 密钥输入备份的新尝试"
-      },
-      "0.8.0": {
-        "en": "IMPORTANT: update to TFT Version 5.1.0\npagePopup added\ncolor for brightsky favorit/bottom day fixed\nunlock pin fail fixed",
-        "de": "WICHTIG: Update auf TFT Version 5.1.0\npagePopup hinzugefügt\nFarbe für Brightsky favorit/bottom gefixt\nFehler in Unlock behoben",
-        "ru": "ВАЖНО: обновление TFT версии 5.1.0\npagePopup добавлен\nцвет для яркого фаворита / нижний день фиксированный\nотказ разблокировки",
-        "pt": "IMPORTANTE: atualização para TFT Versão 5.1.0\npáginaPopup adicionado\ncor para brightsky favorit / fundo dia fixo\nfalha de desbloqueio do pino corrigido",
-        "nl": "BELANGRIJK: bijwerken naar TFT versie 5.1.0\npagePopup toegevoegd\nkleur voor heldere favoriet/onderste dag vast\nunlock pin defect gerepareerd",
-        "fr": "IMPORTANT: mise à jour de la version 5.1.0 de TFT\npagePopup ajouté\ncouleur pour brightsky favorit/bottom jour fixe\nla broche de déverrouillage a échoué",
-        "it": "IMPORTANTE: aggiornamento alla versione TFT 5.1.0\npagePopup aggiunto\ncolore per luminososky favorito / giorno inferiore fisso\nperno di sblocco fisso",
-        "es": "IMPORTANTE: actualización a TFT versión 5.1.0\npáginaPopup añadido\ncolor para brillantesky favorableit / día inferior fijo\ndesbloqueo del pasador fijo",
-        "pl": "WAŻNE: aktualizacja do wersji 5.1.0 TFT\nspektakl dodany\nkolor dla brightsky favorit / dolny dzień stałe\nodblokować pin awaria stałe",
-        "uk": "IMPORTANT: оновлення до версії TFT 5.1.0\npagePopup додано\nколір для яскраво-справи/знижнього дня фіксований\nрозблокування шпильки не фіксована",
-        "zh-cn": "重要:更新到TFT版本5.1.0\n页面页已添加\n亮天空偏好颜色/ 底日固定\n解锁失败已修复"
       }
     },
     "titleLang": {
