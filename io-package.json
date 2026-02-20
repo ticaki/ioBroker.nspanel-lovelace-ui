@@ -5,7 +5,7 @@
     "news": {
       "0.12.0": {
         "en": "NSPanel TFT version is displayed correctly depending on the model.\n(tt-tom17) Option to write Tasmota telemetry data into states.  \nAdmin-Tab globalSetting convert to React  \nAdmin-Tab Maintain convert to React  \nAdd icon selector to trash entries",
-        "de": "Die NSPanel TFT-Version wird je nach Modell korrekt angezeigt.\n(tt-tom17) Option zum Schreiben von Tasmota-Telemetriedaten in Zustände.\nAdmin-Tab globalSetting konvertiert in React\nAdmin-Tab Maintain in React konvertieren\nFügen Sie Icon-Selektor zum Mülleintrag hinzu",
+        "de": "Die NSPanel TFT-Version wird je nach Modell korrekt angezeigt.\n(tt-tom17) Option zum Schreiben von Tasmota-Telemetriedaten in Zustände.\nAdmin-Tab globalSetting konvertiert in React\nAdmin-Tab Maintain in React konvertieren\nIcon-Selektor zum Kalender (pageTrash) hinzugefügt",
         "ru": "Версия NSPanel TFT отображается правильно в зависимости от модели.\n(tt-tom17) Возможность записи данных телеметрии Tasmota в состояния.\nAdmin-Tab GlobalSetting преобразуется в React\nAdmin-Tab преобразуется в React\nДобавить селектор значков для мусорных записей",
         "pt": "A versão do NSPanel TFT é exibida corretamente dependendo do modelo.\n(tt-tom17) Opção para escrever dados de telemetria Tasmota em estados.\nAdmin-Tab globalSetting converter para React\nAdmin-Tab Manter converter para React\nAdicionar o seletor de ícones aos itens de lixo",
         "nl": "NSPanel TFT versie wordt correct weergegeven, afhankelijk van het model.\n(tt-tom17) Optie om Tasmota telemetrie gegevens in staten te schrijven.\nAdmin-Tab globalSetting convert to React\nAdmin-Tab handhaven converteren naar React\nPictogramselectie toevoegen aan prullenbakitems",

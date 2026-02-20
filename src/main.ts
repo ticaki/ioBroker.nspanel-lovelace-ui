@@ -938,10 +938,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                     }
                                                     const done = await this.controller.addPanel(config);
                                                     if (done) {
-                                                        const name =
-                                                            this.controller.panels[index].friendlyName ||
-                                                            config.name ||
-                                                            config.topic;
+                                                        const name = config.name || config.topic;
                                                         const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
                                                         this.log.info(msg);
                                                         r.messages.push(msg);

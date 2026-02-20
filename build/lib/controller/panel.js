@@ -1341,7 +1341,7 @@ class Panel extends import_library.BaseClass {
   }
   async writeInfo() {
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-    const modelSuffix = `-${this.info.nspanel.model}`;
+    const modelSuffix = this.info.nspanel.model == "eu" ? "" : `-${this.info.nspanel.model}`;
     const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
     this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
     await this.library.writeFromJson(
