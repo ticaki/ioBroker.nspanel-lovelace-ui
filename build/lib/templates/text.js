@@ -2534,14 +2534,14 @@ const textTemplates = {
           value: {
             type: "state",
             role: "",
-            regexp: /.icon_special$/,
+            regexp: /(?<!\b(day|night))\.icon_special$/,
             mode: "auto",
             dp: ""
           },
           color: {
             type: "triggered",
             role: "",
-            regexp: /.icon_special$/,
+            regexp: /(?<!\b(day|night))\.icon_special$/,
             mode: "auto",
             dp: "",
             read: `
@@ -2605,7 +2605,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /[0-9]\.temperature_min$/
+          regexp: /(?<!\b(day|night))\.temperature_min$/
         },
         decimal: {
           type: "const",
@@ -2623,7 +2623,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /[0-9]\.temperature_max$/
+          regexp: /(?<!\b(day|night))\.temperature_max$/
         },
         decimal: {
           type: "const",
@@ -2640,14 +2640,14 @@ const textTemplates = {
           value: {
             type: "state",
             role: "",
-            regexp: /[0-9]\.icon_special$/,
+            regexp: /(?<!\b(day|night))\.icon_special$/,
             mode: "auto",
             dp: ""
           },
           color: {
             type: "triggered",
             role: "",
-            regexp: /[0-9]\.icon_special$/,
+            regexp: /(?<!\b(day|night))\.icon_special$/,
             mode: "auto",
             dp: "",
             read: `
@@ -2698,7 +2698,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /[0-9]\.timestamp$/,
+          regexp: /(?<!\b(day|night))0-9]\.timestamp$/,
           read: `{
                         if (!val) {
                             return null;
@@ -2727,7 +2727,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.temperature$/
+          regexp: /(?<!\b(day|night))\.temperature$/
         },
         decimal: {
           type: "const",
@@ -2745,7 +2745,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.temperature$/
+          regexp: /(?<!\b(day|night))\.temperature$/
         },
         decimal: {
           type: "const",
@@ -2762,7 +2762,7 @@ const textTemplates = {
           value: {
             type: "state",
             role: "weather.icon.name",
-            regexp: /\.icon$/,
+            regexp: /(?<!\b(day|night))\.icon$/,
             mode: "auto",
             dp: "",
             /**
@@ -2844,7 +2844,7 @@ const textTemplates = {
           color: {
             type: "triggered",
             role: "weather.icon.name",
-            regexp: /\.icon$/,
+            regexp: /(?<!\b(day|night))\.icon$/,
             mode: "auto",
             dp: "",
             read: `
@@ -2914,7 +2914,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /[0-9]\.timestamp$/,
+          regexp: /(?<!\b(day|night))\.timestamp$/,
           read: `{
                         if (!val) {
                             return null;
@@ -2938,12 +2938,24 @@ const textTemplates = {
     adapter: "brightsky",
     data: {
       entity1: {
-        value: { mode: "auto", role: "", type: "triggered", regexp: /\.wind_speed_10$/, dp: `` },
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /(?<!\b(day|night))\.wind_speed_10$/,
+          dp: ``
+        },
         decimal: { type: "const", constVal: 0 },
         unit: void 0
       },
       entity2: {
-        value: { mode: "auto", role: "", type: "triggered", regexp: /\.wind_speed_10$/, dp: `` },
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /(?<!\b(day|night))\.wind_speed_10$/,
+          dp: ``
+        },
         decimal: { type: "const", constVal: 0 }
       },
       icon: {
@@ -2969,7 +2981,13 @@ const textTemplates = {
     adapter: "brightsky",
     data: {
       entity2: {
-        value: { mode: "auto", role: "", type: "triggered", regexp: /\.wind_bearing_text$/, dp: `` },
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /(?<!\b(day|night))\.wind_bearing_text$/,
+          dp: ``
+        },
         decimal: { type: "const", constVal: 0 },
         factor: void 0,
         unit: { type: "const", constVal: "" }
@@ -3028,7 +3046,7 @@ const textTemplates = {
     adapter: "brightsky",
     data: {
       entity1: {
-        value: { type: "triggered", mode: "auto", role: "", regexp: /\.solar_10$/, dp: `` },
+        value: { type: "triggered", mode: "auto", role: "", regexp: /(?<!\b(day|night))\.solar_10$/, dp: `` },
         decimal: void 0,
         factor: void 0,
         unit: void 0
@@ -3073,7 +3091,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.temperature$/
+          regexp: /(?<!\b(day|night))\.temperature$/
         },
         decimal: {
           type: "const",
@@ -3087,7 +3105,7 @@ const textTemplates = {
           role: "",
           type: "triggered",
           dp: "",
-          regexp: /\.temperature$/
+          regexp: /(?<!\b(day|night))\.temperature$/
         },
         decimal: {
           type: "const",

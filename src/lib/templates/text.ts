@@ -2538,14 +2538,14 @@ export const textTemplates: TemplateItems = {
                     value: {
                         type: 'state',
                         role: '',
-                        regexp: /.icon_special$/,
+                        regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
                     },
                     color: {
                         type: 'triggered',
                         role: '',
-                        regexp: /.icon_special$/,
+                        regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
                         read: `
@@ -2610,7 +2610,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /[0-9]\.temperature_min$/,
+                    regexp: /(?<!\b(day|night))\.temperature_min$/,
                 },
                 decimal: {
                     type: 'const',
@@ -2628,7 +2628,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /[0-9]\.temperature_max$/,
+                    regexp: /(?<!\b(day|night))\.temperature_max$/,
                 },
                 decimal: {
                     type: 'const',
@@ -2645,14 +2645,14 @@ export const textTemplates: TemplateItems = {
                     value: {
                         type: 'state',
                         role: '',
-                        regexp: /[0-9]\.icon_special$/,
+                        regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
                     },
                     color: {
                         type: 'triggered',
                         role: '',
-                        regexp: /[0-9]\.icon_special$/,
+                        regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
                         read: `
@@ -2703,7 +2703,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /[0-9]\.timestamp$/,
+                    regexp: /(?<!\b(day|night))0-9]\.timestamp$/,
                     read: `{
                         if (!val) {
                             return null;
@@ -2732,7 +2732,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature$/,
+                    regexp: /(?<!\b(day|night))\.temperature$/,
                 },
                 decimal: {
                     type: 'const',
@@ -2750,7 +2750,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature$/,
+                    regexp: /(?<!\b(day|night))\.temperature$/,
                 },
                 decimal: {
                     type: 'const',
@@ -2767,7 +2767,7 @@ export const textTemplates: TemplateItems = {
                     value: {
                         type: 'state',
                         role: 'weather.icon.name',
-                        regexp: /\.icon$/,
+                        regexp: /(?<!\b(day|night))\.icon$/,
                         mode: 'auto',
                         dp: '',
                         /**
@@ -2849,7 +2849,7 @@ export const textTemplates: TemplateItems = {
                     color: {
                         type: 'triggered',
                         role: 'weather.icon.name',
-                        regexp: /\.icon$/,
+                        regexp: /(?<!\b(day|night))\.icon$/,
                         mode: 'auto',
                         dp: '',
                         read: `
@@ -2919,7 +2919,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /[0-9]\.timestamp$/,
+                    regexp: /(?<!\b(day|night))\.timestamp$/,
                     read: `{
                         if (!val) {
                             return null;
@@ -2943,12 +2943,24 @@ export const textTemplates: TemplateItems = {
         adapter: 'brightsky',
         data: {
             entity1: {
-                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_speed_10$/, dp: `` },
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /(?<!\b(day|night))\.wind_speed_10$/,
+                    dp: ``,
+                },
                 decimal: { type: 'const', constVal: 0 },
                 unit: undefined,
             },
             entity2: {
-                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_speed_10$/, dp: `` },
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /(?<!\b(day|night))\.wind_speed_10$/,
+                    dp: ``,
+                },
                 decimal: { type: 'const', constVal: 0 },
             },
             icon: {
@@ -2975,7 +2987,13 @@ export const textTemplates: TemplateItems = {
         adapter: 'brightsky',
         data: {
             entity2: {
-                value: { mode: 'auto', role: '', type: 'triggered', regexp: /\.wind_bearing_text$/, dp: `` },
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /(?<!\b(day|night))\.wind_bearing_text$/,
+                    dp: ``,
+                },
                 decimal: { type: 'const', constVal: 0 },
                 factor: undefined,
                 unit: { type: 'const', constVal: '' },
@@ -3035,7 +3053,7 @@ export const textTemplates: TemplateItems = {
         adapter: 'brightsky',
         data: {
             entity1: {
-                value: { type: 'triggered', mode: 'auto', role: '', regexp: /\.solar_10$/, dp: `` },
+                value: { type: 'triggered', mode: 'auto', role: '', regexp: /(?<!\b(day|night))\.solar_10$/, dp: `` },
                 decimal: undefined,
                 factor: undefined,
                 unit: undefined,
@@ -3081,7 +3099,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature$/,
+                    regexp: /(?<!\b(day|night))\.temperature$/,
                 },
                 decimal: {
                     type: 'const',
@@ -3095,7 +3113,7 @@ export const textTemplates: TemplateItems = {
                     role: '',
                     type: 'triggered',
                     dp: '',
-                    regexp: /\.temperature$/,
+                    regexp: /(?<!\b(day|night))\.temperature$/,
                 },
                 decimal: {
                     type: 'const',
