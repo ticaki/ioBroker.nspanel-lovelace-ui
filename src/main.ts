@@ -938,10 +938,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                     }
                                                     const done = await this.controller.addPanel(config);
                                                     if (done) {
-                                                        const name =
-                                                            this.controller.panels[index].friendlyName ||
-                                                            config.name ||
-                                                            config.topic;
+                                                        const name = config.name || config.topic;
                                                         const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
                                                         this.log.info(msg);
                                                         r.messages.push(msg);
@@ -1840,12 +1837,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _check_tasmota: check_tasmota,
                                 _check_tft: check_tft,
                                 _check_script: check_script,
-                                _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : 'offline'}`}`})`,
+                                _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : a.flashing ? `flashing` : 'offline'}`}`})`,
                                 _name: a.friendlyName,
                                 _ip: a.info?.tasmota?.net?.IPAddress
                                     ? a.info.tasmota.net.IPAddress
                                     : 'offline - waiting',
-                                _online: a.isOnline ? 'yes' : 'no',
+                                _online: a.isOnline && a.initDone ? 'yes' : 'no',
+                                _flashing: a.flashing,
                                 _topic: a.topic,
                                 _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
                                 _tftVersion: nv ? nv : '???',

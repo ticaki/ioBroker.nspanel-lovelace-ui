@@ -157,6 +157,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.12.1 (2026-02-20)
+- (ticaki) fixed: brightsky template
+- (ticaki) fixed: malfunction of the update icon in the screensaver
+- (ticaki) fixed: When sending the script, the restart was confirmed with the wrong panel name.
+
 ### 0.12.0 (2026-02-19)
 - (ticaki) NSPanel TFT version is displayed correctly depending on the model.
 - (ticaki)(tt-tom17) Option to write Tasmota telemetry data into states.  

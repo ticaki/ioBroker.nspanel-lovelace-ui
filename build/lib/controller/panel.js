@@ -795,7 +795,9 @@ class Panel extends import_library.BaseClass {
           return;
         }
         if ("Flashing" in msg) {
-          this.log.info(`Going offline for flashing!`);
+          if (this.isOnline) {
+            this.log.info(`Going offline for flashing!`);
+          }
           this.isOnline = false;
           this.flashing = msg.Flashing.complete < 99;
           this.log.info(`Flashing: ${msg.Flashing.complete}%`);
@@ -1341,7 +1343,7 @@ class Panel extends import_library.BaseClass {
   }
   async writeInfo() {
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
-    const modelSuffix = `-${this.info.nspanel.model}`;
+    const modelSuffix = this.info.nspanel.model == "eu" ? "" : `-${this.info.nspanel.model}`;
     const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
     this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
     await this.library.writeFromJson(
