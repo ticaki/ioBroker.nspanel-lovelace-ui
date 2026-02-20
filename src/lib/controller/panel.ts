@@ -886,7 +886,9 @@ export class Panel extends BaseClass {
                     return;
                 }
                 if ('Flashing' in msg) {
-                    this.log.info(`Going offline for flashing!`);
+                    if (this.isOnline) {
+                        this.log.info(`Going offline for flashing!`);
+                    }
                     this.isOnline = false;
                     this.flashing = msg.Flashing.complete < 99;
                     this.log.info(`Flashing: ${msg.Flashing.complete}%`);

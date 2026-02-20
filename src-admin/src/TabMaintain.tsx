@@ -13,7 +13,7 @@ import {
     DialogContentText,
     DialogActions,
 } from '@mui/material';
-import { green, grey, orange, red, blue } from '@mui/material/colors';
+import { green, grey, orange, red, blue, yellow } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
 
 //import RefreshIcon from '@mui/icons-material/Refresh';
@@ -24,6 +24,7 @@ interface MaintainPanelInfo {
     _name: string;
     _ip: string;
     _online: 'yes' | 'no';
+    _flashing: boolean;
     _topic: string;
     _id: string;
     _tftVersion: string;
@@ -298,7 +299,14 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
               this.props.data.internalServerIp !== '127.0.0.1'
             : this.props.data.mqttIp;
 
-        return !!(hasValidIp && hasValidTopic && hasValidData && hasValidServer && panel._online !== 'no');
+        return !!(
+            hasValidIp &&
+            hasValidTopic &&
+            hasValidData &&
+            hasValidServer &&
+            panel._online !== 'no' &&
+            !panel._flashing
+        );
     }
 
     private getPanelCardStyle(panel: MaintainPanelInfo): {
@@ -316,6 +324,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             return {
                 backgroundColor: isDark ? grey[800] : grey[300],
                 borderColor: isDark ? grey[700] : grey[400],
+                buttonTasmotaColor: 'primary',
+                buttonTftColor: 'primary',
+                buttonScriptColor: 'primary',
+            };
+        }
+        if (panel._flashing) {
+            return {
+                backgroundColor: isDark ? yellow[900] : yellow[100],
+                borderColor: isDark ? yellow[700] : yellow[400],
                 buttonTasmotaColor: 'primary',
                 buttonTftColor: 'primary',
                 buttonScriptColor: 'primary',
@@ -471,6 +488,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                             onClick={() => this.handleTftInstall(panel)}
                                             disabled={
                                                 panel._online === 'no' ||
+                                                panel._flashing ||
                                                 !panel._ip ||
                                                 processingPanel === panel._name ||
                                                 !this.state.alive
