@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/classes/templates.ts"],
-  "sourcesContent": ["import { BaseClass, type AdapterClassDefinition } from '../controller/library';\n\nexport class Templates extends BaseClass {\n    constructor(adapter: AdapterClassDefinition) {\n        super(adapter, 'templates');\n    }\n}\n"],
-  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,qBAAuD;AAEhD,MAAM,kBAAkB,yBAAU;AAAA,EACrC,YAAY,SAAiC;AACzC,UAAM,SAAS,WAAW;AAAA,EAC9B;AACJ;",
-  "names": []
-}

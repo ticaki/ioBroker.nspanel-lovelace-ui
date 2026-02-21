@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/classes/PageInterface.ts"],
-  "sourcesContent": ["import type { Panel } from '../controller/panel';\nimport type * as pages from '../types/pages';\nimport type { Page } from './Page';\n\nexport type PageItemInterface = BaseTriggeredPageInterface & {\n    card: pages.PageTypeCards;\n    panel: Panel;\n    id: string;\n    parent: Page;\n};\n\nexport type PageInterface = BaseTriggeredPageInterface & {\n    card: pages.PageTypeCards;\n    panel: Panel;\n    id: string;\n};\n"],
-  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
-  "names": []
-}
