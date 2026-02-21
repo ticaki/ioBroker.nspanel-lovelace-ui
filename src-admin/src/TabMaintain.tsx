@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import { green, grey, orange, red, blue, yellow } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
-import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
 
 interface MaintainPanelInfo {
     _Headline: string;
@@ -60,6 +59,8 @@ interface ConfirmDialogState {
 class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProps, MaintainPanelState> {
     private confirmDialog: ConfirmDialogState | null = null;
     private timeoutHandle: NodeJS.Timeout | null = null;
+    private instance = this.props.oContext.instance ?? '0';
+    private adapterName = this.props.oContext.adapterName;
 
     constructor(props: ConfigGenericProps & MaintainPanelProps) {
         super(props);
@@ -75,13 +76,12 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
     componentWillUnmount(): void {
         // Unsubscribe from alive state changes
-        const instance = this.props.oContext.instance ?? '0';
-        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
         this.props.oContext.socket.unsubscribeState(aliveStateId, this.onAliveChanged);
         // Unsubscribe from panel online state changes
         for (const panel of this.props.data.panels) {
             this.props.oContext.socket.unsubscribeState(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}.panels.${panel.id}.info.isOnline`,
+                `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                 this.onPanelOnlineChanged,
             );
         }
@@ -95,8 +95,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
-        const instance = this.props.oContext.instance ?? '0';
-        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
 
         try {
             const state = await this.props.oContext.socket.getState(aliveStateId);
@@ -115,7 +114,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 // nspanel-lovelace-ui.0.panels.7C_87_CE_C6_1B_74.info.isOnline
                 console.log(`[Maintain] Subscribing to online state for panel ${panel.name} (${panel.id})`);
                 await this.props.oContext.socket.subscribeState(
-                    `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}.panels.${panel.id}.info.isOnline`,
+                    `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                     this.onPanelOnlineChanged,
                 );
             }
@@ -157,7 +156,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
         try {
             const result = await this.props.oContext.socket.sendTo(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                `${this.adapterName}.${this.instance}`,
                 'refreshMaintainTable',
                 { internalServerIp: this.props.data.internalServerIp },
             );
@@ -197,7 +196,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             try {
                 this.onPanelOnlineChanged('', null); // Trigger immediate refresh to update online status
                 const result = await this.props.oContext.socket.sendTo(
-                    `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                    `${this.adapterName}.${this.instance}`,
                     'updateTasmota',
                     { topic: panel._topic },
                 );
@@ -226,7 +225,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     console.log('[Maintain] Sending TFT install command to MQTT for panel:', panel._name);
                     this.onPanelOnlineChanged('', null);
                     const result = await this.props.oContext.socket.sendTo(
-                        `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                        `${this.adapterName}.${this.instance}`,
                         'tftInstallSendToMQTT',
                         {
                             tasmotaIP: panel._ip,
@@ -255,7 +254,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
         try {
             const result = await this.props.oContext.socket.sendTo(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                `${this.adapterName}.${this.instance}`,
                 'createScript',
                 { name: panel._name, topic: panel._topic },
             );
@@ -274,7 +273,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private async handleOpenTasmotaConsole(panel: MaintainPanelInfo): Promise<void> {
         try {
             const result = await this.props.oContext.socket.sendTo(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                `${this.adapterName}.${this.instance}`,
                 'openTasmotaConsole',
                 { ip: panel._ip },
             );
@@ -365,6 +364,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
+        // Expert Mode from props (provided by json-config system)
+        //const isExpertMode = this.props.expertMode ?? false;
+
         const { panels, error, processingPanel } = this.state;
         const confirmDialog = this.confirmDialog;
 

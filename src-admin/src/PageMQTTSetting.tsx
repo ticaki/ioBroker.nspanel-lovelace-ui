@@ -112,6 +112,9 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
 
+        // Destructure state properties for easier access
+        const { alive } = this.state;
+
         // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
         const data = this.props.data || {};
 
@@ -135,7 +138,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             <Checkbox
                                 onChange={this.handleCheckboxChange('mqttServer')}
                                 checked={data.mqttServer ?? false}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('mqttServer')}
@@ -156,7 +159,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         onClick={() => {
                             // Handle button click
                         }}
-                        disabled={!this.state.alive || !data.mqttServer}
+                        disabled={!alive || !data.mqttServer}
                     >
                         {this.getText('getRandomMqttCredentials')}
                     </Button>
@@ -167,26 +170,26 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         label={this.getText('mqttIp')}
                         value={data.mqttIp ?? ''}
                         onChange={this.handleTextChange('mqttIp')}
-                        disabled={!this.state.alive || data.mqttServer}
+                        disabled={!alive || data.mqttServer}
                     />
                     <TextField
                         label={this.getText('mqttPort')}
                         value={data.mqttPort ?? ''}
                         onChange={this.handleTextChange('mqttPort')}
-                        disabled={!this.state.alive || data.mqttServer}
+                        disabled={!alive || data.mqttServer}
                     />
                     <TextField
                         label={this.getText('mqttUsername')}
                         value={data.mqttUsername ?? ''}
                         onChange={this.handleTextChange('mqttUsername')}
-                        disabled={!this.state.alive || data.mqttServer}
+                        disabled={!alive || data.mqttServer}
                     />
                     <PasswordField
                         label={this.getText('mqttPassword')}
                         value={data.mqttPassword ?? ''}
                         onChange={value => this.props.onChange({ mqttPassword: value })}
                         placeholder="••••••••"
-                        disabled={!this.state.alive || data.mqttServer}
+                        disabled={!alive || data.mqttServer}
                     />
                 </Box>
                 {/* Tasmota Admin Password */}
@@ -196,7 +199,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             <Checkbox
                                 onChange={this.handleCheckboxChange('useTasmotaAdmin')}
                                 checked={data.useTasmotaAdmin ?? false}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('useTasmotaAdmin')}
@@ -207,7 +210,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             value={data.tasmotaAdminPassword}
                             onChange={value => this.props.onChange({ tasmotaAdminPassword: value })}
                             placeholder="••••••••"
-                            disabled={!this.state.alive}
+                            disabled={!alive}
                         />
                     )}
                 </Box>

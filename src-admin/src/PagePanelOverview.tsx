@@ -480,7 +480,6 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (!panelToDelete) {
             return;
         }
-
         console.log('[PagePanelOverview] Deleting panel:', panelToDelete);
         const panels = this.props.data.panels || [];
         const updatedPanels = panels.filter((p: PanelInfo) => p.id !== panelToDelete.id);

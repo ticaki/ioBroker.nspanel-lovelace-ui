@@ -61,19 +61,21 @@ class PasswordField extends React.Component<PasswordFieldProps, PasswordFieldSta
                 helperText={helperText}
                 placeholder={placeholder}
                 size={size}
-                InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                            <IconButton
-                                onClick={this.handleToggleVisibility}
-                                disabled={disabled}
-                                edge="end"
-                                size="small"
-                            >
-                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                        </InputAdornment>
-                    ),
+                slotProps={{
+                    input: {
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    onClick={this.handleToggleVisibility}
+                                    disabled={disabled}
+                                    edge="end"
+                                    size="small"
+                                >
+                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    },
                 }}
             />
         );
