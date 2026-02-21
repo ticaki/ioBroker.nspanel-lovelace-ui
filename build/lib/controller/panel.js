@@ -73,6 +73,7 @@ class Panel extends import_library.BaseClass {
   data = {};
   blockStartup = null;
   _isOnline = false;
+  _status = "offline";
   blockTouchEventsForMs = 200;
   // ms
   lastSendTypeDate = 0;
@@ -187,6 +188,17 @@ class Panel extends import_library.BaseClass {
       }
     }
   };
+  set status(val) {
+    this._status = val;
+    void this.library.writedp(
+      `panels.${this.name}.status`,
+      definition.reversePanelStatusStates(val),
+      definition.genericStateObjects.panel.panels.status
+    );
+  }
+  get status() {
+    return this._status;
+  }
   meetsVersion(version) {
     var _a, _b;
     if ((_b = (_a = this.info) == null ? void 0 : _a.nspanel) == null ? void 0 : _b.displayVersion) {
@@ -371,6 +383,7 @@ class Panel extends import_library.BaseClass {
       void 0,
       definition.genericStateObjects.panel.panels.cmd._channel
     );
+    this.status = "initializing";
     await this.library.writedp(
       `panels.${this.name}.cmd.dim`,
       void 0,
@@ -662,6 +675,9 @@ class Panel extends import_library.BaseClass {
       }
       await Promise.all(inits);
     }
+    if (this.status === "initializing") {
+      this.status = "connecting";
+    }
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -762,6 +778,7 @@ class Panel extends import_library.BaseClass {
         this._activePage && void this._activePage.setVisibility(false);
         this.restartLoops();
         this.log.warn("is offline!");
+        this.status = "offline";
       }
     }
     this._isOnline = s;
@@ -806,6 +823,7 @@ class Panel extends import_library.BaseClass {
             msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
             definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
           );
+          this.status = "flashing";
           return;
         } else if ("nlui_driver_version" in msg) {
           this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
@@ -1302,6 +1320,7 @@ class Panel extends import_library.BaseClass {
     }
     this.log.info("Goint offline because delete panel!");
     this.isOnline = false;
+    this.status = "offline";
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
@@ -1392,6 +1411,7 @@ class Panel extends import_library.BaseClass {
             `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`
           );
           await this.controller.removePanel(this);
+          this.status = "error";
           return;
         }
         this.requestStatusTasmota();
@@ -1424,6 +1444,7 @@ class Panel extends import_library.BaseClass {
         if (start.alwaysOn === "none") {
           this.sendScreensaverTimeout(2);
         }
+        this.status = "online";
         this.log.info("Panel startup finished!");
         break;
       }
@@ -1825,6 +1846,7 @@ class Panel extends import_library.BaseClass {
           this.sendToTasmota(`${this.topic}/cmnd/Restart`, "1");
           this.log.info("Going offline because of Tasmota restart!");
           this.isOnline = false;
+          this.status = "offline";
           break;
         }
         case "cmd/screenSaverRotationTime": {

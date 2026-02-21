@@ -154,6 +154,7 @@ export class PanelSend extends BaseClass {
                     this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
                 }
                 this.panel.isOnline = false;
+                this.panel.status = 'offline';
             }
         }
         this.losingDelay = this.losingDelay + 2000;

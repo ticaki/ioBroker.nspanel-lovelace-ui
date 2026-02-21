@@ -85,6 +85,8 @@ export class Panel extends BaseClass {
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
 
+    private _status: string = 'offline';
+
     public blockTouchEventsForMs: number = 200; // ms
     public lastSendTypeDate: number = 0;
     public isBuzzerAllowed: boolean = true;
@@ -197,6 +199,19 @@ export class Panel extends BaseClass {
             },
         },
     };
+
+    set status(val: string) {
+        this._status = val;
+        void this.library.writedp(
+            `panels.${this.name}.status`,
+            definition.reversePanelStatusStates(val),
+            definition.genericStateObjects.panel.panels.status,
+        );
+    }
+
+    get status(): string {
+        return this._status;
+    }
 
     meetsVersion(version: string): boolean {
         if (this.info?.nspanel?.displayVersion) {
@@ -399,6 +414,7 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd._channel,
         );
+        this.status = 'initializing';
         await this.library.writedp(
             `panels.${this.name}.cmd.dim`,
             undefined,
@@ -732,6 +748,9 @@ export class Panel extends BaseClass {
 
             await Promise.all(inits);
         }
+        if (this.status === 'initializing') {
+            this.status = 'connecting';
+        }
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -851,6 +870,7 @@ export class Panel extends BaseClass {
                 this._activePage && void this._activePage.setVisibility(false);
                 this.restartLoops();
                 this.log.warn('is offline!');
+                this.status = 'offline';
             }
         }
         this._isOnline = s;
@@ -897,6 +917,7 @@ export class Panel extends BaseClass {
                         msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
                         definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
                     );
+                    this.status = 'flashing';
                     return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
@@ -1458,6 +1479,7 @@ export class Panel extends BaseClass {
         }
         this.log.info('Goint offline because delete panel!');
         this.isOnline = false;
+        this.status = 'offline';
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
@@ -1551,6 +1573,7 @@ export class Panel extends BaseClass {
                         `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`,
                     );
                     await this.controller.removePanel(this);
+                    this.status = 'error';
                     return;
                 }
 
@@ -1593,7 +1616,7 @@ export class Panel extends BaseClass {
                 if (start.alwaysOn === 'none') {
                     this.sendScreensaverTimeout(2);
                 }
-
+                this.status = 'online';
                 this.log.info('Panel startup finished!');
                 break;
             }
@@ -2006,6 +2029,7 @@ export class Panel extends BaseClass {
                     this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
                     this.log.info('Going offline because of Tasmota restart!');
                     this.isOnline = false;
+                    this.status = 'offline';
                     break;
                 }
                 case 'cmd/screenSaverRotationTime': {

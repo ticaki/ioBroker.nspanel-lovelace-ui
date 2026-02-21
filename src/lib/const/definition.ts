@@ -31,11 +31,33 @@ export const defaultChannel: ioBroker.ChannelObject = {
     native: {},
 };
 
+export const panelStatusStates: Record<number, string> = {
+    0: 'offline',
+    1: 'initializing',
+    2: 'connecting',
+    3: 'connected',
+    4: 'online',
+    5: 'flashing',
+    6: 'error',
+};
+
+export function reversePanelStatusStates(value: string): number {
+    const reversed: Record<string, number> = {};
+    for (const key in panelStatusStates) {
+        if (Object.prototype.hasOwnProperty.call(panelStatusStates, key)) {
+            const value = panelStatusStates[key];
+            reversed[value] = parseInt(key, 10);
+        }
+    }
+    return reversed[value];
+}
+
 export const genericStateObjects: {
     default: ioBroker.StateObject;
     customString: ioBroker.StateObject;
     panel: customChannelType & {
         panels: customChannelType & {
+            status: ioBroker.StateObject;
             cmd: customChannelType & {
                 dim: customChannelType & {
                     active: ioBroker.StateObject;
@@ -136,6 +158,19 @@ export const genericStateObjects: {
                     statusStates: {
                         onlineId: 'info.isOnline',
                     },
+                },
+                native: {},
+            },
+            status: {
+                _id: '',
+                type: 'state',
+                common: {
+                    name: 'StateObjects.status',
+                    type: 'number',
+                    role: 'value',
+                    read: true,
+                    write: false,
+                    states: panelStatusStates,
                 },
                 native: {},
             },

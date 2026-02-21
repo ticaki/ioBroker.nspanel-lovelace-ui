@@ -38,6 +38,8 @@ __export(definition_exports, {
   getTasmotaTimeZone: () => getTasmotaTimeZone,
   isDimConfigKey: () => isDimConfigKey,
   isDimValueForKey: () => isDimValueForKey,
+  panelStatusStates: () => panelStatusStates,
+  reversePanelStatusStates: () => reversePanelStatusStates,
   tasmotaOtaUrl: () => tasmotaOtaUrl,
   tasmotaTimeZones: () => tasmotaTimeZones,
   tasmotaTimeZonesAdmin: () => tasmotaTimeZonesAdmin,
@@ -53,6 +55,25 @@ const defaultChannel = {
   },
   native: {}
 };
+const panelStatusStates = {
+  0: "offline",
+  1: "initializing",
+  2: "connecting",
+  3: "connected",
+  4: "online",
+  5: "flashing",
+  6: "error"
+};
+function reversePanelStatusStates(value) {
+  const reversed = {};
+  for (const key in panelStatusStates) {
+    if (Object.prototype.hasOwnProperty.call(panelStatusStates, key)) {
+      const value2 = panelStatusStates[key];
+      reversed[value2] = parseInt(key, 10);
+    }
+  }
+  return reversed[value];
+}
 const genericStateObjects = {
   default: {
     _id: "No_definition",
@@ -84,6 +105,19 @@ const genericStateObjects = {
           statusStates: {
             onlineId: "info.isOnline"
           }
+        },
+        native: {}
+      },
+      status: {
+        _id: "",
+        type: "state",
+        common: {
+          name: "StateObjects.status",
+          type: "number",
+          role: "value",
+          read: true,
+          write: false,
+          states: panelStatusStates
         },
         native: {}
       },
@@ -5192,6 +5226,8 @@ function isDimValueForKey(key, val) {
   getTasmotaTimeZone,
   isDimConfigKey,
   isDimValueForKey,
+  panelStatusStates,
+  reversePanelStatusStates,
   tasmotaOtaUrl,
   tasmotaTimeZones,
   tasmotaTimeZonesAdmin,
