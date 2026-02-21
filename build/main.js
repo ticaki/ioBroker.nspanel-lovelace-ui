@@ -2001,7 +2001,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       return null;
     }
     data["tft-alpha"] = alpha;
-    const modelSuffix = m ? `-${m}` : "";
+    const modelSuffix = m ? m === "eu" ? "" : `-${m}` : "";
     const alphaKey = alpha ? `tft${modelSuffix}-alpha` : "";
     const betaKey = beta ? `tft${modelSuffix}-beta` : "";
     const defaultKey = `tft${modelSuffix}`;

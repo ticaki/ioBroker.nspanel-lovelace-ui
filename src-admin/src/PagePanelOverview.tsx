@@ -20,14 +20,17 @@ import {
     DialogContentText,
     DialogTitle,
     FormControl,
+    IconButton,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface PanelInfo {
-    _id?: string;
-    _ip?: string;
-    _name?: string;
-    _topic?: string;
-    _model?: string;
+    id?: string;
+    ip?: string;
+    name?: string;
+    topic?: string;
+    model?: string;
 }
 
 interface TimezoneEntity {
@@ -48,6 +51,9 @@ interface PagePanelOverviewState extends ConfigGenericState {
 
     error: string | null;
     panels: PanelInfo[];
+    // State for delete dialog
+    showDeleteConfirm: boolean;
+    panelToDelete: PanelInfo | null;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -66,6 +72,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             processing: false,
             error: null,
             panels: [],
+            showDeleteConfirm: false,
+            panelToDelete: null,
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
@@ -359,7 +367,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             const result = await this.props.oContext.socket.sendTo(
                 `${this.adapterName}.${this.instance ?? '0'}`,
                 'openTasmotaConsole',
-                { ip: panel._ip },
+                { ip: panel.ip },
             );
 
             if (result && typeof result === 'object' && 'openUrl' in result) {
@@ -369,6 +377,46 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             this.setState({ error: String(err) });
         }
     }
+
+    // Handler zum Bearbeiten eines Panels - kopiert Daten in die Initialisierungsbox
+    private handleEditPanel = (panel: PanelInfo): void => {
+        console.log('Editing panel:', panel);
+        if (!this.state.alive) {
+            return;
+        }
+        // Setze temporäre Laufzeit-Variablen direkt auf props.data
+        this.props.data._tasmotaIP = panel.ip || '';
+        this.props.data._tasmotaName = panel.name || '';
+        this.props.data._tasmotaTopic = panel.topic || '';
+        this.props.data.nsPanelModel = panel.model || 'eu';
+
+        // Force Update damit die TextFields aktualisiert werden
+        this.forceUpdate();
+    };
+
+    // Öffnet den Bestätigungsdialog zum Löschen
+    private handleDeleteClick = (panel: PanelInfo): void => {
+        this.setState({ showDeleteConfirm: true, panelToDelete: panel });
+    };
+
+    // Schließt den Lösch-Dialog ohne Aktion
+    private handleDeleteClose = (): void => {
+        this.setState({ showDeleteConfirm: false, panelToDelete: null });
+    };
+
+    // Löscht das Panel nach Bestätigung
+    private handleDeleteConfirm = (): void => {
+        const { panelToDelete } = this.state;
+        if (!panelToDelete) {
+            return;
+        }
+
+        const panels = this.props.data.panels || [];
+        const updatedPanels = panels.filter((p: PanelInfo) => p.id !== panelToDelete.id);
+
+        void this.onChange('panels', updatedPanels);
+        this.setState({ showDeleteConfirm: false, panelToDelete: null });
+    };
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
@@ -380,7 +428,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const panels: PanelInfo[] = data.panels || [];
 
         // Setze Standardwert für nsPanelModel, falls nicht vorhanden (EU als Standard)
-        const panelModel = data.nsPanelModel ?? '';
+        const panelModel = data.nsPanelModel ?? 'eu';
 
         // Gemeinsame Styles für alle Boxen
         const boxStyle = {
@@ -490,7 +538,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             value={panelModel}
                             onChange={this.handleSelectStringChange('nsPanelModel')}
                         >
-                            <MenuItem value="">{this.getText('eu-Version')}</MenuItem>
+                            <MenuItem value="eu">{this.getText('eu-Version')}</MenuItem>
                             <MenuItem value="us-l">{this.getText('us-l-Version')}</MenuItem>
                             <MenuItem value="us-p">{this.getText('us-p-Version')}</MenuItem>
                         </Select>
@@ -555,7 +603,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {panels.map((panel, index) => {
                         return (
                             <Box
-                                key={panel._id || index}
+                                key={panel.id || index}
                                 sx={{
                                     width: 'fit-content',
                                     maxWidth: '100%',
@@ -566,14 +614,33 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     borderRadius: 1,
                                 }}
                             >
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        mb: 2,
-                                    }}
-                                >
-                                    {panel._name}
-                                </Typography>
+                                {/* Panel Name as Title with Edit and Delete Icons */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{ flex: 1 }}
+                                    >
+                                        {panel.name}
+                                    </Typography>
+                                    <IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={() => this.handleEditPanel(panel)}
+                                        disabled={!this.state.alive}
+                                        title={this.getText('editPanel')}
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        size="small"
+                                        color="error"
+                                        onClick={() => this.handleDeleteClick(panel)}
+                                        disabled={!this.state.alive}
+                                        title={this.getText('deletePanel')}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Box>
 
                                 {/* Version Info with Flexbox */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -581,7 +648,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('macAdressOfPanel')}
-                                            value={panel._id}
+                                            value={panel.id}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
@@ -592,7 +659,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('ipFromPanel')}
-                                            value={panel._ip}
+                                            value={panel.ip}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
@@ -603,7 +670,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('panelTopic')}
-                                            value={panel._topic}
+                                            value={panel.topic}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
@@ -614,7 +681,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('panelModel')}
-                                            value={panel._model}
+                                            value={panel.model}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
@@ -626,7 +693,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         variant="contained"
                                         fullWidth
                                         onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel._ip || !this.state.alive}
+                                        disabled={!panel.ip || !this.state.alive}
                                         size="small"
                                         sx={{ mt: 1 }}
                                     >
@@ -659,6 +726,30 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             autoFocus
                         >
                             {this.getText('Start')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Delete Confirm Dialog */}
+                <Dialog
+                    open={this.state.showDeleteConfirm}
+                    onClose={this.handleDeleteClose}
+                >
+                    <DialogTitle>{this.getText('deletePanel')}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            {this.getText('deletePanelConfirmText').replace('%s', this.state.panelToDelete?.name || '')}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleDeleteClose}>{this.getText('Cancel')}</Button>
+                        <Button
+                            onClick={this.handleDeleteConfirm}
+                            variant="contained"
+                            color="error"
+                            autoFocus
+                        >
+                            {this.getText('Delete')}
                         </Button>
                     </DialogActions>
                 </Dialog>
