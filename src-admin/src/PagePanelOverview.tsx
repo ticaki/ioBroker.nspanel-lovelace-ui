@@ -22,8 +22,10 @@ import {
     FormControl,
     IconButton,
 } from '@mui/material';
+import { green, red, grey } from '@mui/material/colors';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CircleIcon from '@mui/icons-material/Circle';
 
 interface PanelInfo {
     id?: string;
@@ -58,6 +60,8 @@ interface PagePanelOverviewState extends ConfigGenericState {
     showSuccessConfirm: boolean;
     successMessage: string;
     pendingPanels: PanelInfo[] | null;
+    // Map of panel IDs to their online status
+    panelOnlineStates: Record<string, boolean>;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -81,6 +85,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             showSuccessConfirm: false,
             successMessage: '',
             pendingPanels: null,
+            panelOnlineStates: {},
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
@@ -93,6 +98,13 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             `system.adapter.${this.adapterName}.${this.instance}.alive`,
             this.onAliveChanged,
         );
+        // Unsubscribe from panel online state changes
+        for (const panel of this.props.data.panels || []) {
+            this.props.oContext.socket.unsubscribeState(
+                `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
+                this.onPanelOnlineChanged,
+            );
+        }
     }
     // Lade Timezone-Entities beim Mounten und abonniere Alive-Status
     async componentDidMount(): Promise<void> {
@@ -112,6 +124,19 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             console.error('[PagePanelOverview] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false, error: String(error) });
         }
+
+        try {
+            for (const panel of this.props.data.panels) {
+                // nspanel-lovelace-ui.0.panels.7C_87_CE_C6_1B_74.info.isOnline
+                console.log(`[PagePanelOverview] Subscribing to online state for panel ${panel.name} (${panel.id})`);
+                await this.props.oContext.socket.subscribeState(
+                    `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
+                    this.onPanelOnlineChanged,
+                );
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to subscribe to panel online states:', error);
+        }
     }
     // Callback for alive state changes
     onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
@@ -122,6 +147,29 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             this.setState({ alive: isAlive, error: isAlive ? null : this.getText('adapterNotAlive') });
         }
     };
+
+    // Callback für State-Änderungen (z.B. Online-Status der Panels)
+    onPanelOnlineChanged = (id: string, state: ioBroker.State | null | undefined): void => {
+        // Extract panel ID from state ID: nspanel-lovelace-ui.0.panels.{panelId}.info.isOnline
+        const match = id.match(/\.panels\.([^.]+)\.info\.isOnline$/);
+        if (!match) {
+            console.warn('[PagePanelOverview] Could not extract panel ID from state:', id);
+            return;
+        }
+
+        const panelId = match[1];
+        const isOnline = state ? !!state.val : false;
+
+        console.log(`[PagePanelOverview] Panel ${panelId} online status changed:`, isOnline);
+
+        this.setState(prevState => ({
+            panelOnlineStates: {
+                ...prevState.panelOnlineStates,
+                [panelId]: isOnline,
+            },
+        }));
+    };
+
     // Lade Timezone-Entities
     async loadTimezoneEntities(forceReload = false): Promise<void> {
         if (!this.state.alive) {
@@ -525,6 +573,19 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const data = this.props.data || {};
         const isUpdate = this.isPanelAlreadyConfigured();
         const panels: PanelInfo[] = data.panels || [];
+        const {
+            alive,
+            panelOnlineStates,
+            loadingTimezone,
+            error,
+            showConfirm,
+            showDeleteConfirm,
+            showSuccessConfirm,
+            panelToDelete,
+            successMessage,
+            timezoneEntities,
+            processing,
+        } = this.state;
 
         // Setze Standardwert für nsPanelModel, falls nicht vorhanden (EU als Standard)
         const panelModel = data.nsPanelModel ?? 'eu';
@@ -575,7 +636,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         <TextField
                             sx={{ m: 1, minWidth: 200 }}
                             size="small"
-                            disabled={!this.state.alive}
+                            disabled={!alive}
                             variant="standard"
                             label={this.getText('internalServerIp')}
                             value={data.internalServerIp ?? ''}
@@ -592,7 +653,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         sx={{ m: 1, minWidth: 200 }}
                         variant="standard"
                         size="small"
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                         label={this.getText('ipFromPanel')}
                         value={data._tasmotaIP ?? ''}
                         onChange={this.handleIpChange('_tasmotaIP')}
@@ -606,7 +667,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     <TextField
                         sx={{ m: 1, minWidth: 200 }}
                         size="small"
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                         variant="standard"
                         label={this.getText('panelName')}
                         value={data._tasmotaName ?? ''}
@@ -615,7 +676,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     <TextField
                         sx={{ m: 1, minWidth: 200 }}
                         size="small"
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                         variant="standard"
                         label={this.getText('panelTopic')}
                         value={data._tasmotaTopic ?? ''}
@@ -626,7 +687,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     <FormControl
                         sx={{ m: 1, minWidth: 200 }}
                         size="small"
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                         variant="standard"
                     >
                         <InputLabel id="panelmodel-label">{this.getText('nsPanelModel')}</InputLabel>
@@ -646,7 +707,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     <FormControl
                         sx={{ m: 1, minWidth: 200 }}
                         size="small"
-                        disabled={!this.state.alive || this.state.loadingTimezone}
+                        disabled={!alive || loadingTimezone}
                         variant="standard"
                     >
                         <InputLabel id="timezone-label">{this.getText('timezone')}</InputLabel>
@@ -661,7 +722,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             }}
                             onChange={this.handleSelectStringChange('timezone')}
                         >
-                            {this.state.loadingTimezone && (
+                            {loadingTimezone && (
                                 <MenuItem
                                     disabled
                                     value=""
@@ -669,7 +730,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <CircularProgress size={16} />
                                 </MenuItem>
                             )}
-                            {(this.state.timezoneEntities || []).map(entity => (
+                            {(timezoneEntities || []).map(entity => (
                                 <MenuItem
                                     key={entity.value || entity.label}
                                     value={entity.value}
@@ -681,13 +742,13 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     </FormControl>
                 </Box>
                 {/* Error Alert */}
-                {this.state.error && (
+                {error && (
                     <Alert
                         severity="error"
                         onClose={() => this.setState({ error: null })}
                         sx={{ mt: 2 }}
                     >
-                        {this.state.error}
+                        {error}
                     </Alert>
                 )}
                 {/* Init/Update Button */}
@@ -695,10 +756,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     variant="contained"
                     fullWidth
                     onClick={this.handleInitClick}
-                    disabled={!this.state.alive || !this.isFormValid() || this.state.processing}
+                    disabled={!alive || !this.isFormValid() || processing}
                     sx={{ mt: 2 }}
                 >
-                    {this.state.processing ? (
+                    {processing ? (
                         <CircularProgress size={24} />
                     ) : isUpdate ? (
                         this.getText('nsPanelUpdate')
@@ -718,13 +779,33 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     maxWidth: '100%',
                                     minWidth: 320,
                                     border: 3,
-                                    opacity: !this.state.alive ? 0.6 : 1,
+                                    opacity: !alive ? 0.6 : 1,
                                     p: 2,
                                     borderRadius: 1,
                                 }}
                             >
-                                {/* Panel Name as Title with Edit and Delete Icons */}
+                                {/* Panel Name as Title with Edit, Delete and Online Status Icons */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                                    {/* Online status indicator */}
+                                    <CircleIcon
+                                        sx={{
+                                            fontSize: 20,
+                                            color:
+                                                panelOnlineStates[panel.id || ''] === true
+                                                    ? green[500]
+                                                    : panelOnlineStates[panel.id || ''] === false
+                                                      ? red[500]
+                                                      : grey[400],
+                                            ml: -0.5,
+                                        }}
+                                        titleAccess={
+                                            panelOnlineStates[panel.id || ''] === true
+                                                ? 'Online'
+                                                : panelOnlineStates[panel.id || ''] === false
+                                                  ? 'Offline'
+                                                  : 'Unknown'
+                                        }
+                                    />
                                     <Typography
                                         variant="h6"
                                         sx={{ flex: 1 }}
@@ -735,7 +816,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="primary"
                                         onClick={() => this.handleEditPanel(panel)}
-                                        disabled={!this.state.alive}
+                                        disabled={!alive || !panelOnlineStates[panel.id || '']}
                                         title={this.getText('editPanel')}
                                     >
                                         <EditIcon />
@@ -744,7 +825,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="error"
                                         onClick={() => this.handleDeleteClick(panel)}
-                                        disabled={!this.state.alive}
+                                        disabled={!alive || !panelOnlineStates[panel.id || '']}
                                         title={this.getText('deletePanel')}
                                     >
                                         <DeleteIcon />
@@ -802,7 +883,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         variant="contained"
                                         fullWidth
                                         onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel.ip || !this.state.alive}
+                                        disabled={!panel.ip || !alive || panelOnlineStates[panel.id || ''] === false}
                                         size="small"
                                         sx={{ mt: 1 }}
                                     >
@@ -816,7 +897,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
                 {/* Confirm Dialog */}
                 <Dialog
-                    open={this.state.showConfirm}
+                    open={showConfirm}
                     onClose={this.handleConfirmClose}
                 >
                     <DialogTitle>{isUpdate ? this.getText('nsPanelUpdate') : this.getText('nsPanelInit')}</DialogTitle>
@@ -841,13 +922,13 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
                 {/* Delete Confirm Dialog */}
                 <Dialog
-                    open={this.state.showDeleteConfirm}
+                    open={showDeleteConfirm}
                     onClose={this.handleDeleteClose}
                 >
                     <DialogTitle>{this.getText('deletePanel')}</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
-                            {this.getText('deletePanelConfirmText').replace('%s', this.state.panelToDelete?.name || '')}
+                            {this.getText('deletePanelConfirmText').replace('%s', panelToDelete?.name || '')}
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
@@ -865,12 +946,12 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
                 {/* Success Confirm Dialog */}
                 <Dialog
-                    open={this.state.showSuccessConfirm}
+                    open={showSuccessConfirm}
                     onClose={this.handleSuccessClose}
                 >
                     <DialogTitle>{this.getText('Success')}</DialogTitle>
                     <DialogContent>
-                        <DialogContentText>{this.state.successMessage}</DialogContentText>
+                        <DialogContentText>{successMessage}</DialogContentText>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={this.handleSuccessClose}>{this.getText('Cancel')}</Button>
