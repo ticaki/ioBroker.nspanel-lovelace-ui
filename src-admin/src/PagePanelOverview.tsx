@@ -54,6 +54,10 @@ interface PagePanelOverviewState extends ConfigGenericState {
     // State for delete dialog
     showDeleteConfirm: boolean;
     panelToDelete: PanelInfo | null;
+    // State for success dialog
+    showSuccessConfirm: boolean;
+    successMessage: string;
+    pendingPanels: PanelInfo[] | null;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -74,6 +78,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             panels: [],
             showDeleteConfirm: false,
             panelToDelete: null,
+            showSuccessConfirm: false,
+            successMessage: '',
+            pendingPanels: null,
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
@@ -286,7 +293,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     };
     // Startet die Initialisierung nach Bestätigung
     private handleConfirmStart = async (): Promise<void> => {
-        this.setState({ showConfirm: false, processing: true });
+        console.log('[PagePanelOverview] === INIT START ===');
+        this.setState({ showConfirm: false, processing: true, error: null });
 
         try {
             const payload = {
@@ -303,12 +311,74 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 model: this.props.data.nsPanelModel,
             };
 
-            await this.props.oContext.socket.sendTo(`${this.adapterName}.${this.instance}`, 'nsPanelInit', payload);
+            console.log('[PagePanelOverview] Sending payload:', payload);
 
-            this.setState({ processing: false });
+            const result = await this.props.oContext.socket.sendTo(
+                `${this.adapterName}.${this.instance}`,
+                'nsPanelInit',
+                payload,
+            );
+
+            console.log('[PagePanelOverview] Received result:', result);
+
+            // Prüfe Callback-Ergebnis
+            if (result && typeof result === 'object') {
+                if ('error' in result && result.error) {
+                    // Fehler aufgetreten
+                    console.error('[PagePanelOverview] Error from adapter:', result.error);
+                    const errorMessage = this.getText(String(result.error)) || String(result.error);
+                    this.setState({
+                        processing: false,
+                        error: errorMessage,
+                    });
+                    return;
+                }
+
+                if ('native' in result && result.native && 'saveConfig' in result && result.saveConfig) {
+                    // Erfolg - zeige Bestätigungsdialog
+                    const native = result.native as Record<string, any>;
+                    console.log('[PagePanelOverview] Success! Native data:', native);
+
+                    if (native.panels && Array.isArray(native.panels)) {
+                        const successKey = 'result' in result ? String(result.result) : 'sendToNSPanelInitDataSuccess';
+                        console.log('[PagePanelOverview] Success message key:', successKey);
+                        const successMessage = this.getText(successKey) || successKey;
+
+                        this.setState({
+                            processing: false,
+                            showSuccessConfirm: true,
+                            successMessage: successMessage,
+                            pendingPanels: native.panels,
+                        });
+                    } else {
+                        console.error('[PagePanelOverview] No panels in native data');
+                        this.setState({
+                            processing: false,
+                            error: 'No panels data received',
+                        });
+                    }
+                } else {
+                    // Unerwartetes Ergebnis
+                    console.error('[PagePanelOverview] Unexpected response structure:', result);
+                    this.setState({
+                        processing: false,
+                        error: 'Unexpected response from adapter',
+                    });
+                }
+            } else {
+                // Kein gültiges Result-Objekt
+                console.error('[PagePanelOverview] Invalid result object:', result);
+                this.setState({
+                    processing: false,
+                    error: 'Invalid response from adapter',
+                });
+            }
         } catch (error) {
-            console.error('[PageNSPanelOverview] Init failed:', error);
-            this.setState({ processing: false });
+            console.error('[PagePanelOverview] Init failed with exception:', error);
+            this.setState({
+                processing: false,
+                error: String(error),
+            });
         }
     };
     // Handler für Service-Pin-Änderungen mit Validierung
@@ -411,11 +481,41 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             return;
         }
 
+        console.log('[PagePanelOverview] Deleting panel:', panelToDelete);
         const panels = this.props.data.panels || [];
         const updatedPanels = panels.filter((p: PanelInfo) => p.id !== panelToDelete.id);
 
         void this.onChange('panels', updatedPanels);
         this.setState({ showDeleteConfirm: false, panelToDelete: null });
+    };
+
+    // Schließt den Success-Dialog ohne Speichern
+    private handleSuccessClose = (): void => {
+        console.log('[PagePanelOverview] Success dialog cancelled');
+        this.setState({ showSuccessConfirm: false, successMessage: '', pendingPanels: null });
+    };
+
+    // Speichert die Config nach erfolgreicher Initialisierung
+    private handleSuccessSave = async (): Promise<void> => {
+        console.log('[PagePanelOverview] Saving config after success');
+        const { pendingPanels } = this.state;
+
+        if (pendingPanels) {
+            await this.onChange('panels', pendingPanels);
+
+            // Lösche temporäre Laufzeit-Variablen
+            this.props.data._tasmotaIP = '';
+            this.props.data._tasmotaName = '';
+            this.props.data._tasmotaTopic = '';
+
+            this.setState({
+                showSuccessConfirm: false,
+                successMessage: '',
+                pendingPanels: null,
+            });
+            this.forceUpdate();
+            console.log('[PagePanelOverview] Config saved successfully');
+        }
     };
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
@@ -581,6 +681,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         </Select>
                     </FormControl>
                 </Box>
+                {/* Error Alert */}
+                {this.state.error && (
+                    <Alert
+                        severity="error"
+                        onClose={() => this.setState({ error: null })}
+                        sx={{ mt: 2 }}
+                    >
+                        {this.state.error}
+                    </Alert>
+                )}
                 {/* Init/Update Button */}
                 <Button
                     variant="contained"
@@ -750,6 +860,28 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             autoFocus
                         >
                             {this.getText('Delete')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Success Confirm Dialog */}
+                <Dialog
+                    open={this.state.showSuccessConfirm}
+                    onClose={this.handleSuccessClose}
+                >
+                    <DialogTitle>{this.getText('Success')}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>{this.state.successMessage}</DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleSuccessClose}>{this.getText('Cancel')}</Button>
+                        <Button
+                            onClick={this.handleSuccessSave}
+                            variant="contained"
+                            color="primary"
+                            autoFocus
+                        >
+                            {this.getText('Save')}
                         </Button>
                     </DialogActions>
                 </Dialog>
