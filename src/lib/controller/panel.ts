@@ -14,6 +14,7 @@ import type { Controller } from './controller';
 import { BaseClass, type AdapterClassDefinition } from './library';
 import type { callbackMessageType } from '../classes/mqtt';
 import * as definition from '../const/definition';
+import * as adminShareConfig from '../types/adminShareConfig';
 import { type Page, type PageConfigAll } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { PageMedia } from '../pages/pageMedia';
@@ -85,7 +86,8 @@ export class Panel extends BaseClass {
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
 
-    private _status: string = 'offline';
+    private _status: adminShareConfig.PanelStatus = 'offline';
+    private _statusUpdateQueue: Promise<void> = Promise.resolve();
 
     public blockTouchEventsForMs: number = 200; // ms
     public lastSendTypeDate: number = 0;
@@ -200,16 +202,59 @@ export class Panel extends BaseClass {
         },
     };
 
-    set status(val: string) {
-        this._status = val;
-        void this.library.writedp(
-            `panels.${this.name}.status`,
-            definition.reversePanelStatusStates(val),
-            definition.genericStateObjects.panel.panels.status,
-        );
+    async setStatus(val: adminShareConfig.PanelStatus): Promise<void> {
+        // Serialize status updates to prevent race conditions
+        this._statusUpdateQueue = this._statusUpdateQueue
+            .then(async () => {
+                // Check if status transition is allowed
+                let shouldUpdate = false;
+                switch (val) {
+                    case 'offline':
+                    case 'initializing':
+                        if (['offline'].includes(this._status)) {
+                            shouldUpdate = true;
+                        }
+                        break;
+                    case 'connecting':
+                        if (['offline', 'initializing'].includes(this._status)) {
+                            shouldUpdate = true;
+                        }
+                        break;
+                    case 'connected':
+                        if (['offline', 'initializing', 'connecting'].includes(this._status)) {
+                            shouldUpdate = true;
+                        }
+                        break;
+                    case 'online':
+                        if (['offline', 'initializing', 'connecting', 'connected', 'flashing'].includes(this._status)) {
+                            shouldUpdate = true;
+                        }
+                        break;
+                    case 'flashing':
+                    case 'error':
+                        shouldUpdate = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (shouldUpdate) {
+                    this._status = val;
+                    await this.library.writedp(
+                        `panels.${this.name}.status`,
+                        adminShareConfig.reversePanelStatusStates(val),
+                        definition.genericStateObjects.panel.panels.status,
+                    );
+                }
+            })
+            .catch(err => {
+                this.log.error(`Error updating panel status: ${err}`);
+            });
+
+        await this._statusUpdateQueue;
     }
 
-    get status(): string {
+    get status(): adminShareConfig.PanelStatus {
         return this._status;
     }
 
@@ -414,7 +459,7 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd._channel,
         );
-        this.status = 'initializing';
+        await this.setStatus('initializing');
         await this.library.writedp(
             `panels.${this.name}.cmd.dim`,
             undefined,
@@ -748,9 +793,8 @@ export class Panel extends BaseClass {
 
             await Promise.all(inits);
         }
-        if (this.status === 'initializing') {
-            this.status = 'connecting';
-        }
+        await this.setStatus('connecting');
+
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -870,7 +914,7 @@ export class Panel extends BaseClass {
                 this._activePage && void this._activePage.setVisibility(false);
                 this.restartLoops();
                 this.log.warn('is offline!');
-                this.status = 'offline';
+                void this.setStatus('offline');
             }
         }
         this._isOnline = s;
@@ -917,7 +961,7 @@ export class Panel extends BaseClass {
                         msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
                         definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
                     );
-                    this.status = 'flashing';
+                    await this.setStatus('flashing');
                     return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
@@ -1032,6 +1076,7 @@ export class Panel extends BaseClass {
                         this.info.tasmota.safeboot = data.StatusFWR.Version.includes('Safeboot');
                         this.info.tasmota.uptime = data.StatusSTS.Uptime;
                         this.info.tasmota.sts = data.StatusSTS;
+                        await this.setStatus('connected');
 
                         await this.writeInfo();
                         break;
@@ -1479,7 +1524,7 @@ export class Panel extends BaseClass {
         }
         this.log.info('Goint offline because delete panel!');
         this.isOnline = false;
-        this.status = 'offline';
+        await this.setStatus('offline');
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
@@ -1573,7 +1618,7 @@ export class Panel extends BaseClass {
                         `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`,
                     );
                     await this.controller.removePanel(this);
-                    this.status = 'error';
+                    await this.setStatus('error');
                     return;
                 }
 
@@ -1616,7 +1661,7 @@ export class Panel extends BaseClass {
                 if (start.alwaysOn === 'none') {
                     this.sendScreensaverTimeout(2);
                 }
-                this.status = 'online';
+                await this.setStatus('online');
                 this.log.info('Panel startup finished!');
                 break;
             }
@@ -2029,7 +2074,7 @@ export class Panel extends BaseClass {
                     this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
                     this.log.info('Going offline because of Tasmota restart!');
                     this.isOnline = false;
-                    this.status = 'offline';
+                    await this.setStatus('offline');
                     break;
                 }
                 case 'cmd/screenSaverRotationTime': {
