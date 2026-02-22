@@ -54,13 +54,13 @@ const panelStatusStates = {
   // Panel hat einen Fehler gemeldet (z.B. Verbindungsfehler, Fehler beim Flashen, etc.)
 };
 const panelStatusColors = {
-  offline: "grey",
-  initializing: "grey",
-  connecting: "lightblue",
-  connected: "blue",
-  online: "green",
-  flashing: "yellow",
-  error: "red"
+  offline: "#9E9E9E",
+  initializing: "#9E9E9E",
+  connecting: "#03A9F4",
+  connected: "#2196F3",
+  online: "#4CAF50",
+  flashing: "#FFC107",
+  error: "#F44336"
 };
 function reversePanelStatusStates(value) {
   const reversed = {};
