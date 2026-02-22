@@ -26,6 +26,7 @@ import { green, red, grey } from '@mui/material/colors';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CircleIcon from '@mui/icons-material/Circle';
+import ConfigIP from './components/ConfigIP';
 
 interface PanelInfo {
     id?: string;
@@ -633,21 +634,21 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     </Typography>
                     {/* IP-Adresse des internen Servers */}
                     {data.mqttServer && (
-                        <TextField
-                            sx={{ m: 1, minWidth: 200 }}
-                            size="small"
-                            disabled={!alive}
-                            variant="standard"
-                            label={this.getText('internalServerIp')}
-                            value={data.internalServerIp ?? ''}
-                            onChange={this.handleIpChange('internalServerIp')}
-                            error={!!data.internalServerIp && !this.isValidCompleteIp(data.internalServerIp)}
-                            helperText={
-                                !!data.internalServerIp && !this.isValidCompleteIp(data.internalServerIp)
-                                    ? this.getText('mustBeIp')
-                                    : ''
-                            }
-                        />
+                        <FormControl>
+                            <ConfigIP
+                                {...this.props}
+                                schema={
+                                    {
+                                        sx: { m: 1, minWidth: 200 },
+                                        label: 'internalServerIp',
+                                        noInternal: true,
+                                        onlyIp4: true,
+                                    } as any
+                                }
+                                attr="internalServerIp"
+                                disabled={!alive}
+                            />
+                        </FormControl>
                     )}
                     <TextField
                         sx={{ m: 1, minWidth: 200 }}
