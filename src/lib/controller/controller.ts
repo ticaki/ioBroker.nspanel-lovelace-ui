@@ -483,9 +483,7 @@ export class Controller extends Library.BaseClass {
         }
         const index = this.panels.findIndex(p => id.startsWith(this.library.cleandp(p.friendlyName)));
         if (index !== -1) {
-            if (this.panels[index].status === 'connecting') {
-                this.panels[index].status = 'connected';
-            }
+            void this.panels[index].setStatus('connected');
             if (this.panels[index].initDone) {
                 this.panels[index].restartLoops();
                 return true;

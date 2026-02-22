@@ -173,3 +173,36 @@ export type NavigationAssignment = {
 export type NavigationAssignmentList = NavigationAssignment[];
 export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
 export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
+
+export type PanelStatus = 'offline' | 'initializing' | 'connecting' | 'connected' | 'online' | 'flashing' | 'error';
+
+export const panelStatusStates: Record<number, PanelStatus> = {
+    0: 'offline', // Panel ist offline, keine belegbare Verbindung zum Adapter
+    1: 'initializing', // Panel Objekt initialisiert. Nur im Startup / Skriptübertragung
+    2: 'connecting', // Panel baut mqtt-Verbindung auf. Nur im Startup / Skriptübertragung
+    3: 'connected', // Panel hat mqtt-Verbindung aufgebaut, aber noch kein Online-Status. Nur im Startup / Skriptübertragung
+    4: 'online', // Panel TFT hat sich gemeldet und ist online
+    5: 'flashing', // Panel wird geflasht
+    6: 'error', // Panel hat einen Fehler gemeldet (z.B. Verbindungsfehler, Fehler beim Flashen, etc.)
+};
+
+export const panelStatusColors: Record<PanelStatus, string> = {
+    offline: 'grey',
+    initializing: 'grey',
+    connecting: 'lightblue',
+    connected: 'blue',
+    online: 'green',
+    flashing: 'yellow',
+    error: 'red',
+};
+
+export function reversePanelStatusStates(value: PanelStatus): number {
+    const reversed: Record<PanelStatus, number> = {} as Record<PanelStatus, number>;
+    for (const key in panelStatusStates) {
+        if (Object.prototype.hasOwnProperty.call(panelStatusStates, key)) {
+            const value = panelStatusStates[key];
+            reversed[value] = parseInt(key, 10);
+        }
+    }
+    return reversed[value];
+}

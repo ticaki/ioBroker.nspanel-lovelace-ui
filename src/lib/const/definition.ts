@@ -3,6 +3,7 @@ import type * as types from '../types/types';
 import * as globals from '../types/function-and-const';
 import type { PagePopupDataDetails } from '../types/pages';
 import type { RGB } from './Color';
+import { panelStatusStates } from '../types/adminShareConfig';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -30,27 +31,6 @@ export const defaultChannel: ioBroker.ChannelObject = {
     },
     native: {},
 };
-
-export const panelStatusStates: Record<number, string> = {
-    0: 'offline',
-    1: 'initializing',
-    2: 'connecting',
-    3: 'connected',
-    4: 'online',
-    5: 'flashing',
-    6: 'error',
-};
-
-export function reversePanelStatusStates(value: string): number {
-    const reversed: Record<string, number> = {};
-    for (const key in panelStatusStates) {
-        if (Object.prototype.hasOwnProperty.call(panelStatusStates, key)) {
-            const value = panelStatusStates[key];
-            reversed[value] = parseInt(key, 10);
-        }
-    }
-    return reversed[value];
-}
 
 export const genericStateObjects: {
     default: ioBroker.StateObject;
