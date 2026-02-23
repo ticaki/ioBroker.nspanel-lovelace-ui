@@ -1072,6 +1072,33 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 this.log.info(
                                     `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} with user ${obj.message.mqttUsername} && ${obj.message.mqttPassword}`,
                                 );
+                                const config = this.config;
+                                const panels = config.panels ?? [];
+                                const index = panels.findIndex(a => a.topic === obj.message.tasmotaTopic);
+                                const item: (typeof this.config.panels)[number] =
+                                    index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
+                                const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
+                                let update = false;
+                                if (index !== -1 && ipIndex !== index) {
+                                    this.log.error('Topic and ip are not on the same panel!');
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToIpTopicDifferent' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                } else {
+                                    update = index !== -1;
+                                    const panel = this.controller?.panels.find(
+                                        a => a.topic === obj.message.tasmotaTopic,
+                                    );
+                                    if (panel) {
+                                        void panel.setStatus('setup');
+                                    }
+                                }
                                 let u = new URL(
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
@@ -1167,27 +1194,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     }
                                     break;
                                 }
-                                const config = this.config;
-                                const panels = config.panels ?? [];
-                                const index = panels.findIndex(a => a.topic === obj.message.tasmotaTopic);
-                                const item: (typeof this.config.panels)[number] =
-                                    index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
-                                const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
-                                let update = false;
-                                if (index !== -1 && ipIndex !== index) {
-                                    this.log.error('Topic and ip are not on the same panel!');
-                                    if (obj.callback) {
-                                        this.sendTo(
-                                            obj.from,
-                                            obj.command,
-                                            { error: 'sendToIpTopicDifferent' },
-                                            obj.callback,
-                                        );
-                                    }
-                                    break;
-                                } else {
-                                    update = index !== -1;
-                                }
+
                                 mac = r.StatusNET.Mac;
                                 item.model = obj.message.model || 'eu';
                                 item.name = obj.message.tasmotaName;

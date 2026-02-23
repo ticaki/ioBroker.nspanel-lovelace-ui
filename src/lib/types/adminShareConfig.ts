@@ -174,7 +174,15 @@ export type NavigationAssignmentList = NavigationAssignment[];
 export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
 export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
 
-export type PanelStatus = 'offline' | 'initializing' | 'connecting' | 'connected' | 'online' | 'flashing' | 'error';
+export type PanelStatus =
+    | 'offline'
+    | 'initializing'
+    | 'connecting'
+    | 'connected'
+    | 'online'
+    | 'flashing'
+    | 'error'
+    | 'setup';
 
 export const panelStatusStates: Record<number, PanelStatus> = {
     0: 'offline', // Panel ist offline, keine belegbare Verbindung zum Adapter
@@ -184,6 +192,7 @@ export const panelStatusStates: Record<number, PanelStatus> = {
     4: 'online', // Panel TFT hat sich gemeldet und ist online
     5: 'flashing', // Panel wird geflasht
     6: 'error', // Panel hat einen Fehler gemeldet (z.B. Verbindungsfehler, Fehler beim Flashen, etc.)
+    7: 'setup', // Panel befindet sich im Einrichtungsmodus
 };
 
 export const panelStatusColors: Record<PanelStatus, string> = {
@@ -193,6 +202,7 @@ export const panelStatusColors: Record<PanelStatus, string> = {
     connected: '#2196F3',
     online: '#4CAF50',
     flashing: '#FFC107',
+    setup: '#d99800',
     error: '#F44336',
 };
 
