@@ -50,8 +50,10 @@ const panelStatusStates = {
   // Panel TFT hat sich gemeldet und ist online
   5: "flashing",
   // Panel wird geflasht
-  6: "error"
+  6: "error",
   // Panel hat einen Fehler gemeldet (z.B. Verbindungsfehler, Fehler beim Flashen, etc.)
+  7: "setup"
+  // Panel befindet sich im Einrichtungsmodus
 };
 const panelStatusColors = {
   offline: "#9E9E9E",
@@ -60,6 +62,7 @@ const panelStatusColors = {
   connected: "#2196F3",
   online: "#4CAF50",
   flashing: "#FFC107",
+  setup: "#d99800",
   error: "#F44336"
 };
 function reversePanelStatusStates(value) {
