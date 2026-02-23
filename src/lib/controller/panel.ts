@@ -234,6 +234,7 @@ export class Panel extends BaseClass {
                             shouldUpdate = true;
                         }
                         break;
+                    case 'setup':
                     case 'flashing':
                     case 'error':
                         shouldUpdate = true;

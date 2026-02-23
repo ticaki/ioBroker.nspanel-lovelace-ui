@@ -219,6 +219,7 @@ class Panel extends import_library.BaseClass {
             shouldUpdate = true;
           }
           break;
+        case "setup":
         case "flashing":
         case "error":
           shouldUpdate = true;
