@@ -13,8 +13,9 @@ import {
     DialogContentText,
     DialogActions,
 } from '@mui/material';
-import { green, grey, orange, red, blue, yellow } from '@mui/material/colors';
+import { grey, orange, blue, yellow } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
+import { PanelStatusBadge } from './components/PanelStatusBadge';
 
 interface MaintainPanelInfo {
     _Headline: string;
@@ -42,7 +43,7 @@ interface MaintainPanelProps {
 }
 
 interface MaintainPanelState extends ConfigGenericState {
-    panels: MaintainPanelInfo[];
+    panelsInfo: MaintainPanelInfo[];
     loading: boolean;
     error: string | null;
     processingPanel: string | null;
@@ -66,7 +67,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         super(props);
         this.state = {
             ...this.state,
-            panels: [],
+            panelsInfo: [],
             loading: false,
             error: null,
             processingPanel: null,
@@ -163,7 +164,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             console.log('[Maintain] refreshMaintainTable result:', result);
 
             if (result && result.native && Array.isArray(result.native._maintainPanels)) {
-                this.setState({ panels: result.native._maintainPanels, loading: false });
+                this.setState({ panelsInfo: result.native._maintainPanels, loading: false });
             } else {
                 this.setState({ error: this.getText('invalidResponseFromAdapter'), loading: false });
             }
@@ -336,7 +337,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 buttonScriptColor: 'primary',
             };
         }
-        if (panel._online === 'no') {
+        /* if (panel._online === 'no') {
             return {
                 backgroundColor: isDark ? red[900] : red[100],
                 borderColor: red[700],
@@ -344,7 +345,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 buttonTftColor: 'primary',
                 buttonScriptColor: 'primary',
             };
-        }
+        } */
         if (panel._check) {
             return {
                 backgroundColor: isDark ? orange[900] : orange[100],
@@ -355,8 +356,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             };
         }
         return {
-            backgroundColor: isDark ? green[900] : green[100],
-            borderColor: green[700],
+            // backgroundColor: isDark ? green[900] : green[100],
+            // borderColor: green[700],
+            backgroundColor: 'transparent',
+            borderColor: 'primary',
             buttonTasmotaColor: 'primary',
             buttonTftColor: 'primary',
             buttonScriptColor: 'primary',
@@ -367,7 +370,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
 
-        const { panels, error, processingPanel } = this.state;
+        const { panelsInfo, error, processingPanel } = this.state;
         const confirmDialog = this.confirmDialog;
 
         return (
@@ -408,7 +411,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
                 {/* Panels as Boxes */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                    {panels.map((panel, index) => {
+                    {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
                         return (
                             <Box
@@ -434,6 +437,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                 >
                                     {panel._Headline}
                                 </Typography>
+                                <PanelStatusBadge
+                                    panelId={panel._id}
+                                    oContext={this.props.oContext}
+                                />
 
                                 {/* Version Info with Flexbox */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

@@ -22,11 +22,10 @@ import {
     FormControl,
     IconButton,
 } from '@mui/material';
-import { green, red, grey } from '@mui/material/colors';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CircleIcon from '@mui/icons-material/Circle';
 import ConfigIP from './components/ConfigIP';
+import { PanelStatusBadge } from './components/PanelStatusBadge';
 
 interface PanelInfo {
     id?: string;
@@ -785,28 +784,17 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     borderRadius: 1,
                                 }}
                             >
-                                {/* Panel Name as Title with Edit, Delete and Online Status Icons */}
+                                {/* Panel Name as Title with Edit, Delete and Status Badge */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                                    {/* Online status indicator */}
-                                    <CircleIcon
-                                        sx={{
-                                            fontSize: 20,
-                                            color:
-                                                panelOnlineStates[panel.id || ''] === true
-                                                    ? green[500]
-                                                    : panelOnlineStates[panel.id || ''] === false
-                                                      ? red[500]
-                                                      : grey[400],
-                                            ml: -0.5,
-                                        }}
-                                        titleAccess={
-                                            panelOnlineStates[panel.id || ''] === true
-                                                ? 'Online'
-                                                : panelOnlineStates[panel.id || ''] === false
-                                                  ? 'Offline'
-                                                  : 'Unknown'
-                                        }
-                                    />
+                                    {/* Panel status badge */}
+                                    {panel.id && (
+                                        <PanelStatusBadge
+                                            panelId={panel.id}
+                                            oContext={this.props.oContext}
+                                            size="small"
+                                            showLabel={true}
+                                        />
+                                    )}
                                     <Typography
                                         variant="h6"
                                         sx={{ flex: 1 }}
