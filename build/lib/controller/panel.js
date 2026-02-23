@@ -195,7 +195,7 @@ class Panel extends import_library.BaseClass {
       let shouldUpdate = false;
       switch (val) {
         case "offline":
-          {
+          if (!["setup"].includes(this._status)) {
             shouldUpdate = true;
           }
           break;

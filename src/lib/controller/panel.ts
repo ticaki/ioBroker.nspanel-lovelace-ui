@@ -210,7 +210,7 @@ export class Panel extends BaseClass {
                 let shouldUpdate = false;
                 switch (val) {
                     case 'offline':
-                        {
+                        if (!['setup'].includes(this._status)) {
                             shouldUpdate = true;
                         }
                         break;
