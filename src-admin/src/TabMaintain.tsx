@@ -50,6 +50,15 @@ interface MaintainPanelState extends ConfigGenericState {
     alive?: boolean;
 }
 
+// daten die aus der config kommen, also die props.data
+interface PanelConfig {
+    id?: string;
+    ip?: string;
+    name?: string;
+    topic?: string;
+    model?: string;
+}
+
 interface ConfirmDialogState {
     open: boolean;
     title: string;
@@ -369,8 +378,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
-
-        const { panelsInfo, error, processingPanel } = this.state;
+        const panelsConfig: PanelConfig[] = this.props.data.panels || [];
+        const { panelsInfo, error, processingPanel, alive } = this.state;
         const confirmDialog = this.confirmDialog;
 
         return (
@@ -413,6 +422,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                     {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
+                        const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
                         return (
                             <Box
                                 key={panel._id || index}
@@ -423,24 +433,29 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     border: 3,
                                     borderColor: cardStyle.borderColor,
                                     backgroundColor: cardStyle.backgroundColor,
-                                    opacity: !this.state.alive ? 0.6 : 1,
+                                    opacity: !alive ? 0.6 : 1,
                                     p: 2,
                                     borderRadius: 1,
                                 }}
                             >
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        fontWeight: panel._check ? 'bold' : 'normal',
-                                        mb: 2,
-                                    }}
-                                >
-                                    {panel._Headline}
-                                </Typography>
-                                <PanelStatusBadge
-                                    panelId={panel._id}
-                                    oContext={this.props.oContext}
-                                />
+                                {/* Panel Name and Status Badge */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: panel._check ? 'bold' : 'normal',
+                                        }}
+                                    >
+                                        {panel._Headline}
+                                    </Typography>
+                                    <PanelStatusBadge
+                                        panelId={panelConfig?.id || panel._id}
+                                        oContext={this.props.oContext}
+                                        disableTooltip={true}
+                                        showIcon={false}
+                                        alive={alive}
+                                    />
+                                </Box>
 
                                 {/* Version Info with Flexbox */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -459,7 +474,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                             disabled={
                                                 !this.isPanelUpdateable(panel) ||
                                                 processingPanel === panel._name ||
-                                                !this.state.alive
+                                                !alive
                                             }
                                             size="small"
                                             sx={{
@@ -499,7 +514,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 panel._flashing ||
                                                 !panel._ip ||
                                                 processingPanel === panel._name ||
-                                                !this.state.alive
+                                                !alive
                                             }
                                             size="small"
                                             sx={{
@@ -538,7 +553,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 !panel._name ||
                                                 !panel._topic ||
                                                 processingPanel === panel._name ||
-                                                !this.state.alive
+                                                !alive
                                             }
                                             size="small"
                                             sx={{
@@ -566,7 +581,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                         variant="contained"
                                         fullWidth
                                         onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel._ip || !this.state.alive}
+                                        disabled={!panel._ip || !alive}
                                         size="small"
                                         sx={{ mt: 1 }}
                                     >

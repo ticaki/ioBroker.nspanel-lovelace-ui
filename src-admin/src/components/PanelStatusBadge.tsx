@@ -10,6 +10,9 @@ export interface PanelStatusBadgeProps {
     adapterName?: string;
     size?: 'small' | 'medium';
     showLabel?: boolean;
+    showIcon?: boolean;
+    disableTooltip?: boolean;
+    alive?: boolean;
 }
 
 interface PanelStatusBadgeState {
@@ -111,7 +114,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
 
     render(): React.JSX.Element {
         const { status, loading } = this.state;
-        const { size = 'small', showLabel = true } = this.props;
+        const { size = 'small', showLabel = true, showIcon = true, disableTooltip = false, alive = true } = this.props;
 
         if (loading) {
             return (
@@ -120,42 +123,54 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
                     icon={<CircularProgress size={16} />}
                     label={showLabel ? I18n.t('Loading...') : undefined}
                     variant="outlined"
+                    disabled={!alive}
                 />
             );
         }
 
-        if (!status) {
+        if (!status || !alive) {
             return (
                 <Chip
                     size={size}
-                    icon={<CircleIcon sx={{ fontSize: 12, color: panelStatusColors.offline }} />}
+                    icon={showIcon ? <CircleIcon sx={{ fontSize: 12, color: panelStatusColors.offline }} /> : undefined}
                     label={showLabel ? this.getStatusLabel('offline') : undefined}
                     variant="outlined"
                     sx={{ borderColor: panelStatusColors.offline }}
+                    disabled={!alive}
                 />
             );
         }
 
         const color = panelStatusColors[status];
         const label = this.getStatusLabel(status);
+        console.log(`[PanelStatusBadge] Rendering status: ${status} with color ${color}`);
 
-        return (
+        const chipelement = (
+            <Chip
+                size={size}
+                icon={showIcon ? <CircleIcon sx={{ fontSize: 12, color: color }} /> : undefined}
+                label={showLabel ? label : undefined}
+                variant="outlined"
+                disabled={!alive}
+                sx={{
+                    borderColor: color,
+                    '& .MuiChip-label': {
+                        color: color,
+                    },
+                    '& .MuiChip-icon': {
+                        color: `${color} !important`,
+                    },
+                }}
+            />
+        );
+        return disableTooltip ? (
+            chipelement
+        ) : (
             <Tooltip
                 title={label}
                 arrow
             >
-                <Chip
-                    size={size}
-                    icon={<CircleIcon sx={{ fontSize: 12, color }} />}
-                    label={showLabel ? label : undefined}
-                    variant="outlined"
-                    sx={{
-                        borderColor: color,
-                        '& .MuiChip-label': {
-                            color: color,
-                        },
-                    }}
-                />
+                {chipelement}
             </Tooltip>
         );
     }

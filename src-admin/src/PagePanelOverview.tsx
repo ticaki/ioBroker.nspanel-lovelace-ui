@@ -27,7 +27,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ConfigIP from './components/ConfigIP';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 
-interface PanelInfo {
+interface PanelConfig {
     id?: string;
     ip?: string;
     name?: string;
@@ -52,14 +52,14 @@ interface PagePanelOverviewState extends ConfigGenericState {
     processing: boolean;
 
     error: string | null;
-    panels: PanelInfo[];
+    panels: PanelConfig[];
     // State for delete dialog
     showDeleteConfirm: boolean;
-    panelToDelete: PanelInfo | null;
+    panelToDelete: PanelConfig | null;
     // State for success dialog
     showSuccessConfirm: boolean;
     successMessage: string;
-    pendingPanels: PanelInfo[] | null;
+    pendingPanels: PanelConfig[] | null;
     // Map of panel IDs to their online status
     panelOnlineStates: Record<string, boolean>;
 }
@@ -480,7 +480,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
     }
 
-    private async handleOpenTasmotaConsole(panel: PanelInfo): Promise<void> {
+    private async handleOpenTasmotaConsole(panel: PanelConfig): Promise<void> {
         try {
             const result = await this.props.oContext.socket.sendTo(
                 `${this.adapterName}.${this.instance ?? '0'}`,
@@ -497,7 +497,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 
     // Handler zum Bearbeiten eines Panels - kopiert Daten in die Initialisierungsbox
-    private handleEditPanel = (panel: PanelInfo): void => {
+    private handleEditPanel = (panel: PanelConfig): void => {
         console.log('Editing panel:', panel);
         if (!this.state.alive) {
             return;
@@ -513,7 +513,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     };
 
     // Öffnet den Bestätigungsdialog zum Löschen
-    private handleDeleteClick = (panel: PanelInfo): void => {
+    private handleDeleteClick = (panel: PanelConfig): void => {
         this.setState({ showDeleteConfirm: true, panelToDelete: panel });
     };
 
@@ -530,7 +530,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
         console.log('[PagePanelOverview] Deleting panel:', panelToDelete);
         const panels = this.props.data.panels || [];
-        const updatedPanels = panels.filter((p: PanelInfo) => p.id !== panelToDelete.id);
+        const updatedPanels = panels.filter((p: PanelConfig) => p.id !== panelToDelete.id);
 
         void this.onChange('panels', updatedPanels);
         this.setState({ showDeleteConfirm: false, panelToDelete: null });
@@ -572,7 +572,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
         const data = this.props.data || {};
         const isUpdate = this.isPanelAlreadyConfigured();
-        const panels: PanelInfo[] = data.panels || [];
+        const panels: PanelConfig[] = data.panels || [];
         const {
             alive,
             panelOnlineStates,
@@ -786,21 +786,20 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             >
                                 {/* Panel Name as Title with Edit, Delete and Status Badge */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                                    {/* Panel status badge */}
-                                    {panel.id && (
-                                        <PanelStatusBadge
-                                            panelId={panel.id}
-                                            oContext={this.props.oContext}
-                                            size="small"
-                                            showLabel={true}
-                                        />
-                                    )}
-                                    <Typography
-                                        variant="h6"
-                                        sx={{ flex: 1 }}
-                                    >
-                                        {panel.name}
-                                    </Typography>
+                                    {/* Left side: Name and Badge vertically stacked */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1 }}>
+                                        <Typography variant="h6">{panel.name}</Typography>
+                                        {panel.id && (
+                                            <PanelStatusBadge
+                                                panelId={panel.id}
+                                                oContext={this.props.oContext}
+                                                size="small"
+                                                showLabel={true}
+                                                alive={alive}
+                                            />
+                                        )}
+                                    </Box>
+                                    {/* Right side: Action buttons */}
                                     <IconButton
                                         size="small"
                                         color="primary"
