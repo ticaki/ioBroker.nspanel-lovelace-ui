@@ -166,34 +166,49 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 </Box>
                 {/* MQTT Connection Settings */}
                 <Box sx={boxStyle}>
-                    <TextField
-                        label={this.getText('mqttIp')}
-                        value={data.mqttIp ?? ''}
-                        onChange={this.handleTextChange('mqttIp')}
-                        disabled={!alive || data.mqttServer}
-                    />
-                    <TextField
-                        label={this.getText('mqttPort')}
-                        value={data.mqttPort ?? ''}
-                        onChange={this.handleTextChange('mqttPort')}
-                        disabled={!alive || data.mqttServer}
-                    />
-                    <TextField
-                        label={this.getText('mqttUsername')}
-                        value={data.mqttUsername ?? ''}
-                        onChange={this.handleTextChange('mqttUsername')}
-                        disabled={!alive || data.mqttServer}
-                    />
-                    <PasswordField
-                        label={this.getText('mqttPassword')}
-                        value={data.mqttPassword ?? ''}
-                        onChange={value => this.props.onChange({ mqttPassword: value })}
-                        placeholder="••••••••"
-                        disabled={!alive || data.mqttServer}
-                    />
+                    <Box sx={{ display: 'flex', width: '100%' }}>
+                        <TextField
+                            variant="standard"
+                            label={this.getText('mqttIp')}
+                            value={data.mqttIp ?? ''}
+                            onChange={this.handleTextChange('mqttIp')}
+                            disabled={!alive || data.mqttServer}
+                            sx={{ m: 1 }}
+                        />
+                        <TextField
+                            variant="standard"
+                            label={this.getText('mqttPort')}
+                            value={data.mqttPort ?? ''}
+                            onChange={this.handleTextChange('mqttPort')}
+                            disabled={!alive || data.mqttServer}
+                            sx={{ m: 1 }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', width: '100%' }}>
+                        <TextField
+                            variant="standard"
+                            label={this.getText('mqttUsername')}
+                            value={data.mqttUsername ?? ''}
+                            onChange={this.handleTextChange('mqttUsername')}
+                            disabled={!alive || data.mqttServer}
+                            sx={{ m: 1, flex: 1 }}
+                        />
+                        <PasswordField
+                            variant="standard"
+                            label={this.getText('mqttPassword')}
+                            value={data.mqttPassword ?? ''}
+                            onChange={value => this.props.onChange({ mqttPassword: value })}
+                            placeholder="••••••••"
+                            disabled={!alive || data.mqttServer}
+                            sx={{ m: 1, flex: 1 }}
+                        />
+                    </Box>
                 </Box>
                 {/* Tasmota Admin Password */}
-                <Box sx={boxStyle}>
+                <Box
+                    sx={boxStyle}
+                    flexDirection={'column'}
+                >
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -206,11 +221,14 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     />
                     {data.useTasmotaAdmin && (
                         <PasswordField
+                            variant="standard"
                             label={this.getText('tasmotaAdminPassword')}
                             value={data.tasmotaAdminPassword}
                             onChange={value => this.props.onChange({ tasmotaAdminPassword: value })}
                             placeholder="••••••••"
                             disabled={!alive}
+                            sx={{ m: 1 }}
+                            fullWidth
                         />
                     )}
                 </Box>

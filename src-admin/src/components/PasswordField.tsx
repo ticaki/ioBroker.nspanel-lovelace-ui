@@ -3,6 +3,7 @@ import { TextField, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 type PasswordFieldProps = {
+    variant?: 'standard' | 'outlined' | 'filled';
     label: string;
     value: string;
     onChange: (value: string) => void;
@@ -12,6 +13,7 @@ type PasswordFieldProps = {
     placeholder?: string;
     fullWidth?: boolean;
     size?: 'small' | 'medium';
+    sx?: Record<string, unknown>;
 };
 
 interface PasswordFieldState {
@@ -39,6 +41,7 @@ class PasswordField extends React.Component<PasswordFieldProps, PasswordFieldSta
     render(): React.JSX.Element {
         const { showPassword } = this.state;
         const {
+            variant = 'standard',
             label,
             value,
             disabled = false,
@@ -47,11 +50,14 @@ class PasswordField extends React.Component<PasswordFieldProps, PasswordFieldSta
             placeholder = '',
             fullWidth = false,
             size = 'small',
+            sx = {},
         } = this.props;
 
         return (
             <TextField
+                variant={variant}
                 fullWidth={fullWidth}
+                sx={sx}
                 label={label}
                 type={showPassword ? 'text' : 'password'}
                 value={value}
