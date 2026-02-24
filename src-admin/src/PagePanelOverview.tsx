@@ -62,10 +62,13 @@ interface PagePanelOverviewState extends ConfigGenericState {
     pendingPanels: PanelConfig[] | null;
     // Map of panel IDs to their online status
     panelOnlineStates: Record<string, boolean>;
+    // State for blink animation
+    isBlinking: boolean;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
     private pagesRetryTimeout?: NodeJS.Timeout;
+    private blinkTimeout?: NodeJS.Timeout;
     private instance = this.props.oContext.instance ?? '0';
     private adapterName = this.props.oContext.adapterName;
 
@@ -86,12 +89,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             successMessage: '',
             pendingPanels: null,
             panelOnlineStates: {},
+            isBlinking: false,
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
     componentWillUnmount(): void {
         if (this.pagesRetryTimeout) {
             clearTimeout(this.pagesRetryTimeout);
+        }
+        if (this.blinkTimeout) {
+            clearTimeout(this.blinkTimeout);
         }
         // Unsubscribe from alive state changes
         this.props.oContext.socket.unsubscribeState(
@@ -333,7 +340,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
     // Öffnet den Bestätigungsdialog für die Initialisierung
     private handleInitClick = (): void => {
-        this.setState({ showConfirm: true });
+        this.setState({ showConfirm: true, isBlinking: false });
     };
     // Schließt den Bestätigungsdialog ohne Aktion
     private handleConfirmClose = (): void => {
@@ -508,8 +515,36 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.props.data._tasmotaTopic = panel.topic || '';
         this.props.data.nsPanelModel = panel.model || 'eu';
 
+        // Starte Blink-Animation
+        this.startBlinkAnimation();
+
         // Force Update damit die TextFields aktualisiert werden
         this.forceUpdate();
+    };
+
+    // Startet die Blink-Animation (8x blinken = 16 State-Änderungen)
+    private startBlinkAnimation = (): void => {
+        if (this.blinkTimeout) {
+            clearTimeout(this.blinkTimeout);
+        }
+
+        let count = 0;
+        const maxBlinks = 16; // 8x ein/aus = 16 Zustandsänderungen
+        const blinkInterval = 200; // 200ms pro Zustandsänderung
+
+        const blink = (): void => {
+            if (count >= maxBlinks) {
+                this.setState({ isBlinking: true }); // Bleibt blau nach dem Blinken
+                return;
+            }
+
+            this.setState(prevState => ({ isBlinking: !prevState.isBlinking }));
+            count++;
+
+            this.blinkTimeout = setTimeout(blink, blinkInterval);
+        };
+
+        blink();
     };
 
     // Öffnet den Bestätigungsdialog zum Löschen
@@ -598,6 +633,13 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             borderRadius: 1,
         };
 
+        // Fieldset-Style mit Blink-Effekt
+        const fieldsetStyle = {
+            ...boxStyle,
+            borderColor: this.state.isBlinking ? 'primary.main' : 'divider',
+            transition: 'border-color 0.1s',
+        };
+
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {/* Beta warning */}
@@ -623,7 +665,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 </Box>
                 <Box
                     component="fieldset"
-                    sx={boxStyle}
+                    sx={fieldsetStyle}
                 >
                     <Typography
                         component="legend"

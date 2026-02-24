@@ -1,7 +1,12 @@
 import React from 'react';
 import { Chip, Tooltip, CircularProgress } from '@mui/material';
 import { Circle as CircleIcon } from '@mui/icons-material';
-import { panelStatusStates, panelStatusColors, type PanelStatus } from '../../../src/lib/types/adminShareConfig';
+import {
+    panelStatusStates,
+    panelStatusColors,
+    panelStatusTranslationKeys,
+    type PanelStatus,
+} from '../../../src/lib/types/adminShareConfig';
 import { I18n } from '@iobroker/adapter-react-v5';
 
 export interface PanelStatusBadgeProps {
@@ -99,22 +104,13 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
 
     private getStatusLabel(status: PanelStatus): string {
         // Translate status to user-friendly text
-        const translationKeys: Record<PanelStatus, string> = {
-            offline: 'Panel_status_offline',
-            initializing: 'Panel_status_initializing',
-            connecting: 'Panel_status_connecting',
-            connected: 'Panel_status_connected',
-            online: 'Panel_status_online',
-            flashing: 'Panel_status_flashing',
-            error: 'Panel_status_error',
-        };
-
-        return I18n.t(translationKeys[status]) || status;
+        return I18n.t(panelStatusTranslationKeys[status]) || status;
     }
 
     render(): React.JSX.Element {
         const { status, loading } = this.state;
         const { size = 'small', showLabel = true, showIcon = true, disableTooltip = false, alive = true } = this.props;
+        const maxWidth = showLabel ? 150 : 24;
 
         if (loading) {
             return (
@@ -124,6 +120,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
                     label={showLabel ? I18n.t('Loading...') : undefined}
                     variant="outlined"
                     disabled={!alive}
+                    sx={{ maxWidth: maxWidth }}
                 />
             );
         }
@@ -135,7 +132,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
                     icon={showIcon ? <CircleIcon sx={{ fontSize: 12, color: panelStatusColors.offline }} /> : undefined}
                     label={showLabel ? this.getStatusLabel('offline') : undefined}
                     variant="outlined"
-                    sx={{ borderColor: panelStatusColors.offline }}
+                    sx={{ borderColor: panelStatusColors.offline, maxWidth: maxWidth }}
                     disabled={!alive}
                 />
             );
@@ -153,6 +150,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
                 variant="outlined"
                 disabled={!alive}
                 sx={{
+                    maxWidth: maxWidth,
                     borderColor: color,
                     '& .MuiChip-label': {
                         color: color,

@@ -58,6 +58,7 @@
     "Panel_status_initializing": "Initializing",
     "Panel_status_offline": "Offline",
     "Panel_status_online": "Online",
+    "Panel_status_setup": "Setup",
     "Paused": "Paused",
     "Refresh Device": "Refresh device",
     "RefreshMaintainTable": "Refresh table",
