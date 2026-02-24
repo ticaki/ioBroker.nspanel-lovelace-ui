@@ -100,6 +100,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (this.blinkTimeout) {
             clearTimeout(this.blinkTimeout);
         }
+        // Remove visibility change listener
+        document.removeEventListener('visibilitychange', this.onVisibilityChange);
         // Unsubscribe from alive state changes
         this.props.oContext.socket.unsubscribeState(
             `system.adapter.${this.adapterName}.${this.instance}.alive`,
@@ -144,7 +146,56 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         } catch (error) {
             console.error('[PagePanelOverview] Failed to subscribe to panel online states:', error);
         }
+
+        // Listen for visibility changes to refresh states when tab becomes visible again
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
+
+    // Handler für Visibility-Änderungen (Browser-Tab erhält wieder Fokus)
+    private onVisibilityChange = (): void => {
+        if (document.visibilityState === 'visible') {
+            console.log('[PagePanelOverview] Tab became visible - refreshing states');
+            void this.refreshStates();
+        }
+    };
+
+    // Methode zum Aktualisieren der States nach Fokus-Wiedererlannung
+    private async refreshStates(): Promise<void> {
+        // Alive-Status neu laden
+        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            if (this.state.alive !== isAlive) {
+                this.setState({ alive: isAlive, error: isAlive ? null : this.getText('adapterNotAlive') });
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to refresh alive state:', error);
+        }
+
+        // Panel-Online-Stati neu laden
+        try {
+            const newPanelStates: Record<string, boolean> = {};
+            for (const panel of this.props.data.panels || []) {
+                const panelStateId = `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`;
+                const state = await this.props.oContext.socket.getState(panelStateId);
+                const isOnline = !!state?.val;
+                newPanelStates[panel.id!] = isOnline;
+            }
+
+            // Nur State aktualisieren wenn es Änderungen gibt
+            const hasChanges = Object.keys(newPanelStates).some(
+                panelId => this.state.panelOnlineStates[panelId] !== newPanelStates[panelId],
+            );
+
+            if (hasChanges) {
+                this.setState({ panelOnlineStates: newPanelStates });
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to refresh panel online states:', error);
+        }
+    }
+
     // Callback for alive state changes
     onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
         const wasAlive = this.state.alive;

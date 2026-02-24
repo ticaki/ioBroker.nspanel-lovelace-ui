@@ -85,6 +85,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     componentWillUnmount(): void {
+        // Remove visibility change listener
+        document.removeEventListener('visibilitychange', this.onVisibilityChange);
         // Unsubscribe from alive state changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
         this.props.oContext.socket.unsubscribeState(aliveStateId, this.onAliveChanged);
@@ -131,6 +133,37 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         } catch (error) {
             console.error('[Maintain] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false });
+        }
+
+        // Listen for visibility changes to refresh states when tab becomes visible again
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
+    }
+
+    // Handler für Visibility-Änderungen (Browser-Tab erhält wieder Fokus)
+    private onVisibilityChange = (): void => {
+        if (document.visibilityState === 'visible') {
+            console.log('[Maintain] Tab became visible - refreshing states');
+            void this.refreshStates();
+        }
+    };
+
+    // Methode zum Aktualisieren der States nach Fokus-Wiedererlannung
+    private async refreshStates(): Promise<void> {
+        // Alive-Status neu laden
+        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            if (this.state.alive !== isAlive) {
+                this.setState({ alive: isAlive });
+            }
+        } catch (error) {
+            console.error('[Maintain] Failed to refresh alive state:', error);
+        }
+
+        // Panel-Informationen komplett neu laden
+        if (this.state.alive) {
+            await this.refreshPanels();
         }
     }
 
