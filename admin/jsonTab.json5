@@ -1,0 +1,22 @@
+{
+    "i18n": true,
+    "type": "tabs",
+    "items": {
+        "_tabMaintain": {
+            "type": "panel",
+            "label": "Maintain",
+            //"hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "items": {
+                "pageGlobalSettings": {
+                    "type": "custom",
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/TabMaintain",
+                    "bundlerType": "module",
+                    "xs": 12
+                    //"label": "test"
+                }
+            }
+        }
+    }
+}

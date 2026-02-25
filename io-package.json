@@ -289,7 +289,13 @@
         "colMediaTitleOff": "#808080",
         "colMediaOnOffColor": "#ffffff"
       }
-    ]
+    ],
+    "adminTab": {
+         "link": "jsonTab.json5",      
+         "name": "nspanel", 
+         "singleton": false, 
+         "order": 10
+      }
   },
   "objects": [],
   "instanceObjects": [
