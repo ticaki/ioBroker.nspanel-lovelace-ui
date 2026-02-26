@@ -460,6 +460,7 @@ export class Controller extends Library.BaseClass {
             this.log.debug(`Panel ${newPanel.name} created`);
             return true;
         }
+        await newPanel.setStatus('error');
         await newPanel.delete();
         this.adapter.testSuccessful = false;
         this.log.error(`Panel ${panel.name} has a invalid configuration.`);
