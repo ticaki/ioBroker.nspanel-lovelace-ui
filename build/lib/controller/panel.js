@@ -215,7 +215,9 @@ class Panel extends import_library.BaseClass {
           }
           break;
         case "online":
-          if (["offline", "initializing", "connecting", "connected", "flashing"].includes(this._status)) {
+          if (["offline", "initializing", "connecting", "connected", "flashing", "error"].includes(
+            this._status
+          )) {
             shouldUpdate = true;
           }
           break;
