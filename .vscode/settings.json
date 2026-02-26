@@ -38,5 +38,11 @@
     }
   ],
 
-  "findUnusedExports.detectCircularImports": true
+  "findUnusedExports.detectCircularImports": true,
+  "cSpell.words": [
+    "iobroker",
+    "tasmota",
+    "Tasmota",
+    "Validierungsfunktion"
+  ]
 }

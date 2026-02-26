@@ -49,6 +49,7 @@ class ConfigIP extends ConfigGeneric<ConfigIPProps, ConfigIPState> {
         try {
             const socket = this.props.oContext.socket;
             let ips = await socket.getHostByIp(this.props.common.host);
+            console.log('IPs loaded:', ips);
 
             // Filter based on schema options
             if (!this.props.schema.listenOnAllPorts) {
@@ -63,6 +64,7 @@ class ConfigIP extends ConfigGeneric<ConfigIPProps, ConfigIPState> {
 
             if (this.props.schema.noInternal) {
                 ips = ips.filter((item: IPInfo) => !item.internal);
+                ips = ips.filter((item: IPInfo) => item.address !== '127.0.0.1' && item.address !== '::1');
             }
 
             // Label special addresses

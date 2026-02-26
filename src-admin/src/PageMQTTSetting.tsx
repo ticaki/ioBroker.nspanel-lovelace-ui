@@ -165,7 +165,10 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     </Button>
                 </Box>
                 {/* MQTT Connection Settings */}
-                <Box sx={boxStyle}>
+                <Box
+                    sx={boxStyle}
+                    flexDirection={'column'}
+                >
                     <Box sx={{ display: 'flex', width: '100%' }}>
                         <TextField
                             variant="standard"
@@ -173,7 +176,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             value={data.mqttIp ?? ''}
                             onChange={this.handleTextChange('mqttIp')}
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                         <TextField
                             variant="standard"
@@ -181,7 +184,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             value={data.mqttPort ?? ''}
                             onChange={this.handleTextChange('mqttPort')}
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                     </Box>
                     <Box sx={{ display: 'flex', width: '100%' }}>
@@ -191,7 +194,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             value={data.mqttUsername ?? ''}
                             onChange={this.handleTextChange('mqttUsername')}
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1, flex: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                         <PasswordField
                             variant="standard"
@@ -200,14 +203,17 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             onChange={value => this.props.onChange({ mqttPassword: value })}
                             placeholder="••••••••"
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1, flex: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                     </Box>
                 </Box>
                 {/* Tasmota Admin Password */}
                 <Box
-                    sx={boxStyle}
-                    flexDirection={'column'}
+                    sx={{
+                        ...boxStyle,
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
                 >
                     <FormControlLabel
                         control={
@@ -227,8 +233,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             onChange={value => this.props.onChange({ tasmotaAdminPassword: value })}
                             placeholder="••••••••"
                             disabled={!alive}
-                            sx={{ m: 1 }}
-                            fullWidth
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                     )}
                 </Box>
