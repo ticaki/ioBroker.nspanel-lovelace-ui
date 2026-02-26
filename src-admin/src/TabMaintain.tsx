@@ -436,7 +436,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         target="_blank"
                         sx={{ color: 'red' }}
                     >
-                        {this.getText('openLinkAdapterInsatllation')}
+                        {this.getText('openLinkAdapterInstallation')}
                     </Button>
                 </Box>
 

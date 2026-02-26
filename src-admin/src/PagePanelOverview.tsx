@@ -580,7 +580,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
 
         let count = 0;
-        const maxBlinks = 16; // 8x ein/aus = 16 Zustandsänderungen
+        const maxBlinks = 8; // 8x ein/aus = 16 Zustandsänderungen
         const blinkInterval = 200; // 200ms pro Zustandsänderung
 
         const blink = (): void => {
@@ -711,7 +711,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         target="_blank"
                         sx={{ color: 'red' }}
                     >
-                        {this.getText('openLinkAdapterInsatllation')}
+                        {this.getText('openLinkAdapterInstallation')}
                     </Button>
                 </Box>
                 <Box
