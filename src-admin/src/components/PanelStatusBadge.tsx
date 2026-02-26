@@ -62,9 +62,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
 
         try {
             const state = await oContext.socket.getState(statusStateId);
-            const statusValue = state?.val;
-            const status = this.getStatusFromValue(statusValue);
-            this.setState({ status, loading: false });
+            this.onStatusChanged(statusStateId, state);
 
             await oContext.socket.subscribeState(statusStateId, this.onStatusChanged);
             console.log(`[PanelStatusBadge] Subscribed to status state: ${statusStateId}`);
@@ -91,8 +89,14 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
     private onStatusChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
         const statusValue = state?.val;
         const status = this.getStatusFromValue(statusValue);
-        this.setState({ status, loading: false });
-        console.log(`[PanelStatusBadge] Status changed: ${statusValue} (${status})`);
+        if (status !== this.state.status) {
+            this.setState({ status, loading: false });
+            console.log(`[PanelStatusBadge] Status changed: ${statusValue} (${status})`);
+        } else {
+            console.log(
+                `[PanelStatusBadge] Status change received but status is the same: ${statusValue} (${status}) this.state.status: ${this.state.status}`,
+            ); // Debug log to check if status is actually changing
+        }
     };
 
     private getStatusFromValue(value: any): PanelStatus {
