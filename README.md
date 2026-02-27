@@ -157,6 +157,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (tt-tom17)(ticaki) Panel status system with badge (online/offline/setup/flashing states)
+- (tt-tom17) Panel management improvements (IP selector, delete/edit panels, init button)
+- (tt-tom17) MQTT configuration UI design improvements
+- (tt-tom17)(ticaki) Various fixes (badge flickering, tab focus, jsonConfig, translations, hex colors)
+
 ### 0.12.1 (2026-02-20)
 - (ticaki) fixed: brightsky template
 - (ticaki) fixed: malfunction of the update icon in the screensaver
