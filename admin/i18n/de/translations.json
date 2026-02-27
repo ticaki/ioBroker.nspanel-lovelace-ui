@@ -128,6 +128,7 @@
     "White brightness": "Weißhelligkeit",
     "Zone Clean": "Zonenrein",
     "actualtemp": "Aktuelle Temp",
+    "adapterNotAlive": "Der Adapter läuft nicht oder kann auf Grund eines Fehler nicht starten. Bitte überprüfen Sie die Adapter-Logs für weitere Informationen.",
     "all": "alle",
     "alwaysOn": "Verhalten des Bildschirmschoners",
     "alwaysOnDisplay": "Seite dauerhaft anzeigen",

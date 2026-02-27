@@ -952,7 +952,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('panelModel')}
-                                            value={panel.model}
+                                            value={this.getText(`${panel.model}-Version`)}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
@@ -964,7 +964,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         variant="contained"
                                         fullWidth
                                         onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel.ip || !alive || panelOnlineStates[panel.id || ''] === false}
+                                        disabled={!panel.ip || !alive}
                                         size="small"
                                         sx={{ mt: 1 }}
                                     >

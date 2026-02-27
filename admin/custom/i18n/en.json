@@ -128,6 +128,7 @@
     "White brightness": "White brightness",
     "Zone Clean": "Zone Clean",
     "actualtemp": "Actual Temp",
+    "adapterNotAlive": "The adapter is not running or cannot start due to an error. Please check the adapter logs for more information.",
     "all": "all",
     "alwaysOn": "Screensaver behavior",
     "alwaysOnDisplay": "Always show this page",
