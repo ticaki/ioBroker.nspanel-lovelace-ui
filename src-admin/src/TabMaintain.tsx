@@ -72,6 +72,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private instance = this.props.oContext.instance ?? '0';
     private adapterName = this.props.oContext.adapterName;
     private panelsConfig: PanelConfig[] = [];
+    private _isMounted: boolean = false;
 
     constructor(props: ConfigGenericProps & MaintainPanelProps) {
         super(props);
@@ -86,6 +87,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     async componentWillUnmount(): Promise<void> {
+        this._isMounted = false;
         // Remove visibility change listener
         document.removeEventListener('visibilitychange', this.onVisibilityChange);
         // Unsubscribe from alive state changes
@@ -123,6 +125,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
     async componentDidMount(): Promise<void> {
         super.componentDidMount();
+        this._isMounted = true;
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -130,7 +133,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         try {
             const state = await this.props.oContext.socket.getState(aliveStateId);
             const isAlive = !!state?.val;
-            this.setState({ alive: isAlive });
+            if (this._isMounted) {
+                this.setState({ alive: isAlive });
+            }
 
             // Subscribe to alive state changes
             await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
@@ -151,7 +156,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             }
         } catch (error) {
             console.error('[Maintain] Failed to get alive state or subscribe:', error);
-            this.setState({ alive: false });
+            if (this._isMounted) {
+                this.setState({ alive: false });
+            }
         }
 
         // Listen for visibility changes to refresh states when tab becomes visible again
@@ -168,12 +175,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
     // Methode zum Aktualisieren der States nach Fokus-Wiedererlannung
     private async refreshStates(): Promise<void> {
+        if (!this._isMounted) {
+            return;
+        }
         // Alive-Status neu laden
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
         try {
             const state = await this.props.oContext.socket.getState(aliveStateId);
             const isAlive = !!state?.val;
-            if (this.state.alive !== isAlive) {
+            if (this._isMounted && this.state.alive !== isAlive) {
                 this.setState({ alive: isAlive });
             }
         } catch (error) {
@@ -181,13 +191,16 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
 
         // Panel-Informationen komplett neu laden
-        if (this.state.alive) {
+        if (this._isMounted && this.state.alive) {
             await this.refreshPanels();
         }
     }
 
     // Callback for alive state changes
     onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        if (!this._isMounted) {
+            return;
+        }
         const wasAlive = this.state.alive;
         const isAlive = state ? !!state.val : false;
 
@@ -199,23 +212,35 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
     // Callback for panel online state changes
     onPanelOnlineChanged = (_id: string, _state: ioBroker.State | null | undefined): void => {
+        if (!this._isMounted) {
+            return;
+        }
         console.log('[Maintain] Panel online state changed, refreshing panels');
         void this.refreshPanels();
         if (this.timeoutHandle) {
             clearTimeout(this.timeoutHandle);
         }
         this.timeoutHandle = setTimeout(() => {
-            void this.refreshPanels();
+            if (this._isMounted) {
+                void this.refreshPanels();
+            }
         }, 5000);
     };
 
     private async refreshPanels(): Promise<void> {
+        if (!this._isMounted) {
+            return;
+        }
         if (!this.state.alive) {
-            this.setState({ error: this.getText('adapterNotAlive'), loading: false });
+            if (this._isMounted) {
+                this.setState({ error: this.getText('adapterNotAlive'), loading: false });
+            }
             return;
         }
         await this.getPanels();
-        this.setState({ loading: true, error: null });
+        if (this._isMounted) {
+            this.setState({ loading: true, error: null });
+        }
 
         try {
             const result = await this.props.oContext.socket.sendTo(
@@ -225,13 +250,19 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             );
             console.log('[Maintain] refreshMaintainTable result:', result);
 
+            if (!this._isMounted) {
+                return;
+            }
+
             if (result && result.native && Array.isArray(result.native._maintainPanels)) {
                 this.setState({ panelsInfo: result.native._maintainPanels, loading: false });
             } else {
                 this.setState({ error: this.getText('invalidResponseFromAdapter'), loading: false });
             }
         } catch (err) {
-            this.setState({ error: String(err), loading: false });
+            if (this._isMounted) {
+                this.setState({ error: String(err), loading: false });
+            }
             return;
         }
     }
@@ -254,7 +285,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private handleTasmotaUpdate(panel: MaintainPanelInfo): void {
         this.showConfirmDialog(this.getText('tasmotaUpdate'), this.getText('updateTasmotaText'), async () => {
             this.closeConfirmDialog();
-            this.setState({ processingPanel: panel._name });
+            if (this._isMounted) {
+                this.setState({ processingPanel: panel._name });
+            }
 
             try {
                 this.onPanelOnlineChanged('', null); // Trigger immediate refresh to update online status
@@ -264,14 +297,22 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     { topic: panel._topic },
                 );
 
+                if (!this._isMounted) {
+                    return;
+                }
+
                 if (result && typeof result === 'object' && 'error' in result) {
                     this.setState({ error: String(result.error), processingPanel: null });
                 } else {
                     await this.refreshPanels();
-                    this.setState({ processingPanel: null });
+                    if (this._isMounted) {
+                        this.setState({ processingPanel: null });
+                    }
                 }
             } catch (err) {
-                this.setState({ error: String(err), processingPanel: null });
+                if (this._isMounted) {
+                    this.setState({ error: String(err), processingPanel: null });
+                }
             }
         });
     }
@@ -282,7 +323,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             `${this.getText('tftInstallSendToMQTTText')}\n\nPanel: ${panel._name}\nTFT - Version: ${panel._tftVersion}`,
             async () => {
                 this.closeConfirmDialog();
-                this.setState({ processingPanel: panel._name });
+                if (this._isMounted) {
+                    this.setState({ processingPanel: panel._name });
+                }
 
                 try {
                     console.log('[Maintain] Sending TFT install command to MQTT for panel:', panel._name);
@@ -299,21 +342,30 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                             model: panel._nsPanelModel,
                         },
                     );
+                    if (!this._isMounted) {
+                        return;
+                    }
                     if (result && typeof result === 'object' && 'error' in result) {
                         this.setState({ error: String(result.error), processingPanel: null });
                     } else {
                         await this.refreshPanels();
-                        this.setState({ processingPanel: null });
+                        if (this._isMounted) {
+                            this.setState({ processingPanel: null });
+                        }
                     }
                 } catch (err) {
-                    this.setState({ error: String(err), processingPanel: null });
+                    if (this._isMounted) {
+                        this.setState({ error: String(err), processingPanel: null });
+                    }
                 }
             },
         );
     }
 
     private async handleCreateScript(panel: MaintainPanelInfo): Promise<void> {
-        this.setState({ processingPanel: panel._name });
+        if (this._isMounted) {
+            this.setState({ processingPanel: panel._name });
+        }
 
         try {
             const result = await this.props.oContext.socket.sendTo(
@@ -322,14 +374,22 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 { name: panel._name, topic: panel._topic },
             );
 
+            if (!this._isMounted) {
+                return;
+            }
+
             if (result && typeof result === 'object' && 'error' in result) {
                 this.setState({ error: String(result.error), processingPanel: null });
             } else {
                 await this.refreshPanels();
-                this.setState({ processingPanel: null });
+                if (this._isMounted) {
+                    this.setState({ processingPanel: null });
+                }
             }
         } catch (err) {
-            this.setState({ error: String(err), processingPanel: null });
+            if (this._isMounted) {
+                this.setState({ error: String(err), processingPanel: null });
+            }
         }
     }
 
@@ -345,7 +405,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 window.open(result.openUrl as string, '_blank');
             }
         } catch (err) {
-            this.setState({ error: String(err) });
+            if (this._isMounted) {
+                this.setState({ error: String(err) });
+            }
         }
     }
 
