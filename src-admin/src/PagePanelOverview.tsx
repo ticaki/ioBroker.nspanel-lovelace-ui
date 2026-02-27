@@ -661,7 +661,6 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const panels: PanelConfig[] = data.panels || [];
         const {
             alive,
-            panelOnlineStates,
             loadingTimezone,
             error,
             showConfirm,
@@ -897,7 +896,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="primary"
                                         onClick={() => this.handleEditPanel(panel)}
-                                        disabled={!alive || !panelOnlineStates[panel.id || '']}
+                                        disabled={!alive}
                                         title={this.getText('editPanel')}
                                     >
                                         <EditIcon />
@@ -906,7 +905,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="error"
                                         onClick={() => this.handleDeleteClick(panel)}
-                                        disabled={!alive || !panelOnlineStates[panel.id || '']}
+                                        disabled={!alive}
                                         title={this.getText('deletePanel')}
                                     >
                                         <DeleteIcon />
