@@ -71,6 +71,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private timeoutHandle: NodeJS.Timeout | null = null;
     private instance = this.props.oContext.instance ?? '0';
     private adapterName = this.props.oContext.adapterName;
+    private panelsConfig: PanelConfig[] = [];
 
     constructor(props: ConfigGenericProps & MaintainPanelProps) {
         super(props);
@@ -84,14 +85,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         };
     }
 
-    componentWillUnmount(): void {
+    async componentWillUnmount(): Promise<void> {
         // Remove visibility change listener
         document.removeEventListener('visibilitychange', this.onVisibilityChange);
         // Unsubscribe from alive state changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
         this.props.oContext.socket.unsubscribeState(aliveStateId, this.onAliveChanged);
         // Unsubscribe from panel online state changes
-        for (const panel of this.props.data.panels) {
+        const panels = await this.getPanels();
+        for (const panel of panels) {
             this.props.oContext.socket.unsubscribeState(
                 `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                 this.onPanelOnlineChanged,
@@ -101,6 +103,21 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             clearTimeout(this.timeoutHandle);
             this.timeoutHandle = null;
         }
+    }
+
+    async getPanels(): Promise<PanelConfig[]> {
+        if (!this.props.data?.panels) {
+            if (this.panelsConfig.length > 0) {
+                return this.panelsConfig;
+            }
+            const obj = await this.props.oContext.socket.getObject(
+                `system.adapter.${this.props.oContext.adapterName}.${this.props.oContext.instance}`,
+            );
+
+            this.panelsConfig = obj?.native?.panels || [];
+            return this.panelsConfig; // Fallback zu leerem Objekt, falls native nicht definiert ist
+        }
+        return this.props.data.panels || []; // Fallback zu leerem Array, falls panels nicht definiert ist
     }
 
     async componentDidMount(): Promise<void> {
@@ -122,7 +139,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 console.log('[Maintain] Adapter is alive, ready to load settings.');
                 await this.refreshPanels();
             }
-            for (const panel of this.props.data.panels) {
+            const panels = await this.getPanels();
+            for (const panel of panels) {
                 // nspanel-lovelace-ui.0.panels.7C_87_CE_C6_1B_74.info.isOnline
                 console.log(`[Maintain] Subscribing to online state for panel ${panel.name} (${panel.id})`);
                 await this.props.oContext.socket.subscribeState(
@@ -195,6 +213,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             this.setState({ error: this.getText('adapterNotAlive'), loading: false });
             return;
         }
+        await this.getPanels();
         this.setState({ loading: true, error: null });
 
         try {
@@ -411,7 +430,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
-        const panelsConfig: PanelConfig[] = this.props.data.panels || [];
+        const panelsConfig: PanelConfig[] = this.panelsConfig;
         const { panelsInfo, error, processingPanel, alive } = this.state;
         const confirmDialog = this.confirmDialog;
 
