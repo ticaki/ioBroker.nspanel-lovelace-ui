@@ -200,7 +200,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             variant="standard"
                             label={this.getText('mqttPassword')}
                             value={data.mqttPassword ?? ''}
-                            onChange={value => this.props.onChange({ mqttPassword: value })}
+                            onChange={value => this.onChange('mqttPassword', value)}
                             placeholder="••••••••"
                             disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
@@ -230,7 +230,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             variant="standard"
                             label={this.getText('tasmotaAdminPassword')}
                             value={data.tasmotaAdminPassword}
-                            onChange={value => this.props.onChange({ tasmotaAdminPassword: value })}
+                            onChange={value => this.onChange('tasmotaAdminPassword', value)}
                             placeholder="••••••••"
                             disabled={!alive}
                             sx={{ m: 1, maxWidth: '300px' }}
