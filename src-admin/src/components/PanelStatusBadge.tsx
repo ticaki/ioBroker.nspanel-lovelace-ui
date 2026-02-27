@@ -118,7 +118,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
                 <Chip
                     size={size}
                     icon={<CircularProgress size={16} />}
-                    label={showLabel ? I18n.t('Loading...') : undefined}
+                    label={showLabel ? 'Loading...' : undefined}
                     variant="outlined"
                     disabled={!alive}
                     sx={{ maxWidth: maxWidth }}
