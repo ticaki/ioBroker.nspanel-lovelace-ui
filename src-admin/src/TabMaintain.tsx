@@ -117,7 +117,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             this.panelsConfig = obj?.native?.panels || [];
             return this.panelsConfig; // Fallback zu leerem Objekt, falls native nicht definiert ist
         }
-        return this.props.data.panels || []; // Fallback zu leerem Array, falls panels nicht definiert ist
+        this.panelsConfig = this.props.data.panels || [];
+        return this.panelsConfig; // Fallback zu leerem Array, falls panels nicht definiert ist
     }
 
     async componentDidMount(): Promise<void> {
