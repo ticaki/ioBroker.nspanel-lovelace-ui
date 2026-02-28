@@ -13,8 +13,12 @@ import {
     FormControl,
     InputLabel,
     InputAdornment,
+    IconButton,
 } from '@mui/material';
 import { grey, orange, yellow } from '@mui/material/colors';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 
@@ -45,6 +49,7 @@ interface StateObjectData {
         read: boolean;
         unit?: string;
         states?: Record<string, string>;
+        role?: string;
     };
 }
 
@@ -91,7 +96,7 @@ const optionalDisplayStates: OptionalDisplayState[] = [
     {
         id: 'info.nspanel.firmwareUpdate',
         f: (val: any) => {
-            return val < 100;
+            return val && val < 100 && val > 0;
         },
     },
 ];
@@ -498,6 +503,15 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
             };
         });
     }
+    private handleSettingsPanel(): void {
+        // Konstruiere die URL zur Adapter-Konfiguration
+        const protocol = window.location.protocol; // http: or https:
+        const host = window.location.host; // ip:port, z.B. 127.0.0.1:8082
+        const configUrl = `${protocol}//${host}/#tab-instances/config/system.adapter.${this.adapterName}.${this.instance}`;
+
+        console.log('[Panelinfo] Opening settings panel:', configUrl);
+        window.location.href = configUrl;
+    }
 
     // Handle text field commit (blur or enter)
     private async handleTextFieldCommit(panelId: string, statePath: string): Promise<void> {
@@ -587,13 +601,32 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         const type = obj.common.type;
         const states = obj.common.states;
         const unit = obj.common.unit;
+        const role = obj.common.role;
 
-        console.log(`[Panelinfo] Rendering control for ${statePath}:`, { type, unit, isWritable, states });
+        console.log(`[Panelinfo] Rendering control for ${statePath}:`, { type, unit, isWritable, states, role });
 
         // Get label from common.name
         let label = obj.common.name;
         if (typeof label === 'object') {
             label = label[this.props.oContext.systemLang] || label.en || Object.values(label)[0] || statePath;
+        }
+
+        // Boolean button (Taster ohne anzeigbaren Wert)
+        if (type === 'boolean' && isWritable && role && role.startsWith('button')) {
+            return (
+                <Button
+                    key={statePath}
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    onClick={() => {
+                        void this.writeStateValue(panelId, statePath, true);
+                    }}
+                    disabled={!this.state.alive}
+                >
+                    {label}
+                </Button>
+            );
         }
 
         // Boolean with switch
@@ -618,14 +651,13 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         // Boolean read-only
         if (type === 'boolean' && !isWritable) {
             return (
-                <TextField
+                <Box
                     key={statePath}
-                    label={label}
-                    value={value ? 'true' : 'false'}
-                    slotProps={{ input: { readOnly: true } }}
-                    size="small"
-                    fullWidth
-                />
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}
+                >
+                    {value ? <CheckCircleIcon color="success" /> : <CancelIcon color="disabled" />}
+                    <Typography variant="body2">{label}</Typography>
+                </Box>
             );
         }
 
@@ -760,23 +792,35 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                     borderRadius: 1,
                                 }}
                             >
-                                {/* Panel Name and Status Badge */}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                                    <Typography
-                                        variant="h6"
-                                        sx={{
-                                            fontWeight: panel._check ? 'bold' : 'normal',
-                                        }}
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                                    {/* Left side: Name and Badge vertically stacked */}
+                                    {/* Panel Name and Status Badge */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                fontWeight: panel._check ? 'bold' : 'normal',
+                                            }}
+                                        >
+                                            {panel._Headline}
+                                        </Typography>
+                                        <PanelStatusBadge
+                                            panelId={panelConfig?.id || panel._id}
+                                            oContext={this.props.oContext}
+                                            disableTooltip={true}
+                                            showIcon={false}
+                                            alive={alive}
+                                        />
+                                    </Box>
+                                    <IconButton
+                                        size="small"
+                                        color={panel._check ? 'primary' : 'default'}
+                                        onClick={() => this.handleSettingsPanel()}
+                                        disabled={!alive}
+                                        title={this.getText('settingPanel')}
                                     >
-                                        {panel._Headline}
-                                    </Typography>
-                                    <PanelStatusBadge
-                                        panelId={panelConfig?.id || panel._id}
-                                        oContext={this.props.oContext}
-                                        disableTooltip={true}
-                                        showIcon={false}
-                                        alive={alive}
-                                    />
+                                        <SettingsOutlinedIcon />
+                                    </IconButton>
                                 </Box>
 
                                 {/* Panel States */}
