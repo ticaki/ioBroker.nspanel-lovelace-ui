@@ -26,6 +26,10 @@ interface PanelStatusBadgeState {
 }
 
 export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, PanelStatusBadgeState> {
+    private oContext = this.props.oContext;
+    private instance = this.oContext.instance ?? '0';
+    private adapter = this.props.adapterName || this.oContext.adapterName || 'nspanel-lovelace-ui';
+
     constructor(props: PanelStatusBadgeProps) {
         super(props);
         this.state = {
@@ -50,23 +54,17 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
     }
 
     private getStatusStateId(): string {
-        const { panelId, oContext, adapterName } = this.props;
-        const adapter = adapterName || oContext.adapterName || 'nspanel-lovelace-ui';
-        const instance = oContext.instance ?? '0';
-        return `${adapter}.${instance}.panels.${panelId}.status`;
+        return `${this.adapter}.${this.instance}.panels.${this.props.panelId}.status`;
     }
 
     private async subscribeToStatus(): Promise<void> {
-        const { oContext } = this.props;
         const statusStateId = this.getStatusStateId();
 
         try {
-            const state = await oContext.socket.getState(statusStateId);
-            const statusValue = state?.val;
-            const status = this.getStatusFromValue(statusValue);
-            this.setState({ status, loading: false });
+            const state = await this.oContext.socket.getState(statusStateId);
+            this.onStatusChanged(statusStateId, state);
 
-            await oContext.socket.subscribeState(statusStateId, this.onStatusChanged);
+            await this.oContext.socket.subscribeState(statusStateId, this.onStatusChanged);
             console.log(`[PanelStatusBadge] Subscribed to status state: ${statusStateId}`);
         } catch (error) {
             console.error('[PanelStatusBadge] Failed to subscribe to status:', error);
@@ -75,13 +73,10 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
     }
 
     private async unsubscribeFromStatus(panelId: string): Promise<void> {
-        const { oContext, adapterName } = this.props;
-        const adapter = adapterName || oContext.adapterName || 'nspanel-lovelace-ui';
-        const instance = oContext.instance ?? '0';
-        const statusStateId = `${adapter}.${instance}.panels.${panelId}.status`;
+        const statusStateId = `${this.adapter}.${this.instance}.panels.${panelId}.status`;
 
         try {
-            await oContext.socket.unsubscribeState(statusStateId, this.onStatusChanged);
+            await this.oContext.socket.unsubscribeState(statusStateId, this.onStatusChanged);
             console.log(`[PanelStatusBadge] Unsubscribed from status state: ${statusStateId}`);
         } catch (error) {
             console.error('[PanelStatusBadge] Failed to unsubscribe from status:', error);
@@ -91,8 +86,14 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
     private onStatusChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
         const statusValue = state?.val;
         const status = this.getStatusFromValue(statusValue);
-        this.setState({ status, loading: false });
-        console.log(`[PanelStatusBadge] Status changed: ${statusValue} (${status})`);
+        if (status !== this.state.status) {
+            this.setState({ status, loading: false });
+            console.log(`[PanelStatusBadge] Status changed: ${statusValue} (${status})`);
+        } else {
+            console.log(
+                `[PanelStatusBadge] Status change received but status is the same: ${statusValue} (${status}) this.state.status: ${this.state.status}`,
+            ); // Debug log to check if status is actually changing
+        }
     };
 
     private getStatusFromValue(value: any): PanelStatus {
@@ -117,7 +118,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
                 <Chip
                     size={size}
                     icon={<CircularProgress size={16} />}
-                    label={showLabel ? I18n.t('Loading...') : undefined}
+                    label={showLabel ? 'Loading...' : undefined}
                     variant="outlined"
                     disabled={!alive}
                     sx={{ maxWidth: maxWidth }}

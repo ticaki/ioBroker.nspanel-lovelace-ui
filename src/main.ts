@@ -1884,7 +1884,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                             }
                             temp.push({
-                                _check: true,
+                                _check: false,
                                 _Headline: `${a.name} (${
                                     ft
                                         ? ft

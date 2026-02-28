@@ -216,7 +216,9 @@ class Panel extends import_library.BaseClass {
           }
           break;
         case "online":
-          if (["offline", "initializing", "connecting", "connected", "flashing"].includes(this._status)) {
+          if (["offline", "initializing", "connecting", "connected", "flashing", "error"].includes(
+            this._status
+          )) {
             shouldUpdate = true;
           }
           break;
@@ -865,14 +867,18 @@ class Panel extends import_library.BaseClass {
             this.log.info(`Going offline for flashing!`);
           }
           this.isOnline = false;
-          this.flashing = msg.Flashing.complete < 99;
-          this.log.info(`Flashing: ${msg.Flashing.complete}%`);
+          this.flashing = msg.Flashing.complete !== "done";
+          this.log.info(`Flashing: ${msg.Flashing.complete}${this.flashing ? "%" : ""}`);
           await this.library.writedp(
             `panels.${this.name}.info.nspanel.firmwareUpdate`,
-            msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
+            !this.flashing ? 100 : msg.Flashing.complete,
             definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
           );
-          await this.setStatus("flashing");
+          if (this.flashing) {
+            await this.setStatus("flashing");
+          } else {
+            await this.setStatus("offline");
+          }
           return;
         } else if ("nlui_driver_version" in msg) {
           this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);

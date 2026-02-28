@@ -1633,7 +1633,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
               }
               temp.push({
-                _check: true,
+                _check: false,
                 _Headline: `${a.name} (${ft ? ft : `${this.mainConfiguration ? this.mainConfiguration.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline"}`})`,
                 _name: a.name,
                 _ip: this.mainConfiguration ? this.mainConfiguration.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline",

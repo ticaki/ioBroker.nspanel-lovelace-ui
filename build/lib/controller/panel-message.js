@@ -148,7 +148,9 @@ class PanelSend extends import_library.BaseClass {
           this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
         }
         this.panel.isOnline = false;
-        await this.panel.setStatus("offline");
+        if (this.panel.status !== "flashing") {
+          await this.panel.setStatus("error");
+        }
       }
     }
     this.losingDelay = this.losingDelay + 2e3;

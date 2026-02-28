@@ -580,7 +580,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
 
         let count = 0;
-        const maxBlinks = 16; // 8x ein/aus = 16 Zustandsänderungen
+        const maxBlinks = 8; // 8x ein/aus = 16 Zustandsänderungen
         const blinkInterval = 200; // 200ms pro Zustandsänderung
 
         const blink = (): void => {
@@ -661,7 +661,6 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const panels: PanelConfig[] = data.panels || [];
         const {
             alive,
-            panelOnlineStates,
             loadingTimezone,
             error,
             showConfirm,
@@ -711,7 +710,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         target="_blank"
                         sx={{ color: 'red' }}
                     >
-                        {this.getText('openLinkAdapterInsatllation')}
+                        {this.getText('openLinkAdapterInstallation')}
                     </Button>
                 </Box>
                 <Box
@@ -897,7 +896,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="primary"
                                         onClick={() => this.handleEditPanel(panel)}
-                                        disabled={!alive || !panelOnlineStates[panel.id || '']}
+                                        disabled={!alive}
                                         title={this.getText('editPanel')}
                                     >
                                         <EditIcon />
@@ -906,7 +905,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="error"
                                         onClick={() => this.handleDeleteClick(panel)}
-                                        disabled={!alive || !panelOnlineStates[panel.id || '']}
+                                        disabled={!alive}
                                         title={this.getText('deletePanel')}
                                     >
                                         <DeleteIcon />
@@ -952,7 +951,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('panelModel')}
-                                            value={panel.model}
+                                            value={this.getText(`${panel.model}-Version`)}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
@@ -964,7 +963,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         variant="contained"
                                         fullWidth
                                         onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel.ip || !alive || panelOnlineStates[panel.id || ''] === false}
+                                        disabled={!panel.ip || !alive}
                                         size="small"
                                         sx={{ mt: 1 }}
                                     >

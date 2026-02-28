@@ -1,7 +1,7 @@
 import React from 'react';
 import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import { Checkbox, FormControlLabel, Box, Typography, TextField, type SelectChangeEvent, Button } from '@mui/material';
+import { Checkbox, FormControlLabel, Box, Typography, TextField, Button } from '@mui/material';
 import PasswordField from './components/PasswordField';
 
 interface PageMQTTSettingState extends ConfigGenericState {
@@ -71,20 +71,6 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             void this.onChange(key, event.target.checked);
         };
 
-    // Generische Handler-Funktion für Select-String-Änderungen
-    private handleSelectStringChange =
-        (key: string) =>
-        (event: SelectChangeEvent<string>): void => {
-            void this.onChange(key, event.target.value);
-        };
-
-    // Generische Handler-Funktion für Select-Number-Änderungen
-    private handleSelectNumberChange =
-        (key: string) =>
-        (event: SelectChangeEvent<number>): void => {
-            void this.onChange(key, event.target.value);
-        };
-
     // Generische Handler-Funktion für Text-Änderungen
     private handleTextChange =
         (key: string) =>
@@ -92,19 +78,31 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             void this.onChange(key, event.target.value);
         };
 
-    // Validierungsfunktion
-    // Prüft, ob der String nur aus Ziffern besteht (oder leer ist)
-    private validateServicePin = (value: string): boolean => {
-        return value === '' || /^[0-9]+$/.test(value);
-    };
+    // Handler für zufällige MQTT-Credentials
+    private handleGetRandomMqttCredentials = async (): Promise<void> => {
+        try {
+            const result = await this.props.oContext.socket.sendTo(
+                `${this.adapterName}.${this.instance}`,
+                'getRandomMqttCredentials',
+                { mqttServer: true },
+            );
 
-    // Handler für Service-Pin-Änderungen mit Validierung
-    private handleServicePinChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const value = event.target.value;
-
-        // Erlaube die Änderung nur, wenn der Wert valide ist
-        if (this.validateServicePin(value)) {
-            void this.onChange('pw1', value);
+            if (result && result.native) {
+                // Aktualisiere die Config-Werte mit den generierten Credentials
+                if (result.native.mqttUsername) {
+                    await this.onChange('mqttUsername', result.native.mqttUsername);
+                }
+                if (result.native.mqttPassword) {
+                    await this.onChange('mqttPassword', result.native.mqttPassword);
+                }
+                if (result.native.mqttPort) {
+                    await this.onChange('mqttPort', result.native.mqttPort);
+                }
+            } else if (result && result.error) {
+                console.error('[PageMQTTSetting] Error getting random MQTT credentials:', result.error);
+            }
+        } catch (error) {
+            console.error('[PageMQTTSetting] Failed to get random MQTT credentials:', error);
         }
     };
 
@@ -156,16 +154,17 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => {
-                            // Handle button click
-                        }}
+                        onClick={this.handleGetRandomMqttCredentials}
                         disabled={!alive || !data.mqttServer}
                     >
                         {this.getText('getRandomMqttCredentials')}
                     </Button>
                 </Box>
                 {/* MQTT Connection Settings */}
-                <Box sx={boxStyle}>
+                <Box
+                    sx={boxStyle}
+                    flexDirection={'column'}
+                >
                     <Box sx={{ display: 'flex', width: '100%' }}>
                         <TextField
                             variant="standard"
@@ -173,7 +172,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             value={data.mqttIp ?? ''}
                             onChange={this.handleTextChange('mqttIp')}
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                         <TextField
                             variant="standard"
@@ -181,7 +180,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             value={data.mqttPort ?? ''}
                             onChange={this.handleTextChange('mqttPort')}
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                     </Box>
                     <Box sx={{ display: 'flex', width: '100%' }}>
@@ -191,23 +190,26 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             value={data.mqttUsername ?? ''}
                             onChange={this.handleTextChange('mqttUsername')}
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1, flex: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                         <PasswordField
                             variant="standard"
                             label={this.getText('mqttPassword')}
                             value={data.mqttPassword ?? ''}
-                            onChange={value => this.props.onChange({ mqttPassword: value })}
+                            onChange={value => this.onChange('mqttPassword', value)}
                             placeholder="••••••••"
                             disabled={!alive || data.mqttServer}
-                            sx={{ m: 1, flex: 1 }}
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                     </Box>
                 </Box>
                 {/* Tasmota Admin Password */}
                 <Box
-                    sx={boxStyle}
-                    flexDirection={'column'}
+                    sx={{
+                        ...boxStyle,
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
                 >
                     <FormControlLabel
                         control={
@@ -224,11 +226,10 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             variant="standard"
                             label={this.getText('tasmotaAdminPassword')}
                             value={data.tasmotaAdminPassword}
-                            onChange={value => this.props.onChange({ tasmotaAdminPassword: value })}
+                            onChange={value => this.onChange('tasmotaAdminPassword', value)}
                             placeholder="••••••••"
                             disabled={!alive}
-                            sx={{ m: 1 }}
-                            fullWidth
+                            sx={{ m: 1, maxWidth: '300px' }}
                         />
                     )}
                 </Box>

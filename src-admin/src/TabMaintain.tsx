@@ -50,13 +50,13 @@ interface MaintainPanelState extends ConfigGenericState {
     alive?: boolean;
 }
 
-// daten die aus der config kommen, also die props.data
+// Daten die aus der config kommen, also die props.data
 interface PanelConfig {
-    id?: string;
-    ip?: string;
-    name?: string;
-    topic?: string;
-    model?: string;
+    id: string;
+    ip: string;
+    name: string;
+    topic: string;
+    model: string;
 }
 
 interface ConfirmDialogState {
@@ -73,6 +73,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private adapterName = this.props.oContext.adapterName;
     private panelsConfig: PanelConfig[] = [];
     private _isMounted: boolean = false;
+    private aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
 
     constructor(props: ConfigGenericProps & MaintainPanelProps) {
         super(props);
@@ -91,8 +92,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         // Remove visibility change listener
         document.removeEventListener('visibilitychange', this.onVisibilityChange);
         // Unsubscribe from alive state changes
-        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
-        this.props.oContext.socket.unsubscribeState(aliveStateId, this.onAliveChanged);
+        this.props.oContext.socket.unsubscribeState(this.aliveStateId, this.onAliveChanged);
         // Unsubscribe from panel online state changes
         const panels = await this.getPanels();
         for (const panel of panels) {
@@ -128,17 +128,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         this._isMounted = true;
 
         // Get initial alive state and subscribe to changes
-        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
-
         try {
-            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const state = await this.props.oContext.socket.getState(this.aliveStateId);
             const isAlive = !!state?.val;
             if (this._isMounted) {
                 this.setState({ alive: isAlive });
             }
 
             // Subscribe to alive state changes
-            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+            await this.props.oContext.socket.subscribeState(this.aliveStateId, this.onAliveChanged);
 
             // If adapter is alive, start loading pages
             if (isAlive) {
@@ -179,9 +177,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             return;
         }
         // Alive-Status neu laden
-        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
         try {
-            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const state = await this.props.oContext.socket.getState(this.aliveStateId);
             const isAlive = !!state?.val;
             if (this._isMounted && this.state.alive !== isAlive) {
                 this.setState({ alive: isAlive });
@@ -216,7 +213,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             return;
         }
         console.log('[Maintain] Panel online state changed, refreshing panels');
-        void this.refreshPanels();
+        //void this.refreshPanels();
         if (this.timeoutHandle) {
             clearTimeout(this.timeoutHandle);
         }
@@ -234,6 +231,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         if (!this.state.alive) {
             if (this._isMounted) {
                 this.setState({ error: this.getText('adapterNotAlive'), loading: false });
+                this.setState({ panelsInfo: [] });
             }
             return;
         }
@@ -393,12 +391,16 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
     }
 
-    private async handleOpenTasmotaConsole(panel: MaintainPanelInfo): Promise<void> {
+    private async handleOpenTasmotaConsole(panel: PanelConfig | undefined): Promise<void> {
         try {
+            if (!panel?.ip) {
+                this.setState({ error: this.getText('invalidIpForConsole') });
+                return;
+            }
             const result = await this.props.oContext.socket.sendTo(
                 `${this.adapterName}.${this.instance}`,
                 'openTasmotaConsole',
-                { ip: panel._ip },
+                { ip: panel.ip },
             );
 
             if (result && typeof result === 'object' && 'openUrl' in result) {
@@ -518,7 +520,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         target="_blank"
                         sx={{ color: 'red' }}
                     >
-                        {this.getText('openLinkAdapterInsatllation')}
+                        {this.getText('openLinkAdapterInstallation')}
                     </Button>
                 </Box>
 
@@ -695,8 +697,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     <Button
                                         variant="contained"
                                         fullWidth
-                                        onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel._ip || !alive}
+                                        onClick={() =>
+                                            this.handleOpenTasmotaConsole(panelConfig)
+                                        }
+                                        disabled={!panelConfig?.ip || !alive}
                                         size="small"
                                         sx={{ mt: 1 }}
                                     >
