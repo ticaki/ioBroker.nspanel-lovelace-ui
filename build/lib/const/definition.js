@@ -101,6 +101,18 @@ const genericStateObjects = {
         },
         native: {}
       },
+      scriptName: {
+        _id: "",
+        type: "state",
+        common: {
+          name: "StateObjects.scriptName",
+          type: "string",
+          role: "text",
+          read: true,
+          write: false
+        },
+        native: {}
+      },
       pagePopup: {
         _channel: {
           _id: "",

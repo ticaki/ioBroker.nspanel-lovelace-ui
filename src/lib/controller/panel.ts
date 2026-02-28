@@ -46,6 +46,7 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     controller: Controller;
     topic: string;
     name: string;
+    scriptName: string;
     buttons: {
         left: Types.ConfigButtonFunction;
         right: Types.ConfigButtonFunction;
@@ -85,7 +86,7 @@ export class Panel extends BaseClass {
     private data: Record<string, any> = {};
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
-
+    readonly scriptName: string;
     private _status: adminShareConfig.PanelStatus = 'offline';
     private _statusUpdateQueue: Promise<void> = Promise.resolve();
 
@@ -286,6 +287,7 @@ export class Panel extends BaseClass {
         this.format = { ...DefaultOptions.format, ...(options.format as any) };
         this.controller = options.controller;
         this.topic = options.topic;
+        this.scriptName = options.scriptName.split('.').slice(2).join('.') || options.scriptName;
         this.info.nspanel.model = options.model || 'eu';
         if (typeof this.panelSend.addMessage === 'function') {
             this.sendToPanelClass = this.panelSend.addMessage;
@@ -482,6 +484,11 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.pagePopup._channel,
         );
 
+        await this.library.writedp(
+            `panels.${this.name}.scriptName`,
+            this.scriptName,
+            definition.genericStateObjects.panel.panels.scriptName,
+        );
         for (const key of Object.keys(definition.genericStateObjects.panel.panels.pagePopup)) {
             if (key !== '_channel') {
                 await this.library.writedp(

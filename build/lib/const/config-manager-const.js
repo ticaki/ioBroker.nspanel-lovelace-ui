@@ -105,6 +105,7 @@ const defaultConfig = {
   version: "0",
   panelTopic: "",
   weatherEntity: "",
+  scriptName: "missing",
   bottomScreensaverEntity: [],
   favoritScreensaverEntity: [],
   alternateScreensaverEntity: [],

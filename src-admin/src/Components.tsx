@@ -5,6 +5,7 @@ import PageConfigManager from './PageConfigManager';
 import ScreensaverPage from './ScreensaverPage';
 import PageGlobalSettings from './PageGlobalSettings';
 import TabMaintain from './TabMaintain';
+import TabPanelinfo from './TabPanelinfo';
 import PageMQTTSetting from './PageMQTTSetting';
 import PagePanelOverview from './PagePanelOverview';
 
@@ -16,6 +17,7 @@ export default {
     ScreensaverPage,
     PageGlobalSettings,
     TabMaintain,
+    TabPanelinfo,
     PageMQTTSetting,
     PagePanelOverview,
 };

@@ -38,6 +38,7 @@ export const genericStateObjects: {
     panel: customChannelType & {
         panels: customChannelType & {
             status: ioBroker.StateObject;
+            scriptName: ioBroker.StateObject;
             cmd: customChannelType & {
                 dim: customChannelType & {
                     active: ioBroker.StateObject;
@@ -151,6 +152,18 @@ export const genericStateObjects: {
                     read: true,
                     write: false,
                     states: panelStatusStates,
+                },
+                native: {},
+            },
+            scriptName: {
+                _id: '',
+                type: 'state',
+                common: {
+                    name: 'StateObjects.scriptName',
+                    type: 'string',
+                    role: 'text',
+                    read: true,
+                    write: false,
                 },
                 native: {},
             },

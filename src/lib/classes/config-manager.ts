@@ -69,7 +69,7 @@ export class ConfigManager extends BaseClass {
         }
         /* handle global config */
         if (configManagerConst.isGlobalConfig(configuration)) {
-            let panelConfig = { pages: [], navigation: [], scriptVersion: '' } as Omit<
+            let panelConfig = { pages: [], navigation: [], scriptVersion: '', scriptName: 'missing' } as Omit<
                 Partial<panelConfigPartial>,
                 'pages' | 'navigation'
             > & {
@@ -80,6 +80,7 @@ export class ConfigManager extends BaseClass {
             // get all pages from global config
             const tempConfig = { ...configuration, pages: [] };
             ({ panelConfig, messages } = await this.getPageConfig(tempConfig as any, panelConfig, messages));
+
             const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
             if (obj && !this.dontWrite) {
                 obj.native = obj.native || {};
@@ -409,7 +410,7 @@ export class ConfigManager extends BaseClass {
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBase[];
-        } = { pages: [], navigation: [], scriptVersion: config.version };
+        } = { pages: [], navigation: [], scriptVersion: config.version, scriptName: config.scriptName || 'missing' };
 
         if (!config.panelTopic) {
             this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
