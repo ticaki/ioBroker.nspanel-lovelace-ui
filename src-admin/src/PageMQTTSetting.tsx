@@ -191,7 +191,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         variant="contained"
                         color="primary"
                         onClick={this.handleGetRandomMqttCredentials}
-                        disabled={!alive}
+                        disabled={!alive || !data.mqttServer}
                     >
                         {this.getText('getRandomMqttCredentials')}
                     </Button>
@@ -208,7 +208,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             label={this.getText('mqttIp')}
                             value={data.mqttIp ?? ''}
                             onChange={this.handleTextChange('mqttIp')}
-                            disabled={!alive || !data.mqttServer}
+                            disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
                         />
                         {/* Port-Feld mit readOnly, wenn mqttServer aktiviert ist */}
@@ -218,7 +218,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             label={this.getText('mqttPort')}
                             value={data.mqttPort ?? ''}
                             onChange={this.handleTextChange('mqttPort')}
-                            disabled={!alive || !data.mqttServer}
+                            disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
                         />
                     </Box>
@@ -229,7 +229,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             label={this.getText('mqttUser')}
                             value={data.mqttUsername ?? ''}
                             onChange={this.handleTextChange('mqttUsername')}
-                            disabled={!alive || !data.mqttServer}
+                            disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
                         />
                         {/* Passwortfeld mit Sichtbarkeitstoggle */}
@@ -239,7 +239,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             type={showPassword ? 'text' : 'password'}
                             value={data.mqttPassword ?? ''}
                             onChange={this.handleTextChange('mqttPassword')}
-                            disabled={!alive || !data.mqttServer}
+                            disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
                             slotProps={{
                                 input: {
@@ -247,7 +247,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                         <InputAdornment position="end">
                                             <IconButton
                                                 onClick={this.handleToggleVisibility}
-                                                disabled={!alive || !data.mqttServer}
+                                                disabled={!alive || data.mqttServer}
                                                 edge="end"
                                                 size="small"
                                             >
@@ -285,7 +285,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             type={showPassword ? 'text' : 'password'}
                             value={data.tasmotaAdminPassword}
                             onChange={value => this.onChange('tasmotaAdminPassword', value)}
-                            disabled={!alive || !data.mqttServer}
+                            disabled={!alive}
                             sx={{ m: 1, maxWidth: '300px' }}
                             slotProps={{
                                 input: {
@@ -293,7 +293,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                         <InputAdornment position="end">
                                             <IconButton
                                                 onClick={this.handleToggleVisibility}
-                                                disabled={!alive || !data.mqttServer}
+                                                disabled={!alive}
                                                 edge="end"
                                                 size="small"
                                             >
