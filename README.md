@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) New Admin tab for quick overview and minor settings
 - (tt-tom17)(ticaki) Panel status system with badge (online/offline/setup/flashing states)
 - (tt-tom17) Panel management improvements (IP selector, delete/edit panels, init button)
 - (tt-tom17) MQTT configuration UI design improvements
