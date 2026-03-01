@@ -82,7 +82,8 @@ const displayStates = [
     'cmd.dim.dayMode',
     'cmd.dim.schedule',
     'info.nspanel.model',
-    'info.isOnline',
+    'info.internal.pageCount',
+    'info.internal.servicePageCount',
     'info.internal.scriptName',
 ];
 
