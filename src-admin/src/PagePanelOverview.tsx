@@ -64,6 +64,11 @@ interface PagePanelOverviewState extends ConfigGenericState {
     panelOnlineStates: Record<string, boolean>;
     // State for blink animation
     isBlinking: boolean;
+    // Lokale Kopien der Tasmota-Eingabefelder (verhindert Cursor-Sprünge)
+    localTasmotaIP: string;
+    localTasmotaName: string;
+    localTasmotaTopic: string;
+    localTimezone: string;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -90,6 +95,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             pendingPanels: null,
             panelOnlineStates: {},
             isBlinking: false,
+            localTasmotaIP: props.data._tasmotaIP ?? '',
+            localTasmotaName: props.data._tasmotaName ?? '',
+            localTasmotaTopic: props.data._tasmotaTopic ?? '',
+            localTimezone: props.data.timezone ?? '',
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
@@ -293,25 +302,32 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private handleCheckboxChange =
         (key: string) =>
         (event: React.ChangeEvent<HTMLInputElement>): void => {
-            void this.onChange(key, event.target.checked);
+            void this.onChange(key, event.target.checked).then(() => this.forceUpdate());
         };
     // Generische Handler-Funktion für Select-String-Änderungen
     private handleSelectStringChange =
         (key: string) =>
         (event: SelectChangeEvent<string>): void => {
-            void this.onChange(key, event.target.value);
+            void this.onChange(key, event.target.value).then(() => this.forceUpdate());
         };
     // Generische Handler-Funktion für Select-Number-Änderungen
     private handleSelectNumberChange =
         (key: string) =>
         (event: SelectChangeEvent<number>): void => {
-            void this.onChange(key, event.target.value);
+            void this.onChange(key, event.target.value).then(() => this.forceUpdate());
         };
     // Generische Handler-Funktion für Text-Änderungen
     private handleTextChange =
         (key: string) =>
         (event: React.ChangeEvent<HTMLInputElement>): void => {
-            void this.onChange(key, event.target.value);
+            const value = event.target.value;
+            // Lokalen State aktualisieren, damit der Cursor nicht ans Ende springt
+            if (key === '_tasmotaName') {
+                this.setState({ localTasmotaName: value });
+            } else if (key === '_tasmotaTopic') {
+                this.setState({ localTasmotaTopic: value });
+            }
+            void this.onChange(key, value);
         };
     // Validierungsfunktion
     // Prüft, ob der String nur aus Ziffern besteht (oder leer ist)
@@ -369,14 +385,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     // Prüft, ob alle erforderlichen Felder gültig sind, um den Init/Update-Button zu aktivieren
     private isFormValid(): boolean {
         const data = this.props.data;
+        const { localTasmotaIP, localTasmotaName, localTasmotaTopic } = this.state;
 
         return (
-            !!data._tasmotaIP &&
-            this.isValidCompleteIp(data._tasmotaIP) &&
-            !!data._tasmotaTopic &&
-            this.validateTopic(data._tasmotaTopic) &&
-            !!data._tasmotaName &&
-            data.nsPanelModel != null &&
+            !!localTasmotaIP &&
+            this.isValidCompleteIp(localTasmotaIP) &&
+            !!localTasmotaTopic &&
+            this.validateTopic(localTasmotaTopic) &&
+            !!localTasmotaName &&
             (!!data.mqttServer || !!data.mqttIp) &&
             !!data.mqttPort &&
             !!data.mqttUsername &&
@@ -387,10 +403,15 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     // Prüft, ob das Panel bereits konfiguriert ist (basierend auf dem Topic)
     private isPanelAlreadyConfigured(): boolean {
         const panels = this.props.data.panels || [];
-        return panels.findIndex((panel: any) => panel.topic === this.props.data._tasmotaTopic) !== -1;
+        return panels.findIndex((panel: any) => panel.topic === this.state.localTasmotaTopic) !== -1;
     }
     // Öffnet den Bestätigungsdialog für die Initialisierung
     private handleInitClick = (): void => {
+        // Lokale State-Werte nach props.data synchronisieren, damit handleConfirmStart
+        // immer die aktuellsten Werte aus dem Formular übergibt.
+        this.props.data._tasmotaIP = this.state.localTasmotaIP;
+        this.props.data._tasmotaName = this.state.localTasmotaName;
+        this.props.data._tasmotaTopic = this.state.localTasmotaTopic;
         this.setState({ showConfirm: true, isBlinking: false });
     };
     // Schließt den Bestätigungsdialog ohne Aktion
@@ -414,7 +435,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 mqttPassword: this.props.data.mqttPassword,
                 internalServerIp: this.props.data.internalServerIp,
                 useBetaTFT: this.props.data.useBetaTFT,
-                model: this.props.data.nsPanelModel,
+                model: this.props.data._nsPanelModel || 'eu',
             };
 
             console.log('[PagePanelOverview] Sending payload:', payload);
@@ -506,11 +527,32 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
             // Erlaube die Eingabe, wenn sie während des Tippens valide ist
             if (this.isValidIpInput(value)) {
+                // Lokalen State aktualisieren, damit der Cursor nicht ans Ende springt
+                if (key === '_tasmotaIP') {
+                    this.setState({ localTasmotaIP: value });
+                }
                 void this.onChange(key, value);
                 // Prüfe Validierung und setze Fehler
                 this.checkValidation(key, value);
             }
         };
+    // Synchronisiert lokale State-Werte zurück nach props.data und erzwingt ein Re-Render
+    private syncLocalToProps = (): void => {
+        this.props.data._tasmotaIP = this.state.localTasmotaIP;
+        this.props.data._tasmotaName = this.state.localTasmotaName;
+        this.props.data._tasmotaTopic = this.state.localTasmotaTopic;
+        this.props.data.timezone = this.state.localTimezone;
+        this.forceUpdate();
+    };
+    // Handler für Blur- und Enter-Events in den Eingabefeldern
+    private handleFieldSync = (): void => {
+        this.syncLocalToProps();
+    };
+    private handleFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+        if (event.key === 'Enter') {
+            this.syncLocalToProps();
+        }
+    };
     // Prüft die Validierung und setzt Fehler
     private checkValidation(key: string, value: string): void {
         const data = this.props.data || {};
@@ -564,13 +606,18 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.props.data._tasmotaIP = panel.ip || '';
         this.props.data._tasmotaName = panel.name || '';
         this.props.data._tasmotaTopic = panel.topic || '';
-        this.props.data.nsPanelModel = panel.model || 'eu';
+        this.props.data._nsPanelModel = panel.model || 'eu';
+
+        // Lokalen State synchronisieren
+        this.setState({
+            localTasmotaIP: panel.ip || '',
+            localTasmotaName: panel.name || '',
+            localTasmotaTopic: panel.topic || '',
+            // localTimezone bleibt beim Edit unverändert
+        });
 
         // Starte Blink-Animation
         this.startBlinkAnimation();
-
-        // Force Update damit die TextFields aktualisiert werden
-        this.forceUpdate();
     };
 
     // Startet die Blink-Animation (8x blinken = 16 State-Änderungen)
@@ -645,8 +692,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 showSuccessConfirm: false,
                 successMessage: '',
                 pendingPanels: null,
+                localTasmotaIP: '',
+                localTasmotaName: '',
+                localTasmotaTopic: '',
+                // localTimezone bleibt erhalten
             });
-            this.forceUpdate();
             console.log('[PagePanelOverview] Config saved successfully');
         }
     };
@@ -672,8 +722,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             processing,
         } = this.state;
 
-        // Setze Standardwert für nsPanelModel, falls nicht vorhanden (EU als Standard)
-        const panelModel = data.nsPanelModel ?? 'eu';
+        // Setze Standardwert für _nsPanelModel, falls nicht vorhanden (EU als Standard)
+        const panelModel = data._nsPanelModel || 'eu';
 
         // Gemeinsame Styles für alle Boxen
         const boxStyle = {
@@ -747,11 +797,13 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         size="small"
                         disabled={!alive}
                         label={this.getText('ipFromPanel')}
-                        value={data._tasmotaIP ?? ''}
+                        value={this.state.localTasmotaIP}
                         onChange={this.handleIpChange('_tasmotaIP')}
-                        error={!!data._tasmotaIP && !this.isValidCompleteIp(data._tasmotaIP)}
+                        onBlur={this.handleFieldSync}
+                        onKeyDown={this.handleFieldKeyDown}
+                        error={!!this.state.localTasmotaIP && !this.isValidCompleteIp(this.state.localTasmotaIP)}
                         helperText={
-                            !!data._tasmotaIP && !this.isValidCompleteIp(data._tasmotaIP)
+                            !!this.state.localTasmotaIP && !this.isValidCompleteIp(this.state.localTasmotaIP)
                                 ? this.getText('mustBeIp')
                                 : ''
                         }
@@ -762,8 +814,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         disabled={!alive}
                         variant="standard"
                         label={this.getText('panelName')}
-                        value={data._tasmotaName ?? ''}
+                        value={this.state.localTasmotaName}
                         onChange={this.handleTextChange('_tasmotaName')}
+                        onBlur={this.handleFieldSync}
+                        onKeyDown={this.handleFieldKeyDown}
                     />
                     <TextField
                         sx={{ m: 1, minWidth: 200 }}
@@ -771,9 +825,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         disabled={!alive}
                         variant="standard"
                         label={this.getText('panelTopic')}
-                        value={data._tasmotaTopic ?? ''}
+                        value={this.state.localTasmotaTopic}
                         onChange={this.handleTextChange('_tasmotaTopic')}
-                        error={!!data._tasmotaTopic && !this.validateTopic(data._tasmotaTopic)}
+                        onBlur={this.handleFieldSync}
+                        onKeyDown={this.handleFieldKeyDown}
+                        error={!!this.state.localTasmotaTopic && !this.validateTopic(this.state.localTasmotaTopic)}
                     />
                     {/* Panel Model Select */}
                     <FormControl
@@ -788,7 +844,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             id="panelmodel-select"
                             label={this.getText('nsPanelModel')}
                             value={panelModel}
-                            onChange={this.handleSelectStringChange('nsPanelModel')}
+                            onChange={this.handleSelectStringChange('_nsPanelModel')}
                         >
                             <MenuItem value="eu">{this.getText('eu-Version')}</MenuItem>
                             <MenuItem value="us-l">{this.getText('us-l-Version')}</MenuItem>
@@ -806,13 +862,17 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         <Select
                             labelId="timezone-label"
                             id="timezone-select"
-                            value={data.timezone ?? ''}
+                            value={this.state.localTimezone}
                             label={this.getText('timezone')}
                             onOpen={() => {
                                 // Lade Daten wenn Select geöffnet wird
                                 void this.loadTimezoneEntities(true);
                             }}
-                            onChange={this.handleSelectStringChange('timezone')}
+                            onChange={(event: SelectChangeEvent<string>) => {
+                                const value = event.target.value;
+                                this.setState({ localTimezone: value });
+                                void this.onChange('timezone', value).then(() => this.forceUpdate());
+                            }}
                         >
                             {loadingTimezone && (
                                 <MenuItem

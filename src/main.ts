@@ -1104,7 +1104,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=status 5`,
                                 );
+                                this.log.debug(`Requesting tasmota status 5 with url: ${u.href}`);
                                 let r = await this.fetch(u.href);
+                                this.log.debug(`Response from tasmota status 5: ${JSON.stringify(r)}`);
                                 if (!isTasmotaStatusNet(r)) {
                                     this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                                     if (obj.callback) {
@@ -1147,7 +1149,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `&cmnd=Backlog${encodeURIComponent(url)}`,
                                 );
                                 this.log.info(
-                                    `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
+                                    `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}. With msg: ${url}`,
                                 );
                                 await this.fetch(u.href);
                                 this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60_000));
