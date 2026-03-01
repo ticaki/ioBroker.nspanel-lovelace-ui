@@ -1303,6 +1303,7 @@ declare namespace ScriptConfig {
         offColor?: RGB | string;
         colorScale?: IconScaleElement;
         buttonText?: string;
+        buttonTextOff?: string;
     };
 
     export type PageBaseItem =
@@ -1379,6 +1380,7 @@ declare namespace ScriptConfig {
             name?: string;
             secondRow?: string;
             buttonText?: string;
+            buttonTextOff?: string;
             unit?: string;
             colormode?: string;
             colorScale?: IconScaleElement;
