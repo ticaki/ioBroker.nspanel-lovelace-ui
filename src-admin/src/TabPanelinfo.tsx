@@ -576,6 +576,10 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
     }
 
     private async handleOpenTasmotaConsole(panel: PanelinfoInfo): Promise<void> {
+        if (!this.state.alive) {
+            console.warn('[Panelinfo] Cannot open Tasmota console: adapter not alive');
+            return;
+        }
         try {
             const result = await this.props.oContext.socket.sendTo(
                 `${this.adapterName}.${this.instance}`,
@@ -771,7 +775,6 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                             onChange={e => {
                                 void this.writeStateValue(panelId, statePath, e.target.checked);
                             }}
-                            disabled={!this.state.alive}
                         />
                     }
                     label={label}
@@ -811,7 +814,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                 void this.writeStateValue(panelId, statePath, e.target.value);
                             }
                         }}
-                        disabled={!isWritable || !this.state.alive}
+                        disabled={!isWritable}
                     >
                         {Object.entries(states).map(([val, text]) => (
                             <MenuItem
@@ -851,7 +854,6 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 }}
                 size="small"
                 fullWidth
-                disabled={!this.state.alive}
             />
         );
     }
