@@ -972,8 +972,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 u = new import_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog${encodeURIComponent(url)}`
                 );
-                this.log.info(
-                  `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}. With msg: ${url}`
+                this.log.debug(
+                  `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
                 );
                 await this.fetch(u.href);
                 this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 6e4);

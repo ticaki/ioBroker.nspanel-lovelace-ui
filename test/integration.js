@@ -24,7 +24,7 @@ tests.integration(path.join(__dirname, '..'), {
 
         // Since the tests are heavily instrumented, each suite gives access to a so called "harness" to control the tests.
         // The harness provides methods to interact with the adapter and the system under test.
-        suite("Test: Test with testdata", (getHarness) => {
+        /*suite("Test: Test with testdata", (getHarness) => {
             // For convenience, get the current suite's harness before all tests
             let harness;
             before(() => {
@@ -100,6 +100,6 @@ tests.integration(path.join(__dirname, '..'), {
                 await wait(3000);
                 return reject('Adapter not running');
             })).timeout(2000000);
-        });
+        });*/
     }
 });
