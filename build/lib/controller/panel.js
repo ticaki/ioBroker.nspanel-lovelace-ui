@@ -74,7 +74,6 @@ class Panel extends import_library.BaseClass {
   data = {};
   blockStartup = null;
   _isOnline = false;
-  scriptName;
   _status = "offline";
   _statusUpdateQueue = Promise.resolve();
   blockTouchEventsForMs = 200;
@@ -118,6 +117,11 @@ class Panel extends import_library.BaseClass {
   detach = { left: false, right: false };
   persistentPageItems = {};
   info = {
+    internal: {
+      scriptName: "missing",
+      pageCount: 0,
+      servicePageCount: 0
+    },
     nspanel: {
       displayVersion: "",
       model: "eu",
@@ -270,7 +274,7 @@ class Panel extends import_library.BaseClass {
     this.format = { ...DefaultOptions.format, ...options.format };
     this.controller = options.controller;
     this.topic = options.topic;
-    this.scriptName = options.scriptName.split(".").slice(2).join(".") || options.scriptName;
+    this.info.internal.scriptName = options.scriptName.split(".").slice(2).join(".") || options.scriptName;
     this.info.nspanel.model = options.model || "eu";
     if (typeof this.panelSend.addMessage === "function") {
       this.sendToPanelClass = this.panelSend.addMessage;
@@ -293,6 +297,8 @@ class Panel extends import_library.BaseClass {
       }
       return false;
     });
+    this.info.internal.pageCount = options.pages.length;
+    this.info.internal.servicePageCount = import_system_templates.systemPages.length;
     options.pages = options.pages.concat(import_system_templates.systemPages);
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
@@ -446,11 +452,6 @@ class Panel extends import_library.BaseClass {
       `panels.${this.name}.cmd.pagePopup`,
       void 0,
       definition.genericStateObjects.panel.panels.cmd.pagePopup._channel
-    );
-    await this.library.writedp(
-      `panels.${this.name}.scriptName`,
-      this.scriptName,
-      definition.genericStateObjects.panel.panels.scriptName
     );
     for (const key of Object.keys(definition.genericStateObjects.panel.panels.pagePopup)) {
       if (key !== "_channel") {

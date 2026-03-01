@@ -83,7 +83,7 @@ const displayStates = [
     'cmd.dim.schedule',
     'info.nspanel.model',
     'info.isOnline',
-    'scriptName',
+    'info.internal.scriptName',
 ];
 
 // Optionale States mit bedingter Anzeige (z.B. nur für Tasmota-Modelle)
@@ -103,10 +103,15 @@ const optionalDisplayStates: OptionalDisplayState[] = [
 
 class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, PanelinfoState> {
     private timeoutHandle: NodeJS.Timeout | null = null;
+    private retryTimeoutHandle: NodeJS.Timeout | null = null;
     private instance = this.props.oContext.instance ?? '0';
     private adapterName = this.props.oContext.adapterName;
     private panelsConfig: PanelConfig[] = [];
     private _isMounted: boolean = false;
+    private stateRetryCount: Map<string, number> = new Map(); // Track retry count per state
+    private failedStates: Set<string> = new Set(); // Track states that need retry
+    private readonly MAX_RETRY_COUNT = 5;
+    private readonly RETRY_DELAY_MS = 7000; // 7 seconds
 
     constructor(props: ConfigGenericProps & PanelinfoProps) {
         super(props);
@@ -148,6 +153,10 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         if (this.timeoutHandle) {
             clearTimeout(this.timeoutHandle);
             this.timeoutHandle = null;
+        }
+        if (this.retryTimeoutHandle) {
+            clearTimeout(this.retryTimeoutHandle);
+            this.retryTimeoutHandle = null;
         }
     }
 
@@ -274,6 +283,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 const obj = await this.props.oContext.socket.getObject(stateId);
                 if (!obj || !obj.common) {
                     console.warn(`[Panelinfo] Object not found or invalid: ${stateId}`);
+                    this.failedStates.add(stateId);
+                    this.scheduleRetry();
                     continue;
                 }
 
@@ -295,8 +306,13 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 // Subscribe to state changes
                 await this.props.oContext.socket.subscribeState(stateId, this.onStateChanged);
                 console.log(`[Panelinfo] Subscribed to state: ${stateId}`);
+                // Remove from failed states if it was there
+                this.failedStates.delete(stateId);
+                this.stateRetryCount.delete(stateId);
             } catch (error) {
                 console.error(`[Panelinfo] Failed to load state ${stateId}:`, error);
+                this.failedStates.add(stateId);
+                this.scheduleRetry();
             }
         }
 
@@ -309,6 +325,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 const obj = await this.props.oContext.socket.getObject(stateId);
                 if (!obj || !obj.common) {
                     console.warn(`[Panelinfo] Optional object not found or invalid: ${stateId}`);
+                    this.failedStates.add(stateId);
+                    this.scheduleRetry();
                     continue;
                 }
 
@@ -330,8 +348,13 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 // Subscribe to state changes
                 await this.props.oContext.socket.subscribeState(stateId, this.onStateChanged);
                 console.log(`[Panelinfo] Subscribed to optional state: ${stateId}`);
+                // Remove from failed states if it was there
+                this.failedStates.delete(stateId);
+                this.stateRetryCount.delete(stateId);
             } catch (error) {
                 console.error(`[Panelinfo] Failed to load optional state ${stateId}:`, error);
+                this.failedStates.add(stateId);
+                this.scheduleRetry();
             }
         }
 
@@ -342,6 +365,114 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                     [panelId]: panelStateData,
                 },
             }));
+        }
+    }
+
+    // Schedule retry for failed states
+    private scheduleRetry(): void {
+        if (this.retryTimeoutHandle || !this._isMounted) {
+            return; // Already scheduled or unmounted
+        }
+
+        this.retryTimeoutHandle = setTimeout(() => {
+            this.retryTimeoutHandle = null;
+            void this.retryFailedStates();
+        }, this.RETRY_DELAY_MS);
+    }
+
+    // Retry loading failed states
+    private async retryFailedStates(): Promise<void> {
+        if (!this._isMounted || this.failedStates.size === 0) {
+            return;
+        }
+
+        const statesToRetry = Array.from(this.failedStates);
+        console.log(`[Panelinfo] Retrying ${statesToRetry.length} failed states`);
+
+        for (const stateId of statesToRetry) {
+            const retryCount = this.stateRetryCount.get(stateId) || 0;
+
+            if (retryCount >= this.MAX_RETRY_COUNT) {
+                console.warn(`[Panelinfo] Max retry count reached for state: ${stateId}`);
+                this.failedStates.delete(stateId);
+                this.stateRetryCount.delete(stateId);
+                continue;
+            }
+
+            // Parse stateId to get panelId and statePath
+            const match = stateId.match(new RegExp(`${this.adapterName}.${this.instance}.panels.([^.]+).(.+)`));
+            if (!match) {
+                console.error(`[Panelinfo] Cannot parse state ID: ${stateId}`);
+                this.failedStates.delete(stateId);
+                continue;
+            }
+
+            const [, panelId, statePath] = match;
+
+            try {
+                // Get object data
+                const obj = await this.props.oContext.socket.getObject(stateId);
+                if (!obj || !obj.common) {
+                    console.warn(`[Panelinfo] Retry ${retryCount + 1}: Object still not found: ${stateId}`);
+                    this.stateRetryCount.set(stateId, retryCount + 1);
+                    continue;
+                }
+
+                // Validate type
+                if (!['number', 'boolean', 'string'].includes(obj.common.type)) {
+                    console.error(`[Panelinfo] Invalid type '${obj.common.type}' for state: ${stateId}`);
+                    this.failedStates.delete(stateId);
+                    this.stateRetryCount.delete(stateId);
+                    continue;
+                }
+
+                // Get current state value
+                const state = await this.props.oContext.socket.getState(stateId);
+                const value = state?.val ?? null;
+
+                // Subscribe to state changes
+                await this.props.oContext.socket.subscribeState(stateId, this.onStateChanged);
+                console.log(`[Panelinfo] Retry ${retryCount + 1} successful: Subscribed to state: ${stateId}`);
+
+                // Update panel state data
+                if (this._isMounted) {
+                    this.setState(prevState => {
+                        const panelStateData = prevState.panelStates[panelId];
+                        if (!panelStateData) {
+                            return null;
+                        }
+
+                        return {
+                            ...prevState,
+                            panelStates: {
+                                ...prevState.panelStates,
+                                [panelId]: {
+                                    ...panelStateData,
+                                    states: {
+                                        ...panelStateData.states,
+                                        [statePath]: {
+                                            object: obj as StateObjectData,
+                                            value,
+                                        },
+                                    },
+                                },
+                            },
+                        };
+                    });
+                }
+
+                // Success - remove from failed states
+                this.failedStates.delete(stateId);
+                this.stateRetryCount.delete(stateId);
+            } catch (error) {
+                console.error(`[Panelinfo] Retry ${retryCount + 1} failed for state ${stateId}:`, error);
+                this.stateRetryCount.set(stateId, retryCount + 1);
+            }
+        }
+
+        // If there are still failed states, schedule another retry
+        if (this.failedStates.size > 0) {
+            this.scheduleRetry();
         }
     }
 
@@ -650,12 +781,14 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
 
         // Boolean read-only
         if (type === 'boolean' && !isWritable) {
+            const panel = this.state.panelsInfo.find(p => p._id === panelId);
+            const iconColor = panel?._check ? 'disabled' : 'error';
             return (
                 <Box
                     key={statePath}
                     sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}
                 >
-                    {value ? <CheckCircleIcon color="success" /> : <CancelIcon color="disabled" />}
+                    {value ? <CheckCircleIcon color="success" /> : <CancelIcon color={iconColor} />}
                     <Typography variant="body2">{label}</Typography>
                 </Box>
             );

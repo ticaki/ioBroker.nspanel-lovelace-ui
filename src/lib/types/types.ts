@@ -509,6 +509,11 @@ export type PanelInfo = {
         sts: STATUS0['StatusSTS'];
         mqttClient: string;
     };
+    internal: {
+        scriptName: string;
+        pageCount: number;
+        servicePageCount: number;
+    };
 };
 
 export type oldQRType = {
