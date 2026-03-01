@@ -138,6 +138,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
             // Subscribe to alive state changes
             await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+
+            // Timezone-Entities vorladen, wenn bereits ein Wert gesetzt ist
+            if (isAlive && this.props.data.timezone) {
+                void this.loadTimezoneEntities(false);
+            }
         } catch (error) {
             console.error('[PagePanelOverview] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false, error: String(error) });
@@ -158,6 +163,21 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
         // Listen for visibility changes to refresh states when tab becomes visible again
         document.addEventListener('visibilitychange', this.onVisibilityChange);
+    }
+
+    // Synchronisiert props.data.timezone → localTimezone, sobald der Wert über Props hereinkommt
+    componentDidUpdate(prevProps: ConfigGenericProps & { theme?: any }): void {
+        const prevTz = prevProps.data?.timezone ?? '';
+        const nextTz = this.props.data?.timezone ?? '';
+        // Sync wenn sich der Prop-Wert ändert ODER wenn localTimezone noch leer ist
+        // aber bereits ein Wert vorhanden ist (In-Place-Mutation von props.data)
+        if (
+            (prevTz !== nextTz || (this.state.localTimezone === '' && nextTz !== '')) &&
+            this.state.localTimezone !== nextTz &&
+            nextTz !== ''
+        ) {
+            this.setState({ localTimezone: nextTz });
+        }
     }
 
     // Handler für Visibility-Änderungen (Browser-Tab erhält wieder Fokus)
@@ -874,6 +894,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                 void this.onChange('timezone', value).then(() => this.forceUpdate());
                             }}
                         >
+                            {/* Fallback-MenuItem: zeigt den aktuellen Wert an, solange Entities noch nicht geladen sind */}
+                            {this.state.localTimezone &&
+                                !(timezoneEntities || []).some(e => e.value === this.state.localTimezone) && (
+                                    <MenuItem value={this.state.localTimezone}>{this.state.localTimezone}</MenuItem>
+                                )}
                             {loadingTimezone && (
                                 <MenuItem
                                     disabled
