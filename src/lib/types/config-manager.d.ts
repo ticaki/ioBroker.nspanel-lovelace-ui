@@ -748,6 +748,7 @@ declare namespace ScriptConfig {
     export type Config = {
         version: string;
         panelName?: string;
+        scriptName: string;
         /**
          * The topic to receive and send messages to the panel.
          */

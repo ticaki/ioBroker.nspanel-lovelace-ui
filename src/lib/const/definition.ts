@@ -943,6 +943,53 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
+                internal: {
+                    _channel: {
+                        _id: '',
+                        type: 'channel',
+                        common: {
+                            name: 'Information',
+                        },
+                        native: {},
+                    },
+                    scriptName: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.scriptName',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    pageCount: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.pageCount',
+                            type: 'number',
+                            role: 'value',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    servicePageCount: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.servicePageCount',
+                            type: 'number',
+                            role: 'value',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                },
+
                 nspanel: {
                     _channel: {
                         _id: '',

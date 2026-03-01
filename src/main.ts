@@ -183,6 +183,8 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
 
         //try {
+
+        let pauseAdapter = false;
         this.mainConfiguration = [];
         const obj = await this.getForeignObjectAsync(this.namespace);
         if (obj && obj.native) {
@@ -269,14 +271,15 @@ class NspanelLovelaceUi extends utils.Adapter {
             } catch (e: any) {
                 this.log.error(`Error in configuration: ${e.message}`);
                 this.mainConfiguration = [];
-                return;
+                pauseAdapter = true;
             }
         }
 
-        /*} catch (e: any) {
-            this.log.warn(`Invalid configuration stopped! ${e}`);
+        if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
+            this.log.error('Invalid admin configuration for mqtt!');
+            this.testSuccessful = false;
             return;
-        }*/
+        }
         if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
             this.config.mqttPassword = this.config.mqttPassword || '';
 
@@ -309,29 +312,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             await this.library.initStates(states);
             await this.onMqttConnect();
             await this.delay(1000);
-
-            // set all .info.nspanel.isOnline to false
-            for (const id in states) {
-                if (id.endsWith('.info.isOnline')) {
-                    await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
-                }
-            }
-            this.log.debug('Check configuration!');
-
-            if (!this.config.pw1 || typeof this.config.pw1 !== 'string') {
-                this.log.warn('No pin entered for the service page! Please set a pin in the admin settings!');
-            }
-
-            if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
-                this.log.error('Invalid admin configuration for mqtt!');
-                this.testSuccessful = false;
-                return;
-            }
-            /*const test = await this.getObjectViewAsync('system', 'instance', {
-                startkey: `system.adapter`,
-                endkey: `system.adapter}`,
-            });
-            this.log.debug(JSON.stringify(test));*/
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
                 this.config.mqttIp,
@@ -347,6 +327,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                 return;
             }
             await this.mqttClient.waitConnectAsync(5000);
+            if (pauseAdapter) {
+                return;
+            }
+            // set all .info.nspanel.isOnline to false
+            for (const id in states) {
+                if (id.endsWith('.info.isOnline')) {
+                    await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
+                }
+            }
+            this.log.debug('Check configuration!');
+
+            if (!this.config.pw1 || typeof this.config.pw1 !== 'string') {
+                this.log.warn('No pin entered for the service page! Please set a pin in the admin settings!');
+            }
+
+            /*const test = await this.getObjectViewAsync('system', 'instance', {
+                startkey: `system.adapter`,
+                endkey: `system.adapter}`,
+            });
+            this.log.debug(JSON.stringify(test));*/
 
             if (this.config.testCase) {
                 await this.extendForeignObjectAsync('0_userdata.0.boolean', {
@@ -1104,7 +1104,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=status 5`,
                                 );
+                                this.log.debug(`Requesting tasmota status 5 with url: ${u.href}`);
                                 let r = await this.fetch(u.href);
+                                this.log.debug(`Response from tasmota status 5: ${JSON.stringify(r)}`);
                                 if (!isTasmotaStatusNet(r)) {
                                     this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                                     if (obj.callback) {
@@ -1146,7 +1148,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=Backlog${encodeURIComponent(url)}`,
                                 );
-                                this.log.info(
+                                this.log.debug(
                                     `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
                                 );
                                 await this.fetch(u.href);
@@ -1258,7 +1260,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 if (result?.nlui_driver_version !== '-1') {
                                     try {
-                                        await this.delay(3000);
+                                        await this.delay(5000);
 
                                         const cmnd = await this.getTFTVersionOnline(
                                             obj.message.model,
@@ -1884,7 +1886,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                             }
                             temp.push({
-                                _check: true,
+                                _check: false,
                                 _Headline: `${a.name} (${
                                     ft
                                         ? ft

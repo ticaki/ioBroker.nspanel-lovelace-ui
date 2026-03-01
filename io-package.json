@@ -148,6 +148,10 @@
     "adminUI": {
       "config": "json"
     },
+    "adminTab": {
+      "link": "jsonTab.json5",
+      "singleton": false
+    },
     "dependencies": [
       {
         "js-controller": ">=7.0.6"
@@ -155,7 +159,7 @@
     ],
     "globalDependencies": [
       {
-        "admin": ">=7.6.17",
+        "admin": ">=7.6.20",
         "javascript": ">=8.9.2"
       }
     ],

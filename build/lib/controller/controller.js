@@ -426,6 +426,7 @@ class Controller extends Library.BaseClass {
     panel.name = this.adapter.config.panels[index].id;
     panel.friendlyName = this.adapter.config.panels[index].name;
     panel.controller = this;
+    panel.scriptName = panel.scriptName || "missing";
     const o = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if ((panel == null ? void 0 : panel.topic) && o && o.native && o.native.navigation) {
       if (o.native.navigation[panel.topic] && o.native.navigation[panel.topic].useNavigation) {
@@ -440,6 +441,7 @@ class Controller extends Library.BaseClass {
       this.log.debug(`Panel ${newPanel.name} created`);
       return true;
     }
+    await newPanel.setStatus("error");
     await newPanel.delete();
     this.adapter.testSuccessful = false;
     this.log.error(`Panel ${panel.name} has a invalid configuration.`);

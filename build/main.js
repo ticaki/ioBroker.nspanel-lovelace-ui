@@ -162,6 +162,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       );
       this.config.weatherEntity = "";
     }
+    let pauseAdapter = false;
     this.mainConfiguration = [];
     const obj = await this.getForeignObjectAsync(this.namespace);
     if (obj && obj.native) {
@@ -234,8 +235,13 @@ class NspanelLovelaceUi extends utils.Adapter {
       } catch (e) {
         this.log.error(`Error in configuration: ${e.message}`);
         this.mainConfiguration = [];
-        return;
+        pauseAdapter = true;
       }
+    }
+    if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
+      this.log.error("Invalid admin configuration for mqtt!");
+      this.testSuccessful = false;
+      return;
     }
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
       this.config.mqttPassword = this.config.mqttPassword || "";
@@ -266,20 +272,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       await this.library.initStates(states);
       await this.onMqttConnect();
       await this.delay(1e3);
-      for (const id in states) {
-        if (id.endsWith(".info.isOnline")) {
-          await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
-        }
-      }
-      this.log.debug("Check configuration!");
-      if (!this.config.pw1 || typeof this.config.pw1 !== "string") {
-        this.log.warn("No pin entered for the service page! Please set a pin in the admin settings!");
-      }
-      if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
-        this.log.error("Invalid admin configuration for mqtt!");
-        this.testSuccessful = false;
-        return;
-      }
       this.mqttClient = new MQTT.MQTTClientClass(
         this,
         this.config.mqttIp,
@@ -295,6 +287,18 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       }
       await this.mqttClient.waitConnectAsync(5e3);
+      if (pauseAdapter) {
+        return;
+      }
+      for (const id in states) {
+        if (id.endsWith(".info.isOnline")) {
+          await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
+        }
+      }
+      this.log.debug("Check configuration!");
+      if (!this.config.pw1 || typeof this.config.pw1 !== "string") {
+        this.log.warn("No pin entered for the service page! Please set a pin in the admin settings!");
+      }
       if (this.config.testCase) {
         await this.extendForeignObjectAsync("0_userdata.0.boolean", {
           type: "state",
@@ -933,7 +937,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 let u = new import_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=status 5`
                 );
+                this.log.debug(`Requesting tasmota status 5 with url: ${u.href}`);
                 let r = await this.fetch(u.href);
+                this.log.debug(`Response from tasmota status 5: ${JSON.stringify(r)}`);
                 if (!(0, import_function_and_const.isTasmotaStatusNet)(r)) {
                   this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                   if (obj.callback) {
@@ -966,7 +972,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 u = new import_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog${encodeURIComponent(url)}`
                 );
-                this.log.info(
+                this.log.debug(
                   `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`
                 );
                 await this.fetch(u.href);
@@ -1057,7 +1063,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 if ((result == null ? void 0 : result.nlui_driver_version) !== "-1") {
                   try {
-                    await this.delay(3e3);
+                    await this.delay(5e3);
                     const cmnd = await this.getTFTVersionOnline(
                       obj.message.model,
                       obj.message.useBetaTFT,
@@ -1633,7 +1639,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
               }
               temp.push({
-                _check: true,
+                _check: false,
                 _Headline: `${a.name} (${ft ? ft : `${this.mainConfiguration ? this.mainConfiguration.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline"}`})`,
                 _name: a.name,
                 _ip: this.mainConfiguration ? this.mainConfiguration.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline",

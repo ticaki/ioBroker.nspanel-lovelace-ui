@@ -117,6 +117,11 @@ class Panel extends import_library.BaseClass {
   detach = { left: false, right: false };
   persistentPageItems = {};
   info = {
+    internal: {
+      scriptName: "missing",
+      pageCount: 0,
+      servicePageCount: 0
+    },
     nspanel: {
       displayVersion: "",
       model: "eu",
@@ -195,7 +200,7 @@ class Panel extends import_library.BaseClass {
       let shouldUpdate = false;
       switch (val) {
         case "offline":
-          {
+          if (!["setup"].includes(this._status)) {
             shouldUpdate = true;
           }
           break;
@@ -215,7 +220,9 @@ class Panel extends import_library.BaseClass {
           }
           break;
         case "online":
-          if (["offline", "initializing", "connecting", "connected", "flashing"].includes(this._status)) {
+          if (["offline", "initializing", "connecting", "connected", "flashing", "error"].includes(
+            this._status
+          )) {
             shouldUpdate = true;
           }
           break;
@@ -267,6 +274,7 @@ class Panel extends import_library.BaseClass {
     this.format = { ...DefaultOptions.format, ...options.format };
     this.controller = options.controller;
     this.topic = options.topic;
+    this.info.internal.scriptName = options.scriptName.split(".").slice(2).join(".") || options.scriptName;
     this.info.nspanel.model = options.model || "eu";
     if (typeof this.panelSend.addMessage === "function") {
       this.sendToPanelClass = this.panelSend.addMessage;
@@ -289,6 +297,8 @@ class Panel extends import_library.BaseClass {
       }
       return false;
     });
+    this.info.internal.pageCount = options.pages.length;
+    this.info.internal.servicePageCount = import_system_templates.systemPages.length;
     options.pages = options.pages.concat(import_system_templates.systemPages);
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
@@ -858,14 +868,18 @@ class Panel extends import_library.BaseClass {
             this.log.info(`Going offline for flashing!`);
           }
           this.isOnline = false;
-          this.flashing = msg.Flashing.complete < 99;
-          this.log.info(`Flashing: ${msg.Flashing.complete}%`);
+          this.flashing = msg.Flashing.complete !== "done";
+          this.log.info(`Flashing: ${msg.Flashing.complete}${this.flashing ? "%" : ""}`);
           await this.library.writedp(
             `panels.${this.name}.info.nspanel.firmwareUpdate`,
-            msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
+            !this.flashing ? 100 : msg.Flashing.complete,
             definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
           );
-          await this.setStatus("flashing");
+          if (this.flashing) {
+            await this.setStatus("flashing");
+          } else {
+            await this.setStatus("offline");
+          }
           return;
         } else if ("nlui_driver_version" in msg) {
           this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);

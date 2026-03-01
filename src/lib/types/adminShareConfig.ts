@@ -206,6 +206,17 @@ export const panelStatusColors: Record<PanelStatus, string> = {
     error: '#F44336',
 };
 
+export const panelStatusTranslationKeys: Record<PanelStatus, string> = {
+    offline: 'Panel_status_offline',
+    initializing: 'Panel_status_initializing',
+    connecting: 'Panel_status_connecting',
+    connected: 'Panel_status_connected',
+    online: 'Panel_status_online',
+    flashing: 'Panel_status_flashing',
+    setup: 'Panel_status_setup',
+    error: 'Panel_status_error',
+};
+
 export function reversePanelStatusStates(value: PanelStatus): number {
     const reversed: Record<PanelStatus, number> = {} as Record<PanelStatus, number>;
     for (const key in panelStatusStates) {

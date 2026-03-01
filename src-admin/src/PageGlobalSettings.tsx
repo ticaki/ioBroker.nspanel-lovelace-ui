@@ -16,7 +16,6 @@ import {
     type SelectChangeEvent,
     Tooltip,
 } from '@mui/material';
-import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
 
 interface WeatherEntity {
     label: string;
@@ -44,6 +43,8 @@ interface PageGlobalSettingsState extends ConfigGenericState {
 
 class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PageGlobalSettingsState> {
     private pagesRetryTimeout?: NodeJS.Timeout;
+    private adapterName = this.props.oContext.adapterName;
+    private instance = this.props.oContext.instance ?? '0';
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
@@ -60,9 +61,8 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
             clearTimeout(this.pagesRetryTimeout);
         }
         // Unsubscribe from alive state changes
-        const instance = this.props.oContext.instance ?? '0';
         this.props.oContext.socket.unsubscribeState(
-            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+            `system.adapter.${this.adapterName}.${this.instance}.alive`,
             this.onAliveChanged,
         );
     }
@@ -71,8 +71,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
-        const instance = this.props.oContext.instance ?? '0';
-        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
 
         try {
             const state = await this.props.oContext.socket.getState(aliveStateId);
@@ -120,8 +119,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         this.setState({ loadingWeather: true });
 
         if (this.props.oContext.socket) {
-            const instance = this.props.oContext.instance ?? '0';
-            const target = `${ADAPTER_NAME}.${instance}`;
+            const target = `${this.adapterName}.${this.instance}`;
             const payload = {
                 internalServerIp: this.props.data?.internalServerIp,
             };
@@ -208,6 +206,12 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
     };
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
+        // Exper Mode from props (provided by json-config system)
+        //const isExpertMode = this.props.expertMode ?? false;
+
+        // Destructure state properties for easier access
+        const { alive } = this.state;
+
         // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
         const data = this.props.data || {};
         const useBetaTFT = data.useBetaTFT ?? false;
@@ -275,7 +279,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                                     <Checkbox
                                         checked={useBetaTFT}
                                         onChange={this.handleCheckboxChange('useBetaTFT')}
-                                        disabled={!this.state.alive || !isExpertMode}
+                                        disabled={!alive || !isExpertMode}
                                     />
                                 }
                                 label={this.getText('useBetaVersion')}
@@ -295,7 +299,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                     <FormControl
                         sx={{ m: 1, minWidth: 120 }}
                         size="small"
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                     >
                         <Select
                             id="color-theme-select"
@@ -324,7 +328,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                     <FormControl
                         sx={{ m: 1, minWidth: 200 }}
                         size="small"
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                     >
                         <InputLabel id="weather-entity-label">{this.getText('weatherEntityLabel')}</InputLabel>
                         <Select
@@ -337,7 +341,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                                 void this.loadWeatherEntities(true);
                             }}
                             onChange={this.handleSelectStringChange('weatherEntity')}
-                            disabled={!this.state.alive || this.state.loadingWeather}
+                            disabled={!alive || this.state.loadingWeather}
                         >
                             {this.state.loadingWeather && (
                                 <MenuItem
@@ -372,7 +376,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <Checkbox
                                 checked={weekdayFormat}
                                 onChange={this.handleCheckboxChange('weekdayFormat')}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('longWeekdayName')}
@@ -380,7 +384,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                     <FormControl
                         sx={{ m: 1, minWidth: 120 }}
                         size="small"
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                     >
                         <InputLabel id="MonthFormat-label">{this.getText('MonthFormat')}</InputLabel>
                         <Select
@@ -400,7 +404,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <Checkbox
                                 checked={yearFormat}
                                 onChange={this.handleCheckboxChange('yearFormat')}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('longYear')}
@@ -420,7 +424,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <Checkbox
                                 checked={shutterClosedIsZero}
                                 onChange={this.handleCheckboxChange('shutterClosedIsZero')}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('shutterClosedIsZero')}
@@ -440,7 +444,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <Checkbox
                                 checked={defaultValueCardThermo}
                                 onChange={this.handleCheckboxChange('defaultValueCardThermo')}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('defaultValueCardThermo')}
@@ -461,12 +465,13 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         type="password"
                         value={pw1}
                         onChange={this.handleServicePinChange}
-                        disabled={!this.state.alive}
+                        disabled={!alive}
                         helperText={this.getText('mustBeNumber')}
                         error={!this.validateServicePin(pw1)}
-                        inputProps={{
-                            inputMode: 'numeric',
-                            pattern: '[0-9]*',
+                        slotProps={{
+                            input: {
+                                inputMode: 'numeric',
+                            },
                         }}
                     />
                 </Box>
@@ -478,7 +483,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <Checkbox
                                 checked={rememberLastSite}
                                 onChange={this.handleCheckboxChange('rememberLastSite')}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('rememberLastSite')}
@@ -493,7 +498,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <Checkbox
                                 checked={writeTasmotaTele}
                                 onChange={this.handleCheckboxChange('writeTasmotaTele')}
-                                disabled={!this.state.alive}
+                                disabled={!alive}
                             />
                         }
                         label={this.getText('writeTasmotaTele')}

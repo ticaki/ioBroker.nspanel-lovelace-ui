@@ -27,6 +27,7 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
+  panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   reversePanelStatusStates: () => reversePanelStatusStates
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
@@ -65,6 +66,16 @@ const panelStatusColors = {
   setup: "#d99800",
   error: "#F44336"
 };
+const panelStatusTranslationKeys = {
+  offline: "Panel_status_offline",
+  initializing: "Panel_status_initializing",
+  connecting: "Panel_status_connecting",
+  connected: "Panel_status_connected",
+  online: "Panel_status_online",
+  flashing: "Panel_status_flashing",
+  setup: "Panel_status_setup",
+  error: "Panel_status_error"
+};
 function reversePanelStatusStates(value) {
   const reversed = {};
   for (const key in panelStatusStates) {
@@ -86,6 +97,7 @@ function reversePanelStatusStates(value) {
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   panelStatusColors,
   panelStatusStates,
+  panelStatusTranslationKeys,
   reversePanelStatusStates
 });
 //# sourceMappingURL=adminShareConfig.js.map

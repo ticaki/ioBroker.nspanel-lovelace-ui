@@ -1,0 +1,1138 @@
+import React from 'react';
+import { withTheme } from '@mui/styles';
+import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import {
+    Alert,
+    //Checkbox,
+    //FormControlLabel,
+    Box,
+    Select,
+    TextField,
+    MenuItem,
+    CircularProgress,
+    InputLabel,
+    Typography,
+    type SelectChangeEvent,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    FormControl,
+    IconButton,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfigIP from './components/ConfigIP';
+import { PanelStatusBadge } from './components/PanelStatusBadge';
+
+interface PanelConfig {
+    id?: string;
+    ip?: string;
+    name?: string;
+    topic?: string;
+    model?: string;
+}
+
+interface TimezoneEntity {
+    value: string;
+    label: string;
+}
+
+interface PagePanelOverviewState extends ConfigGenericState {
+    // Define any additional state properties if needed
+    timezoneEntities?: TimezoneEntity[];
+    loadingTimezone?: boolean;
+    lastTimezoneLoad?: number;
+    // State for alive status of the adapter
+    alive: boolean;
+    // State for confirmation dialog
+    showConfirm: boolean;
+    processing: boolean;
+
+    error: string | null;
+    panels: PanelConfig[];
+    // State for delete dialog
+    showDeleteConfirm: boolean;
+    panelToDelete: PanelConfig | null;
+    // State for success dialog
+    showSuccessConfirm: boolean;
+    successMessage: string;
+    pendingPanels: PanelConfig[] | null;
+    // Map of panel IDs to their online status
+    panelOnlineStates: Record<string, boolean>;
+    // State for blink animation
+    isBlinking: boolean;
+    // Lokale Kopien der Tasmota-Eingabefelder (verhindert Cursor-Sprünge)
+    localTasmotaIP: string;
+    localTasmotaName: string;
+    localTasmotaTopic: string;
+    localTimezone: string;
+}
+
+class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
+    private pagesRetryTimeout?: NodeJS.Timeout;
+    private blinkTimeout?: NodeJS.Timeout;
+    private instance = this.props.oContext.instance ?? '0';
+    private adapterName = this.props.oContext.adapterName;
+
+    constructor(props: ConfigGenericProps & { theme?: any }) {
+        super(props);
+        this.state = {
+            ...this.state,
+            alive: false,
+            timezoneEntities: [],
+            lastTimezoneLoad: 0,
+            showConfirm: false,
+            processing: false,
+            error: null,
+            panels: [],
+            showDeleteConfirm: false,
+            panelToDelete: null,
+            showSuccessConfirm: false,
+            successMessage: '',
+            pendingPanels: null,
+            panelOnlineStates: {},
+            isBlinking: false,
+            localTasmotaIP: props.data._tasmotaIP ?? '',
+            localTasmotaName: props.data._tasmotaName ?? '',
+            localTasmotaTopic: props.data._tasmotaTopic ?? '',
+            localTimezone: props.data.timezone ?? '',
+        };
+    }
+    // Bereinige Ressourcen und Abonnements beim Unmounten
+    componentWillUnmount(): void {
+        if (this.pagesRetryTimeout) {
+            clearTimeout(this.pagesRetryTimeout);
+        }
+        if (this.blinkTimeout) {
+            clearTimeout(this.blinkTimeout);
+        }
+        // Remove visibility change listener
+        document.removeEventListener('visibilitychange', this.onVisibilityChange);
+        // Unsubscribe from alive state changes
+        this.props.oContext.socket.unsubscribeState(
+            `system.adapter.${this.adapterName}.${this.instance}.alive`,
+            this.onAliveChanged,
+        );
+        // Unsubscribe from panel online state changes
+        for (const panel of this.props.data.panels || []) {
+            this.props.oContext.socket.unsubscribeState(
+                `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
+                this.onPanelOnlineChanged,
+            );
+        }
+    }
+    // Lade Timezone-Entities beim Mounten und abonniere Alive-Status
+    async componentDidMount(): Promise<void> {
+        super.componentDidMount();
+
+        // Get initial alive state and subscribe to changes
+        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
+
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            this.setState({ alive: isAlive });
+
+            // Subscribe to alive state changes
+            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+
+            // Timezone-Entities vorladen, wenn bereits ein Wert gesetzt ist
+            if (isAlive && this.props.data.timezone) {
+                void this.loadTimezoneEntities(false);
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to get alive state or subscribe:', error);
+            this.setState({ alive: false, error: String(error) });
+        }
+
+        try {
+            for (const panel of this.props.data.panels) {
+                // nspanel-lovelace-ui.0.panels.7C_87_CE_C6_1B_74.info.isOnline
+                console.log(`[PagePanelOverview] Subscribing to online state for panel ${panel.name} (${panel.id})`);
+                await this.props.oContext.socket.subscribeState(
+                    `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
+                    this.onPanelOnlineChanged,
+                );
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to subscribe to panel online states:', error);
+        }
+
+        // Listen for visibility changes to refresh states when tab becomes visible again
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
+    }
+
+    // Synchronisiert props.data.timezone → localTimezone, sobald der Wert über Props hereinkommt
+    componentDidUpdate(prevProps: ConfigGenericProps & { theme?: any }): void {
+        const prevTz = prevProps.data?.timezone ?? '';
+        const nextTz = this.props.data?.timezone ?? '';
+        // Sync wenn sich der Prop-Wert ändert ODER wenn localTimezone noch leer ist
+        // aber bereits ein Wert vorhanden ist (In-Place-Mutation von props.data)
+        if (
+            (prevTz !== nextTz || (this.state.localTimezone === '' && nextTz !== '')) &&
+            this.state.localTimezone !== nextTz &&
+            nextTz !== ''
+        ) {
+            this.setState({ localTimezone: nextTz });
+        }
+    }
+
+    // Handler für Visibility-Änderungen (Browser-Tab erhält wieder Fokus)
+    private onVisibilityChange = (): void => {
+        if (document.visibilityState === 'visible') {
+            console.log('[PagePanelOverview] Tab became visible - refreshing states');
+            void this.refreshStates();
+        }
+    };
+
+    // Methode zum Aktualisieren der States nach Fokus-Wiedererlannung
+    private async refreshStates(): Promise<void> {
+        // Alive-Status neu laden
+        const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const isAlive = !!state?.val;
+            if (this.state.alive !== isAlive) {
+                this.setState({ alive: isAlive, error: isAlive ? null : this.getText('adapterNotAlive') });
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to refresh alive state:', error);
+        }
+
+        // Panel-Online-Stati neu laden
+        try {
+            const newPanelStates: Record<string, boolean> = {};
+            for (const panel of this.props.data.panels || []) {
+                const panelStateId = `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`;
+                const state = await this.props.oContext.socket.getState(panelStateId);
+                const isOnline = !!state?.val;
+                newPanelStates[panel.id!] = isOnline;
+            }
+
+            // Nur State aktualisieren wenn es Änderungen gibt
+            const hasChanges = Object.keys(newPanelStates).some(
+                panelId => this.state.panelOnlineStates[panelId] !== newPanelStates[panelId],
+            );
+
+            if (hasChanges) {
+                this.setState({ panelOnlineStates: newPanelStates });
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to refresh panel online states:', error);
+        }
+    }
+
+    // Callback for alive state changes
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const wasAlive = this.state.alive;
+        const isAlive = state ? !!state.val : false;
+
+        if (wasAlive !== isAlive) {
+            this.setState({ alive: isAlive, error: isAlive ? null : this.getText('adapterNotAlive') });
+        }
+    };
+
+    // Callback für State-Änderungen (z.B. Online-Status der Panels)
+    onPanelOnlineChanged = (id: string, state: ioBroker.State | null | undefined): void => {
+        // Extract panel ID from state ID: nspanel-lovelace-ui.0.panels.{panelId}.info.isOnline
+        const match = id.match(/\.panels\.([^.]+)\.info\.isOnline$/);
+        if (!match) {
+            console.warn('[PagePanelOverview] Could not extract panel ID from state:', id);
+            return;
+        }
+
+        const panelId = match[1];
+        const isOnline = state ? !!state.val : false;
+
+        console.log(`[PagePanelOverview] Panel ${panelId} online status changed:`, isOnline);
+
+        this.setState(prevState => ({
+            panelOnlineStates: {
+                ...prevState.panelOnlineStates,
+                [panelId]: isOnline,
+            },
+        }));
+    };
+
+    // Lade Timezone-Entities
+    async loadTimezoneEntities(forceReload = false): Promise<void> {
+        if (!this.state.alive) {
+            return;
+        }
+
+        const now = Date.now();
+        const lastLoad = this.state.lastTimezoneLoad || 0;
+
+        if (!forceReload && now - lastLoad < 60000 && this.state.timezoneEntities?.length) {
+            console.log('[PagePanelOverview] Using cached timezone entities, last load:', new Date(lastLoad));
+            return;
+        }
+
+        console.log('[PagePanelOverview] Loading timezone entities, forceReload:', forceReload);
+        this.setState({ loadingTimezone: true, error: null });
+
+        if (this.props.oContext.socket) {
+            const target = `${this.adapterName}.${this.instance}`;
+            const payload = {
+                ip: this.props.data?.internalServerIp,
+            };
+
+            try {
+                const timeoutPromise = new Promise<never>((_, reject) => {
+                    setTimeout(() => reject(new Error('sendTo timeout after 2 seconds')), 2000);
+                });
+
+                const sendToPromise = this.props.oContext.socket.sendTo(target, 'getTimeZones', payload);
+
+                const raw = await Promise.race([sendToPromise, timeoutPromise]);
+
+                let entities: TimezoneEntity[] = [];
+                if (Array.isArray(raw)) {
+                    entities = raw;
+                } else if (raw && Array.isArray(raw.result)) {
+                    entities = raw.result;
+                }
+
+                console.log('[PagePanelOverview] sendTo successful', { target, entities });
+
+                this.setState({
+                    timezoneEntities: entities,
+                    lastTimezoneLoad: now,
+                    loadingTimezone: false,
+                });
+            } catch (e) {
+                console.error('[PagePanelOverview] Failed to load timezone entities', {
+                    target,
+                    cmd: 'getTimeZones',
+                    payload,
+                    error: e,
+                });
+                this.setState({
+                    timezoneEntities: [],
+                    loadingTimezone: false,
+                    error: String(e),
+                });
+            }
+        }
+    }
+    // Generische Handler-Funktion für Checkbox-Änderungen
+    private handleCheckboxChange =
+        (key: string) =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            void this.onChange(key, event.target.checked).then(() => this.forceUpdate());
+        };
+    // Generische Handler-Funktion für Select-String-Änderungen
+    private handleSelectStringChange =
+        (key: string) =>
+        (event: SelectChangeEvent<string>): void => {
+            void this.onChange(key, event.target.value).then(() => this.forceUpdate());
+        };
+    // Generische Handler-Funktion für Select-Number-Änderungen
+    private handleSelectNumberChange =
+        (key: string) =>
+        (event: SelectChangeEvent<number>): void => {
+            void this.onChange(key, event.target.value).then(() => this.forceUpdate());
+        };
+    // Generische Handler-Funktion für Text-Änderungen
+    private handleTextChange =
+        (key: string) =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            const value = event.target.value;
+            // Lokalen State aktualisieren, damit der Cursor nicht ans Ende springt
+            if (key === '_tasmotaName') {
+                this.setState({ localTasmotaName: value });
+            } else if (key === '_tasmotaTopic') {
+                this.setState({ localTasmotaTopic: value });
+            }
+            void this.onChange(key, value);
+        };
+    // Validierungsfunktion
+    // Prüft, ob der String nur aus Ziffern besteht (oder leer ist)
+    private validatePin = (value: string): boolean => {
+        return value === '' || /^[0-9]+$/.test(value);
+    };
+    // Prüft, ob die IP-Eingabe erlaubt ist (während des Tippens)
+    private isValidIpInput(ip: string): boolean {
+        if (ip === '') {
+            return true; // Leeres Feld erlauben
+        }
+        // Erlaube nur Ziffern und Punkte
+        if (!/^[\d.]*$/.test(ip)) {
+            return false;
+        }
+        // Prüfe, dass nicht mehr als 3 Punkte vorhanden sind
+        if (ip.split('.').length > 4) {
+            return false;
+        }
+        // Prüfe, dass keine Zahlen über 255 vorkommen
+        const parts = ip.split('.');
+        return parts.every(part => {
+            if (part === '') {
+                return true; // Leere Teile während des Tippens erlauben
+            }
+            const num = parseInt(part, 10);
+            return !isNaN(num) && num <= 255;
+        });
+    }
+    // Prüft, ob die IP vollständig und gültig ist (für Fehleranzeige)
+    private isValidCompleteIp(ip: string): boolean {
+        if (ip === '127.0.0.1') {
+            // Verwerfe localhost IPs
+            return false;
+        }
+        if (ip === '') {
+            return true; // Leeres Feld ist ok
+        }
+        const parts = ip.split('.');
+        if (parts.length !== 4) {
+            return false;
+        }
+        return parts.every(part => {
+            const num = parseInt(part, 10);
+            return !isNaN(num) && num >= 0 && num <= 255;
+        });
+    }
+    // Validiert das Topic-Format (mindestens 4 Zeichen, beginnt mit Buchstabe, gefolgt von Buchstaben, Zahlen, Unterstrichen oder Schrägstrichen)
+    private validateTopic(topic: string): boolean {
+        if (!topic || topic.length < 4) {
+            return false;
+        }
+        return /^[a-zA-Z][\w/]+$/.test(topic);
+    }
+    // Prüft, ob alle erforderlichen Felder gültig sind, um den Init/Update-Button zu aktivieren
+    private isFormValid(): boolean {
+        const data = this.props.data;
+        const { localTasmotaIP, localTasmotaName, localTasmotaTopic } = this.state;
+
+        return (
+            !!localTasmotaIP &&
+            this.isValidCompleteIp(localTasmotaIP) &&
+            !!localTasmotaTopic &&
+            this.validateTopic(localTasmotaTopic) &&
+            !!localTasmotaName &&
+            (!!data.mqttServer || !!data.mqttIp) &&
+            !!data.mqttPort &&
+            !!data.mqttUsername &&
+            !!data.mqttPassword &&
+            (!data.mqttServer || (!!data.internalServerIp && this.isValidCompleteIp(data.internalServerIp)))
+        );
+    }
+    // Prüft, ob das Panel bereits konfiguriert ist (basierend auf dem Topic)
+    private isPanelAlreadyConfigured(): boolean {
+        const panels = this.props.data.panels || [];
+        return panels.findIndex((panel: any) => panel.topic === this.state.localTasmotaTopic) !== -1;
+    }
+    // Öffnet den Bestätigungsdialog für die Initialisierung
+    private handleInitClick = (): void => {
+        // Lokale State-Werte nach props.data synchronisieren, damit handleConfirmStart
+        // immer die aktuellsten Werte aus dem Formular übergibt.
+        this.props.data._tasmotaIP = this.state.localTasmotaIP;
+        this.props.data._tasmotaName = this.state.localTasmotaName;
+        this.props.data._tasmotaTopic = this.state.localTasmotaTopic;
+        this.setState({ showConfirm: true, isBlinking: false });
+    };
+    // Schließt den Bestätigungsdialog ohne Aktion
+    private handleConfirmClose = (): void => {
+        this.setState({ showConfirm: false });
+    };
+    // Startet die Initialisierung nach Bestätigung
+    private handleConfirmStart = async (): Promise<void> => {
+        console.log('[PagePanelOverview] === INIT START ===');
+        this.setState({ showConfirm: false, processing: true, error: null });
+
+        try {
+            const payload = {
+                tasmotaName: this.props.data._tasmotaName,
+                tasmotaIP: this.props.data._tasmotaIP,
+                tasmotaTopic: this.props.data._tasmotaTopic,
+                mqttServer: this.props.data.mqttServer,
+                mqttIp: this.props.data.mqttIp,
+                mqttPort: this.props.data.mqttPort,
+                mqttUsername: this.props.data.mqttUsername,
+                mqttPassword: this.props.data.mqttPassword,
+                internalServerIp: this.props.data.internalServerIp,
+                useBetaTFT: this.props.data.useBetaTFT,
+                model: this.props.data._nsPanelModel || 'eu',
+            };
+
+            console.log('[PagePanelOverview] Sending payload:', payload);
+
+            const result = await this.props.oContext.socket.sendTo(
+                `${this.adapterName}.${this.instance}`,
+                'nsPanelInit',
+                payload,
+            );
+
+            console.log('[PagePanelOverview] Received result:', result);
+
+            // Prüfe Callback-Ergebnis
+            if (result && typeof result === 'object') {
+                if ('error' in result && result.error) {
+                    // Fehler aufgetreten
+                    console.error('[PagePanelOverview] Error from adapter:', result.error);
+                    const errorMessage = this.getText(String(result.error)) || String(result.error);
+                    this.setState({
+                        processing: false,
+                        error: errorMessage,
+                    });
+                    return;
+                }
+
+                if ('native' in result && result.native && 'saveConfig' in result && result.saveConfig) {
+                    // Erfolg - zeige Bestätigungsdialog
+                    const native = result.native as Record<string, any>;
+                    console.log('[PagePanelOverview] Success! Native data:', native);
+
+                    if (native.panels && Array.isArray(native.panels)) {
+                        const successKey = 'result' in result ? String(result.result) : 'sendToNSPanelInitDataSuccess';
+                        console.log('[PagePanelOverview] Success message key:', successKey);
+                        const successMessage = this.getText(successKey) || successKey;
+
+                        this.setState({
+                            processing: false,
+                            showSuccessConfirm: true,
+                            successMessage: successMessage,
+                            pendingPanels: native.panels,
+                        });
+                    } else {
+                        console.error('[PagePanelOverview] No panels in native data');
+                        this.setState({
+                            processing: false,
+                            error: 'No panels data received',
+                        });
+                    }
+                } else {
+                    // Unerwartetes Ergebnis
+                    console.error('[PagePanelOverview] Unexpected response structure:', result);
+                    this.setState({
+                        processing: false,
+                        error: 'Unexpected response from adapter',
+                    });
+                }
+            } else {
+                // Kein gültiges Result-Objekt
+                console.error('[PagePanelOverview] Invalid result object:', result);
+                this.setState({
+                    processing: false,
+                    error: 'Invalid response from adapter',
+                });
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Init failed with exception:', error);
+            this.setState({
+                processing: false,
+                error: String(error),
+            });
+        }
+    };
+    // Handler für Service-Pin-Änderungen mit Validierung
+    private handlePinChange =
+        (key: string) =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            const value = event.target.value;
+
+            // Erlaube die Änderung nur, wenn der Wert valide ist
+            if (this.validatePin(value)) {
+                void this.onChange(key, value);
+            }
+        };
+    // Handler für IP-Adress-Änderungen mit Validierung während der Eingabe
+    private handleIpChange =
+        (key: string) =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            const value = event.target.value;
+
+            // Erlaube die Eingabe, wenn sie während des Tippens valide ist
+            if (this.isValidIpInput(value)) {
+                // Lokalen State aktualisieren, damit der Cursor nicht ans Ende springt
+                if (key === '_tasmotaIP') {
+                    this.setState({ localTasmotaIP: value });
+                }
+                void this.onChange(key, value);
+                // Prüfe Validierung und setze Fehler
+                this.checkValidation(key, value);
+            }
+        };
+    // Synchronisiert lokale State-Werte zurück nach props.data und erzwingt ein Re-Render
+    private syncLocalToProps = (): void => {
+        this.props.data._tasmotaIP = this.state.localTasmotaIP;
+        this.props.data._tasmotaName = this.state.localTasmotaName;
+        this.props.data._tasmotaTopic = this.state.localTasmotaTopic;
+        this.props.data.timezone = this.state.localTimezone;
+        this.forceUpdate();
+    };
+    // Handler für Blur- und Enter-Events in den Eingabefeldern
+    private handleFieldSync = (): void => {
+        this.syncLocalToProps();
+    };
+    private handleFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+        if (event.key === 'Enter') {
+            this.syncLocalToProps();
+        }
+    };
+    // Prüft die Validierung und setzt Fehler
+    private checkValidation(key: string, value: string): void {
+        const data = this.props.data || {};
+        const tempData = { ...data, [key]: value };
+
+        // Prüfe und setze Fehler für internalServerIp
+        if (tempData.internalServerIp && !this.isValidCompleteIp(tempData.internalServerIp)) {
+            this.props.onError('internalServerIp', this.getText('mustBeIp'));
+        } else {
+            this.props.onError('internalServerIp');
+        }
+
+        // Prüfe und setze Fehler für _tasmotaIP
+        if (tempData._tasmotaIP && !this.isValidCompleteIp(tempData._tasmotaIP)) {
+            this.props.onError('_tasmotaIP', this.getText('mustBeIp'));
+        } else {
+            this.props.onError('_tasmotaIP');
+        }
+
+        // Prüfe und setze Fehler für _tasmotaTopic
+        if (tempData._tasmotaTopic && !this.validateTopic(tempData._tasmotaTopic)) {
+            this.props.onError('_tasmotaTopic', this.getText('invalidTopic'));
+        } else {
+            this.props.onError('_tasmotaTopic');
+        }
+    }
+
+    private async handleOpenTasmotaConsole(panel: PanelConfig): Promise<void> {
+        try {
+            const result = await this.props.oContext.socket.sendTo(
+                `${this.adapterName}.${this.instance ?? '0'}`,
+                'openTasmotaConsole',
+                { ip: panel.ip },
+            );
+
+            if (result && typeof result === 'object' && 'openUrl' in result) {
+                window.open(result.openUrl as string, '_blank');
+            }
+        } catch (err) {
+            this.setState({ error: String(err) });
+        }
+    }
+
+    // Handler zum Bearbeiten eines Panels - kopiert Daten in die Initialisierungsbox
+    private handleEditPanel = (panel: PanelConfig): void => {
+        console.log('Editing panel:', panel);
+        if (!this.state.alive) {
+            return;
+        }
+        // Setze temporäre Laufzeit-Variablen direkt auf props.data
+        this.props.data._tasmotaIP = panel.ip || '';
+        this.props.data._tasmotaName = panel.name || '';
+        this.props.data._tasmotaTopic = panel.topic || '';
+        this.props.data._nsPanelModel = panel.model || 'eu';
+
+        // Lokalen State synchronisieren
+        this.setState({
+            localTasmotaIP: panel.ip || '',
+            localTasmotaName: panel.name || '',
+            localTasmotaTopic: panel.topic || '',
+            // localTimezone bleibt beim Edit unverändert
+        });
+
+        // Starte Blink-Animation
+        this.startBlinkAnimation();
+    };
+
+    // Startet die Blink-Animation (8x blinken = 16 State-Änderungen)
+    private startBlinkAnimation = (): void => {
+        if (this.blinkTimeout) {
+            clearTimeout(this.blinkTimeout);
+        }
+
+        let count = 0;
+        const maxBlinks = 8; // 8x ein/aus = 16 Zustandsänderungen
+        const blinkInterval = 200; // 200ms pro Zustandsänderung
+
+        const blink = (): void => {
+            if (count >= maxBlinks) {
+                this.setState({ isBlinking: true }); // Bleibt blau nach dem Blinken
+                return;
+            }
+
+            this.setState(prevState => ({ isBlinking: !prevState.isBlinking }));
+            count++;
+
+            this.blinkTimeout = setTimeout(blink, blinkInterval);
+        };
+
+        blink();
+    };
+
+    // Öffnet den Bestätigungsdialog zum Löschen
+    private handleDeleteClick = (panel: PanelConfig): void => {
+        this.setState({ showDeleteConfirm: true, panelToDelete: panel });
+    };
+
+    // Schließt den Lösch-Dialog ohne Aktion
+    private handleDeleteClose = (): void => {
+        this.setState({ showDeleteConfirm: false, panelToDelete: null });
+    };
+
+    // Löscht das Panel nach Bestätigung
+    private handleDeleteConfirm = (): void => {
+        const { panelToDelete } = this.state;
+        if (!panelToDelete) {
+            return;
+        }
+        console.log('[PagePanelOverview] Deleting panel:', panelToDelete);
+        const panels = this.props.data.panels || [];
+        const updatedPanels = panels.filter((p: PanelConfig) => p.id !== panelToDelete.id);
+
+        void this.onChange('panels', updatedPanels);
+        this.setState({ showDeleteConfirm: false, panelToDelete: null });
+    };
+
+    // Schließt den Success-Dialog ohne Speichern
+    private handleSuccessClose = (): void => {
+        console.log('[PagePanelOverview] Success dialog cancelled');
+        this.setState({ showSuccessConfirm: false, successMessage: '', pendingPanels: null });
+    };
+
+    // Speichert die Config nach erfolgreicher Initialisierung
+    private handleSuccessSave = async (): Promise<void> => {
+        console.log('[PagePanelOverview] Saving config after success');
+        const { pendingPanels } = this.state;
+
+        if (pendingPanels) {
+            await this.onChange('panels', pendingPanels);
+
+            // Lösche temporäre Laufzeit-Variablen
+            this.props.data._tasmotaIP = '';
+            this.props.data._tasmotaName = '';
+            this.props.data._tasmotaTopic = '';
+
+            this.setState({
+                showSuccessConfirm: false,
+                successMessage: '',
+                pendingPanels: null,
+                localTasmotaIP: '',
+                localTasmotaName: '',
+                localTasmotaTopic: '',
+                // localTimezone bleibt erhalten
+            });
+            console.log('[PagePanelOverview] Config saved successfully');
+        }
+    };
+
+    renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
+        // Expert Mode from props (provided by json-config system)
+        //const isExpertMode = this.props.expertMode ?? false;
+
+        // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
+        const data = this.props.data || {};
+        const isUpdate = this.isPanelAlreadyConfigured();
+        const panels: PanelConfig[] = data.panels || [];
+        const {
+            alive,
+            loadingTimezone,
+            error,
+            showConfirm,
+            showDeleteConfirm,
+            showSuccessConfirm,
+            panelToDelete,
+            successMessage,
+            timezoneEntities,
+            processing,
+        } = this.state;
+
+        // Setze Standardwert für _nsPanelModel, falls nicht vorhanden (EU als Standard)
+        const panelModel = data._nsPanelModel || 'eu';
+
+        // Gemeinsame Styles für alle Boxen
+        const boxStyle = {
+            p: 2,
+            border: 2,
+            borderColor: 'divider',
+            borderRadius: 1,
+        };
+
+        // Fieldset-Style mit Blink-Effekt
+        const fieldsetStyle = {
+            ...boxStyle,
+            borderColor: this.state.isBlinking ? 'primary.main' : 'divider',
+            transition: 'border-color 0.1s',
+        };
+
+        return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {/* Beta warning */}
+                {this.props.data.useBetaTFT && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 2 }}
+                    >
+                        {this.getText('useBetaVersionText')}
+                    </Alert>
+                )}
+                {/* Link to wiki */}
+                <Box sx={{ mb: 2 }}>
+                    <Button
+                        variant="text"
+                        color="primary"
+                        href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation"
+                        target="_blank"
+                        sx={{ color: 'red' }}
+                    >
+                        {this.getText('openLinkAdapterInstallation')}
+                    </Button>
+                </Box>
+                <Box
+                    component="fieldset"
+                    sx={fieldsetStyle}
+                >
+                    <Typography
+                        component="legend"
+                        variant="h6"
+                    >
+                        {this.getText('nsPanelInitLabel')}
+                    </Typography>
+                    {/* IP-Adresse des internen Servers */}
+                    {data.mqttServer && (
+                        <FormControl>
+                            <ConfigIP
+                                {...this.props}
+                                schema={
+                                    {
+                                        sx: { m: 1, minWidth: 200 },
+                                        label: 'internalServerIp',
+                                        noInternal: true,
+                                        onlyIp4: true,
+                                    } as any
+                                }
+                                attr="internalServerIp"
+                                disabled={!alive}
+                            />
+                        </FormControl>
+                    )}
+                    <TextField
+                        sx={{ m: 1, minWidth: 200 }}
+                        variant="standard"
+                        size="small"
+                        disabled={!alive}
+                        label={this.getText('ipFromPanel')}
+                        value={this.state.localTasmotaIP}
+                        onChange={this.handleIpChange('_tasmotaIP')}
+                        onBlur={this.handleFieldSync}
+                        onKeyDown={this.handleFieldKeyDown}
+                        error={!!this.state.localTasmotaIP && !this.isValidCompleteIp(this.state.localTasmotaIP)}
+                        helperText={
+                            !!this.state.localTasmotaIP && !this.isValidCompleteIp(this.state.localTasmotaIP)
+                                ? this.getText('mustBeIp')
+                                : ''
+                        }
+                    />
+                    <TextField
+                        sx={{ m: 1, minWidth: 200 }}
+                        size="small"
+                        disabled={!alive}
+                        variant="standard"
+                        label={this.getText('panelName')}
+                        value={this.state.localTasmotaName}
+                        onChange={this.handleTextChange('_tasmotaName')}
+                        onBlur={this.handleFieldSync}
+                        onKeyDown={this.handleFieldKeyDown}
+                    />
+                    <TextField
+                        sx={{ m: 1, minWidth: 200 }}
+                        size="small"
+                        disabled={!alive}
+                        variant="standard"
+                        label={this.getText('panelTopic')}
+                        value={this.state.localTasmotaTopic}
+                        onChange={this.handleTextChange('_tasmotaTopic')}
+                        onBlur={this.handleFieldSync}
+                        onKeyDown={this.handleFieldKeyDown}
+                        error={!!this.state.localTasmotaTopic && !this.validateTopic(this.state.localTasmotaTopic)}
+                    />
+                    {/* Panel Model Select */}
+                    <FormControl
+                        sx={{ m: 1, minWidth: 200 }}
+                        size="small"
+                        disabled={!alive}
+                        variant="standard"
+                    >
+                        <InputLabel id="panelmodel-label">{this.getText('nsPanelModel')}</InputLabel>
+                        <Select
+                            labelId="panelmodel-label"
+                            id="panelmodel-select"
+                            label={this.getText('nsPanelModel')}
+                            value={panelModel}
+                            onChange={this.handleSelectStringChange('_nsPanelModel')}
+                        >
+                            <MenuItem value="eu">{this.getText('eu-Version')}</MenuItem>
+                            <MenuItem value="us-l">{this.getText('us-l-Version')}</MenuItem>
+                            <MenuItem value="us-p">{this.getText('us-p-Version')}</MenuItem>
+                        </Select>
+                    </FormControl>
+                    {/* Timezone Select - wird nur angezeigt, wenn die Daten geladen wurden oder gerade geladen werden */}
+                    <FormControl
+                        sx={{ m: 1, minWidth: 200 }}
+                        size="small"
+                        disabled={!alive || loadingTimezone}
+                        variant="standard"
+                    >
+                        <InputLabel id="timezone-label">{this.getText('timezone')}</InputLabel>
+                        <Select
+                            labelId="timezone-label"
+                            id="timezone-select"
+                            value={this.state.localTimezone}
+                            label={this.getText('timezone')}
+                            onOpen={() => {
+                                // Lade Daten wenn Select geöffnet wird
+                                void this.loadTimezoneEntities(true);
+                            }}
+                            onChange={(event: SelectChangeEvent<string>) => {
+                                const value = event.target.value;
+                                this.setState({ localTimezone: value });
+                                void this.onChange('timezone', value).then(() => this.forceUpdate());
+                            }}
+                        >
+                            {/* Fallback-MenuItem: zeigt den aktuellen Wert an, solange Entities noch nicht geladen sind */}
+                            {this.state.localTimezone &&
+                                !(timezoneEntities || []).some(e => e.value === this.state.localTimezone) && (
+                                    <MenuItem value={this.state.localTimezone}>{this.state.localTimezone}</MenuItem>
+                                )}
+                            {loadingTimezone && (
+                                <MenuItem
+                                    disabled
+                                    value=""
+                                >
+                                    <CircularProgress size={16} />
+                                </MenuItem>
+                            )}
+                            {(timezoneEntities || []).map(entity => (
+                                <MenuItem
+                                    key={entity.value || entity.label}
+                                    value={entity.value}
+                                >
+                                    {entity.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Box>
+                {/* Error Alert */}
+                {error && (
+                    <Alert
+                        severity="error"
+                        onClose={() => this.setState({ error: null })}
+                        sx={{ mt: 2 }}
+                    >
+                        {error}
+                    </Alert>
+                )}
+                {/* Init/Update Button */}
+                <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={this.handleInitClick}
+                    disabled={!alive || !this.isFormValid() || processing}
+                    sx={{ mt: 2 }}
+                >
+                    {processing ? (
+                        <CircularProgress size={24} />
+                    ) : isUpdate ? (
+                        this.getText('nsPanelUpdate')
+                    ) : (
+                        this.getText('nsPanelInit')
+                    )}
+                </Button>
+
+                {/* Panels as Boxes */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                    {panels.map((panel, index) => {
+                        return (
+                            <Box
+                                key={panel.id || index}
+                                sx={{
+                                    width: 'fit-content',
+                                    maxWidth: '100%',
+                                    minWidth: 320,
+                                    border: 3,
+                                    opacity: !alive ? 0.6 : 1,
+                                    p: 2,
+                                    borderRadius: 1,
+                                }}
+                            >
+                                {/* Panel Name as Title with Edit, Delete and Status Badge */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                                    {/* Left side: Name and Badge vertically stacked */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1 }}>
+                                        <Typography variant="h6">{panel.name}</Typography>
+                                        {panel.id && (
+                                            <PanelStatusBadge
+                                                panelId={panel.id}
+                                                oContext={this.props.oContext}
+                                                size="small"
+                                                showLabel={true}
+                                                alive={alive}
+                                            />
+                                        )}
+                                    </Box>
+                                    {/* Right side: Action buttons */}
+                                    <IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={() => this.handleEditPanel(panel)}
+                                        disabled={!alive}
+                                        title={this.getText('editPanel')}
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        size="small"
+                                        color="error"
+                                        onClick={() => this.handleDeleteClick(panel)}
+                                        disabled={!alive}
+                                        title={this.getText('deletePanel')}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Box>
+
+                                {/* Version Info with Flexbox */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    {/* mac */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('macAdressOfPanel')}
+                                            value={panel.id}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* ip - Address */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('ipFromPanel')}
+                                            value={panel.ip}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* topic */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('panelTopic')}
+                                            value={panel.topic}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* Model*/}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                        <TextField
+                                            label={this.getText('panelModel')}
+                                            value={this.getText(`${panel.model}-Version`)}
+                                            slotProps={{ input: { readOnly: true } }}
+                                            size="small"
+                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        />
+                                    </Box>
+
+                                    {/* Console Button */}
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={() => this.handleOpenTasmotaConsole(panel)}
+                                        disabled={!panel.ip || !alive}
+                                        size="small"
+                                        sx={{ mt: 1 }}
+                                    >
+                                        {this.getText('openTasmotaConsole')}
+                                    </Button>
+                                </Box>
+                            </Box>
+                        );
+                    })}
+                </Box>
+
+                {/* Confirm Dialog */}
+                <Dialog
+                    open={showConfirm}
+                    onClose={this.handleConfirmClose}
+                >
+                    <DialogTitle>{isUpdate ? this.getText('nsPanelUpdate') : this.getText('nsPanelInit')}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            {isUpdate
+                                ? this.getText('NSPanel_configuration_update_text')
+                                : this.getText('NSPanel_configuration_text')}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleConfirmClose}>{this.getText('Cancel')}</Button>
+                        <Button
+                            onClick={this.handleConfirmStart}
+                            variant="contained"
+                            autoFocus
+                        >
+                            {this.getText('Start')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Delete Confirm Dialog */}
+                <Dialog
+                    open={showDeleteConfirm}
+                    onClose={this.handleDeleteClose}
+                >
+                    <DialogTitle>{this.getText('deletePanel')}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            {this.getText('deletePanelConfirmText').replace('%s', panelToDelete?.name || '')}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleDeleteClose}>{this.getText('Cancel')}</Button>
+                        <Button
+                            onClick={this.handleDeleteConfirm}
+                            variant="contained"
+                            color="error"
+                            autoFocus
+                        >
+                            {this.getText('Delete')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Success Confirm Dialog */}
+                <Dialog
+                    open={showSuccessConfirm}
+                    onClose={this.handleSuccessClose}
+                >
+                    <DialogTitle>{this.getText('Success')}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>{successMessage}</DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleSuccessClose}>{this.getText('Cancel')}</Button>
+                        <Button
+                            onClick={this.handleSuccessSave}
+                            variant="contained"
+                            color="primary"
+                            autoFocus
+                        >
+                            {this.getText('Save')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Box>
+        );
+    }
+}
+
+export default withTheme(PagePanelOverview);

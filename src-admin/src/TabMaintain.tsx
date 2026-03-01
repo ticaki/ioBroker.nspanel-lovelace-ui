@@ -13,11 +13,9 @@ import {
     DialogContentText,
     DialogActions,
 } from '@mui/material';
-import { green, grey, orange, red, blue, yellow } from '@mui/material/colors';
+import { grey, orange, blue, yellow } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
-
-//import RefreshIcon from '@mui/icons-material/Refresh';
-import { ADAPTER_NAME } from '../../src/lib/types/adminShareConfig';
+import { PanelStatusBadge } from './components/PanelStatusBadge';
 
 interface MaintainPanelInfo {
     _Headline: string;
@@ -45,11 +43,20 @@ interface MaintainPanelProps {
 }
 
 interface MaintainPanelState extends ConfigGenericState {
-    panels: MaintainPanelInfo[];
+    panelsInfo: MaintainPanelInfo[];
     loading: boolean;
     error: string | null;
     processingPanel: string | null;
     alive?: boolean;
+}
+
+// Daten die aus der config kommen, also die props.data
+interface PanelConfig {
+    id: string;
+    ip: string;
+    name: string;
+    topic: string;
+    model: string;
 }
 
 interface ConfirmDialogState {
@@ -62,12 +69,17 @@ interface ConfirmDialogState {
 class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProps, MaintainPanelState> {
     private confirmDialog: ConfirmDialogState | null = null;
     private timeoutHandle: NodeJS.Timeout | null = null;
+    private instance = this.props.oContext.instance ?? '0';
+    private adapterName = this.props.oContext.adapterName;
+    private panelsConfig: PanelConfig[] = [];
+    private _isMounted: boolean = false;
+    private aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
 
     constructor(props: ConfigGenericProps & MaintainPanelProps) {
         super(props);
         this.state = {
             ...this.state,
-            panels: [],
+            panelsInfo: [],
             loading: false,
             error: null,
             processingPanel: null,
@@ -75,15 +87,17 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         };
     }
 
-    componentWillUnmount(): void {
+    async componentWillUnmount(): Promise<void> {
+        this._isMounted = false;
+        // Remove visibility change listener
+        document.removeEventListener('visibilitychange', this.onVisibilityChange);
         // Unsubscribe from alive state changes
-        const instance = this.props.oContext.instance ?? '0';
-        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
-        this.props.oContext.socket.unsubscribeState(aliveStateId, this.onAliveChanged);
+        this.props.oContext.socket.unsubscribeState(this.aliveStateId, this.onAliveChanged);
         // Unsubscribe from panel online state changes
-        for (const panel of this.props.data.panels) {
+        const panels = await this.getPanels();
+        for (const panel of panels) {
             this.props.oContext.socket.unsubscribeState(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}.panels.${panel.id}.info.isOnline`,
+                `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                 this.onPanelOnlineChanged,
             );
         }
@@ -93,42 +107,97 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
     }
 
+    async getPanels(): Promise<PanelConfig[]> {
+        if (!this.props.data?.panels) {
+            if (this.panelsConfig.length > 0) {
+                return this.panelsConfig;
+            }
+            const obj = await this.props.oContext.socket.getObject(
+                `system.adapter.${this.props.oContext.adapterName}.${this.props.oContext.instance}`,
+            );
+
+            this.panelsConfig = obj?.native?.panels || [];
+            return this.panelsConfig; // Fallback zu leerem Objekt, falls native nicht definiert ist
+        }
+        this.panelsConfig = this.props.data.panels || [];
+        return this.panelsConfig; // Fallback zu leerem Array, falls panels nicht definiert ist
+    }
+
     async componentDidMount(): Promise<void> {
         super.componentDidMount();
+        this._isMounted = true;
 
         // Get initial alive state and subscribe to changes
-        const instance = this.props.oContext.instance ?? '0';
-        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
-
         try {
-            const state = await this.props.oContext.socket.getState(aliveStateId);
+            const state = await this.props.oContext.socket.getState(this.aliveStateId);
             const isAlive = !!state?.val;
-            this.setState({ alive: isAlive });
+            if (this._isMounted) {
+                this.setState({ alive: isAlive });
+            }
 
             // Subscribe to alive state changes
-            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+            await this.props.oContext.socket.subscribeState(this.aliveStateId, this.onAliveChanged);
 
             // If adapter is alive, start loading pages
             if (isAlive) {
                 console.log('[Maintain] Adapter is alive, ready to load settings.');
                 await this.refreshPanels();
             }
-            for (const panel of this.props.data.panels) {
+            const panels = await this.getPanels();
+            for (const panel of panels) {
                 // nspanel-lovelace-ui.0.panels.7C_87_CE_C6_1B_74.info.isOnline
                 console.log(`[Maintain] Subscribing to online state for panel ${panel.name} (${panel.id})`);
                 await this.props.oContext.socket.subscribeState(
-                    `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}.panels.${panel.id}.info.isOnline`,
+                    `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                     this.onPanelOnlineChanged,
                 );
             }
         } catch (error) {
             console.error('[Maintain] Failed to get alive state or subscribe:', error);
-            this.setState({ alive: false });
+            if (this._isMounted) {
+                this.setState({ alive: false });
+            }
+        }
+
+        // Listen for visibility changes to refresh states when tab becomes visible again
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
+    }
+
+    // Handler für Visibility-Änderungen (Browser-Tab erhält wieder Fokus)
+    private onVisibilityChange = (): void => {
+        if (document.visibilityState === 'visible') {
+            console.log('[Maintain] Tab became visible - refreshing states');
+            void this.refreshStates();
+        }
+    };
+
+    // Methode zum Aktualisieren der States nach Fokus-Wiedererlannung
+    private async refreshStates(): Promise<void> {
+        if (!this._isMounted) {
+            return;
+        }
+        // Alive-Status neu laden
+        try {
+            const state = await this.props.oContext.socket.getState(this.aliveStateId);
+            const isAlive = !!state?.val;
+            if (this._isMounted && this.state.alive !== isAlive) {
+                this.setState({ alive: isAlive });
+            }
+        } catch (error) {
+            console.error('[Maintain] Failed to refresh alive state:', error);
+        }
+
+        // Panel-Informationen komplett neu laden
+        if (this._isMounted && this.state.alive) {
+            await this.refreshPanels();
         }
     }
 
     // Callback for alive state changes
     onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        if (!this._isMounted) {
+            return;
+        }
         const wasAlive = this.state.alive;
         const isAlive = state ? !!state.val : false;
 
@@ -140,38 +209,58 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
     // Callback for panel online state changes
     onPanelOnlineChanged = (_id: string, _state: ioBroker.State | null | undefined): void => {
+        if (!this._isMounted) {
+            return;
+        }
         console.log('[Maintain] Panel online state changed, refreshing panels');
-        void this.refreshPanels();
+        //void this.refreshPanels();
         if (this.timeoutHandle) {
             clearTimeout(this.timeoutHandle);
         }
         this.timeoutHandle = setTimeout(() => {
-            void this.refreshPanels();
+            if (this._isMounted) {
+                void this.refreshPanels();
+            }
         }, 5000);
     };
 
     private async refreshPanels(): Promise<void> {
-        if (!this.state.alive) {
-            this.setState({ error: this.getText('adapterNotAlive'), loading: false });
+        if (!this._isMounted) {
             return;
         }
-        this.setState({ loading: true, error: null });
+        if (!this.state.alive) {
+            if (this._isMounted) {
+                this.setState({ error: this.getText('adapterNotAlive'), loading: false });
+                this.setState({ panelsInfo: [] });
+            }
+            return;
+        }
+        await this.getPanels();
+        if (this._isMounted) {
+            this.setState({ loading: true, error: null });
+        }
 
         try {
             const result = await this.props.oContext.socket.sendTo(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                `${this.adapterName}.${this.instance}`,
                 'refreshMaintainTable',
                 { internalServerIp: this.props.data.internalServerIp },
             );
             console.log('[Maintain] refreshMaintainTable result:', result);
 
+            if (!this._isMounted) {
+                return;
+            }
+
             if (result && result.native && Array.isArray(result.native._maintainPanels)) {
-                this.setState({ panels: result.native._maintainPanels, loading: false });
+                this.setState({ panelsInfo: result.native._maintainPanels, loading: false });
             } else {
                 this.setState({ error: this.getText('invalidResponseFromAdapter'), loading: false });
             }
         } catch (err) {
-            this.setState({ error: String(err), loading: false });
+            if (this._isMounted) {
+                this.setState({ error: String(err), loading: false });
+            }
             return;
         }
     }
@@ -194,24 +283,34 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private handleTasmotaUpdate(panel: MaintainPanelInfo): void {
         this.showConfirmDialog(this.getText('tasmotaUpdate'), this.getText('updateTasmotaText'), async () => {
             this.closeConfirmDialog();
-            this.setState({ processingPanel: panel._name });
+            if (this._isMounted) {
+                this.setState({ processingPanel: panel._name });
+            }
 
             try {
                 this.onPanelOnlineChanged('', null); // Trigger immediate refresh to update online status
                 const result = await this.props.oContext.socket.sendTo(
-                    `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                    `${this.adapterName}.${this.instance}`,
                     'updateTasmota',
                     { topic: panel._topic },
                 );
+
+                if (!this._isMounted) {
+                    return;
+                }
 
                 if (result && typeof result === 'object' && 'error' in result) {
                     this.setState({ error: String(result.error), processingPanel: null });
                 } else {
                     await this.refreshPanels();
-                    this.setState({ processingPanel: null });
+                    if (this._isMounted) {
+                        this.setState({ processingPanel: null });
+                    }
                 }
             } catch (err) {
-                this.setState({ error: String(err), processingPanel: null });
+                if (this._isMounted) {
+                    this.setState({ error: String(err), processingPanel: null });
+                }
             }
         });
     }
@@ -222,13 +321,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             `${this.getText('tftInstallSendToMQTTText')}\n\nPanel: ${panel._name}\nTFT - Version: ${panel._tftVersion}`,
             async () => {
                 this.closeConfirmDialog();
-                this.setState({ processingPanel: panel._name });
+                if (this._isMounted) {
+                    this.setState({ processingPanel: panel._name });
+                }
 
                 try {
                     console.log('[Maintain] Sending TFT install command to MQTT for panel:', panel._name);
                     this.onPanelOnlineChanged('', null);
                     const result = await this.props.oContext.socket.sendTo(
-                        `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                        `${this.adapterName}.${this.instance}`,
                         'tftInstallSendToMQTT',
                         {
                             tasmotaIP: panel._ip,
@@ -239,65 +340,89 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                             model: panel._nsPanelModel,
                         },
                     );
+                    if (!this._isMounted) {
+                        return;
+                    }
                     if (result && typeof result === 'object' && 'error' in result) {
                         this.setState({ error: String(result.error), processingPanel: null });
                     } else {
                         await this.refreshPanels();
-                        this.setState({ processingPanel: null });
+                        if (this._isMounted) {
+                            this.setState({ processingPanel: null });
+                        }
                     }
                 } catch (err) {
-                    this.setState({ error: String(err), processingPanel: null });
+                    if (this._isMounted) {
+                        this.setState({ error: String(err), processingPanel: null });
+                    }
                 }
             },
         );
     }
 
     private async handleCreateScript(panel: MaintainPanelInfo): Promise<void> {
-        this.setState({ processingPanel: panel._name });
+        if (this._isMounted) {
+            this.setState({ processingPanel: panel._name });
+        }
 
         try {
             const result = await this.props.oContext.socket.sendTo(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                `${this.adapterName}.${this.instance}`,
                 'createScript',
                 { name: panel._name, topic: panel._topic },
             );
+
+            if (!this._isMounted) {
+                return;
+            }
 
             if (result && typeof result === 'object' && 'error' in result) {
                 this.setState({ error: String(result.error), processingPanel: null });
             } else {
                 await this.refreshPanels();
-                this.setState({ processingPanel: null });
+                if (this._isMounted) {
+                    this.setState({ processingPanel: null });
+                }
             }
         } catch (err) {
-            this.setState({ error: String(err), processingPanel: null });
+            if (this._isMounted) {
+                this.setState({ error: String(err), processingPanel: null });
+            }
         }
     }
 
-    private async handleOpenTasmotaConsole(panel: MaintainPanelInfo): Promise<void> {
+    private async handleOpenTasmotaConsole(panel: PanelConfig | undefined): Promise<void> {
         try {
+            if (!panel?.ip) {
+                this.setState({ error: this.getText('invalidIpForConsole') });
+                return;
+            }
             const result = await this.props.oContext.socket.sendTo(
-                `${this.props.oContext.adapterName}.${this.props.oContext.instance ?? '0'}`,
+                `${this.adapterName}.${this.instance}`,
                 'openTasmotaConsole',
-                { ip: panel._ip },
+                { ip: panel.ip },
             );
 
             if (result && typeof result === 'object' && 'openUrl' in result) {
                 window.open(result.openUrl as string, '_blank');
             }
         } catch (err) {
-            this.setState({ error: String(err) });
+            if (this._isMounted) {
+                this.setState({ error: String(err) });
+            }
         }
     }
 
     private isPanelUpdateable(panel: MaintainPanelInfo): boolean {
+        const data = this.props.data;
         const hasValidIp = panel._ip && /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(panel._ip);
         const hasValidTopic = panel._topic && /^[a-zA-Z][\w/]+$/.test(panel._topic);
-        const hasValidData = this.props.data.mqttPort && this.props.data.mqttUsername && this.props.data.mqttPassword;
-        const hasValidServer = this.props.data.mqttServer
-            ? this.props.data.internalServerIp &&
-              /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(this.props.data.internalServerIp) &&
-              this.props.data.internalServerIp !== '127.0.0.1'
-            : this.props.data.mqttIp;
+        const hasValidData = data.mqttPort && data.mqttUsername && data.mqttPassword;
+        const hasValidServer = data.mqttServer
+            ? data.internalServerIp &&
+              /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(data.internalServerIp) &&
+              data.internalServerIp !== '127.0.0.1'
+            : data.mqttIp;
 
         return !!(
             hasValidIp &&
@@ -338,7 +463,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 buttonScriptColor: 'primary',
             };
         }
-        if (panel._online === 'no') {
+        /* if (panel._online === 'no') {
             return {
                 backgroundColor: isDark ? red[900] : red[100],
                 borderColor: red[700],
@@ -346,7 +471,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 buttonTftColor: 'primary',
                 buttonScriptColor: 'primary',
             };
-        }
+        } */
         if (panel._check) {
             return {
                 backgroundColor: isDark ? orange[900] : orange[100],
@@ -357,8 +482,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             };
         }
         return {
-            backgroundColor: isDark ? green[900] : green[100],
-            borderColor: green[700],
+            // backgroundColor: isDark ? green[900] : green[100],
+            // borderColor: green[700],
+            backgroundColor: 'transparent',
+            borderColor: 'primary',
             buttonTasmotaColor: 'primary',
             buttonTftColor: 'primary',
             buttonScriptColor: 'primary',
@@ -366,7 +493,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
-        const { panels, error, processingPanel } = this.state;
+        // Expert Mode from props (provided by json-config system)
+        //const isExpertMode = this.props.expertMode ?? false;
+        const panelsConfig: PanelConfig[] = this.panelsConfig;
+        const { panelsInfo, error, processingPanel, alive } = this.state;
         const confirmDialog = this.confirmDialog;
 
         return (
@@ -390,7 +520,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         target="_blank"
                         sx={{ color: 'red' }}
                     >
-                        {this.getText('openLinkAdapterInsatllation')}
+                        {this.getText('openLinkAdapterInstallation')}
                     </Button>
                 </Box>
 
@@ -407,8 +537,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
                 {/* Panels as Boxes */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                    {panels.map((panel, index) => {
+                    {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
+                        const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
                         return (
                             <Box
                                 key={panel._id || index}
@@ -419,20 +550,29 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     border: 3,
                                     borderColor: cardStyle.borderColor,
                                     backgroundColor: cardStyle.backgroundColor,
-                                    opacity: !this.state.alive ? 0.6 : 1,
+                                    opacity: !alive ? 0.6 : 1,
                                     p: 2,
                                     borderRadius: 1,
                                 }}
                             >
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        fontWeight: panel._check ? 'bold' : 'normal',
-                                        mb: 2,
-                                    }}
-                                >
-                                    {panel._Headline}
-                                </Typography>
+                                {/* Panel Name and Status Badge */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: panel._check ? 'bold' : 'normal',
+                                        }}
+                                    >
+                                        {panel._Headline}
+                                    </Typography>
+                                    <PanelStatusBadge
+                                        panelId={panelConfig?.id || panel._id}
+                                        oContext={this.props.oContext}
+                                        disableTooltip={true}
+                                        showIcon={false}
+                                        alive={alive}
+                                    />
+                                </Box>
 
                                 {/* Version Info with Flexbox */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -451,7 +591,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                             disabled={
                                                 !this.isPanelUpdateable(panel) ||
                                                 processingPanel === panel._name ||
-                                                !this.state.alive
+                                                !alive
                                             }
                                             size="small"
                                             sx={{
@@ -491,7 +631,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 panel._flashing ||
                                                 !panel._ip ||
                                                 processingPanel === panel._name ||
-                                                !this.state.alive
+                                                !alive
                                             }
                                             size="small"
                                             sx={{
@@ -530,7 +670,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 !panel._name ||
                                                 !panel._topic ||
                                                 processingPanel === panel._name ||
-                                                !this.state.alive
+                                                !alive
                                             }
                                             size="small"
                                             sx={{
@@ -557,8 +697,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     <Button
                                         variant="contained"
                                         fullWidth
-                                        onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel._ip || !this.state.alive}
+                                        onClick={() =>
+                                            this.handleOpenTasmotaConsole(panelConfig)
+                                        }
+                                        disabled={!panelConfig?.ip || !alive}
                                         size="small"
                                         sx={{ mt: 1 }}
                                     >

@@ -85,7 +85,7 @@ class ConfigManager extends import_library.BaseClass {
       return { messages: ["Abort: Invalid configuration"], panelConfig: void 0 };
     }
     if (configManagerConst.isGlobalConfig(configuration)) {
-      let panelConfig2 = { pages: [], navigation: [], scriptVersion: "" };
+      let panelConfig2 = { pages: [], navigation: [], scriptVersion: "", scriptName: "missing" };
       let messages2 = [];
       const tempConfig = { ...configuration, pages: [] };
       ({ panelConfig: panelConfig2, messages: messages2 } = await this.getPageConfig(tempConfig, panelConfig2, messages2));
@@ -382,7 +382,7 @@ class ConfigManager extends import_library.BaseClass {
     config.subPages = config.subPages.filter(
       (item) => config.pages.findIndex((item2) => item.uniqueName === item2.uniqueName) === -1
     );
-    let panelConfig = { pages: [], navigation: [], scriptVersion: config.version };
+    let panelConfig = { pages: [], navigation: [], scriptVersion: config.version, scriptName: config.scriptName || "missing" };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
       messages.push("Required field panelTopic is missing");
