@@ -275,10 +275,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
         }
 
-        /*} catch (e: any) {
-            this.log.warn(`Invalid configuration stopped! ${e}`);
+        if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
+            this.log.error('Invalid admin configuration for mqtt!');
+            this.testSuccessful = false;
             return;
-        }*/
+        }
         if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
             this.config.mqttPassword = this.config.mqttPassword || '';
 
@@ -341,11 +342,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.log.warn('No pin entered for the service page! Please set a pin in the admin settings!');
             }
 
-            if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
-                this.log.error('Invalid admin configuration for mqtt!');
-                this.testSuccessful = false;
-                return;
-            }
             /*const test = await this.getObjectViewAsync('system', 'instance', {
                 startkey: `system.adapter`,
                 endkey: `system.adapter}`,

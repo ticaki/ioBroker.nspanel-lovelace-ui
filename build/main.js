@@ -238,6 +238,11 @@ class NspanelLovelaceUi extends utils.Adapter {
         pauseAdapter = true;
       }
     }
+    if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
+      this.log.error("Invalid admin configuration for mqtt!");
+      this.testSuccessful = false;
+      return;
+    }
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
       this.config.mqttPassword = this.config.mqttPassword || "";
       const port = await this.getPortAsync(this.config.mqttPort);
@@ -293,11 +298,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.debug("Check configuration!");
       if (!this.config.pw1 || typeof this.config.pw1 !== "string") {
         this.log.warn("No pin entered for the service page! Please set a pin in the admin settings!");
-      }
-      if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
-        this.log.error("Invalid admin configuration for mqtt!");
-        this.testSuccessful = false;
-        return;
       }
       if (this.config.testCase) {
         await this.extendForeignObjectAsync("0_userdata.0.boolean", {
