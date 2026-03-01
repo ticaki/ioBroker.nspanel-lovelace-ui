@@ -18,6 +18,11 @@ interface PageMQTTSettingState extends ConfigGenericState {
     showPassword: boolean;
     // State for alive status of the adapter
     alive?: boolean;
+    // Lokale Kopien für kontrollierte Inputs
+    localMqttIp?: string;
+    localMqttPort?: number;
+    localMqttUsername?: string;
+    localMqttPassword?: string;
 }
 
 class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PageMQTTSettingState> {
@@ -31,6 +36,10 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             ...this.state,
             alive: false,
             showPassword: false,
+            localMqttIp: undefined,
+            localMqttPort: undefined,
+            localMqttUsername: undefined,
+            localMqttPassword: undefined,
         };
     }
 
@@ -81,13 +90,6 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             void this.onChange(key, event.target.checked);
         };
 
-    // Generische Handler-Funktion für Text-Änderungen
-    private handleTextChange =
-        (key: string) =>
-        (event: React.ChangeEvent<HTMLInputElement>): void => {
-            void this.onChange(key, event.target.value);
-        };
-
     // Handler für zufällige MQTT-Credentials
     private handleGetRandomMqttCredentials = async (): Promise<void> => {
         try {
@@ -132,21 +134,42 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
         }
     };
 
+    // Handler für Passwort-Sichtbarkeit
     private handleToggleVisibility = (): void => {
         this.setState(prevState => ({
             showPassword: !prevState.showPassword,
         }));
     };
 
+    // Generische Handler-Funktion für Text-Änderungen mit lokalem State
+    private handleTextChange =
+        (key: string) =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            const value = event.target.value;
+
+            // Setze lokalen State für sofortiges Feedback
+            const stateKey = `local${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+            this.setState({ [stateKey]: value } as any);
+
+            // Propagiere asynchron zur Config
+            void this.onChange(key, value);
+        };
+
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
 
         // Destructure state properties for easier access
-        const { alive, showPassword } = this.state;
+        const { alive, showPassword, localMqttIp, localMqttPort, localMqttUsername, localMqttPassword } = this.state;
 
         // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
         const data = this.props.data || {};
+
+        // Verwende lokale Werte wenn vorhanden, sonst data
+        const mqttIp = localMqttIp !== undefined ? localMqttIp : (data.mqttIp ?? '');
+        const mqttPort = localMqttPort !== undefined ? localMqttPort : (data.mqttPort ?? '');
+        const mqttUsername = localMqttUsername !== undefined ? localMqttUsername : (data.mqttUsername ?? '');
+        const mqttPassword = localMqttPassword !== undefined ? localMqttPassword : (data.mqttPassword ?? '');
 
         // Gemeinsame Styles für alle Boxen
         const boxStyle = {
@@ -206,7 +229,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         <TextField
                             variant="standard"
                             label={this.getText('mqttIp')}
-                            value={data.mqttIp ?? ''}
+                            value={mqttIp}
                             onChange={this.handleTextChange('mqttIp')}
                             disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
@@ -216,7 +239,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             variant="standard"
                             type="number"
                             label={this.getText('mqttPort')}
-                            value={data.mqttPort ?? ''}
+                            value={mqttPort}
                             onChange={this.handleTextChange('mqttPort')}
                             disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
@@ -227,17 +250,17 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         <TextField
                             variant="standard"
                             label={this.getText('mqttUser')}
-                            value={data.mqttUsername ?? ''}
+                            value={mqttUsername}
                             onChange={this.handleTextChange('mqttUsername')}
                             disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
                         />
-                        {/* Passwortfeld mit Sichtbarkeitstoggle */}
+                        {/* Passwortfeld mit Sichtbarkeit */}
                         <TextField
                             variant="standard"
                             label={this.getText('mqttPassword')}
                             type={showPassword ? 'text' : 'password'}
-                            value={data.mqttPassword ?? ''}
+                            value={mqttPassword}
                             onChange={this.handleTextChange('mqttPassword')}
                             disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
