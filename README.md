@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### 0.13.0 (2026-03-01)
+### 0.13.1 (2026-03-01)
 - (ticaki) New Admin tab for quick overview and minor settings
 - (tt-tom17)(ticaki) Panel status system with badge (online/offline/setup/flashing states)
 - (tt-tom17) Panel management improvements (IP selector, delete/edit panels, init button)
