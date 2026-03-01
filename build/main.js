@@ -162,6 +162,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       );
       this.config.weatherEntity = "";
     }
+    let pauseAdapter = false;
     this.mainConfiguration = [];
     const obj = await this.getForeignObjectAsync(this.namespace);
     if (obj && obj.native) {
@@ -234,7 +235,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       } catch (e) {
         this.log.error(`Error in configuration: ${e.message}`);
         this.mainConfiguration = [];
-        return;
+        pauseAdapter = true;
       }
     }
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
@@ -266,20 +267,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       await this.library.initStates(states);
       await this.onMqttConnect();
       await this.delay(1e3);
-      for (const id in states) {
-        if (id.endsWith(".info.isOnline")) {
-          await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
-        }
-      }
-      this.log.debug("Check configuration!");
-      if (!this.config.pw1 || typeof this.config.pw1 !== "string") {
-        this.log.warn("No pin entered for the service page! Please set a pin in the admin settings!");
-      }
-      if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
-        this.log.error("Invalid admin configuration for mqtt!");
-        this.testSuccessful = false;
-        return;
-      }
       this.mqttClient = new MQTT.MQTTClientClass(
         this,
         this.config.mqttIp,
@@ -295,6 +282,23 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       }
       await this.mqttClient.waitConnectAsync(5e3);
+      if (pauseAdapter) {
+        return;
+      }
+      for (const id in states) {
+        if (id.endsWith(".info.isOnline")) {
+          await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
+        }
+      }
+      this.log.debug("Check configuration!");
+      if (!this.config.pw1 || typeof this.config.pw1 !== "string") {
+        this.log.warn("No pin entered for the service page! Please set a pin in the admin settings!");
+      }
+      if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
+        this.log.error("Invalid admin configuration for mqtt!");
+        this.testSuccessful = false;
+        return;
+      }
       if (this.config.testCase) {
         await this.extendForeignObjectAsync("0_userdata.0.boolean", {
           type: "state",
@@ -1059,7 +1063,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 if ((result == null ? void 0 : result.nlui_driver_version) !== "-1") {
                   try {
-                    await this.delay(3e3);
+                    await this.delay(5e3);
                     const cmnd = await this.getTFTVersionOnline(
                       obj.message.model,
                       obj.message.useBetaTFT,

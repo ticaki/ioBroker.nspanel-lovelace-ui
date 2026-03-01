@@ -183,6 +183,8 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
 
         //try {
+
+        let pauseAdapter = false;
         this.mainConfiguration = [];
         const obj = await this.getForeignObjectAsync(this.namespace);
         if (obj && obj.native) {
@@ -269,7 +271,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             } catch (e: any) {
                 this.log.error(`Error in configuration: ${e.message}`);
                 this.mainConfiguration = [];
-                return;
+                pauseAdapter = true;
             }
         }
 
@@ -309,7 +311,24 @@ class NspanelLovelaceUi extends utils.Adapter {
             await this.library.initStates(states);
             await this.onMqttConnect();
             await this.delay(1000);
-
+            this.mqttClient = new MQTT.MQTTClientClass(
+                this,
+                this.config.mqttIp,
+                this.config.mqttPort,
+                this.config.mqttUsername,
+                this.config.mqttPassword,
+                this.config.mqttServer,
+                async (topic, message) => {
+                    this.log.debug(`${topic} ${message}`);
+                },
+            );
+            if (!this.mqttClient) {
+                return;
+            }
+            await this.mqttClient.waitConnectAsync(5000);
+            if (pauseAdapter) {
+                return;
+            }
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
                 if (id.endsWith('.info.isOnline')) {
@@ -332,21 +351,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                 endkey: `system.adapter}`,
             });
             this.log.debug(JSON.stringify(test));*/
-            this.mqttClient = new MQTT.MQTTClientClass(
-                this,
-                this.config.mqttIp,
-                this.config.mqttPort,
-                this.config.mqttUsername,
-                this.config.mqttPassword,
-                this.config.mqttServer,
-                async (topic, message) => {
-                    this.log.debug(`${topic} ${message}`);
-                },
-            );
-            if (!this.mqttClient) {
-                return;
-            }
-            await this.mqttClient.waitConnectAsync(5000);
 
             if (this.config.testCase) {
                 await this.extendForeignObjectAsync('0_userdata.0.boolean', {
@@ -1260,7 +1264,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 if (result?.nlui_driver_version !== '-1') {
                                     try {
-                                        await this.delay(3000);
+                                        await this.delay(5000);
 
                                         const cmnd = await this.getTFTVersionOnline(
                                             obj.message.model,
