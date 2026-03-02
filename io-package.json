@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.13.1",
+    "version": "0.13.2",
     "news": {
+      "0.13.2": {
+        "en": "Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaConsole button fixed\nSome minor fixes (settings model, tab model, field types)",
+        "de": "Wartungsansicht: korrekter Versionsvergleich für Tasmota- und TFT-Versionen (Upgrade vs. Downgrade-Erkennung)\nTabPanelinfo: openTasmotaConsole Button funktioniert jetzt\nEinige kleinere Fixes (Einstellungen: Modell, Tab: Modell, Feldtypen)",
+        "ru": "Поддерживайте таблицу: надлежащее сравнение семверов для версий Tasmota и TFT (обновление против обнаружения понижения)\nTabPanelinfo: кнопка openTasmotaConsole\nНекоторые незначительные исправления (модель настроек, модель вкладок, типы полей)",
+        "pt": "Manter tabela: comparação de semáforo adequada para as versões Tasmota e TFT (detecção upgrade vs. downgrade)\nTabPanelinfo: botão abertoTasmotaConsole corrigido\nAlgumas correções menores (settings model, tab model, field types)",
+        "nl": "Onderhoud tabel: juiste semver vergelijking voor Tasmota en TFT versies (upgrade vs. downgrade detectie)\nTabPanelinfo: openTasmotaConsole knop vast\nEnkele kleine correcties (instellingen model, tabmodel, veldtypes)",
+        "fr": "Maintenez une table : comparaison correcte entre le semver des versions Tasmota et TFT (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaConsole bouton fixe\nQuelques corrections mineures (réglage du modèle, tabulaire, types de champs)",
+        "it": "Tabella principale: corretto confronto semver per le versioni Tasmota e TFT (rilevamento upgrade vs downgrade)\nTabPanelinfo: pulsante apertoTasmotaConsole fisso\nAlcune correzioni minori (modello di impostazioni, modello di scheda, tipi di campo)",
+        "es": "Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaBotón de consola fijo\nAlgunas correcciones menores (modelo de fijación, modelo de pestañas, tipos de campo)",
+        "pl": "Utrzymanie tabeli: prawidłowe porównanie semvera dla wersji Tasmota i TFT (upgrade vs downgrade detection)\nTabPanelinfo: przycisk openTasmotaConsole naprawiony\nNiektóre drobne poprawki (model ustawień, model zakładki, typy pól)",
+        "uk": "Зміст таблиці: належне порівняння semver для версій Tasmota і TFT (оновлення проти виявлення низградів)\nTabPanelinfo: openTasmotaConsole кнопка фіксована\nДеякі незначні фіксації (модель, модель вкладки, типи поля)",
+        "zh-cn": "维护表格:Tasmota和TFT版本(升级与降级检测)的正确模拟比较\nTabPanelinfo: 打开 Tasmota 控制台按钮\n一些小修正(设置模型,制表模型,字段类型)"
+      },
       "0.13.1": {
         "en": "New Admin tab for quick overview and minor settings\nPanel status system with badge (online/offline/setup/flashing states)\nPanel management improvements (IP selector, delete/edit panels, init button)\nMQTT configuration UI design improvements\nVarious fixes (badge flickering, tab focus, jsonConfig, translations, hex colors)",
         "de": "Neuer Admin-Tab für schnelle Übersicht und kleinere Einstellungen\nPanel-Statussystem mit Badge (Online/Offline/Setup/Flashing-Status)\nVerbesserungen im Panel-Management (IP-Selektor, Panels löschen/bearbeiten, Init-Button)\nVerbesserungen am MQTT-Konfigurations-UI-Design\nVerschiedene Fehlerbehebungen (Badge-Flackern, Tab-Fokus, jsonConfig, Übersetzungen, Hex-Farben)",
@@ -80,19 +93,6 @@
         "pl": "Naprawiono: W pewnych okolicznościach, adapter rozbija się, gdy wywołana jest pop-up.",
         "uk": "Виправлено: За певних обставин адаптер зникає, коли називається спливаюче вікно.",
         "zh-cn": "固定:在某些情况下,适配器在叫弹出时会崩溃."
-      },
-      "0.9.0": {
-        "en": "HMI: long press added (v5.1.1)\nReplace double-click with long press \npageItem type=button long press added\ncustom pageitem added\nscript ID is found uniquely",
-        "de": "HMI: langer Klick hinzugefügt (v5.1.1)\nDoppelklick ersetzen mit langem Klick (v5.1.1)\nPageitem type=button langer Klick hinzugefügt\nbenutzerdefinierte PageItem hinzugefügt\nID der Pageitems wird eindeutig gefunden",
-        "ru": "HMI: добавлено длинное нажатие (v5.1.1)\nЗамените двойной щелчок длинным нажатием\nстраница Тип элемента = добавлена длинная кнопка\nдобавлен пользовательский pageitem\nидентификатор скрипта найден уникально",
-        "pt": "HMI: longa impressão adicionada (v5.1.1)\nSubstituir o duplo- clique com uma longa imprensa\npágina Tipo de item=botão longa imprensa adicionada\npágina personalizada adicionada\niD do script é encontrado de forma única",
-        "nl": "HMI: lange pers toegevoegd (v5.1.1)\nDubbelklik vervangen door lange druk\nblz. Item type=knop lange druk toegevoegd\naangepast paginaitem toegevoegd\nscript ID wordt uniek gevonden",
-        "fr": "HMI: ajout d'une longue presse (v5.1.1)\nRemplacer le double-clic par une longue pression\npage Type d'article=bouton presse longue ajoutée\npage personnalisée ajouté\niD de script est trouvé uniquement",
-        "it": "HMI: pressa lunga aggiunta (v5.1.1)\nSostituisci il doppio clic con la stampa lunga\npagina Articolo tipo=button lunga stampa aggiunto\npagina personalizzata aggiunto\nscript ID è trovato unico",
-        "es": "HMI: larga prensa agregada (v5.1.1)\nReemplazar el doble clic con la larga prensa\npágina Tipo de artículo= prensa larga de botón añadido\npágina personal añadido\niD de script se encuentra única",
-        "pl": "HMI: dodana długa prasa (v5.1.1)\nZastąp podwójne kliknięcie długim naciśnięciem\nstrona Typ elementu = przycisk długi naciśnij dodany\nniestandardowa pozycja konkursowa\niD skryptu znajduje się unikalnie",
-        "uk": "HMI: доданий довгопрес (v5.1.1)\nЗамініть подвійний клацання з довгою пресою\nновини Тип елемента: доданий прес\nдодано користувацьку сторінку\nідентифікатор сценарію",
-        "zh-cn": "HMI: 长报增加(v5.1.1.1)\n双击改为长按\n页 次 项目类型=按钮长度已添加\n添加自定义页面项目\n唯一找到脚本 ID"
       }
     },
     "titleLang": {
