@@ -792,8 +792,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
             );
         }
 
-        // Select field with states
-        if (states && Object.keys(states).length > 0) {
+        // Select field with states (writable only)
+        if (states && Object.keys(states).length > 0 && isWritable) {
             return (
                 <FormControl
                     key={statePath}
@@ -805,11 +805,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                         value={value}
                         label={label}
                         onChange={e => {
-                            if (isWritable) {
-                                void this.writeStateValue(panelId, statePath, e.target.value);
-                            }
+                            void this.writeStateValue(panelId, statePath, e.target.value);
                         }}
-                        disabled={!isWritable}
                     >
                         {Object.entries(states).map(([val, text]) => (
                             <MenuItem
@@ -821,6 +818,25 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                         ))}
                     </Select>
                 </FormControl>
+            );
+        }
+
+        // Read-only text field for states (shows resolved value)
+        if (states && Object.keys(states).length > 0 && !isWritable) {
+            const displayText = states[value] || value;
+            return (
+                <TextField
+                    key={statePath}
+                    label={label}
+                    value={displayText}
+                    slotProps={{
+                        input: {
+                            readOnly: true,
+                        },
+                    }}
+                    size="small"
+                    fullWidth
+                />
             );
         }
 
