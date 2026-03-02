@@ -1536,8 +1536,22 @@ class NspanelLovelaceUi extends utils.Adapter {
               flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
             }
           }
+          const compareSemver = (a, b) => {
+            const pa = a.split(".").map(Number);
+            const pb = b.split(".").map(Number);
+            for (let i = 0; i < 3; i++) {
+              if (pa[i] > pb[i]) {
+                return 1;
+              }
+              if (pa[i] < pb[i]) {
+                return -1;
+              }
+            }
+            return 0;
+          };
           if ((_r = this.controller) == null ? void 0 : _r.panels) {
             const updateText = this.library.getTranslation("updateAvailable");
+            const downgradeText = this.library.getTranslation("downgradeAvailable");
             const checkText = this.library.getTranslation("check!");
             const temp = [];
             for (const a of this.controller.panels) {
@@ -1572,10 +1586,17 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 if (((_v = a.info.tasmota) == null ? void 0 : _v.onlineVersion) && tv) {
                   const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
-                  if (temp2 && temp2[1] && temp2[1] !== tv) {
-                    tv += ` (${updateText})`;
-                    check = true;
-                    check_tasmota = true;
+                  if (temp2 && temp2[1]) {
+                    const cmp = compareSemver(temp2[1], tv);
+                    if (cmp > 0) {
+                      tv += ` (${updateText})`;
+                      check = true;
+                      check_tasmota = true;
+                    } else if (cmp < 0) {
+                      tv += ` (${downgradeText})`;
+                      check = false;
+                      check_tasmota = true;
+                    }
                   }
                 }
                 tv = tv ? `v${tv}` : "";
@@ -1587,14 +1608,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 if (((_x = a.info.nspanel) == null ? void 0 : _x.onlineVersion) && nv) {
                   const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
-                  if (temp2 && temp2[1] && temp2[1] !== nv) {
+                  if (temp2 && temp2[1]) {
+                    const cmp = compareSemver(temp2[1], nv);
                     if (nv === "0.0.0") {
                       nv += ` (Developer version!)`;
-                    } else {
+                      check = true;
+                      check_tft = true;
+                    } else if (cmp > 0) {
                       nv += ` (${updateText})`;
+                      check = true;
+                      check_tft = true;
+                    } else if (cmp < 0) {
+                      nv += ` (${downgradeText})`;
+                      check = true;
+                      check_tft = true;
                     }
-                    check = true;
-                    check_tft = true;
                   }
                 }
                 nv = nv ? `v${nv}` : "";

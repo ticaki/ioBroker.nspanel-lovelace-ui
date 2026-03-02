@@ -393,6 +393,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
     private async handleOpenTasmotaConsole(panel: PanelConfig | undefined): Promise<void> {
         try {
+            console.log('[Maintain] Attempting to open Tasmota console for panel:', panel);
             if (!panel?.ip) {
                 this.setState({ error: this.getText('invalidIpForConsole') });
                 return;
@@ -697,9 +698,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     <Button
                                         variant="contained"
                                         fullWidth
-                                        onClick={() =>
-                                            this.handleOpenTasmotaConsole(panelConfig)
-                                        }
+                                        onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
                                         disabled={!panelConfig?.ip || !alive}
                                         size="small"
                                         sx={{ mt: 1 }}

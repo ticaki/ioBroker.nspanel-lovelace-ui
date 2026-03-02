@@ -1776,8 +1776,23 @@ class NspanelLovelaceUi extends utils.Adapter {
                         }
                     }
 
+                    const compareSemver = (a: string, b: string): number => {
+                        const pa = a.split('.').map(Number);
+                        const pb = b.split('.').map(Number);
+                        for (let i = 0; i < 3; i++) {
+                            if (pa[i] > pb[i]) {
+                                return 1;
+                            }
+                            if (pa[i] < pb[i]) {
+                                return -1;
+                            }
+                        }
+                        return 0;
+                    };
+
                     if (this.controller?.panels) {
                         const updateText = this.library.getTranslation('updateAvailable');
+                        const downgradeText = this.library.getTranslation('downgradeAvailable');
                         const checkText = this.library.getTranslation('check!');
                         const temp = [];
                         for (const a of this.controller.panels) {
@@ -1812,10 +1827,17 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 if (a.info.tasmota?.onlineVersion && tv) {
                                     const temp = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
-                                    if (temp && temp[1] && temp[1] !== tv) {
-                                        tv += ` (${updateText})`;
-                                        check = true;
-                                        check_tasmota = true;
+                                    if (temp && temp[1]) {
+                                        const cmp = compareSemver(temp[1], tv);
+                                        if (cmp > 0) {
+                                            tv += ` (${updateText})`;
+                                            check = true;
+                                            check_tasmota = true;
+                                        } else if (cmp < 0) {
+                                            tv += ` (${downgradeText})`;
+                                            check = false;
+                                            check_tasmota = true;
+                                        }
                                     }
                                 }
                                 tv = tv ? `v${tv}` : '';
@@ -1827,14 +1849,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 if (a.info.nspanel?.onlineVersion && nv) {
                                     const temp = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
-                                    if (temp && temp[1] && temp[1] !== nv) {
+                                    if (temp && temp[1]) {
+                                        const cmp = compareSemver(temp[1], nv);
                                         if (nv === '0.0.0') {
                                             nv += ` (Developer version!)`;
-                                        } else {
+                                            check = true;
+                                            check_tft = true;
+                                        } else if (cmp > 0) {
                                             nv += ` (${updateText})`;
+                                            check = true;
+                                            check_tft = true;
+                                        } else if (cmp < 0) {
+                                            nv += ` (${downgradeText})`;
+                                            check = true;
+                                            check_tft = true;
                                         }
-                                        check = true;
-                                        check_tft = true;
                                     }
                                 }
                                 nv = nv ? `v${nv}` : '';

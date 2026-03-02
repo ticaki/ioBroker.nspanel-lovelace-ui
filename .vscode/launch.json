@@ -5,7 +5,7 @@
             "port": 9229,
             "request": "attach",
             "resolveSourceMapLocations": [
-                "${workspaceFolder}/.dev-server/test/node_modules/**/*.js"
+                "${workspaceFolder}/.dev-server/default/node_modules/**/*.js"
             ],
             "restart": true,
             "type": "node"
