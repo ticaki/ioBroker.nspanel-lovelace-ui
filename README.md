@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)
+- (ticaki) TabPanelinfo: openTasmotaConsole button fixed
 
 ### 0.13.1 (2026-03-01)
 - (ticaki) New Admin tab for quick overview and minor settings

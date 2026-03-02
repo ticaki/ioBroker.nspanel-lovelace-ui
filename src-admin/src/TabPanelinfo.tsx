@@ -576,21 +576,15 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         }
     }
 
-    private async handleOpenTasmotaConsole(panel: PanelinfoInfo): Promise<void> {
-        if (!this.state.alive) {
-            console.warn('[Panelinfo] Cannot open Tasmota console: adapter not alive');
-            return;
-        }
+    private handleOpenTasmotaConsole(panel: PanelConfig | undefined): void {
         try {
-            const result = await this.props.oContext.socket.sendTo(
-                `${this.adapterName}.${this.instance}`,
-                'openTasmotaConsole',
-                { ip: panel._ip },
-            );
-
-            if (result && typeof result === 'object' && 'openUrl' in result) {
-                window.open(result.openUrl as string, '_blank');
+            console.log('[Maintain] Attempting to open Tasmota console for panel:', panel);
+            if (!panel?.ip) {
+                this.setState({ error: this.getText('invalidIpForConsole') });
+                return;
             }
+            const openUrl = `http://${panel.ip}:80/cs?`;
+            window.open(openUrl, '_blank', 'noopener,noreferrer');
         } catch (err) {
             if (this._isMounted) {
                 this.setState({ error: String(err) });
@@ -982,8 +976,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                 <Button
                                     variant="contained"
                                     fullWidth
-                                    onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                    disabled={!panel._ip || !alive}
+                                    onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
+                                    disabled={!panelConfig?.ip || !alive}
                                     size="small"
                                 >
                                     {this.getText('openTasmotaConsole')}

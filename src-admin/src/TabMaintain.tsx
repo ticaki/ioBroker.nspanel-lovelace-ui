@@ -391,22 +391,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
     }
 
-    private async handleOpenTasmotaConsole(panel: PanelConfig | undefined): Promise<void> {
+    private handleOpenTasmotaConsole(panel: PanelConfig | undefined): void {
         try {
             console.log('[Maintain] Attempting to open Tasmota console for panel:', panel);
             if (!panel?.ip) {
                 this.setState({ error: this.getText('invalidIpForConsole') });
                 return;
             }
-            const result = await this.props.oContext.socket.sendTo(
-                `${this.adapterName}.${this.instance}`,
-                'openTasmotaConsole',
-                { ip: panel.ip },
-            );
-
-            if (result && typeof result === 'object' && 'openUrl' in result) {
-                window.open(result.openUrl as string, '_blank');
-            }
+            const openUrl = `http://${panel.ip}:80/cs?`;
+            window.open(openUrl, '_blank', 'noopener,noreferrer');
         } catch (err) {
             if (this._isMounted) {
                 this.setState({ error: String(err) });
