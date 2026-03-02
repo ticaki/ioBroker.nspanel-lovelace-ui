@@ -1027,7 +1027,12 @@ const genericStateObjects = {
               type: "string",
               role: "text",
               read: true,
-              write: false
+              write: false,
+              states: {
+                eu: "eu-Version",
+                "us-p": "us-p-Version",
+                "us-l": "us-l-Version"
+              }
             },
             native: {}
           },

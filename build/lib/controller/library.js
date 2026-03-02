@@ -327,11 +327,7 @@ class Library extends BaseClass {
       }
       if (!disallowed) {
         if (obj.type === "state" && obj.common.states) {
-          const existing = await this.adapter.getObjectAsync(dp);
-          if (existing) {
-            existing.common.states = obj.common.states;
-            await this.adapter.setObject(dp, existing);
-          }
+          obj.common.states = await this.getTranslationStatesObj(obj.common.states);
         }
         await this.adapter.extendObject(dp, obj);
       }
@@ -343,11 +339,7 @@ class Library extends BaseClass {
       }
       if (!disallowed) {
         if (obj.type === "state" && obj.common.states) {
-          const existing = await this.adapter.getObjectAsync(dp);
-          if (existing) {
-            existing.common.states = obj.common.states;
-            await this.adapter.setObject(dp, existing);
-          }
+          obj.common.states = await this.getTranslationStatesObj(obj.common.states);
         }
         await this.adapter.extendObject(dp, obj);
         node.init = false;
@@ -705,6 +697,54 @@ class Library extends BaseClass {
       return key;
     }
     return result;
+  }
+  async getTranslationStatesObj(states) {
+    const language = this.getLocalLanguage();
+    try {
+      const i = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${language}/translations.json`)));
+      if (typeof states === "object" && !Array.isArray(states)) {
+        const result = {};
+        for (const key in states) {
+          const k = states[key];
+          if (i[k] !== void 0) {
+            result[key] = i[k];
+          } else {
+            if (this.adapter.config.logUnknownTokens) {
+              this.unknownTokens[k] = "";
+            }
+            result[key] = k;
+          }
+        }
+        return result;
+      } else if (Array.isArray(states)) {
+        const result = [];
+        for (const key of states) {
+          if (i[key] !== void 0) {
+            result.push(i[key]);
+          } else {
+            if (this.adapter.config.logUnknownTokens) {
+              this.unknownTokens[key] = "";
+            }
+            result.push(key);
+          }
+        }
+        return result;
+      }
+      return states;
+    } catch {
+      if (this.adapter.config.logUnknownTokens) {
+        if (typeof states === "object" && !Array.isArray(states)) {
+          for (const key in states) {
+            this.unknownTokens[key] = "";
+          }
+        } else if (Array.isArray(states)) {
+          for (const key of states) {
+            this.unknownTokens[key] = "";
+          }
+        }
+      }
+      return states;
+    }
   }
   async checkLanguage() {
     try {

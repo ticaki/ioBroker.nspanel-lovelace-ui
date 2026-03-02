@@ -1084,6 +1084,11 @@ export const genericStateObjects: {
                             role: 'text',
                             read: true,
                             write: false,
+                            states: {
+                                eu: 'eu-Version',
+                                'us-p': 'us-p-Version',
+                                'us-l': 'us-l-Version',
+                            },
                         },
                         native: {},
                     },
