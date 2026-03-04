@@ -704,6 +704,7 @@ class Panel extends import_library.BaseClass {
           case "page":
             break;
           case "switch":
+          case "buttonBackFlip":
           case "button": {
             if (typeof button.state === "string") {
               const di = new import_data_item.Dataitem(
@@ -1683,6 +1684,24 @@ class Panel extends import_library.BaseClass {
             return;
           }
           await action.state.setStateFlip();
+          break;
+        }
+        case "buttonBackFlip": {
+          if (typeof action.state === "string") {
+            this.log.error(`Button ${button} has no state!`);
+            return;
+          }
+          await action.state.setStateTrue();
+          setTimeout(
+            async (state) => {
+              if (this.unload || this.adapter.unload) {
+                return;
+              }
+              await state.setStateFalse();
+            },
+            100,
+            action.state
+          );
           break;
         }
       }

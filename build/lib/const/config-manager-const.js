@@ -50,7 +50,7 @@ function isButton(F) {
   if (F === null) {
     return true;
   }
-  return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button") && F.state && !F.state.endsWith("."));
+  return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button" || F.mode === "buttonBackFlip") && F.state && !F.state.endsWith("."));
 }
 function isGlobalConfig(F) {
   if (F === void 0) {

@@ -783,6 +783,7 @@ export class Panel extends BaseClass {
                         break;
 
                     case 'switch':
+                    case 'buttonBackFlip':
                     case 'button': {
                         if (typeof button.state === 'string') {
                             const di = new Dataitem(
@@ -1875,6 +1876,24 @@ export class Panel extends BaseClass {
                         return;
                     }
                     await action.state.setStateFlip();
+                    break;
+                }
+                case 'buttonBackFlip': {
+                    if (typeof action.state === 'string') {
+                        this.log.error(`Button ${button} has no state!`);
+                        return;
+                    }
+                    await action.state.setStateTrue();
+                    setTimeout(
+                        async state => {
+                            if (this.unload || this.adapter.unload) {
+                                return;
+                            }
+                            await state.setStateFalse();
+                        },
+                        100,
+                        action.state,
+                    );
                     break;
                 }
             }

@@ -275,11 +275,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
         }
 
-        if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
-            this.log.error('Invalid admin configuration for mqtt!');
-            this.testSuccessful = false;
-            return;
-        }
         if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
             this.config.mqttPassword = this.config.mqttPassword || '';
 
@@ -302,6 +297,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.testCase,
             );
             this.config.mqttIp = '127.0.0.1';
+        }
+
+        if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
+            this.log.error('Invalid admin configuration for mqtt!');
+            this.testSuccessful = false;
+            return;
         }
 
         //check config
@@ -1835,7 +1836,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             check_tasmota = true;
                                         } else if (cmp < 0) {
                                             tv += ` (${downgradeText})`;
-                                            check = false;
                                             check_tasmota = true;
                                         }
                                     }

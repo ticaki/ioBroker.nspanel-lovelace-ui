@@ -648,7 +648,7 @@ async function configuration (): Promise<void> {
         // DE: Konfiguration des rechten Schalters des NSPanels
         // EN: Configuration of the right switch of the NSPanel
         buttonRight: null/*{
-            mode: 'toggle',
+            mode: 'switch',
             page: '0_userdata.0.example',
             
         }*/,
@@ -683,7 +683,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.18.1';
+const version = '0.19.1';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1482,6 +1482,18 @@ declare namespace ScriptConfig {
              *
              */
             mode: 'button';
+            /**
+             * The state of the button datapoint to trigger.
+             *
+             */
+            state: string;
+        }
+        | {
+            /**
+             * Mode for triggering a button datapoint and flip back to false.
+             *
+             */
+            mode: 'buttonBackFlip';
             /**
              * The state of the button datapoint to trigger.
              *

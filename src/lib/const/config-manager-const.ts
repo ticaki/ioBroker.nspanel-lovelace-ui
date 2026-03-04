@@ -30,7 +30,10 @@ export function isButton(F: any): F is ConfigButtonFunction {
     return (
         'mode' in F &&
         ((F.mode === 'page' && F.page) ||
-            ('state' in F && (F.mode === 'switch' || F.mode === 'button') && F.state && !F.state.endsWith('.')))
+            ('state' in F &&
+                (F.mode === 'switch' || F.mode === 'button' || F.mode === 'buttonBackFlip') &&
+                F.state &&
+                !F.state.endsWith('.')))
     );
 }
 

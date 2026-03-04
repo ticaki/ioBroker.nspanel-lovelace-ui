@@ -322,6 +322,18 @@ export type ConfigButtonFunction =
            */
           state: string | dataItem.Dataitem;
       }
+    | {
+          /**
+           * Mode for triggering a button datapoint and flip back to false.
+           *
+           */
+          mode: 'buttonBackFlip';
+          /**
+           * The state of the button datapoint to trigger.
+           *
+           */
+          state: string | dataItem.Dataitem;
+      }
     | null;
 /**
  * Json to Status0 from Tasmota
