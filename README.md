@@ -157,6 +157,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.13.3 (2026-03-04)
+- (ticaki) added mode: buttonBackFlip to HW buttons
+- (ticaki) fixed critical bug when using internal MQTT server
+
 ### 0.13.2 (2026-03-02)
 - (ticaki) Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)
 - (ticaki) TabPanelinfo: openTasmotaConsole button fixed
