@@ -1692,7 +1692,7 @@ class Panel extends import_library.BaseClass {
             return;
           }
           await action.state.setStateTrue();
-          setTimeout(
+          this.adapter.setTimeout(
             async (state) => {
               if (this.unload || this.adapter.unload) {
                 return;

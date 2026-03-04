@@ -1884,7 +1884,7 @@ export class Panel extends BaseClass {
                         return;
                     }
                     await action.state.setStateTrue();
-                    setTimeout(
+                    this.adapter.setTimeout(
                         async state => {
                             if (this.unload || this.adapter.unload) {
                                 return;
