@@ -329,6 +329,10 @@ export type ConfigButtonFunction =
            */
           mode: 'buttonBackFlip';
           /**
+           * delay in ms before flipping back to false, default is 250ms, must be between 1 and 2^31-1
+           */
+          delay?: number;
+          /**
            * The state of the button datapoint to trigger.
            *
            */

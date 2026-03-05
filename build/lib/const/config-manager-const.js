@@ -50,7 +50,22 @@ function isButton(F) {
   if (F === null) {
     return true;
   }
-  return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button" || F.mode === "buttonBackFlip") && F.state && !F.state.endsWith("."));
+  if (!("mode" in F)) {
+    return false;
+  }
+  const mode = F.mode;
+  switch (mode) {
+    case "page":
+      return !!F.page;
+    case "switch":
+    case "button":
+    case "buttonBackFlip":
+      return "state" in F && !!F.state && typeof F.state === "string" && !F.state.endsWith(".");
+    default: {
+      mode;
+      return false;
+    }
+  }
 }
 function isGlobalConfig(F) {
   if (F === void 0) {

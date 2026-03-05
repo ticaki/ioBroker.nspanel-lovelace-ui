@@ -88,6 +88,7 @@ export class Panel extends BaseClass {
     private _isOnline: boolean = false;
     private _status: adminShareConfig.PanelStatus = 'offline';
     private _statusUpdateQueue: Promise<void> = Promise.resolve();
+    private buttonBackFlipTimeout: { left?: ioBroker.Timeout | undefined; right?: ioBroker.Timeout | undefined } = {};
 
     public blockTouchEventsForMs: number = 200; // ms
     public lastSendTypeDate: number = 0;
@@ -1540,7 +1541,11 @@ export class Panel extends BaseClass {
     async delete(): Promise<void> {
         this.unload = true;
         this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
-
+        for (const button of ['left', 'right'] as const) {
+            if (this.buttonBackFlipTimeout[button]) {
+                this.adapter.clearTimeout(this.buttonBackFlipTimeout[button]);
+            }
+        }
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
         }
@@ -1884,14 +1889,19 @@ export class Panel extends BaseClass {
                         return;
                     }
                     await action.state.setStateTrue();
-                    this.adapter.setTimeout(
+                    if (this.buttonBackFlipTimeout[button]) {
+                        this.adapter.clearTimeout(this.buttonBackFlipTimeout[button]);
+                    }
+                    this.buttonBackFlipTimeout[button] = this.adapter.setTimeout(
                         async state => {
                             if (this.unload || this.adapter.unload) {
                                 return;
                             }
                             await state.setStateFalse();
                         },
-                        100,
+                        typeof action.delay !== 'number' || action.delay < 1 || action.delay > 2 ** 31 - 1
+                            ? 250
+                            : action.delay,
                         action.state,
                     );
                     break;

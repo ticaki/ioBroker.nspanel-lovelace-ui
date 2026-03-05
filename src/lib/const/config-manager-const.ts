@@ -26,15 +26,25 @@ export function isButton(F: any): F is ConfigButtonFunction {
     if (F === null) {
         return true;
     }
+    if (!('mode' in F)) {
+        return false;
+    }
 
-    return (
-        'mode' in F &&
-        ((F.mode === 'page' && F.page) ||
-            ('state' in F &&
-                (F.mode === 'switch' || F.mode === 'button' || F.mode === 'buttonBackFlip') &&
-                F.state &&
-                !F.state.endsWith('.')))
-    );
+    const mode = F.mode as NonNullable<ConfigButtonFunction>['mode'];
+    switch (mode) {
+        case 'page':
+            return !!F.page;
+        case 'switch':
+        case 'button':
+        case 'buttonBackFlip':
+            return 'state' in F && !!F.state && typeof F.state === 'string' && !F.state.endsWith('.');
+        default: {
+            // Exhaustiveness check: TypeScript-Fehler wenn ein neuer mode in ConfigButtonFunction
+            // ergänzt wird, aber dieser switch nicht angepasst wurde.
+            mode satisfies never;
+            return false;
+        }
+    }
 }
 
 export function isGlobalConfig(F: any): F is ScriptConfig.globalPagesConfig {

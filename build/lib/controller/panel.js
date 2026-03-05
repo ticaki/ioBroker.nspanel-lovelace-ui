@@ -76,6 +76,7 @@ class Panel extends import_library.BaseClass {
   _isOnline = false;
   _status = "offline";
   _statusUpdateQueue = Promise.resolve();
+  buttonBackFlipTimeout = {};
   blockTouchEventsForMs = 200;
   // ms
   lastSendTypeDate = 0;
@@ -1373,6 +1374,11 @@ class Panel extends import_library.BaseClass {
     var _a;
     this.unload = true;
     this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
+    for (const button of ["left", "right"]) {
+      if (this.buttonBackFlipTimeout[button]) {
+        this.adapter.clearTimeout(this.buttonBackFlipTimeout[button]);
+      }
+    }
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
     }
@@ -1692,14 +1698,17 @@ class Panel extends import_library.BaseClass {
             return;
           }
           await action.state.setStateTrue();
-          this.adapter.setTimeout(
+          if (this.buttonBackFlipTimeout[button]) {
+            this.adapter.clearTimeout(this.buttonBackFlipTimeout[button]);
+          }
+          this.buttonBackFlipTimeout[button] = this.adapter.setTimeout(
             async (state) => {
               if (this.unload || this.adapter.unload) {
                 return;
               }
               await state.setStateFalse();
             },
-            100,
+            typeof action.delay !== "number" || action.delay < 1 || action.delay > 2 ** 31 - 1 ? 250 : action.delay,
             action.state
           );
           break;

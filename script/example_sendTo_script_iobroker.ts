@@ -640,8 +640,8 @@ async function configuration (): Promise<void> {
 
         // DE: Konfiguration des linken Schalters des NSPanels
         // EN: Configuration of the left switch of the NSPanel
-        buttonLeft: {         
-            mode: 'page',   
+        buttonLeft: {
+            mode: 'page',
             page: 'main',
         },
 
@@ -683,7 +683,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.19.1';
+const version = '0.19.2';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1336,7 +1336,7 @@ declare namespace ScriptConfig {
             role?: string;
             targetPageLongPress?: string | null | undefined;
             longPress?: string | undefined;
-        
+
             /**
              * The icon that is used in the standard case or if ID is true
              */
@@ -1414,9 +1414,9 @@ declare namespace ScriptConfig {
             enabled?: boolean | string;
             // erstmal für media mit id keine erstellung einer mediaCard - nur schalten
             asControl?: boolean;
-             /* role 'button' only: Text for cardEntities - Icon for cardGrid */
-            confirm?: string | { text?: string; icon?: string; color?: RGB | {r: number; g: number; b: number} | string };
-            });
+            /* role 'button' only: Text for cardEntities - Icon for cardGrid */
+            confirm?: string | {text?: string; icon?: string; color?: RGB | {r: number; g: number; b: number} | string};
+        });
 
     type sliderItems = {
         heading: string;
@@ -1495,9 +1495,13 @@ declare namespace ScriptConfig {
              */
             mode: 'buttonBackFlip';
             /**
-             * The state of the button datapoint to trigger.
-             *
-             */
+           * delay in ms before flipping back to false, default is 250ms, must be between 1 and 2^31-1
+           */
+            delay?: number;
+            /**
+               * The state of the button datapoint to trigger.
+               *
+               */
             state: string;
         }
         | null;
