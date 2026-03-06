@@ -1348,6 +1348,15 @@ export class Panel extends BaseClass {
                     await this.handleButtonsForDetach();
                     break;
                 }
+
+                case 'buttons.left': {
+                    await this.onDetachButtonEvent('left');
+                    break;
+                }
+                case 'buttons.right': {
+                    await this.onDetachButtonEvent('right');
+                    break;
+                }
                 case 'screenSaver.layout': {
                     if (typeof state.val === 'number' && globals.isScreenSaverModeAsNumber(state.val)) {
                         await this.statesControler.setInternalState(
