@@ -327,9 +327,14 @@ export type ConfigButtonFunction =
            * Mode for triggering a button datapoint and flip back to false.
            *
            */
-          mode: 'buttonBackFlip';
+          mode: 'buttonOnDelayOff' | 'buttonOffDelayOn' | 'buttonDelayOn' | 'buttonDelayOff';
           /**
-           * delay in ms before flipping back to false, default is 250ms, must be between 1 and 2^31-1
+           * delay in seconds used for the timed state change:
+           * - buttonOnDelayOff: immediately sets true, reverts to false after delay
+           * - buttonOffDelayOn: immediately sets false, reverts to true after delay
+           * - buttonDelayOn: sets true after delay
+           * - buttonDelayOff: sets false after delay
+           * Default is 0.25s, must be between 0.001 and 2147483 (~24 days)
            */
           delay?: number;
           /**

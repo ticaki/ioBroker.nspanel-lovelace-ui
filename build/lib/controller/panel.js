@@ -567,6 +567,7 @@ class Panel extends import_library.BaseClass {
       this.detach.left,
       definition.genericStateObjects.panel.panels.cmd.detachLeft
     );
+    await this.handleButtonsForDetach();
     state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.timeout`);
     if (state) {
       this.timeout = parseInt(String(state.val));
@@ -705,7 +706,10 @@ class Panel extends import_library.BaseClass {
           case "page":
             break;
           case "switch":
-          case "buttonBackFlip":
+          case "buttonOnDelayOff":
+          case "buttonOffDelayOn":
+          case "buttonDelayOn":
+          case "buttonDelayOff":
           case "button": {
             if (typeof button.state === "string") {
               const di = new import_data_item.Dataitem(
@@ -812,6 +816,35 @@ class Panel extends import_library.BaseClass {
       throw new Error(`No active page here panel ${this.friendlyName}, check code!`);
     }
     return this._activePage;
+  }
+  async handleButtonsForDetach() {
+    if (this.detach.left || this.detach.right) {
+      await this.library.writedp(
+        `panels.${this.name}.cmd.buttons`,
+        void 0,
+        definition.genericStateObjects.panel.panels.cmd.buttons._channel
+      );
+      if (this.detach.left) {
+        await this.library.writedp(
+          `panels.${this.name}.cmd.buttons.left`,
+          false,
+          definition.genericStateObjects.panel.panels.cmd.buttons.left
+        );
+      } else {
+        await this.library.cleanUpTree([], [`panels.${this.name}.cmd.buttons.left`], 5);
+      }
+      if (this.detach.right) {
+        await this.library.writedp(
+          `panels.${this.name}.cmd.buttons.right`,
+          false,
+          definition.genericStateObjects.panel.panels.cmd.buttons.right
+        );
+      } else {
+        await this.library.cleanUpTree([], [`panels.${this.name}.cmd.buttons.right`], 5);
+      }
+    } else {
+      await this.library.cleanUpTree([], [`panels.${this.name}.cmd.buttons`], 4);
+    }
   }
   get isOnline() {
     return this._isOnline;
@@ -1149,10 +1182,12 @@ class Panel extends import_library.BaseClass {
         }
         case "detachLeft": {
           await this.statesControler.setInternalState(`${this.name}/cmd/detachLeft`, !!state.val, false);
+          await this.handleButtonsForDetach();
           break;
         }
         case "detachRight": {
           await this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
+          await this.handleButtonsForDetach();
           break;
         }
         case "screenSaver.layout": {
@@ -1692,24 +1727,32 @@ class Panel extends import_library.BaseClass {
           await action.state.setStateFlip();
           break;
         }
-        case "buttonBackFlip": {
+        case "buttonOnDelayOff":
+        case "buttonOffDelayOn":
+        case "buttonDelayOn":
+        case "buttonDelayOff": {
           if (typeof action.state === "string") {
             this.log.error(`Button ${button} has no state!`);
             return;
           }
-          await action.state.setStateTrue();
+          const bool = action.mode === "buttonOffDelayOn" || action.mode === "buttonDelayOn";
+          if (action.mode === "buttonOffDelayOn" || action.mode === "buttonOnDelayOff") {
+            await action.state.setState(!bool);
+          }
           if (this.buttonBackFlipTimeout[button]) {
             this.adapter.clearTimeout(this.buttonBackFlipTimeout[button]);
           }
+          const time = action.delay && typeof action.delay === "number" ? Math.round(action.delay * 1e3) : 250;
           this.buttonBackFlipTimeout[button] = this.adapter.setTimeout(
-            async (state) => {
-              if (this.unload || this.adapter.unload) {
+            async (action2, bool2) => {
+              if (this.unload || this.adapter.unload || typeof action2.state === "string") {
                 return;
               }
-              await state.setStateFalse();
+              await action2.state.setState(bool2);
             },
-            typeof action.delay !== "number" || action.delay < 1 || action.delay > 2 ** 31 - 1 ? 250 : action.delay,
-            action.state
+            time < 1 || time > 2 ** 31 - 1 ? 250 : time,
+            action,
+            bool
           );
           break;
         }

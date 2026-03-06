@@ -683,7 +683,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.19.2';
+const version = '0.19.3';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1489,21 +1489,26 @@ declare namespace ScriptConfig {
             state: string;
         }
         | {
-            /**
-             * Mode for triggering a button datapoint and flip back to false.
-             *
-             */
-            mode: 'buttonBackFlip';
-            /**
-           * delay in ms before flipping back to false, default is 250ms, must be between 1 and 2^31-1
+          /**
+           * Mode for triggering a button datapoint and flip back to false.
+           *
            */
-            delay?: number;
-            /**
-               * The state of the button datapoint to trigger.
-               *
-               */
-            state: string;
-        }
+          mode: 'buttonOnDelayOff' | 'buttonOffDelayOn' | 'buttonDelayOn' | 'buttonDelayOff';
+          /**
+           * delay in seconds used for the timed state change:
+           * - buttonOnDelayOff: immediately sets true, reverts to false after delay
+           * - buttonOffDelayOn: immediately sets false, reverts to true after delay
+           * - buttonDelayOn: sets true after delay
+           * - buttonDelayOff: sets false after delay
+           * Default is 0.25s, must be between 0.001 and 2147483 (~24 days)
+           */
+          delay?: number;
+          /**
+           * The state of the button datapoint to trigger.
+           *
+           */
+          state: string;
+      }
         | null;
 
     export type Config = {

@@ -59,7 +59,10 @@ function isButton(F) {
       return !!F.page;
     case "switch":
     case "button":
-    case "buttonBackFlip":
+    case "buttonOnDelayOff":
+    case "buttonOffDelayOn":
+    case "buttonDelayOn":
+    case "buttonDelayOff":
       return "state" in F && !!F.state && typeof F.state === "string" && !F.state.endsWith(".");
     default: {
       mode;

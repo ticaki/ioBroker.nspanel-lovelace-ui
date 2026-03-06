@@ -460,7 +460,7 @@ export class Library extends BaseClass {
     async cleanUpTree(hold: string[], filter: string[] | null, deep: number): Promise<void> {
         let del = [];
         for (const dp in this.stateDataBase) {
-            if (filter && filter.filter(a => dp.startsWith(a) || a.startsWith(dp)).length == 0) {
+            if (filter && filter.filter(a => dp.startsWith(a)).length == 0) {
                 continue;
             }
             if (hold.filter(a => dp.startsWith(a) || a.startsWith(dp)).length > 0) {

@@ -38,7 +38,12 @@ export const genericStateObjects: {
     panel: customChannelType & {
         panels: customChannelType & {
             status: ioBroker.StateObject;
+
             cmd: customChannelType & {
+                buttons: customChannelType & {
+                    left: ioBroker.StateObject;
+                    right: ioBroker.StateObject;
+                };
                 dim: customChannelType & {
                     active: ioBroker.StateObject;
                     standby: ioBroker.StateObject;
@@ -285,6 +290,40 @@ export const genericStateObjects: {
                         name: 'StateObjects.cmd',
                     },
                     native: {},
+                },
+                buttons: {
+                    _channel: {
+                        _id: '',
+                        type: 'folder',
+                        common: {
+                            name: 'StateObjects.cmd.buttons',
+                        },
+                        native: {},
+                    },
+                    left: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.cmd.buttons.left',
+                            type: 'boolean',
+                            role: 'button',
+                            read: false,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    right: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.cmd.buttons.right',
+                            type: 'boolean',
+                            role: 'button',
+                            read: false,
+                            write: true,
+                        },
+                        native: {},
+                    },
                 },
                 isBuzzerAllowed: {
                     _id: '',

@@ -622,6 +622,9 @@ export class Panel extends BaseClass {
             this.detach.left,
             definition.genericStateObjects.panel.panels.cmd.detachLeft,
         );
+
+        await this.handleButtonsForDetach();
+
         state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.timeout`);
         if (state) {
             this.timeout = parseInt(String(state.val));
@@ -784,7 +787,10 @@ export class Panel extends BaseClass {
                         break;
 
                     case 'switch':
-                    case 'buttonBackFlip':
+                    case 'buttonOnDelayOff':
+                    case 'buttonOffDelayOn':
+                    case 'buttonDelayOn':
+                    case 'buttonDelayOff':
                     case 'button': {
                         if (typeof button.state === 'string') {
                             const di = new Dataitem(
@@ -914,6 +920,37 @@ export class Panel extends BaseClass {
         }
         return this._activePage;
     }
+
+    async handleButtonsForDetach(): Promise<void> {
+        if (this.detach.left || this.detach.right) {
+            await this.library.writedp(
+                `panels.${this.name}.cmd.buttons`,
+                undefined,
+                definition.genericStateObjects.panel.panels.cmd.buttons._channel,
+            );
+            if (this.detach.left) {
+                await this.library.writedp(
+                    `panels.${this.name}.cmd.buttons.left`,
+                    false,
+                    definition.genericStateObjects.panel.panels.cmd.buttons.left,
+                );
+            } else {
+                await this.library.cleanUpTree([], [`panels.${this.name}.cmd.buttons.left`], 5);
+            }
+            if (this.detach.right) {
+                await this.library.writedp(
+                    `panels.${this.name}.cmd.buttons.right`,
+                    false,
+                    definition.genericStateObjects.panel.panels.cmd.buttons.right,
+                );
+            } else {
+                await this.library.cleanUpTree([], [`panels.${this.name}.cmd.buttons.right`], 5);
+            }
+        } else {
+            await this.library.cleanUpTree([], [`panels.${this.name}.cmd.buttons`], 4);
+        }
+    }
+
     get isOnline(): boolean {
         return this._isOnline;
     }
@@ -1303,10 +1340,12 @@ export class Panel extends BaseClass {
                 }
                 case 'detachLeft': {
                     await this.statesControler.setInternalState(`${this.name}/cmd/detachLeft`, !!state.val, false);
+                    await this.handleButtonsForDetach();
                     break;
                 }
                 case 'detachRight': {
                     await this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
+                    await this.handleButtonsForDetach();
                     break;
                 }
                 case 'screenSaver.layout': {
@@ -1883,26 +1922,33 @@ export class Panel extends BaseClass {
                     await action.state.setStateFlip();
                     break;
                 }
-                case 'buttonBackFlip': {
+                case 'buttonOnDelayOff':
+                case 'buttonOffDelayOn':
+                case 'buttonDelayOn':
+                case 'buttonDelayOff': {
                     if (typeof action.state === 'string') {
                         this.log.error(`Button ${button} has no state!`);
                         return;
                     }
-                    await action.state.setStateTrue();
+                    const bool = action.mode === 'buttonOffDelayOn' || action.mode === 'buttonDelayOn';
+                    if (action.mode === 'buttonOffDelayOn' || action.mode === 'buttonOnDelayOff') {
+                        await action.state.setState(!bool);
+                    }
                     if (this.buttonBackFlipTimeout[button]) {
                         this.adapter.clearTimeout(this.buttonBackFlipTimeout[button]);
                     }
+                    const time =
+                        action.delay && typeof action.delay === 'number' ? Math.round(action.delay * 1000) : 250;
                     this.buttonBackFlipTimeout[button] = this.adapter.setTimeout(
-                        async state => {
-                            if (this.unload || this.adapter.unload) {
+                        async (action, bool: boolean) => {
+                            if (this.unload || this.adapter.unload || typeof action.state === 'string') {
                                 return;
                             }
-                            await state.setStateFalse();
+                            await action.state.setState(bool);
                         },
-                        typeof action.delay !== 'number' || action.delay < 1 || action.delay > 2 ** 31 - 1
-                            ? 250
-                            : action.delay,
-                        action.state,
+                        time < 1 || time > 2 ** 31 - 1 ? 250 : time,
+                        action,
+                        bool,
                     );
                     break;
                 }

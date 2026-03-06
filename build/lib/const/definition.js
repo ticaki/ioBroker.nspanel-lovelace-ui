@@ -233,6 +233,40 @@ const genericStateObjects = {
           },
           native: {}
         },
+        buttons: {
+          _channel: {
+            _id: "",
+            type: "folder",
+            common: {
+              name: "StateObjects.cmd.buttons"
+            },
+            native: {}
+          },
+          left: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.cmd.buttons.left",
+              type: "boolean",
+              role: "button",
+              read: false,
+              write: true
+            },
+            native: {}
+          },
+          right: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.cmd.buttons.right",
+              type: "boolean",
+              role: "button",
+              read: false,
+              write: true
+            },
+            native: {}
+          }
+        },
         isBuzzerAllowed: {
           _id: "",
           type: "state",

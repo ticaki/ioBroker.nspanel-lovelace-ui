@@ -36,7 +36,10 @@ export function isButton(F: any): F is ConfigButtonFunction {
             return !!F.page;
         case 'switch':
         case 'button':
-        case 'buttonBackFlip':
+        case 'buttonOnDelayOff':
+        case 'buttonOffDelayOn':
+        case 'buttonDelayOn':
+        case 'buttonDelayOff':
             return 'state' in F && !!F.state && typeof F.state === 'string' && !F.state.endsWith('.');
         default: {
             // Exhaustiveness check: TypeScript-Fehler wenn ein neuer mode in ConfigButtonFunction
