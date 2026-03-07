@@ -576,6 +576,7 @@ class StatesControler extends import_library.BaseClass {
       const oldLc = entry.state.lc;
       entry.ts = Date.now();
       entry.state = state;
+      entry.f !== void 0 && await entry.f(dp, entry.state);
       const isSystemOrAlias = startsWithUserdata || startsWithAlias || !state.ack && startsWithNamespace;
       const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
       if (mayTrigger) {
@@ -723,7 +724,6 @@ class StatesControler extends import_library.BaseClass {
         ts: Date.now()
       };
       await this.onStateChange(id, newState);
-      f && await f(id, this.triggerDB[id].state);
       return true;
     } else if (common) {
       if (this.adapter.config.debugLogStates) {

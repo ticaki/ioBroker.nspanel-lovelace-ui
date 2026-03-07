@@ -699,6 +699,7 @@ export class StatesControler extends BaseClass {
             // Update triggerDB entry
             entry.ts = Date.now();
             entry.state = state;
+            entry.f !== undefined && (await entry.f(dp, entry.state));
 
             const isSystemOrAlias = startsWithUserdata || startsWithAlias || (!state.ack && startsWithNamespace);
             const mayTrigger = state.ack || entry.internal || isSystemOrAlias;
@@ -894,7 +895,7 @@ export class StatesControler extends BaseClass {
 
             // here we trigger the state command
             // if we change this onStateTrigger change 'ne' not work correcty
-            f && (await f(id, this.triggerDB[id].state));
+            //f && (await f(id, this.triggerDB[id].state));
 
             return true;
 

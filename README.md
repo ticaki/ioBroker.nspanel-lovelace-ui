@@ -161,7 +161,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) added: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modes for HW button actions
 
 ### 0.13.3 (2026-03-04)
-- (ticaki) added mode: buttonBackFlip to HW buttons
 - (ticaki) fixed critical bug when using internal MQTT server
 
 ### 0.13.2 (2026-03-02)
