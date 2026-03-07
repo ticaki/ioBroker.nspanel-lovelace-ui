@@ -1,322 +1,322 @@
 {
-    "common": {
-        "name": "nspanel-lovelace-ui",
-        "version": "0.13.3",
-        "news": {
-            "0.13.3": {
-                "en": "added mode: buttonBackFlip to HW buttons\nfixed critical bug when using internal MQTT server",
-                "de": "Modus hinzugefügt: buttonBackFlip für HW-Buttons\nKritischer Bug bei Verwendung des internen MQTT-Servers behoben",
-                "ru": "добавлен режим: buttonBackFlip для HW-кнопок\nисправлена критическая ошибка при использовании внутреннего MQTT-сервера",
-                "pt": "modo adicionado: buttonBackFlip para botões HW\ncorrigido erro crítico ao usar o servidor MQTT interno",
-                "nl": "modus toegevoegd: buttonBackFlip voor HW-knoppen\nkritieke bug opgelost bij gebruik van de interne MQTT-server",
-                "fr": "mode ajouté : buttonBackFlip pour les boutons HW\ncorrection d’un bug critique lors de l’utilisation du serveur MQTT interne",
-                "it": "modalità aggiunta: buttonBackFlip per i pulsanti HW\ncorretto bug critico durante l’uso del server MQTT interno",
-                "es": "modo añadido: buttonBackFlip para botones HW\ncorregido error crítico al usar el servidor MQTT interno",
-                "pl": "dodano tryb: buttonBackFlip dla przycisków HW\nnaprawiono krytyczny błąd podczas korzystania z wewnętrznego serwera MQTT",
-                "uk": "додано режим: buttonBackFlip для HW-кнопок\nвиправлено критичну помилку під час використання внутрішнього MQTT-сервера",
-                "zh-cn": "新增模式：buttonBackFlip（用于 HW 按钮）\n修复在使用内部 MQTT 服务器时的严重错误"
-            },
-            "0.13.2": {
-                "en": "Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaConsole button fixed\nSome minor fixes (settings model, tab model, field types)",
-                "de": "Wartungsansicht: korrekter Versionsvergleich für Tasmota- und TFT-Versionen (Upgrade vs. Downgrade-Erkennung)\nTabPanelinfo: openTasmotaConsole Button funktioniert jetzt\nEinige kleinere Fixes (Einstellungen: Modell, Tab: Modell, Feldtypen)",
-                "ru": "Поддерживайте таблицу: надлежащее сравнение семверов для версий Tasmota и TFT (обновление против обнаружения понижения)\nTabPanelinfo: кнопка openTasmotaConsole\nНекоторые незначительные исправления (модель настроек, модель вкладок, типы полей)",
-                "pt": "Manter tabela: comparação de semáforo adequada para as versões Tasmota e TFT (detecção upgrade vs. downgrade)\nTabPanelinfo: botão abertoTasmotaConsole corrigido\nAlgumas correções menores (settings model, tab model, field types)",
-                "nl": "Onderhoud tabel: juiste semver vergelijking voor Tasmota en TFT versies (upgrade vs. downgrade detectie)\nTabPanelinfo: openTasmotaConsole knop vast\nEnkele kleine correcties (instellingen model, tabmodel, veldtypes)",
-                "fr": "Maintenez une table : comparaison correcte entre le semver des versions Tasmota et TFT (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaConsole bouton fixe\nQuelques corrections mineures (réglage du modèle, tabulaire, types de champs)",
-                "it": "Tabella principale: corretto confronto semver per le versioni Tasmota e TFT (rilevamento upgrade vs downgrade)\nTabPanelinfo: pulsante apertoTasmotaConsole fisso\nAlcune correzioni minori (modello di impostazioni, modello di scheda, tipi di campo)",
-                "es": "Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaBotón de consola fijo\nAlgunas correcciones menores (modelo de fijación, modelo de pestañas, tipos de campo)",
-                "pl": "Utrzymanie tabeli: prawidłowe porównanie semvera dla wersji Tasmota i TFT (upgrade vs downgrade detection)\nTabPanelinfo: przycisk openTasmotaConsole naprawiony\nNiektóre drobne poprawki (model ustawień, model zakładki, typy pól)",
-                "uk": "Зміст таблиці: належне порівняння semver для версій Tasmota і TFT (оновлення проти виявлення низградів)\nTabPanelinfo: openTasmotaConsole кнопка фіксована\nДеякі незначні фіксації (модель, модель вкладки, типи поля)",
-                "zh-cn": "维护表格:Tasmota和TFT版本(升级与降级检测)的正确模拟比较\nTabPanelinfo: 打开 Tasmota 控制台按钮\n一些小修正(设置模型,制表模型,字段类型)"
-            },
-            "0.13.1": {
-                "en": "New Admin tab for quick overview and minor settings\nPanel status system with badge (online/offline/setup/flashing states)\nPanel management improvements (IP selector, delete/edit panels, init button)\nMQTT configuration UI design improvements\nVarious fixes (badge flickering, tab focus, jsonConfig, translations, hex colors)",
-                "de": "Neuer Admin-Tab für schnelle Übersicht und kleinere Einstellungen\nPanel-Statussystem mit Badge (Online/Offline/Setup/Flashing-Status)\nVerbesserungen im Panel-Management (IP-Selektor, Panels löschen/bearbeiten, Init-Button)\nVerbesserungen am MQTT-Konfigurations-UI-Design\nVerschiedene Fehlerbehebungen (Badge-Flackern, Tab-Fokus, jsonConfig, Übersetzungen, Hex-Farben)",
-                "ru": "Новая вкладка Admin для быстрого обзора и незначительных настроек\nСистема статуса панели с бейджем (online/offline/setup/flashing)\nУлучшения управления панелями (выбор IP, удаление/редактирование панелей, кнопка init)\nУлучшения дизайна интерфейса конфигурации MQTT\nРазличные исправления (мерцание бейджа, фокус вкладок, jsonConfig, переводы, hex-цвета)",
-                "pt": "Nova aba Admin para visão geral rápida e configurações menores\nSistema de status do painel com badge (online/offline/setup/flashing)\nMelhorias no gerenciamento de painéis (seletor de IP, excluir/editar painéis, botão init)\nMelhorias no design da interface de configuração MQTT\nVárias correções (flicker do badge, foco de abas, jsonConfig, traduções, cores hex)",
-                "nl": "Nieuw Admin-tabblad voor snel overzicht en kleine instellingen\nPaneelstatussysteem met badge (online/offline/setup/flashing)\nVerbeteringen in paneelbeheer (IP-selector, panelen verwijderen/bewerken, init-knop)\nVerbeteringen in het ontwerp van de MQTT-configuratie-UI\nDiverse fixes (badge-flikkering, tabfocus, jsonConfig, vertalingen, hex-kleuren)",
-                "fr": "Nouvel onglet Admin pour un aperçu rapide et des réglages mineurs\nSystème d’état du panneau avec badge (online/offline/setup/flashing)\nAméliorations de la gestion des panneaux (sélecteur IP, suppression/modification des panneaux, bouton init)\nAméliorations du design de l’interface de configuration MQTT\nDivers correctifs (clignotement du badge, focus des onglets, jsonConfig, traductions, couleurs hex)",
-                "it": "Nuova scheda Admin per una panoramica rapida e impostazioni minori\n(ticaki) Sistema di stato del pannello con badge (online/offline/setup/flashing)\nMiglioramenti alla gestione dei pannelli (selettore IP, eliminazione/modifica pannelli, pulsante init)\nMiglioramenti al design dell’interfaccia di configurazione MQTT\n(ticaki) Varie correzioni (sfarfallio del badge, focus delle schede, jsonConfig, traduzioni, colori hex)",
-                "es": "Nueva pestaña Admin para una vista rápida y ajustes menores\n(ticaki) Sistema de estado del panel con insignia (online/offline/setup/flashing)\nMejoras en la gestión de paneles (selector de IP, eliminar/editar paneles, botón init)\nMejoras en el diseño de la interfaz de configuración MQTT\n(ticaki) Varias correcciones (parpadeo de la insignia, enfoque de pestañas, jsonConfig, traducciones, colores hex)",
-                "pl": "Nowa zakładka Admin do szybkiego przeglądu i drobnych ustawień\n(ticaki) System statusu panelu z odznaką (online/offline/setup/flashing)\nUlepszenia zarządzania panelami (wybór IP, usuwanie/edycja paneli, przycisk init)\nUlepszenia projektu interfejsu konfiguracji MQTT\n(ticaki) Różne poprawki (migotanie odznaki, fokus zakładek, jsonConfig, tłumaczenia, kolory hex)",
-                "uk": "Нова вкладка Admin для швидкого огляду та незначних налаштувань\n(ticaki) Система статусу панелі з бейджем (online/offline/setup/flashing)\nПокращення керування панелями (вибір IP, видалення/редагування панелей, кнопка init)\nПокращення дизайну інтерфейсу конфігурації MQTT\n(ticaki) Різні виправлення (мерехтіння бейджа, фокус вкладок, jsonConfig, переклади, hex-кольори)",
-                "zh-cn": "新增 Admin 标签页，用于快速概览和小型设置\n(ticaki) 带徽章的面板状态系统（在线/离线/设置/刷写状态）\n面板管理改进（IP 选择器、删除/编辑面板、init 按钮）\nMQTT 配置界面设计改进\n(ticaki) 各种修复（徽章闪烁、标签焦点、jsonConfig、翻译、十六进制颜色）"
-            },
-            "0.12.1": {
-                "en": "fixed: brightsky template\nfixed: malfunction of the update icon in the screensaver\nfixed: When sending the script, the restart was confirmed with the wrong panel name.",
-                "de": "Behoben: brightsky Vorlage\nBehoben: Fehlfunktion des Aktualisierungssymbols im Bildschirmschoner\nBehoben: Beim Senden des Skripts wurde der Neustart mit dem falschen Panelnamen bestätigt.",
-                "ru": "фиксированный: яркий шаблон\nисправлено: неисправность значка обновления в заставке\nфиксированный: При отправке сценария перезапуск был подтвержден неправильным названием панели.",
-                "pt": "fixo: modelo brightsky\ncorrigido: mau funcionamento do ícone de atualização no protetor de tela\nfixado: Ao enviar o script, o reinício foi confirmado com o nome errado do painel.",
-                "nl": "vast: helder sjabloon\nvast: storing van de update pictogram in de screensaver\nvast: Bij het versturen van het script werd de herstart bevestigd met de verkeerde paneelnaam.",
-                "fr": "corrigé: modèle brightsky\ncorrigé : dysfonctionnement de l'icône de mise à jour dans l'économiseur d'écran\nfixe: Lors de l'envoi du script, le redémarrage a été confirmé avec le mauvais nom de panneau.",
-                "it": "fisso: modello luminososky\nfisso: malfunzionamento dell'icona di aggiornamento nel salvaschermo\nfisso: Quando si invia lo script, il riavvio è stato confermato con il nome del pannello sbagliato.",
-                "es": "fijo: plantilla brillante\nfijo: mal funcionamiento del icono de actualización en el salvapantallas\nfijo: Al enviar el guión, el reinicio fue confirmado con el nombre del panel equivocado.",
-                "pl": "stałe: szablon brightsky\nstałe: nieprawidłowe działanie ikony aktualizacji w wygaszaczu ekranu\nstałe: Podczas wysyłania skryptu, restart został potwierdzony złą nazwą panelu.",
-                "uk": "фіксована: яскравий шаблон\nфіксована: несправність іконки оновлення в екранахaver\nфіксована: При надсиланні сценарію перезавантаження було підтверджено невірною назвою панелі.",
-                "zh-cn": "固定:亮天空模板\n固定: 屏幕保护中更新图标的故障\n固定 : 在发送脚本时,重新启动以错误的面板名称被确认."
-            },
-            "0.12.0": {
-                "en": "NSPanel TFT version is displayed correctly depending on the model.\n(tt-tom17) Option to write Tasmota telemetry data into states.  \nAdmin-Tab globalSetting convert to React  \nAdmin-Tab Maintain convert to React  \nAdd icon selector to trash entries",
-                "de": "Die NSPanel TFT-Version wird je nach Modell korrekt angezeigt.\n(tt-tom17) Option zum Schreiben von Tasmota-Telemetriedaten in Zustände.\nAdmin-Tab globalSetting konvertiert in React\nAdmin-Tab Maintain in React konvertieren\nIcon-Selektor zum Kalender (pageTrash) hinzugefügt",
-                "ru": "Версия NSPanel TFT отображается правильно в зависимости от модели.\n(tt-tom17) Возможность записи данных телеметрии Tasmota в состояния.\nAdmin-Tab GlobalSetting преобразуется в React\nAdmin-Tab преобразуется в React\nДобавить селектор значков для мусорных записей",
-                "pt": "A versão do NSPanel TFT é exibida corretamente dependendo do modelo.\n(tt-tom17) Opção para escrever dados de telemetria Tasmota em estados.\nAdmin-Tab globalSetting converter para React\nAdmin-Tab Manter converter para React\nAdicionar o seletor de ícones aos itens de lixo",
-                "nl": "NSPanel TFT versie wordt correct weergegeven, afhankelijk van het model.\n(tt-tom17) Optie om Tasmota telemetrie gegevens in staten te schrijven.\nAdmin-Tab globalSetting convert to React\nAdmin-Tab handhaven converteren naar React\nPictogramselectie toevoegen aan prullenbakitems",
-                "fr": "La version NSPanel TFT s'affiche correctement selon le modèle.\n(tt-tom17) Option pour écrire les données de télémétrie de Tasmota dans les états.\nAdmin-Tab globalSetting convertir pour Réagir\nAdmin-Tab Maintenez la conversion pour réagir\nAjouter le sélecteur d'icônes aux entrées de déchets",
-                "it": "La versione TFT NSPanel viene visualizzata correttamente a seconda del modello.\n(t-tom17) Opzione per scrivere dati di telemetria Tasmota in stati.\nAdmin-Tab GlobalSetting convertire in React\nAdmin-Tab Maintain convertire in React\nAggiungere il selettore icona alle voci di cestino",
-                "es": "La versión NSPanel TFT se muestra correctamente dependiendo del modelo.\n(tt-tom17) Opción de escribir datos de telemetría de Tasmota en estados.\nAdmin-Tab globalConversor de configuración para React\nAdmin-Tab Maintain convertir a React\nAñadir selector de iconos a las entradas de basura",
-                "pl": "Wersja NSPanel TFT jest wyświetlana poprawnie w zależności od modelu.\n(tt- tom17) Opcja zapisu danych telemetrycznych Tasmota do państw.\nAdministrat- Tab globalSetting konwertuj do React\nAdmin- Tab Utrzymanie konwersji do reakcji\nDodaj ikonę do wpisów śmieci",
-                "uk": "Версія NSPanel TFT відображається правильно в залежності від моделі.\n(т-том17) Для запису даних телеметрії Тасмота в штати.\nСтатус на сервери\nПеретворення домену-Tab в React\nДодавання ікони selector до записів сміття",
-                "zh-cn": "NSPanel TFT版本根据模型显示正确.\n(吨) 选择将 Tasmota 遥测数据写入状态 .\nAdmin-Tab 全球设置转换为React\n维持转换为反应\n向垃圾项添加图标选择器"
-            },
-            "0.11.0": {
-                "en": "Fixed incorrect error logs for cardThermo and cardThermo2\nadd PageTrash to Admin-Tab PageConfig",
-                "de": "Fehlerprotokolle für die Karte Thermo und Karte Thermo2 behoben\npageTrash zu Admin-Tab PageConfig hinzufügen",
-                "ru": "Исправлены неправильные журналы ошибок для карты Термо и карточка Термо2\nдобавить PageTrash в Admin-Tab PageConfig",
-                "pt": "Registros de erro incorretos corrigidos para o cartão Termo e cartão Termo2\nadd PageTrash to Admin-Tab PageConfig",
-                "nl": "Onjuiste fout logs voor kaart Thermo en kaart Thermo2\npageTrash toevoegen aan Admin-Tab PageConfig",
-                "fr": "Correction des journaux d'erreurs incorrectes pour la carte Thermo et carte Thermo2\najouter PageTrash à Admin-Tab PageConfig",
-                "it": "Log di errore non corretti per la scheda Termo e scheda Termocoppia\naggiungi PageTrash a Admin-Tab PageConfig",
-                "es": "Registros de errores corregidos para tarjeta Termo y tarjeta Thermo2\nagregar PageTrash a Admin-Tab PageConfig",
-                "pl": "Naprawiono nieprawidłowe dzienniki błędów karty Termo i karta Termo2\ndodaj PageTrash do Admin- Tab PageConfig",
-                "uk": "Виправлені неправильні журнали помилок для картки Термо-карта Термо2\nдодати сторінкуПерейти в Admin-Tab PageConfig",
-                "zh-cn": "卡片的固定错误日志 热和卡 热量2\n将页面回收站添加到管理员- Tab 页面配置"
-            },
-            "0.10.0": {
-                "en": "Confirmation click for role button\nSome duplicate unique names were overlooked during script transfer.\nbug fixes for role 'blind'\nminor bug fixes",
-                "de": "Bestätigungsklick für Role button hinzugefügt\nEinige doppelte Eindeutigenamen wurden während der Scriptübertragung übersehen.\nFehlerbehebungen für rolle 'blind'\nkleine Fehlerbehebungen",
-                "ru": "Клик подтверждения для кнопки «Роль»\nНекоторые повторяющиеся уникальные имена были упущены из виду во время передачи сценария.\nрешения для роли «слепой»\nнезначительные исправления ошибок",
-                "pt": "Clique de confirmação para o botão de função\nAlguns nomes únicos duplicados foram ignorados durante a transferência do script.\ncorreções de erros para o papel 'cego'\ncorreções de erros menores",
-                "nl": "Bevestigingsklik voor rolknop\nSommige dubbele unieke namen werden over het hoofd gezien tijdens scriptoverdracht.\nbugfixes voor rol 'blind'\nkleine foutherstel",
-                "fr": "Cliquez sur confirmation pour le bouton rôle\nCertains noms uniques dupliqués ont été négligés lors du transfert de script.\ncorrection du bug pour le rôle 'aveugle'\ncorrection de bugs mineurs",
-                "it": "Fare clic su Conferma per il pulsante ruolo\nAlcuni nomi unici duplicati sono stati trascurati durante il trasferimento di script.\ncorrezioni di bug per il ruolo 'blind'\ncorrezioni di bug minori",
-                "es": "Clic de confirmación para el botón de rol\nAlgunos nombres únicos duplicados fueron pasados por alto durante la transferencia de script.\nbug fixes for role 'blind'\ncorrecciones de errores menores",
-                "pl": "Klikając na przycisk potwierdzania roli\nNiektóre unikalne nazwy zostały pominięte podczas transferu skryptu.\npoprawki błędów dla roli 'ślepota'\ndrobne poprawki błędów",
-                "uk": "Підтвердження кнопки для ролі\nДеякі дублікати унікальних імен були отримані під час передачі сценарію.\nвиправлення помилок для ролі 'blind'\nнезначні виправлення помилок",
-                "zh-cn": "确认点击角色按钮\n一些重复的独特名称在脚本传输过程中被忽略.\n角色“ 盲目” 的错误修正\n小错误修正"
-            }
-        },
-        "titleLang": {
-            "en": "NSPanel-Lovelace-UI Next Level",
-            "de": "NSPanel-Lovelace-UI Next Level",
-            "ru": "Пользовательский интерфейс NSPanel Lovelace",
-            "pt": "UI NSPanel Lovelace",
-            "nl": "NSPanel Lovelace-gebruikersinterface",
-            "fr": "Interface utilisateur NSPanel Lovelace",
-            "it": "Interfaccia utente NPanel Lovelace",
-            "es": "Interfaz de usuario de NSPanel Lovelace",
-            "pl": "Interfejs NSPanel Lovelace",
-            "uk": "Інтерфейс користувача NSPanel Lovelace",
-            "zh-cn": "NSPanel Lovelace UI"
-        },
-        "desc": {
-            "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
-            "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Lovelace UI Design.",
-            "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
-            "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
-            "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
-            "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
-            "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
-            "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
-            "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
-            "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
-            "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
-        },
-        "authors": [
-            "ticaki <github@renopoint.de>"
-        ],
-        "keywords": [
-            "NSPanel",
-            "Lovelace",
-            "Sonoff",
-            "Lovelace UI"
-        ],
-        "licenseInformation": {
-            "license": "MIT",
-            "type": "free"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "nspanel-lovelace-ui.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
-        "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
-        "loglevel": "info",
-        "mode": "daemon",
-        "type": "hardware",
-        "compact": true,
-        "connectionType": "local",
-        "dataSource": "push",
-        "adminUI": {
-            "config": "json"
-        },
-        "adminTab": {
-            "link": "jsonTab.json5",
-            "singleton": false
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=7.0.6"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.6.20",
-                "javascript": ">=8.9.2"
-            }
-        ],
-        "messagebox": true,
-        "tier": 3
+  "common": {
+    "name": "nspanel-lovelace-ui",
+    "version": "0.13.4",
+    "news": {
+      "0.13.4": {
+        "en": "added: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modes for HW button actions",
+        "de": "Hinzugefügt: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff Modi für HW-Buttonautomationen",
+        "ru": "добавлено: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff режимы для действий кнопок HW",
+        "pt": "adicionado: botãoOnDelayOff / botãoOffDelayOn / botãoDelayOn / botãoDelayOff modos para ações dos botões HW",
+        "nl": "toegevoegd: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modi voor HW-knopacties",
+        "fr": "ajouté: boutonOnDelayOff / boutonOffDelayOn / boutonDelayOn / boutonDelayOff modes pour les actions des boutons HW",
+        "it": "aggiunto: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modalità per le azioni dei pulsanti HW",
+        "es": "añadido: botónOnDelayOff / botónOffDelayOn / botónDelayOn / botónDelayOff modos para las acciones de los botones HW",
+        "pl": "dodane: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff tryby dla akcji przycisków HW",
+        "uk": "доданий: кнопкаOnDelayOff / кнопкаOffDelayOn / кнопкаDelayOn / кнопкаDelayOff режими для дії кнопок HW",
+        "zh-cn": "添加: 按钮OnDelayOff / 按钮OffDelayOn / 按钮DelayOn / 按钮DelayOff 模式用于 HW 按钮操作"
+      },
+      "0.13.3": {
+        "en": "added mode: buttonBackFlip to HW buttons\nfixed critical bug when using internal MQTT server",
+        "de": "Modus hinzugefügt: buttonBackFlip für HW-Buttons\nKritischer Bug bei Verwendung des internen MQTT-Servers behoben",
+        "ru": "добавлен режим: buttonBackFlip для HW-кнопок\nисправлена критическая ошибка при использовании внутреннего MQTT-сервера",
+        "pt": "modo adicionado: buttonBackFlip para botões HW\ncorrigido erro crítico ao usar o servidor MQTT interno",
+        "nl": "modus toegevoegd: buttonBackFlip voor HW-knoppen\nkritieke bug opgelost bij gebruik van de interne MQTT-server",
+        "fr": "mode ajouté : buttonBackFlip pour les boutons HW\ncorrection d’un bug critique lors de l’utilisation du serveur MQTT interne",
+        "it": "modalità aggiunta: buttonBackFlip per i pulsanti HW\ncorretto bug critico durante l’uso del server MQTT interno",
+        "es": "modo añadido: buttonBackFlip para botones HW\ncorregido error crítico al usar el servidor MQTT interno",
+        "pl": "dodano tryb: buttonBackFlip dla przycisków HW\nnaprawiono krytyczny błąd podczas korzystania z wewnętrznego serwera MQTT",
+        "uk": "додано режим: buttonBackFlip для HW-кнопок\nвиправлено критичну помилку під час використання внутрішнього MQTT-сервера",
+        "zh-cn": "新增模式：buttonBackFlip（用于 HW 按钮）\n修复在使用内部 MQTT 服务器时的严重错误"
+      },
+      "0.13.2": {
+        "en": "Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaConsole button fixed\nSome minor fixes (settings model, tab model, field types)",
+        "de": "Wartungsansicht: korrekter Versionsvergleich für Tasmota- und TFT-Versionen (Upgrade vs. Downgrade-Erkennung)\nTabPanelinfo: openTasmotaConsole Button funktioniert jetzt\nEinige kleinere Fixes (Einstellungen: Modell, Tab: Modell, Feldtypen)",
+        "ru": "Поддерживайте таблицу: надлежащее сравнение семверов для версий Tasmota и TFT (обновление против обнаружения понижения)\nTabPanelinfo: кнопка openTasmotaConsole\nНекоторые незначительные исправления (модель настроек, модель вкладок, типы полей)",
+        "pt": "Manter tabela: comparação de semáforo adequada para as versões Tasmota e TFT (detecção upgrade vs. downgrade)\nTabPanelinfo: botão abertoTasmotaConsole corrigido\nAlgumas correções menores (settings model, tab model, field types)",
+        "nl": "Onderhoud tabel: juiste semver vergelijking voor Tasmota en TFT versies (upgrade vs. downgrade detectie)\nTabPanelinfo: openTasmotaConsole knop vast\nEnkele kleine correcties (instellingen model, tabmodel, veldtypes)",
+        "fr": "Maintenez une table : comparaison correcte entre le semver des versions Tasmota et TFT (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaConsole bouton fixe\nQuelques corrections mineures (réglage du modèle, tabulaire, types de champs)",
+        "it": "Tabella principale: corretto confronto semver per le versioni Tasmota e TFT (rilevamento upgrade vs downgrade)\nTabPanelinfo: pulsante apertoTasmotaConsole fisso\nAlcune correzioni minori (modello di impostazioni, modello di scheda, tipi di campo)",
+        "es": "Maintain table: proper semver comparison for Tasmota and TFT versions (upgrade vs. downgrade detection)\nTabPanelinfo: openTasmotaBotón de consola fijo\nAlgunas correcciones menores (modelo de fijación, modelo de pestañas, tipos de campo)",
+        "pl": "Utrzymanie tabeli: prawidłowe porównanie semvera dla wersji Tasmota i TFT (upgrade vs downgrade detection)\nTabPanelinfo: przycisk openTasmotaConsole naprawiony\nNiektóre drobne poprawki (model ustawień, model zakładki, typy pól)",
+        "uk": "Зміст таблиці: належне порівняння semver для версій Tasmota і TFT (оновлення проти виявлення низградів)\nTabPanelinfo: openTasmotaConsole кнопка фіксована\nДеякі незначні фіксації (модель, модель вкладки, типи поля)",
+        "zh-cn": "维护表格:Tasmota和TFT版本(升级与降级检测)的正确模拟比较\nTabPanelinfo: 打开 Tasmota 控制台按钮\n一些小修正(设置模型,制表模型,字段类型)"
+      },
+      "0.13.1": {
+        "en": "New Admin tab for quick overview and minor settings\nPanel status system with badge (online/offline/setup/flashing states)\nPanel management improvements (IP selector, delete/edit panels, init button)\nMQTT configuration UI design improvements\nVarious fixes (badge flickering, tab focus, jsonConfig, translations, hex colors)",
+        "de": "Neuer Admin-Tab für schnelle Übersicht und kleinere Einstellungen\nPanel-Statussystem mit Badge (Online/Offline/Setup/Flashing-Status)\nVerbesserungen im Panel-Management (IP-Selektor, Panels löschen/bearbeiten, Init-Button)\nVerbesserungen am MQTT-Konfigurations-UI-Design\nVerschiedene Fehlerbehebungen (Badge-Flackern, Tab-Fokus, jsonConfig, Übersetzungen, Hex-Farben)",
+        "ru": "Новая вкладка Admin для быстрого обзора и незначительных настроек\nСистема статуса панели с бейджем (online/offline/setup/flashing)\nУлучшения управления панелями (выбор IP, удаление/редактирование панелей, кнопка init)\nУлучшения дизайна интерфейса конфигурации MQTT\nРазличные исправления (мерцание бейджа, фокус вкладок, jsonConfig, переводы, hex-цвета)",
+        "pt": "Nova aba Admin para visão geral rápida e configurações menores\nSistema de status do painel com badge (online/offline/setup/flashing)\nMelhorias no gerenciamento de painéis (seletor de IP, excluir/editar painéis, botão init)\nMelhorias no design da interface de configuração MQTT\nVárias correções (flicker do badge, foco de abas, jsonConfig, traduções, cores hex)",
+        "nl": "Nieuw Admin-tabblad voor snel overzicht en kleine instellingen\nPaneelstatussysteem met badge (online/offline/setup/flashing)\nVerbeteringen in paneelbeheer (IP-selector, panelen verwijderen/bewerken, init-knop)\nVerbeteringen in het ontwerp van de MQTT-configuratie-UI\nDiverse fixes (badge-flikkering, tabfocus, jsonConfig, vertalingen, hex-kleuren)",
+        "fr": "Nouvel onglet Admin pour un aperçu rapide et des réglages mineurs\nSystème d’état du panneau avec badge (online/offline/setup/flashing)\nAméliorations de la gestion des panneaux (sélecteur IP, suppression/modification des panneaux, bouton init)\nAméliorations du design de l’interface de configuration MQTT\nDivers correctifs (clignotement du badge, focus des onglets, jsonConfig, traductions, couleurs hex)",
+        "it": "Nuova scheda Admin per una panoramica rapida e impostazioni minori\n(ticaki) Sistema di stato del pannello con badge (online/offline/setup/flashing)\nMiglioramenti alla gestione dei pannelli (selettore IP, eliminazione/modifica pannelli, pulsante init)\nMiglioramenti al design dell’interfaccia di configurazione MQTT\n(ticaki) Varie correzioni (sfarfallio del badge, focus delle schede, jsonConfig, traduzioni, colori hex)",
+        "es": "Nueva pestaña Admin para una vista rápida y ajustes menores\n(ticaki) Sistema de estado del panel con insignia (online/offline/setup/flashing)\nMejoras en la gestión de paneles (selector de IP, eliminar/editar paneles, botón init)\nMejoras en el diseño de la interfaz de configuración MQTT\n(ticaki) Varias correcciones (parpadeo de la insignia, enfoque de pestañas, jsonConfig, traducciones, colores hex)",
+        "pl": "Nowa zakładka Admin do szybkiego przeglądu i drobnych ustawień\n(ticaki) System statusu panelu z odznaką (online/offline/setup/flashing)\nUlepszenia zarządzania panelami (wybór IP, usuwanie/edycja paneli, przycisk init)\nUlepszenia projektu interfejsu konfiguracji MQTT\n(ticaki) Różne poprawki (migotanie odznaki, fokus zakładek, jsonConfig, tłumaczenia, kolory hex)",
+        "uk": "Нова вкладка Admin для швидкого огляду та незначних налаштувань\n(ticaki) Система статусу панелі з бейджем (online/offline/setup/flashing)\nПокращення керування панелями (вибір IP, видалення/редагування панелей, кнопка init)\nПокращення дизайну інтерфейсу конфігурації MQTT\n(ticaki) Різні виправлення (мерехтіння бейджа, фокус вкладок, jsonConfig, переклади, hex-кольори)",
+        "zh-cn": "新增 Admin 标签页，用于快速概览和小型设置\n(ticaki) 带徽章的面板状态系统（在线/离线/设置/刷写状态）\n面板管理改进（IP 选择器、删除/编辑面板、init 按钮）\nMQTT 配置界面设计改进\n(ticaki) 各种修复（徽章闪烁、标签焦点、jsonConfig、翻译、十六进制颜色）"
+      },
+      "0.12.1": {
+        "en": "fixed: brightsky template\nfixed: malfunction of the update icon in the screensaver\nfixed: When sending the script, the restart was confirmed with the wrong panel name.",
+        "de": "Behoben: brightsky Vorlage\nBehoben: Fehlfunktion des Aktualisierungssymbols im Bildschirmschoner\nBehoben: Beim Senden des Skripts wurde der Neustart mit dem falschen Panelnamen bestätigt.",
+        "ru": "фиксированный: яркий шаблон\nисправлено: неисправность значка обновления в заставке\nфиксированный: При отправке сценария перезапуск был подтвержден неправильным названием панели.",
+        "pt": "fixo: modelo brightsky\ncorrigido: mau funcionamento do ícone de atualização no protetor de tela\nfixado: Ao enviar o script, o reinício foi confirmado com o nome errado do painel.",
+        "nl": "vast: helder sjabloon\nvast: storing van de update pictogram in de screensaver\nvast: Bij het versturen van het script werd de herstart bevestigd met de verkeerde paneelnaam.",
+        "fr": "corrigé: modèle brightsky\ncorrigé : dysfonctionnement de l'icône de mise à jour dans l'économiseur d'écran\nfixe: Lors de l'envoi du script, le redémarrage a été confirmé avec le mauvais nom de panneau.",
+        "it": "fisso: modello luminososky\nfisso: malfunzionamento dell'icona di aggiornamento nel salvaschermo\nfisso: Quando si invia lo script, il riavvio è stato confermato con il nome del pannello sbagliato.",
+        "es": "fijo: plantilla brillante\nfijo: mal funcionamiento del icono de actualización en el salvapantallas\nfijo: Al enviar el guión, el reinicio fue confirmado con el nombre del panel equivocado.",
+        "pl": "stałe: szablon brightsky\nstałe: nieprawidłowe działanie ikony aktualizacji w wygaszaczu ekranu\nstałe: Podczas wysyłania skryptu, restart został potwierdzony złą nazwą panelu.",
+        "uk": "фіксована: яскравий шаблон\nфіксована: несправність іконки оновлення в екранахaver\nфіксована: При надсиланні сценарію перезавантаження було підтверджено невірною назвою панелі.",
+        "zh-cn": "固定:亮天空模板\n固定: 屏幕保护中更新图标的故障\n固定 : 在发送脚本时,重新启动以错误的面板名称被确认."
+      },
+      "0.12.0": {
+        "en": "NSPanel TFT version is displayed correctly depending on the model.\n(tt-tom17) Option to write Tasmota telemetry data into states.  \nAdmin-Tab globalSetting convert to React  \nAdmin-Tab Maintain convert to React  \nAdd icon selector to trash entries",
+        "de": "Die NSPanel TFT-Version wird je nach Modell korrekt angezeigt.\n(tt-tom17) Option zum Schreiben von Tasmota-Telemetriedaten in Zustände.\nAdmin-Tab globalSetting konvertiert in React\nAdmin-Tab Maintain in React konvertieren\nIcon-Selektor zum Kalender (pageTrash) hinzugefügt",
+        "ru": "Версия NSPanel TFT отображается правильно в зависимости от модели.\n(tt-tom17) Возможность записи данных телеметрии Tasmota в состояния.\nAdmin-Tab GlobalSetting преобразуется в React\nAdmin-Tab преобразуется в React\nДобавить селектор значков для мусорных записей",
+        "pt": "A versão do NSPanel TFT é exibida corretamente dependendo do modelo.\n(tt-tom17) Opção para escrever dados de telemetria Tasmota em estados.\nAdmin-Tab globalSetting converter para React\nAdmin-Tab Manter converter para React\nAdicionar o seletor de ícones aos itens de lixo",
+        "nl": "NSPanel TFT versie wordt correct weergegeven, afhankelijk van het model.\n(tt-tom17) Optie om Tasmota telemetrie gegevens in staten te schrijven.\nAdmin-Tab globalSetting convert to React\nAdmin-Tab handhaven converteren naar React\nPictogramselectie toevoegen aan prullenbakitems",
+        "fr": "La version NSPanel TFT s'affiche correctement selon le modèle.\n(tt-tom17) Option pour écrire les données de télémétrie de Tasmota dans les états.\nAdmin-Tab globalSetting convertir pour Réagir\nAdmin-Tab Maintenez la conversion pour réagir\nAjouter le sélecteur d'icônes aux entrées de déchets",
+        "it": "La versione TFT NSPanel viene visualizzata correttamente a seconda del modello.\n(t-tom17) Opzione per scrivere dati di telemetria Tasmota in stati.\nAdmin-Tab GlobalSetting convertire in React\nAdmin-Tab Maintain convertire in React\nAggiungere il selettore icona alle voci di cestino",
+        "es": "La versión NSPanel TFT se muestra correctamente dependiendo del modelo.\n(tt-tom17) Opción de escribir datos de telemetría de Tasmota en estados.\nAdmin-Tab globalConversor de configuración para React\nAdmin-Tab Maintain convertir a React\nAñadir selector de iconos a las entradas de basura",
+        "pl": "Wersja NSPanel TFT jest wyświetlana poprawnie w zależności od modelu.\n(tt- tom17) Opcja zapisu danych telemetrycznych Tasmota do państw.\nAdministrat- Tab globalSetting konwertuj do React\nAdmin- Tab Utrzymanie konwersji do reakcji\nDodaj ikonę do wpisów śmieci",
+        "uk": "Версія NSPanel TFT відображається правильно в залежності від моделі.\n(т-том17) Для запису даних телеметрії Тасмота в штати.\nСтатус на сервери\nПеретворення домену-Tab в React\nДодавання ікони selector до записів сміття",
+        "zh-cn": "NSPanel TFT版本根据模型显示正确.\n(吨) 选择将 Tasmota 遥测数据写入状态 .\nAdmin-Tab 全球设置转换为React\n维持转换为反应\n向垃圾项添加图标选择器"
+      },
+      "0.11.0": {
+        "en": "Fixed incorrect error logs for cardThermo and cardThermo2\nadd PageTrash to Admin-Tab PageConfig",
+        "de": "Fehlerprotokolle für die Karte Thermo und Karte Thermo2 behoben\npageTrash zu Admin-Tab PageConfig hinzufügen",
+        "ru": "Исправлены неправильные журналы ошибок для карты Термо и карточка Термо2\nдобавить PageTrash в Admin-Tab PageConfig",
+        "pt": "Registros de erro incorretos corrigidos para o cartão Termo e cartão Termo2\nadd PageTrash to Admin-Tab PageConfig",
+        "nl": "Onjuiste fout logs voor kaart Thermo en kaart Thermo2\npageTrash toevoegen aan Admin-Tab PageConfig",
+        "fr": "Correction des journaux d'erreurs incorrectes pour la carte Thermo et carte Thermo2\najouter PageTrash à Admin-Tab PageConfig",
+        "it": "Log di errore non corretti per la scheda Termo e scheda Termocoppia\naggiungi PageTrash a Admin-Tab PageConfig",
+        "es": "Registros de errores corregidos para tarjeta Termo y tarjeta Thermo2\nagregar PageTrash a Admin-Tab PageConfig",
+        "pl": "Naprawiono nieprawidłowe dzienniki błędów karty Termo i karta Termo2\ndodaj PageTrash do Admin- Tab PageConfig",
+        "uk": "Виправлені неправильні журнали помилок для картки Термо-карта Термо2\nдодати сторінкуПерейти в Admin-Tab PageConfig",
+        "zh-cn": "卡片的固定错误日志 热和卡 热量2\n将页面回收站添加到管理员- Tab 页面配置"
+      }
     },
-    "protectedNative": [
-        "mqttPassword",
-        "pageQRssid",
-        "pageQRpwd1",
-        "pageQRpwd2",
-        "pageQRpwd3",
-        "tasmotaAdminPassword",
-        "pw1"
-    ],
-    "encryptedNative": [
-        "mqttPassword",
-        "pageQRssid",
-        "pageQRpwd1",
-        "pageQRpwd2",
-        "pageQRpwd3",
-        "tasmotaAdminPassword",
-        "pw1"
-    ],
-    "native": {
-        "mqttPassword": "",
-        "mqttUsername": "",
-        "mqttIp": "",
-        "mqttPort": 0,
-        "panels": [],
-        "pageQRpwd1": "",
-        "pageQRpwd2": "",
-        "pageQRpwd3": "",
-        "pageQRssid": "",
-        "pw1": "",
-        "tasmotaAdminPassword": "",
-        "useBetaTFT": false,
-        "shutterClosedIsZero": false,
-        "colorStates": [
-            {
-                "colGood": "#00ff00",
-                "colBad": "#ff0000",
-                "colTrue": "#00ff00",
-                "colFalse": "#ff0000",
-                "colActivated": "#ffff00",
-                "colDeactivated": "#808080",
-                "colAttention": "#00ffff",
-                "colInfo": "#ffffff",
-                "colOption1": "#ffff00",
-                "colOption2": "#ffcc00",
-                "colOption3": "#ff0000",
-                "colOption4": "#00ff00",
-                "colOpen": "#ff0000",
-                "colClose": "#00ff00",
-                "colHot": "#ff0000",
-                "colCold": "#0000ff",
-                "colOn": "#00ff00",
-                "colOff": "#ff0000",
-                "colLight": "#ffffff",
-                "colDark": "#808080",
-                "colWarning": "#ffa500",
-                "colSuccess": "#00ff00",
-                "colNeutral": "#808080",
-                "colHighlight": "#00c8ff",
-                "colDisabled": "#404040"
-            }
-        ],
-        "colorNavigation": [
-            {
-                "colNavLeft": "#ffffff",
-                "colNavRight": "#ffffff",
-                "colNavDownLeft": "#ffffff",
-                "colNavDownRight": "#ffffff",
-                "colNavDown": "#ffffff",
-                "colNavHome": "#ffffff",
-                "colNavParent": "#ffffff"
-            }
-        ],
-        "colorWeatherIcon": [
-            {
-                "colSunny": "#ffff00",
-                "colPartlyCloudy": "#999999",
-                "colCloudy": "#555555",
-                "colFog": "#aaaaaa",
-                "colHail": "#d0d0d0",
-                "colLightning": "#ffff33",
-                "colLightningRainy": "#cccc66",
-                "colPouring": "#3333ff",
-                "colRainy": "#6666ff",
-                "colSnowy": "#cccccc",
-                "colSnowyHeavy": "#bbbbbb",
-                "colSnowyRainy": "#9999ff",
-                "colWindy": "#999999",
-                "colTornado": "#ff3232",
-                "colClearNight": "#666666",
-                "colExceptional": "#ff3232"
-            }
-        ],
-        "colorDisplay": [
-            {
-                "colForeground": "#ffffff",
-                "colBackground": "#101010"
-            }
-        ],
-        "colorWeatherForecast": [
-            {
-                "colSolar": "#00ff00",
-                "colTemperature": "#ff0000",
-                "colGust": "#0000ff",
-                "colSunrise": "#ffff00",
-                "colSunset": "#ff9900"
-            }
-        ],
-        "colorScreensaver": [
-            {
-                "colFgTime": "#ffffff",
-                "colFgTimeAmPm": "#ffcc00",
-                "colFgDate": "#c0c0c0",
-                "colFgMain": "#ffffff",
-                "colFgMainAlt": "#ffcc00",
-                "colFgTimeAdd": "#00c8ff",
-                "colFgForecast": "#c0c0c0",
-                "colFgBar": "#c0c0c0"
-            }
-        ],
-        "colorCardMedia": [
-            {
-                "colMediaArtistOn": "#ffff00",
-                "colMediaArtistOff": "#808080",
-                "colMediaTitleOn": "#ffff00",
-                "colMediaTitleOff": "#808080",
-                "colMediaOnOffColor": "#ffffff"
-            }
-        ]
+    "titleLang": {
+      "en": "NSPanel-Lovelace-UI Next Level",
+      "de": "NSPanel-Lovelace-UI Next Level",
+      "ru": "Пользовательский интерфейс NSPanel Lovelace",
+      "pt": "UI NSPanel Lovelace",
+      "nl": "NSPanel Lovelace-gebruikersinterface",
+      "fr": "Interface utilisateur NSPanel Lovelace",
+      "it": "Interfaccia utente NPanel Lovelace",
+      "es": "Interfaz de usuario de NSPanel Lovelace",
+      "pl": "Interfejs NSPanel Lovelace",
+      "uk": "Інтерфейс користувача NSPanel Lovelace",
+      "zh-cn": "NSPanel Lovelace UI"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
+      "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Lovelace UI Design.",
+      "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
+      "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
+      "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
+      "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
+      "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
+      "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
+      "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
+      "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
+      "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
+    },
+    "authors": [
+      "ticaki <github@renopoint.de>"
+    ],
+    "keywords": [
+      "NSPanel",
+      "Lovelace",
+      "Sonoff",
+      "Lovelace UI"
+    ],
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "nspanel-lovelace-ui.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
+    "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "hardware",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "push",
+    "adminUI": {
+      "config": "json"
+    },
+    "adminTab": {
+      "link": "jsonTab.json5",
+      "singleton": false
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=7.0.6"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.6.20",
+        "javascript": ">=8.9.2"
+      }
+    ],
+    "messagebox": true,
+    "tier": 3
+  },
+  "protectedNative": [
+    "mqttPassword",
+    "pageQRssid",
+    "pageQRpwd1",
+    "pageQRpwd2",
+    "pageQRpwd3",
+    "tasmotaAdminPassword",
+    "pw1"
+  ],
+  "encryptedNative": [
+    "mqttPassword",
+    "pageQRssid",
+    "pageQRpwd1",
+    "pageQRpwd2",
+    "pageQRpwd3",
+    "tasmotaAdminPassword",
+    "pw1"
+  ],
+  "native": {
+    "mqttPassword": "",
+    "mqttUsername": "",
+    "mqttIp": "",
+    "mqttPort": 0,
+    "panels": [],
+    "pageQRpwd1": "",
+    "pageQRpwd2": "",
+    "pageQRpwd3": "",
+    "pageQRssid": "",
+    "pw1": "",
+    "tasmotaAdminPassword": "",
+    "useBetaTFT": false,
+    "shutterClosedIsZero": false,
+    "colorStates": [
+      {
+        "colGood": "#00ff00",
+        "colBad": "#ff0000",
+        "colTrue": "#00ff00",
+        "colFalse": "#ff0000",
+        "colActivated": "#ffff00",
+        "colDeactivated": "#808080",
+        "colAttention": "#00ffff",
+        "colInfo": "#ffffff",
+        "colOption1": "#ffff00",
+        "colOption2": "#ffcc00",
+        "colOption3": "#ff0000",
+        "colOption4": "#00ff00",
+        "colOpen": "#ff0000",
+        "colClose": "#00ff00",
+        "colHot": "#ff0000",
+        "colCold": "#0000ff",
+        "colOn": "#00ff00",
+        "colOff": "#ff0000",
+        "colLight": "#ffffff",
+        "colDark": "#808080",
+        "colWarning": "#ffa500",
+        "colSuccess": "#00ff00",
+        "colNeutral": "#808080",
+        "colHighlight": "#00c8ff",
+        "colDisabled": "#404040"
+      }
+    ],
+    "colorNavigation": [
+      {
+        "colNavLeft": "#ffffff",
+        "colNavRight": "#ffffff",
+        "colNavDownLeft": "#ffffff",
+        "colNavDownRight": "#ffffff",
+        "colNavDown": "#ffffff",
+        "colNavHome": "#ffffff",
+        "colNavParent": "#ffffff"
+      }
+    ],
+    "colorWeatherIcon": [
+      {
+        "colSunny": "#ffff00",
+        "colPartlyCloudy": "#999999",
+        "colCloudy": "#555555",
+        "colFog": "#aaaaaa",
+        "colHail": "#d0d0d0",
+        "colLightning": "#ffff33",
+        "colLightningRainy": "#cccc66",
+        "colPouring": "#3333ff",
+        "colRainy": "#6666ff",
+        "colSnowy": "#cccccc",
+        "colSnowyHeavy": "#bbbbbb",
+        "colSnowyRainy": "#9999ff",
+        "colWindy": "#999999",
+        "colTornado": "#ff3232",
+        "colClearNight": "#666666",
+        "colExceptional": "#ff3232"
+      }
+    ],
+    "colorDisplay": [
+      {
+        "colForeground": "#ffffff",
+        "colBackground": "#101010"
+      }
+    ],
+    "colorWeatherForecast": [
+      {
+        "colSolar": "#00ff00",
+        "colTemperature": "#ff0000",
+        "colGust": "#0000ff",
+        "colSunrise": "#ffff00",
+        "colSunset": "#ff9900"
+      }
+    ],
+    "colorScreensaver": [
+      {
+        "colFgTime": "#ffffff",
+        "colFgTimeAmPm": "#ffcc00",
+        "colFgDate": "#c0c0c0",
+        "colFgMain": "#ffffff",
+        "colFgMainAlt": "#ffcc00",
+        "colFgTimeAdd": "#00c8ff",
+        "colFgForecast": "#c0c0c0",
+        "colFgBar": "#c0c0c0"
+      }
+    ],
+    "colorCardMedia": [
+      {
+        "colMediaArtistOn": "#ffff00",
+        "colMediaArtistOff": "#808080",
+        "colMediaTitleOn": "#ffff00",
+        "colMediaTitleOff": "#808080",
+        "colMediaOnOffColor": "#ffffff"
+      }
     ]
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
