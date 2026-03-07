@@ -401,11 +401,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
         try {
             for (const panel of panels) {
-                await this.props.oContext.socket.sendTo(
-                    `${this.adapterName}.${this.instance}`,
-                    'createScript',
-                    { name: panel._name, topic: panel._topic },
-                );
+                await this.props.oContext.socket.sendTo(`${this.adapterName}.${this.instance}`, 'createScript', {
+                    name: panel._name,
+                    topic: panel._topic,
+                });
             }
             await this.refreshPanels();
         } catch (err) {
