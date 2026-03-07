@@ -120,10 +120,10 @@ export class ConfigManager extends BaseClass {
 
         this.log.debug(`Start converting configuration for ${config.panelName || config.panelTopic}`);
         let file = undefined;
-        if (fs.existsSync(path.join(__dirname, '../../script'))) {
-            file = fs.readFileSync(path.join(__dirname, '../../script/example_sendTo_script_iobroker.ts'), 'utf8');
+        if (fs.existsSync(path.join(__dirname, '../../../script'))) {
+            file = fs.readFileSync(path.join(__dirname, '../../../script/example_sendTo_script_iobroker.ts'), 'utf8');
         }
-        const vTemp = file?.match(/const.version.+'(\d+\.\d+\.\d+)';/) || [];
+        const vTemp = file?.match(/const version = '(\d+\.\d+\.\d+)';/) || [];
         const scriptVersion = vTemp[1] ? vTemp[1] : '';
         const version = getVersionAsNumber(config.version);
         const requiredVersion = getVersionAsNumber(scriptVersion);
