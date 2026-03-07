@@ -440,6 +440,7 @@
     "unlock_type": "Type",
     "unlock_unlock": "Ontgrendelen",
     "up/down": "omhoog/omlaag",
+    "updateAllScripts": "Scripts bijwerken voor alle panelen",
     "updateAvailable": "Update beschikbaar",
     "updateTasmotaText": "Wil je de Tasmota-firmware op dit paneel updaten?\n\nHet paneel wordt opnieuw opgestart en is ongeveer 40 seconden niet beschikbaar.",
     "upload_file": "Bestand uploaden",

@@ -440,6 +440,7 @@
     "unlock_type": "Taper",
     "unlock_unlock": "Ouvrir",
     "up/down": "vers le haut",
+    "updateAllScripts": "Mettre à jour les scripts pour tous les panneaux",
     "updateAvailable": "Mise à jour disponible",
     "updateTasmotaText": "Voulez-vous mettre à jour le firmware Tasmota sur ce panneau ?\n\nLe panneau redémarrera et sera indisponible pendant environ 40 secondes.",
     "upload_file": "Télécharger le fichier",

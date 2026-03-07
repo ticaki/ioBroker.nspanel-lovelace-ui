@@ -440,6 +440,7 @@
     "unlock_type": "Tipo",
     "unlock_unlock": "Sbloccare",
     "up/down": "su/giù",
+    "updateAllScripts": "Aggiorna script per tutti i pannelli",
     "updateAvailable": "Aggiornamento disponibile",
     "updateTasmotaText": "Vuoi aggiornare il firmware Tasmota su questo pannello?\n\nIl pannello si riavvierà e non sarà disponibile per circa 40 secondi.",
     "upload_file": "Carica file",

@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (copilot) added: "Update scripts for all panels" button in Maintain tab — triggers script update for all panels that require one
+
 ### 0.13.4 (2026-03-07)
 - (ticaki) added: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modes for HW button actions
 

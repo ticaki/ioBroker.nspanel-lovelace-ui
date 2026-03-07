@@ -441,6 +441,7 @@
     "unlock_type": "Type",
     "unlock_unlock": "Unlock",
     "up/down": "up/down",
+    "updateAllScripts": "Update scripts for all panels",
     "updateAvailable": "Update available",
     "updateTasmotaText": "Do you want to update the Tasmota firmware on this panel?\n\nThe panel will restart and will be unavailable for about 40 seconds.",
     "upload_file": "Upload file",

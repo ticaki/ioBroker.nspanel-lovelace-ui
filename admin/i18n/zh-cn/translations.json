@@ -440,6 +440,7 @@
     "unlock_type": "类型",
     "unlock_unlock": "开锁",
     "up/down": "上/下",
+    "updateAllScripts": "更新所有面板的脚本",
     "updateAvailable": "更新可用",
     "updateTasmotaText": "您想更新此面板上的 Tasmota 固件吗？\n\n面板将重新启动，并在大约 40 秒内不可用。",
     "upload_file": "上传文件",

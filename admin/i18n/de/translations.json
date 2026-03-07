@@ -441,6 +441,7 @@
     "unlock_type": "Typ",
     "unlock_unlock": "Entsperren",
     "up/down": "oben/unten",
+    "updateAllScripts": "Skripte für alle Panels aktualisieren",
     "updateAvailable": "Update verfügbar",
     "updateTasmotaText": "Möchten Sie die Tasmota-Firmware auf diesem Panel aktualisieren?\n\nDas Panel wird neu gestartet und ist für ca. 40 Sekunden nicht erreichbar.",
     "upload_file": "Datei hochladen",

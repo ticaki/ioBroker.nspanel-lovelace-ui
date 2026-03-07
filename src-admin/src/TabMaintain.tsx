@@ -391,6 +391,34 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
     }
 
+    private async handleUpdateAllScripts(): Promise<void> {
+        const panels = this.state.panelsInfo.filter(p => p._check_script && p._name && p._topic);
+        if (panels.length === 0) {
+            return;
+        }
+        if (this._isMounted) {
+            this.setState({ processingPanel: 'all' });
+        }
+        try {
+            for (const panel of panels) {
+                await this.props.oContext.socket.sendTo(
+                    `${this.adapterName}.${this.instance}`,
+                    'createScript',
+                    { name: panel._name, topic: panel._topic },
+                );
+            }
+            await this.refreshPanels();
+        } catch (err) {
+            if (this._isMounted) {
+                this.setState({ error: String(err) });
+            }
+        } finally {
+            if (this._isMounted) {
+                this.setState({ processingPanel: null });
+            }
+        }
+    }
+
     private handleOpenTasmotaConsole(panel: PanelConfig | undefined): void {
         try {
             console.log('[Maintain] Attempting to open Tasmota console for panel:', panel);
@@ -492,6 +520,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         const panelsConfig: PanelConfig[] = this.panelsConfig;
         const { panelsInfo, error, processingPanel, alive } = this.state;
         const confirmDialog = this.confirmDialog;
+        const anyScriptNeedsUpdate = panelsInfo.some(p => p._check_script);
 
         return (
             <Box sx={{ p: 2 }}>
@@ -505,8 +534,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     </Alert>
                 )}
 
-                {/* Link to wiki */}
-                <Box sx={{ mb: 2 }}>
+                {/* Link to wiki + Update all scripts button */}
+                <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                     <Button
                         variant="text"
                         color="primary"
@@ -515,6 +544,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         sx={{ color: 'red' }}
                     >
                         {this.getText('openLinkAdapterInstallation')}
+                    </Button>
+                    <Button
+                        variant="text"
+                        color="primary"
+                        disabled={!anyScriptNeedsUpdate || processingPanel !== null || !alive}
+                        onClick={() => void this.handleUpdateAllScripts()}
+                        sx={{ color: anyScriptNeedsUpdate ? 'orange' : undefined }}
+                    >
+                        {processingPanel === 'all' ? <CircularProgress size={20} /> : this.getText('updateAllScripts')}
                     </Button>
                 </Box>
 

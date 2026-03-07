@@ -440,6 +440,7 @@
     "unlock_type": "Typ",
     "unlock_unlock": "Odblokować",
     "up/down": "w górę/w dół",
+    "updateAllScripts": "Aktualizuj skrypty dla wszystkich paneli",
     "updateAvailable": "Aktualizacja dostępna",
     "updateTasmotaText": "Czy chcesz zaktualizować oprogramowanie Tasmota na tym panelu?\n\nPanel uruchomi się ponownie i będzie niedostępny przez około 40 sekund.",
     "upload_file": "Prześlij plik",
