@@ -128,7 +128,7 @@ class ConfigManager extends import_library.BaseClass {
     if (fs.existsSync(import_path.default.join(__dirname, "../../script"))) {
       file = fs.readFileSync(import_path.default.join(__dirname, "../../script/example_sendTo_script_iobroker.ts"), "utf8");
     }
-    const vTemp = (file == null ? void 0 : file.match(/const.version.+'(\d\.\d\.\d)';/)) || [];
+    const vTemp = (file == null ? void 0 : file.match(/const.version.+'(\d+\.\d+\.\d+)';/)) || [];
     const scriptVersion = vTemp[1] ? vTemp[1] : "";
     const version = (0, import_tools.getVersionAsNumber)(config.version);
     const requiredVersion = (0, import_tools.getVersionAsNumber)(scriptVersion);
