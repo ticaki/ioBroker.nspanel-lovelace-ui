@@ -860,15 +860,26 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.info.isOnline
       );
       if (s) {
+        this._isOnline = s;
         this.log.info("is online!");
+        const state = this.library.readdb(`panels.${this.name}.cmd.tempOffSet`);
+        let val = 0;
+        if (state != null && typeof state.val === "number") {
+          val = state.val;
+          val = Math.max(-12.6, Math.min(12.6, val));
+        }
+        this.sendTempOffSetToPanel = this._sendTempOffSetToPanel;
+        this.sendTempOffSetToPanel(val);
       } else {
         this._activePage && void this._activePage.setVisibility(false);
+        this.sendTempOffSetToPanel = (_val) => {
+        };
         this.restartLoops();
         this.log.warn("is offline!");
         void this.setStatus("offline");
+        this._isOnline = s;
       }
     }
-    this._isOnline = s;
   }
   async isValid() {
     return true;
@@ -1330,6 +1341,18 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "tempOffSet": {
+          if (state && state.val != null && typeof state.val === "number") {
+            state.val = Math.max(-12.6, Math.min(12.6, state.val));
+            this.sendTempOffSetToPanel(state.val);
+            await this.library.writedp(
+              `panels.${this.name}.cmd.tempOffSet`,
+              state.val,
+              definition.genericStateObjects.panel.panels.cmd.tempOffSet
+            );
+          }
+          break;
+        }
       }
     }
   }
@@ -1767,6 +1790,20 @@ class Panel extends import_library.BaseClass {
       }
     }
   };
+  _sendTempOffSetToPanel(value) {
+    if (this.unload || this.adapter.unload || !this.isOnline) {
+      return;
+    }
+    value = Math.max(-12.6, Math.min(12.6, value));
+    this.sendToTasmota(`${this.topic}/cmnd/TempOffset`, String(value));
+    void this.library.writedp(
+      `panels.${this.name}.cmd.tempOffSet`,
+      value,
+      definition.genericStateObjects.panel.panels.cmd.tempOffSet
+    );
+  }
+  sendTempOffSetToPanel(_value) {
+  }
   onInternalCommand = async (id, state) => {
     var _a, _b, _c;
     if (!id.startsWith(this.name)) {

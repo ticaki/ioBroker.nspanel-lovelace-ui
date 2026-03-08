@@ -233,6 +233,21 @@ const genericStateObjects = {
           },
           native: {}
         },
+        tempOffSet: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.tempOffSet",
+            type: "number",
+            role: "level",
+            read: true,
+            write: true,
+            def: 0,
+            min: -12.6,
+            max: 12.6
+          },
+          native: {}
+        },
         buttons: {
           _channel: {
             _id: "",

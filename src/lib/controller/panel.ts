@@ -965,15 +965,26 @@ export class Panel extends BaseClass {
                 definition.genericStateObjects.panel.panels.info.isOnline,
             );
             if (s) {
+                this._isOnline = s;
                 this.log.info('is online!');
+                // Tempoffset state is only relevant when the panel is online, so we can clean it up when going offline and restore it when going online again
+                const state = this.library.readdb(`panels.${this.name}.cmd.tempOffSet`);
+                let val = 0;
+                if (state != null && typeof state.val === 'number') {
+                    val = state.val;
+                    val = Math.max(-12.6, Math.min(12.6, val));
+                }
+                this.sendTempOffSetToPanel = this._sendTempOffSetToPanel;
+                this.sendTempOffSetToPanel(val);
             } else {
                 this._activePage && void this._activePage.setVisibility(false);
+                this.sendTempOffSetToPanel = (_val: number) => {};
                 this.restartLoops();
                 this.log.warn('is offline!');
                 void this.setStatus('offline');
+                this._isOnline = s;
             }
         }
-        this._isOnline = s;
     }
     async isValid(): Promise<true> {
         return true;
@@ -1497,6 +1508,18 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'tempOffSet': {
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        state.val = Math.max(-12.6, Math.min(12.6, state.val));
+                        this.sendTempOffSetToPanel(state.val);
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.tempOffSet`,
+                            state.val,
+                            definition.genericStateObjects.panel.panels.cmd.tempOffSet,
+                        );
+                    }
+                    break;
+                }
             }
         }
     }
@@ -1964,6 +1987,21 @@ export class Panel extends BaseClass {
             }
         }
     };
+
+    _sendTempOffSetToPanel(value: number): void {
+        if (this.unload || this.adapter.unload || !this.isOnline) {
+            return;
+        }
+        value = Math.max(-12.6, Math.min(12.6, value));
+        this.sendToTasmota(`${this.topic}/cmnd/TempOffset`, String(value));
+        void this.library.writedp(
+            `panels.${this.name}.cmd.tempOffSet`,
+            value,
+            definition.genericStateObjects.panel.panels.cmd.tempOffSet,
+        );
+    }
+    sendTempOffSetToPanel(_value: number): void {}
+
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (!id.startsWith(this.name)) {
             return null;
