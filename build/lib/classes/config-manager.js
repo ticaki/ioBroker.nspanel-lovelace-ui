@@ -142,7 +142,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (version < requiredVersion) {
       messages.push(
-        `Update Script! Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is lower than the required version ${scriptVersion}!`
+        `Update your script and/or resend the configuration to the adapter! Panel for Topic: ${config.panelTopic}, name: ${panelItem.name} \u2014 script version ${config.version} is below the required version ${scriptVersion}!`
       );
       this.log.warn(messages[messages.length - 1]);
     } else if (version > requiredVersion) {
