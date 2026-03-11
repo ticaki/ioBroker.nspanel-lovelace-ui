@@ -75,7 +75,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
   }
   onStateTriggerSuperDoNotOverride = async (dp, from) => {
     var _a;
-    if (this.unload || this.adapter.unload) {
+    if (this.unload || this.adapter.unload || !this.basePanel.isOnline) {
       return false;
     }
     if (!this.visibility && !(this.neverDeactivateTrigger || this.canBeHidden && ((_a = this.parent) == null ? void 0 : _a.visibility) || from.neverDeactivateTrigger)) {

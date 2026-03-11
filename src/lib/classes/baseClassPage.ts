@@ -83,7 +83,7 @@ export class BaseTriggeredPage extends BaseClass {
     }
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseTriggeredPage): Promise<boolean> => {
-        if (this.unload || this.adapter.unload) {
+        if (this.unload || this.adapter.unload || !this.basePanel.isOnline) {
             return false;
         }
         if (

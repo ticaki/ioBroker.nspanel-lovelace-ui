@@ -1034,6 +1034,14 @@ export class Panel extends BaseClass {
                         await this.setStatus('offline');
                     }
                     return;
+                } else if ('TempOffset' in msg) {
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.tempOffSet`,
+                        parseFloat(msg.TempOffset),
+                        definition.genericStateObjects.panel.panels.cmd.tempOffSet,
+                    );
+                    this.log.debug(`Received tempOffset ${msg.TempOffset} from panel, send to state and panel`);
+                    return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
                     await this.library.writedp(
@@ -1512,11 +1520,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         state.val = Math.max(-12.6, Math.min(12.6, state.val));
                         this.sendTempOffSetToPanel(state.val);
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.tempOffSet`,
-                            state.val,
-                            definition.genericStateObjects.panel.panels.cmd.tempOffSet,
-                        );
+                        this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
                     }
                     break;
                 }
