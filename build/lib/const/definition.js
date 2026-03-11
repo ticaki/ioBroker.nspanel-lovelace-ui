@@ -1143,6 +1143,62 @@ const genericStateObjects = {
             },
             native: {}
           },
+          sensors: {
+            _channel: {
+              _id: "",
+              type: "folder",
+              common: {
+                name: "sensors"
+              },
+              native: {}
+            },
+            Time: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "Time",
+                type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            ANALOG: {
+              _channel: {
+                _id: "",
+                type: "folder",
+                common: {
+                  name: "ANALOG"
+                },
+                native: {}
+              },
+              Temperature1: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Temperature1",
+                  type: "number",
+                  role: "value.temperature",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              }
+            },
+            TempUnit: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "TempUnit",
+                type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            }
+          },
           firmwareversion: {
             _id: "",
             type: "state",

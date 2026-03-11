@@ -193,6 +193,13 @@ class Panel extends import_library.BaseClass {
           LinkCount: 0,
           Downtime: ""
         }
+      },
+      sensors: {
+        Time: "",
+        ANALOG: {
+          Temperature1: 0
+        },
+        TempUnit: ""
       }
     }
   };
@@ -974,7 +981,13 @@ class Panel extends import_library.BaseClass {
     } else if (topic.endsWith("/tele/INFO1")) {
       this.restartLoops();
     } else if (topic.includes("/tele/") && this.adapter.config.writeTasmotaTele != void 0 && this.adapter.config.writeTasmotaTele) {
-      await this.library.writeFromJson(`panels.${this.name}.info.tasmota.sts`, "", {}, JSON.parse(message));
+      this.info.tasmota.sensors = JSON.parse(message);
+      await this.library.writeFromJson(
+        `panels.${this.name}.info.tasmota.sensors`,
+        "",
+        {},
+        this.info.tasmota.sensors
+      );
     } else {
       const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
       if (command) {
@@ -995,6 +1008,12 @@ class Panel extends import_library.BaseClass {
               definition.genericStateObjects.panel.panels.cmd.power1
             );
             await this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === "ON", true);
+            break;
+          }
+          case "stat/STATUS10": {
+            const data = JSON.parse(message);
+            this.info.tasmota.sensors = data.StatusSNS;
+            await this.writeInfo();
             break;
           }
           case "stat/STATUS0": {
@@ -1029,6 +1048,7 @@ class Panel extends import_library.BaseClass {
             this.info.tasmota.safeboot = data.StatusFWR.Version.includes("Safeboot");
             this.info.tasmota.uptime = data.StatusSTS.Uptime;
             this.info.tasmota.sts = data.StatusSTS;
+            this.info.tasmota.sensors = data.StatusSNS;
             await this.setStatus("connected");
             await this.writeInfo();
             break;
@@ -1353,7 +1373,7 @@ class Panel extends import_library.BaseClass {
           if (state && state.val != null && typeof state.val === "number") {
             state.val = Math.max(-12.6, Math.min(12.6, state.val));
             this.sendTempOffSetToPanel(state.val);
-            this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");
+            this.sendToTasmota(`${this.topic}/cmnd/STATUS10`, "");
           }
           break;
         }

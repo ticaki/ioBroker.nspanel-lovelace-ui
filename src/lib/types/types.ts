@@ -275,7 +275,7 @@ export interface State extends Omit<ioBroker.State, 'val'> {
 }
 export type StateValue = ioBroker.StateValue | object;
 
-export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1' | 'stat/STATUS0';
+export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1' | 'stat/STATUS0' | 'stat/STATUS10';
 
 /**
  * Represents the configuration for a button function.
@@ -529,6 +529,7 @@ export type PanelInfo = {
         uptime: string;
         sts: STATUS0['StatusSTS'];
         mqttClient: string;
+        sensors: STATUS0['StatusSNS'];
     };
     internal: {
         scriptName: string;

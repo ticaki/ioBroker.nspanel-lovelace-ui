@@ -205,6 +205,13 @@ export class Panel extends BaseClass {
                     Downtime: '',
                 },
             },
+            sensors: {
+                Time: '',
+                ANALOG: {
+                    Temperature1: 0,
+                },
+                TempUnit: '',
+            },
         },
     };
 
@@ -1097,7 +1104,13 @@ export class Panel extends BaseClass {
             this.adapter.config.writeTasmotaTele != undefined &&
             this.adapter.config.writeTasmotaTele
         ) {
-            await this.library.writeFromJson(`panels.${this.name}.info.tasmota.sts`, '', {}, JSON.parse(message));
+            this.info.tasmota.sensors = JSON.parse(message);
+            await this.library.writeFromJson(
+                `panels.${this.name}.info.tasmota.sensors`,
+                '',
+                {},
+                this.info.tasmota.sensors,
+            );
         } else {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
                 [])[0] as Types.TasmotaIncomingTopics | null;
@@ -1119,6 +1132,12 @@ export class Panel extends BaseClass {
                             definition.genericStateObjects.panel.panels.cmd.power1,
                         );
                         await this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === 'ON', true);
+                        break;
+                    }
+                    case 'stat/STATUS10': {
+                        const data = JSON.parse(message) as Types.STATUS0;
+                        this.info.tasmota.sensors = data.StatusSNS;
+                        await this.writeInfo();
                         break;
                     }
                     case 'stat/STATUS0': {
@@ -1155,6 +1174,7 @@ export class Panel extends BaseClass {
                         this.info.tasmota.safeboot = data.StatusFWR.Version.includes('Safeboot');
                         this.info.tasmota.uptime = data.StatusSTS.Uptime;
                         this.info.tasmota.sts = data.StatusSTS;
+                        this.info.tasmota.sensors = data.StatusSNS;
                         await this.setStatus('connected');
 
                         await this.writeInfo();
@@ -1520,7 +1540,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         state.val = Math.max(-12.6, Math.min(12.6, state.val));
                         this.sendTempOffSetToPanel(state.val);
-                        this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
+                        this.sendToTasmota(`${this.topic}/cmnd/STATUS10`, '');
                     }
                     break;
                 }
