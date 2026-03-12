@@ -372,7 +372,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     from: 'system.adapter.admin.0',
                     callback: () => {},
                 } as unknown as ioBroker.Message);
-                await this.delay(3000);
+                await this.delay(1000);
                 this.mainConfiguration = this.testCaseConfig;
                 const test = new MQTT.MQTTClientClass(
                     this,
@@ -1258,7 +1258,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.log.debug(`URL: ${url}`);
                                         await this.fetch(url);
                                         this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
-                                        await this.delay(7000);
+                                        await this.delay(1500);
                                     } else {
                                         this.log.info(
                                             `Emulator detected on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}, skipping berry install.`,
@@ -1269,7 +1269,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 if (result?.nlui_driver_version !== '-1') {
                                     try {
-                                        await this.delay(5000);
+                                        await this.delay(1500);
 
                                         const cmnd = await this.getTFTVersionOnline(
                                             obj.message.model,
