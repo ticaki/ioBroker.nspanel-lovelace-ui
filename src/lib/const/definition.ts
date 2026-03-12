@@ -5429,11 +5429,6 @@ export const tasmotaTimeZones = [
     },
 ];
 
-export const tasmotaTimeZonesAdmin = tasmotaTimeZones.map(tz => ({
-    label: tz.label,
-    value: tz.label,
-}));
-
 export function getTasmotaTimeZone(label: string): string {
     const tz = tasmotaTimeZones.find(tz => tz.label === label);
     return tz ? tz.value : '';

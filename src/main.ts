@@ -2035,12 +2035,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
-                case 'getTimeZones': {
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, definition.tasmotaTimeZonesAdmin, obj.callback);
-                    }
-                    break;
-                }
                 case 'openLinkAliasTable': {
                     if (obj.callback) {
                         this.sendTo(
