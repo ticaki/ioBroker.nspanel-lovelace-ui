@@ -1204,6 +1204,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 );
 
                                 await this.fetch(u.href);
+                                await this.delay(150);
 
                                 mac = r.StatusNET.Mac;
                                 item.model = obj.message.model || 'eu';

@@ -1016,6 +1016,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=${encodeURIComponent(`AdcParam 2,14600,10000,3950`)}`
                 );
                 await this.fetch(u.href);
+                await this.delay(150);
                 mac = r.StatusNET.Mac;
                 item.model = obj.message.model || "eu";
                 item.name = obj.message.tasmotaName;
