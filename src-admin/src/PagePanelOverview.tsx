@@ -26,6 +26,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfigIP from './components/ConfigIP';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
+import { tasmotaTimeZones } from './tasmotaTimeZones';
 
 interface PanelConfig {
     id?: string;
@@ -140,8 +141,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
 
             // Timezone-Entities vorladen, wenn bereits ein Wert gesetzt ist
-            if (isAlive && this.props.data.timezone) {
-                void this.loadTimezoneEntities(false);
+            if (this.props.data.timezone) {
+                void this.loadTimezoneEntities();
             }
         } catch (error) {
             console.error('[PagePanelOverview] Failed to get alive state or subscribe:', error);
@@ -258,64 +259,24 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     };
 
     // Lade Timezone-Entities
-    async loadTimezoneEntities(forceReload = false): Promise<void> {
+    loadTimezoneEntities(): void {
         if (!this.state.alive) {
             return;
         }
-
-        const now = Date.now();
-        const lastLoad = this.state.lastTimezoneLoad || 0;
-
-        if (!forceReload && now - lastLoad < 60000 && this.state.timezoneEntities?.length) {
-            console.log('[PagePanelOverview] Using cached timezone entities, last load:', new Date(lastLoad));
-            return;
-        }
-
-        console.log('[PagePanelOverview] Loading timezone entities, forceReload:', forceReload);
-        this.setState({ loadingTimezone: true, error: null });
-
-        if (this.props.oContext.socket) {
-            const target = `${this.adapterName}.${this.instance}`;
-            const payload = {
-                ip: this.props.data?.internalServerIp,
-            };
-
-            try {
-                const timeoutPromise = new Promise<never>((_, reject) => {
-                    setTimeout(() => reject(new Error('sendTo timeout after 2 seconds')), 2000);
-                });
-
-                const sendToPromise = this.props.oContext.socket.sendTo(target, 'getTimeZones', payload);
-
-                const raw = await Promise.race([sendToPromise, timeoutPromise]);
-
-                let entities: TimezoneEntity[] = [];
-                if (Array.isArray(raw)) {
-                    entities = raw;
-                } else if (raw && Array.isArray(raw.result)) {
-                    entities = raw.result;
-                }
-
-                console.log('[PagePanelOverview] sendTo successful', { target, entities });
-
-                this.setState({
-                    timezoneEntities: entities,
-                    lastTimezoneLoad: now,
-                    loadingTimezone: false,
-                });
-            } catch (e) {
-                console.error('[PagePanelOverview] Failed to load timezone entities', {
-                    target,
-                    cmd: 'getTimeZones',
-                    payload,
-                    error: e,
-                });
-                this.setState({
-                    timezoneEntities: [],
-                    loadingTimezone: false,
-                    error: String(e),
-                });
-            }
+        try {
+            this.setState({
+                timezoneEntities: tasmotaTimeZones,
+                loadingTimezone: false,
+            });
+        } catch (e) {
+            console.error('[PagePanelOverview] Failed to load timezone entities', {
+                error: e,
+            });
+            this.setState({
+                timezoneEntities: [],
+                loadingTimezone: false,
+                error: String(e),
+            });
         }
     }
     // Generische Handler-Funktion für Checkbox-Änderungen
@@ -886,7 +847,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             label={this.getText('timezone')}
                             onOpen={() => {
                                 // Lade Daten wenn Select geöffnet wird
-                                void this.loadTimezoneEntities(true);
+                                void this.loadTimezoneEntities();
                             }}
                             onChange={(event: SelectChangeEvent<string>) => {
                                 const value = event.target.value;
