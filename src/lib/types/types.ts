@@ -344,6 +344,35 @@ export type ConfigButtonFunction =
           state: string | dataItem.Dataitem;
       }
     | null;
+
+export type TasmotaTeleState = {
+    Time: string;
+    Uptime: string;
+    UptimeSec: number;
+    Heap: number;
+    SleepMode: string;
+    Sleep: number;
+    LoadAvg: number;
+    MqttCount: number;
+    Berry: {
+        HeapUsed: number;
+        Objects: number;
+    };
+    POWER1: string;
+    POWER2: string;
+    Wifi: {
+        AP: number;
+        SSId: string;
+        BSSId: string;
+        Channel: number;
+        Mode: string;
+        RSSI: number;
+        Signal: number;
+        LinkCount: number;
+        Downtime: string;
+    };
+};
+
 /**
  * Json to Status0 from Tasmota
  */

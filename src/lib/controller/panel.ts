@@ -1009,7 +1009,7 @@ export class Panel extends BaseClass {
             }
         }
 
-        if (topic.endsWith(definition.ReiveTopicAppendix)) {
+        if (topic.endsWith(definition.ReiveTopicAppendix) || topic.endsWith('/stat/RESULT')) {
             const event: Types.IncomingEvent | null = this.convertToEvent(message);
             if (event) {
                 await this.HandleIncomingMessage(event);
@@ -1099,16 +1099,20 @@ export class Panel extends BaseClass {
             }
         } else if (topic.endsWith('/tele/INFO1')) {
             this.restartLoops();
-        } else if (
-            topic.includes('/tele/') &&
-            this.adapter.config.writeTasmotaTele != undefined &&
-            this.adapter.config.writeTasmotaTele
-        ) {
+        } else if (topic.endsWith('/tele/STATE')) {
+            this.info.tasmota.sts = JSON.parse(message) as Types.TasmotaTeleState;
+            await this.library.writeFromJson(
+                `panels.${this.name}.info.tasmota.sts`,
+                'panel.panels.info.tasmota.sts',
+                definition.genericStateObjects,
+                this.info.tasmota.sts,
+            );
+        } else if (topic.endsWith('/tele/SENSOR')) {
             this.info.tasmota.sensors = JSON.parse(message);
             await this.library.writeFromJson(
                 `panels.${this.name}.info.tasmota.sensors`,
-                '',
-                {},
+                'panel.panels.info.tasmota.sensors',
+                definition.genericStateObjects,
                 this.info.tasmota.sensors,
             );
         } else {
