@@ -1047,7 +1047,7 @@ export class Panel extends BaseClass {
                         parseFloat(msg.TempOffset),
                         definition.genericStateObjects.panel.panels.cmd.tempOffSet,
                     );
-                    this.log.debug(`Received tempOffset ${msg.TempOffset} from panel, send to state and panel`);
+                    this.log.debug(`Received tempOffset ${msg.TempOffset} from panel, write to state.`);
                     return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
@@ -1142,6 +1142,7 @@ export class Panel extends BaseClass {
                         const data = JSON.parse(message) as Types.STATUS0;
                         this.info.tasmota.sensors = data.StatusSNS;
                         await this.writeInfo();
+                        this.log.debug(`Received STATUS10 with sensor data, updated info and states!`);
                         break;
                     }
                     case 'stat/STATUS0': {
@@ -1544,7 +1545,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         state.val = Math.max(-12.6, Math.min(12.6, state.val));
                         this.sendTempOffSetToPanel(state.val);
-                        this.sendToTasmota(`${this.topic}/cmnd/STATUS10`, '');
+                        this.sendToTasmota(`${this.topic}/cmnd/STATUS`, '10');
                     }
                     break;
                 }
