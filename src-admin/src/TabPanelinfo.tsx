@@ -81,6 +81,8 @@ const displayStates = [
     'cmd.screenSaver.timeout',
     'cmd.dim.dayMode',
     'cmd.dim.schedule',
+    'cmd.tempOffset',
+    'info.tasmota.sensors.ANALOG.Temperature1',
     'info.nspanel.model',
     'info.internal.pageCount',
     'info.internal.servicePageCount',

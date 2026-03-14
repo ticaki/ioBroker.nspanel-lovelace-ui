@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.timeout": "Screensaver timeout",
     "StateObjects.scriptName": "Script name",
     "StateObjects.status": "Status json",
+    "StateObjects.tempOffset": "Temperature offset",
     "StateObjects.uptime": "Uptime",
     "Success": "Success",
     "Sun": "Sun",

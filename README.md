@@ -158,7 +158,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (copilot) added: "Update scripts for all panels" button in Maintain tab — triggers script update for all panels that require one
+- (tt-tom17) moved: timezone selection into Admin Code
+- (ticaki) added: TempOffset configurable in objects (#629)
+- (ticaki) added: "Update scripts for all panels" button in Maintain tab
 
 ### 0.13.4 (2026-03-07)
 - (ticaki) added: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modes for HW button actions

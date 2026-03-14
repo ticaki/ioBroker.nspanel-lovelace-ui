@@ -974,18 +974,18 @@ export class Panel extends BaseClass {
             if (s) {
                 this._isOnline = s;
                 this.log.info('is online!');
-                // Tempoffset state is only relevant when the panel is online, so we can clean it up when going offline and restore it when going online again
-                const state = this.library.readdb(`panels.${this.name}.cmd.tempOffSet`);
+                // tempOffset state is only relevant when the panel is online, so we can clean it up when going offline and restore it when going online again
+                const state = this.library.readdb(`panels.${this.name}.cmd.tempOffset`);
                 let val = 0;
                 if (state != null && typeof state.val === 'number') {
                     val = state.val;
                     val = Math.max(-12.6, Math.min(12.6, val));
                 }
-                this.sendTempOffSetToPanel = this._sendTempOffSetToPanel;
-                this.sendTempOffSetToPanel(val);
+                this.sendtempOffsetToPanel = this._sendtempOffsetToPanel;
+                this.sendtempOffsetToPanel(val);
             } else {
                 this._activePage && void this._activePage.setVisibility(false);
-                this.sendTempOffSetToPanel = (_val: number) => {};
+                this.sendtempOffsetToPanel = (_val: number) => {};
                 this.restartLoops();
                 this.log.warn('is offline!');
                 void this.setStatus('offline');
@@ -1041,13 +1041,15 @@ export class Panel extends BaseClass {
                         await this.setStatus('offline');
                     }
                     return;
-                } else if ('TempOffset' in msg) {
-                    await this.library.writedp(
-                        `panels.${this.name}.cmd.tempOffSet`,
-                        parseFloat(msg.TempOffset),
-                        definition.genericStateObjects.panel.panels.cmd.tempOffSet,
-                    );
-                    this.log.debug(`Received tempOffset ${msg.TempOffset} from panel, write to state.`);
+                } else if ('tempOffset' in msg) {
+                    const def = structuredClone(definition.genericStateObjects.panel.panels.cmd.tempOffset);
+                    if (this.info.tasmota.sensors?.TempUnit === 'F') {
+                        def.common.unit = '°F';
+                    } else {
+                        def.common.unit = '°C';
+                    }
+                    await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, parseFloat(msg.tempOffset), def);
+                    this.log.debug(`Received tempOffset ${msg.tempOffset} from panel, write to state.`);
                     return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
@@ -1109,12 +1111,7 @@ export class Panel extends BaseClass {
             );
         } else if (topic.endsWith('/tele/SENSOR')) {
             this.info.tasmota.sensors = JSON.parse(message);
-            await this.library.writeFromJson(
-                `panels.${this.name}.info.tasmota.sensors`,
-                'panel.panels.info.tasmota.sensors',
-                definition.genericStateObjects,
-                this.info.tasmota.sensors,
-            );
+            await this.writeInfo();
         } else {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
                 [])[0] as Types.TasmotaIncomingTopics | null;
@@ -1541,10 +1538,10 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'tempOffSet': {
+                case 'tempOffset': {
                     if (state && state.val != null && typeof state.val === 'number') {
                         state.val = Math.max(-12.6, Math.min(12.6, state.val));
-                        this.sendTempOffSetToPanel(state.val);
+                        this.sendtempOffsetToPanel(state.val);
                         this.sendToTasmota(`${this.topic}/cmnd/STATUS`, '10');
                     }
                     break;
@@ -1698,17 +1695,18 @@ export class Panel extends BaseClass {
         const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
         this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
 
-        await this.library.writeFromJson(
-            `panels.${this.name}.info`,
-            'panel.panels.info',
-            definition.genericStateObjects,
-            this.info,
-        );
+        const def = structuredClone(definition.genericStateObjects.panel.panels);
+        if (this.info.tasmota.sensors?.TempUnit === 'F') {
+            def.info.tasmota.sensors.ANALOG.Temperature1.common.unit = '°F';
+        } else {
+            def.info.tasmota.sensors.ANALOG.Temperature1.common.unit = '°C';
+        }
+        await this.library.writeFromJson(`panels.${this.name}.info`, 'info', def, this.info);
     }
     /**
      *  Handle incoming messages from panel
      *
-     * @param event incoming event....
+     * @param event incoming event...
      * @returns void
      */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
@@ -2017,19 +2015,21 @@ export class Panel extends BaseClass {
         }
     };
 
-    _sendTempOffSetToPanel(value: number): void {
+    _sendtempOffsetToPanel(value: number): void {
         if (this.unload || this.adapter.unload || !this.isOnline) {
             return;
         }
         value = Math.max(-12.6, Math.min(12.6, value));
-        this.sendToTasmota(`${this.topic}/cmnd/TempOffset`, String(value));
-        void this.library.writedp(
-            `panels.${this.name}.cmd.tempOffSet`,
-            value,
-            definition.genericStateObjects.panel.panels.cmd.tempOffSet,
-        );
+        this.sendToTasmota(`${this.topic}/cmnd/tempOffset`, String(value));
+        const def = structuredClone(definition.genericStateObjects.panel.panels.cmd.tempOffset);
+        if (this.info.tasmota.sensors?.TempUnit === 'F') {
+            def.common.unit = '°F';
+        } else {
+            def.common.unit = '°C';
+        }
+        void this.library.writedp(`panels.${this.name}.cmd.tempOffset`, value, def);
     }
-    sendTempOffSetToPanel(_value: number): void {}
+    sendtempOffsetToPanel(_value: number): void {}
 
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (!id.startsWith(this.name)) {

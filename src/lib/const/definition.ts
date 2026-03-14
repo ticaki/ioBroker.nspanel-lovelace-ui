@@ -39,7 +39,7 @@ export const genericStateObjects: {
         panels: customChannelType & {
             status: ioBroker.StateObject;
             cmd: customChannelType & {
-                tempOffSet: ioBroker.StateObject;
+                tempOffset: ioBroker.StateObject;
                 buttons: customChannelType & {
                     left: ioBroker.StateObject;
                     right: ioBroker.StateObject;
@@ -292,11 +292,11 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                tempOffSet: {
+                tempOffset: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'StateObjects.tempOffSet',
+                        name: 'StateObjects.tempOffset',
                         type: 'number',
                         role: 'level',
                         read: true,

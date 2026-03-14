@@ -232,11 +232,11 @@ const genericStateObjects = {
           },
           native: {}
         },
-        tempOffSet: {
+        tempOffset: {
           _id: "",
           type: "state",
           common: {
-            name: "StateObjects.tempOffSet",
+            name: "StateObjects.tempOffset",
             type: "number",
             role: "level",
             read: true,
