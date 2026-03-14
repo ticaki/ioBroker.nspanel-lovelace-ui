@@ -92,7 +92,7 @@
     "verify": "npm run lint && npm run lint:admin && npm run build",
     "dev": "dev-server upload && dev-server watch",
     "dev:admin": "npm run build:admin && dev-server upload && dev-server watch",
-    "dev:full": "npm run build:admin && npm run verify && dev-server upload && dev-server watch"
+    "dev:full": "npm run verify && npm run build:admin && dev-server upload && dev-server watch"
   },
   "bugs": {
     "url": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues"
