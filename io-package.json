@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.13.4",
+    "version": "0.14.0",
     "news": {
+      "0.14.0": {
+        "en": "refactored: timezone selection code moved from adapter to admin handler (internal, no UI changes)\nadded: TempOffset configurable in objects and admin tab (#629)\nadded: \"Update scripts for all panels\" button in Maintain tab",
+        "de": "Refactoring: Timezone-Auswahlcode vom Adapter in den Admin-Handler verschoben (intern, keine UI-Änderung)\nhinzugefügt: TempOffset konfigurierbar in Objekten und Admin-Tab (#629)\nhinzugefügt: Schaltfläche \"Skripte für alle Panels aktualisieren\" im Reiter Maintain",
+        "ru": "рефакторинг: код выбора часового пояса перемещён из адаптера в обработчик администратора (внутреннее, без изменений UI)\nдобавлено: TempOffset настраивается в объектах и вкладке администратора (#629)\nдобавлена кнопка «Обновить скрипты для всех панелей» во вкладке «Обслуживание»",
+        "pt": "refatorado: código de seleção de fuso horário movido do adaptador para o manipulador de administração (interno, sem alterações de UI)\nadicionado: TempOffset configurável em objetos e guia de administração (#629)\nadicionado: botão \"Atualizar scripts para todos os painéis\" na aba Manutenção",
+        "nl": "geherstructureerd: tijdzoneselectiecode verplaatst van adapter naar admin-handler (intern, geen UI-wijzigingen)\ntoegevoegd: TempOffset configureerbaar in objecten en admin tab (#629)\ntoegevoegd: knop \"Scripts voor alle panelen bijwerken\" in tabblad Onderhoud",
+        "fr": "refactorisé : code de sélection du fuseau horaire déplacé de l'adaptateur vers le gestionnaire admin (interne, sans modification de l'interface)\najouté: TempOffset configurable dans les objets et l'onglet admin (#629)\najouté: bouton \"Mettre à jour les scripts pour tous les panneaux\" dans l'onglet Maintenance",
+        "it": "refactoring: codice di selezione del fuso orario spostato dall'adattatore all'handler admin (interno, nessuna modifica UI)\naggiunto: TempOffset configurabile in oggetti e scheda admin (#629)\naggiunto: pulsante \"Aggiorna gli script per tutti i pannelli\" nella scheda Manutenzione",
+        "es": "refactorizado: código de selección de zona horaria movido del adaptador al manejador admin (interno, sin cambios de UI)\nañadido: TempOffset configurable en objetos y pestaña admin (#629)\nañadido: botón \"Actualizar scripts para todos los paneles\" en la pestaña Mantenimiento",
+        "pl": "refaktoryzacja: kod wyboru strefy czasowej przeniesiony z adaptera do handlera admina (wewnętrzne, bez zmian UI)\ndodane: TempOffset konfigurowalny w obiektach i zakładce admin (#629)\ndodane: przycisk \"Aktualizuj skrypty dla wszystkich paneli\" w zakładce Konserwacja",
+        "uk": "рефакторинг: код вибору часового поясу переміщено з адаптера до обробника адміністратора (внутрішнє, без змін UI)\nдодано: TempOffset налаштовується в об'єктах і вкладці адміністратора (#629)\nдодано: кнопка \"Оновити скрипти для всіх панелей\" у вкладці Обслуговування",
+        "zh-cn": "重构: 将时区选择代码从适配器移至管理处理器（内部重构，无UI变更）\n添加: TempOffset可在对象和管理标签中配置 (#629)\n添加: 维护标签中的\"为所有面板更新脚本\"按钮"
+      },
       "0.13.4": {
         "en": "added: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modes for HW button actions",
         "de": "Hinzugefügt: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff Modi für HW-Buttonautomationen",
@@ -80,19 +93,6 @@
         "pl": "Wersja NSPanel TFT jest wyświetlana poprawnie w zależności od modelu.\n(tt- tom17) Opcja zapisu danych telemetrycznych Tasmota do państw.\nAdministrat- Tab globalSetting konwertuj do React\nAdmin- Tab Utrzymanie konwersji do reakcji\nDodaj ikonę do wpisów śmieci",
         "uk": "Версія NSPanel TFT відображається правильно в залежності від моделі.\n(т-том17) Для запису даних телеметрії Тасмота в штати.\nСтатус на сервери\nПеретворення домену-Tab в React\nДодавання ікони selector до записів сміття",
         "zh-cn": "NSPanel TFT版本根据模型显示正确.\n(吨) 选择将 Tasmota 遥测数据写入状态 .\nAdmin-Tab 全球设置转换为React\n维持转换为反应\n向垃圾项添加图标选择器"
-      },
-      "0.11.0": {
-        "en": "Fixed incorrect error logs for cardThermo and cardThermo2\nadd PageTrash to Admin-Tab PageConfig",
-        "de": "Fehlerprotokolle für die Karte Thermo und Karte Thermo2 behoben\npageTrash zu Admin-Tab PageConfig hinzufügen",
-        "ru": "Исправлены неправильные журналы ошибок для карты Термо и карточка Термо2\nдобавить PageTrash в Admin-Tab PageConfig",
-        "pt": "Registros de erro incorretos corrigidos para o cartão Termo e cartão Termo2\nadd PageTrash to Admin-Tab PageConfig",
-        "nl": "Onjuiste fout logs voor kaart Thermo en kaart Thermo2\npageTrash toevoegen aan Admin-Tab PageConfig",
-        "fr": "Correction des journaux d'erreurs incorrectes pour la carte Thermo et carte Thermo2\najouter PageTrash à Admin-Tab PageConfig",
-        "it": "Log di errore non corretti per la scheda Termo e scheda Termocoppia\naggiungi PageTrash a Admin-Tab PageConfig",
-        "es": "Registros de errores corregidos para tarjeta Termo y tarjeta Thermo2\nagregar PageTrash a Admin-Tab PageConfig",
-        "pl": "Naprawiono nieprawidłowe dzienniki błędów karty Termo i karta Termo2\ndodaj PageTrash do Admin- Tab PageConfig",
-        "uk": "Виправлені неправильні журнали помилок для картки Термо-карта Термо2\nдодати сторінкуПерейти в Admin-Tab PageConfig",
-        "zh-cn": "卡片的固定错误日志 热和卡 热量2\n将页面回收站添加到管理员- Tab 页面配置"
       }
     },
     "titleLang": {

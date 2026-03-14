@@ -157,9 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (tt-tom17) moved: timezone selection into Admin Code
-- (ticaki) added: TempOffset configurable in objects (#629)
+### 0.14.0 (2026-03-14)
+- (tt-tom17) refactored: timezone selection code moved from adapter to admin handler (internal, no UI changes)
+- (ticaki) added: TempOffset configurable in objects and admin tab (#629)
 - (ticaki) added: "Update scripts for all panels" button in Maintain tab
 
 ### 0.13.4 (2026-03-07)
