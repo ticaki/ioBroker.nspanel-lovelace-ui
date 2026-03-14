@@ -1071,7 +1071,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     obj.message.mqttServer = true;
                                 }
                                 this.log.info(
-                                    `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} with user ${obj.message.mqttUsername} && ${obj.message.mqttPassword}`,
+                                    `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} with user ${obj.message.mqttUsername} && ***`,
                                 );
                                 const config = this.config;
                                 const panels = config.panels ?? [];
@@ -1105,7 +1105,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=status 5`,
                                 );
-                                this.log.debug(`Requesting tasmota status 5 with url: ${u.href}`);
+                                this.log.debug(
+                                    `Requesting tasmota status 5 with url: ${u.href.replace(/password=[^&]*/g, 'password=***')}`,
+                                );
                                 let r = await this.fetch(u.href);
                                 this.log.debug(`Response from tasmota status 5: ${JSON.stringify(r)}`);
                                 if (!isTasmotaStatusNet(r)) {
@@ -1173,7 +1175,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         `&cmnd=status 0`,
                                 );
                                 r = await this.fetch(u.href);
-                                if (!isTasmotaStatusNet(r)) {
+                                if (!isTasmotaStatusNet(r) || !r || !r.StatusNET || !r.StatusNET.Mac) {
                                     this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                                     if (obj.callback) {
                                         this.sendTo(
@@ -1185,18 +1187,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     }
                                     break;
                                 }
-                                if (!r || !r.StatusNET || !r.StatusNET.Mac) {
-                                    this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
-                                    if (obj.callback) {
-                                        this.sendTo(
-                                            obj.from,
-                                            obj.command,
-                                            { error: 'sendToDeviceNotFound2' },
-                                            obj.callback,
-                                        );
-                                    }
-                                    break;
-                                }
+
                                 u = new URL(
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
@@ -1255,7 +1246,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.log.info(
                                             `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
                                         );
-                                        this.log.debug(`URL: ${url}`);
+                                        this.log.debug(`URL: ${url.replace(/password=[^&]*/g, 'password=***')}`);
                                         await this.fetch(url);
                                         this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
                                         await this.delay(1500);
@@ -1307,7 +1298,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                 obj.callback,
                                             );
                                         }
-                                        throw e;
+                                        break;
                                     }
                                 }
                                 await this.createConfigurationScript(item.name, item.topic);
@@ -1328,7 +1319,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                             }
                         } catch (e: any) {
-                            this.log.error(`Error: while sending mqtt config & base config to tasmota - ${e}`);
+                            const stack = e instanceof Error ? (e.stack ?? e.message) : String(e);
+                            this.log.error(
+                                `Error in nsPanelInit while sending config to tasmota (${obj.message?.tasmotaIP ?? 'unknown IP'}): ${stack}`,
+                            );
                             if (obj.callback) {
                                 this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail4' }, obj.callback);
                             }

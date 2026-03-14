@@ -53,7 +53,6 @@
     "@tsconfig/node20": "^20.1.8",
     "@types/node": "^25.0.3",
     "@types/node-forge": "^1.3.14",
-    "baseline-browser-mapping": "^2.9.14",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
@@ -89,8 +88,11 @@
     "npm": "npm i && cd src-admin && npm i",
     "build:admin": "cd src-admin && npm run build",
     "build:all": "npm run build && npm run build:admin",
-    "verify": "npm run lint && npm run build",
-    "build:watch": "npm run build:admin && npm run verify && dev-server upload && dev-server watch"
+    "lint:admin": "cd src-admin && npm run lint",
+    "verify": "npm run lint && npm run lint:admin && npm run build",
+    "dev": "dev-server upload && dev-server watch",
+    "dev:admin": "npm run build:admin && dev-server upload && dev-server watch",
+    "dev:full": "npm run build:admin && npm run verify && dev-server upload && dev-server watch"
   },
   "bugs": {
     "url": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues"

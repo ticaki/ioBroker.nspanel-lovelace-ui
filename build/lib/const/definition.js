@@ -40,7 +40,6 @@ __export(definition_exports, {
   isDimValueForKey: () => isDimValueForKey,
   tasmotaOtaUrl: () => tasmotaOtaUrl,
   tasmotaTimeZones: () => tasmotaTimeZones,
-  tasmotaTimeZonesAdmin: () => tasmotaTimeZonesAdmin,
   weatherEntities: () => weatherEntities
 });
 module.exports = __toCommonJS(definition_exports);
@@ -5313,10 +5312,6 @@ const tasmotaTimeZones = [
     value: "Timezone +0:00"
   }
 ];
-const tasmotaTimeZonesAdmin = tasmotaTimeZones.map((tz) => ({
-  label: tz.label,
-  value: tz.label
-}));
 function getTasmotaTimeZone(label) {
   const tz = tasmotaTimeZones.find((tz2) => tz2.label === label);
   return tz ? tz.value : "";
@@ -5364,7 +5359,6 @@ function isDimValueForKey(key, val) {
   isDimValueForKey,
   tasmotaOtaUrl,
   tasmotaTimeZones,
-  tasmotaTimeZonesAdmin,
   weatherEntities
 });
 //# sourceMappingURL=definition.js.map
