@@ -5580,6 +5580,10 @@ export class ConfigManager extends BaseClass {
             result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
         }
 
+        result.fillIfBelowMin =
+            !('ScreensaverEntityFillIfBelowMin' in entity && entity.ScreensaverEntityFillIfBelowMin != null) ||
+            entity.ScreensaverEntityFillIfBelowMin;
+
         if (isScreensaverPageItemDataItemsOptions(result)) {
             return result;
         }

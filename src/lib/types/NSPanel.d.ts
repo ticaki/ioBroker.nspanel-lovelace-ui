@@ -1454,6 +1454,8 @@ export namespace NSPanel {
         type: SerialTypePageElements;
         data: PageItemBase;
         filter?: pages.filterType;
+        /** If true, this entity is used to fill up to the minimum required number of visible screensaver items. */
+        fillIfBelowMin?: boolean;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

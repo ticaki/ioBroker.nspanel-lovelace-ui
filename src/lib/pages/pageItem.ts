@@ -251,7 +251,7 @@ export class PageItem extends BaseTriggeredPage {
         }
     }
 
-    async getPageItemPayload(): Promise<string> {
+    async getPageItemPayload(skipEnabledCheck: boolean = false): Promise<string> {
         await this.controller.statesControler.activateTrigger(this);
         this.lastPopupType = undefined;
         if (this.dataItems && this.config) {
@@ -260,7 +260,7 @@ export class PageItem extends BaseTriggeredPage {
             const entry = this.dataItems;
             const message: Partial<NSPanel.MessageItem> = {};
             message.intNameEntity = this.id;
-            if (!(await this.isEnabled())) {
+            if (!skipEnabledCheck && !(await this.isEnabled())) {
                 return '';
             }
             switch (entry.type) {

@@ -862,6 +862,7 @@ declare namespace ScriptConfig {
                */
               ScreensaverEntityEnabled?: string;
               ScreensaverEntityVisibleCondition?: string;
+              ScreensaverEntityFillIfBelowMin?: boolean;
           })
         | { type: 'native'; native: any }
         | ({

@@ -224,7 +224,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       }
     }
   }
-  async getPageItemPayload() {
+  async getPageItemPayload(skipEnabledCheck = false) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
@@ -234,7 +234,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       const entry = this.dataItems;
       const message = {};
       message.intNameEntity = this.id;
-      if (!await this.isEnabled()) {
+      if (!skipEnabledCheck && !await this.isEnabled()) {
         return "";
       }
       switch (entry.type) {

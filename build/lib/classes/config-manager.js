@@ -4698,6 +4698,7 @@ class ConfigManager extends import_library.BaseClass {
     if (entity.ScreensaverEntityOffText) {
       result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
     }
+    result.fillIfBelowMin = !("ScreensaverEntityFillIfBelowMin" in entity && entity.ScreensaverEntityFillIfBelowMin != null) || entity.ScreensaverEntityFillIfBelowMin;
     if (isScreensaverPageItemDataItemsOptions(result)) {
       return result;
     }

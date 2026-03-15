@@ -138,7 +138,8 @@ export class Screensaver extends Page {
             enabledIndex: number;
             payload: string;
         };
-        type Result = AppendResult | OverwriteResult | null;
+        type FillerResult = { kind: 'filler'; place: NSPanel.ScreenSaverPlaces; idx: number; payload: string };
+        type Result = AppendResult | OverwriteResult | FillerResult | null;
 
         // Collect results in parallel, but tagged with original index
         const results: Result[] = await Promise.all(
@@ -177,6 +178,10 @@ export class Screensaver extends Page {
                 // Skip via boolean enabled=false
                 const enabledBool = await pageItem.isEnabled();
                 if (enabledBool === false) {
+                    if (pageItem.config?.fillIfBelowMin) {
+                        const payload = await pageItem.getPageItemPayload(true);
+                        return { kind: 'filler', place, idx, payload };
+                    }
                     return null;
                 }
 
@@ -186,8 +191,11 @@ export class Screensaver extends Page {
             }),
         );
 
-        // Apply overwrites and collect appends grouped by place
-        const appendsByPlace: Record<NSPanel.ScreenSaverPlaces, Array<{ idx: number; payload: string }>> = {
+        // Apply overwrites and collect appends/fillers grouped by place
+        const combinedByPlace: Record<
+            NSPanel.ScreenSaverPlaces,
+            Array<{ idx: number; payload: string; isFiller: boolean }>
+        > = {
             indicator: [],
             left: [],
             time: [],
@@ -206,7 +214,7 @@ export class Screensaver extends Page {
             if (r.kind === 'overwrite') {
                 overwrite[r.place][r.enabledIndex] = r.payload;
             } else {
-                appendsByPlace[r.place].push({ idx: r.idx, payload: r.payload });
+                combinedByPlace[r.place].push({ idx: r.idx, payload: r.payload, isFiller: r.kind === 'filler' });
             }
         }
 
@@ -217,9 +225,27 @@ export class Screensaver extends Page {
                 continue;
             }
 
-            // Stable order: sort by original index
-            const ordered = appendsByPlace[place].sort((a, b) => a.idx - b.idx).map(e => e.payload);
-            message.options[place].push(...ordered);
+            const maxForFill =
+                Definition.ScreenSaverConst[layout][place].maxEntries[model] ??
+                Definition.ScreenSaverConst[layout][place].maxEntries.eu;
+
+            // Sort all candidates by original index
+            const combined = combinedByPlace[place].sort((a, b) => a.idx - b.idx);
+            const regularCount = combined.filter(e => !e.isFiller).length;
+            // How many fillers are needed to reach max
+            let fillersLeft = Math.max(0, maxForFill - regularCount);
+
+            // Insert items in original order; fillers only where there is still a slot needed
+            for (const entry of combined) {
+                if (entry.isFiller) {
+                    if (fillersLeft > 0) {
+                        message.options[place].push(entry.payload);
+                        fillersLeft--;
+                    }
+                } else {
+                    message.options[place].push(entry.payload);
+                }
+            }
 
             // Apply overwrites (sparse assignment is fine)
             Object.assign(message.options[place], overwrite[place]);

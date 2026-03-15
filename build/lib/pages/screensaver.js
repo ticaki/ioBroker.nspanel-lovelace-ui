@@ -183,6 +183,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * @param places Places to include in the message.
    */
   async getData(places) {
+    var _a;
     const config = this.config;
     if (!config || !globals.isScreenSaverCardType(config.card)) {
       return null;
@@ -218,8 +219,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     const layout = this.mode;
     const results = await Promise.all(
       this.pageItems.map(async (pageItem, idx) => {
-        var _a, _b, _c;
-        const place = (_a = pageItem == null ? void 0 : pageItem.config) == null ? void 0 : _a.modeScr;
+        var _a2, _b, _c, _d;
+        const place = (_a2 = pageItem == null ? void 0 : pageItem.config) == null ? void 0 : _a2.modeScr;
         if (!place) {
           return null;
         }
@@ -247,13 +248,17 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         }
         const enabledBool = await pageItem.isEnabled();
         if (enabledBool === false) {
+          if ((_d = pageItem.config) == null ? void 0 : _d.fillIfBelowMin) {
+            const payload2 = await pageItem.getPageItemPayload(true);
+            return { kind: "filler", place, idx, payload: payload2 };
+          }
           return null;
         }
         const payload = await pageItem.getPageItemPayload();
         return { kind: "append", place, idx, payload };
       })
     );
-    const appendsByPlace = {
+    const combinedByPlace = {
       indicator: [],
       left: [],
       time: [],
@@ -271,7 +276,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       if (r.kind === "overwrite") {
         overwrite[r.place][r.enabledIndex] = r.payload;
       } else {
-        appendsByPlace[r.place].push({ idx: r.idx, payload: r.payload });
+        combinedByPlace[r.place].push({ idx: r.idx, payload: r.payload, isFiller: r.kind === "filler" });
       }
     }
     for (const key in message.options) {
@@ -279,8 +284,20 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       if (!places.includes(place)) {
         continue;
       }
-      const ordered = appendsByPlace[place].sort((a, b) => a.idx - b.idx).map((e) => e.payload);
-      message.options[place].push(...ordered);
+      const maxForFill = (_a = Definition.ScreenSaverConst[layout][place].maxEntries[model]) != null ? _a : Definition.ScreenSaverConst[layout][place].maxEntries.eu;
+      const combined = combinedByPlace[place].sort((a, b) => a.idx - b.idx);
+      const regularCount = combined.filter((e) => !e.isFiller).length;
+      let fillersLeft = Math.max(0, maxForFill - regularCount);
+      for (const entry of combined) {
+        if (entry.isFiller) {
+          if (fillersLeft > 0) {
+            message.options[place].push(entry.payload);
+            fillersLeft--;
+          }
+        } else {
+          message.options[place].push(entry.payload);
+        }
+      }
       Object.assign(message.options[place], overwrite[place]);
       let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
       if (max == null) {
