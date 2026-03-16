@@ -224,7 +224,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const pw1 = data.pw1 ?? '';
         const rememberLastSite = data.rememberLastSite ?? false;
         const weatherEntity = data.weatherEntity ?? '';
-        const writeTasmotaTele = data.writeTasmotaTele ?? false;
+        // const writeTasmotaTele = data.writeTasmotaTele ?? false;
 
         // Expert Mode from props (provided by json-config system)
         const isExpertMode = this.props.expertMode ?? false;
@@ -492,7 +492,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                 </Box>
 
                 {/* Write Tasmota Telemetry Checkbox */}
-                <Box sx={boxStyle}>
+                {/* <Box sx={boxStyle}>
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -505,6 +505,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                     />
                     <FormHelperText>{this.getText('writeTasmotaTeleHint')}</FormHelperText>
                 </Box>
+                */}
             </Box>
         );
     }

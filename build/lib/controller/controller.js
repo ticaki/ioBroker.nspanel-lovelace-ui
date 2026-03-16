@@ -452,7 +452,7 @@ class Controller extends Library.BaseClass {
     if (index !== -1) {
       this.panels.splice(index, 1);
       await panel.delete();
-      this.log.info(`Panel ${panel.topic} deleted`);
+      this.log.info(`Panel ${panel.topic} removed!`);
     } else {
       this.log.error(`Panel ${panel.topic} not found`);
     }

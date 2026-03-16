@@ -996,7 +996,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     {/* Model*/}
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
-                                            label={this.getText('panelModel')}
+                                            label={this.getText('nsPanelModel')}
                                             value={this.getText(`${panel.model || 'eu'}-Version`)}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
