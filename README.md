@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) added: `ScreensaverEntityFillIfBelowMin` – fills screensaver slots when too few items are visible (default: true)
+- (ticaki) fixed: various bug fixes and improvements in the admin UI
 
 ### 0.14.0 (2026-03-14)
 - (tt-tom17) refactored: timezone selection code moved from adapter to admin handler (internal, no UI changes)

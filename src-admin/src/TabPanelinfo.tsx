@@ -804,10 +804,15 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 >
                     <InputLabel>{label}</InputLabel>
                     <Select
-                        value={value}
+                        value={value !== null && value !== undefined ? String(value) : ''}
                         label={label}
                         onChange={e => {
-                            void this.writeStateValue(panelId, statePath, e.target.value);
+                            const stringVal = e.target.value;
+                            let typedVal: string | number = stringVal;
+                            if (type === 'number') {
+                                typedVal = parseFloat(stringVal);
+                            }
+                            void this.writeStateValue(panelId, statePath, typedVal);
                         }}
                     >
                         {Object.entries(states).map(([val, text]) => (
@@ -825,7 +830,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
 
         // Read-only text field for states (shows resolved value)
         if (states && Object.keys(states).length > 0 && !isWritable) {
-            const displayText = states[value] || value;
+            const stateKey = value !== null && value !== undefined ? String(value) : '';
+            const displayText = states[stateKey] || stateKey;
             return (
                 <TextField
                     key={statePath}
