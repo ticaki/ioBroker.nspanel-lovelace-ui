@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.15.0 (2026-03-16)
 - (ticaki) added: `ScreensaverEntityFillIfBelowMin` – fills screensaver slots when too few items are visible (default: true)
 - (ticaki) fixed: various bug fixes and improvements in the admin UI
 
