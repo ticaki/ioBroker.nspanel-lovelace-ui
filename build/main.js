@@ -1040,7 +1040,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                       break;
                     }
                     const version = obj.message.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
-                    const url3 = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                    const url3 = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                     this.log.info(
                       `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`
                     );
@@ -1149,7 +1149,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   break;
                 }
                 const version = obj.message.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
-                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                const url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                 await this.fetch(url);
                 if (obj.callback) {
@@ -2056,6 +2056,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     this.log.debug(cmnd);
     return cmnd;
+  }
+  getBerryInstallUrl(tasmotaIP, version) {
+    return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
   }
 }
 if (require.main !== module) {
