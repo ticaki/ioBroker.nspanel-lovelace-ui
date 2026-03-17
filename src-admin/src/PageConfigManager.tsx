@@ -228,6 +228,24 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
                 ],
             };
+        } else if (cardType === 'cardChart') {
+            newEntry = {
+                card: 'cardChart',
+                uniqueName: name,
+                headline: name,
+                chartColor: '#FFFF00',
+                selChartType: 'cardChart',
+                selInstanceDataSource: 0,
+                selInstance: '',
+                setStateForTicks: '',
+                setStateForValues: '',
+                setStateForDB: '',
+                txtLabelYAchse: '',
+                rangeHours: 24,
+                maxXAxisTicks: 2,
+                factorCardChart: 1,
+                maxXAxisLabels: 4,
+            };
         } else {
             return; // Unbekannter Typ
         }
