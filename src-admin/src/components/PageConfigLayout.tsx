@@ -20,7 +20,7 @@ import {
     ADAPTER_NAME,
 } from '../../../src/lib/types/adminShareConfig';
 
-export type PageCardType = 'cardTrash' | 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
+export type PageCardType = 'cardChart' | 'cardTrash' | 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
 
 export interface PageConfigLayoutProps {
     entries: PageConfigEntry[];
@@ -203,6 +203,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
+                                <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>

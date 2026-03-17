@@ -12,6 +12,7 @@ import { PageConfigLayout, type PageCardType } from './components/PageConfigLayo
 import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
+import { PageChartEditor } from './components/PageChartEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -363,6 +364,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardTrash') {
             return (
                 <PageTrashEditor
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardChart') {
+            return (
+                <PageChartEditor
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}
