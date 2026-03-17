@@ -171,7 +171,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     native.pageConfig.push(temp);
                 });
                 //delete native.pageChartdata;
-                //change = true;
+                change = true;
             }
 
             if (change) {

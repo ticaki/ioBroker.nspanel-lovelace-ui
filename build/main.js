@@ -155,6 +155,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           };
           native.pageConfig.push(temp);
         });
+        change = true;
       }
       if (change) {
         const uniquePages = /* @__PURE__ */ new Map();
