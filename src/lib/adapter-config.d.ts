@@ -239,7 +239,10 @@ declare global {
                 colMediaTitleOff: string;
                 colMediaOnOffColor: string;
             }[];
+
             pageUnlockConfig: any
+            pageQRConfig: any[];
+
             pageConfig: ({
                 card: 'cardAlarm'; // Card type - will be extended with more types
                 alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
@@ -290,9 +293,26 @@ declare global {
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
                 navigationAssignment?: navigationAssignment[];
+            }|{
+                card: 'cardChart';
+                headline: string;
+                chartColor: string;
+                selChartType: 'cardChart' | 'cardLChart';
+                selInstanceDataSource: 0 | 1;
+                selInstance: string;
+                setStateForTicks: string;
+                setStateForValues: string;
+                setStateForDB: string;
+                txtLabelYAchse: string;
+                rangeHours: number;
+                maxXAxisTicks: number;
+                factorCardChart: number;
+                maxXAxisLabels: number;
+                uniqueName: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                navigationAssignment?: navigationAssignment[]
             })[];
-
-            pageQRConfig: any[];
         }
     }
 }
