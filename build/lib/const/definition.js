@@ -1299,7 +1299,8 @@ const genericStateObjects = {
                 type: "number",
                 role: "text",
                 read: true,
-                write: false
+                write: false,
+                unit: "s"
               },
               native: {}
             },
@@ -1498,7 +1499,8 @@ const genericStateObjects = {
                   type: "number",
                   role: "text",
                   read: true,
-                  write: false
+                  write: false,
+                  unit: "%"
                 },
                 native: {}
               },
@@ -1510,7 +1512,8 @@ const genericStateObjects = {
                   type: "number",
                   role: "text",
                   read: true,
-                  write: false
+                  write: false,
+                  unit: "dBm"
                 },
                 native: {}
               },

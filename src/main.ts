@@ -1236,6 +1236,18 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             }
                                             break;
                                         }
+
+                                        if (!(await this.checkTasmotaHasInternetAccess(obj.message.tasmotaIP, topic))) {
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToNoInternetAccess' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            break;
+                                        }
                                         const version = obj.message.useBetaTFT
                                             ? result[`berry-beta`].split('_')[0]
                                             : result.berry.split('_')[0];
@@ -1355,6 +1367,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     }
                                     break;
                                 }
+
                                 const version = obj.message.useBetaTFT
                                     ? result[`berry-beta`].split('_')[0]
                                     : result.berry.split('_')[0];
@@ -2358,6 +2371,23 @@ class NspanelLovelaceUi extends utils.Adapter {
             `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
             `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`
         );
+    }
+    async checkTasmotaHasInternetAccess(tasmotaIP: string, topic: string): Promise<boolean> {
+        try {
+            const url =
+                `http://${tasmotaIP}/cm?` +
+                `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                `&cmnd=Ping%20raw.githubusercontent.com`;
+
+            await this.fetch(url);
+            this.mqttClient && (await this.mqttClient.waitTasmotaHasInternet(topic, 5000));
+            this.log.debug(`Tasmota device at ${tasmotaIP} has internet access.`);
+            return true;
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
+            return false;
+        }
     }
 }
 

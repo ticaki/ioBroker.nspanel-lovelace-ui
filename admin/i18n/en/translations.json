@@ -348,6 +348,7 @@
     "select_panel_first": "Select panel",
     "sendToAnyError": "An error occurred",
     "sendToDeviceNotFound": "Device not found",
+    "sendToNoInternetAccess": "Tasmota device has no internet access",
     "sendToDeviceNotFound2": "Device not found",
     "sendToIpTopicDifferent": "IP address and topic belong to different panels",
     "sendToNSPanelInitDataSuccess": "Panel was successfully initialized",
@@ -475,5 +476,6 @@
     "wlanhidden": "hidden wifi",
     "wlantype": "Wifi encryption",
     "writeTasmotaTele": "Write Tasmota telemetry data",
-    "writeTasmotaTeleHint": "When enabled, the telemetry data of the panel will be stored in the data points (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "When enabled, the telemetry data of the panel will be stored in the data points (panels/XXXXX/info/tasmota/sts....).",
+"StateObjects.pageCount": "Number of pages"
 }

@@ -1039,6 +1039,17 @@ class NspanelLovelaceUi extends utils.Adapter {
                       }
                       break;
                     }
+                    if (!await this.checkTasmotaHasInternetAccess(obj.message.tasmotaIP, topic)) {
+                      if (obj.callback) {
+                        this.sendTo(
+                          obj.from,
+                          obj.command,
+                          { error: "sendToNoInternetAccess" },
+                          obj.callback
+                        );
+                      }
+                      break;
+                    }
                     const version = obj.message.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
                     const url3 = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                     this.log.info(
@@ -2059,6 +2070,19 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   getBerryInstallUrl(tasmotaIP, version) {
     return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+  }
+  async checkTasmotaHasInternetAccess(tasmotaIP, topic) {
+    try {
+      const url = `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Ping%20raw.githubusercontent.com`;
+      await this.fetch(url);
+      this.mqttClient && await this.mqttClient.waitTasmotaHasInternet(topic, 5e3);
+      this.log.debug(`Tasmota device at ${tasmotaIP} has internet access.`);
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
+      return false;
+    }
   }
 }
 if (require.main !== module) {
