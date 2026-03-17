@@ -18,7 +18,8 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageChart_exports = {};
 __export(pageChart_exports, {
-  PageChart: () => PageChart
+  PageChart: () => PageChart,
+  isChartDetailsExternal: () => isChartDetailsExternal
 });
 module.exports = __toCommonJS(pageChart_exports);
 var import_Page = require("../classes/Page");
@@ -39,9 +40,11 @@ const PageChartMessageDefault = {
 };
 class PageChart extends import_Page.Page {
   items;
-  index = 0;
+  //index: number = 0;
   checkState = true;
-  adminConfig;
+  dbDetails;
+  chartTimeout;
+  oldDatabaseData = null;
   constructor(config, options) {
     if (config.card !== "cardChart" && config.card !== "cardLChart") {
       return;
@@ -52,17 +55,17 @@ class PageChart extends import_Page.Page {
     } else {
       throw new Error("Missing config!");
     }
-    this.index = this.config.index;
     this.minUpdateInterval = 6e4;
-    this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {
+    if (this.items && this.items.data && this.items.data.dbData) {
+      const dbDetails = await this.items.data.dbData.getObject();
+      if (isChartDetailsExternal(dbDetails)) {
+        this.dbDetails = dbDetails;
+      }
+    }
     await super.init();
   }
-  /**
-   *
-   * @returns // TODO: remove this
-   */
   async update() {
     var _a, _b;
     if (!this.visibility) {
@@ -75,7 +78,7 @@ class PageChart extends import_Page.Page {
     message.ticks = ["~"];
     message.value = "~";
     if (this.checkState) {
-      if (this.items && this.adminConfig != null) {
+      if (this.items) {
         const items = this.items;
         const { valuesChart, ticksChart } = await this.getChartData();
         message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
@@ -94,59 +97,104 @@ class PageChart extends import_Page.Page {
     this.sendType(true);
     this.sendToPanel(this.getMessage(message), false);
   }
-  static async getChartPageConfig(configManager, index, gridItem, messages, page) {
-    const adapter = configManager.adapter;
-    const config = adapter.config.pageChartdata[index];
-    let stateExistValue = "";
-    let stateExistTicks = "";
-    if (config) {
-      const card = config.selChartType;
-      adapter.log.debug(`get pageconfig Card: ${card}`);
-      if (config.selInstanceDataSource === 1) {
-        if (await configManager.existsState(config.setStateForDB)) {
-          stateExistValue = config.setStateForDB;
-        }
-      } else {
-        if (await configManager.existsState(config.setStateForValues)) {
-          stateExistValue = config.setStateForValues;
-        }
-      }
-      if (await configManager.existsState(config.setStateForTicks)) {
-        stateExistTicks = config.setStateForTicks;
-      }
-      gridItem = {
-        ...gridItem,
-        uniqueID: config.pageName,
-        alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? "always" : "none",
-        hidden: page.hiddenByTrigger || config.hiddenByTrigger,
-        config: {
-          card,
-          index,
-          data: {
-            headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ""),
-            text: { type: "const", constVal: config.txtlabelYAchse || "" },
-            color: { true: { color: { type: "const", constVal: config.chart_color } } },
-            ticks: { type: "triggered", dp: stateExistTicks },
-            value: { type: "triggered", dp: stateExistValue }
+  /* static async getChartPageConfig(
+          configManager: ConfigManager,
+          index: number,
+          gridItem: pages.PageBase,
+          messages: string[],
+          page: ScriptConfig.PageChart,
+      ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
+          const adapter = configManager.adapter;
+          const config = adapter.config.pageChartdata[index];
+          let stateExistValue = '';
+          let stateExistTicks = '';
+          if (config) {
+              const card = config.selChartType;
+              adapter.log.debug(`get pageconfig Card: ${card}`);
+              if (config.selInstanceDataSource === 1) {
+                  // AdapterVersion
+                  if (await configManager.existsState(config.setStateForDB)) {
+                      stateExistValue = config.setStateForDB;
+                  }
+              } else {
+                  // oldScriptVersion
+                  if (await configManager.existsState(config.setStateForValues)) {
+                      stateExistValue = config.setStateForValues;
+                  }
+              }
+              if (await configManager.existsState(config.setStateForTicks)) {
+                  stateExistTicks = config.setStateForTicks;
+              }
+  
+              gridItem = {
+                  ...gridItem,
+                  uniqueID: config.pageName,
+                  alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? 'always' : 'none',
+                  hidden: page.hiddenByTrigger || config.hiddenByTrigger,
+                  config: {
+                      card: card,
+                      //index: index,
+                      data: {
+                          headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
+                          text: { type: 'const', constVal: config.txtlabelYAchse || '' },
+                          color: { true: { color: { type: 'const', constVal: config.chart_color } } },
+                          ticks: { type: 'triggered', dp: stateExistTicks },
+                          value: { type: 'triggered', dp: stateExistValue },
+                      },
+                  },
+                  pageItems: [],
+              };
+              return { gridItem, messages };
           }
-        },
-        pageItems: []
-      };
-      return { gridItem, messages };
+          throw new Error('No config for cardChart found');
+      } */
+  // Überschreiben der getChartData-Methode
+  async getChartData(ticksChart = ["~"], valuesChart = "~") {
+    var _a, _b;
+    if (this.items) {
+      const items = this.items;
+      const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
+      const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
+      if (tempTicks && Array.isArray(tempTicks) && tempTicks.length > 0) {
+        ticksChart = tempTicks;
+      }
+      if (tempValues && typeof tempValues === "string" && tempValues.length > 0) {
+        valuesChart = tempValues;
+      }
     }
-    throw new Error("No config for cardChart found");
+    return { ticksChart, valuesChart };
   }
-  async getChartData() {
-    const ticksChart = [];
-    const valuesChart = "";
+  async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
+    this.log.warn("getChartDataScript not implemented in base PageChart class");
     return { ticksChart, valuesChart };
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
+    if (!_instance) {
+      return null;
+    }
+    const alive = await this.adapter.getForeignStateAsync(`${_instance}.alive`);
+    if (!alive || !alive.val) {
+      return null;
+    }
+    if (this.unload || this.adapter.unload) {
+      return null;
+    }
     return new Promise((resolve, reject) => {
+      if (this.chartTimeout) {
+        resolve(this.oldDatabaseData || null);
+        return;
+      }
+      this.chartTimeout = this.adapter.setTimeout(() => {
+        this.chartTimeout = null;
+        if (this.unload || this.adapter.unload) {
+          resolve(null);
+          return;
+        }
+        reject(
+          new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`)
+        );
+      }, 15e3);
       try {
-        const timeout = this.adapter.setTimeout(() => {
-          reject(new Error(`error  in system`));
-        }, 5e3);
         this.adapter.sendTo(
           _instance,
           "getHistory",
@@ -163,8 +211,13 @@ class PageChart extends import_Page.Page {
             }
           },
           (result) => {
-            if (timeout) {
-              this.adapter.clearTimeout(timeout);
+            if (this.chartTimeout) {
+              this.adapter.clearTimeout(this.chartTimeout);
+            }
+            this.chartTimeout = null;
+            if (this.unload || this.adapter.unload) {
+              resolve(null);
+              return;
             }
             if (result && "result" in result) {
               if (Array.isArray(result.result)) {
@@ -173,10 +226,13 @@ class PageChart extends import_Page.Page {
                     `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
                   );
                 }
+                this.oldDatabaseData = result.result;
                 resolve(result.result);
+                return;
               }
             }
             reject(new Error("No data found"));
+            return;
           }
         );
       } catch (error) {
@@ -199,85 +255,6 @@ class PageChart extends import_Page.Page {
   }
   async onVisibilityChange(val) {
     if (val) {
-      this.checkState = false;
-      if (!this.adminConfig) {
-        this.log.warn("AdminConfig is not set, cannot check states");
-        this.checkState = false;
-      } else {
-        try {
-          const cfg = this.adminConfig;
-          const ds = cfg.selInstanceDataSource;
-          if (ds === 0) {
-            if (cfg.setStateForValues != null && cfg.setStateForValues !== "") {
-              const state = await this.adapter.getForeignStateAsync(cfg.setStateForValues);
-              if (state && state.val !== null && state.val !== void 0) {
-                this.log.debug(
-                  `State ${cfg.setStateForValues} for Values exists and has value: ${state.val}`
-                );
-                this.checkState = true;
-              } else if (state) {
-                this.log.warn(`State ${cfg.setStateForValues} for Values exists but has no value`);
-              } else {
-                this.log.error(`State ${cfg.setStateForValues} for Values does not exist`);
-              }
-            } else {
-              this.log.error("No setStateForValues configured");
-            }
-            if (cfg.setStateForTicks != null && cfg.setStateForTicks !== "") {
-              const state = await this.adapter.getForeignStateAsync(cfg.setStateForTicks);
-              if (state && state.val !== null && state.val !== void 0) {
-                this.log.debug(
-                  `State ${cfg.setStateForTicks} for Ticks exists and has value: ${state.val}`
-                );
-                this.checkState = true;
-              } else if (state) {
-                this.log.warn(`State ${cfg.setStateForTicks} for Ticks exists but has no value`);
-                this.checkState = false;
-              } else {
-                this.log.error(`State ${cfg.setStateForTicks} for Ticks does not exist`);
-                this.checkState = false;
-              }
-            } else {
-              this.log.error("No setStateForTicks configured");
-              this.checkState = false;
-            }
-          } else if (ds === 1) {
-            if (cfg.selInstance != null && cfg.selInstance !== "") {
-              const alive = await this.adapter.getForeignStateAsync(
-                `system.adapter.${cfg.selInstance}.alive`
-              );
-              if (alive && alive.val) {
-                this.log.debug(`Instance ${cfg.selInstance} is alive`);
-                this.checkState = true;
-              } else {
-                this.log.warn(`Instance ${cfg.selInstance} is not alive`);
-                this.checkState = false;
-              }
-            } else {
-              this.log.error("No selInstance configured");
-              this.checkState = false;
-            }
-            if (cfg.setStateForDB != null && cfg.setStateForDB !== "") {
-              const state = await this.adapter.getForeignStateAsync(cfg.setStateForDB);
-              if (state) {
-                this.log.debug(`State ${cfg.setStateForDB} for DB exists`);
-                this.checkState = true;
-              } else {
-                this.log.warn(`State ${cfg.setStateForDB} for DB does not exist`);
-                this.checkState = false;
-              }
-            } else {
-              this.log.error("No setStateForDB configured");
-              this.checkState = false;
-            }
-          } else {
-            this.log.error("Unknown selInstanceDataSource, skipping specific checks");
-            this.checkState = false;
-          }
-        } catch (error) {
-          this.log.error(`Error onVisibilityChange: ${error}`);
-        }
-      }
       await this.update();
     }
   }
@@ -289,9 +266,20 @@ class PageChart extends import_Page.Page {
   }
   async onButtonEvent(_event) {
   }
+  async delete() {
+    if (this.chartTimeout) {
+      this.adapter.clearTimeout(this.chartTimeout);
+    }
+    this.chartTimeout = null;
+    await super.delete();
+  }
+}
+function isChartDetailsExternal(obj) {
+  return obj && typeof obj === "object" && "instance" in obj && typeof obj.instance === "string" && obj.instance && "state" in obj && typeof obj.state === "string" && obj.state;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageChart
+  PageChart,
+  isChartDetailsExternal
 });
 //# sourceMappingURL=pageChart.js.map

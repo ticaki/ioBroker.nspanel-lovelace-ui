@@ -3,7 +3,6 @@ import * as configManagerConst from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
-import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
@@ -820,37 +819,6 @@ export class ConfigManager extends BaseClass {
                     } catch (error: any) {
                         messages.push(
                             `Configuration error in page power ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
-                        );
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                }
-                // PageChart einlesen
-                if (page.type === 'cardChart' || page.type === 'cardLChart') {
-                    if (!Array.isArray(this.adapter.config.pageChartdata)) {
-                        messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageChartdata.findIndex(
-                        item => item.pageName === page.uniqueName,
-                    );
-                    if (index === -1) {
-                        messages.push(`No pageChartdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    try {
-                        ({ gridItem, messages } = await PageChart.getChartPageConfig(
-                            this,
-                            index,
-                            gridItem,
-                            messages,
-                            page,
-                        ));
-                    } catch (error: any) {
-                        messages.push(
-                            `Configuration error in page chart ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                         );
                         this.log.warn(messages[messages.length - 1]);
                         continue;

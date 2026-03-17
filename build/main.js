@@ -133,6 +133,29 @@ class NspanelLovelaceUi extends utils.Adapter {
         delete native.pageQRdata;
         change = true;
       }
+      if (native.pageChartdata) {
+        native.pageChartdata.forEach((page) => {
+          const temp = {
+            card: "cardChart",
+            uniqueName: page.pageName,
+            headline: page.headline,
+            hidden: page.hiddenByTrigger || false,
+            chartColor: page.chart_color || "",
+            selChartType: page.selChartType || "cardChart",
+            selInstanceDataSource: page.selInstanceDataSource || 0,
+            selInstance: page.selInstance || "",
+            setStateForTicks: page.setStateForTicks || "",
+            setStateForValues: page.setStateForValues || "",
+            setStateForDB: page.setStateForDB || "",
+            txtLabelYAchse: page.txtlabelYAchse || "",
+            rangeHours: page.rangeHours || 24,
+            maxXAxisTicks: page.maxXAxisTicks || 2,
+            factorCardChart: page.factorCardChart || 1,
+            maxXAxisLabels: page.maxXAxisLabels || 4
+          };
+          native.pageConfig.push(temp);
+        });
+      }
       if (change) {
         const uniquePages = /* @__PURE__ */ new Map();
         for (const p of (_a = native.pageConfig) != null ? _a : []) {
