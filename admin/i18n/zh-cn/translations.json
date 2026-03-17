@@ -350,6 +350,8 @@
     "sendToAnyError": "发生错误",
     "sendToDeviceNotFound": "未找到设备",
     "sendToNoInternetAccess": "Tasmota设备无法访问互联网",
+    "sendToRequestFail2": "无法在线确定TFT固件版本",
+    "sendToRequestFail3": "通过MQTT发送TFT固件更新命令失败",
     "sendToDeviceNotFound2": "未找到设备",
     "sendToIpTopicDifferent": "IP地址和主题属于不同的面板",
     "sendToNSPanelInitDataSuccess": "面板初始化成功",

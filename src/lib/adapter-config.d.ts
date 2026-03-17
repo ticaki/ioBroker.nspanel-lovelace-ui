@@ -4,6 +4,10 @@
 declare global {
     namespace ioBroker {
         interface AdapterConfig {
+            versionJsonUrl: string;
+            berryUrl: string;
+            tftUrl: string;
+
             rememberLastSite: boolean
             testCase: boolean;
             mqttServer: boolean;

@@ -350,6 +350,8 @@
     "sendToAnyError": "Сталася помилка",
     "sendToDeviceNotFound": "Пристрій не знайдено",
     "sendToNoInternetAccess": "Пристрій Tasmota не має доступу до Інтернету",
+    "sendToRequestFail2": "Не вдалося онлайн визначити версію прошивки TFT",
+    "sendToRequestFail3": "Не вдалося надіслати команду оновлення прошивки TFT через MQTT",
     "sendToDeviceNotFound2": "Пристрій не знайдено",
     "sendToIpTopicDifferent": "IP-адреса та топік належать різним панелям",
     "sendToNSPanelInitDataSuccess": "Панель успішно ініціалізована",

@@ -162,7 +162,7 @@ class MQTTClientClass extends import_library.BaseClass {
       });
     });
   }
-  async waitTasmotaHasInternet(_topic, timeout) {
+  async waitTasmotaHasInternet(_topic, timeout, hostname) {
     return new Promise((resolve, reject) => {
       const topic = `${_topic}/tele/RESULT`;
       this.log.debug(`Check if Tasmota has internet access on: ${topic}`);
@@ -175,7 +175,7 @@ class MQTTClientClass extends import_library.BaseClass {
       void this.subscribe(topic, async (_topic2, _message) => {
         var _a, _b;
         const payload = JSON.parse(_message);
-        if (!((_b = (_a = payload.Ping) == null ? void 0 : _a["raw.githubusercontent.com"]) == null ? void 0 : _b.Reachable)) {
+        if (!((_b = (_a = payload.Ping) == null ? void 0 : _a[hostname]) == null ? void 0 : _b.Reachable)) {
           return false;
         }
         if (ref) {

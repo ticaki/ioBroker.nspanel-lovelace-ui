@@ -350,6 +350,8 @@
     "sendToAnyError": "Er is een fout opgetreden",
     "sendToDeviceNotFound": "Apparaat niet gevonden",
     "sendToNoInternetAccess": "Tasmota-apparaat heeft geen internettoegang",
+    "sendToRequestFail2": "TFT-firmwareversie kon niet online worden bepaald",
+    "sendToRequestFail3": "Verzenden van TFT-firmware-update-opdracht via MQTT mislukt",
     "sendToDeviceNotFound2": "Apparaat niet gevonden",
     "sendToIpTopicDifferent": "IP-adres en topic horen bij verschillende panelen",
     "sendToNSPanelInitDataSuccess": "Paneel is succesvol geïnitialiseerd",

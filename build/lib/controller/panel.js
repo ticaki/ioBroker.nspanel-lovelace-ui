@@ -958,15 +958,13 @@ class Panel extends import_library.BaseClass {
           this.adapter.setTimeout(async () => {
             let result = void 0;
             try {
-              result = await this.adapter.fetch(
-                "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
-              );
+              result = await this.adapter.fetch(this.adapter.config.versionJsonUrl);
               if (!result) {
                 return;
               }
               const version = this.adapter.config.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
               if (parseInt(version) != this.info.nspanel.berryDriverVersion && this.info.nspanel.berryDriverVersion != -1) {
-                const url = `http://${this.info.tasmota.net.IPAddress}/cm?${this.adapter.config.useTasmotaAdmin ? `user=admin&password=${this.adapter.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                const url = `http://${this.info.tasmota.net.IPAddress}/cm?${this.adapter.config.useTasmotaAdmin ? `user=admin&password=${this.adapter.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch ${this.adapter.config.berryUrl}/${version}/autoexec.be; Restart 1`;
                 this.log.info(
                   `Automatic update of the berry driver version from ${this.info.nspanel.berryDriverVersion} to ${version} on tasmota with IP ${this.info.tasmota.net.IPAddress} and  ${this.info.tasmota.net.Hostname}.`
                 );

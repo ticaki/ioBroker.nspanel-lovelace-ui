@@ -3187,6 +3187,54 @@
                     "lg": 3,
                     "xl": 2
                 },
+                "_header1": {
+                    "type": "header",
+                    "label": "Danger Zone - only for users who know exactly what they are doing",
+                    "size": 3,
+                    "text": "Danger Zone",
+                    "hidden": "false",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "versionJsonUrl": {
+                    "type": "text",
+                    "label": "Override URL for the version JSON file.",
+                    "tooltip": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
+                    "default": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "berryUrl": {
+                    "type": "text",
+                    "label": "Override URL for the Berry Script.",
+                    "tooltip": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
+                    "default": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tftUrl": {
+                    "type": "text",
+                    "label": "Override URL for the TFT Server. (http only)",
+                    "tooltip": "http://nspanel.de",
+                    "default": "http://nspanel.de",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_header": {
                     "type": "header",
                     "label": "Not used",

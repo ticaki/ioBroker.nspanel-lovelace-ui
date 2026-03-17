@@ -642,9 +642,9 @@ export class Controller extends Library.BaseClass {
 
     async getTFTVersion(): Promise<void> {
         try {
-            const result = (await this.adapter.fetch(
-                'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-            )) as Record<string, string> | undefined;
+            const result = (await this.adapter.fetch(this.adapter.config.versionJsonUrl)) as
+                | Record<string, string>
+                | undefined;
 
             const data = result;
             if (!data) {
@@ -665,9 +665,7 @@ export class Controller extends Library.BaseClass {
     }
     async getTasmotaVersion(): Promise<string> {
         try {
-            const result = (await this.adapter.fetch(
-                'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-            )) as Record<string, string>;
+            const result = (await this.adapter.fetch(this.adapter.config.versionJsonUrl)) as Record<string, string>;
             // Filter JSON by "tag_name" and write to variable
             const TasmotaVersionOnline = result.tasmota.trim();
 

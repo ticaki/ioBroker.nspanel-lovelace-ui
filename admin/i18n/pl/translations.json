@@ -350,6 +350,8 @@
     "sendToAnyError": "Wystąpił błąd",
     "sendToDeviceNotFound": "Urządzenie nie zostało znalezione",
     "sendToNoInternetAccess": "Urządzenie Tasmota nie ma dostępu do Internetu",
+    "sendToRequestFail2": "Nie udało się online określić wersji firmware TFT",
+    "sendToRequestFail3": "Nie udało się wysłać polecenia aktualizacji firmware TFT przez MQTT",
     "sendToDeviceNotFound2": "Urządzenie nie zostało znalezione",
     "sendToIpTopicDifferent": "Adres IP i temat należą do różnych paneli",
     "sendToNSPanelInitDataSuccess": "Panel został pomyślnie zainicjowany",

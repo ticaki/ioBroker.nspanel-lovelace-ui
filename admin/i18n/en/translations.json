@@ -349,6 +349,8 @@
     "sendToAnyError": "An error occurred",
     "sendToDeviceNotFound": "Device not found",
     "sendToNoInternetAccess": "Tasmota device has no internet access",
+    "sendToRequestFail2": "Could not determine TFT firmware version online",
+    "sendToRequestFail3": "Failed to send TFT firmware update command via MQTT",
     "sendToDeviceNotFound2": "Device not found",
     "sendToIpTopicDifferent": "IP address and topic belong to different panels",
     "sendToNSPanelInitDataSuccess": "Panel was successfully initialized",

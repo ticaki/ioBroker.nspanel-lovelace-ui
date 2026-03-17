@@ -170,7 +170,7 @@ export class MQTTClientClass extends BaseClass {
         });
     }
 
-    async waitTasmotaHasInternet(_topic: string, timeout: number): Promise<void> {
+    async waitTasmotaHasInternet(_topic: string, timeout: number, hostname: string): Promise<void> {
         return new Promise((resolve, reject) => {
             const topic = `${_topic}/tele/RESULT`;
             this.log.debug(`Check if Tasmota has internet access on: ${topic}`);
@@ -197,7 +197,7 @@ export class MQTTClientClass extends BaseClass {
                     >;
                 };
                 //  {"Ping":{"raw.githubusercontent.com":{"Reachable":true,"IP":"185.199.111.133","Success":1,"Timeout":0,"MinTime":108,"MaxTime":108,"AvgTime":108}}}
-                if (!payload.Ping?.['raw.githubusercontent.com']?.Reachable) {
+                if (!payload.Ping?.[hostname]?.Reachable) {
                     return false; // keep listener, wait for next ping result
                 }
                 if (ref) {

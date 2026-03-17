@@ -584,9 +584,7 @@ class Controller extends Library.BaseClass {
   };
   async getTFTVersion() {
     try {
-      const result = await this.adapter.fetch(
-        "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
-      );
+      const result = await this.adapter.fetch(this.adapter.config.versionJsonUrl);
       const data = result;
       if (!data) {
         this.log.error("No version data received.");
@@ -603,9 +601,7 @@ class Controller extends Library.BaseClass {
   async getTasmotaVersion() {
     var _a, _b;
     try {
-      const result = await this.adapter.fetch(
-        "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
-      );
+      const result = await this.adapter.fetch(this.adapter.config.versionJsonUrl);
       const TasmotaVersionOnline = result.tasmota.trim();
       this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
       for (const panel of this.panels) {
