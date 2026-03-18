@@ -157,10 +157,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (ticaki) added: i18n translation for `sendToNoInternetAccess` error key in all languages
+### 0.15.1 (2026-03-18)
 - (ticaki) added: internet access check for Tasmota device before berry installation
-- (ticaki) added: label and help text for `_activateURls` checkbox (EN/DE) – explains that activation allows URL editing and is not saved
 
 ### 0.15.0 (2026-03-16)
 - (ticaki) added: `ScreensaverEntityFillIfBelowMin` – fills screensaver slots when too few items are visible (default: true)
