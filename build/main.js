@@ -143,7 +143,8 @@ class NspanelLovelaceUi extends utils.Adapter {
           native.berryUrl = iopackage.native.berryUrl || "";
           change = true;
         } catch (e) {
-          this.log.error(`Error while reading io-package.json for default URLs: ${e}`);
+          const errorMessage = e instanceof Error ? e.message : String(e);
+          this.log.error(`Error while reading io-package.json for default URLs: ${errorMessage}`);
         }
       }
       if (change) {
