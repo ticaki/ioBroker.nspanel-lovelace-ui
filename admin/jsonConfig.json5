@@ -3195,9 +3195,21 @@
                     "hidden": "false",
                     "xs": 12,
                     "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "_activateURls": {
+                    "type": "checkbox",
+                    "label": "activateURLs",
+                    "help": "activateURLsHelp",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "versionJsonUrl": {
                     "type": "text",
@@ -3205,6 +3217,7 @@
                     "tooltip": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
                     "default": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
                     "newLine": true,
+                    "disabled": "!data._activateURls",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -3216,24 +3229,26 @@
                     "label": "Override URL for the Berry Script.",
                     "tooltip": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
                     "default": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
+                    "disabled": "!data._activateURls",
                     "newLine": true,
                     "xs": 12,
                     "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "tftUrl": {
                     "type": "text",
                     "label": "Override URL for the TFT Server. (http only)",
                     "tooltip": "http://nspanel.de",
                     "default": "http://nspanel.de",
+                    "disabled": "!data._activateURls",
                     "newLine": true,
                     "xs": 12,
                     "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "_header": {
                     "type": "header",

@@ -185,7 +185,7 @@
     "pw1"
   ],
   "native": {
-    "versionJsonUrl": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",  
+    "versionJsonUrl": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
     "berryUrl": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
     "tftUrl": "http://nspanel.de",
     "mqttPassword": "",
