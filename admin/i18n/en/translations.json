@@ -356,6 +356,7 @@
     "sendToNSPanelInitDataSuccess": "Panel was successfully initialized",
     "sendToNSPanelUpdateDataSuccess": "Panel was successfully updated",
     "sendToNoInternetAccess": "Tasmota device has no internet access",
+    "sendToRequestFailBerry": "Did not receive download confirmation from Tasmota after berry installation",
     "sendToRequestFail2": "Could not determine TFT firmware version online",
     "sendToRequestFail3": "Failed to send TFT firmware update command via MQTT",
     "sendToRequestFail4": "Request to the panel failed",

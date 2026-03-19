@@ -356,6 +356,7 @@
     "sendToNSPanelInitDataSuccess": "Панель успешно инициализирована",
     "sendToNSPanelUpdateDataSuccess": "Панель успешно обновлена",
     "sendToNoInternetAccess": "Устройство Tasmota не имеет доступа к Интернету",
+    "sendToRequestFailBerry": "Не получено подтверждение загрузки от Tasmota после установки berry",
     "sendToRequestFail2": "Не удалось определить версию прошивки TFT онлайн",
     "sendToRequestFail3": "Ошибка при отправке команды обновления прошивки TFT через MQTT",
     "sendToRequestFail4": "Запрос к панели не выполнен",

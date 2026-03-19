@@ -356,6 +356,7 @@
     "sendToNSPanelInitDataSuccess": "面板初始化成功",
     "sendToNSPanelUpdateDataSuccess": "面板已成功更新",
     "sendToNoInternetAccess": "Tasmota设备无法访问互联网",
+    "sendToRequestFailBerry": "Berry安装后未收到来自Tasmota的下载确认",
     "sendToRequestFail2": "无法在线确定TFT固件版本",
     "sendToRequestFail3": "通过MQTT发送TFT固件更新命令失败",
     "sendToRequestFail4": "向面板的请求失败",

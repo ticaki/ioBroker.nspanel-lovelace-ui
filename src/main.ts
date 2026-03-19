@@ -1286,14 +1286,33 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         const version = obj.message.useBetaTFT
                                             ? result[`berry-beta`].split('_')[0]
                                             : result.berry.split('_')[0];
-                                        const url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
+                                        let url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                                         this.log.info(
                                             `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
                                         );
                                         this.log.debug(`URL: ${url.replace(/password=[^&]*/g, 'password=***')}`);
                                         await this.fetch(url);
+                                        try {
+                                            this.mqttClient && (await this.mqttClient.waitTasmotaUrlFetch(topic, 5000));
+                                        } catch {
+                                            this.log.error(
+                                                `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install.`,
+                                            );
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToRequestFailBerry' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            break;
+                                        }
+
+                                        url = this.getRestartTasmotaUrl(obj.message.tasmotaIP);
+                                        await this.fetch(url);
                                         this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
-                                        await this.delay(1500);
+                                        await this.delay(1000);
                                     } else {
                                         this.log.info(
                                             `Emulator detected on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}, skipping berry install.`,
@@ -2409,9 +2428,17 @@ class NspanelLovelaceUi extends utils.Adapter {
         return (
             `http://${tasmotaIP}/cm?` +
             `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-            `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be; Restart 1`
+            `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be`
         );
     }
+    getRestartTasmotaUrl(tasmotaIP: string): string {
+        return (
+            `http://${tasmotaIP}/cm?` +
+            `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+            `&cmnd=Restart%201`
+        );
+    }
+
     async checkTasmotaHasInternetAccess(tasmotaIP: string, topic: string, testUrl: string): Promise<boolean> {
         try {
             const hostname = new URL(testUrl).hostname;

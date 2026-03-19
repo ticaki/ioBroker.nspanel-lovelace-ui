@@ -170,6 +170,33 @@ export class MQTTClientClass extends BaseClass {
         });
     }
 
+    async waitTasmotaUrlFetch(_topic: string, timeout: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const topic = `${_topic}/stat/RESULT`;
+            this.log.debug(`Check if Tasmota install berry: ${topic}`);
+            let ref: ioBroker.Timeout | undefined;
+            if (timeout > 0) {
+                ref = this.adapter.setTimeout(() => {
+                    reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
+                }, timeout);
+            }
+
+            void this.subscribe(topic, async (_topic, _message) => {
+                const payload = JSON.parse(_message) as {
+                    UrlFetch?: string;
+                };
+                if (payload.UrlFetch !== 'Done') {
+                    return false; // keep listener, 
+                }
+                if (ref) {
+                    this.adapter.clearTimeout(ref);
+                }
+                this.log.debug(`Tasmota install berry detected: ${_topic} with message: ${_message}`);
+                resolve();
+                return true; // remove this one-shot listener
+            });
+        });
+    }
     async waitTasmotaHasInternet(_topic: string, timeout: number, hostname: string): Promise<void> {
         return new Promise((resolve, reject) => {
             const topic = `${_topic}/tele/RESULT`;

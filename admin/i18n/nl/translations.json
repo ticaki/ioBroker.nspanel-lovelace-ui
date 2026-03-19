@@ -356,6 +356,7 @@
     "sendToNSPanelInitDataSuccess": "Paneel is succesvol geïnitialiseerd",
     "sendToNSPanelUpdateDataSuccess": "Paneel is succesvol bijgewerkt",
     "sendToNoInternetAccess": "Tasmota-apparaat heeft geen internettoegang",
+    "sendToRequestFailBerry": "Geen downloadbevestiging van Tasmota ontvangen na de installatie van berry",
     "sendToRequestFail2": "TFT-firmwareversie kon niet online worden bepaald",
     "sendToRequestFail3": "Verzenden van TFT-firmware-update-opdracht via MQTT mislukt",
     "sendToRequestFail4": "Verzoek aan het paneel mislukt",

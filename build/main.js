@@ -1081,14 +1081,32 @@ class NspanelLovelaceUi extends utils.Adapter {
                       break;
                     }
                     const version = obj.message.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
-                    const url3 = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
+                    let url3 = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                     this.log.info(
                       `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`
                     );
                     this.log.debug(`URL: ${url3.replace(/password=[^&]*/g, "password=***")}`);
                     await this.fetch(url3);
+                    try {
+                      this.mqttClient && await this.mqttClient.waitTasmotaUrlFetch(topic, 5e3);
+                    } catch {
+                      this.log.error(
+                        `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install.`
+                      );
+                      if (obj.callback) {
+                        this.sendTo(
+                          obj.from,
+                          obj.command,
+                          { error: "sendToRequestFailBerry" },
+                          obj.callback
+                        );
+                      }
+                      break;
+                    }
+                    url3 = this.getRestartTasmotaUrl(obj.message.tasmotaIP);
+                    await this.fetch(url3);
                     this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 2e4);
-                    await this.delay(1500);
+                    await this.delay(1e3);
                   } else {
                     this.log.info(
                       `Emulator detected on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}, skipping berry install.`
@@ -2102,7 +2120,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     return cmnd;
   }
   getBerryInstallUrl(tasmotaIP, version) {
-    return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be; Restart 1`;
+    return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be`;
+  }
+  getRestartTasmotaUrl(tasmotaIP) {
+    return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart%201`;
   }
   async checkTasmotaHasInternetAccess(tasmotaIP, topic, testUrl) {
     try {
