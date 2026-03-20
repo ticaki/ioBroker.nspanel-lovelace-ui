@@ -186,7 +186,7 @@ export class MQTTClientClass extends BaseClass {
                     UrlFetch?: string;
                 };
                 if (payload.UrlFetch !== 'Done') {
-                    return false; // keep listener, 
+                    return false; // keep listener,
                 }
                 if (ref) {
                     this.adapter.clearTimeout(ref);
