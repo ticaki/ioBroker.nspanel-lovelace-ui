@@ -359,6 +359,7 @@
     "sendToRequestFail2": "TFT-firmwareversie kon niet online worden bepaald",
     "sendToRequestFail3": "Verzenden van TFT-firmware-update-opdracht via MQTT mislukt",
     "sendToRequestFail4": "Verzoek aan het paneel mislukt",
+    "sendToRequestFailBerry": "Geen downloadbevestiging van Tasmota ontvangen na de installatie van berry",
     "short": "kort",
     "shutter": "Luik",
     "shutterClosedIsZero": "De positie van 0 wordt weergegeven als volledig gesloten (maximaal verlengd).",

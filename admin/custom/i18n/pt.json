@@ -359,6 +359,7 @@
     "sendToRequestFail2": "Não foi possível determinar a versão do firmware TFT online",
     "sendToRequestFail3": "Falha ao enviar o comando de atualização de firmware TFT via MQTT",
     "sendToRequestFail4": "Solicitação ao painel falhou",
+    "sendToRequestFailBerry": "Nenhuma confirmação de download recebida do Tasmota após a instalação do berry",
     "short": "curto",
     "shutter": "Obturador",
     "shutterClosedIsZero": "A posição de 0 é exibida como totalmente fechada (estendida ao máximo).",

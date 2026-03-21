@@ -97,14 +97,14 @@ class PageChartBar extends import_pageChart.PageChart {
           valuesChart = valuesChart.substring(0, valuesChart.length - 1);
           const max = Math.max(...tempScale);
           const min = 0;
-          const fixIntervall = max > 50 ? 10 : max > 20 ? 5 : 2;
-          const intervall = Math.max(Number(((max - min) / 5).toFixed()), fixIntervall);
-          this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
+          const fixInterval = max > 50 ? 10 : max > 20 ? 5 : 2;
+          const interval = Math.max(Number(((max - min) / 5).toFixed()), fixInterval);
+          this.log.debug(`Scale Min: ${min}, Max: ${max} Interval: ${interval}`);
           const tempTickChart = [];
           let currentTick = min;
-          while (currentTick < max + intervall) {
+          while (currentTick < max + interval) {
             tempTickChart.push(String(currentTick));
-            currentTick += intervall;
+            currentTick += interval;
           }
           tempTickChart.push(String(currentTick));
           ticksChart = tempTickChart;

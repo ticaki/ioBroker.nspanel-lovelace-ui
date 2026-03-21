@@ -55,7 +55,7 @@ class PageChartLine extends import_pageChart.PageChart {
       const stateValue = items.state || "";
       const instance = items.instance || "";
       const maxXAxisLabels = items.maxLabels || 4;
-      const maxXAxisTicks = items.maxTicks || 2;
+      const maxXAxisTicks = items.maxTicks || 8;
       const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60;
       const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120;
       const maxX = 1440;
@@ -70,8 +70,8 @@ class PageChartLine extends import_pageChart.PageChart {
           const date = /* @__PURE__ */ new Date();
           date.setSeconds(0, 0);
           const ts = Math.round(date.getTime() / 1e3);
-          const tsYesterday = ts - hoursRangeFromNow * 3600;
-          for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksInterval * 60, i += xAxisTicksInterval) {
+          const tsStart = ts - hoursRangeFromNow * 3600;
+          for (let x = tsStart, i = 0; x < ts; x += xAxisTicksInterval * 60, i += xAxisTicksInterval) {
             if (i % xAxisLabelInterval) {
               ticksAndLabelsList.push(i);
             } else {
@@ -85,11 +85,11 @@ class PageChartLine extends import_pageChart.PageChart {
           ticksAndLabelsList.push(String(maxX));
           ticksAndLabels = ticksAndLabelsList.join("+");
           const list = [];
-          const offSetTime = Math.round(dbDaten[0].ts / 1e3);
-          const lastTs = Math.round(dbDaten[dbDaten.length - 1].ts / 1e3);
-          const counter = dbDaten.length > 1 ? Math.max((lastTs - offSetTime) / maxX, 1) : 1;
+          const startTs = Math.round(dbDaten[0].ts / 1e3);
+          const endTs = Math.round(dbDaten[dbDaten.length - 1].ts / 1e3);
+          const counter = dbDaten.length > 1 ? Math.max((endTs - startTs) / maxX, 1) : 1;
           for (let i = 0; i < dbDaten.length; i++) {
-            const time = Math.round((dbDaten[i].ts / 1e3 - offSetTime) / counter);
+            const time = Math.round((dbDaten[i].ts / 1e3 - startTs) / counter);
             const value = Math.round(dbDaten[i].val * 10);
             if (value != null) {
               list.push(`${time}:${value}`);
@@ -107,15 +107,15 @@ class PageChartLine extends import_pageChart.PageChart {
             const roundedMin = Math.floor(rawMin / 10) * 10;
             const roundedMax = Math.ceil(rawMax / 10) * 10;
             const span = Math.max(roundedMax - roundedMin, 10);
-            const intervall = Math.max(Number((span / 5).toFixed()), 10);
+            const interval = Math.max(Number((span / 5).toFixed()), 10);
             this.log.debug(
-              `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) Intervall: ${intervall}`
+              `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) interval: ${interval}`
             );
             const tempTickChart = [];
-            let currentTick = roundedMin - intervall * 2;
-            while (currentTick < roundedMax + intervall) {
+            let currentTick = roundedMin - interval * 2;
+            while (currentTick < roundedMax + interval) {
               tempTickChart.push(String(currentTick));
-              currentTick += intervall;
+              currentTick += interval;
             }
             ticksChart = tempTickChart;
           }

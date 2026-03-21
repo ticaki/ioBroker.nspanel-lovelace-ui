@@ -367,6 +367,7 @@
     "sendToRequestFail2": "TFT-Firmware-Version konnte nicht online ermittelt werden",
     "sendToRequestFail3": "TFT-Firmware-Update-Befehl konnte nicht per MQTT gesendet werden",
     "sendToRequestFail4": "Anfrage an das Panel fehlgeschlagen",
+    "sendToRequestFailBerry": "Keine Download-Bestätigung von Tasmota nach der Berry-Installation erhalten",
     "short": "kurz",
     "shutter": "Rollladen",
     "shutterClosedIsZero": "Die Position von 0 wird als vollständig geschlossen angezeigt (maximal ausgefahren).",
