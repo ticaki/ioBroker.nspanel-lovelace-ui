@@ -15,7 +15,7 @@ export class PageChartLine extends PageChart {
             this.enums || this.dpInit
                 ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
-        // create Dataitems
+        // create DataItems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: Partial<pages.cardChartDataItems> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
@@ -45,13 +45,13 @@ export class PageChartLine extends PageChart {
             const items = this.dbDetails;
 
             // AdapterVersion
-            const hoursRangeFromNow = items.hours || 24;
-            const stateValue = items.state || '';
-            const instance = items.instance || '';
-            const maxXAxisLabels = items.maxLabels || 4;
-            const maxXAxisTicks = items.maxTicks || 2;
-            const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60;
-            const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120;
+            const hoursRangeFromNow = items.hours || 24; //Zeitspanne in Stunden, die von jetzt an zurückgerechnet wird
+            const stateValue = items.state || ''; // State, von dem die Daten abgerufen werden sollen
+            const instance = items.instance || ''; // Datenbankadapter-Instanz, die die Daten abruft
+            const maxXAxisLabels = items.maxLabels || 4; // Maximale Anzahl der X-Achsen-Beschriftungen, die angezeigt werden sollen (kleiner als Ticks)
+            const maxXAxisTicks = items.maxTicks || 8; // Maximale Anzahl der X-Achsen-Ticks, die angezeigt werden sollen
+            const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60; // Intervall in Minuten zwischen den X-Achsen-Ticks (z.B. 60 für 1 Tick pro Stunde)
+            const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120; // Intervall in Minuten zwischen den X-Achsen-Beschriftungen (z.B. 120 für 1 Beschriftung pro 2 Stunden)
             const maxX = 1440; // 24h = 1440min
 
             const tempScale: number[] = [];
@@ -68,9 +68,9 @@ export class PageChartLine extends PageChart {
                     const date = new Date();
                     date.setSeconds(0, 0);
                     const ts = Math.round(date.getTime() / 1000);
-                    const tsYesterday = ts - hoursRangeFromNow * 3600;
+                    const tsStart = ts - hoursRangeFromNow * 3600;
 
-                    for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksInterval * 60, i += xAxisTicksInterval) {
+                    for (let x = tsStart, i = 0; x < ts; x += xAxisTicksInterval * 60, i += xAxisTicksInterval) {
                         if (i % xAxisLabelInterval) {
                             ticksAndLabelsList.push(i);
                         } else {
@@ -87,11 +87,11 @@ export class PageChartLine extends PageChart {
                     ticksAndLabels = ticksAndLabelsList.join('+');
 
                     const list = [];
-                    const offSetTime = Math.round(dbDaten[0].ts / 1000);
-                    const lastTs = Math.round(dbDaten[dbDaten.length - 1].ts / 1000);
-                    const counter = dbDaten.length > 1 ? Math.max((lastTs - offSetTime) / maxX, 1) : 1;
+                    const startTs = Math.round(dbDaten[0].ts / 1000);
+                    const endTs = Math.round(dbDaten[dbDaten.length - 1].ts / 1000);
+                    const counter = dbDaten.length > 1 ? Math.max((endTs - startTs) / maxX, 1) : 1;
                     for (let i = 0; i < dbDaten.length; i++) {
-                        const time = Math.round((dbDaten[i].ts / 1000 - offSetTime) / counter);
+                        const time = Math.round((dbDaten[i].ts / 1000 - startTs) / counter);
                         const value = Math.round(dbDaten[i].val * 10);
                         if (value != null) {
                             list.push(`${time}:${value}`);
@@ -114,18 +114,18 @@ export class PageChartLine extends PageChart {
                         const roundedMin = Math.floor(rawMin / 10) * 10;
                         const roundedMax = Math.ceil(rawMax / 10) * 10;
 
-                        // ensure at least a minimal span to avoid zero intervall
+                        // ensure at least a minimal span to avoid zero interval
                         const span = Math.max(roundedMax - roundedMin, 10);
-                        const intervall = Math.max(Number((span / 5).toFixed()), 10);
+                        const interval = Math.max(Number((span / 5).toFixed()), 10);
 
                         this.log.debug(
-                            `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) Intervall: ${intervall}`,
+                            `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) interval: ${interval}`,
                         );
                         const tempTickChart: string[] = [];
-                        let currentTick = roundedMin - intervall * 2;
-                        while (currentTick < roundedMax + intervall) {
+                        let currentTick = roundedMin - interval * 2;
+                        while (currentTick < roundedMax + interval) {
                             tempTickChart.push(String(currentTick));
-                            currentTick += intervall;
+                            currentTick += interval;
                         }
                         ticksChart = tempTickChart;
                     }

@@ -116,17 +116,17 @@ export class PageChartBar extends PageChart {
                     // Erstelle die Y-Achsen-Skalierung (Ticks)
                     const max = Math.max(...tempScale);
                     const min = 0;
-                    const fixIntervall = max > 50 ? 10 : max > 20 ? 5 : 2;
-                    const intervall = Math.max(Number(((max - min) / 5).toFixed()), fixIntervall);
+                    const fixInterval = max > 50 ? 10 : max > 20 ? 5 : 2;
+                    const interval = Math.max(Number(((max - min) / 5).toFixed()), fixInterval);
 
-                    this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
+                    this.log.debug(`Scale Min: ${min}, Max: ${max} Interval: ${interval}`);
 
                     // Erstelle Tick-Array für Y-Achse
                     const tempTickChart: string[] = [];
                     let currentTick = min;
-                    while (currentTick < max + intervall) {
+                    while (currentTick < max + interval) {
                         tempTickChart.push(String(currentTick));
-                        currentTick += intervall;
+                        currentTick += interval;
                     }
                     tempTickChart.push(String(currentTick));
                     ticksChart = tempTickChart;
