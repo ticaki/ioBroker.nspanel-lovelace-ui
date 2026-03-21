@@ -85,7 +85,7 @@ const displayStates = [
     'info.tasmota.sensors.ANALOG.Temperature1',
     'info.nspanel.model',
     'info.internal.pageCount',
-    'info.internal.servicePageCount',
+    'info.tasmota.sts.Wifi.Signal',
     'info.internal.scriptName',
 ];
 

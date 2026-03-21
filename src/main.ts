@@ -9,7 +9,7 @@ import {
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
-//FlashNextionAdv0 http://nspanel.de/nspanel-v4.6.0.tft ist die 55
+//FlashNextionAdv0 ${this.config.tftUrl}/nspanel-v4.6.0.tft ist die 55
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
@@ -22,7 +22,7 @@ import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
-import type { panelConfigPartial } from './lib/controller/panel';
+import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import { URL } from 'url';
 import type * as pages from './lib/types/pages';
@@ -145,6 +145,20 @@ class NspanelLovelaceUi extends utils.Adapter {
                 });
                 delete native.pageQRdata;
                 change = true;
+            }
+            if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {
+                try {
+                    const iopackage = JSON.parse(
+                        fs.readFileSync(path.join(__dirname, '..', 'io-package.json'), 'utf-8'),
+                    );
+                    native.versionJsonUrl = iopackage.native.versionJsonUrl || '';
+                    native.tftUrl = iopackage.native.tftUrl || '';
+                    native.berryUrl = iopackage.native.berryUrl || '';
+                    change = true;
+                } catch (e: unknown) {
+                    const errorMessage = e instanceof Error ? e.message : String(e);
+                    this.log.error(`Error while reading io-package.json for default URLs: ${errorMessage}`);
+                }
             }
 
             if (native.pageChartdata) {
@@ -1107,6 +1121,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
                                 const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
                                 let update = false;
+                                let panel: Panel | undefined = undefined;
                                 if (index !== -1 && ipIndex !== index) {
                                     this.log.error('Topic and ip are not on the same panel!');
                                     if (obj.callback) {
@@ -1120,9 +1135,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     break;
                                 } else {
                                     update = index !== -1;
-                                    const panel = this.controller?.panels.find(
-                                        a => a.topic === obj.message.tasmotaTopic,
-                                    );
+                                    panel = this.controller?.panels.find(a => a.topic === obj.message.tasmotaTopic);
                                     if (panel) {
                                         void panel.setStatus('setup');
                                     }
@@ -1147,6 +1160,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             obj.callback,
                                         );
                                     }
+                                    if (panel) {
+                                        void panel.setStatus('error');
+                                    }
                                     break;
                                 }
 
@@ -1159,6 +1175,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             { error: 'sendToDeviceNotFound' },
                                             obj.callback,
                                         );
+                                    }
+                                    if (panel) {
+                                        void panel.setStatus('error');
                                     }
                                     break;
                                 }
@@ -1212,6 +1231,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             obj.callback,
                                         );
                                     }
+                                    if (panel) {
+                                        void panel.setStatus('error');
+                                    }
                                     break;
                                 }
 
@@ -1248,9 +1270,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         //ignore
                                     }
                                     if (!result || result.nlui_driver_version !== '-1') {
-                                        result = (await this.fetch(
-                                            'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                                        )) as Record<string, string> | undefined;
+                                        result = (await this.fetch(this.config.versionJsonUrl)) as
+                                            | Record<string, string>
+                                            | undefined;
                                         if (!result) {
                                             this.log.error('No version found!');
                                             if (obj.callback) {
@@ -1261,19 +1283,63 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                     obj.callback,
                                                 );
                                             }
+                                            if (panel) {
+                                                void panel.setStatus('error');
+                                            }
+                                            break;
+                                        }
+
+                                        if (
+                                            !(await this.checkTasmotaHasInternetAccess(
+                                                obj.message.tasmotaIP,
+                                                topic,
+                                                this.config.berryUrl,
+                                            ))
+                                        ) {
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToNoInternetAccess' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            if (panel) {
+                                                void panel.setStatus('error');
+                                            }
+
                                             break;
                                         }
                                         const version = obj.message.useBetaTFT
                                             ? result[`berry-beta`].split('_')[0]
                                             : result.berry.split('_')[0];
-                                        const url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
+                                        let url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                                         this.log.info(
                                             `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
                                         );
                                         this.log.debug(`URL: ${url.replace(/password=[^&]*/g, 'password=***')}`);
                                         await this.fetch(url);
+                                        try {
+                                            this.mqttClient && (await this.mqttClient.waitTasmotaUrlFetch(topic, 5000));
+                                        } catch {
+                                            this.log.error(
+                                                `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install.`,
+                                            );
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToRequestFailBerry' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            break;
+                                        }
+
+                                        url = this.getRestartTasmotaUrl(obj.message.tasmotaIP);
+                                        await this.fetch(url);
                                         this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
-                                        await this.delay(1500);
+                                        await this.delay(1000);
                                     } else {
                                         this.log.info(
                                             `Emulator detected on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}, skipping berry install.`,
@@ -1281,6 +1347,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     }
                                 } catch (e: any) {
                                     this.log.error(`Error: while installing berry - ${e}`);
+                                    if (panel) {
+                                        void panel.setStatus('error');
+                                    }
                                 }
                                 if (result?.nlui_driver_version !== '-1') {
                                     try {
@@ -1290,7 +1359,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             obj.message.model,
                                             obj.message.useBetaTFT,
                                             this.config.forceTFTVersion,
-                                            result,
+                                            undefined,
                                         );
                                         if (!cmnd) {
                                             this.log.error('No version found!');
@@ -1301,6 +1370,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                     { error: 'sendToRequestFail2' },
                                                     obj.callback,
                                                 );
+                                            }
+                                            if (panel) {
+                                                void panel.setStatus('error');
                                             }
                                             break;
                                         }
@@ -1321,6 +1393,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                 { error: 'sendToRequestFail3' },
                                                 obj.callback,
                                             );
+                                        }
+                                        if (panel) {
+                                            void panel.setStatus('error');
                                         }
                                         break;
                                     }
@@ -1367,9 +1442,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                             try {
                                 let result: Record<string, string> | undefined = undefined;
 
-                                result = (await this.fetch(
-                                    'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                                )) as Record<string, string> | undefined;
+                                result = (await this.fetch(this.config.versionJsonUrl)) as
+                                    | Record<string, string>
+                                    | undefined;
                                 if (!result) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
@@ -1382,6 +1457,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     }
                                     break;
                                 }
+
                                 const version = obj.message.useBetaTFT
                                     ? result[`berry-beta`].split('_')[0]
                                     : result.berry.split('_')[0];
@@ -2014,9 +2090,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'updateTasmota': {
                     let language = this.library.getLocalLanguage();
                     language = language === 'zh-cn' ? 'en' : language;
-                    const result = (await this.fetch(
-                        'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                    )) as Record<string, string>;
+                    const result = (await this.fetch(this.config.versionJsonUrl)) as Record<string, string>;
                     if ('tasmota' in result) {
                         const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
 
@@ -2337,9 +2411,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         result?: Record<string, string>,
     ): Promise<string | null> {
         if (!result) {
-            result = (await this.fetch(
-                'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-            )) as Record<string, string> | undefined;
+            result = (await this.fetch(this.config.versionJsonUrl)) as Record<string, string> | undefined;
         }
         const data = result;
         if (!data) {
@@ -2369,7 +2441,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
 
         const fileName = `nspanel${modelSuffix}-v${version}.tft`;
-        const url = `http://nspanel.de/${encodeURIComponent(fileName)}`;
+        const url = `${this.config.tftUrl}/${encodeURIComponent(fileName)}`;
         const cmnd = `FlashNextionAdv0 ${url}`;
 
         if (alpha) {
@@ -2383,8 +2455,34 @@ class NspanelLovelaceUi extends utils.Adapter {
         return (
             `http://${tasmotaIP}/cm?` +
             `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-            `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`
+            `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be`
         );
+    }
+    getRestartTasmotaUrl(tasmotaIP: string): string {
+        return (
+            `http://${tasmotaIP}/cm?` +
+            `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+            `&cmnd=Restart%201`
+        );
+    }
+
+    async checkTasmotaHasInternetAccess(tasmotaIP: string, topic: string, testUrl: string): Promise<boolean> {
+        try {
+            const hostname = new URL(testUrl).hostname;
+            const url =
+                `http://${tasmotaIP}/cm?` +
+                `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                `&cmnd=Ping%20${encodeURIComponent(hostname)}`;
+
+            await this.fetch(url);
+            this.mqttClient && (await this.mqttClient.waitTasmotaHasInternet(topic, 5000, hostname));
+            this.log.debug(`Tasmota device at ${tasmotaIP} has internet access.`);
+            return true;
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
+            return false;
+        }
     }
 }
 

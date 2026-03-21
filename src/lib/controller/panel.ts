@@ -1064,9 +1064,9 @@ export class Panel extends BaseClass {
                     this.adapter.setTimeout(async () => {
                         let result: Record<string, string> | undefined = undefined;
                         try {
-                            result = (await this.adapter.fetch(
-                                'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
-                            )) as Record<string, string> | undefined;
+                            result = (await this.adapter.fetch(this.adapter.config.versionJsonUrl)) as
+                                | Record<string, string>
+                                | undefined;
                             if (!result) {
                                 return;
                             }
@@ -1080,7 +1080,7 @@ export class Panel extends BaseClass {
                                 const url =
                                     `http://${this.info.tasmota.net.IPAddress}/cm?` +
                                     `${this.adapter.config.useTasmotaAdmin ? `user=admin&password=${this.adapter.config.tasmotaAdminPassword}` : ``}` +
-                                    `&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry/${version}/autoexec.be; Restart 1`;
+                                    `&cmnd=Backlog UrlFetch ${this.adapter.config.berryUrl}/${version}/autoexec.be; Restart 1`;
                                 this.log.info(
                                     `Automatic update of the berry driver version from ${this.info.nspanel.berryDriverVersion} to ${version} on tasmota with IP ${this.info.tasmota.net.IPAddress} and  ${this.info.tasmota.net.Hostname}.`,
                                 );

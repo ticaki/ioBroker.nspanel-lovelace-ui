@@ -162,6 +162,57 @@ class MQTTClientClass extends import_library.BaseClass {
       });
     });
   }
+  async waitTasmotaUrlFetch(_topic, timeout) {
+    return new Promise((resolve, reject) => {
+      const topic = `${_topic}/stat/RESULT`;
+      this.log.debug(`Check if Tasmota install berry: ${topic}`);
+      let ref;
+      if (timeout > 0) {
+        ref = this.adapter.setTimeout(() => {
+          reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
+        }, timeout);
+      }
+      void this.subscribe(topic, async (_topic2, _message) => {
+        const payload = JSON.parse(_message);
+        if (payload.UrlFetch !== "Done") {
+          return false;
+        }
+        if (ref) {
+          this.adapter.clearTimeout(ref);
+        }
+        this.log.debug(`Tasmota install berry detected: ${_topic2} with message: ${_message}`);
+        resolve();
+        return true;
+      });
+    });
+  }
+  async waitTasmotaHasInternet(_topic, timeout, hostname) {
+    return new Promise((resolve, reject) => {
+      const topic = `${_topic}/tele/RESULT`;
+      this.log.debug(`Check if Tasmota has internet access on: ${topic}`);
+      let ref;
+      if (timeout > 0) {
+        ref = this.adapter.setTimeout(() => {
+          reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
+        }, timeout);
+      }
+      void this.subscribe(topic, async (_topic2, _message) => {
+        var _a, _b;
+        const payload = JSON.parse(_message);
+        if (!((_b = (_a = payload.Ping) == null ? void 0 : _a[hostname]) == null ? void 0 : _b.Reachable)) {
+          return false;
+        }
+        if (ref) {
+          this.adapter.clearTimeout(ref);
+        }
+        this.log.debug(
+          `Tasmota connect to raw.githubusercontent.com detected: ${_topic2} with message: ${_message}`
+        );
+        resolve();
+        return true;
+      });
+    });
+  }
   async publish(topic, message, opt) {
     try {
       if (!this.client.connected) {

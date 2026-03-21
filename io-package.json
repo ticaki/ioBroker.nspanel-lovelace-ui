@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.15.0",
+    "version": "0.15.1",
     "news": {
+      "0.15.1": {
+        "en": "added: internet access check for Tasmota device before berry installation",
+        "de": "hinzugefügt: Internetzugangscheck für Tasmota Gerät vor Berryinstallation",
+        "ru": "проверка доступа в Интернет для устройства Tasmota перед установкой ягоды",
+        "pt": "adicionado: verificação de acesso à internet para dispositivo Tasmota antes da instalação de baga",
+        "nl": "toegevoegd: internet toegangscontrole voor Tasmota apparaat voor bessen installatie",
+        "fr": "ajouté: contrôle d'accès internet pour l'appareil Tasmota avant l'installation de baies",
+        "it": "aggiunto: controllo di accesso internet per dispositivo Tasmota prima dell'installazione di bacca",
+        "es": "añadido: cheque de acceso a Internet para el dispositivo Tasmota antes de la instalación de bay",
+        "pl": "dodane: sprawdzenie dostępu do Internetu dla urządzenia Tasmota przed instalacją jagód",
+        "uk": "доданий: перевірка доступу до Інтернету для пристрою Tasmota перед установкою ягід",
+        "zh-cn": "添加:在安装莓汁前对塔斯莫塔设备进行互联网访问检查"
+      },
       "0.15.0": {
         "en": "added: `ScreensaverEntityFillIfBelowMin` – fills screensaver slots when too few items are visible (default: true)\nfixed: various bug fixes and improvements in the admin UI",
         "de": "hinzugefügt: `ScreensaverEntityFillIfBelowMin` – füllt Bildschirmschoner-Slots, wenn zu wenige Elemente sichtbar sind (Standard: true)\nbehoben: verschiedene Fehlerbehebungen und Verbesserungen im Admin UI",
@@ -80,19 +93,6 @@
         "pl": "Nowa zakładka Admin do szybkiego przeglądu i drobnych ustawień\n(ticaki) System statusu panelu z odznaką (online/offline/setup/flashing)\nUlepszenia zarządzania panelami (wybór IP, usuwanie/edycja paneli, przycisk init)\nUlepszenia projektu interfejsu konfiguracji MQTT\n(ticaki) Różne poprawki (migotanie odznaki, fokus zakładek, jsonConfig, tłumaczenia, kolory hex)",
         "uk": "Нова вкладка Admin для швидкого огляду та незначних налаштувань\n(ticaki) Система статусу панелі з бейджем (online/offline/setup/flashing)\nПокращення керування панелями (вибір IP, видалення/редагування панелей, кнопка init)\nПокращення дизайну інтерфейсу конфігурації MQTT\n(ticaki) Різні виправлення (мерехтіння бейджа, фокус вкладок, jsonConfig, переклади, hex-кольори)",
         "zh-cn": "新增 Admin 标签页，用于快速概览和小型设置\n(ticaki) 带徽章的面板状态系统（在线/离线/设置/刷写状态）\n面板管理改进（IP 选择器、删除/编辑面板、init 按钮）\nMQTT 配置界面设计改进\n(ticaki) 各种修复（徽章闪烁、标签焦点、jsonConfig、翻译、十六进制颜色）"
-      },
-      "0.12.1": {
-        "en": "fixed: brightsky template\nfixed: malfunction of the update icon in the screensaver\nfixed: When sending the script, the restart was confirmed with the wrong panel name.",
-        "de": "Behoben: brightsky Vorlage\nBehoben: Fehlfunktion des Aktualisierungssymbols im Bildschirmschoner\nBehoben: Beim Senden des Skripts wurde der Neustart mit dem falschen Panelnamen bestätigt.",
-        "ru": "фиксированный: яркий шаблон\nисправлено: неисправность значка обновления в заставке\nфиксированный: При отправке сценария перезапуск был подтвержден неправильным названием панели.",
-        "pt": "fixo: modelo brightsky\ncorrigido: mau funcionamento do ícone de atualização no protetor de tela\nfixado: Ao enviar o script, o reinício foi confirmado com o nome errado do painel.",
-        "nl": "vast: helder sjabloon\nvast: storing van de update pictogram in de screensaver\nvast: Bij het versturen van het script werd de herstart bevestigd met de verkeerde paneelnaam.",
-        "fr": "corrigé: modèle brightsky\ncorrigé : dysfonctionnement de l'icône de mise à jour dans l'économiseur d'écran\nfixe: Lors de l'envoi du script, le redémarrage a été confirmé avec le mauvais nom de panneau.",
-        "it": "fisso: modello luminososky\nfisso: malfunzionamento dell'icona di aggiornamento nel salvaschermo\nfisso: Quando si invia lo script, il riavvio è stato confermato con il nome del pannello sbagliato.",
-        "es": "fijo: plantilla brillante\nfijo: mal funcionamiento del icono de actualización en el salvapantallas\nfijo: Al enviar el guión, el reinicio fue confirmado con el nombre del panel equivocado.",
-        "pl": "stałe: szablon brightsky\nstałe: nieprawidłowe działanie ikony aktualizacji w wygaszaczu ekranu\nstałe: Podczas wysyłania skryptu, restart został potwierdzony złą nazwą panelu.",
-        "uk": "фіксована: яскравий шаблон\nфіксована: несправність іконки оновлення в екранахaver\nфіксована: При надсиланні сценарію перезавантаження було підтверджено невірною назвою панелі.",
-        "zh-cn": "固定:亮天空模板\n固定: 屏幕保护中更新图标的故障\n固定 : 在发送脚本时,重新启动以错误的面板名称被确认."
       }
     },
     "titleLang": {
@@ -185,6 +185,9 @@
     "pw1"
   ],
   "native": {
+    "versionJsonUrl": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
+    "berryUrl": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
+    "tftUrl": "http://nspanel.de",
     "mqttPassword": "",
     "mqttUsername": "",
     "mqttIp": "",
