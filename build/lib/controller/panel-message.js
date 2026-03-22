@@ -149,6 +149,12 @@ class PanelSend extends import_library.BaseClass {
         }
         this.panel.isOnline = false;
         if (this.panel.status !== "flashing") {
+          try {
+            await this.adapter.fetch(`http://${this.panel.info.tasmota.net.IPAddress}/cm?`, void 0, 500);
+          } catch {
+            await this.panel.setStatus("offline");
+            return;
+          }
           await this.panel.setStatus("error");
         }
       }
