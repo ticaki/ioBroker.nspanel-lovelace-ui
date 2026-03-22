@@ -359,6 +359,7 @@
     "sendToRequestFail2": "无法在线确定TFT固件版本",
     "sendToRequestFail3": "通过MQTT发送TFT固件更新命令失败",
     "sendToRequestFail4": "向面板的请求失败",
+    "sendToRequestFailBerry": "Berry安装后未收到来自Tasmota的下载确认",
     "short": "短的",
     "shutter": "快门",
     "shutterClosedIsZero": "0的位置显示为完全闭合（最大扩展）。",

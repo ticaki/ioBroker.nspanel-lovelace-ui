@@ -70,6 +70,8 @@ interface PagePanelOverviewState extends ConfigGenericState {
     localTasmotaName: string;
     localTasmotaTopic: string;
     localTimezone: string;
+    // State für Message Dialog
+    showMessageConfirm: boolean;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -100,6 +102,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             localTasmotaName: props.data._tasmotaName ?? '',
             localTasmotaTopic: props.data._tasmotaTopic ?? '',
             localTimezone: props.data.timezone ?? '',
+            showMessageConfirm: false,
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
@@ -439,6 +442,12 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         processing: false,
                         error: errorMessage,
                     });
+                    if (result.error == 'sendToNoInternetAccess') {
+                        this.setState({
+                            showMessageConfirm: true,
+                            error: `${errorMessage}`,
+                        });
+                    }
                     return;
                 }
 
@@ -682,6 +691,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
     };
 
+    // Schließt den Message-Dialog
+    private handleMessageClose = (): void => {
+        this.setState({ showMessageConfirm: false });
+    };
+
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
@@ -701,6 +715,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             successMessage,
             timezoneEntities,
             processing,
+            showMessageConfirm,
         } = this.state;
 
         // Setze Standardwert für _nsPanelModel, falls nicht vorhanden (EU als Standard)
@@ -1089,6 +1104,20 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         >
                             {this.getText('Save')}
                         </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Message Dialog */}
+                <Dialog
+                    open={showMessageConfirm}
+                    onClose={this.handleMessageClose}
+                >
+                    <DialogTitle>{`Panel ${this.props.data._tasmotaName}`}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>{error}</DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleMessageClose}>{this.getText('Commit')}</Button>
                     </DialogActions>
                 </Dialog>
             </Box>
