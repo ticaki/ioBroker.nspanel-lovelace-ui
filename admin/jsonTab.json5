@@ -1,5 +1,5 @@
 {
-    "i18n": "custom",
+    "i18n": "custom/i18n",
     "type": "tabs",
     "items": {
         "_tabMaintain": {
