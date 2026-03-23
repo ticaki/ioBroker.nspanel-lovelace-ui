@@ -2102,7 +2102,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   async getVersionsJson() {
     try {
-      if (this.versionJson && Date.now() - this.versionJson.timestamp < 15 * 60 * 1e3) {
+      if (this.versionJson && Date.now() - this.versionJson.timestamp < 60 * 60 * 1e3) {
         return this.versionJson.data;
       }
       const result = await this.fetch(this.config.versionJsonUrl);
