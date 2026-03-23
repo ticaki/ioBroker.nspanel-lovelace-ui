@@ -56,6 +56,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     fetchs: Map<AbortController, ioBroker.Timeout | undefined> = new Map();
 
     paused: boolean = false;
+    public versionJson: { data: Record<string, string>; timestamp: number } | undefined = undefined;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -1093,6 +1094,22 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const item: (typeof this.config.panels)[number] =
                                     index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
                                 const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
+                                let versionsJson: Record<string, string> | undefined = undefined;
+                                versionsJson = await this.getVersionsJson();
+                                if (!versionsJson) {
+                                    this.log.error(
+                                        'Could not fetch version json! Check your internet connection and the url in the adapter configuration!',
+                                    );
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToVersionJsonFetchFailed' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                }
                                 let update = false;
                                 let panel: Panel | undefined = undefined;
                                 if (index !== -1 && ipIndex !== index) {
@@ -1242,11 +1259,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     } catch {
                                         //ignore
                                     }
+
                                     if (!result || result.nlui_driver_version !== '-1') {
-                                        result = (await this.fetch(this.config.versionJsonUrl)) as
-                                            | Record<string, string>
-                                            | undefined;
-                                        if (!result) {
+                                        if (!versionsJson) {
                                             this.log.error('No version found!');
                                             if (obj.callback) {
                                                 this.sendTo(
@@ -1284,8 +1299,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             break;
                                         }
                                         const version = obj.message.useBetaTFT
-                                            ? result[`berry-beta`].split('_')[0]
-                                            : result.berry.split('_')[0];
+                                            ? versionsJson[`berry-beta`].split('_')[0]
+                                            : versionsJson.berry.split('_')[0];
                                         let url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                                         this.log.info(
                                             `Installing berry on tasmota with IP ${obj.message.tasmotaIP}, name ${obj.message.tasmotaName}.`,
@@ -1332,7 +1347,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             obj.message.model,
                                             obj.message.useBetaTFT,
                                             this.config.forceTFTVersion,
-                                            undefined,
+                                            versionsJson,
                                         );
                                         if (!cmnd) {
                                             this.log.error('No version found!');
@@ -1415,9 +1430,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             try {
                                 let result: Record<string, string> | undefined = undefined;
 
-                                result = (await this.fetch(this.config.versionJsonUrl)) as
-                                    | Record<string, string>
-                                    | undefined;
+                                result = await this.getVersionsJson();
                                 if (!result) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
@@ -2063,8 +2076,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'updateTasmota': {
                     let language = this.library.getLocalLanguage();
                     language = language === 'zh-cn' ? 'en' : language;
-                    const result = (await this.fetch(this.config.versionJsonUrl)) as Record<string, string>;
-                    if ('tasmota' in result) {
+                    const result = await this.getVersionsJson();
+                    if (result && 'tasmota' in result) {
                         const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
 
                         if (this.controller?.panels) {
@@ -2377,6 +2390,24 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
         }
     }
+    async getVersionsJson(): Promise<Record<string, string> | undefined> {
+        try {
+            if (this.versionJson && Date.now() - this.versionJson.timestamp < 15 * 60 * 1000) {
+                return this.versionJson.data;
+            }
+            const result = (await this.fetch(this.config.versionJsonUrl)) as Record<string, string> | undefined;
+            if (result) {
+                this.versionJson = { data: result, timestamp: Date.now() };
+                return result;
+            }
+            this.log.error('No version data received.');
+            return undefined;
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            this.log.error(`Error fetching version data: ${errorMessage}`);
+            return undefined;
+        }
+    }
     async getTFTVersionOnline(
         m: string,
         beta: boolean,
@@ -2384,7 +2415,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         result?: Record<string, string>,
     ): Promise<string | null> {
         if (!result) {
-            result = (await this.fetch(this.config.versionJsonUrl)) as Record<string, string> | undefined;
+            result = await this.getVersionsJson();
         }
         const data = result;
         if (!data) {

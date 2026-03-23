@@ -580,11 +580,11 @@ class Controller extends Library.BaseClass {
     await this.statesControler.setInternalState("///Notifications", true, true);
   }
   checkOnlineVersion = async () => {
-    await this.getTFTVersion();
+    await this.writeTFTVersion();
   };
-  async getTFTVersion() {
+  async writeTFTVersion() {
     try {
-      const result = await this.adapter.fetch(this.adapter.config.versionJsonUrl);
+      const result = await this.adapter.getVersionsJson();
       const data = result;
       if (!data) {
         this.log.error("No version data received.");
@@ -601,7 +601,11 @@ class Controller extends Library.BaseClass {
   async getTasmotaVersion() {
     var _a, _b;
     try {
-      const result = await this.adapter.fetch(this.adapter.config.versionJsonUrl);
+      const result = await this.adapter.getVersionsJson();
+      if (!result) {
+        this.log.error("No version data received.");
+        return "";
+      }
       const TasmotaVersionOnline = result.tasmota.trim();
       this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
       for (const panel of this.panels) {
