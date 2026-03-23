@@ -10,6 +10,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    Tooltip,
 } from '@mui/material';
 import { EntitySelector } from './EntitySelector';
 import type { ChartEntry } from '../../../src/lib/types/adminShareConfig';
@@ -109,12 +110,14 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                                 this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
                             }
                         }}
-                        InputProps={{
-                            sx: {
-                                backgroundColor: 'transparent',
-                                px: 1,
-                                fontWeight: 600,
-                                width: '50%',
+                        slotProps={{
+                            input: {
+                                sx: {
+                                    backgroundColor: 'transparent',
+                                    px: 1,
+                                    fontWeight: 600,
+                                    width: '50%',
+                                },
                             },
                         }}
                     />
@@ -156,8 +159,10 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                     onChange={e => {
                         this.handleFieldChange('headline', e.target.value);
                     }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                    slotProps={{
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                        },
                     }}
                     sx={{ mb: 2 }}
                 />
@@ -173,8 +178,10 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                         onChange={e => {
                             this.handleFieldChange('chartColor', e.target.value);
                         }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                        slotProps={{
+                            input: {
+                                sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                            },
                         }}
                     />
                 </Box>
@@ -316,8 +323,10 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                     onChange={e => {
                         this.handleFieldChange('txtLabelYAchse', e.target.value);
                     }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1 },
+                    slotProps={{
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1 },
+                        },
                     }}
                     sx={{ mb: 2 }}
                 />
@@ -333,8 +342,10 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
                         onChange={e => {
                             this.handleFieldChange('rangeHours', parseInt(e.target.value, 10));
                         }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                        slotProps={{
+                            input: {
+                                sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                            },
                         }}
                         sx={{ mb: 2 }}
                     />
@@ -363,38 +374,54 @@ export class PageChartEditor extends React.Component<PageChartEditorProps, PageC
 
                 {/* Max X-Axis Ticks (only for DB adapter and cardLChart) */}
                 {entry.selInstanceDataSource === 1 && entry.selChartType === 'cardLChart' && (
-                    <TextField
-                        fullWidth
-                        variant="standard"
-                        type="number"
-                        label={this.getText('chart_XTicks')}
-                        value={entry.maxXAxisTicks ?? 10}
-                        onChange={e => {
-                            this.handleFieldChange('maxXAxisTicks', parseInt(e.target.value, 10));
-                        }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
-                        }}
-                        sx={{ mb: 2 }}
-                    />
+                    <Tooltip
+                        title={this.getText('chart_XTicksTooltip')}
+                        placement="top"
+                        arrow
+                    >
+                        <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            label={this.getText('chart_XTicks')}
+                            value={entry.maxXAxisTicks ?? 10}
+                            onChange={e => {
+                                this.handleFieldChange('maxXAxisTicks', parseInt(e.target.value, 10));
+                            }}
+                            slotProps={{
+                                input: {
+                                    sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                                },
+                            }}
+                            sx={{ mb: 2 }}
+                        />
+                    </Tooltip>
                 )}
 
                 {/* Max X-Axis Labels */}
                 {entry.selInstanceDataSource === 1 && (
-                    <TextField
-                        fullWidth
-                        variant="standard"
-                        type="number"
-                        label={this.getText('chart_XLabels')}
-                        value={entry.maxXAxisLabels ?? 6}
-                        onChange={e => {
-                            this.handleFieldChange('maxXAxisLabels', parseInt(e.target.value, 10));
-                        }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
-                        }}
-                        sx={{ mb: 2 }}
-                    />
+                    <Tooltip
+                        title={this.getText('chart_XTicksTooltip')}
+                        placement="top"
+                        arrow
+                    >
+                        <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            label={this.getText('chart_XLabels')}
+                            value={entry.maxXAxisLabels ?? 6}
+                            onChange={e => {
+                                this.handleFieldChange('maxXAxisLabels', parseInt(e.target.value, 10));
+                            }}
+                            slotProps={{
+                                input: {
+                                    sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                                },
+                            }}
+                            sx={{ mb: 2 }}
+                        />
+                    </Tooltip>
                 )}
             </Box>
         );

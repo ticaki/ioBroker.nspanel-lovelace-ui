@@ -48,8 +48,8 @@ export class PageChartLine extends PageChart {
             const hoursRangeFromNow = items.hours || 24; //Zeitspanne in Stunden, die von jetzt an zurückgerechnet wird
             const stateValue = items.state || ''; // State, von dem die Daten abgerufen werden sollen
             const instance = items.instance || ''; // Datenbankadapter-Instanz, die die Daten abruft
-            const maxXAxisLabels = items.maxLabels || 4; // Maximale Anzahl der X-Achsen-Beschriftungen, die angezeigt werden sollen (kleiner als Ticks)
-            const maxXAxisTicks = items.maxTicks || 8; // Maximale Anzahl der X-Achsen-Ticks, die angezeigt werden sollen
+            const maxXAxisLabels = items.maxLabels || 4; // alle x Stunden ein Label, wenn maxLabels 4 ist, dann alle 4 Stunden ein Label
+            const maxXAxisTicks = items.maxTicks || 2; // alle x Stunden ein Tick, wenn maxTicks 2 ist, dann alle 2 Stunden ein Tick
             const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60; // Intervall in Minuten zwischen den X-Achsen-Ticks (z.B. 60 für 1 Tick pro Stunde)
             const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120; // Intervall in Minuten zwischen den X-Achsen-Beschriftungen (z.B. 120 für 1 Beschriftung pro 2 Stunden)
             const maxX = 1440; // 24h = 1440min
@@ -59,8 +59,6 @@ export class PageChartLine extends PageChart {
             try {
                 const dbDaten = await this.getDataFromDB(stateValue, hoursRangeFromNow, instance);
                 if (dbDaten && Array.isArray(dbDaten) && dbDaten.length > 0) {
-                    this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
-
                     let ticksAndLabels = '';
                     let coordinates = '';
 
@@ -83,7 +81,9 @@ export class PageChartLine extends PageChart {
                             ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
                         }
                     }
-                    ticksAndLabelsList.push(String(maxX));
+                    ticksAndLabelsList.push(
+                        `${String(maxX - 10)}^${new Date(ts * 1000).getHours().toString().padStart(2, '0')}:${new Date(ts * 1000).getMinutes().toString().padStart(2, '0')}`,
+                    );
                     ticksAndLabels = ticksAndLabelsList.join('+');
 
                     const list = [];

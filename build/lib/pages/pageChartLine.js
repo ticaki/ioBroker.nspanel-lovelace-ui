@@ -55,7 +55,7 @@ class PageChartLine extends import_pageChart.PageChart {
       const stateValue = items.state || "";
       const instance = items.instance || "";
       const maxXAxisLabels = items.maxLabels || 4;
-      const maxXAxisTicks = items.maxTicks || 8;
+      const maxXAxisTicks = items.maxTicks || 2;
       const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60;
       const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120;
       const maxX = 1440;
@@ -63,7 +63,6 @@ class PageChartLine extends import_pageChart.PageChart {
       try {
         const dbDaten = await this.getDataFromDB(stateValue, hoursRangeFromNow, instance);
         if (dbDaten && Array.isArray(dbDaten) && dbDaten.length > 0) {
-          this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
           let ticksAndLabels = "";
           let coordinates = "";
           const ticksAndLabelsList = [];
@@ -82,7 +81,9 @@ class PageChartLine extends import_pageChart.PageChart {
               ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
             }
           }
-          ticksAndLabelsList.push(String(maxX));
+          ticksAndLabelsList.push(
+            `${String(maxX - 10)}^${new Date(ts * 1e3).getHours().toString().padStart(2, "0")}:${new Date(ts * 1e3).getMinutes().toString().padStart(2, "0")}`
+          );
           ticksAndLabels = ticksAndLabelsList.join("+");
           const list = [];
           const startTs = Math.round(dbDaten[0].ts / 1e3);

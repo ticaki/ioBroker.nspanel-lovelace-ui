@@ -162,6 +162,7 @@ class PageChart extends import_Page.Page {
         valuesChart = tempValues;
       }
     }
+    this.log.debug(`Data from States (oldScriptVersion)`);
     return { ticksChart, valuesChart };
   }
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
@@ -203,10 +204,14 @@ class PageChart extends import_Page.Page {
             options: {
               start: Date.now() - _rangeHours * 60 * 60 * 1e3,
               end: Date.now(),
-              count: _rangeHours,
-              limit: _rangeHours,
+              /** number of values if aggregate is 'onchange' or number of intervals if other aggregate method. Count will be ignored if step is set, else default is 500 if not set */
+              count: Math.min(78, _rangeHours * 60),
+              /** do not return more entries than limit */
+              limit: Math.min(78, _rangeHours * 60),
+              /** if null values should be included (false), replaced by last not null value (true) or replaced with 0 (0) */
               ignoreNull: true,
               aggregate: "average",
+              /** round result to number of digits after decimal point */
               round: 1
             }
           },
@@ -221,6 +226,7 @@ class PageChart extends import_Page.Page {
             }
             if (result && "result" in result) {
               if (Array.isArray(result.result)) {
+                this.log.debug(`Data points retrieved from DB: ${result.result.length}`);
                 for (let i = 0; i < result.result.length; i++) {
                   this.log.debug(
                     `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
