@@ -11,4 +11,5 @@ declare class NspanelLovelaceUi extends utils.Adapter {
     unload: boolean;
     testSuccessful: boolean;
     async fetch(url: string, init?: RequestInit, timeout = 30_000): Promise<unknown>;
+    async getVersionsJson(): Promise<Record<string, string> | undefined>;
 }

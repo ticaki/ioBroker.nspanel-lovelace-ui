@@ -1064,10 +1064,9 @@ export class Panel extends BaseClass {
                     this.adapter.setTimeout(async () => {
                         let result: Record<string, string> | undefined = undefined;
                         try {
-                            result = (await this.adapter.fetch(this.adapter.config.versionJsonUrl)) as
-                                | Record<string, string>
-                                | undefined;
+                            result = await this.adapter.getVersionsJson();
                             if (!result) {
+                                this.log.error('No version data received.');
                                 return;
                             }
                             const version = this.adapter.config.useBetaTFT

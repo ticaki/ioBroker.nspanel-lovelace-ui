@@ -636,15 +636,13 @@ export class Controller extends Library.BaseClass {
     }
 
     checkOnlineVersion = async (): Promise<void> => {
-        await this.getTFTVersion();
+        await this.writeTFTVersion();
         //await this.getTasmotaVersion();
     };
 
-    async getTFTVersion(): Promise<void> {
+    async writeTFTVersion(): Promise<void> {
         try {
-            const result = (await this.adapter.fetch(this.adapter.config.versionJsonUrl)) as
-                | Record<string, string>
-                | undefined;
+            const result = await this.adapter.getVersionsJson();
 
             const data = result;
             if (!data) {
@@ -665,7 +663,11 @@ export class Controller extends Library.BaseClass {
     }
     async getTasmotaVersion(): Promise<string> {
         try {
-            const result = (await this.adapter.fetch(this.adapter.config.versionJsonUrl)) as Record<string, string>;
+            const result = await this.adapter.getVersionsJson();
+            if (!result) {
+                this.log.error('No version data received.');
+                return '';
+            }
             // Filter JSON by "tag_name" and write to variable
             const TasmotaVersionOnline = result.tasmota.trim();
 

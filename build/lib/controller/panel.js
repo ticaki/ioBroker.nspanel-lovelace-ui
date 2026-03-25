@@ -958,8 +958,9 @@ class Panel extends import_library.BaseClass {
           this.adapter.setTimeout(async () => {
             let result = void 0;
             try {
-              result = await this.adapter.fetch(this.adapter.config.versionJsonUrl);
+              result = await this.adapter.getVersionsJson();
               if (!result) {
+                this.log.error("No version data received.");
                 return;
               }
               const version = this.adapter.config.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
