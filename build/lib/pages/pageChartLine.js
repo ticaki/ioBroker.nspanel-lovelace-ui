@@ -91,7 +91,7 @@ class PageChartLine extends import_pageChart.PageChart {
           const counter = dbDaten.length > 1 ? Math.max((endTs - startTs) / maxX, 1) : 1;
           for (let i = 0; i < dbDaten.length; i++) {
             const time = Math.round((dbDaten[i].ts / 1e3 - startTs) / counter);
-            const value = Math.round(dbDaten[i].val * 10);
+            const value = Math.round(dbDaten[i].val);
             if (value != null) {
               list.push(`${time}:${value}`);
               tempScale.push(value);

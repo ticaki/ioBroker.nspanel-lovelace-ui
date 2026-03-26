@@ -205,12 +205,12 @@ class PageChart extends import_Page.Page {
               start: Date.now() - _rangeHours * 60 * 60 * 1e3,
               end: Date.now(),
               /** number of values if aggregate is 'onchange' or number of intervals if other aggregate method. Count will be ignored if step is set, else default is 500 if not set */
-              count: Math.min(78, _rangeHours * 60),
+              count: Math.min(109, _rangeHours * 60),
               /** do not return more entries than limit */
-              limit: Math.min(78, _rangeHours * 60),
+              limit: Math.min(120, _rangeHours * 60),
               /** if null values should be included (false), replaced by last not null value (true) or replaced with 0 (0) */
               ignoreNull: true,
-              aggregate: "average",
+              aggregate: "none",
               /** round result to number of digits after decimal point */
               round: 1
             }
