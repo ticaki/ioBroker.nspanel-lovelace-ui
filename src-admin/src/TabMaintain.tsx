@@ -36,7 +36,7 @@ interface MaintainPanelInfo {
 }
 
 interface MaintainPanelProps {
-    oContext?: any;
+    oContext?: ConfigGenericProps['oContext'];
     themeType: ThemeType;
     themeName: ThemeName;
     theme: IobTheme;

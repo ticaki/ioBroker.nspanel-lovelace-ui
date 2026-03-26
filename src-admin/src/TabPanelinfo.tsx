@@ -34,28 +34,15 @@ interface PanelinfoInfo {
 }
 
 interface PanelinfoProps {
-    oContext?: any;
+    oContext?: ConfigGenericProps['oContext'];
     themeType: ThemeType;
     themeName: ThemeName;
     theme: IobTheme;
 }
 
-interface StateObjectData {
-    id: string;
-    common: {
-        name: string | Record<string, string>;
-        type: 'number' | 'boolean' | 'string';
-        write: boolean;
-        read: boolean;
-        unit?: string;
-        states?: Record<string, string>;
-        role?: string;
-    };
-}
-
 interface PanelStateData {
     panelId: string;
-    states: Record<string, { object: StateObjectData; value: any; tempValue?: string }>;
+    states: Record<string, { object: ioBroker.StateObject; value: any; tempValue?: string }>;
 }
 
 interface PanelinfoState extends ConfigGenericState {
@@ -75,7 +62,7 @@ interface PanelConfig {
     model?: string;
 }
 
-// Hier können weitere States hinzugefügt werden, die angezeigt bzw. besteuert werden sollen
+// Hier können weitere States hinzugefügt werden, die angezeigt bzw. gesteuert werden sollen
 const displayStates = [
     'cmd.screenSaver.layout', // steht für z.B. für nspanel-lovelace-ui.0.panels.C0_49_EF_FA_4C_6C.cmd.screenSaver.layout
     'cmd.screenSaver.timeout',
@@ -284,7 +271,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
             try {
                 // Get object data
                 const obj = await this.props.oContext.socket.getObject(stateId);
-                if (!obj || !obj.common) {
+                if (!obj || !obj.common || obj.type !== 'state') {
                     console.warn(`[Panelinfo] Object not found or invalid: ${stateId}`);
                     this.failedStates.add(stateId);
                     this.scheduleRetry();
@@ -302,7 +289,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 const value = state?.val ?? null;
 
                 panelStateData.states[statePath] = {
-                    object: obj as StateObjectData,
+                    object: obj as ioBroker.StateObject,
                     value,
                 };
 
@@ -326,7 +313,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
             try {
                 // Get object data
                 const obj = await this.props.oContext.socket.getObject(stateId);
-                if (!obj || !obj.common) {
+                if (!obj || !obj.common || obj.type !== 'state') {
                     console.warn(`[Panelinfo] Optional object not found or invalid: ${stateId}`);
                     this.failedStates.add(stateId);
                     this.scheduleRetry();
@@ -344,7 +331,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 const value = state?.val ?? null;
 
                 panelStateData.states[optState.id] = {
-                    object: obj as StateObjectData,
+                    object: obj,
                     value,
                 };
 
@@ -415,7 +402,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
             try {
                 // Get object data
                 const obj = await this.props.oContext.socket.getObject(stateId);
-                if (!obj || !obj.common) {
+                if (!obj || !obj.common || obj.type !== 'state') {
                     console.warn(`[Panelinfo] Retry ${retryCount + 1}: Object still not found: ${stateId}`);
                     this.stateRetryCount.set(stateId, retryCount + 1);
                     continue;
@@ -454,7 +441,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                     states: {
                                         ...panelStateData.states,
                                         [statePath]: {
-                                            object: obj as StateObjectData,
+                                            object: obj,
                                             value,
                                         },
                                     },
@@ -740,7 +727,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         // Get label from common.name
         let label = obj.common.name;
         if (typeof label === 'object') {
-            label = label[this.props.oContext.systemLang] || label.en || Object.values(label)[0] || statePath;
+            const lang = this.props.oContext?.systemConfig?.language ?? 'en';
+            label = label[lang] || label.en || Object.values(label)[0] || statePath;
         }
 
         // Boolean button (Taster ohne anzeigbaren Wert)
@@ -831,7 +819,12 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         // Read-only text field for states (shows resolved value)
         if (states && Object.keys(states).length > 0 && !isWritable) {
             const stateKey = value !== null && value !== undefined ? String(value) : '';
-            const displayText = states[stateKey] || stateKey;
+            const displayText =
+                typeof states === 'object'
+                    ? Array.isArray(states)
+                        ? states[Number(stateKey)]
+                        : states[stateKey]
+                    : states || stateKey;
             return (
                 <TextField
                     key={statePath}
