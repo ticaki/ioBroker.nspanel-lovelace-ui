@@ -157,6 +157,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.15.2 (2026-03-26)
+- (tt-tom17) added: message dialog when berry installation fails due to missing internet access on the panel
+- (ticaki) added: improved offline detection for panels
+- (ticaki) improved: version info caching (15–60 min) to reduce external API calls
+- (ticaki) fixed: admin panel info tab now displays state labels in the correct system language
+
 ### 0.15.1 (2026-03-18)
 - (ticaki) added: internet access check for Tasmota device before berry installation
 

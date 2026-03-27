@@ -1,20 +1,33 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.15.1",
+    "version": "0.15.2",
     "news": {
+      "0.15.2": {
+        "en": "added: message dialog when berry installation fails due to missing internet access on the panel\nadded: improved offline detection for panels\nimproved: version info caching (15–60 min) to reduce external API calls\nfixed: admin panel info tab now displays state labels in the correct system language",
+        "de": "neu: Meldungsdialog wenn die Berry-Installation aufgrund fehlender Internetverbindung des Panels fehlschlägt\nneu: Verbesserte Offline-Erkennung für Panels\nverbessert: Versions-Info-Caching (15–60 Min.) zur Reduzierung externer API-Aufrufe\nbehoben: Panel-Info-Tab zeigt State-Labels nun in der korrekten Systemsprache an",
+        "ru": "добавлено: диалог сообщения, если установка Berry не удаётся из-за отсутствия доступа к интернету на панели\nдобавлено: улучшенное определение режима офлайн для панелей\nулучшено: кэширование информации о версии (15–60 мин.) для уменьшения внешних вызовов API\nисправлено: вкладка информации о панели теперь отображает метки состояний на правильном языке системы",
+        "pt": "adicionado: diálogo de mensagem quando a instalação do Berry falha por falta de acesso à internet no painel\nadicionado: detecção offline melhorada para painéis\nmelhorado: cache de informações de versão (15–60 min) para reduzir chamadas de API externas\ncorrigido: aba de informações do painel agora exibe rótulos de estado no idioma do sistema correto",
+        "nl": "toegevoegd: berichtendialoog als de Berry-installatie mislukt vanwege het ontbreken van internettoegang op het paneel\ntoegevoegd: verbeterde offline-detectie voor panelen\nverbeterd: versie-info-caching (15–60 min) om externe API-aanroepen te verminderen\nopgelost: paneelinformatie-tabblad toont nu statuslabels in de juiste systeemtaal",
+        "fr": "ajouté : boîte de dialogue de message lorsque l'installation de Berry échoue en raison d'un manque d'accès internet sur le panneau\najouté : détection hors ligne améliorée pour les panneaux\namélioré : mise en cache des informations de version (15–60 min) pour réduire les appels API externes\ncorrigé : l'onglet d'informations du panneau affiche maintenant les étiquettes d'état dans la langue du système correcte",
+        "it": "aggiunto: finestra di dialogo quando l'installazione di Berry fallisce per mancanza di accesso a internet sul pannello\naggiunto: rilevamento offline migliorato per i pannelli\nmigliorato: cache delle informazioni di versione (15–60 min) per ridurre le chiamate API esterne\ncorretto: la scheda informazioni del pannello ora visualizza le etichette di stato nella lingua di sistema corretta",
+        "es": "añadido: diálogo de mensaje cuando la instalación de Berry falla por falta de acceso a internet en el panel\nañadido: detección sin conexión mejorada para paneles\nmejorado: caché de información de versión (15–60 min) para reducir las llamadas a API externas\ncorregido: la pestaña de información del panel ahora muestra las etiquetas de estado en el idioma del sistema correcto",
+        "pl": "dodano: okno dialogowe wiadomości, gdy instalacja Berry nie powiodła się z powodu braku dostępu do internetu na panelu\ndodano: ulepszone wykrywanie trybu offline dla paneli\nulepszone: buforowanie informacji o wersji (15–60 min) w celu zmniejszenia liczby zewnętrznych wywołań API\nnaprawiono: karta informacyjna panelu wyświetla teraz etykiety stanów w poprawnym języku systemowym",
+        "uk": "додано: діалог повідомлення, коли встановлення Berry не вдається через відсутність доступу до інтернету на панелі\nдодано: покращене визначення режиму офлайн для панелей\nпокращено: кешування інформації про версію (15–60 хв.) для зменшення зовнішніх викликів API\nвиправлено: вкладка інформації про панель тепер відображає мітки станів на правильній мові системи",
+        "zh-cn": "新增: Berry 安装因面板缺少网络连接而失败时显示消息对话框\n新增: 改进面板的离线检测\n改进: 版本信息缓存（15–60分钟）以减少外部API调用\n修复: 管理面板信息标签现在以正确的系统语言显示状态标签"
+      },
       "0.15.1": {
         "en": "added: internet access check for Tasmota device before berry installation",
         "de": "hinzugefügt: Internetzugangscheck für Tasmota Gerät vor Berryinstallation",
-        "ru": "проверка доступа в Интернет для устройства Tasmota перед установкой ягоды",
-        "pt": "adicionado: verificação de acesso à internet para dispositivo Tasmota antes da instalação de baga",
-        "nl": "toegevoegd: internet toegangscontrole voor Tasmota apparaat voor bessen installatie",
-        "fr": "ajouté: contrôle d'accès internet pour l'appareil Tasmota avant l'installation de baies",
-        "it": "aggiunto: controllo di accesso internet per dispositivo Tasmota prima dell'installazione di bacca",
-        "es": "añadido: cheque de acceso a Internet para el dispositivo Tasmota antes de la instalación de bay",
-        "pl": "dodane: sprawdzenie dostępu do Internetu dla urządzenia Tasmota przed instalacją jagód",
-        "uk": "доданий: перевірка доступу до Інтернету для пристрою Tasmota перед установкою ягід",
-        "zh-cn": "添加:在安装莓汁前对塔斯莫塔设备进行互联网访问检查"
+        "ru": "добавлено: проверка доступа к интернету для устройства Tasmota перед установкой Berry",
+        "pt": "adicionado: verificação de acesso à internet para dispositivo Tasmota antes da instalação do Berry",
+        "nl": "toegevoegd: controle op internettoegang voor Tasmota-apparaat vóór de Berry-installatie",
+        "fr": "ajouté : vérification de l'accès internet pour l'appareil Tasmota avant l'installation de Berry",
+        "it": "aggiunto: verifica dell'accesso a internet per il dispositivo Tasmota prima dell'installazione di Berry",
+        "es": "añadido: comprobación de acceso a internet para el dispositivo Tasmota antes de la instalación de Berry",
+        "pl": "dodano: sprawdzenie dostępu do internetu dla urządzenia Tasmota przed instalacją Berry",
+        "uk": "додано: перевірка доступу до інтернету для пристрою Tasmota перед встановленням Berry",
+        "zh-cn": "新增: 在安装Berry之前检查Tasmota设备的网络访问权限"
       },
       "0.15.0": {
         "en": "added: `ScreensaverEntityFillIfBelowMin` – fills screensaver slots when too few items are visible (default: true)\nfixed: various bug fixes and improvements in the admin UI",
@@ -80,19 +93,6 @@
         "pl": "Utrzymanie tabeli: prawidłowe porównanie semvera dla wersji Tasmota i TFT (upgrade vs downgrade detection)\nTabPanelinfo: przycisk openTasmotaConsole naprawiony\nNiektóre drobne poprawki (model ustawień, model zakładki, typy pól)",
         "uk": "Зміст таблиці: належне порівняння semver для версій Tasmota і TFT (оновлення проти виявлення низградів)\nTabPanelinfo: openTasmotaConsole кнопка фіксована\nДеякі незначні фіксації (модель, модель вкладки, типи поля)",
         "zh-cn": "维护表格:Tasmota和TFT版本(升级与降级检测)的正确模拟比较\nTabPanelinfo: 打开 Tasmota 控制台按钮\n一些小修正(设置模型,制表模型,字段类型)"
-      },
-      "0.13.1": {
-        "en": "New Admin tab for quick overview and minor settings\nPanel status system with badge (online/offline/setup/flashing states)\nPanel management improvements (IP selector, delete/edit panels, init button)\nMQTT configuration UI design improvements\nVarious fixes (badge flickering, tab focus, jsonConfig, translations, hex colors)",
-        "de": "Neuer Admin-Tab für schnelle Übersicht und kleinere Einstellungen\nPanel-Statussystem mit Badge (Online/Offline/Setup/Flashing-Status)\nVerbesserungen im Panel-Management (IP-Selektor, Panels löschen/bearbeiten, Init-Button)\nVerbesserungen am MQTT-Konfigurations-UI-Design\nVerschiedene Fehlerbehebungen (Badge-Flackern, Tab-Fokus, jsonConfig, Übersetzungen, Hex-Farben)",
-        "ru": "Новая вкладка Admin для быстрого обзора и незначительных настроек\nСистема статуса панели с бейджем (online/offline/setup/flashing)\nУлучшения управления панелями (выбор IP, удаление/редактирование панелей, кнопка init)\nУлучшения дизайна интерфейса конфигурации MQTT\nРазличные исправления (мерцание бейджа, фокус вкладок, jsonConfig, переводы, hex-цвета)",
-        "pt": "Nova aba Admin para visão geral rápida e configurações menores\nSistema de status do painel com badge (online/offline/setup/flashing)\nMelhorias no gerenciamento de painéis (seletor de IP, excluir/editar painéis, botão init)\nMelhorias no design da interface de configuração MQTT\nVárias correções (flicker do badge, foco de abas, jsonConfig, traduções, cores hex)",
-        "nl": "Nieuw Admin-tabblad voor snel overzicht en kleine instellingen\nPaneelstatussysteem met badge (online/offline/setup/flashing)\nVerbeteringen in paneelbeheer (IP-selector, panelen verwijderen/bewerken, init-knop)\nVerbeteringen in het ontwerp van de MQTT-configuratie-UI\nDiverse fixes (badge-flikkering, tabfocus, jsonConfig, vertalingen, hex-kleuren)",
-        "fr": "Nouvel onglet Admin pour un aperçu rapide et des réglages mineurs\nSystème d’état du panneau avec badge (online/offline/setup/flashing)\nAméliorations de la gestion des panneaux (sélecteur IP, suppression/modification des panneaux, bouton init)\nAméliorations du design de l’interface de configuration MQTT\nDivers correctifs (clignotement du badge, focus des onglets, jsonConfig, traductions, couleurs hex)",
-        "it": "Nuova scheda Admin per una panoramica rapida e impostazioni minori\n(ticaki) Sistema di stato del pannello con badge (online/offline/setup/flashing)\nMiglioramenti alla gestione dei pannelli (selettore IP, eliminazione/modifica pannelli, pulsante init)\nMiglioramenti al design dell’interfaccia di configurazione MQTT\n(ticaki) Varie correzioni (sfarfallio del badge, focus delle schede, jsonConfig, traduzioni, colori hex)",
-        "es": "Nueva pestaña Admin para una vista rápida y ajustes menores\n(ticaki) Sistema de estado del panel con insignia (online/offline/setup/flashing)\nMejoras en la gestión de paneles (selector de IP, eliminar/editar paneles, botón init)\nMejoras en el diseño de la interfaz de configuración MQTT\n(ticaki) Varias correcciones (parpadeo de la insignia, enfoque de pestañas, jsonConfig, traducciones, colores hex)",
-        "pl": "Nowa zakładka Admin do szybkiego przeglądu i drobnych ustawień\n(ticaki) System statusu panelu z odznaką (online/offline/setup/flashing)\nUlepszenia zarządzania panelami (wybór IP, usuwanie/edycja paneli, przycisk init)\nUlepszenia projektu interfejsu konfiguracji MQTT\n(ticaki) Różne poprawki (migotanie odznaki, fokus zakładek, jsonConfig, tłumaczenia, kolory hex)",
-        "uk": "Нова вкладка Admin для швидкого огляду та незначних налаштувань\n(ticaki) Система статусу панелі з бейджем (online/offline/setup/flashing)\nПокращення керування панелями (вибір IP, видалення/редагування панелей, кнопка init)\nПокращення дизайну інтерфейсу конфігурації MQTT\n(ticaki) Різні виправлення (мерехтіння бейджа, фокус вкладок, jsonConfig, переклади, hex-кольори)",
-        "zh-cn": "新增 Admin 标签页，用于快速概览和小型设置\n(ticaki) 带徽章的面板状态系统（在线/离线/设置/刷写状态）\n面板管理改进（IP 选择器、删除/编辑面板、init 按钮）\nMQTT 配置界面设计改进\n(ticaki) 各种修复（徽章闪烁、标签焦点、jsonConfig、翻译、十六进制颜色）"
       }
     },
     "titleLang": {
