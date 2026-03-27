@@ -326,8 +326,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             await this.library.init();
             const states = await this.getStatesAsync('*');
             await this.library.initStates(states);
-            await this.onMqttConnect();
-            await this.delay(1000);
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
                 this.config.mqttIp,
@@ -346,6 +344,8 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (pauseAdapter) {
                 return;
             }
+            await this.onMqttConnect();
+            await this.delay(1000);
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
                 if (id.endsWith('.info.isOnline')) {
@@ -513,7 +513,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     await this.fetch(
                         `http://${tasmota.ip}/cm?` +
                             `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                            `&cmnd=Backlog Restart 1`,
+                            `&cmnd=Restart 1`,
                     );
                 } else {
                     this.log.info(`Update detected on the Nspanel with the ip ${tasmota.ip}!!`);
