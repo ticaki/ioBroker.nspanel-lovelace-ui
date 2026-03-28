@@ -1,4 +1,4 @@
-import _fs from 'fs';
+import _fs from 'node:fs';
 import { genericStateObjects } from '../const/definition';
 
 import * as LocalTranslations from '../../../templates/translations.json';

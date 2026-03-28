@@ -7,7 +7,7 @@ import * as factory from 'aedes-server-factory';
 import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 
 import Aedes, { type Client } from 'aedes';
-import { type Server } from 'net';
+import { type Server } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import * as forge from 'node-forge';
 import type { Controller } from '../controller/controller';
