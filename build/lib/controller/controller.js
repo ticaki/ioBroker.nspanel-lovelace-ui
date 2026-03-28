@@ -699,8 +699,8 @@ class Controller extends Library.BaseClass {
               false,
               (0, import_tools.getInternalDefaults)("string", "text", false)
             );
-            await this.adapter.delay(10);
             this.log.debug(`Set InternalState for ///pageTrash_${entry.uniqueName}`);
+            await this.adapter.delay(10);
           }
           await this.statesControler.setInternalState(
             `///pageTrash_${entry.uniqueName}`,
