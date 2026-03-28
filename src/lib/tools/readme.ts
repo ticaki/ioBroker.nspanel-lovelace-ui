@@ -1,8 +1,8 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { requiredScriptDataPoints } from '../const/config-manager-const';
 
-import { promises as fsp } from 'fs';
-import * as path from 'path';
+import { promises as fsp } from 'node:fs';
+import * as path from 'node:path';
 
 const slug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
 const esc = (s: string | undefined): string => (s ?? '').replace(/\|/g, '\\|');
