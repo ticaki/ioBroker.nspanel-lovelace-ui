@@ -24,7 +24,7 @@ import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
-import { URL } from 'url';
+import { URL } from 'node:url';
 import type * as pages from './lib/types/pages';
 import * as fs from 'node:fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
