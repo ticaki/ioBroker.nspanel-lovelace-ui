@@ -32,10 +32,10 @@ __export(readme_exports, {
   getStringOrArray: () => getStringOrArray
 });
 module.exports = __toCommonJS(readme_exports);
-var fs = __toESM(require("fs"));
+var fs = __toESM(require("node:fs"));
 var import_config_manager_const = require("../const/config-manager-const");
-var import_fs = require("fs");
-var path = __toESM(require("path"));
+var import_node_fs = require("node:fs");
+var path = __toESM(require("node:path"));
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
 const esc = (s) => (s != null ? s : "").replace(/\|/g, "\\|");
 async function generateAliasDocumentation() {
@@ -80,7 +80,7 @@ ${header}`;
 ${body}`;
   const out = `${toc}
 ${body}`;
-  await import_fs.promises.writeFile(path.join(process.cwd(), "doc/de/ALIAS.md"), out, "utf8");
+  await import_node_fs.promises.writeFile(path.join(process.cwd(), "doc/de/ALIAS.md"), out, "utf8");
 }
 function getStringOrArray(item) {
   if (Array.isArray(item)) {

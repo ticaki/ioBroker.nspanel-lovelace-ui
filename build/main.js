@@ -32,8 +32,8 @@ var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
 var import_url = require("url");
-var fs = __toESM(require("fs"));
-var import_path = __toESM(require("path"));
+var fs = __toESM(require("node:fs"));
+var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
 var import_node_ical = __toESM(require("node-ical"));
@@ -137,7 +137,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {
         try {
           const iopackage = JSON.parse(
-            fs.readFileSync(import_path.default.join(__dirname, "..", "io-package.json"), "utf-8")
+            fs.readFileSync(import_node_path.default.join(__dirname, "..", "io-package.json"), "utf-8")
           );
           native.versionJsonUrl = iopackage.native.versionJsonUrl || "";
           native.tftUrl = iopackage.native.tftUrl || "";
@@ -1601,9 +1601,9 @@ class NspanelLovelaceUi extends utils.Adapter {
           const flashingText = this.library.getTranslation("Updating");
           const flashingObj = {};
           let file = void 0;
-          if (fs.existsSync(import_path.default.join(__dirname, "../script"))) {
+          if (fs.existsSync(import_node_path.default.join(__dirname, "../script"))) {
             file = fs.readFileSync(
-              import_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"),
+              import_node_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"),
               "utf8"
             );
           }
@@ -1789,8 +1789,8 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         case "getIconBase64": {
           try {
-            if (fs.existsSync(import_path.default.join(__dirname, "../script"))) {
-              const fileContent = fs.readFileSync(import_path.default.join(__dirname, "../script/icons.json"), "utf-8");
+            if (fs.existsSync(import_node_path.default.join(__dirname, "../script"))) {
+              const fileContent = fs.readFileSync(import_node_path.default.join(__dirname, "../script/icons.json"), "utf-8");
               const icons = JSON.parse(fileContent);
               const index = icons.findIndex((a) => a.name === obj.message.icon);
               let img = "";
@@ -1987,10 +1987,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     await this.extendForeignObjectAsync(scriptPath, folder);
     const scriptId = this.library.cleandp(`${scriptPath}.globalPageConfig`);
     this.log.debug(`Create/Update script ${scriptId}`);
-    if (fs.existsSync(import_path.default.join(__dirname, "../script"))) {
-      let file = fs.readFileSync(import_path.default.join(__dirname, "../script/globalPageConfig.ts"), "utf8");
+    if (fs.existsSync(import_node_path.default.join(__dirname, "../script"))) {
+      let file = fs.readFileSync(import_node_path.default.join(__dirname, "../script/globalPageConfig.ts"), "utf8");
       const baseFile = fs.readFileSync(
-        import_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"),
+        import_node_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"),
         "utf8"
       );
       const o = await this.getForeignObjectAsync(scriptId);
@@ -2058,8 +2058,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     await this.extendForeignObjectAsync(scriptPath, folder);
     const scriptId = this.library.cleandp(`${scriptPath}.${this.library.cleandp(panelName, false, true)}`);
     this.log.debug(`Create script ${scriptId}`);
-    if (fs.existsSync(import_path.default.join(__dirname, "../script")) && panelName && panelTopic) {
-      let file = fs.readFileSync(import_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"), "utf8");
+    if (fs.existsSync(import_node_path.default.join(__dirname, "../script")) && panelName && panelTopic) {
+      let file = fs.readFileSync(import_node_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"), "utf8");
       const o = await this.getForeignObjectAsync(scriptId);
       if (file) {
         file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${panelTopic}',`);
