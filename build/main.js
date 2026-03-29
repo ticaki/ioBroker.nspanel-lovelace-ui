@@ -31,7 +31,7 @@ var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
-var import_url = require("url");
+var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
@@ -964,7 +964,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     void panel.setStatus("setup");
                   }
                 }
-                let u = new import_url.URL(
+                let u = new import_node_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=status 5`
                 );
                 this.log.debug(
@@ -1007,7 +1007,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const appendix = r.StatusNET.Mac.replace(/:/g, "").slice(-6);
                 const mqttClientId = `${this.library.cleandp(obj.message.tasmotaName)}-${appendix}`;
                 const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${topic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; FriendlyName1 ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}; MqttClient ${mqttClientId}; ${obj.message.mqttServer ? "SetOption132 1; SetOption103 1 " : "SetOption132 0; SetOption103 0"}; Restart 1`;
-                u = new import_url.URL(
+                u = new import_node_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog${encodeURIComponent(url)}`
                 );
                 this.log.debug(
@@ -1015,14 +1015,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                 );
                 await this.fetch(u.href);
                 this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 6e4);
-                u = new import_url.URL(
+                u = new import_node_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog${encodeURIComponent(
                     ` WebLog 2;SetOption111 1; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0;${this.config.timezone ? definition.getTasmotaTimeZone(this.config.timezone) : ""}; restart 1`
                   )}`
                 );
                 await this.fetch(u.href);
                 this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 6e4);
-                u = new import_url.URL(
+                u = new import_node_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=status 0`
                 );
                 r = await this.fetch(u.href);
@@ -1041,7 +1041,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                u = new import_url.URL(
+                u = new import_node_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=${encodeURIComponent(`AdcParam 2,14600,10000,3950`)}`
                 );
                 await this.fetch(u.href);
@@ -2161,7 +2161,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   async checkTasmotaHasInternetAccess(tasmotaIP, topic, testUrl) {
     try {
-      const hostname = new import_url.URL(testUrl).hostname;
+      const hostname = new import_node_url.URL(testUrl).hostname;
       const url = `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Ping%20${encodeURIComponent(hostname)}`;
       await this.fetch(url);
       this.mqttClient && await this.mqttClient.waitTasmotaHasInternet(topic, 5e3, hostname);
