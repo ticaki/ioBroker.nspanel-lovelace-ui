@@ -1038,11 +1038,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'setPopupNotification': {
-                    if (this.controller && obj.message) {
+                    if (this.controller?.panels?.some(p => p.status === 'online') && obj.message) {
                         await this.controller.setPopupNotification(obj.message);
-                    }
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, [], obj.callback);
+                        }
+                    } else {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { error: 'No Panels Online' }, obj.callback);
+                        }
                     }
                     break;
                 }
