@@ -147,11 +147,11 @@ function getTrashItem(event, countItems, items) {
     eventDatum = countItems < 6 ? eventStartdatum.toLocaleString("de-DE", { weekday: "long" }) : eventStartdatum.toLocaleString("de-DE", { weekday: "short" });
   } else {
     eventDatum = (countItems < 6 ? eventStartdatum.toLocaleString("de-DE", {
-      year: "2-digit",
+      year: "numeric",
       month: "2-digit",
       day: "2-digit"
     }) : eventStartdatum.toLocaleString("de-DE", {
-      year: "numeric",
+      year: "2-digit",
       month: "2-digit",
       day: "2-digit"
     })) || "";

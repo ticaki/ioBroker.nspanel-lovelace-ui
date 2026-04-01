@@ -181,12 +181,12 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
         eventDatum =
             (countItems < 6
                 ? eventStartdatum.toLocaleString('de-DE', {
-                      year: '2-digit',
+                      year: 'numeric',
                       month: '2-digit',
                       day: '2-digit',
                   })
                 : eventStartdatum.toLocaleString('de-DE', {
-                      year: 'numeric',
+                      year: '2-digit',
                       month: '2-digit',
                       day: '2-digit',
                   })) || '';
