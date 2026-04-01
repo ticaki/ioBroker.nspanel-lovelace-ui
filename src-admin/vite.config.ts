@@ -16,6 +16,7 @@ const config = {
             },
             remotes: {},
             shared: moduleFederationShared(JSON.parse(readFileSync('./package.json').toString())),
+            dts: false,
         }),
         react(),
         vitetsConfigPaths(),
