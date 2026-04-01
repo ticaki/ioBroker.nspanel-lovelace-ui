@@ -1925,8 +1925,10 @@ class NspanelLovelaceUi extends utils.Adapter {
               const data = import_node_ical.default.parseICS(content);
               const eventNames = /* @__PURE__ */ new Set();
               for (const k in data) {
-                if (data[k].type === "VEVENT") {
-                  const eventName = data[k].summary;
+                const component = data[k];
+                if (component && component.type === "VEVENT") {
+                  const eventSummary = component.summary !== void 0 ? component.summary : null;
+                  const eventName = typeof eventSummary === "string" ? eventSummary : eventSummary == null ? void 0 : eventSummary.val;
                   if (eventName && eventName.trim() !== "") {
                     eventNames.add(eventName);
                   }
