@@ -37,7 +37,7 @@
     "aedes-server-factory": "^0.2.1",
     "colord": "^2.9.3",
     "level": "^10.0.0",
-    "mqtt": "^5.14.1",
+    "mqtt": "^5.15.1",
     "node-forge": "^1.4.0",
     "node-ical": "^0.22.1"
   },
