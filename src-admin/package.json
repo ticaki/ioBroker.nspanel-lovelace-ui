@@ -14,7 +14,7 @@
         "@iobroker/build-tools": "^3.0.1",
         "@iobroker/eslint-config": "^2.0.1",
         "@iobroker/json-config": "^8.2.18",
-        "@module-federation/runtime": "^0.21.3",
+        "@module-federation/runtime": "^2.2.3",
         "@module-federation/vite": "^1.13.4",
         "@mui/icons-material": "^6.4.8",
         "@mui/material": "^6.4.8",
