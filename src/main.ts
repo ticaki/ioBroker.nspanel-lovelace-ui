@@ -2205,8 +2205,12 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                             const eventNames = new Set<string>();
                             for (const k in data) {
-                                if (data[k].type === 'VEVENT') {
-                                    const eventName = data[k].summary;
+                                const component = data[k];
+                                if (component && component.type === 'VEVENT') {
+                                    const eventSummary = component.summary !== undefined ? component.summary : null;
+                                    const eventName =
+                                        typeof eventSummary === 'string' ? eventSummary : (eventSummary as any)?.val;
+
                                     if (eventName && eventName.trim() !== '') {
                                         eventNames.add(eventName);
                                     }

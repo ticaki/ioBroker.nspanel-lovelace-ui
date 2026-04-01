@@ -100,8 +100,8 @@ export async function getTrashDataFromFile(
 
         // Filter und sortiere Events nach Startdatum
         const arrayData: CalendarComponent[] = Object.values(data).filter(
-            entry =>
-                entry &&
+            (entry): entry is CalendarComponent =>
+                entry !== undefined &&
                 typeof entry === 'object' &&
                 entry.type === 'VEVENT' &&
                 new Date(entry.start).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0),
@@ -135,7 +135,10 @@ export async function getTrashDataFromFile(
 }
 
 function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: TrashItem[]): ItemObject | null {
-    const eventName = event.summary;
+    const eventSummary = event.summary !== undefined ? event.summary : null;
+
+    // Extrahiere String-Wert aus ParameterValue-Objekt oder verwende direkt den String
+    const eventName = typeof eventSummary === 'string' ? eventSummary : (eventSummary as any)?.val;
 
     // Prüfen ob event existiert
     if (!eventName || eventName.trim() === '') {
@@ -143,7 +146,10 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
     }
     let trashIndex = -1;
     for (let i = 0; i < items.length; i++) {
-        if (items[i].textTrash && items[i].textTrash.trim() !== '' && eventName.includes(items[i].textTrash)) {
+        const trashText = items[i].textTrash;
+        const trashName = typeof trashText === 'string' ? trashText : (trashText as any)?.val;
+
+        if (trashName && trashName.trim() !== '' && eventName.includes(trashName)) {
             trashIndex = i;
             break;
         }
