@@ -6,7 +6,7 @@ import aedesPersistencelevel from 'aedes-persistence-level';
 import * as factory from 'aedes-server-factory';
 import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 
-import Aedes, { type Client } from 'aedes';
+import { Aedes, type Client } from 'aedes';
 import { type Server } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import * as forge from 'node-forge';
@@ -465,7 +465,9 @@ export class MQTTServerClass extends BaseClass {
                 },
             });
         }
-        return new MQTTServerClass(adapter, port, username, password, path, mqttKeys, testCase);
+        const instance = new MQTTServerClass(adapter, port, username, password, path, mqttKeys, testCase);
+        await instance.start(port);
+        return instance;
     }
 
     constructor(
@@ -491,11 +493,6 @@ export class MQTTServerClass extends BaseClass {
             },
         });
         //this.server = createServer(this.aedes.handle);
-
-        this.server.listen(port, () => {
-            this.ready = true;
-            this.log.info(`MQTT server started and listening on port ${port}`);
-        });
 
         // Logge explizit Fehler beim Server-Socket (z. B. Port schon belegt)
         this.server.on('error', err => {
@@ -558,6 +555,21 @@ export class MQTTServerClass extends BaseClass {
                 this.intervals.length,
             );
             this.intervals.push(interval);
+        });
+    }
+
+    async start(port: number): Promise<void> {
+        // aedes 1.x: broker.closed is true after construction until listen() is called.
+        // Without listen(), the connect handler silently drops CONNACK.
+        await this.aedes.listen();
+        await new Promise<void>((resolve, reject) => {
+            this.server.once('error', reject);
+            this.server.listen(port, () => {
+                this.server.removeListener('error', reject);
+                this.ready = true;
+                this.log.info(`MQTT server started and listening on port ${port}`);
+                resolve();
+            });
         });
     }
 

@@ -37,7 +37,7 @@ var import_level = require("level");
 var import_aedes_persistence_level = __toESM(require("aedes-persistence-level"));
 var factory = __toESM(require("aedes-server-factory"));
 var import_library = require("../controller/library");
-var import_aedes = __toESM(require("aedes"));
+var import_aedes = require("aedes");
 var import_node_crypto = require("node:crypto");
 var forge = __toESM(require("node-forge"));
 class MQTTClientClass extends import_library.BaseClass {
@@ -380,12 +380,14 @@ class MQTTServerClass extends import_library.BaseClass {
         }
       });
     }
-    return new MQTTServerClass(adapter, port, username, password, path, mqttKeys, testCase);
+    const instance = new MQTTServerClass(adapter, port, username, password, path, mqttKeys, testCase);
+    await instance.start(port);
+    return instance;
   }
   constructor(adapter, port, username, password, path, keyPair, testCase = false) {
     super(adapter, "mqttServer");
     const persistence = (0, import_aedes_persistence_level.default)(new import_level.Level(path));
-    this.aedes = new import_aedes.default({ persistence });
+    this.aedes = new import_aedes.Aedes({ persistence });
     if (testCase) {
     }
     this.server = factory.createServer(this.aedes, {
@@ -393,10 +395,6 @@ class MQTTServerClass extends import_library.BaseClass {
         key: Buffer.from(keyPair.privateKey),
         cert: Buffer.from(keyPair.certPem)
       }
-    });
-    this.server.listen(port, () => {
-      this.ready = true;
-      this.log.info(`MQTT server started and listening on port ${port}`);
     });
     this.server.on("error", (err) => {
       this.ready = false;
@@ -451,6 +449,18 @@ class MQTTServerClass extends import_library.BaseClass {
         this.intervals.length
       );
       this.intervals.push(interval);
+    });
+  }
+  async start(port) {
+    await this.aedes.listen();
+    await new Promise((resolve, reject) => {
+      this.server.once("error", reject);
+      this.server.listen(port, () => {
+        this.server.removeListener("error", reject);
+        this.ready = true;
+        this.log.info(`MQTT server started and listening on port ${port}`);
+        resolve();
+      });
     });
   }
   destroy() {
