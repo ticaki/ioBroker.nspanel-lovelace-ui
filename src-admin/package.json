@@ -10,10 +10,10 @@
         "copy:custom": "ts-node ../tasks.ts admin:copy"
     },
     "devDependencies": {
-        "@iobroker/adapter-react-v5": "^8.0.9",
+        "@iobroker/adapter-react-v5": "^8.1.6",
         "@iobroker/build-tools": "^3.0.1",
         "@iobroker/eslint-config": "^2.0.1",
-        "@iobroker/json-config": "^8.0.6",
+        "@iobroker/json-config": "^8.2.18",
         "@module-federation/runtime": "^0.21.3",
         "@module-federation/vite": "^1.9.0",
         "@mui/icons-material": "^6.4.8",
@@ -21,7 +21,7 @@
         "@mui/styles": "^6.5.0",
         "@originjs/vite-plugin-federation": "^1.4.0",
         "@types/dagre": "^0.7.53",
-        "@types/lodash": "^4.17.20",
+        "@types/lodash": "^4.17.24",
         "@types/node": "^25.5.0",
         "@types/react": "^18.3.19",
         "@types/react-dom": "^18.3.5",
