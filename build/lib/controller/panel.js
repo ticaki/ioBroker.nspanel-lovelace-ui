@@ -719,19 +719,18 @@ class Panel extends import_library.BaseClass {
           case "buttonDelayOff":
           case "button": {
             if (typeof button.state === "string") {
-              const di = new import_data_item.Dataitem(
-                this.adapter,
-                { type: "state", dp: button.state },
-                this.screenSaver,
-                this.statesControler
-              );
-              button.state = di;
+              const dp = button.state;
               inits.push(
-                di.isValidAndInit().then((ok) => {
-                  if (!ok) {
-                    if (this.buttons) {
-                      this.buttons[key] = null;
-                    }
+                import_data_item.Dataitem.create(
+                  this.adapter,
+                  { type: "state", dp },
+                  this.screenSaver,
+                  this.statesControler
+                ).then((di) => {
+                  if (di !== null) {
+                    button.state = di;
+                  } else if (this.buttons) {
+                    this.buttons[key] = null;
                   }
                 })
               );
@@ -1526,13 +1525,13 @@ class Panel extends import_library.BaseClass {
     const modelSuffix = this.info.nspanel.model == "eu" ? "" : `-${this.info.nspanel.model}`;
     const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
     this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
-    const def = structuredClone(definition.genericStateObjects.panel.panels);
+    const def = structuredClone(definition.genericStateObjects);
     if (((_a = this.info.tasmota.sensors) == null ? void 0 : _a.TempUnit) === "F") {
-      def.info.tasmota.sensors.ANALOG.Temperature1.common.unit = "\xB0F";
+      def.panel.panels.info.tasmota.sensors.ANALOG.Temperature1.common.unit = "\xB0F";
     } else {
-      def.info.tasmota.sensors.ANALOG.Temperature1.common.unit = "\xB0C";
+      def.panel.panels.info.tasmota.sensors.ANALOG.Temperature1.common.unit = "\xB0C";
     }
-    await this.library.writeFromJson(`panels.${this.name}.info`, "info", def, this.info);
+    await this.library.writeFromJson(`panels.${this.name}.info`, "panel.panels.info", def, this.info);
   }
   /**
    *  Handle incoming messages from panel
@@ -1581,8 +1580,8 @@ class Panel extends import_library.BaseClass {
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
         this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
         this.sendRules();
-        await this.writeInfo();
         await this.adapter.delay(100);
+        await this.writeInfo();
         this.sendDimmode();
         this.navigation.resetPosition(true);
         const start = this.navigation.getCurrentMainPage();

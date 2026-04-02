@@ -64,6 +64,32 @@ export class Dataitem extends BaseClass {
             }
         }
     }
+    /**
+     * Creates a Dataitem and initialises it in one step.
+     * Returns `null` when the configuration is invalid or initialisation fails.
+     * Cleans up (marks the instance as unloaded) on failure so that the trigger
+     * housekeeping in StatesController's deletePageLoop can reclaim any resources.
+     *
+     * @param adapter this of adapter
+     * @param options {NSPanel.DataItemsOptions}
+     * @param parent {BaseTriggeredPage}
+     * @param db {StatesControler}
+     * @returns initialised Dataitem or null
+     */
+    static async create(
+        adapter: any,
+        options: NSPanel.DataItemsOptions,
+        parent: BaseTriggeredPage,
+        db: StatesControler,
+    ): Promise<Dataitem | null> {
+        const item = new Dataitem(adapter, options, parent, db);
+        if (await item.isValidAndInit()) {
+            return item;
+        }
+        await item.delete();
+        return null;
+    }
+
     public get writeable(): boolean {
         return this._writeable;
     }

@@ -92,7 +92,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 1800;
   }
   async init() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
       const i = await this.createMainItems(this.config, this.enums, this.dpInit);
       i.ident = (_b = this.config.ident) != null ? _b : "";
@@ -110,7 +110,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         case "sonos":
           {
             const dp = arr.length >= 4 ? `${arr.slice(0, 4).join(".")}.coordinator` : "";
-            this.coordinator = new import_data_item.Dataitem(
+            this.coordinator = (_f = await import_data_item.Dataitem.create(
               this.adapter,
               {
                 name: `${this.id}-coordinator`,
@@ -120,11 +120,7 @@ class PageMedia extends import_pageMenu.PageMenu {
               },
               this,
               this.basePanel.statesControler
-            );
-            if (!await this.coordinator.isValidAndInit()) {
-              await this.coordinator.delete();
-              this.coordinator = void 0;
-            }
+            )) != null ? _f : void 0;
             this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join(".") : "";
           }
           break;

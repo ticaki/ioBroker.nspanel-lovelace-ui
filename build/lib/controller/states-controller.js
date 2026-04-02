@@ -754,7 +754,7 @@ class StatesControler extends import_library.BaseClass {
    * @returns then json with values dataitem or undefined
    */
   async createDataItems(data, parent, target = {}, path = "data", options) {
-    var _a;
+    var _a, _b;
     for (const i in data) {
       const d = data[i];
       if (d === void 0) {
@@ -769,12 +769,12 @@ class StatesControler extends import_library.BaseClass {
           options
         );
       } else if (typeof d === "object" && "type" in d) {
-        target[i] = data[i] !== void 0 ? new import_data_item.Dataitem(
+        target[i] = data[i] !== void 0 ? (_b = await import_data_item.Dataitem.create(
           this.adapter,
           { ...d, name: `${this.name}.${parent.name}.${i}.${path}`, constants: options },
           parent,
           this
-        ) : void 0;
+        )) != null ? _b : void 0 : void 0;
         if (target[i] !== void 0 && !await target[i].isValidAndInit()) {
           target[i] = void 0;
         }

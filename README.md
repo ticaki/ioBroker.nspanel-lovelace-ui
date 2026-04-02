@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) fixed: MQTT broker (aedes 1.x) 
+- (ticaki) added: `Dataitem.create()` static factory method combining construction and `isValidAndInit()` with automatic cleanup on failure
 
 ### 0.15.2 (2026-03-26)
 - (tt-tom17) added: message dialog when berry installation fails due to missing internet access on the panel

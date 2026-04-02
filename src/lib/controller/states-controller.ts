@@ -952,12 +952,12 @@ export class StatesControler extends BaseClass {
             } else if (typeof d === 'object' && 'type' in d) {
                 target[i] =
                     data[i] !== undefined
-                        ? new Dataitem(
+                        ? ((await Dataitem.create(
                               this.adapter,
                               { ...d, name: `${this.name}.${parent.name}.${i}.${path}`, constants: options },
                               parent,
                               this,
-                          )
+                          )) ?? undefined)
                         : undefined;
                 if (target[i] !== undefined && !(await (target[i] as Dataitem).isValidAndInit())) {
                     target[i] = undefined;
