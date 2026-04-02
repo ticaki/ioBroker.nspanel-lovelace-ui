@@ -17,11 +17,11 @@
         "outDir": "./build/",
         "removeComments": false,
 
-        // Override @tsconfig/node20 defaults: adapter runs as CommonJS, classic resolution
-        // avoids issues with ESM-only packages (e.g. aedes 1.x) that have missing .js
-        // extensions in their declaration files.
-        "module": "commonjs",
-        "moduleResolution": "node",
+        // Override @tsconfig/node20 defaults: bundler resolution avoids issues with
+        // ESM-only packages (e.g. aedes 1.x) that have missing .js extensions in their
+        // declaration files. module:preserve is compatible with ESBuild (tsc type-check only).
+        "module": "preserve",
+        "moduleResolution": "bundler",
 
         // This is necessary for the automatic typing of the adapter config
         "resolveJsonModule": true,
