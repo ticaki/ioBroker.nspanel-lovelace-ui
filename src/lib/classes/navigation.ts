@@ -123,7 +123,7 @@ export class Navigation extends BaseClass {
         this.navigationConfig = config.navigationConfig.filter(a => a !== null && a != null);
     }
 
-    init(): void {
+    async init(): Promise<void> {
         this.database = [];
         let serviceLeft = '';
         let serviceRight = '';
@@ -209,7 +209,28 @@ export class Navigation extends BaseClass {
                 }
             }
         }
+
+        const db = this.getDatabase();
+        const names: string[] = [];
+        if (db) {
+            for (const p of db) {
+                if (p?.page) {
+                    names.push(p.page.name);
+                }
+            }
+            const o = await this.adapter.getObjectAsync(`panels.${this.panel.name}`);
+            if (!o) {
+                this.log.error(`Panel object not found: panels.${this.panel.name}`);
+                return;
+            }
+            if (!o.native) {
+                o.native = {};
+            }
+            o.native.navigationNodes = names;
+            await this.adapter.setObject(`panels.${this.panel.name}`, o);
+        }
     }
+
     async setPageByIndex(index: number | undefined, d?: 'left' | 'right'): Promise<void> {
         if (index !== -1 && index !== undefined) {
             const item = this.database[index];

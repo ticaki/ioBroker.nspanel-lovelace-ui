@@ -708,7 +708,7 @@ export class Panel extends BaseClass {
             }
         }
 
-        this.navigation.init();
+        await this.navigation.init();
 
         //this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
         //this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
@@ -2541,7 +2541,7 @@ export class Panel extends BaseClass {
             );
         }
     }
-    saveNavigationMap = async (map: NavigationPositionsMap[]): Promise<void> => {
+    saveNavigationMapDeprecated = async (map: NavigationPositionsMap[]): Promise<void> => {
         if (!Array.isArray(map)) {
             this.log.error('Navigation map is not an array!');
             return;

@@ -36,7 +36,6 @@ import type {
 } from '../../../src/lib/types/adminShareConfig';
 import {
     // SENDTO_GET_PANELS_COMMAND,
-    SENDTO_GET_PAGES_COMMAND,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
 } from '../../../src/lib/types/adminShareConfig';
@@ -80,8 +79,7 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
     lastLoadTime: Record<string, number>;
     // focus tracking per topic for optimization
     focusReceived: Record<string, boolean>;
-    // retry tracking for empty results
-    retryCount: Record<string, number>;
+    // retry tracking removed - no longer needed
     // pending delete confirmation (mobile two-step delete)
     pendingDelete?: string;
     // active tab index
@@ -108,6 +106,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         widthPercent: 30,
     };
 
+    /** Menge der aktuell abonnierten Objekt-IDs für Panel-Objekte */
+    private _subscribedObjectIds = new Set<string>();
+
     constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
         super(props);
         this.state = {
@@ -122,7 +123,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             isLoading: {},
             lastLoadTime: {},
             focusReceived: {},
-            retryCount: {},
             activeTab: 0,
         };
     }
@@ -135,6 +135,11 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                 `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
                 this.onAliveChanged,
             );
+            // Alle Panel-Objekt-Subscriptions aufräumen
+            for (const id of this._subscribedObjectIds) {
+                void this.props.oContext.socket.unsubscribeObject(id, this.onPanelObjectChanged);
+            }
+            this._subscribedObjectIds.clear();
         }
     }
 
@@ -163,6 +168,91 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         await this.loadPanels(false);
         // initialize from incoming props once panels are available
         await this.applyAssignmentsFromProps(this.props.currentAssignments || []);
+    }
+
+    /**
+     * Wird aufgerufen, wenn sich ein Panel-Objekt (panels.${id}) in ioBroker ändert.
+     * Liest navigationNodes neu ein und aktualisiert pagesMap für alle betroffenen Topics.
+     *
+     * @param id
+     * @param obj
+     */
+    private onPanelObjectChanged = (id: string, obj: ioBroker.Object | null | undefined): void => {
+        const nodes: string[] = this.sortNodes(
+            Array.isArray(obj?.native?.navigationNodes) ? (obj.native.navigationNodes as string[]) : [],
+        );
+
+        // Alle Topics die auf diese panel-id zeigen aktualisieren
+        const affectedTopics = this.state.available
+            .filter(p => {
+                if (!p.id) {
+                    return false;
+                }
+                const instance = this.props.oContext?.instance ?? '0';
+                return id === `${ADAPTER_NAME}.${instance}.panels.${p.id}`;
+            })
+            .map(p => p.panelTopic);
+
+        if (affectedTopics.length === 0) {
+            return;
+        }
+
+        this.setState(prev => {
+            const nextPagesMap = { ...prev.pagesMap };
+            for (const topic of affectedTopics) {
+                nextPagesMap[topic] = nodes;
+            }
+            // Falls ALL_PANELS_SPECIAL_ID geladen wurde, Merge neu berechnen
+            if (prev.pagesMap[ALL_PANELS_SPECIAL_ID] !== undefined) {
+                const allNodes = new Set<string>();
+                for (const p of prev.available) {
+                    const pNodes = p.panelTopic === affectedTopics[0] ? nodes : (prev.pagesMap[p.panelTopic] ?? []);
+                    for (const n of pNodes) {
+                        allNodes.add(n);
+                    }
+                }
+                nextPagesMap[ALL_PANELS_SPECIAL_ID] = this.sortNodes([...allNodes]);
+            }
+            return { pagesMap: nextPagesMap };
+        });
+    };
+
+    /**
+     * Synchronisiert die Objekt-Subscriptions mit den aktuell bekannten Panels.
+     * Neue Panels werden abonniert, entfernte abgemeldet.
+     *
+     * @param panels
+     */
+    private async updateObjectSubscriptions(panels: PanelInfo[]): Promise<void> {
+        if (!this.props.oContext?.socket) {
+            return;
+        }
+        const instance = this.props.oContext.instance ?? '0';
+        const wantedIds = new Set(panels.filter(p => p.id).map(p => `${ADAPTER_NAME}.${instance}.panels.${p.id}`));
+
+        // Neue abonnieren
+        for (const id of wantedIds) {
+            if (!this._subscribedObjectIds.has(id)) {
+                try {
+                    await this.props.oContext.socket.subscribeObject(id, this.onPanelObjectChanged);
+                    this._subscribedObjectIds.add(id);
+                } catch (e) {
+                    console.warn(`[NavigationAssignmentPanel] subscribeObject failed for ${id}`, e);
+                }
+            }
+        }
+
+        // Nicht mehr benötigte abmelden
+        for (const id of this._subscribedObjectIds) {
+            if (!wantedIds.has(id)) {
+                try {
+                    await this.props.oContext.socket.unsubscribeObject(id, this.onPanelObjectChanged);
+                } catch (e) {
+                    console.warn(`[NavigationAssignmentPanel] unsubscribeObject failed for ${id}`, e);
+                }
+                this._subscribedObjectIds.delete(id);
+            }
+        }
     }
 
     // Callback for alive state changes
@@ -252,7 +342,8 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             if (this.props.fetchPanels) {
                 list = await this.props.fetchPanels();
             } else if (this.props.data?.panels) {
-                list = (this.props.data.panels || []).map((p: { name: string; topic: string }) => ({
+                list = (this.props.data.panels || []).map((p: { id?: string; name: string; topic: string }) => ({
+                    id: p.id,
                     panelTopic: p.topic,
                     friendlyName: p.name || p.topic,
                 }));
@@ -267,6 +358,8 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                     () => resolve(),
                 ),
             );
+            // Objekt-Subscriptions mit der neuen Panel-Liste synchronisieren
+            await this.updateObjectSubscriptions(list);
         } catch {
             // ignore errors silently for now
             // console.error('Failed to load panels', e);
@@ -297,11 +390,20 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         }
         const updatedAdded = [...added, panel];
         const nextAssignments: NavigationAssignmentList = [...this.state.assignments, { topic: panel.panelTopic }];
-        this.setState({
-            added: updatedAdded,
-            assignments: nextAssignments,
-            selectedTopic: '',
-        });
+        this.setState(
+            {
+                added: updatedAdded,
+                assignments: nextAssignments,
+                selectedTopic: '',
+            },
+            () => {
+                // Aktuelle Seite in die navigationNodes des neu zugewiesenen Panels eintragen,
+                // damit sie bei anderen Seiten (gleicher Panel-Zuweisung) sofort in den Dropdowns erscheint.
+                if (this.props.uniqueName) {
+                    void this.addPageToAssignedPanels(this.props.uniqueName);
+                }
+            },
+        );
         // pre-load pages for this panel to populate selects
         void this.loadPagesForPanel(panel.panelTopic);
         // inform parent about new assignments (map to NavigationAssignmentList)
@@ -362,14 +464,97 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         }
     }
 
-    async loadPagesForPanel(topic: string, forceReload = false): Promise<void> {
-        if (!topic) {
+    /**
+     * Sortiert eine Liste von Seiten-Namen: "main" zuerst, dann alphabetisch.
+     *
+     * @param nodes
+     */
+    private sortNodes(nodes: string[]): string[] {
+        return [...nodes].sort((a, b) => {
+            if (a === 'main') {
+                return -1;
+            }
+            if (b === 'main') {
+                return 1;
+            }
+            return a.localeCompare(b);
+        });
+    }
+
+    /**
+     * Liest navigationNodes aus dem ioBroker-Objekt eines einzelnen Panels.
+     * Gibt ein leeres Array zurück, wenn kein Objekt oder keine Nodes vorhanden.
+     *
+     * @param panelId
+     */
+    private async readNavigationNodesForPanelId(panelId: string | undefined): Promise<string[]> {
+        if (!this.props.oContext?.socket) {
+            return [];
+        }
+        const instance = this.props.oContext.instance ?? '0';
+        const objectId = `${ADAPTER_NAME}.${instance}.panels.${panelId}`;
+        try {
+            const obj = await this.props.oContext.socket.getObject(objectId);
+            if (obj?.native?.navigationNodes && Array.isArray(obj.native.navigationNodes)) {
+                return obj.native.navigationNodes as string[];
+            }
+        } catch (e) {
+            console.warn(`[NavigationAssignmentPanel] getObject failed for ${objectId}`, e);
+        }
+        return [];
+    }
+
+    /**
+     * Fügt eine neue Seite (pageName) zu den navigationNodes aller zugewiesenen Panels hinzu.
+     * Bei ALL_PANELS_SPECIAL_ID werden alle bekannten Panels aktualisiert.
+     * Da die Objekt-Subscriptions aktiv sind, wird onPanelObjectChanged automatisch
+     * ausgelöst und die UI aktualisiert sich selbst.
+     *
+     * Temporäre Lösung: der Adapter sollte die navigationNodes selbst pflegen.
+     *
+     * @param pageName - uniqueName / id der neu angelegten Seite
+     */
+    async addPageToAssignedPanels(pageName: string): Promise<void> {
+        if (!this.props.oContext?.socket || !pageName) {
             return;
         }
+        const instance = this.props.oContext.instance ?? '0';
 
-        // Don't try to load if adapter is not alive
-        if (!this.state.alive) {
-            console.log(`[NavigationAssignmentPanel] Adapter not alive, skipping pages load for ${topic}`);
+        // Alle Panel-IDs bestimmen die aktualisiert werden sollen
+        const hasAllPanels = this.state.added.some(p => p.panelTopic === ALL_PANELS_SPECIAL_ID);
+        const panels = hasAllPanels ? this.state.available.filter(p => p.id) : this.state.added.filter(p => p.id);
+
+        await Promise.all(
+            panels.map(async panel => {
+                const objectId = `${ADAPTER_NAME}.${instance}.panels.${panel.id}`;
+                try {
+                    const obj = await this.props.oContext.socket.getObject(objectId);
+                    if (!obj) {
+                        console.warn(
+                            `[NavigationAssignmentPanel] addPageToAssignedPanels: object not found: ${objectId}`,
+                        );
+                        return;
+                    }
+                    const currentNodes: string[] = Array.isArray(obj?.native?.navigationNodes)
+                        ? (obj.native.navigationNodes as string[])
+                        : [];
+                    if (currentNodes.includes(pageName)) {
+                        return; // schon vorhanden
+                    }
+                    const updatedNodes = this.sortNodes([...currentNodes, pageName]);
+                    // Nur native.navigationNodes patchen - löst subscribeObject-Callback aus
+                    await this.props.oContext.socket.extendObject(objectId, {
+                        native: { navigationNodes: updatedNodes },
+                    });
+                } catch (e) {
+                    console.error(`[NavigationAssignmentPanel] addPageToAssignedPanels failed for ${objectId}`, e);
+                }
+            }),
+        );
+    }
+
+    async loadPagesForPanel(topic: string, forceReload = false): Promise<void> {
+        if (!topic || !this.props.oContext?.socket) {
             return;
         }
 
@@ -377,137 +562,55 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         const lastLoad = this.state.lastLoadTime[topic] || 0;
         const isCurrentlyLoading = this.state.isLoading[topic];
         const hasBeenLoaded = !!this.state.pagesMap[topic];
-        const needsReload = forceReload || !hasBeenLoaded || now - lastLoad > 60000; // 1 minute cache
+        const needsReload = forceReload || !hasBeenLoaded || now - lastLoad > 60000; // 1 Minute Cache
 
-        // Skip if already loading or recently loaded (unless forced)
         if (isCurrentlyLoading || (!needsReload && hasBeenLoaded)) {
             return;
         }
 
-        // Start loading state
         this.setState(prev => ({
             isLoading: { ...prev.isLoading, [topic]: true },
             lastLoadTime: { ...prev.lastLoadTime, [topic]: now },
         }));
 
         try {
-            let list: string[] = [];
-            let success = false;
+            let list: string[];
 
-            // Try to load from adapter with timeout (only if alive)
-            if (this.props.oContext?.socket) {
-                const instance = this.props.oContext.instance ?? '0';
-                const target = `${ADAPTER_NAME}.${instance}`;
-                const payload = { panelTopic: topic };
-
-                try {
-                    // Race between sendTo and 2-second timeout
-                    const timeoutPromise = new Promise<never>((_, reject) => {
-                        setTimeout(() => reject(new Error('sendTo timeout after 2 seconds')), 2000);
-                    });
-
-                    const sendToPromise = this.props.oContext.socket.sendTo(target, SENDTO_GET_PAGES_COMMAND, payload);
-                    const raw = await Promise.race([sendToPromise, timeoutPromise]);
-
-                    if (Array.isArray(raw)) {
-                        list = raw as string[];
-                        success = true;
-                    } else if (raw && Array.isArray(raw.result)) {
-                        list = raw.result as string[];
-                        success = true;
-                    }
-
-                    console.log('[NavigationAssignmentPanel] sendTo successful', { topic, pages: list });
-                } catch (e) {
-                    console.warn('[NavigationAssignmentPanel] sendTo failed or timed out', {
-                        target,
-                        cmd: SENDTO_GET_PAGES_COMMAND,
-                        payload,
-                        error: e,
-                    });
-                }
-            }
-
-            // Check if we got an empty array - might mean adapter not ready yet
-            if (success && list.length === 0) {
-                const currentRetryCount = this.state.retryCount[topic] || 0;
-                const maxRetries = 3;
-                const retryDelay = 2000; // 2 seconds
-
-                if (currentRetryCount < maxRetries) {
-                    console.log(
-                        `[NavigationAssignmentPanel] Got empty array for ${topic}, retrying in ${retryDelay}ms (attempt ${currentRetryCount + 1}/${maxRetries})`,
+            if (topic === ALL_PANELS_SPECIAL_ID) {
+                // Alle bekannten Panels abfragen und Ergebnisse zusammenführen (Duplikate entfernen)
+                const allNodes = await Promise.all(
+                    this.state.available.filter(p => p.id).map(p => this.readNavigationNodesForPanelId(p.id)),
+                );
+                list = this.sortNodes([...new Set(allNodes.flat())]);
+            } else {
+                // Passendes Panel über topic finden und dessen id verwenden
+                const panel = this.panelInfoMap[topic];
+                if (!panel?.id) {
+                    console.warn(
+                        `[NavigationAssignmentPanel] No panel id found for topic "${topic}", cannot load pages`,
                     );
-
-                    // Update retry count
-                    this.setState(prev => ({
-                        retryCount: { ...prev.retryCount, [topic]: currentRetryCount + 1 },
-                    }));
-
-                    // Retry after delay
-                    setTimeout(() => {
-                        this.setState(prev => ({
-                            isLoading: { ...prev.isLoading, [topic]: false },
-                        }));
-                        void this.loadPagesForPanel(topic, true);
-                    }, retryDelay);
-
-                    return; // Don't update state yet, wait for retry
-                }
-
-                console.log(`[NavigationAssignmentPanel] Max retries reached for ${topic}, accepting empty result`);
-                // Reset retry count for future attempts
-                this.setState(prev => ({
-                    retryCount: { ...prev.retryCount, [topic]: 0 },
-                }));
-            } else if (success && list.length > 0) {
-                // Reset retry count on successful result with data
-                this.setState(prev => ({
-                    retryCount: { ...prev.retryCount, [topic]: 0 },
-                }));
-            }
-
-            // If sendTo failed or timed out, retry logic for critical scenarios
-            if (!success && !this.props.oContext?.socket) {
-                // Retry after 1 second delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // Mark as not loading temporarily to allow retry
-                this.setState(prev => ({
-                    isLoading: { ...prev.isLoading, [topic]: false },
-                }));
-
-                // Recursive retry (but only once to avoid infinite loops)
-                if (!this.state.focusReceived[topic]) {
-                    this.setState(prev => ({
-                        focusReceived: { ...prev.focusReceived, [topic]: true },
-                    }));
-                    return this.loadPagesForPanel(topic, true);
+                    list = [];
+                } else {
+                    list = this.sortNodes(await this.readNavigationNodesForPanelId(panel.id));
                 }
             }
 
-            const prevPages = this.state.pagesMap ? this.state.pagesMap[topic] : undefined;
-            const prevLoading = !!(this.state.isLoading && this.state.isLoading[topic]);
+            console.log('[NavigationAssignmentPanel] navigationNodes loaded', { topic, pages: list });
 
+            const prevPages = this.state.pagesMap[topic];
             const pagesEqual =
                 Array.isArray(prevPages) &&
                 prevPages.length === list.length &&
                 prevPages.every((v, i) => v === list[i]);
 
-            // If neither pages nor loading state changed, skip setState
-            if (!pagesEqual || prevLoading !== false) {
+            if (!pagesEqual || this.state.isLoading[topic]) {
                 this.setState(prev => ({
                     pagesMap: { ...prev.pagesMap, [topic]: list },
                     isLoading: { ...prev.isLoading, [topic]: false },
                 }));
-            } else {
-                // no-op: pages and loading already equal the new values
-                // (optional) console.debug(`[NavigationAssignmentPanel] No state change for ${topic}`);
             }
         } catch (error) {
             console.error('[NavigationAssignmentPanel] loadPagesForPanel error', { topic, error });
-
-            // End loading state even on error
             this.setState(prev => ({
                 isLoading: { ...prev.isLoading, [topic]: false },
             }));
@@ -549,6 +652,19 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         const result = assignment?.navigation?.[field] || '';
         return result;
     };
+
+    /**
+     * Lookup map: panelTopic → { id, friendlyName, panelTopic }
+     * Provides a quick association between a panel's topic string, its unique
+     * config id and its human-readable name/friendlyName.
+     */
+    private get panelInfoMap(): Record<string, PanelInfo> {
+        const map: Record<string, PanelInfo> = {};
+        for (const panel of this.state.available) {
+            map[panel.panelTopic] = panel;
+        }
+        return map;
+    }
 
     togglePanel = (): void => {
         const wasCollapsed = this.state.isCollapsed;

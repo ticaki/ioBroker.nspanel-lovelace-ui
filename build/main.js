@@ -641,7 +641,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             const data = obj.message;
             const panel = this.controller.panels.find((a) => a.name === data.panelName);
             if (panel) {
-              await panel.saveNavigationMap(data.pages);
+              await panel.saveNavigationMapDeprecated(data.pages);
             }
           }
           if (obj.callback) {
