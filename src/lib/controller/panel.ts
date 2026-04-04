@@ -800,20 +800,18 @@ export class Panel extends BaseClass {
                     case 'buttonDelayOff':
                     case 'button': {
                         if (typeof button.state === 'string') {
-                            const di = new Dataitem(
-                                this.adapter,
-                                { type: 'state', dp: button.state },
-                                this.screenSaver,
-                                this.statesControler,
-                            );
-                            button.state = di;
-
+                            const dp = button.state;
                             inits.push(
-                                di.isValidAndInit().then(ok => {
-                                    if (!ok) {
-                                        if (this.buttons) {
-                                            this.buttons[key] = null;
-                                        }
+                                Dataitem.create(
+                                    this.adapter,
+                                    { type: 'state', dp },
+                                    this.screenSaver,
+                                    this.statesControler,
+                                ).then(di => {
+                                    if (di !== null) {
+                                        button.state = di;
+                                    } else if (this.buttons) {
+                                        this.buttons[key] = null;
                                     }
                                 }),
                             );
@@ -1194,7 +1192,7 @@ export class Panel extends BaseClass {
     sendRules(): void {
         this.sendToTasmota(
             `${this.topic}/cmnd/Rule3`,
-            `ON CustomSend DO RuleTimer3 120 ENDON ON Rules#Timer=3 DO CustomSend pageType~pageStartup ENDON${
+            `ON CustomSend DO RuleTimer3 140 ENDON ON Rules#Timer=3 DO CustomSend pageType~pageStartup ENDON${
                 this.detach.left
                     ? ` ON Button1#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button1"} ENDON`
                     : ''
@@ -1694,13 +1692,13 @@ export class Panel extends BaseClass {
         const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
         this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
 
-        const def = structuredClone(definition.genericStateObjects.panel.panels);
+        const def = structuredClone(definition.genericStateObjects);
         if (this.info.tasmota.sensors?.TempUnit === 'F') {
-            def.info.tasmota.sensors.ANALOG.Temperature1.common.unit = '°F';
+            def.panel.panels.info.tasmota.sensors.ANALOG.Temperature1.common.unit = '°F';
         } else {
-            def.info.tasmota.sensors.ANALOG.Temperature1.common.unit = '°C';
+            def.panel.panels.info.tasmota.sensors.ANALOG.Temperature1.common.unit = '°C';
         }
-        await this.library.writeFromJson(`panels.${this.name}.info`, 'info', def, this.info);
+        await this.library.writeFromJson(`panels.${this.name}.info`, 'panel.panels.info', def, this.info);
     }
     /**
      *  Handle incoming messages from panel
@@ -1751,9 +1749,9 @@ export class Panel extends BaseClass {
                 this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
                 this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
                 this.sendRules();
-                await this.writeInfo();
-                // wait 1s to have tasmota time to be ready
+                // wait 0.1s to have tasmota time to be ready
                 await this.adapter.delay(100);
+                await this.writeInfo();
 
                 this.sendDimmode();
 

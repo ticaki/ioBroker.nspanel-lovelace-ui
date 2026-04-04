@@ -2,7 +2,7 @@
 import React from 'react';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 
-import { Box } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 
 import {
     GenericApp,
@@ -16,6 +16,13 @@ import {
 import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
 import NavigationView from './NavigationView';
+import PageConfigManager from './PageConfigManager';
+import ScreensaverPage from './ScreensaverPage';
+import PageGlobalSettings from './PageGlobalSettings';
+import TabMaintain from './TabMaintain';
+import TabPanelinfo from './TabPanelinfo';
+import PageMQTTSetting from './PageMQTTSetting';
+import PagePanelOverview from './PagePanelOverview';
 
 import enLocal from './i18n/en.json';
 import deLocal from './i18n/de.json';
@@ -34,16 +41,20 @@ const styles: Record<string, any> = {
         backgroundColor: theme.palette.background.default,
         color: theme.palette.text.primary,
         height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
     }),
-    item: {
-        padding: 50,
-        width: 400,
+    tabContent: {
+        padding: 24,
+        flex: 1,
+        overflow: 'auto',
     },
 };
 
 interface AppState extends GenericAppState {
     data: Record<string, any>;
     originalData: Record<string, any>;
+    activeTab: number;
 }
 
 class App extends GenericApp<GenericAppProps, AppState> {
@@ -53,9 +64,11 @@ class App extends GenericApp<GenericAppProps, AppState> {
 
         this.state = {
             ...this.state,
+            loaded: true, // skip ioBroker socket connection for local simulation
             data: { myCustomAttribute: 'red' },
             originalData: { myCustomAttribute: 'red' },
             theme: this.createTheme(),
+            activeTab: 0,
         };
         const translations = {
             en: enLocal,
@@ -87,77 +100,197 @@ class App extends GenericApp<GenericAppProps, AppState> {
             );
         }
 
+        const oCtx = {
+            adapterName: 'nspanel-lovelace-ui',
+            socket: this.socket,
+            instance: 0,
+            themeType: this.state.theme.palette.mode,
+            isFloatComma: true,
+            dateFormat: '',
+            forceUpdate: () => {},
+            systemConfig: {} as ioBroker.SystemConfigCommon,
+            theme: this.state.theme,
+            _themeName: this.state.themeName,
+            onCommandRunning: (_commandRunning: boolean): void => {},
+        };
+        const commonProps = {
+            oContext: oCtx,
+            alive: true,
+            changed: JSON.stringify(this.state.originalData) !== JSON.stringify(this.state.data),
+            themeName: this.state.theme.palette.mode,
+            themeType: this.state.theme.palette.mode as any,
+            theme: this.state.theme,
+            common: {} as ioBroker.InstanceCommon,
+            data: this.state.data,
+            originalData: this.state.originalData,
+            onError: (): void => {},
+            onChange: (attrOrData: string | Record<string, any>): void => {
+                if (typeof attrOrData === 'object') {
+                    this.setState({ data: attrOrData });
+                }
+            },
+        };
+
+        const tabs: { label: string; content: React.JSX.Element }[] = [
+            {
+                label: 'IconSelect',
+                content: (
+                    <IconSelect
+                        {...commonProps}
+                        attr="myCustomAttribute"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/IconSelect',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'IconOverview',
+                content: <IconOverview />,
+            },
+            {
+                label: 'NavigationView',
+                content: (
+                    <NavigationView
+                        {...commonProps}
+                        attr="myCustomAttribute"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/NavigationView',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'PageConfigManager',
+                content: (
+                    <PageConfigManager
+                        {...commonProps}
+                        attr="pages"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/PageConfigManager',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'ScreensaverPage',
+                content: (
+                    <ScreensaverPage
+                        {...commonProps}
+                        attr="screensaver"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/ScreensaverPage',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'PageGlobalSettings',
+                content: (
+                    <PageGlobalSettings
+                        {...commonProps}
+                        attr="globalSettings"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/PageGlobalSettings',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'TabMaintain',
+                content: (
+                    <TabMaintain
+                        {...commonProps}
+                        attr="maintain"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/TabMaintain',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'TabPanelinfo',
+                content: (
+                    <TabPanelinfo
+                        {...commonProps}
+                        attr="panelinfo"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/TabPanelinfo',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'PageMQTTSetting',
+                content: (
+                    <PageMQTTSetting
+                        {...commonProps}
+                        attr="mqttSetting"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/PageMQTTSetting',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+            {
+                label: 'PagePanelOverview',
+                content: (
+                    <PagePanelOverview
+                        {...commonProps}
+                        attr="panelOverview"
+                        schema={{
+                            url: '',
+                            i18n: true,
+                            name: 'AdminComponentEasyAccessSet/Components/PagePanelOverview',
+                            type: 'custom',
+                        }}
+                    />
+                ),
+            },
+        ];
+
         return (
             <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={this.state.theme}>
                     <Box sx={styles.app}>
-                        <div style={styles.item}>
-                            <IconSelect
-                                oContext={{
-                                    adapterName: 'nspanel-lovelace-ui',
-                                    socket: this.socket,
-                                    instance: 0,
-                                    themeType: this.state.theme.palette.mode,
-                                    isFloatComma: true,
-                                    dateFormat: '',
-                                    forceUpdate: () => {},
-                                    systemConfig: {} as ioBroker.SystemConfigCommon,
-                                    theme: this.state.theme,
-                                    _themeName: this.state.themeName,
-                                    onCommandRunning: (_commandRunning: boolean): void => {},
-                                }}
-                                alive
-                                changed={JSON.stringify(this.state.originalData) !== JSON.stringify(this.state.data)}
-                                themeName={this.state.theme.palette.mode}
-                                common={{} as ioBroker.InstanceCommon}
-                                attr="myCustomAttribute"
-                                data={this.state.data}
-                                originalData={this.state.originalData}
-                                onError={() => {}}
-                                schema={{
-                                    url: '',
-                                    i18n: true,
-                                    name: 'AdminComponentEasyAccessSet/Components/IconSelect',
-                                    type: 'custom',
-                                }}
-                                onChange={data => this.setState({ data: data as Record<string, any> })}
-                            />
-                        </div>
-                        <div style={styles.item}>
-                            <IconOverview />
-                        </div>
-                        <div style={styles.item}>
-                            <NavigationView
-                                oContext={{
-                                    adapterName: 'nspanel-lovelace-ui',
-                                    socket: this.socket,
-                                    instance: 0,
-                                    themeType: this.state.theme.palette.mode,
-                                    isFloatComma: true,
-                                    dateFormat: '',
-                                    forceUpdate: () => {},
-                                    systemConfig: {} as ioBroker.SystemConfigCommon,
-                                    theme: this.state.theme,
-                                    _themeName: this.state.themeName,
-                                    onCommandRunning: (_commandRunning: boolean): void => {},
-                                }}
-                                alive
-                                changed={JSON.stringify(this.state.originalData) !== JSON.stringify(this.state.data)}
-                                themeName={this.state.theme.palette.mode}
-                                common={{} as ioBroker.InstanceCommon}
-                                attr="myCustomAttribute"
-                                data={this.state.data}
-                                originalData={this.state.originalData}
-                                onError={() => {}}
-                                schema={{
-                                    url: '',
-                                    i18n: true,
-                                    name: 'AdminComponentEasyAccessSet/Components/NavigationView',
-                                    type: 'custom',
-                                }}
-                                onChange={data => this.setState({ data: data as Record<string, any> })}
-                            />
-                        </div>
+                        <Tabs
+                            value={this.state.activeTab}
+                            onChange={(_e, v: number) => this.setState({ activeTab: v })}
+                            variant="scrollable"
+                            scrollButtons="auto"
+                        >
+                            {tabs.map(t => (
+                                <Tab
+                                    key={t.label}
+                                    label={t.label}
+                                />
+                            ))}
+                        </Tabs>
+                        <Box style={styles.tabContent}>{tabs[this.state.activeTab].content}</Box>
                     </Box>
                 </ThemeProvider>
             </StyledEngineProvider>

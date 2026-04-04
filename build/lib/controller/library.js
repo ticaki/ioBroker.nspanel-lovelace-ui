@@ -39,7 +39,7 @@ __export(library_exports, {
   Library: () => Library
 });
 module.exports = __toCommonJS(library_exports);
-var import_fs = __toESM(require("fs"));
+var import_node_fs = __toESM(require("node:fs"));
 var import_definition = require("../const/definition");
 var LocalTranslations = __toESM(require("../../../templates/translations.json"));
 var _adapter, _prefix;
@@ -540,7 +540,7 @@ class Library extends BaseClass {
     }
   }
   async fileExistAsync(file) {
-    if (import_fs.default.existsSync(`./admin/${file}`)) {
+    if (import_node_fs.default.existsSync(`./admin/${file}`)) {
       return true;
     }
     return false;

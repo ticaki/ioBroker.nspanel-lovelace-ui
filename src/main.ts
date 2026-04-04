@@ -24,11 +24,11 @@ import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
-import { URL } from 'url';
+import { URL } from 'node:url';
 import type * as pages from './lib/types/pages';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
-import path from 'path';
+import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
 import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
@@ -1065,11 +1065,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'setPopupNotification': {
-                    if (this.controller && obj.message) {
+                    if (this.controller?.panels?.some(p => p.status === 'online') && obj.message) {
                         await this.controller.setPopupNotification(obj.message);
-                    }
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, [], obj.callback);
+                        }
+                    } else {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { error: 'No Panels Online' }, obj.callback);
+                        }
                     }
                     break;
                 }
@@ -2228,8 +2232,12 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                             const eventNames = new Set<string>();
                             for (const k in data) {
-                                if (data[k].type === 'VEVENT') {
-                                    const eventName = data[k].summary;
+                                const component = data[k];
+                                if (component && component.type === 'VEVENT') {
+                                    const eventSummary = component.summary !== undefined ? component.summary : null;
+                                    const eventName =
+                                        typeof eventSummary === 'string' ? eventSummary : (eventSummary as any)?.val;
+
                                     if (eventName && eventName.trim() !== '') {
                                         eventNames.add(eventName);
                                     }

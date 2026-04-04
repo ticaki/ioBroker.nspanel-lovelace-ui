@@ -354,6 +354,8 @@ export type TasmotaTeleState = {
     Sleep: number;
     LoadAvg: number;
     MqttCount: number;
+    Hostname?: string;
+    IPAddress?: string;
     Berry: {
         HeapUsed: number;
         Objects: number;
@@ -516,6 +518,8 @@ export type STATUS0 = {
         Sleep: number;
         LoadAvg: number;
         MqttCount: number;
+        Hostname?: string;
+        IPAddress?: string;
         Berry: {
             HeapUsed: number;
             Objects: number;

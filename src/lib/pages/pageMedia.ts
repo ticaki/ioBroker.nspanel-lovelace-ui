@@ -107,21 +107,19 @@ export class PageMedia extends PageMenu {
                          * leaves the group, control automatically falls back to it.
                          */
                         const dp = arr.length >= 4 ? `${arr.slice(0, 4).join('.')}.coordinator` : '';
-                        this.coordinator = new Dataitem(
-                            this.adapter,
-                            {
-                                name: `${this.id}-coordinator`,
-                                type: 'triggered',
-                                dp: dp,
-                                writeable: false,
-                            },
-                            this,
-                            this.basePanel.statesControler,
-                        );
-                        if (!(await this.coordinator.isValidAndInit())) {
-                            await this.coordinator.delete();
-                            this.coordinator = undefined;
-                        }
+                        this.coordinator =
+                            (await Dataitem.create(
+                                this.adapter,
+                                {
+                                    name: `${this.id}-coordinator`,
+                                    type: 'triggered',
+                                    dp: dp,
+                                    writeable: false,
+                                },
+                                this,
+                                this.basePanel.statesControler,
+                            )) ?? undefined;
+
                         this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join('.') : '';
                         /*const v = await this.coordinator?.getString();
                         if (v) {

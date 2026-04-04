@@ -1,0 +1,1 @@
+import{b as n}from"./AdminComponentEasyAccessSet__loadShare__react__loadShare__.js-VQUi_FZ-.js";import{Y as s,e as m,T as u,$ as o}from"./identifier-BUIOJqla.js";function r(e){return Object.keys(e).length===0}function a(e=null){const t=n(s);return!t||r(t)?e:t}const c=m();function h(e=c){return a(e)}function i(){const e=h(o);return e[u]||e}export{h as a,a as b,i as u};

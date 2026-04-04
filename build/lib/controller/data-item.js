@@ -35,7 +35,7 @@ var import_Color = require("../const/Color");
 var import_library = require("./library");
 var import_function_and_const = require("../types/function-and-const");
 var _compiledReadFn, _compiledWriteFn;
-class Dataitem extends import_library.BaseClass {
+const _Dataitem = class _Dataitem extends import_library.BaseClass {
   /**
    * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
    *
@@ -86,6 +86,26 @@ class Dataitem extends import_library.BaseClass {
         this.type = void 0;
       }
     }
+  }
+  /**
+   * Creates a Dataitem and initialises it in one step.
+   * Returns `null` when the configuration is invalid or initialisation fails.
+   * Cleans up (marks the instance as unloaded) on failure so that the trigger
+   * housekeeping in StatesController's deletePageLoop can reclaim any resources.
+   *
+   * @param adapter this of adapter
+   * @param options {NSPanel.DataItemsOptions}
+   * @param parent {BaseTriggeredPage}
+   * @param db {StatesControler}
+   * @returns initialised Dataitem or null
+   */
+  static async create(adapter, options, parent, db) {
+    const item = new _Dataitem(adapter, options, parent, db);
+    if (await item.isValidAndInit()) {
+      return item;
+    }
+    await item.delete();
+    return null;
   }
   get writeable() {
     return this._writeable;
@@ -437,9 +457,10 @@ class Dataitem extends import_library.BaseClass {
       await this.stateDB.setState(this, val, this._writeable);
     }
   }
-}
+};
 _compiledReadFn = new WeakMap();
 _compiledWriteFn = new WeakMap();
+let Dataitem = _Dataitem;
 function isDataItem(F) {
   if (F instanceof Dataitem) {
     return true;

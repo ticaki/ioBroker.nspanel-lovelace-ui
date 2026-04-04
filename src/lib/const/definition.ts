@@ -1427,6 +1427,30 @@ export const genericStateObjects: {
                             },
                             native: {},
                         },
+                        Hostname: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'Hostname',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
+                        IPAddress: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'IPAddress',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
                         Berry: {
                             _channel: {
                                 _id: '',

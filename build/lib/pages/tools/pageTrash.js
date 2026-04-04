@@ -89,7 +89,7 @@ async function getTrashDataFromFile(entry, adapter) {
     }
     const data = import_node_ical.default.parseICS(fileData);
     const arrayData = Object.values(data).filter(
-      (entry2) => entry2 && typeof entry2 === "object" && entry2.type === "VEVENT" && new Date(entry2.start).setHours(0, 0, 0, 0) >= (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)
+      (entry2) => entry2 !== void 0 && typeof entry2 === "object" && entry2.type === "VEVENT" && new Date(entry2.start).setHours(0, 0, 0, 0) >= (/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)
     );
     arrayData.sort((a, b) => {
       const dateA = new Date(a.start).getTime();
@@ -114,13 +114,16 @@ async function getTrashDataFromFile(entry, adapter) {
   }
 }
 function getTrashItem(event, countItems, items) {
-  const eventName = event.summary;
+  const eventSummary = event.summary !== void 0 ? event.summary : null;
+  const eventName = typeof eventSummary === "string" ? eventSummary : eventSummary == null ? void 0 : eventSummary.val;
   if (!eventName || eventName.trim() === "") {
     return null;
   }
   let trashIndex = -1;
   for (let i = 0; i < items.length; i++) {
-    if (items[i].textTrash && items[i].textTrash.trim() !== "" && eventName.includes(items[i].textTrash)) {
+    const trashText = items[i].textTrash;
+    const trashName = typeof trashText === "string" ? trashText : trashText == null ? void 0 : trashText.val;
+    if (trashName && trashName.trim() !== "" && eventName.includes(trashName)) {
       trashIndex = i;
       break;
     }
@@ -144,11 +147,11 @@ function getTrashItem(event, countItems, items) {
     eventDatum = countItems < 6 ? eventStartdatum.toLocaleString("de-DE", { weekday: "long" }) : eventStartdatum.toLocaleString("de-DE", { weekday: "short" });
   } else {
     eventDatum = (countItems < 6 ? eventStartdatum.toLocaleString("de-DE", {
-      year: "2-digit",
+      year: "numeric",
       month: "2-digit",
       day: "2-digit"
     }) : eventStartdatum.toLocaleString("de-DE", {
-      year: "numeric",
+      year: "2-digit",
       month: "2-digit",
       day: "2-digit"
     })) || "";
