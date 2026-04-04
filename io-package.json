@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.15.3",
+    "version": "0.15.4",
     "news": {
-      "0.15.3": {
+      "0.15.4": {
         "en": "fixed: iCal / trash page – date display year format (2-digit vs. 4-digit) was swapped for short and long item lists\nfixed: panel rule timer increased from 120 s to 140 s to reduce false \"panel disconnected\" events after startup\nfixed: `setPopupNotification` now returns `{ error: 'No Panels Online' }` via callback when no panel is online instead of silently ignoring the call",
         "de": "behoben: iCal / Müll-Seite – Datumsanzeigeformat für das Jahr (2-stellig vs. 4-stellig) war für kurze und lange Eintraglisten vertauscht\nbehoben: Panel-Regel-Timer von 120 s auf 140 s erhöht, um falsche \"Panel getrennt\"-Ereignisse nach dem Start zu reduzieren\nbehoben: `setPopupNotification` gibt jetzt `{ error: 'No Panels Online' }` per Callback zurück, wenn kein Panel online ist, anstatt den Aufruf still zu ignorieren",
         "ru": "исправлено: страница iCal / мусора – формат отображения года даты (2-значный против 4-значного) был переставлен для коротких и длинных списков элементов\nисправлено: таймер правил панели увеличен со 120 до 140 с для уменьшения ложных событий \"панель отключена\" после запуска\nисправлено: `setPopupNotification` теперь возвращает `{ error: 'No Panels Online' }` через обратный вызов, когда ни одна панель не онлайн, вместо того чтобы молча игнорировать вызов",
