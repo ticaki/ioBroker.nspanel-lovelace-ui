@@ -200,9 +200,9 @@ export class PageChart extends Page {
                             start: Date.now() - _rangeHours * 60 * 60 * 1000,
                             end: Date.now(),
                             /** number of values if aggregate is 'onchange' or number of intervals if other aggregate method. Count will be ignored if step is set, else default is 500 if not set */
-                            count: Math.min(109, _rangeHours * 60),
+                            count: _rangeHours, //Math.min(109, _rangeHours * 60),
                             /** do not return more entries than limit */
-                            limit: Math.min(120, _rangeHours * 60),
+                            limit: _rangeHours, //Math.min(120, _rangeHours * 60),
                             /** if null values should be included (false), replaced by last not null value (true) or replaced with 0 (0) */
                             ignoreNull: true,
                             aggregate: 'none',
