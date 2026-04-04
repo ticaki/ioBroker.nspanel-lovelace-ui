@@ -158,8 +158,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) fixed: MQTT broker (aedes 1.x) 
-- (ticaki) added: `Dataitem.create()` static factory method combining construction and `isValidAndInit()` with automatic cleanup on failure
+- (tt-tom17) fixed: iCal / trash page – date display year format (2-digit vs. 4-digit) was swapped for short and long item lists
+- (ticaki) fixed: panel rule timer increased from 120 s to 140 s to reduce false "panel disconnected" events after startup
+- (ticaki) fixed: `setPopupNotification` now returns `{ error: 'No Panels Online' }` via callback when no panel is online instead of silently ignoring the call
 
 ### 0.15.2 (2026-03-26)
 - (tt-tom17) added: message dialog when berry installation fails due to missing internet access on the panel
