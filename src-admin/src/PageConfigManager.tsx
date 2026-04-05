@@ -259,8 +259,17 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr!, updated);
 
-        const remaining = Array.from(new Set(updated.map(e => e.uniqueName))).filter(Boolean);
-        this.setState({ selected: remaining[0] || '' } as PageConfigManagerState);
+        const MENU_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
+        const { selectedCardType } = this.state;
+        const filteredAfterDelete =
+            selectedCardType === 'all'
+                ? updated
+                : selectedCardType === 'pageMenu'
+                  ? updated.filter(e => MENU_TYPES.includes(e.card))
+                  : updated.filter(e => e.card === selectedCardType);
+
+        const newSelected = filteredAfterDelete.length > 0 ? filteredAfterDelete[0].uniqueName : '';
+        this.setState({ selected: newSelected } as PageConfigManagerState);
     };
 
     private handleAssign = (uniqueName: string, assignments: NavigationAssignmentList): void => {
@@ -368,6 +377,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     theme={this.props.theme}
                     panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
                     expertMode={this.props.expertMode ?? false}
+                    pagesList={pagesList}
                 />
             );
         }

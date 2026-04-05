@@ -33,8 +33,12 @@ type ChannelConfigDialogProps = {
     instance?: number;
     /** oContext für IconSelect (optional – wird aus den anderen Props aufgebaut falls nicht übergeben) */
     oContext?: any;
-    /** Panel-IDs zum Laden der verfügbaren Navigationsseiten */
+    /** Panel-IDs zum Laden der verfügbaren Navigationsseiten (legacy, wird ignoriert wenn pagesList gesetzt) */
     panelIds?: string[];
+    /** Direkte Liste der verfügbaren Seiten – hat Vorrang vor panelIds */
+    pagesList?: string[];
+    /** Name der aktuellen Seite – wird aus der Zielseiten-Auswahl gefiltert */
+    currentPageName?: string;
     onSave?: (config: PageItemConfig) => void;
     /** Vorausgefüllte Channel-ID für Testzwecke */
     initialChannelId?: string;
@@ -109,7 +113,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleOpen = (): void => {
         this.setState({ open: true });
-        if (!this.state.loadingPages && this.state.availablePages.length === 0) {
+        if (this.props.pagesList && this.props.pagesList.length > 0) {
+            this.setState({ availablePages: this.sortPages(this.props.pagesList) });
+        } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
             void this.loadAvailablePages();
         }
         if (this.state.validChannelIds.length === 0) {
@@ -143,7 +149,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeJson: isNative ? JSON.stringify(data?.native ?? {}, null, 2) : '',
             nativeJsonValid: isNative,
         });
-        if (!this.state.loadingPages && this.state.availablePages.length === 0) {
+        if (this.props.pagesList && this.props.pagesList.length > 0) {
+            this.setState({ availablePages: this.sortPages(this.props.pagesList) });
+        } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
             void this.loadAvailablePages();
         }
         if (this.state.validChannelIds.length === 0) {
@@ -335,18 +343,26 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private sortPages(pages: string[]): string[] {
-        return [...pages].sort((a, b) => {
-            if (a === 'main') {
-                return -1;
-            }
-            if (b === 'main') {
-                return 1;
-            }
-            return a.localeCompare(b);
-        });
+        const current = this.props.currentPageName;
+        return [...pages]
+            .filter(p => !current || p !== current)
+            .sort((a, b) => {
+                if (a === 'main') {
+                    return -1;
+                }
+                if (b === 'main') {
+                    return 1;
+                }
+                return a.localeCompare(b);
+            });
     }
 
     private async loadAvailablePages(): Promise<void> {
+        // Wenn pagesList direkt übergeben wurde, direkt setzen
+        if (this.props.pagesList && this.props.pagesList.length > 0) {
+            this.setState({ availablePages: this.sortPages(this.props.pagesList), loadingPages: false });
+            return;
+        }
         const { socket, adapterName = ADAPTER_NAME, instance = 0, panelIds } = this.props;
         if (!socket || !panelIds || panelIds.length === 0) {
             return;
@@ -567,7 +583,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         } = this.state;
 
         const expertMode = this.props.expertMode === true;
-        const standardCanSave = isNavigation || (channelExists === true && !checkingChannel);
+        const standardCanSave =
+            (isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel);
         const canSave = nativeMode ? nativeJsonValid : standardCanSave;
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;

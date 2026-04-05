@@ -151,7 +151,7 @@ export type PageItemConfig = {
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
-    native?: unknown;
+    native?: any;
 };
 
 export type MenuEntry = {

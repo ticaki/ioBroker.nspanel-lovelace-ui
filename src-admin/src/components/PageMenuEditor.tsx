@@ -87,6 +87,8 @@ export interface PageMenuEditorProps {
     panels?: AdminPanelConfig[];
     /** Expert-Mode aus dem json-config-System */
     expertMode?: boolean;
+    /** Alle verfügbaren Seiten (aus sendTo) – wird an ChannelConfigDialog weitergegeben */
+    pagesList?: string[];
 }
 
 interface PageMenuEditorState {
@@ -94,6 +96,8 @@ interface PageMenuEditorState {
     editingSlotIndex: number | null;
     dragOverIndex: number | null;
     extraPages: number;
+    /** Gefilterte Seiten basierend auf den zugewiesenen Panels */
+    filteredPagesList: string[];
 }
 
 export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMenuEditorState> {
@@ -109,6 +113,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             editingSlotIndex: null,
             dragOverIndex: null,
             extraPages: 0,
+            filteredPagesList: [],
         };
     }
 
@@ -143,12 +148,72 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         return 'conflict';
     }
 
+    /**
+     * Callback für Object-Änderungen an Panel-Objekten
+     *
+     * @param _id
+     * @param _obj
+     */
+    private onPanelObjectChanged = (_id: string, _obj: ioBroker.Object | null | undefined): void => {
+        void this.loadFilteredPages();
+    };
+
+    /** Aktuell abonnierte Panel-Objekt-IDs */
+    private subscribedPanelObjectIds: Set<string> = new Set();
+
+    private async updatePanelObjectSubscriptions(): Promise<void> {
+        const socket = this.props.oContext?.socket;
+        if (!socket) {
+            return;
+        }
+        const instance = this.props.oContext?.instance ?? '0';
+        const panels = this.props.panels ?? [];
+        const assignment = this.props.entry.navigationAssignment ?? [];
+
+        const newIds: Set<string> = new Set(
+            assignment
+                .map(a => panels.find(p => p.topic === a.topic)?.id)
+                .filter((id): id is string => !!id)
+                .map(id => `${ADAPTER_NAME}.${instance}.panels.${id}`),
+        );
+
+        // Alte abmelden
+        for (const id of this.subscribedPanelObjectIds) {
+            if (!newIds.has(id)) {
+                try {
+                    await socket.unsubscribeObject(id, this.onPanelObjectChanged);
+                } catch (e) {
+                    console.warn(`[PageMenuEditor] unsubscribeObject failed for ${id}`, e);
+                }
+            }
+        }
+        // Neue anmelden
+        for (const id of newIds) {
+            if (!this.subscribedPanelObjectIds.has(id)) {
+                try {
+                    await socket.subscribeObject(id, this.onPanelObjectChanged);
+                } catch (e) {
+                    console.warn(`[PageMenuEditor] subscribeObject failed for ${id}`, e);
+                }
+            }
+        }
+        this.subscribedPanelObjectIds = newIds;
+    }
+
     componentWillUnmount(): void {
         const instance = this.props.oContext.instance ?? '0';
         this.props.oContext.socket.unsubscribeState(
             `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
             this.onAliveChanged,
         );
+        // Panel-Objekt-Subscriptions abmelden
+        const socket = this.props.oContext?.socket;
+        if (socket) {
+            for (const id of this.subscribedPanelObjectIds) {
+                void socket.unsubscribeObject(id, this.onPanelObjectChanged);
+            }
+        }
+        this.subscribedPanelObjectIds.clear();
     }
 
     componentDidUpdate(prevProps: PageMenuEditorProps): void {
@@ -160,6 +225,14 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 prevProps.panels !== this.props.panels)
         ) {
             this.props.onEntryChange({ ...this.props.entry, card: 'cardGrid' });
+        }
+        // Gefilterte Seitenliste neu laden wenn sich Zuweisung oder pagesList ändert
+        if (
+            prevProps.entry.navigationAssignment !== this.props.entry.navigationAssignment ||
+            prevProps.pagesList !== this.props.pagesList
+        ) {
+            void this.updatePanelObjectSubscriptions();
+            void this.loadFilteredPages();
         }
     }
 
@@ -173,6 +246,83 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         } catch (error) {
             console.error('[PageMenuEditor] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false });
+        }
+        void this.loadFilteredPages();
+        void this.updatePanelObjectSubscriptions();
+    }
+
+    /**
+     * Lädt die Seiten der zugewiesenen Panels via native.navigationNodes aus den ioBroker-Objekten.
+     * Ohne Zuweisung wird pagesList direkt übernommen.
+     */
+    private async loadFilteredPages(): Promise<void> {
+        const assignment = this.props.entry.navigationAssignment;
+        const pagesList = this.props.pagesList ?? [];
+
+        if (!assignment || assignment.length === 0) {
+            this.setState({ filteredPagesList: pagesList });
+            return;
+        }
+
+        const socket = this.props.oContext?.socket;
+        const instance = this.props.oContext?.instance ?? '0';
+        const panels = this.props.panels ?? [];
+
+        if (!socket) {
+            this.setState({ filteredPagesList: pagesList });
+            return;
+        }
+
+        try {
+            const pageSets: Set<string>[] = await Promise.all(
+                assignment.map(async a => {
+                    const panel = panels.find(p => p.topic === a.topic);
+                    if (!panel?.id) {
+                        return new Set<string>();
+                    }
+                    const objectId = `${ADAPTER_NAME}.${instance}.panels.${panel.id}`;
+                    try {
+                        const obj: ioBroker.Object | null | undefined = await socket.getObject(objectId);
+                        const nodes: string[] = Array.isArray(obj?.native?.navigationNodes)
+                            ? (obj.native.navigationNodes as string[])
+                            : [];
+                        return new Set<string>(nodes);
+                    } catch (e) {
+                        console.warn(`[PageMenuEditor] getObject failed for ${objectId}`, e);
+                        return new Set<string>();
+                    }
+                }),
+            );
+
+            // Nur nicht-leere Sets intersecten; wenn alle leer → leere Liste
+            const nonEmpty = pageSets.filter(s => s.size > 0);
+            const intersection =
+                nonEmpty.length === 0
+                    ? new Set<string>()
+                    : nonEmpty.reduce((acc, cur) => {
+                          const result = new Set<string>();
+                          for (const s of acc) {
+                              if (cur.has(s)) {
+                                  result.add(s);
+                              }
+                          }
+                          return result;
+                      });
+
+            const sorted = [...intersection].sort((a, b) => {
+                if (a === 'main') {
+                    return -1;
+                }
+                if (b === 'main') {
+                    return 1;
+                }
+                return a.localeCompare(b);
+            });
+
+            this.setState({ filteredPagesList: sorted });
+        } catch (e) {
+            console.warn('[PageMenuEditor] loadFilteredPages failed', e);
+            this.setState({ filteredPagesList: pagesList });
         }
     }
 
@@ -238,7 +388,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         if (editingSlotIndex === null) {
             return;
         }
-        const pageItems: (PageItemConfig | undefined)[] = [...(this.props.entry.pageItems ?? [])];
+        const pageItems = [...(this.props.entry.pageItems ?? [])];
         while (pageItems.length <= editingSlotIndex) {
             pageItems.push(undefined);
         }
@@ -248,7 +398,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
 
     private handleItemDelete = (index: number, e: React.MouseEvent): void => {
         e.stopPropagation();
-        const pageItems: (PageItemConfig | undefined)[] = [...(this.props.entry.pageItems ?? [])];
+        const pageItems = [...(this.props.entry.pageItems ?? [])];
         pageItems[index] = undefined;
         this.props.onEntryChange({ ...this.props.entry, pageItems });
     };
@@ -284,7 +434,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         if (src === null || src === targetIndex) {
             return;
         }
-        const pageItems: (PageItemConfig | undefined)[] = [...(this.props.entry.pageItems ?? [])];
+        const pageItems = [...(this.props.entry.pageItems ?? [])];
         const maxIdx = Math.max(src, targetIndex);
         while (pageItems.length <= maxIdx) {
             pageItems.push(undefined);
@@ -317,7 +467,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
 
     private renderSlot(index: number, totalSlots: number, wide: boolean): React.JSX.Element {
         const pageItems = this.props.entry.pageItems ?? [];
-        const item: PageItemConfig | undefined = pageItems[index];
+        const item = pageItems[index];
         const isDragSource = this.dragSourceIndex === index;
         const isDragOver = this.state.dragOverIndex === index;
         const isLastSlot = index === totalSlots - 1;
@@ -587,14 +737,18 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const baseSlots = entry.card === 'cardGrid2' ? grid2Slots : SLOT_COUNTS_BASE[entry.card];
         const isGridCard = ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card);
         const scrollPresentation = entry.scrollPresentation ?? 'arrow';
-        // In arrow-Modus reserviert der letzte Slot jeder Seite den Pfeil
         const potentialArrow = isGridCard && scrollPresentation === 'arrow';
-        const effectiveSlots = potentialArrow ? Math.max(1, baseSlots - 1) : baseSlots;
         const pageItems = entry.pageItems ?? [];
-        // Mindest-Seiten aus bestehenden Einträgen ableiten, dann extraPages addieren
-        const basePages = Math.max(1, Math.ceil(pageItems.length / effectiveSlots));
-        const totalPages = basePages + this.state.extraPages;
-        const arrowMode = potentialArrow && totalPages > 1;
+
+        // Erst ohne Pfeil schätzen: Pfeil reserviert erst wenn mehrere Seiten tatsächlich nötig sind
+        const basePagesNoArrow = Math.max(1, Math.ceil(pageItems.length / baseSlots));
+        const totalPagesEst = basePagesNoArrow + this.state.extraPages;
+        // Pfeilmodus nur aktivieren wenn Seiten wirklich vorhanden oder durch "Seite hinzufügen" erzwungen
+        const arrowMode = potentialArrow && totalPagesEst > 1;
+        const effectiveSlots = arrowMode ? Math.max(1, baseSlots - 1) : baseSlots;
+        // Endgültige Seitenanzahl (Pfeilmodus kann durch weniger Slots pro Seite mehr Seiten erzwingen)
+        const basePagesFinal = Math.max(1, Math.ceil(pageItems.length / effectiveSlots));
+        const totalPages = Math.max(basePagesFinal, totalPagesEst);
         const totalRealSlots = effectiveSlots * totalPages;
         const filledCount = pageItems.filter(p => p !== undefined).length;
         const showScrollRadio = isGridCard && totalPages > 1;
@@ -806,6 +960,8 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     themeType={this.props.oContext?.themeType}
                     oContext={this.props.oContext}
                     expertMode={this.props.expertMode ?? false}
+                    pagesList={this.state.filteredPagesList}
+                    currentPageName={this.props.entry.uniqueName}
                     hideTriggerButton
                     onSave={this.handleItemSave}
                 />
