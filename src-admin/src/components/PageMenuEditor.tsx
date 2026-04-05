@@ -756,17 +756,21 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const potentialArrow = isGridCard && scrollPresentation === 'arrow';
         const pageItems = entry.pageItems ?? [];
 
+        // Letzter tatsächlich befüllter Index – trailing undefineds durch Drag/Drop ignorieren
+        const lastFilledIdx = pageItems.reduceRight<number>((acc, v, i) => (acc === -1 && v != null ? i : acc), -1);
+        const filledLength = lastFilledIdx + 1;
+
         // Erst ohne Pfeil schätzen: Pfeil reserviert erst wenn mehrere Seiten tatsächlich nötig sind
-        const basePagesNoArrow = Math.max(1, Math.ceil(pageItems.length / baseSlots));
+        const basePagesNoArrow = Math.max(1, Math.ceil(filledLength / baseSlots));
         const totalPagesEst = basePagesNoArrow + this.state.extraPages;
         // Pfeilmodus nur aktivieren wenn Seiten wirklich vorhanden oder durch "Seite hinzufügen" erzwungen
         const arrowMode = potentialArrow && totalPagesEst > 1;
         const effectiveSlots = arrowMode ? Math.max(1, baseSlots - 1) : baseSlots;
         // Endgültige Seitenanzahl (Pfeilmodus kann durch weniger Slots pro Seite mehr Seiten erzwingen)
-        const basePagesFinal = Math.max(1, Math.ceil(pageItems.length / effectiveSlots));
+        const basePagesFinal = Math.max(1, Math.ceil(filledLength / effectiveSlots));
         const totalPages = Math.max(basePagesFinal, totalPagesEst);
         const totalRealSlots = effectiveSlots * totalPages;
-        const filledCount = pageItems.filter(p => p !== undefined).length;
+        const filledCount = pageItems.filter(p => p != null).length;
         const showScrollRadio = isGridCard && totalPages > 1;
 
         return (
@@ -945,8 +949,8 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         const startIdx = pageIdx * effectiveSlots;
                         const pageHasItems = (entry.pageItems ?? [])
                             .slice(startIdx, startIdx + effectiveSlots)
-                            .some(p => p !== undefined);
-                        const canRemove = totalPages > 1 && !pageHasItems;
+                            .some(p => p != null);
+                        const canRemove = totalPages > 1 && !pageHasItems && pageIdx === totalPages - 1;
                         const onRemovePage = canRemove
                             ? (): void => {
                                   // extraPages dekrementieren wenn möglich, sonst letzte Seite aus pageItems trimmen
