@@ -100,7 +100,7 @@ class Navigation extends import_library.BaseClass {
     this.panel = config.panel;
     this.navigationConfig = config.navigationConfig.filter((a) => a !== null && a != null);
   }
-  init() {
+  async init() {
     var _a, _b;
     this.database = [];
     let serviceLeft = "";
@@ -173,6 +173,25 @@ class Navigation extends import_library.BaseClass {
           }
         }
       }
+    }
+    const db = this.getDatabase();
+    const names = [];
+    if (db) {
+      for (const p of db) {
+        if (p == null ? void 0 : p.page) {
+          names.push(p.page.name);
+        }
+      }
+      const o = await this.adapter.getObjectAsync(`panels.${this.panel.name}`);
+      if (!o) {
+        this.log.error(`Panel object not found: panels.${this.panel.name}`);
+        return;
+      }
+      if (!o.native) {
+        o.native = {};
+      }
+      o.native.navigationNodes = names;
+      await this.adapter.setObject(`panels.${this.panel.name}`, o);
     }
   }
   async setPageByIndex(index, d) {

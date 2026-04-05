@@ -1423,3 +1423,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
 };
+
+/** Alle bekannten Channel-Rollen zur Laufzeit (Keys von requiredScriptDataPoints). */
+export const channelRolesList = Object.keys(requiredScriptDataPoints) as ScriptConfig.channelRoles[];

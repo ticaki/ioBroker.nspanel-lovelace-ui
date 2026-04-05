@@ -47,6 +47,8 @@ export const SENDTO_GET_PAGES_All_COMMAND = 'getAllPages';
 export const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Expected response when asking the adapter for panels
 export type PanelInfo = {
+    /** Unique panel identifier (corresponds to `id` in the adapter config) */
+    id?: string;
     friendlyName: string;
     panelTopic: string;
 };
@@ -259,3 +261,43 @@ export function reversePanelStatusStates(value: PanelStatus): number {
     }
     return reversed[value];
 }
+
+/**
+ * Laufzeit-Array aller bekannten Channel-Rollen (synchron mit ScriptConfig.channelRoles
+ * und den Keys von requiredScriptDataPoints in config-manager-const.ts).
+ * Wird im Admin verwendet, da config-manager-const.ts dort nicht importierbar ist.
+ */
+export const CHANNEL_ROLES_LIST = [
+    'airCondition',
+    'blind',
+    'button',
+    'ct',
+    'dimmer',
+    'door',
+    'gate',
+    'hue',
+    'humidity',
+    'info',
+    'level.mode.fan',
+    'level.timer',
+    'light',
+    'lock',
+    'media',
+    'motion',
+    'rgb',
+    'rgbSingle',
+    'select',
+    'sensor.alarm.flood',
+    'slider',
+    'socket',
+    'temperature',
+    'thermostat',
+    'timeTable',
+    'value.humidity',
+    'value.temperature',
+    'volume',
+    'warning',
+    'window',
+] as const;
+
+export type ChannelRole = (typeof CHANNEL_ROLES_LIST)[number];

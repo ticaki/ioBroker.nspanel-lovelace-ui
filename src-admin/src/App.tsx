@@ -23,6 +23,7 @@ import TabMaintain from './TabMaintain';
 import TabPanelinfo from './TabPanelinfo';
 import PageMQTTSetting from './PageMQTTSetting';
 import PagePanelOverview from './PagePanelOverview';
+import ChannelConfigDialog from './components/ChannelConfigDialog';
 
 import enLocal from './i18n/en.json';
 import deLocal from './i18n/de.json';
@@ -132,6 +133,19 @@ class App extends GenericApp<GenericAppProps, AppState> {
         };
 
         const tabs: { label: string; content: React.JSX.Element }[] = [
+            {
+                label: 'ChannelConfigDialog',
+                content: (
+                    <ChannelConfigDialog
+                        socket={this.socket}
+                        theme={this.state.theme}
+                        themeType={this.state.themeType}
+                        oContext={oCtx}
+                        panelIds={[]}
+                        initialChannelId="javascript.0.test.channel"
+                    />
+                ),
+            },
             {
                 label: 'IconSelect',
                 content: (

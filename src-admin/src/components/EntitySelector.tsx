@@ -6,11 +6,19 @@ interface EntitySelectorProps {
     label: string;
     value: string | undefined;
     onChange: (value: string) => void;
+    /** Wird beim Verlassen des Textfelds (blur) und bei Enter ausgelöst – auch nach SelectID-Auswahl. */
+    onCommit?: (value: string) => void;
     socket: any;
     theme: any;
     themeType: string;
     dialogName: string;
     filterFunc?: (obj: ioBroker.Object) => boolean;
+    /**
+     * Wird nach der Auswahl im SelectID-Dialog aufgerufen und erlaubt die
+     * gewählte ID zu transformieren (z. B. auf den übergeordneten Channel kürzen).
+     * Rückwärtskompatibel – ohne Prop wird die ID unverändert übernommen.
+     */
+    onTransformSelectedId?: (id: string) => string;
     disabled?: boolean;
 }
 
@@ -31,7 +39,19 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
     }
 
     render(): React.ReactNode {
-        const { label, value, onChange, socket, theme, themeType, dialogName, filterFunc, disabled } = this.props;
+        const {
+            label,
+            value,
+            onChange,
+            onCommit,
+            socket,
+            theme,
+            themeType,
+            dialogName,
+            filterFunc,
+            onTransformSelectedId,
+            disabled,
+        } = this.props;
         const { showSelectDialog } = this.state;
 
         return (
@@ -48,6 +68,12 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
                         variant="standard"
                         value={value || ''}
                         onChange={e => onChange(e.target.value)}
+                        onBlur={() => onCommit?.(value || '')}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                                onCommit?.(value || '');
+                            }
+                        }}
                         disabled={disabled}
                     />
                     <Button
@@ -64,17 +90,14 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
                             socket={socket}
                             selected={value || ''}
                             onOk={(selectedId: string | string[] | undefined) => {
-                                const id = Array.isArray(selectedId) ? selectedId[0] : selectedId;
-                                onChange(id || '');
+                                const raw = Array.isArray(selectedId) ? selectedId[0] : selectedId;
+                                const id = onTransformSelectedId ? onTransformSelectedId(raw || '') : raw || '';
+                                onChange(id);
+                                onCommit?.(id);
                                 this.setState({ showSelectDialog: false });
                             }}
                             onClose={() => this.setState({ showSelectDialog: false })}
-                            filterFunc={
-                                filterFunc ||
-                                ((obj: ioBroker.Object): boolean => {
-                                    return !!(obj?.type === 'state');
-                                })
-                            }
+                            filterFunc={filterFunc ?? ((obj: ioBroker.Object): boolean => !!(obj?.type === 'state'))}
                             dialogName={dialogName}
                             theme={theme}
                             themeType={themeType}

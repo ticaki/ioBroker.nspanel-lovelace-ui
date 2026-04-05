@@ -20,6 +20,7 @@ var adminShareConfig_exports = {};
 __export(adminShareConfig_exports, {
   ADAPTER_NAME: () => ADAPTER_NAME,
   ALL_PANELS_SPECIAL_ID: () => ALL_PANELS_SPECIAL_ID,
+  CHANNEL_ROLES_LIST: () => CHANNEL_ROLES_LIST,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND: () => SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
@@ -86,10 +87,43 @@ function reversePanelStatusStates(value) {
   }
   return reversed[value];
 }
+const CHANNEL_ROLES_LIST = [
+  "airCondition",
+  "blind",
+  "button",
+  "ct",
+  "dimmer",
+  "door",
+  "gate",
+  "hue",
+  "humidity",
+  "info",
+  "level.mode.fan",
+  "level.timer",
+  "light",
+  "lock",
+  "media",
+  "motion",
+  "rgb",
+  "rgbSingle",
+  "select",
+  "sensor.alarm.flood",
+  "slider",
+  "socket",
+  "temperature",
+  "thermostat",
+  "timeTable",
+  "value.humidity",
+  "value.temperature",
+  "volume",
+  "warning",
+  "window"
+];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ADAPTER_NAME,
   ALL_PANELS_SPECIAL_ID,
+  CHANNEL_ROLES_LIST,
   SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND,

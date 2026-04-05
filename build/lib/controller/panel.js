@@ -645,7 +645,7 @@ class Panel extends import_library.BaseClass {
         this.log.error("Page failed or has no name!");
       }
     }
-    this.navigation.init();
+    await this.navigation.init();
     if (this.adapter.config.debugLogPages) {
       this.log.debug(`Panel ${this.name} is initialised!`);
     }
@@ -2349,7 +2349,7 @@ ${this.info.tasmota.onlineVersion}`;
       );
     }
   }
-  saveNavigationMap = async (map) => {
+  saveNavigationMapDeprecated = async (map) => {
     if (!Array.isArray(map)) {
       this.log.error("Navigation map is not an array!");
       return;
