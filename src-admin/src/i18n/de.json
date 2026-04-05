@@ -1,1 +1,25 @@
-{}
+{
+    "channelConfigDialog_open": "PageItem konfigurieren",
+    "channelConfigDialog_title": "PageItem-Konfiguration",
+    "channelConfigDialog_channelId": "ioBroker-Kanal",
+    "channelConfigDialog_name": "Name",
+    "channelConfigDialog_isNavigation": "Navigation",
+    "channelConfigDialog_targetPage": "Zielseite",
+    "channelConfigDialog_save": "Speichern",
+    "channelConfigDialog_cancel": "Abbrechen",
+    "channelConfigDialog_noPages": "Keine Seiten verf\u00fcgbar",
+    "channelConfigDialog_condTrue": "Bedingung ist wahr",
+    "channelConfigDialog_condFalse": "Bedingung ist unwahr",
+    "channelConfigDialog_color": "Farbe",
+    "channelConfigDialog_icon_true": "Symbol (wahr)",
+    "channelConfigDialog_icon_false": "Symbol (unwahr)",
+    "channelConfigDialog_defaultIcon": "Standardicon wird verwendet",
+    "channelConfigDialog_defaultColor": "Standardfarbe wird verwendet",
+    "channelConfigDialog_setColor": "Farbe festlegen",
+    "channelConfigDialog_resetColor": "Zur\u00fccksetzen",
+    "channelConfigDialog_defaultName": "Standardname wird verwendet",
+    "channelConfigDialog_channelNotFound": "Objekt nicht in ioBroker gefunden",
+    "channelConfigDialog_noChannelSelected": "kein Channel ausgewählt",
+    "channelConfigDialog_unknownRole": "unbekannte Rolle",
+    "channelConfigDialog_unknownRoleHint": "Die Objekt-Rolle entspricht keinem bekannten Gerätetyp"
+}

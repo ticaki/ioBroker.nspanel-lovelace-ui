@@ -8,6 +8,7 @@ import TabMaintain from './TabMaintain';
 import TabPanelinfo from './TabPanelinfo';
 import PageMQTTSetting from './PageMQTTSetting';
 import PagePanelOverview from './PagePanelOverview';
+import { ChannelConfigDialogJsonConfig } from './components/ChannelConfigDialog';
 
 export default {
     NavigationView,
@@ -20,4 +21,5 @@ export default {
     TabPanelinfo,
     PageMQTTSetting,
     PagePanelOverview,
+    ChannelConfigDialog: ChannelConfigDialogJsonConfig,
 };
