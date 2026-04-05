@@ -1,0 +1,745 @@
+import React from 'react';
+import {
+    Alert,
+    Box,
+    Button,
+    TextField,
+    FormControl,
+    FormLabel,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    Typography,
+    Paper,
+    IconButton,
+    Tooltip,
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DeleteIcon from '@mui/icons-material/Delete';
+import WidgetsIcon from '@mui/icons-material/Widgets';
+import {
+    type MenuEntry,
+    type PageItemConfig,
+    type AdminPanelConfig,
+    ADAPTER_NAME,
+} from '../../../src/lib/types/adminShareConfig';
+import ChannelConfigDialog from './ChannelConfigDialog';
+import icons from '../icons.json';
+
+/** Basis-Slot-Anzahl pro Kartentyp (cardGrid2: eu/us-l = 8, us-p = 9) */
+const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
+    cardGrid: 6,
+    cardGrid2: 8,
+    cardGrid3: 4,
+    cardEntities: 4,
+    cardSchedule: 6,
+};
+
+/** Ergebnis der Panel-Modell-Auswertung für cardGrid2 */
+type Grid2ModelStatus = 'all-usp' | 'none-usp' | 'conflict' | 'unknown';
+
+export interface PageMenuEditorProps {
+    entry: MenuEntry;
+    onEntryChange: (updated: MenuEntry) => void;
+    onUniqueNameChange: (oldName: string, newName: string) => void;
+    getText: (key: string) => string;
+    oContext: any;
+    theme?: any;
+    /** Alle konfigurierten Panels aus den Adapter-Native-Daten */
+    panels?: AdminPanelConfig[];
+}
+
+interface PageMenuEditorState {
+    alive: boolean;
+    editingSlotIndex: number | null;
+    dragSourceIndex: number | null;
+    dragOverIndex: number | null;
+    extraPages: number;
+}
+
+export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMenuEditorState> {
+    private dialogRef = React.createRef<ChannelConfigDialog>();
+    private static iconMap: Map<string, string> | null = null;
+
+    constructor(props: PageMenuEditorProps) {
+        super(props);
+        this.state = {
+            alive: false,
+            editingSlotIndex: null,
+            dragSourceIndex: null,
+            dragOverIndex: null,
+            extraPages: 0,
+        };
+    }
+
+    /**
+     * Berechnet den Modell-Status für cardGrid2 anhand der zugewiesenen Panels.
+     * - Keine Zuweisung → alle konfigurierten Panels werden herangezogen.
+     * - Gemischt us-p/non-usp → 'conflict'.
+     */
+    private getGrid2ModelStatus(): Grid2ModelStatus {
+        const panels = this.props.panels ?? [];
+        const assignment = this.props.entry.navigationAssignment;
+
+        // Keine Zuweisung → kein Konflikt anzeigen
+        if (!assignment || assignment.length === 0) {
+            return 'unknown';
+        }
+
+        const activePanels = assignment
+            .map(a => panels.find(p => p.topic === a.topic))
+            .filter((p): p is AdminPanelConfig => p !== undefined);
+
+        if (activePanels.length === 0) {
+            return 'unknown';
+        }
+        const uspCount = activePanels.filter(p => p.model === 'us-p').length;
+        if (uspCount === 0) {
+            return 'none-usp';
+        }
+        if (uspCount === activePanels.length) {
+            return 'all-usp';
+        }
+        return 'conflict';
+    }
+
+    componentWillUnmount(): void {
+        const instance = this.props.oContext.instance ?? '0';
+        this.props.oContext.socket.unsubscribeState(
+            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
+            this.onAliveChanged,
+        );
+    }
+
+    componentDidUpdate(prevProps: PageMenuEditorProps): void {
+        // Wenn cardGrid2 gerade aktiv ist und ein Konflikt entsteht → automatisch auf cardGrid wechseln
+        if (
+            this.props.entry.card === 'cardGrid2' &&
+            this.getGrid2ModelStatus() === 'conflict' &&
+            (prevProps.entry.navigationAssignment !== this.props.entry.navigationAssignment ||
+                prevProps.panels !== this.props.panels)
+        ) {
+            this.props.onEntryChange({ ...this.props.entry, card: 'cardGrid' });
+        }
+    }
+
+    async componentDidMount(): Promise<void> {
+        const instance = this.props.oContext.instance ?? '0';
+        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+        try {
+            const state = await this.props.oContext.socket.getState(aliveStateId);
+            this.setState({ alive: !!state?.val });
+            await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
+        } catch (error) {
+            console.error('[PageMenuEditor] Failed to get alive state or subscribe:', error);
+            this.setState({ alive: false });
+        }
+    }
+
+    onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const isAlive = state ? !!state.val : false;
+        if (this.state.alive !== isAlive) {
+            this.setState({ alive: isAlive });
+        }
+    };
+
+    private getText(key: string): string {
+        return this.props.getText(key);
+    }
+
+    private static getIconSrc(name: string): string {
+        if (!PageMenuEditor.iconMap) {
+            PageMenuEditor.iconMap = new Map();
+            for (const icon of icons as { name: string; base64: string }[]) {
+                PageMenuEditor.iconMap.set(icon.name, icon.base64);
+            }
+        }
+        return PageMenuEditor.iconMap.get(name) ?? '';
+    }
+
+    private handleCardTypeChange(card: MenuEntry['card']): void {
+        this.setState({ extraPages: 0 });
+        this.props.onEntryChange({ ...this.props.entry, card });
+    }
+
+    private handleSlotClick = (index: number): void => {
+        const item = (this.props.entry.pageItems ?? [])[index];
+        this.setState({ editingSlotIndex: index });
+        this.dialogRef.current?.openWith(item);
+    };
+
+    private handleItemSave = (config: PageItemConfig): void => {
+        const { editingSlotIndex } = this.state;
+        if (editingSlotIndex === null) {
+            return;
+        }
+        const pageItems: (PageItemConfig | undefined)[] = [...(this.props.entry.pageItems ?? [])];
+        while (pageItems.length <= editingSlotIndex) {
+            pageItems.push(undefined);
+        }
+        pageItems[editingSlotIndex] = config;
+        this.props.onEntryChange({ ...this.props.entry, pageItems });
+    };
+
+    private handleItemDelete = (index: number, e: React.MouseEvent): void => {
+        e.stopPropagation();
+        const pageItems: (PageItemConfig | undefined)[] = [...(this.props.entry.pageItems ?? [])];
+        pageItems[index] = undefined;
+        this.props.onEntryChange({ ...this.props.entry, pageItems });
+    };
+
+    private handleDragStart = (index: number): void => {
+        this.setState({ dragSourceIndex: index });
+    };
+
+    private handleDragOver = (index: number, e: React.DragEvent): void => {
+        e.preventDefault();
+        if (this.state.dragOverIndex !== index) {
+            this.setState({ dragOverIndex: index });
+        }
+    };
+
+    private handleDragLeave = (): void => {
+        this.setState({ dragOverIndex: null });
+    };
+
+    private handleDragEnd = (): void => {
+        this.setState({ dragSourceIndex: null, dragOverIndex: null });
+    };
+
+    private handleDrop = (targetIndex: number, e: React.DragEvent): void => {
+        e.preventDefault();
+        const { dragSourceIndex } = this.state;
+        this.setState({ dragSourceIndex: null, dragOverIndex: null });
+        if (dragSourceIndex === null || dragSourceIndex === targetIndex) {
+            return;
+        }
+        const pageItems: (PageItemConfig | undefined)[] = [...(this.props.entry.pageItems ?? [])];
+        const maxIdx = Math.max(dragSourceIndex, targetIndex);
+        while (pageItems.length <= maxIdx) {
+            pageItems.push(undefined);
+        }
+        [pageItems[dragSourceIndex], pageItems[targetIndex]] = [pageItems[targetIndex], pageItems[dragSourceIndex]];
+        this.props.onEntryChange({ ...this.props.entry, pageItems });
+    };
+
+    private getGridConfig(
+        card: MenuEntry['card'],
+        grid2Status: Grid2ModelStatus,
+    ): { columns: string; uspSpecial: boolean; wide: boolean } {
+        switch (card) {
+            case 'cardGrid':
+                return { columns: 'repeat(3, 1fr)', uspSpecial: false, wide: false };
+            case 'cardGrid2':
+                return grid2Status === 'all-usp'
+                    ? { columns: 'repeat(2, 1fr)', uspSpecial: true, wide: false }
+                    : { columns: 'repeat(4, 1fr)', uspSpecial: false, wide: false };
+            case 'cardGrid3':
+                return { columns: 'repeat(2, 1fr)', uspSpecial: false, wide: false };
+            case 'cardEntities':
+                return { columns: '1fr', uspSpecial: false, wide: true };
+            case 'cardSchedule':
+                return { columns: '1fr', uspSpecial: false, wide: true };
+            default:
+                return { columns: 'repeat(3, 1fr)', uspSpecial: false, wide: false };
+        }
+    }
+
+    private renderSlot(index: number, totalSlots: number, wide: boolean): React.JSX.Element {
+        const pageItems = this.props.entry.pageItems ?? [];
+        const item: PageItemConfig | undefined = pageItems[index];
+        const isDragSource = this.state.dragSourceIndex === index;
+        const isDragOver = this.state.dragOverIndex === index;
+        const isLastSlot = index === totalSlots - 1;
+
+        if (item === undefined) {
+            // Leerer Slot – klickbar, empfängt Drops
+            return (
+                <Tooltip
+                    key={index}
+                    title={this.getText('pageMenu_add_item')}
+                >
+                    <Paper
+                        elevation={0}
+                        onClick={() => this.handleSlotClick(index)}
+                        onDragOver={e => this.handleDragOver(index, e)}
+                        onDragLeave={this.handleDragLeave}
+                        onDrop={e => this.handleDrop(index, e)}
+                        sx={{
+                            width: '100%',
+                            height: wide ? 44 : 96,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: isDragOver ? '2px dashed' : '1px dashed',
+                            borderColor: isDragOver ? 'primary.main' : 'divider',
+                            backgroundColor: isDragOver ? 'action.hover' : 'transparent',
+                            cursor: 'pointer',
+                            opacity: isLastSlot ? 0.5 : 0.35,
+                            transition: 'border-color 0.15s, background-color 0.15s',
+                            '&:hover': { opacity: 0.8, borderColor: 'primary.light' },
+                        }}
+                    >
+                        <AddIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                    </Paper>
+                </Tooltip>
+            );
+        }
+
+        const iconSrc = PageMenuEditor.getIconSrc(item.trueIcon || item.falseIcon || '');
+        const label = item.name || String(index + 1);
+
+        if (wide) {
+            // Listenansicht (cardEntities / cardSchedule)
+            return (
+                <Tooltip
+                    key={index}
+                    title={item.channelId || label}
+                >
+                    <Paper
+                        elevation={isDragSource ? 0 : 2}
+                        draggable
+                        onDragStart={() => this.handleDragStart(index)}
+                        onDragEnd={this.handleDragEnd}
+                        onDragOver={e => this.handleDragOver(index, e)}
+                        onDragLeave={this.handleDragLeave}
+                        onDrop={e => this.handleDrop(index, e)}
+                        onClick={() => this.handleSlotClick(index)}
+                        sx={{
+                            width: '100%',
+                            height: 44,
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            px: 1,
+                            gap: 1,
+                            cursor: isDragSource ? 'grabbing' : 'grab',
+                            userSelect: 'none',
+                            opacity: isDragSource ? 0.4 : 1,
+                            outline: isDragOver ? '2px solid' : 'none',
+                            outlineColor: 'primary.main',
+                            transition: 'opacity 0.15s, outline 0.1s',
+                            '&:hover': { backgroundColor: 'action.hover' },
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 28,
+                                height: 28,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                            }}
+                        >
+                            {iconSrc ? (
+                                <img
+                                    src={iconSrc}
+                                    alt={label}
+                                    style={{ width: 24, height: 24 }}
+                                />
+                            ) : (
+                                <WidgetsIcon sx={{ fontSize: 24, color: 'text.secondary' }} />
+                            )}
+                        </Box>
+                        <Typography
+                            variant="body2"
+                            sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        >
+                            {label}
+                        </Typography>
+                        <IconButton
+                            size="small"
+                            onClick={e => this.handleItemDelete(index, e)}
+                            color="error"
+                            sx={{ p: 0.25 }}
+                        >
+                            <DeleteIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                    </Paper>
+                </Tooltip>
+            );
+        }
+
+        // Kachelansicht (Grid-Typen)
+        return (
+            <Tooltip
+                key={index}
+                title={item.channelId || label}
+            >
+                <Paper
+                    elevation={isDragSource ? 0 : 2}
+                    draggable
+                    onDragStart={() => this.handleDragStart(index)}
+                    onDragEnd={this.handleDragEnd}
+                    onDragOver={e => this.handleDragOver(index, e)}
+                    onDragLeave={this.handleDragLeave}
+                    onDrop={e => this.handleDrop(index, e)}
+                    onClick={() => this.handleSlotClick(index)}
+                    sx={{
+                        width: '100%',
+                        height: 96,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        p: 0.5,
+                        cursor: isDragSource ? 'grabbing' : 'grab',
+                        userSelect: 'none',
+                        opacity: isDragSource ? 0.4 : 1,
+                        outline: isDragOver ? '2px solid' : 'none',
+                        outlineColor: 'primary.main',
+                        transition: 'opacity 0.15s, outline 0.1s',
+                        '&:hover': { backgroundColor: 'action.hover' },
+                    }}
+                >
+                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {iconSrc ? (
+                            <img
+                                src={iconSrc}
+                                alt={label}
+                                style={{ width: 32, height: 32 }}
+                            />
+                        ) : (
+                            <WidgetsIcon sx={{ fontSize: 32, color: 'text.secondary' }} />
+                        )}
+                    </Box>
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            width: '100%',
+                            textAlign: 'center',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            px: 0.5,
+                        }}
+                    >
+                        {label}
+                    </Typography>
+                    <Box sx={{ display: 'flex', mt: 0.25 }}>
+                        <IconButton
+                            size="small"
+                            onClick={e => this.handleItemDelete(index, e)}
+                            color="error"
+                            sx={{ p: 0.25 }}
+                        >
+                            <DeleteIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                    </Box>
+                </Paper>
+            </Tooltip>
+        );
+    }
+
+    private renderPage(
+        pageIndex: number,
+        totalPages: number,
+        baseSlots: number,
+        effectiveSlots: number,
+        arrowMode: boolean,
+        card: MenuEntry['card'],
+        grid2Status: Grid2ModelStatus,
+        totalRealSlots: number,
+    ): React.JSX.Element {
+        const { columns, uspSpecial, wide } = this.getGridConfig(card, grid2Status);
+        const startIdx = pageIndex * effectiveSlots;
+
+        return (
+            <Box
+                key={pageIndex}
+                sx={{
+                    mb: pageIndex < totalPages - 1 ? 2 : 0,
+                    pb: pageIndex < totalPages - 1 ? 1 : 0,
+                    borderBottom: pageIndex < totalPages - 1 ? '1px dashed' : 'none',
+                    borderColor: 'divider',
+                }}
+            >
+                {totalPages > 1 && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 0.5 }}
+                    >
+                        {`${this.getText('pageMenu_page')} ${pageIndex + 1} / ${totalPages}`}
+                    </Typography>
+                )}
+                <Box sx={{ display: 'grid', gridTemplateColumns: columns, gap: 1 }}>
+                    {Array.from({ length: baseSlots }, (_, localIdx) => {
+                        const isArrowSlot = arrowMode && localIdx === effectiveSlots;
+                        const isUspTop = uspSpecial && localIdx === 0;
+
+                        if (isArrowSlot) {
+                            return (
+                                <Box key={`arrow-p${pageIndex}`}>
+                                    <Paper
+                                        elevation={0}
+                                        sx={{
+                                            width: '100%',
+                                            height: 96,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            opacity: 0.45,
+                                            userSelect: 'none',
+                                        }}
+                                    >
+                                        <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: 32 }} />
+                                    </Paper>
+                                </Box>
+                            );
+                        }
+
+                        const globalIdx = startIdx + localIdx;
+                        return (
+                            <Box
+                                key={globalIdx}
+                                sx={isUspTop ? { gridColumn: '1 / -1' } : {}}
+                            >
+                                {this.renderSlot(globalIdx, totalRealSlots, wide)}
+                            </Box>
+                        );
+                    })}
+                </Box>
+            </Box>
+        );
+    }
+
+    render(): React.JSX.Element {
+        const { entry } = this.props;
+
+        // Grid2-Modell-Status berechnen (relevant für Slot-Anzahl und Warnung)
+        const grid2Status = this.getGrid2ModelStatus();
+        const grid2Conflict = grid2Status === 'conflict';
+        const grid2Slots = grid2Status === 'all-usp' ? 9 : 8;
+
+        const baseSlots = entry.card === 'cardGrid2' ? grid2Slots : SLOT_COUNTS_BASE[entry.card];
+        const isGridCard = ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card);
+        const scrollPresentation = entry.scrollPresentation ?? 'arrow';
+        // In arrow-Modus reserviert der letzte Slot jeder Seite den Pfeil
+        const potentialArrow = isGridCard && scrollPresentation === 'arrow';
+        const effectiveSlots = potentialArrow ? Math.max(1, baseSlots - 1) : baseSlots;
+        const pageItems = entry.pageItems ?? [];
+        // Mindest-Seiten aus bestehenden Einträgen ableiten, dann extraPages addieren
+        const basePages = Math.max(1, Math.ceil(pageItems.length / effectiveSlots));
+        const totalPages = basePages + this.state.extraPages;
+        const arrowMode = potentialArrow && totalPages > 1;
+        const totalRealSlots = effectiveSlots * totalPages;
+        const filledCount = pageItems.filter(p => p !== undefined).length;
+        const showScrollRadio = isGridCard && totalPages > 1;
+
+        return (
+            <Box>
+                {/* UniqueName */}
+                <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover' }}>
+                    <TextField
+                        fullWidth
+                        variant="standard"
+                        type="text"
+                        label={this.getText('unique_label')}
+                        value={entry.uniqueName}
+                        onChange={e => {
+                            const newUniqueName = e.target.value;
+                            if (newUniqueName.trim()) {
+                                this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
+                            }
+                        }}
+                        InputProps={{
+                            sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' },
+                        }}
+                        disabled={!this.state.alive}
+                    />
+                </Box>
+
+                {/* Überschrift */}
+                <TextField
+                    fullWidth
+                    variant="standard"
+                    type="text"
+                    autoComplete="off"
+                    label={this.getText('headline')}
+                    value={entry.headline ?? ''}
+                    onChange={e => {
+                        this.props.onEntryChange({ ...entry, headline: e.target.value });
+                    }}
+                    InputProps={{
+                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                    }}
+                    sx={{ mb: 2 }}
+                    disabled={!this.state.alive}
+                />
+
+                {/* Card-Typ Auswahl – 2-spaltig */}
+                <Box sx={{ mb: 2 }}>
+                    <FormControl
+                        component="fieldset"
+                        disabled={!this.state.alive}
+                    >
+                        <FormLabel component="legend">{this.getText('pageMenu_card_type')}</FormLabel>
+                        <Box sx={{ display: 'flex', gap: 4, mt: 1 }}>
+                            {/* Linke Spalte: Grid-Varianten */}
+                            <Box>
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ mb: 0.5, display: 'block' }}
+                                >
+                                    {this.getText('pageMenu_group_grid')}
+                                </Typography>
+                                <RadioGroup
+                                    value={
+                                        ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card) ? entry.card : ''
+                                    }
+                                    onChange={(_e, val) => {
+                                        this.handleCardTypeChange(val as MenuEntry['card']);
+                                    }}
+                                >
+                                    <FormControlLabel
+                                        value="cardGrid"
+                                        control={<Radio />}
+                                        label={this.getText('pageMenu_cardGrid')}
+                                    />
+                                    <FormControlLabel
+                                        value="cardGrid2"
+                                        disabled={grid2Conflict}
+                                        control={<Radio />}
+                                        label={
+                                            grid2Status === 'all-usp'
+                                                ? this.getText('pageMenu_cardGrid2_usp')
+                                                : this.getText('pageMenu_cardGrid2')
+                                        }
+                                    />
+                                    <FormControlLabel
+                                        value="cardGrid3"
+                                        control={<Radio />}
+                                        label={this.getText('pageMenu_cardGrid3')}
+                                    />
+                                </RadioGroup>
+                                {grid2Conflict && (
+                                    <Alert
+                                        severity="warning"
+                                        sx={{ mt: 1, fontSize: '0.75rem', py: 0.5 }}
+                                    >
+                                        {this.getText('pageMenu_cardGrid2_conflict')}
+                                    </Alert>
+                                )}
+                            </Box>
+
+                            {/* Rechte Spalte: Entities & Schedule */}
+                            <Box>
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ mb: 0.5, display: 'block' }}
+                                >
+                                    {this.getText('pageMenu_group_list')}
+                                </Typography>
+                                <RadioGroup
+                                    value={['cardEntities', 'cardSchedule'].includes(entry.card) ? entry.card : ''}
+                                    onChange={(_e, val) => {
+                                        this.handleCardTypeChange(val as MenuEntry['card']);
+                                    }}
+                                >
+                                    <FormControlLabel
+                                        value="cardEntities"
+                                        control={<Radio />}
+                                        label={this.getText('pageMenu_cardEntities')}
+                                    />
+                                    <FormControlLabel
+                                        value="cardSchedule"
+                                        control={<Radio />}
+                                        label={this.getText('pageMenu_cardSchedule')}
+                                    />
+                                </RadioGroup>
+                            </Box>
+                        </Box>
+                    </FormControl>
+                </Box>
+
+                {/* Scroll-Typ Auswahl (nur bei Grid und mehreren Seiten) */}
+                {showScrollRadio && (
+                    <Box sx={{ mb: 2 }}>
+                        <FormControl
+                            component="fieldset"
+                            disabled={!this.state.alive}
+                        >
+                            <FormLabel component="legend">{this.getText('pageMenu_scroll_type')}</FormLabel>
+                            <RadioGroup
+                                row
+                                value={scrollPresentation}
+                                onChange={(_e, val) => {
+                                    this.props.onEntryChange({
+                                        ...entry,
+                                        scrollPresentation: val as 'classic' | 'arrow',
+                                    });
+                                }}
+                            >
+                                <FormControlLabel
+                                    value="classic"
+                                    control={<Radio />}
+                                    label={this.getText('pageMenu_scroll_classic')}
+                                />
+                                <FormControlLabel
+                                    value="arrow"
+                                    control={<Radio />}
+                                    label={this.getText('pageMenu_scroll_arrow')}
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                    </Box>
+                )}
+
+                {/* Items */}
+                <Paper
+                    variant="outlined"
+                    sx={{ p: 2, mt: 1 }}
+                >
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ mb: 1 }}
+                    >
+                        {this.getText('pageMenu_items')} ({filledCount}/{totalRealSlots})
+                    </Typography>
+                    {Array.from({ length: totalPages }, (_, pageIdx) =>
+                        this.renderPage(
+                            pageIdx,
+                            totalPages,
+                            baseSlots,
+                            effectiveSlots,
+                            arrowMode,
+                            entry.card,
+                            grid2Status,
+                            totalRealSlots,
+                        ),
+                    )}
+                </Paper>
+
+                {/* Weitere Seite hinzufügen */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<AddIcon />}
+                        onClick={() => this.setState(s => ({ extraPages: s.extraPages + 1 }))}
+                        disabled={!this.state.alive}
+                    >
+                        {this.getText('pageMenu_add_page')}
+                    </Button>
+                </Box>
+
+                {/* ChannelConfigDialog – ohne Trigger-Button, per ref gesteuert */}
+                <ChannelConfigDialog
+                    ref={this.dialogRef}
+                    socket={this.props.oContext?.socket}
+                    theme={this.props.theme}
+                    themeType={this.props.oContext?.themeType}
+                    oContext={this.props.oContext}
+                    hideTriggerButton
+                    onSave={this.handleItemSave}
+                />
+            </Box>
+        );
+    }
+}

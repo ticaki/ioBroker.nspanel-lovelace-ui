@@ -6,10 +6,12 @@ import type {
     PageConfigEntry,
     NavigationAssignmentList,
     PageConfigBaseFields,
+    MenuEntry,
 } from '../../src/lib/types/adminShareConfig';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
+import { PageMenuEditor } from './components/PageMenuEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
 
@@ -228,6 +230,24 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
                 ],
             };
+        } else if (
+            cardType === 'pageMenu' ||
+            cardType === 'cardGrid' ||
+            cardType === 'cardGrid2' ||
+            cardType === 'cardGrid3' ||
+            cardType === 'cardEntities' ||
+            cardType === 'cardSchedule'
+        ) {
+            const menuCard: MenuEntry['card'] =
+                cardType === 'pageMenu'
+                    ? 'cardGrid'
+                    : (cardType as MenuEntry['card']);
+            newEntry = {
+                card: menuCard,
+                uniqueName: name,
+                headline: name,
+                pageItems: [],
+            } satisfies MenuEntry;
         } else {
             return; // Unbekannter Typ
         }
@@ -271,8 +291,13 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     private handleCardTypeChange = (cardType: PageCardType): void => {
         // Beim Wechsel des Card-Typs: filtere Einträge und wähle ersten passenden aus
+        const MENU_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
         const filteredEntries =
-            cardType === 'all' ? this.state.entries : this.state.entries.filter(e => e.card === cardType);
+            cardType === 'all'
+                ? this.state.entries
+                : cardType === 'pageMenu'
+                  ? this.state.entries.filter(e => MENU_TYPES.includes(e.card))
+                  : this.state.entries.filter(e => e.card === cardType);
         const newSelected = filteredEntries.length > 0 ? filteredEntries[0].uniqueName : '';
         this.setState({ selectedCardType: cardType, selected: newSelected } as PageConfigManagerState);
     };
@@ -325,6 +350,26 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
+                />
+            );
+        }
+
+        if (
+            currentEntry.card === 'cardGrid' ||
+            currentEntry.card === 'cardGrid2' ||
+            currentEntry.card === 'cardGrid3' ||
+            currentEntry.card === 'cardEntities' ||
+            currentEntry.card === 'cardSchedule'
+        ) {
+            return (
+                <PageMenuEditor
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                    panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
                 />
             );
         }

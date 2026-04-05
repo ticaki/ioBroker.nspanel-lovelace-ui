@@ -21,18 +21,9 @@ import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
-import { ADAPTER_NAME, CHANNEL_ROLES_LIST } from '../../../src/lib/types/adminShareConfig';
+import { ADAPTER_NAME, CHANNEL_ROLES_LIST, type PageItemConfig } from '../../../src/lib/types/adminShareConfig';
 
-export type ChannelConfig = {
-    channelId: string;
-    name: string;
-    isNavigation: boolean;
-    targetPage: string;
-    trueIcon: string;
-    trueColor: string;
-    falseIcon: string;
-    falseColor: string;
-};
+export type { PageItemConfig };
 
 type ChannelConfigDialogProps = {
     socket: any;
@@ -44,9 +35,11 @@ type ChannelConfigDialogProps = {
     oContext?: any;
     /** Panel-IDs zum Laden der verfügbaren Navigationsseiten */
     panelIds?: string[];
-    onSave?: (config: ChannelConfig) => void;
+    onSave?: (config: PageItemConfig) => void;
     /** Vorausgefüllte Channel-ID für Testzwecke */
     initialChannelId?: string;
+    /** Trigger-Button ausblenden; Dialog wird per openWith()-Methode geöffnet */
+    hideTriggerButton?: boolean;
 };
 
 interface ChannelConfigDialogState {
@@ -112,6 +105,39 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             void this.loadValidChannels();
         }
     };
+
+    /**
+     * Öffnet den Dialog mit optionalen Vorbelegungsdaten.
+     * Wird von übergeordneten Komponenten per ref aufgerufen.
+     *
+     * @param data
+     */
+    public openWith(data?: Partial<PageItemConfig>): void {
+        this.setState({
+            open: true,
+            channelId: data?.channelId ?? '',
+            name: data?.name ?? '',
+            isNavigation: data?.isNavigation ?? false,
+            targetPage: data?.targetPage ?? '',
+            trueIcon: data?.trueIcon ?? '',
+            trueColor: data?.trueColor ?? '',
+            falseIcon: data?.falseIcon ?? '',
+            falseColor: data?.falseColor ?? '',
+            channelExists: null,
+            checkingChannel: false,
+            channelRole: null,
+            roleIsValid: null,
+        });
+        if (!this.state.loadingPages && this.state.availablePages.length === 0) {
+            void this.loadAvailablePages();
+        }
+        if (this.state.validChannelIds.length === 0) {
+            void this.loadValidChannels();
+        }
+        if (data?.channelId) {
+            void this.checkChannelExists(data.channelId);
+        }
+    }
 
     private handleClose = (): void => {
         this.setState({ open: false });
@@ -486,12 +512,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
         return (
             <>
-                <Button
-                    variant="outlined"
-                    onClick={this.handleOpen}
-                >
-                    {I18n.t('channelConfigDialog_open')}
-                </Button>
+                {!this.props.hideTriggerButton && (
+                    <Button
+                        variant="outlined"
+                        onClick={this.handleOpen}
+                    >
+                        {I18n.t('channelConfigDialog_open')}
+                    </Button>
+                )}
 
                 <Dialog
                     open={open}

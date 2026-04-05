@@ -53,6 +53,15 @@ export type PanelInfo = {
     panelTopic: string;
 };
 
+/** Panel configuration entry as stored in the adapter native data (`panels` array). */
+export type AdminPanelConfig = {
+    id?: string;
+    ip?: string;
+    name?: string;
+    topic?: string;
+    model?: string;
+};
+
 export type PanelsResponse = PanelInfo[];
 export interface NavigationSavePayload {
     panelName: string;
@@ -129,6 +138,25 @@ export type ScreensaverEntry = {
 
 export type ScreensaverEntries = ScreensaverEntry[];
 // QR Entry for pageQR configuration
+export type PageItemConfig = {
+    channelId: string;
+    name: string;
+    isNavigation: boolean;
+    targetPage: string;
+    trueIcon: string;
+    trueColor: string;
+    falseIcon: string;
+    falseColor: string;
+};
+
+export type MenuEntry = {
+    card: Extract<AdminCardTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardSchedule'>; // Supported card types - will be extended
+    headline: string;
+    pageItems: (PageItemConfig | undefined)[];
+    scrollPresentation?: 'classic' | 'arrow';
+    uniqueName: string;
+} & PageConfigBaseFields;
+
 export type QREntry = {
     card: Extract<AdminCardTypes, 'cardQR'>;
     selType?: number; // e.g. 0 = FREE, 1 = Wifi, 2 = URL, 3 = TEL
@@ -173,8 +201,8 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry;
+export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry;
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry;
 
 export type PanelStatus =
     | 'offline'

@@ -14,13 +14,23 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
-import {
-    type NavigationAssignmentList,
-    type PageConfigEntry,
-    ADAPTER_NAME,
+import type {
+    AdminCardTypes,
+    NavigationAssignmentList,
+    PageConfigEntry,
 } from '../../../src/lib/types/adminShareConfig';
+import { ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 
-export type PageCardType = 'cardTrash' | 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
+export type PageCardType =
+    | Extract<
+          AdminCardTypes,
+          'cardAlarm' | 'cardQR' | 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardSchedule'
+      >
+    | 'all'
+    | 'cardTrash'
+    | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
+
+const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
 
 export interface PageConfigLayoutProps {
     entries: PageConfigEntry[];
@@ -143,7 +153,12 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         const uniqueNames = Array.from(new Set(entries.map(e => e.uniqueName))).filter(Boolean);
 
         // Filter entries by selected card type
-        const filteredEntries = selectedCardType === 'all' ? entries : entries.filter(e => e.card === selectedCardType);
+        const filteredEntries =
+            selectedCardType === 'all'
+                ? entries
+                : selectedCardType === 'pageMenu'
+                  ? entries.filter(e => MENU_CARD_TYPES.includes(e.card))
+                  : entries.filter(e => e.card === selectedCardType);
         const filteredUniqueNames = Array.from(new Set(filteredEntries.map(e => e.uniqueName))).filter(Boolean);
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
@@ -200,6 +215,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 }}
                             >
                                 <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
+                                <MenuItem value="pageMenu">{this.getText('page_type_pageMenu')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
