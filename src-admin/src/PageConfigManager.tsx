@@ -238,10 +238,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             cardType === 'cardEntities' ||
             cardType === 'cardSchedule'
         ) {
-            const menuCard: MenuEntry['card'] =
-                cardType === 'pageMenu'
-                    ? 'cardGrid'
-                    : (cardType as MenuEntry['card']);
+            const menuCard: MenuEntry['card'] = cardType === 'pageMenu' ? 'cardGrid' : (cardType as MenuEntry['card']);
             newEntry = {
                 card: menuCard,
                 uniqueName: name,
@@ -370,6 +367,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     oContext={this.props.oContext}
                     theme={this.props.theme}
                     panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
+                    expertMode={this.props.expertMode ?? false}
                 />
             );
         }

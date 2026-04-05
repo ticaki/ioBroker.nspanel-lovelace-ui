@@ -21,5 +21,8 @@
     "channelConfigDialog_channelNotFound": "Object not found in ioBroker",
     "channelConfigDialog_noChannelSelected": "no channel selected",
     "channelConfigDialog_unknownRole": "unknown role",
-    "channelConfigDialog_unknownRoleHint": "The object's role is not a recognized device type"
+    "channelConfigDialog_unknownRoleHint": "The object's role is not a recognized device type",
+    "channelConfigDialog_native": "Native",
+    "channelConfigDialog_standard": "Standard",
+    "channelConfigDialog_invalidJson": "Invalid JSON"
 }

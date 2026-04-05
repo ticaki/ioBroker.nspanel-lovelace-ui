@@ -140,6 +140,7 @@ export type ScreensaverEntries = ScreensaverEntry[];
 // QR Entry for pageQR configuration
 export type PageItemConfig = {
     channelId: string;
+    role?: string;
     name: string;
     isNavigation: boolean;
     targetPage: string;
@@ -147,6 +148,10 @@ export type PageItemConfig = {
     trueColor: string;
     falseIcon: string;
     falseColor: string;
+    /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
+    useNative?: boolean;
+    /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
+    native?: unknown;
 };
 
 export type MenuEntry = {

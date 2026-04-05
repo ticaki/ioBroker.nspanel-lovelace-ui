@@ -40,6 +40,8 @@ type ChannelConfigDialogProps = {
     initialChannelId?: string;
     /** Trigger-Button ausblenden; Dialog wird per openWith()-Methode geöffnet */
     hideTriggerButton?: boolean;
+    /** Expert-Mode – zeigt Native-Toggle-Button an */
+    expertMode?: boolean;
 };
 
 interface ChannelConfigDialogState {
@@ -63,6 +65,12 @@ interface ChannelConfigDialogState {
     roleIsValid: boolean | null;
     /** Vorgeladene Channel-IDs mit passender Rolle – Basis für filterFunc */
     validChannelIds: string[];
+    /** Expert-Mode: native JSON-Editor aktiv */
+    nativeMode: boolean;
+    /** Rohes JSON im nativen Editor */
+    nativeJson: string;
+    /** true wenn nativeJson syntaktisch valide ist */
+    nativeJsonValid: boolean;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -93,6 +101,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelRole: null,
             roleIsValid: null,
             validChannelIds: [],
+            nativeMode: false,
+            nativeJson: '',
+            nativeJsonValid: false,
         };
     }
 
@@ -113,6 +124,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param data
      */
     public openWith(data?: Partial<PageItemConfig>): void {
+        const isNative = data?.useNative === true;
         this.setState({
             open: true,
             channelId: data?.channelId ?? '',
@@ -123,10 +135,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             trueColor: data?.trueColor ?? '',
             falseIcon: data?.falseIcon ?? '',
             falseColor: data?.falseColor ?? '',
-            channelExists: null,
+            channelExists: isNative ? true : null,
             checkingChannel: false,
-            channelRole: null,
+            channelRole: data?.role ?? null,
             roleIsValid: null,
+            nativeMode: isNative,
+            nativeJson: isNative ? JSON.stringify(data?.native ?? {}, null, 2) : '',
+            nativeJsonValid: isNative,
         });
         if (!this.state.loadingPages && this.state.availablePages.length === 0) {
             void this.loadAvailablePages();
@@ -134,7 +149,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (this.state.validChannelIds.length === 0) {
             void this.loadValidChannels();
         }
-        if (data?.channelId) {
+        if (!isNative && data?.channelId) {
             void this.checkChannelExists(data.channelId);
         }
     }
@@ -144,10 +159,47 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private handleSave = (): void => {
-        const { channelId, name, isNavigation, targetPage, trueIcon, trueColor, falseIcon, falseColor } = this.state;
+        if (this.state.nativeMode) {
+            try {
+                const parsed: unknown = JSON.parse(this.state.nativeJson);
+                const {
+                    channelId,
+                    name,
+                    isNavigation,
+                    targetPage,
+                    trueIcon,
+                    trueColor,
+                    falseIcon,
+                    falseColor,
+                    channelRole,
+                } = this.state;
+                if (this.props.onSave) {
+                    this.props.onSave({
+                        channelId,
+                        name,
+                        isNavigation,
+                        targetPage,
+                        trueIcon,
+                        trueColor,
+                        falseIcon,
+                        falseColor,
+                        role: channelRole ?? undefined,
+                        useNative: true,
+                        native: parsed,
+                    });
+                }
+            } catch {
+                return;
+            }
+            this.handleClose();
+            return;
+        }
+        const { channelId, name, isNavigation, targetPage, trueIcon, trueColor, falseIcon, falseColor, channelRole } =
+            this.state;
         if (this.props.onSave) {
             this.props.onSave({
                 channelId,
+                role: channelRole ?? undefined,
                 name,
                 isNavigation,
                 targetPage,
@@ -158,6 +210,31 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             });
         }
         this.handleClose();
+    };
+
+    private handleNativeModeToggle = (): void => {
+        if (!this.state.nativeMode) {
+            // Beim Wechsel zu Native: vorhandenes native-JSON beibehalten oder leer starten
+            this.setState({
+                nativeMode: true,
+                nativeJson: '{}',
+                nativeJsonValid: true,
+            });
+        } else {
+            this.setState({ nativeMode: false });
+        }
+    };
+
+    private handleNativeJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>): void => {
+        const json = e.target.value;
+        let valid = false;
+        try {
+            JSON.parse(json);
+            valid = true;
+        } catch {
+            valid = false;
+        }
+        this.setState({ nativeJson: json, nativeJsonValid: valid });
     };
 
     private async loadValidChannels(): Promise<void> {
@@ -484,10 +561,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkingChannel,
             channelRole,
             roleIsValid,
+            nativeMode,
+            nativeJson,
+            nativeJsonValid,
         } = this.state;
-        const canSave = isNavigation || (channelExists === true && !checkingChannel);
+
+        const expertMode = this.props.expertMode === true;
+        const standardCanSave = isNavigation || (channelExists === true && !checkingChannel);
+        const canSave = nativeMode ? nativeJsonValid : standardCanSave;
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
-        const fieldsDisabled = !canSave;
+        const fieldsDisabled = !standardCanSave;
 
         // Untertitel neben dem Titel
         const titleSuffix =
@@ -528,140 +611,172 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     maxWidth="md"
                 >
                     <DialogTitle>
-                        <Typography variant="h6">
-                            {I18n.t('channelConfigDialog_title')}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography
-                                component="span"
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ ml: 1 }}
+                                variant="h6"
+                                sx={{ flex: 1 }}
                             >
-                                ({titleSuffix})
+                                {I18n.t('channelConfigDialog_title')}
+                                <Typography
+                                    component="span"
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ ml: 1 }}
+                                >
+                                    ({titleSuffix})
+                                </Typography>
                             </Typography>
-                        </Typography>
+                        </Box>
                     </DialogTitle>
 
                     <DialogContent>
-                        <Box sx={panelBoxStyle}>
-                            {/* Navigation-Checkbox */}
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={isNavigation}
-                                        onChange={this.handleNavigationChange}
-                                    />
-                                }
-                                label={
-                                    <Typography variant="body1">
-                                        {I18n.t('channelConfigDialog_isNavigation')}
-                                    </Typography>
-                                }
+                        {nativeMode ? (
+                            <TextField
+                                fullWidth
+                                multiline
+                                minRows={12}
+                                value={nativeJson}
+                                onChange={this.handleNativeJsonChange}
+                                error={!nativeJsonValid}
+                                helperText={!nativeJsonValid ? I18n.t('channelConfigDialog_invalidJson') : undefined}
+                                inputProps={{ style: { fontFamily: 'monospace', fontSize: 13 } }}
+                                variant="outlined"
                             />
+                        ) : (
+                            <Box sx={panelBoxStyle}>
+                                {/* Navigation-Checkbox */}
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={isNavigation}
+                                            onChange={this.handleNavigationChange}
+                                        />
+                                    }
+                                    label={
+                                        <Typography variant="body1">
+                                            {I18n.t('channelConfigDialog_isNavigation')}
+                                        </Typography>
+                                    }
+                                />
 
-                            {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
-                            {isNavigation && (
-                                <FormControl
+                                {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
+                                {isNavigation && (
+                                    <FormControl
+                                        variant="standard"
+                                        fullWidth
+                                        disabled={loadingPages}
+                                    >
+                                        <InputLabel>{I18n.t('channelConfigDialog_targetPage')}</InputLabel>
+                                        <Select
+                                            value={targetPage}
+                                            onChange={this.handleTargetPageChange}
+                                            label={I18n.t('channelConfigDialog_targetPage')}
+                                        >
+                                            {loadingPages && (
+                                                <MenuItem
+                                                    disabled
+                                                    value=""
+                                                >
+                                                    <CircularProgress size={16} />
+                                                </MenuItem>
+                                            )}
+                                            {!loadingPages && availablePages.length === 0 && (
+                                                <MenuItem
+                                                    disabled
+                                                    value=""
+                                                >
+                                                    {I18n.t('channelConfigDialog_noPages')}
+                                                </MenuItem>
+                                            )}
+                                            {availablePages.map(page => (
+                                                <MenuItem
+                                                    key={page}
+                                                    value={page}
+                                                >
+                                                    {page}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                )}
+
+                                {/* ioBroker-Channel-Auswahl */}
+                                <EntitySelector
+                                    label={I18n.t('channelConfigDialog_channelId')}
+                                    value={channelId}
+                                    onChange={this.handleChannelIdChange}
+                                    onCommit={this.handleChannelIdCommit}
+                                    onTransformSelectedId={this.transformChannelId}
+                                    socket={socket}
+                                    theme={theme}
+                                    themeType={themeType ?? 'light'}
+                                    dialogName="channelConfigDialog"
+                                    filterFunc={this.buildChannelFilterFunc()}
+                                />
+                                {/* Validierungshinweis Channel */}
+                                {channelId !== '' && channelExists === false && !checkingChannel && (
+                                    <Typography
+                                        variant="caption"
+                                        color="error"
+                                        sx={{ mt: -1.5 }}
+                                    >
+                                        {I18n.t('channelConfigDialog_channelNotFound')}
+                                    </Typography>
+                                )}
+                                {roleIsValid === false && !checkingChannel && (
+                                    <Typography
+                                        variant="caption"
+                                        color="warning.main"
+                                        sx={{ mt: -1.5 }}
+                                    >
+                                        {I18n.t('channelConfigDialog_unknownRoleHint')}
+                                    </Typography>
+                                )}
+
+                                {/* Namensfeld */}
+                                <TextField
+                                    label={I18n.t('channelConfigDialog_name')}
+                                    value={name}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        this.setState({ name: e.target.value })
+                                    }
                                     variant="standard"
                                     fullWidth
-                                    disabled={loadingPages}
-                                >
-                                    <InputLabel>{I18n.t('channelConfigDialog_targetPage')}</InputLabel>
-                                    <Select
-                                        value={targetPage}
-                                        onChange={this.handleTargetPageChange}
-                                        label={I18n.t('channelConfigDialog_targetPage')}
-                                    >
-                                        {loadingPages && (
-                                            <MenuItem
-                                                disabled
-                                                value=""
-                                            >
-                                                <CircularProgress size={16} />
-                                            </MenuItem>
-                                        )}
-                                        {!loadingPages && availablePages.length === 0 && (
-                                            <MenuItem
-                                                disabled
-                                                value=""
-                                            >
-                                                {I18n.t('channelConfigDialog_noPages')}
-                                            </MenuItem>
-                                        )}
-                                        {availablePages.map(page => (
-                                            <MenuItem
-                                                key={page}
-                                                value={page}
-                                            >
-                                                {page}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            )}
+                                    disabled={fieldsDisabled}
+                                    helperText={name === '' ? I18n.t('channelConfigDialog_defaultName') : undefined}
+                                />
 
-                            {/* ioBroker-Channel-Auswahl */}
-                            <EntitySelector
-                                label={I18n.t('channelConfigDialog_channelId')}
-                                value={channelId}
-                                onChange={this.handleChannelIdChange}
-                                onCommit={this.handleChannelIdCommit}
-                                onTransformSelectedId={this.transformChannelId}
-                                socket={socket}
-                                theme={theme}
-                                themeType={themeType ?? 'light'}
-                                dialogName="channelConfigDialog"
-                                filterFunc={this.buildChannelFilterFunc()}
-                            />
-                            {/* Validierungshinweis Channel */}
-                            {channelId !== '' && channelExists === false && !checkingChannel && (
-                                <Typography
-                                    variant="caption"
-                                    color="error"
-                                    sx={{ mt: -1.5 }}
+                                {/* Zweispaltiger Bereich: Wahr / Unwahr */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        gap: 2,
+                                        flexWrap: 'wrap',
+                                        opacity: fieldsDisabled ? 0.4 : 1,
+                                        pointerEvents: fieldsDisabled ? 'none' : 'auto',
+                                    }}
                                 >
-                                    {I18n.t('channelConfigDialog_channelNotFound')}
-                                </Typography>
-                            )}
-                            {roleIsValid === false && !checkingChannel && (
-                                <Typography
-                                    variant="caption"
-                                    color="warning.main"
-                                    sx={{ mt: -1.5 }}
-                                >
-                                    {I18n.t('channelConfigDialog_unknownRoleHint')}
-                                </Typography>
-                            )}
-
-                            {/* Namensfeld */}
-                            <TextField
-                                label={I18n.t('channelConfigDialog_name')}
-                                value={name}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    this.setState({ name: e.target.value })
-                                }
-                                variant="standard"
-                                fullWidth
-                                disabled={fieldsDisabled}
-                                helperText={name === '' ? I18n.t('channelConfigDialog_defaultName') : undefined}
-                            />
-
-                            {/* Zweispaltiger Bereich: Wahr / Unwahr */}
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    gap: 2,
-                                    flexWrap: 'wrap',
-                                    opacity: fieldsDisabled ? 0.4 : 1,
-                                    pointerEvents: fieldsDisabled ? 'none' : 'auto',
-                                }}
-                            >
-                                {this.renderBranchColumn('true')}
-                                {this.renderBranchColumn('false')}
+                                    {this.renderBranchColumn('true')}
+                                    {this.renderBranchColumn('false')}
+                                </Box>
                             </Box>
-                        </Box>
+                        )}
                     </DialogContent>
 
                     <DialogActions>
+                        {(expertMode || nativeMode) && (
+                            <Button
+                                size="small"
+                                variant={nativeMode ? 'contained' : 'outlined'}
+                                color={nativeMode ? 'warning' : 'inherit'}
+                                onClick={this.handleNativeModeToggle}
+                                sx={{ mr: 'auto' }}
+                            >
+                                {nativeMode
+                                    ? I18n.t('channelConfigDialog_standard')
+                                    : I18n.t('channelConfigDialog_native')}
+                            </Button>
+                        )}
                         <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
                         <Button
                             variant="contained"

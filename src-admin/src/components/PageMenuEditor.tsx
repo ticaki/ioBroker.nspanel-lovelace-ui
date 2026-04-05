@@ -39,6 +39,43 @@ const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
 /** Ergebnis der Panel-Modell-Auswertung für cardGrid2 */
 type Grid2ModelStatus = 'all-usp' | 'none-usp' | 'conflict' | 'unknown';
 
+/**
+ * Default-Icons pro channel role, abgeleitet aus getPageItemConfig (die korrekte Funktion).
+ * Reihenfolge: [trueIcon, falseIcon]
+ */
+const ROLE_DEFAULT_ICONS: Record<string, [string, string]> = {
+    airCondition: ['thermometer', 'snowflake-thermometer'],
+    blind: ['window-shutter-open', 'window-shutter'],
+    button: ['gesture-tap-button', 'gesture-tap-button'],
+    ct: ['lightbulb', 'lightbulb-outline'],
+    dimmer: ['lightbulb', 'lightbulb-outline'],
+    door: ['door-open', 'door-closed'],
+    gate: ['garage-open', 'garage'],
+    hue: ['lightbulb', 'lightbulb-outline'],
+    humidity: ['water-percent', 'water-off'],
+    info: ['information-outline', 'information-off-outline'],
+    'level.mode.fan': ['fan', 'fan-off'],
+    'level.timer': ['timer', 'timer-off'],
+    light: ['lightbulb', 'lightbulb-outline'],
+    lock: ['lock-open-variant', 'lock'],
+    media: ['play-box-multiple', 'play-box-multiple-outline'],
+    motion: ['motion-sensor', 'motion-sensor'],
+    rgb: ['lightbulb', 'lightbulb-outline'],
+    rgbSingle: ['lightbulb', 'lightbulb-outline'],
+    select: ['clipboard-list-outline', 'clipboard-list'],
+    'sensor.alarm.flood': ['water-alert', 'water-alert'],
+    slider: ['plus-minus-variant', 'plus-minus-variant'],
+    socket: ['power-socket-de', 'power-socket-de'],
+    temperature: ['thermometer', 'snowflake-thermometer'],
+    thermostat: ['thermometer', 'snowflake-thermometer'],
+    timeTable: ['train', 'train'],
+    'value.humidity': ['water-percent', 'water-off'],
+    'value.temperature': ['thermometer', 'snowflake-thermometer'],
+    volume: ['volume-high', 'volume-mute'],
+    warning: ['alert-decagram-outline', 'alert-decagram-outline'],
+    window: ['window-open-variant', 'window-closed-variant'],
+};
+
 export interface PageMenuEditorProps {
     entry: MenuEntry;
     onEntryChange: (updated: MenuEntry) => void;
@@ -48,12 +85,13 @@ export interface PageMenuEditorProps {
     theme?: any;
     /** Alle konfigurierten Panels aus den Adapter-Native-Daten */
     panels?: AdminPanelConfig[];
+    /** Expert-Mode aus dem json-config-System */
+    expertMode?: boolean;
 }
 
 interface PageMenuEditorState {
     alive: boolean;
     editingSlotIndex: number | null;
-    dragSourceIndex: number | null;
     dragOverIndex: number | null;
     extraPages: number;
 }
@@ -61,13 +99,14 @@ interface PageMenuEditorState {
 export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMenuEditorState> {
     private dialogRef = React.createRef<ChannelConfigDialog>();
     private static iconMap: Map<string, string> | null = null;
+    /** Instanzvariable: synchroner Zugriff beim Drop ohne async-setState-Verzögerung */
+    private dragSourceIndex: number | null = null;
 
     constructor(props: PageMenuEditorProps) {
         super(props);
         this.state = {
             alive: false,
             editingSlotIndex: null,
-            dragSourceIndex: null,
             dragOverIndex: null,
             extraPages: 0,
         };
@@ -149,6 +188,9 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
     }
 
     private static getIconSrc(name: string): string {
+        if (!name) {
+            return '';
+        }
         if (!PageMenuEditor.iconMap) {
             PageMenuEditor.iconMap = new Map();
             for (const icon of icons as { name: string; base64: string }[]) {
@@ -156,6 +198,28 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             }
         }
         return PageMenuEditor.iconMap.get(name) ?? '';
+    }
+
+    /**
+     * Gibt die base64-Bildquelle für ein PageItem zurück.
+     * Ist kein explizites Icon gesetzt, wird das Role-Default-Icon verwendet.
+     *
+     * @param item
+     * @param forTrue
+     */
+    private getItemIconSrc(item: PageItemConfig, forTrue = true): string {
+        const explicit = forTrue ? item.trueIcon : item.falseIcon;
+        if (explicit) {
+            return PageMenuEditor.getIconSrc(explicit);
+        }
+        // Fallback: Role-Default aus gespeicherter role
+        const role = item.role ?? '';
+        const defaults = ROLE_DEFAULT_ICONS[role];
+        if (defaults) {
+            const [trueDefault, falseDefault] = defaults;
+            return PageMenuEditor.getIconSrc(forTrue ? trueDefault : falseDefault);
+        }
+        return '';
     }
 
     private handleCardTypeChange(card: MenuEntry['card']): void {
@@ -189,12 +253,15 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         this.props.onEntryChange({ ...this.props.entry, pageItems });
     };
 
-    private handleDragStart = (index: number): void => {
-        this.setState({ dragSourceIndex: index });
+    private handleDragStart = (index: number, e: React.DragEvent): void => {
+        this.dragSourceIndex = index;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(index));
     };
 
     private handleDragOver = (index: number, e: React.DragEvent): void => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
         if (this.state.dragOverIndex !== index) {
             this.setState({ dragOverIndex: index });
         }
@@ -205,22 +272,24 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
     };
 
     private handleDragEnd = (): void => {
-        this.setState({ dragSourceIndex: null, dragOverIndex: null });
+        this.dragSourceIndex = null;
+        this.setState({ dragOverIndex: null });
     };
 
     private handleDrop = (targetIndex: number, e: React.DragEvent): void => {
         e.preventDefault();
-        const { dragSourceIndex } = this.state;
-        this.setState({ dragSourceIndex: null, dragOverIndex: null });
-        if (dragSourceIndex === null || dragSourceIndex === targetIndex) {
+        const src = this.dragSourceIndex;
+        this.dragSourceIndex = null;
+        this.setState({ dragOverIndex: null });
+        if (src === null || src === targetIndex) {
             return;
         }
         const pageItems: (PageItemConfig | undefined)[] = [...(this.props.entry.pageItems ?? [])];
-        const maxIdx = Math.max(dragSourceIndex, targetIndex);
+        const maxIdx = Math.max(src, targetIndex);
         while (pageItems.length <= maxIdx) {
             pageItems.push(undefined);
         }
-        [pageItems[dragSourceIndex], pageItems[targetIndex]] = [pageItems[targetIndex], pageItems[dragSourceIndex]];
+        [pageItems[src], pageItems[targetIndex]] = [pageItems[targetIndex], pageItems[src]];
         this.props.onEntryChange({ ...this.props.entry, pageItems });
     };
 
@@ -249,7 +318,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
     private renderSlot(index: number, totalSlots: number, wide: boolean): React.JSX.Element {
         const pageItems = this.props.entry.pageItems ?? [];
         const item: PageItemConfig | undefined = pageItems[index];
-        const isDragSource = this.state.dragSourceIndex === index;
+        const isDragSource = this.dragSourceIndex === index;
         const isDragOver = this.state.dragOverIndex === index;
         const isLastSlot = index === totalSlots - 1;
 
@@ -287,7 +356,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             );
         }
 
-        const iconSrc = PageMenuEditor.getIconSrc(item.trueIcon || item.falseIcon || '');
+        const iconSrc = this.getItemIconSrc(item, true);
         const label = item.name || String(index + 1);
 
         if (wide) {
@@ -300,7 +369,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     <Paper
                         elevation={isDragSource ? 0 : 2}
                         draggable
-                        onDragStart={() => this.handleDragStart(index)}
+                        onDragStart={e => this.handleDragStart(index, e)}
                         onDragEnd={this.handleDragEnd}
                         onDragOver={e => this.handleDragOver(index, e)}
                         onDragLeave={this.handleDragLeave}
@@ -371,7 +440,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 <Paper
                     elevation={isDragSource ? 0 : 2}
                     draggable
-                    onDragStart={() => this.handleDragStart(index)}
+                    onDragStart={e => this.handleDragStart(index, e)}
                     onDragEnd={this.handleDragEnd}
                     onDragOver={e => this.handleDragOver(index, e)}
                     onDragLeave={this.handleDragLeave}
@@ -736,6 +805,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     theme={this.props.theme}
                     themeType={this.props.oContext?.themeType}
                     oContext={this.props.oContext}
+                    expertMode={this.props.expertMode ?? false}
                     hideTriggerButton
                     onSave={this.handleItemSave}
                 />
