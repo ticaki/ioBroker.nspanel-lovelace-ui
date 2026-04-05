@@ -321,6 +321,7 @@
     "pageMenu_group_list": "List",
     "pageMenu_items": "Items",
     "pageMenu_page": "Page",
+    "pageMenu_remove_page": "Remove empty page",
     "pageMenu_scroll_arrow": "Arrow (last slot is next-page indicator)",
     "pageMenu_scroll_classic": "Classic",
     "pageMenu_scroll_type": "Scroll mode",

@@ -14,9 +14,9 @@ import {
     IconButton,
     Tooltip,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import DeleteIcon from '@mui/icons-material/Delete';
 import WidgetsIcon from '@mui/icons-material/Widgets';
 import {
     type MenuEntry,
@@ -357,7 +357,10 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
      * @param item
      * @param forTrue
      */
-    private getItemIconSrc(item: PageItemConfig, forTrue = true): string {
+    private getItemIconSrc(item: PageItemConfig | null | undefined, forTrue = true): string {
+        if (item == null) {
+            return '';
+        }
         const explicit = forTrue ? item.trueIcon : item.falseIcon;
         if (explicit) {
             return PageMenuEditor.getIconSrc(explicit);
@@ -467,12 +470,12 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
 
     private renderSlot(index: number, totalSlots: number, wide: boolean): React.JSX.Element {
         const pageItems = this.props.entry.pageItems ?? [];
-        const item = pageItems[index];
+        const item = pageItems[index] ?? undefined;
         const isDragSource = this.dragSourceIndex === index;
         const isDragOver = this.state.dragOverIndex === index;
         const isLastSlot = index === totalSlots - 1;
 
-        if (item === undefined) {
+        if (item == null) {
             // Leerer Slot – klickbar, empfängt Drops
             return (
                 <Tooltip
@@ -660,6 +663,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         card: MenuEntry['card'],
         grid2Status: Grid2ModelStatus,
         totalRealSlots: number,
+        onRemovePage?: () => void,
     ): React.JSX.Element {
         const { columns, uspSpecial, wide } = this.getGridConfig(card, grid2Status);
         const startIdx = pageIndex * effectiveSlots;
@@ -675,13 +679,25 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 }}
             >
                 {totalPages > 1 && (
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'block', mb: 0.5 }}
-                    >
-                        {`${this.getText('pageMenu_page')} ${pageIndex + 1} / ${totalPages}`}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ flex: 1 }}
+                        >
+                            {`${this.getText('pageMenu_page')} ${pageIndex + 1} / ${totalPages}`}
+                        </Typography>
+                        {onRemovePage && (
+                            <Tooltip title={this.getText('pageMenu_remove_page')}>
+                                <IconButton
+                                    size="small"
+                                    onClick={onRemovePage}
+                                >
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    </Box>
                 )}
                 <Box sx={{ display: 'grid', gridTemplateColumns: columns, gap: 1 }}>
                     {Array.from({ length: baseSlots }, (_, localIdx) => {
@@ -925,8 +941,32 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     >
                         {this.getText('pageMenu_items')} ({filledCount}/{totalRealSlots})
                     </Typography>
-                    {Array.from({ length: totalPages }, (_, pageIdx) =>
-                        this.renderPage(
+                    {Array.from({ length: totalPages }, (_, pageIdx) => {
+                        const startIdx = pageIdx * effectiveSlots;
+                        const pageHasItems = (entry.pageItems ?? [])
+                            .slice(startIdx, startIdx + effectiveSlots)
+                            .some(p => p !== undefined);
+                        const canRemove = totalPages > 1 && !pageHasItems;
+                        const onRemovePage = canRemove
+                            ? (): void => {
+                                  // extraPages dekrementieren wenn möglich, sonst letzte Seite aus pageItems trimmen
+                                  if (this.state.extraPages > 0) {
+                                      this.setState(s => ({ extraPages: Math.max(0, s.extraPages - 1) }));
+                                  } else {
+                                      const trimmed = [...(entry.pageItems ?? [])];
+                                      while (trimmed.length > 0 && trimmed[trimmed.length - 1] == undefined) {
+                                          trimmed.pop();
+                                      }
+                                      // Auf Seitengrenze kürzen
+                                      const keepSlots = Math.max(
+                                          effectiveSlots,
+                                          Math.ceil(trimmed.length / effectiveSlots) * effectiveSlots,
+                                      );
+                                      this.props.onEntryChange({ ...entry, pageItems: trimmed.slice(0, keepSlots) });
+                                  }
+                              }
+                            : undefined;
+                        return this.renderPage(
                             pageIdx,
                             totalPages,
                             baseSlots,
@@ -935,8 +975,9 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                             entry.card,
                             grid2Status,
                             totalRealSlots,
-                        ),
-                    )}
+                            onRemovePage,
+                        );
+                    })}
                 </Paper>
 
                 {/* Weitere Seite hinzufügen */}

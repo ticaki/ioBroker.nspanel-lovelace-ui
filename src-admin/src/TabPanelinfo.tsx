@@ -642,7 +642,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         const stateData = panelStateData.states[statePath];
         const tempValue = stateData.tempValue;
 
-        if (tempValue === undefined) {
+        if (tempValue == undefined) {
             return; // No change
         }
 
