@@ -543,20 +543,21 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const isDragSource = this.dragSourceIndex === index;
         const isDragOver = this.state.dragOverIndex === index;
         const isLastSlot = index === totalSlots - 1;
+        const alive = this.state.alive;
 
         if (item == null) {
             // Leerer Slot – klickbar, empfängt Drops
             return (
                 <Tooltip
                     key={index}
-                    title={this.getText('pageMenu_add_item')}
+                    title={alive ? this.getText('pageMenu_add_item') : ''}
                 >
                     <Paper
                         elevation={0}
-                        onClick={() => this.handleSlotClick(index)}
-                        onDragOver={e => this.handleDragOver(index, e)}
-                        onDragLeave={this.handleDragLeave}
-                        onDrop={e => this.handleDrop(index, e)}
+                        onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                        onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
+                        onDragLeave={alive ? this.handleDragLeave : undefined}
+                        onDrop={alive ? e => this.handleDrop(index, e) : undefined}
                         sx={{
                             width: '100%',
                             height: wide ? 44 : 96,
@@ -566,10 +567,10 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                             border: isDragOver ? '2px dashed' : '1px dashed',
                             borderColor: isDragOver ? 'primary.main' : 'divider',
                             backgroundColor: isDragOver ? 'action.hover' : 'transparent',
-                            cursor: 'pointer',
-                            opacity: isLastSlot ? 0.5 : 0.35,
+                            cursor: alive ? 'pointer' : 'not-allowed',
+                            opacity: alive ? (isLastSlot ? 0.5 : 0.35) : 0.2,
                             transition: 'border-color 0.15s, background-color 0.15s',
-                            '&:hover': { opacity: 0.8, borderColor: 'primary.light' },
+                            '&:hover': alive ? { opacity: 0.8, borderColor: 'primary.light' } : {},
                         }}
                     >
                         <AddIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
@@ -590,13 +591,13 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 >
                     <Paper
                         elevation={isDragSource ? 0 : 2}
-                        draggable
-                        onDragStart={e => this.handleDragStart(index, e)}
-                        onDragEnd={this.handleDragEnd}
-                        onDragOver={e => this.handleDragOver(index, e)}
-                        onDragLeave={this.handleDragLeave}
-                        onDrop={e => this.handleDrop(index, e)}
-                        onClick={() => this.handleSlotClick(index)}
+                        draggable={alive}
+                        onDragStart={alive ? e => this.handleDragStart(index, e) : undefined}
+                        onDragEnd={alive ? this.handleDragEnd : undefined}
+                        onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
+                        onDragLeave={alive ? this.handleDragLeave : undefined}
+                        onDrop={alive ? e => this.handleDrop(index, e) : undefined}
+                        onClick={alive ? () => this.handleSlotClick(index) : undefined}
                         sx={{
                             width: '100%',
                             height: 44,
@@ -605,13 +606,13 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                             alignItems: 'center',
                             px: 1,
                             gap: 1,
-                            cursor: isDragSource ? 'grabbing' : 'grab',
+                            cursor: alive ? (isDragSource ? 'grabbing' : 'grab') : 'not-allowed',
                             userSelect: 'none',
-                            opacity: isDragSource ? 0.4 : 1,
+                            opacity: isDragSource ? 0.4 : alive ? 1 : 0.45,
                             outline: isDragOver ? '2px solid' : 'none',
                             outlineColor: 'primary.main',
                             transition: 'opacity 0.15s, outline 0.1s',
-                            '&:hover': { backgroundColor: 'action.hover' },
+                            '&:hover': alive ? { backgroundColor: 'action.hover' } : {},
                         }}
                     >
                         <Box
@@ -642,7 +643,8 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         </Typography>
                         <IconButton
                             size="small"
-                            onClick={e => this.handleItemDelete(index, e)}
+                            onClick={alive ? e => this.handleItemDelete(index, e) : undefined}
+                            disabled={!alive}
                             color="error"
                             sx={{ p: 0.25 }}
                         >
@@ -661,13 +663,13 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             >
                 <Paper
                     elevation={isDragSource ? 0 : 2}
-                    draggable
-                    onDragStart={e => this.handleDragStart(index, e)}
-                    onDragEnd={this.handleDragEnd}
-                    onDragOver={e => this.handleDragOver(index, e)}
-                    onDragLeave={this.handleDragLeave}
-                    onDrop={e => this.handleDrop(index, e)}
-                    onClick={() => this.handleSlotClick(index)}
+                    draggable={alive}
+                    onDragStart={alive ? e => this.handleDragStart(index, e) : undefined}
+                    onDragEnd={alive ? this.handleDragEnd : undefined}
+                    onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
+                    onDragLeave={alive ? this.handleDragLeave : undefined}
+                    onDrop={alive ? e => this.handleDrop(index, e) : undefined}
+                    onClick={alive ? () => this.handleSlotClick(index) : undefined}
                     sx={{
                         width: '100%',
                         height: 96,
@@ -675,13 +677,13 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         flexDirection: 'column',
                         alignItems: 'center',
                         p: 0.5,
-                        cursor: isDragSource ? 'grabbing' : 'grab',
+                        cursor: alive ? (isDragSource ? 'grabbing' : 'grab') : 'not-allowed',
                         userSelect: 'none',
-                        opacity: isDragSource ? 0.4 : 1,
+                        opacity: isDragSource ? 0.4 : alive ? 1 : 0.45,
                         outline: isDragOver ? '2px solid' : 'none',
                         outlineColor: 'primary.main',
                         transition: 'opacity 0.15s, outline 0.1s',
-                        '&:hover': { backgroundColor: 'action.hover' },
+                        '&:hover': alive ? { backgroundColor: 'action.hover' } : {},
                     }}
                 >
                     <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -711,7 +713,8 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     <Box sx={{ display: 'flex', mt: 0.25 }}>
                         <IconButton
                             size="small"
-                            onClick={e => this.handleItemDelete(index, e)}
+                            onClick={alive ? e => this.handleItemDelete(index, e) : undefined}
+                            disabled={!alive}
                             color="error"
                             sx={{ p: 0.25 }}
                         >
@@ -761,6 +764,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                                 <IconButton
                                     size="small"
                                     onClick={onRemovePage}
+                                    disabled={!this.state.alive}
                                 >
                                     <DeleteIcon fontSize="small" />
                                 </IconButton>
@@ -831,7 +835,8 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
 
         // Erst ohne Pfeil schätzen: Pfeil reserviert erst wenn mehrere Seiten tatsächlich nötig sind
         const basePagesNoArrow = Math.max(1, Math.ceil(filledLength / baseSlots));
-        const totalPagesEst = basePagesNoArrow + this.state.extraPages;
+
+        const totalPagesEst = Math.max(basePagesNoArrow, 1 + this.state.extraPages);
         // Pfeilmodus nur aktivieren wenn Seiten wirklich vorhanden oder durch "Seite hinzufügen" erzwungen
         const arrowMode = potentialArrow && totalPagesEst > 1;
         const effectiveSlots = arrowMode ? Math.max(1, baseSlots - 1) : baseSlots;
@@ -1022,8 +1027,9 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         const canRemove = totalPages > 1 && !pageHasItems && pageIdx === totalPages - 1;
                         const onRemovePage = canRemove
                             ? (): void => {
-                                  // extraPages dekrementieren wenn möglich, sonst letzte Seite aus pageItems trimmen
-                                  if (this.state.extraPages > 0) {
+                                  // extraPages dekrementieren wenn der Nutzerwunsch die Seite erzeugt hat;
+                                  // sonst trailing pageItems trimmen.
+                                  if (1 + this.state.extraPages > basePagesNoArrow) {
                                       this.setState(s => ({ extraPages: Math.max(0, s.extraPages - 1) }));
                                   } else {
                                       const trimmed = [...(entry.pageItems ?? [])];
@@ -1076,6 +1082,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     expertMode={this.props.expertMode ?? false}
                     pagesList={this.state.filteredPagesList}
                     currentPageName={this.props.entry.uniqueName}
+                    currentPageCard={this.props.entry.card}
                     hideTriggerButton
                     onSave={this.handleItemSave}
                 />

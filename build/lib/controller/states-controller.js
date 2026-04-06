@@ -26,6 +26,7 @@ var import_library = require("./library");
 var import_tools = require("../const/tools");
 class StatesControler extends import_library.BaseClass {
   triggerDB = {};
+  lastObjectDatabaseCleanup = Date.now();
   // Performance-optimized lookup maps
   targetToTriggerMap = /* @__PURE__ */ new Map();
   activeTriggerCount = /* @__PURE__ */ new Map();
@@ -179,6 +180,13 @@ class StatesControler extends import_library.BaseClass {
     if (expiredIds.length > 0 && this.adapter.config.debugLogStates) {
       this.log.debug(`Cleaned up ${expiredIds.length} expired stateDB entries`);
     }
+  }
+  clearObjectDatabase() {
+    if (this.lastObjectDatabaseCleanup > Date.now() - 2e4) {
+      return;
+    }
+    this.objectDatabase = {};
+    this.lastObjectDatabaseCleanup = Date.now();
   }
   existsState(id) {
     return this.triggerDB[id] !== void 0 || this.stateDB[id] !== void 0;

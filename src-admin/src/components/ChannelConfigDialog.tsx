@@ -6,6 +6,7 @@ import {
     DialogActions,
     Button,
     Box,
+    Alert,
     TextField,
     Checkbox,
     FormControlLabel,
@@ -21,7 +22,12 @@ import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
-import { ADAPTER_NAME, CHANNEL_ROLES_LIST, type PageItemConfig } from '../../../src/lib/types/adminShareConfig';
+import {
+    ADAPTER_NAME,
+    CHANNEL_ROLES_LIST,
+    type PageItemConfig,
+    type MenuEntry,
+} from '../../../src/lib/types/adminShareConfig';
 
 export type { PageItemConfig };
 
@@ -39,6 +45,8 @@ type ChannelConfigDialogProps = {
     pagesList?: string[];
     /** Name der aktuellen Seite – wird aus der Zielseiten-Auswahl gefiltert */
     currentPageName?: string;
+    /** Card-Typ der aktuellen Seite – wird für CheckPageItemConfig benötigt */
+    currentPageCard?: MenuEntry['card'];
     onSave?: (config: PageItemConfig) => void;
     /** Vorausgefüllte Channel-ID für Testzwecke */
     initialChannelId?: string;
@@ -75,6 +83,16 @@ interface ChannelConfigDialogState {
     nativeJson: string;
     /** true wenn nativeJson syntaktisch valide ist */
     nativeJsonValid: boolean;
+    /** true während CheckPageItemConfig-Anfrage läuft */
+    isSaving: boolean;
+    /** Ergebnis-Dialog sichtbar */
+    checkResultOpen: boolean;
+    /** Meldungen aus CheckPageItemConfig */
+    checkResultMessages: string[];
+    /** true = Fehler-Warnung, false = Log + Done */
+    checkResultIsError: boolean;
+    /** Zu speichernde Konfiguration – wird nach "Done" ausgeführt */
+    checkResultPendingConfig: PageItemConfig | null;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -108,6 +126,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeMode: false,
             nativeJson: '',
             nativeJsonValid: false,
+            isSaving: false,
+            checkResultOpen: false,
+            checkResultMessages: [],
+            checkResultIsError: false,
+            checkResultPendingConfig: null,
         };
     }
 
@@ -166,11 +189,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.setState({ open: false });
     };
 
-    private handleSave = (): void => {
+    /** Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. */
+    private buildSaveConfig(): PageItemConfig | null {
+        const { channelId, name, isNavigation, targetPage, trueIcon, trueColor, falseIcon, falseColor, channelRole } =
+            this.state;
         if (this.state.nativeMode) {
             try {
                 const parsed: unknown = JSON.parse(this.state.nativeJson);
-                const {
+                return {
                     channelId,
                     name,
                     isNavigation,
@@ -179,45 +205,121 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     trueColor,
                     falseIcon,
                     falseColor,
-                    channelRole,
-                } = this.state;
-                if (this.props.onSave) {
-                    this.props.onSave({
-                        channelId,
-                        name,
-                        isNavigation,
-                        targetPage,
-                        trueIcon,
-                        trueColor,
-                        falseIcon,
-                        falseColor,
-                        role: channelRole ?? undefined,
-                        useNative: true,
-                        native: parsed,
-                    });
-                }
+                    role: channelRole ?? undefined,
+                    useNative: true,
+                    native: parsed,
+                };
             } catch {
-                return;
+                return null;
             }
-            this.handleClose();
-            return;
         }
-        const { channelId, name, isNavigation, targetPage, trueIcon, trueColor, falseIcon, falseColor, channelRole } =
-            this.state;
+        return {
+            channelId,
+            role: channelRole ?? undefined,
+            name,
+            isNavigation,
+            targetPage,
+            trueIcon,
+            trueColor,
+            falseIcon,
+            falseColor,
+        };
+    }
+
+    /**
+     * Führt onSave aus und schließt den Haupt-Dialog.
+     *
+     * @param config
+     */
+    private commitSave(config: PageItemConfig): void {
         if (this.props.onSave) {
-            this.props.onSave({
-                channelId,
-                role: channelRole ?? undefined,
-                name,
-                isNavigation,
-                targetPage,
-                trueIcon,
-                trueColor,
-                falseIcon,
-                falseColor,
-            });
+            this.props.onSave(config);
         }
         this.handleClose();
+    }
+
+    private handleSave = (): void => {
+        void this.handleSaveAsync();
+    };
+
+    private handleSaveAsync = async (): Promise<void> => {
+        const configToSave = this.buildSaveConfig();
+        if (!configToSave) {
+            return;
+        }
+
+        const socket = this.props.oContext?.socket ?? this.props.socket;
+        const instance = this.props.oContext?.instance ?? '0';
+        const card = this.props.currentPageCard;
+        const uniqueName = this.props.currentPageName;
+
+        if (socket && card && uniqueName) {
+            this.setState({ isSaving: true });
+            try {
+                const item: Record<string, unknown> = {
+                    id: configToSave.channelId,
+                    targetPage: configToSave.targetPage || undefined,
+                    trueIcon: configToSave.trueIcon || undefined,
+                    falseIcon: configToSave.falseIcon || undefined,
+                    trueColor: configToSave.trueColor || undefined,
+                    falseColor: configToSave.falseColor || undefined,
+                    nativeMode: configToSave.useNative ?? false,
+                    native: configToSave.native,
+                };
+                const result: { message: string[]; error: string | undefined } = await socket.sendTo(
+                    `${ADAPTER_NAME}.${instance}`,
+                    'CheckPageItemConfig',
+                    { item, page: { card, uniqueName } },
+                );
+                this.setState({ isSaving: false });
+                const messages = Array.isArray(result?.message)
+                    ? result.message
+                    : result?.message != null
+                      ? [String(result.message)]
+                      : [];
+                if (result?.error !== undefined) {
+                    // Fehler: Dialog bleibt offen, Warnung anzeigen
+                    this.setState({
+                        checkResultOpen: true,
+                        checkResultMessages: messages,
+                        checkResultIsError: true,
+                        checkResultPendingConfig: null,
+                    });
+                } else {
+                    // Erfolg: bei leeren Meldungen direkt speichern, sonst Log anzeigen
+                    if (messages.length === 0) {
+                        this.commitSave(configToSave);
+                    } else {
+                        this.setState({
+                            checkResultOpen: true,
+                            checkResultMessages: messages,
+                            checkResultIsError: false,
+                            checkResultPendingConfig: configToSave,
+                        });
+                    }
+                }
+                return;
+            } catch (e) {
+                console.warn('[ChannelConfigDialog] CheckPageItemConfig failed', e);
+                this.setState({ isSaving: false });
+                // Fallthrough: direkt speichern wenn Check nicht erreichbar
+            }
+        }
+
+        // Kein Check möglich (Adapter offline / Props fehlen) → direkt speichern
+        this.commitSave(configToSave);
+    };
+
+    private handleCheckResultClose = (): void => {
+        this.setState({ checkResultOpen: false, checkResultPendingConfig: null });
+    };
+
+    private handleCheckResultDone = (): void => {
+        const { checkResultPendingConfig } = this.state;
+        this.setState({ checkResultOpen: false, checkResultPendingConfig: null });
+        if (checkResultPendingConfig) {
+            this.commitSave(checkResultPendingConfig);
+        }
     };
 
     private handleNativeModeToggle = (): void => {
@@ -798,10 +900,88 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         <Button
                             variant="contained"
                             onClick={this.handleSave}
-                            disabled={!canSave}
+                            disabled={!canSave || this.state.isSaving}
+                            startIcon={
+                                this.state.isSaving ? (
+                                    <CircularProgress
+                                        size={16}
+                                        color="inherit"
+                                    />
+                                ) : undefined
+                            }
                         >
-                            {I18n.t('channelConfigDialog_save')}
+                            {this.state.isSaving
+                                ? I18n.t('channelConfigDialog_checking')
+                                : I18n.t('channelConfigDialog_save')}
                         </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* CheckPageItemConfig Ergebnis-Dialog */}
+                <Dialog
+                    open={this.state.checkResultOpen}
+                    onClose={this.state.checkResultIsError ? this.handleCheckResultClose : undefined}
+                    maxWidth="sm"
+                    fullWidth
+                >
+                    <DialogTitle>
+                        {this.state.checkResultIsError
+                            ? I18n.t('channelConfigDialog_checkError_title')
+                            : I18n.t('channelConfigDialog_checkLog_title')}
+                    </DialogTitle>
+                    <DialogContent>
+                        <Alert
+                            severity={this.state.checkResultIsError ? 'error' : 'success'}
+                            sx={{ mb: this.state.checkResultMessages.length > 0 ? 1 : 0 }}
+                        >
+                            {this.state.checkResultIsError
+                                ? I18n.t('channelConfigDialog_checkError_title')
+                                : I18n.t('channelConfigDialog_checkLog_title')}
+                        </Alert>
+                        {this.state.checkResultMessages.length > 0 && (
+                            <Box
+                                sx={{
+                                    maxHeight: 300,
+                                    overflowY: 'auto',
+                                    p: 1,
+                                    backgroundColor: 'action.hover',
+                                    borderRadius: 1,
+                                }}
+                            >
+                                {this.state.checkResultMessages.map((msg, i) => (
+                                    <Typography
+                                        key={i}
+                                        variant="body2"
+                                        sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}
+                                    >
+                                        {msg}
+                                    </Typography>
+                                ))}
+                            </Box>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        {this.state.checkResultIsError ? (
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={this.handleCheckResultClose}
+                            >
+                                {I18n.t('channelConfigDialog_checkError_close')}
+                            </Button>
+                        ) : (
+                            <>
+                                <Button onClick={this.handleCheckResultClose}>
+                                    {I18n.t('channelConfigDialog_cancel')}
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={this.handleCheckResultDone}
+                                >
+                                    {I18n.t('channelConfigDialog_checkLog_done')}
+                                </Button>
+                            </>
+                        )}
                     </DialogActions>
                 </Dialog>
             </>

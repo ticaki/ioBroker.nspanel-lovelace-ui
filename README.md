@@ -158,6 +158,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### 0.15.4 (2026-04-04)
+- (ticaki) fixed: `PageMenuEditor` – dragging an item to a slot on a higher-indexed page no longer auto-creates an additional empty page when `arrow` scroll mode is active; extra pages are now tracked as a user-desired minimum rather than an additive offset
+- (ticaki) fixed: `PageMenuEditor` – all slot interactions (click, drag, delete) are now disabled when the adapter is offline (`alive = false`)
+- (ticaki) feat: `ChannelConfigDialog` – clicking Save now calls `CheckPageItemConfig` on the adapter before committing; configuration errors show a warning dialog (dialog stays open, no save); on success a log dialog is shown and the item is saved only after confirming "Save"
 - (ticaki) refactored: panel object subscriptions for `navigationNodes` lifted to `PageConfigManager` and passed via `panelPagesMap` prop to `NavigationAssignmentPanel` and `PageMenuEditor`, eliminating duplicate ioBroker subscriptions
 - (tt-tom17) fixed: iCal / trash page – date display year format (2-digit vs. 4-digit) was swapped for short and long item lists
 - (ticaki) fixed: panel rule timer increased from 120 s to 140 s to reduce false "panel disconnected" events after startup

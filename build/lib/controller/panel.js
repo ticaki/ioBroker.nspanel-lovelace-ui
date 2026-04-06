@@ -293,6 +293,7 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.scriptVersion = options.scriptVersion || "unknown";
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.statesControler = options.controller.statesControler;
+    this.statesControler.clearObjectDatabase();
     const admin = new import_admin.AdminConfiguration(this.adapter);
     admin.processentrys(options);
     options.pages = options.pages.filter((b) => {

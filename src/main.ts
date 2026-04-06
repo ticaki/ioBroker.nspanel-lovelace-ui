@@ -829,6 +829,48 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'CheckPageItemConfig': {
+                    let message: string[] = [];
+                    let error: string | undefined = undefined;
+                    if (obj.message && obj.message.item && obj.message.page) {
+                        const manager = new ConfigManager(this);
+                        const item: ScriptConfig.PageItem = {
+                            id: obj.message.item.id,
+                            navigate: obj.message.item.targetPage ? true : false,
+                            targetPage: obj.message.item.targetPage,
+                            type: null,
+                            native: obj.message.item.nativeMode ? obj.message.item.native : undefined,
+                        };
+                        if ('native' in item && !item.native) {
+                            delete item.native;
+                        }
+                        if ('native' in item) {
+                            // nothing
+                        } else if (item.type == null) {
+                            item.icon = (obj.message.item.trueIcon as AllIcons) ?? undefined;
+                            item.icon2 = (obj.message.item.falseIcon as AllIcons) ?? undefined;
+                            item.onColor = obj.message.item.trueColor ?? undefined;
+                            item.offColor = obj.message.item.falseColor ?? undefined;
+                        }
+
+                        const page: ScriptConfig.PageType = {
+                            type: obj.message.page.card as 'cardGrid',
+                            uniqueName: obj.message.page.uniqueName,
+                            heading: '',
+                            items: [],
+                        };
+                        try {
+                            const result = await manager.getPageItemConfig(item, page, message);
+                            message = result.messages;
+                        } catch (e: any) {
+                            error = `Error in configuration: ${e.message}`;
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { message, error }, obj.callback);
+                    }
+                    break;
+                }
                 case 'ScriptConfigGlobal': {
                     const manager = new ConfigManager(this);
                     try {

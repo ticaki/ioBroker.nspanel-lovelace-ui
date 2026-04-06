@@ -24,5 +24,10 @@
     "channelConfigDialog_unknownRoleHint": "Die Objekt-Rolle entspricht keinem bekannten Gerätetyp",
     "channelConfigDialog_native": "Native",
     "channelConfigDialog_standard": "Standard",
-    "channelConfigDialog_invalidJson": "Ung\u00fcltiges JSON"
+    "channelConfigDialog_invalidJson": "Ung\u00fcltiges JSON",
+    "channelConfigDialog_checking": "Pr\u00fcfe...",
+    "channelConfigDialog_checkError_title": "Konfigurationsfehler",
+    "channelConfigDialog_checkLog_title": "Konfigurationspr\u00fcfung",
+    "channelConfigDialog_checkError_close": "Schlie\u00dfen",
+    "channelConfigDialog_checkLog_done": "Speichern"
 }

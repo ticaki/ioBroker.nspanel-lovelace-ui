@@ -317,6 +317,7 @@ export class Panel extends BaseClass {
         // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
+        this.statesControler.clearObjectDatabase();
 
         // Process admin pages and build navigation
         const admin = new AdminConfiguration(this.adapter);

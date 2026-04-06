@@ -24,5 +24,10 @@
     "channelConfigDialog_unknownRoleHint": "The object's role is not a recognized device type",
     "channelConfigDialog_native": "Native",
     "channelConfigDialog_standard": "Standard",
-    "channelConfigDialog_invalidJson": "Invalid JSON"
+    "channelConfigDialog_invalidJson": "Invalid JSON",
+    "channelConfigDialog_checking": "Checking...",
+    "channelConfigDialog_checkError_title": "Configuration Error",
+    "channelConfigDialog_checkLog_title": "Configuration Check",
+    "channelConfigDialog_checkError_close": "Close",
+    "channelConfigDialog_checkLog_done": "Save"
 }

@@ -33,6 +33,7 @@ export class StatesControler extends BaseClass {
         };
     } = {};
 
+    private lastObjectDatabaseCleanup = Date.now();
     // Performance-optimized lookup maps
     private targetToTriggerMap = new Map<BaseTriggeredPage, Set<string>>();
     private activeTriggerCount = new Map<string, number>();
@@ -219,6 +220,15 @@ export class StatesControler extends BaseClass {
             this.log.debug(`Cleaned up ${expiredIds.length} expired stateDB entries`);
         }
     }
+
+    public clearObjectDatabase(): void {
+        if (this.lastObjectDatabaseCleanup > Date.now() - 20_000) {
+            return;
+        }
+        this.objectDatabase = {};
+        this.lastObjectDatabaseCleanup = Date.now();
+    }
+
     existsState(id: string): boolean {
         return this.triggerDB[id] !== undefined || this.stateDB[id] !== undefined;
     }
