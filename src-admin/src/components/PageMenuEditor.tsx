@@ -23,6 +23,7 @@ import {
     type AdminPageItemConfig,
     type AdminPanelConfig,
     ADAPTER_NAME,
+    ALL_PANELS_SPECIAL_ID,
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
@@ -130,7 +131,12 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const pagesList = this.props.pagesList ?? [];
 
         if (!assignment || assignment.length === 0) {
-            return pagesList;
+            return [...pagesList].sort((a, b) => a.localeCompare(b));
+        }
+
+        // ALL_PANELS_SPECIAL_ID bedeutet "alle Panels" → kein Filter
+        if (assignment.some(a => a.topic === ALL_PANELS_SPECIAL_ID)) {
+            return [...pagesList].sort((a, b) => a.localeCompare(b));
         }
 
         const pageSets = assignment
@@ -329,7 +335,13 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const pagesList = this.props.pagesList ?? [];
 
         if (!assignment || assignment.length === 0) {
-            this.setState({ filteredPagesList: pagesList });
+            this.setState({ filteredPagesList: [...pagesList].sort((a, b) => a.localeCompare(b)) });
+            return;
+        }
+
+        // ALL_PANELS_SPECIAL_ID bedeutet "alle Panels" → kein Filter
+        if (assignment.some(a => a.topic === ALL_PANELS_SPECIAL_ID)) {
+            this.setState({ filteredPagesList: [...pagesList].sort((a, b) => a.localeCompare(b)) });
             return;
         }
 

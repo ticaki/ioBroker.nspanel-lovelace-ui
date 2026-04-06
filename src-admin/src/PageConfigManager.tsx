@@ -522,6 +522,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 onAssign={this.handleAssign}
                 oContext={this.props.oContext}
                 getText={(key: string) => this.getText(key)}
+                panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
                 navigationPanelProps={{
                     ...this.props,
                     data: this.props.data,

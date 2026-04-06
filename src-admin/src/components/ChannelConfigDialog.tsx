@@ -266,18 +266,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     nativeMode: configToSave.useNative ?? false,
                     native: configToSave.native,
                 };
-                const result: { message: string[]; error: string | undefined } = await socket.sendTo(
+                const result: { messages: string[]; error: string | undefined } = await socket.sendTo(
                     `${ADAPTER_NAME}.${instance}`,
                     'CheckPageItemConfig',
                     { item, page: { card, uniqueName } },
                 );
                 this.setState({ isSaving: false });
-                const messages = Array.isArray(result?.message)
-                    ? result.message
-                    : result?.message != null
-                      ? [String(result.message)]
+                const messages = Array.isArray(result?.messages)
+                    ? result.messages
+                    : result?.messages != null
+                      ? [String(result.messages)]
                       : [];
                 if (result?.error !== undefined) {
+                    messages.unshift(result.error);
                     // Fehler: Dialog bleibt offen, Warnung anzeigen
                     this.setState({
                         checkResultOpen: true,
@@ -921,7 +922,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 <Dialog
                     open={this.state.checkResultOpen}
                     onClose={this.state.checkResultIsError ? this.handleCheckResultClose : undefined}
-                    maxWidth="sm"
+                    maxWidth="md"
                     fullWidth
                 >
                     <DialogTitle>
