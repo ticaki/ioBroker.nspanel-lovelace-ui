@@ -2571,12 +2571,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 item.offColor = convertToScriptRGBColor(preItem.falseColor);
             }
 
-            const page: ScriptConfig.PageType = {
+            const page = {
                 type: prePage.card as ScriptConfig.PageType['type'],
                 uniqueName: prePage.uniqueName,
                 heading: '',
-                items: [] as unknown as ScriptConfig.PageGrid['items'],
-            } as ScriptConfig.PageType;
+                items: [],
+            } as unknown as ScriptConfig.PageType;
             try {
                 const result = await manager.getPageItemConfig(item, page, messages);
                 messages = result.messages;
