@@ -58,6 +58,8 @@ type NavigationAssignmentPanelProps = {
     // Neu: Gemeinsame Felder
     commonFields?: PageConfigBaseFields;
     onCommonFieldsChange?: (fields: Partial<PageConfigBaseFields>) => void;
+    /** Vom übergeordneten PageConfigManager bereitgestellt – navigationNodes pro panelTopic */
+    panelPagesMap?: Record<string, string[]>;
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -168,6 +170,40 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         await this.loadPanels(false);
         // initialize from incoming props once panels are available
         await this.applyAssignmentsFromProps(this.props.currentAssignments || []);
+        // Falls der Parent bereits panelPagesMap liefert, initial synchronisieren
+        if (this.props.panelPagesMap) {
+            this.syncPagesMapFromProp(this.props.panelPagesMap);
+        }
+    }
+
+    /**
+     * Synchronisiert pagesMap mit dem vom Parent gelieferten panelPagesMap.
+     * Aktualisiert alle bekannten Panel-Topics sowie ALL_PANELS_SPECIAL_ID.
+     *
+     * @param panelPagesMap
+     */
+    private syncPagesMapFromProp(panelPagesMap: Record<string, string[]>): void {
+        this.setState(prev => {
+            const nextPagesMap = { ...prev.pagesMap };
+            // Pages für alle bekannten Panels aktualisieren
+            for (const p of prev.available) {
+                if (p.panelTopic && panelPagesMap[p.panelTopic] !== undefined) {
+                    nextPagesMap[p.panelTopic] = this.sortNodes(panelPagesMap[p.panelTopic]);
+                }
+            }
+            // ALL_PANELS_SPECIAL_ID neu berechnen, wenn in Benutzung
+            if (prev.added.some(a => a.panelTopic === ALL_PANELS_SPECIAL_ID)) {
+                const allNodes = new Set<string>();
+                for (const p of prev.available) {
+                    const nodes = panelPagesMap[p.panelTopic] ?? [];
+                    for (const n of nodes) {
+                        allNodes.add(n);
+                    }
+                }
+                nextPagesMap[ALL_PANELS_SPECIAL_ID] = this.sortNodes([...allNodes]);
+            }
+            return { pagesMap: nextPagesMap };
+        });
     }
 
     /**
@@ -224,6 +260,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
      * @param panels
      */
     private async updateObjectSubscriptions(panels: PanelInfo[]): Promise<void> {
+        // Der Parent verwaltet die Subscriptions über panelPagesMap – eigene entfallen
+        if (this.props.panelPagesMap) {
+            return;
+        }
         if (!this.props.oContext?.socket) {
             return;
         }
@@ -307,6 +347,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     }
 
     componentDidUpdate(prevProps: NavigationAssignmentPanelProps): void {
+        // Wenn der Parent eine aktualisierte panelPagesMap liefert, direkt in pagesMap übernehmen
+        if (this.props.panelPagesMap && this.props.panelPagesMap !== prevProps.panelPagesMap) {
+            this.syncPagesMapFromProp(this.props.panelPagesMap);
+        }
         // if the selected uniqueName changed, update internal assignments state
         if (prevProps.uniqueName !== this.props.uniqueName) {
             const nextAssignments = this.props.currentAssignments || [];
@@ -555,6 +599,27 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
     async loadPagesForPanel(topic: string, forceReload = false): Promise<void> {
         if (!topic || !this.props.oContext?.socket) {
+            return;
+        }
+
+        // Wenn der Parent panelPagesMap liefert, daraus synchron lesen
+        if (this.props.panelPagesMap) {
+            let list: string[];
+            if (topic === ALL_PANELS_SPECIAL_ID) {
+                const allNodes = new Set<string>();
+                for (const nodes of Object.values(this.props.panelPagesMap)) {
+                    for (const n of nodes) {
+                        allNodes.add(n);
+                    }
+                }
+                list = this.sortNodes([...allNodes]);
+            } else {
+                list = this.sortNodes(this.props.panelPagesMap[topic] ?? []);
+            }
+            this.setState(prev => ({
+                pagesMap: { ...prev.pagesMap, [topic]: list },
+                isLoading: { ...prev.isLoading, [topic]: false },
+            }));
             return;
         }
 

@@ -89,6 +89,8 @@ export interface PageMenuEditorProps {
     expertMode?: boolean;
     /** Alle verfügbaren Seiten (aus sendTo) – wird an ChannelConfigDialog weitergegeben */
     pagesList?: string[];
+    /** Vom übergeordneten PageConfigManager bereitgestellt – navigationNodes pro panelTopic */
+    panelPagesMap?: Record<string, string[]>;
 }
 
 interface PageMenuEditorState {
@@ -115,6 +117,51 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             extraPages: 0,
             filteredPagesList: [],
         };
+    }
+
+    /**
+     * Berechnet die gefilterte Seitenliste synchron aus dem vom Parent gelieferten panelPagesMap.
+     * Bildet die Schnittmenge der Seiten über alle zugewiesenen Panels.
+     *
+     * @param panelPagesMap
+     */
+    private computeFilteredPagesFromMap(panelPagesMap: Record<string, string[]>): string[] {
+        const assignment = this.props.entry.navigationAssignment;
+        const pagesList = this.props.pagesList ?? [];
+
+        if (!assignment || assignment.length === 0) {
+            return pagesList;
+        }
+
+        const pageSets = assignment
+            .map(a => panelPagesMap[a.topic])
+            .filter((pages): pages is string[] => pages !== undefined)
+            .map(pages => new Set(pages));
+
+        const nonEmpty = pageSets.filter(s => s.size > 0);
+        if (nonEmpty.length === 0) {
+            return pagesList;
+        }
+
+        const intersection = nonEmpty.reduce((acc, cur) => {
+            const result = new Set<string>();
+            for (const s of acc) {
+                if (cur.has(s)) {
+                    result.add(s);
+                }
+            }
+            return result;
+        });
+
+        return [...intersection].sort((a, b) => {
+            if (a === 'main') {
+                return -1;
+            }
+            if (b === 'main') {
+                return 1;
+            }
+            return a.localeCompare(b);
+        });
     }
 
     /**
@@ -206,11 +253,13 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
             this.onAliveChanged,
         );
-        // Panel-Objekt-Subscriptions abmelden
-        const socket = this.props.oContext?.socket;
-        if (socket) {
-            for (const id of this.subscribedPanelObjectIds) {
-                void socket.unsubscribeObject(id, this.onPanelObjectChanged);
+        // Panel-Objekt-Subscriptions nur aufräumen, wenn wir sie selbst verwaltet haben
+        if (!this.props.panelPagesMap) {
+            const socket = this.props.oContext?.socket;
+            if (socket) {
+                for (const id of this.subscribedPanelObjectIds) {
+                    void socket.unsubscribeObject(id, this.onPanelObjectChanged);
+                }
             }
         }
         this.subscribedPanelObjectIds.clear();
@@ -226,13 +275,27 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         ) {
             this.props.onEntryChange({ ...this.props.entry, card: 'cardGrid' });
         }
-        // Gefilterte Seitenliste neu laden wenn sich Zuweisung oder pagesList ändert
-        if (
-            prevProps.entry.navigationAssignment !== this.props.entry.navigationAssignment ||
-            prevProps.pagesList !== this.props.pagesList
-        ) {
-            void this.updatePanelObjectSubscriptions();
-            void this.loadFilteredPages();
+
+        if (this.props.panelPagesMap) {
+            // Parent verwaltet Subscriptions: gefilterte Seiten synchron neu berechnen
+            if (
+                this.props.panelPagesMap !== prevProps.panelPagesMap ||
+                prevProps.entry.navigationAssignment !== this.props.entry.navigationAssignment ||
+                prevProps.pagesList !== this.props.pagesList
+            ) {
+                this.setState({
+                    filteredPagesList: this.computeFilteredPagesFromMap(this.props.panelPagesMap),
+                });
+            }
+        } else {
+            // Fallback: eigene Subscription-Logik
+            if (
+                prevProps.entry.navigationAssignment !== this.props.entry.navigationAssignment ||
+                prevProps.pagesList !== this.props.pagesList
+            ) {
+                void this.updatePanelObjectSubscriptions();
+                void this.loadFilteredPages();
+            }
         }
     }
 
@@ -247,8 +310,14 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             console.error('[PageMenuEditor] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false });
         }
-        void this.loadFilteredPages();
-        void this.updatePanelObjectSubscriptions();
+
+        if (this.props.panelPagesMap) {
+            // Parent stellt panelPagesMap bereit – keine eigenen Subscriptions nötig
+            this.setState({ filteredPagesList: this.computeFilteredPagesFromMap(this.props.panelPagesMap) });
+        } else {
+            void this.loadFilteredPages();
+            void this.updatePanelObjectSubscriptions();
+        }
     }
 
     /**

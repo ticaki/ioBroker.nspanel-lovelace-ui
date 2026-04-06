@@ -7,6 +7,7 @@ import type {
     NavigationAssignmentList,
     PageConfigBaseFields,
     MenuEntry,
+    AdminPanelConfig,
 } from '../../src/lib/types/adminShareConfig';
 import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
@@ -22,10 +23,13 @@ interface PageConfigManagerState extends ConfigGenericState {
     pagesList: string[];
     alive: boolean;
     pagesRetryCount: number;
+    /** Enthält navigationNodes pro panelTopic – wird an Kindkomponenten weitergegeben */
+    panelPagesMap: Record<string, string[]>;
 }
 
 class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PageConfigManagerState> {
     private pagesRetryTimeout?: NodeJS.Timeout;
+    private _subscribedPanelObjectIds = new Set<string>();
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
@@ -38,6 +42,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             pagesList: [],
             alive: false,
             pagesRetryCount: 0,
+            panelPagesMap: {},
         } as PageConfigManagerState;
     }
 
@@ -50,6 +55,14 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
             this.onAliveChanged,
         );
+        // Panel-Objekt-Subscriptions aufräumen
+        const socket = this.props.oContext?.socket;
+        if (socket) {
+            for (const id of this._subscribedPanelObjectIds) {
+                void socket.unsubscribeObject(id, this.onPanelObjectChanged);
+            }
+        }
+        this._subscribedPanelObjectIds.clear();
     }
 
     async componentDidMount(): Promise<void> {
@@ -71,6 +84,84 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         } catch (error) {
             console.error('[PageConfig] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false } as PageConfigManagerState);
+        }
+        // Panel-Objekt-Subscriptions für navigationNodes (einmalig beim Mount)
+        await this.updatePanelObjectSubscriptions();
+    }
+
+    /**
+     * Wird aufgerufen, wenn sich ein Panel-Objekt (panels.${id}) ändert.
+     * Liest navigationNodes und aktualisiert panelPagesMap.
+     *
+     * @param id
+     * @param obj
+     */
+    private onPanelObjectChanged = (id: string, obj: ioBroker.Object | null | undefined): void => {
+        const nodes: string[] = Array.isArray(obj?.native?.navigationNodes)
+            ? (obj.native.navigationNodes as string[])
+            : [];
+        const instance = this.props.oContext?.instance ?? '0';
+        const panels: AdminPanelConfig[] = Array.isArray(this.props.data?.panels) ? this.props.data.panels : [];
+        const panel = panels.find(p => p.id && `${ADAPTER_NAME}.${instance}.panels.${p.id}` === id);
+        if (!panel?.topic) {
+            return;
+        }
+        this.setState(
+            prev =>
+                ({
+                    panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
+                }) as PageConfigManagerState,
+        );
+    };
+
+    /**
+     * Synchronisiert die Objekt-Subscriptions mit den konfigurierten Panels.
+     * Beim ersten Abonnieren wird der aktuelle Wert sofort geladen.
+     */
+    private async updatePanelObjectSubscriptions(): Promise<void> {
+        const socket = this.props.oContext?.socket;
+        if (!socket) {
+            return;
+        }
+        const instance = this.props.oContext?.instance ?? '0';
+        const panels: AdminPanelConfig[] = Array.isArray(this.props.data?.panels) ? this.props.data.panels : [];
+        const wantedIds = new Set(panels.filter(p => p.id).map(p => `${ADAPTER_NAME}.${instance}.panels.${p.id}`));
+
+        // Nicht mehr benötigte abmelden
+        for (const id of this._subscribedPanelObjectIds) {
+            if (!wantedIds.has(id)) {
+                try {
+                    await socket.unsubscribeObject(id, this.onPanelObjectChanged);
+                } catch (e) {
+                    console.warn(`[PageConfigManager] unsubscribeObject failed for ${id}`, e);
+                }
+                this._subscribedPanelObjectIds.delete(id);
+            }
+        }
+
+        // Neue abonnieren + Initialwert laden
+        for (const id of wantedIds) {
+            if (!this._subscribedPanelObjectIds.has(id)) {
+                try {
+                    await socket.subscribeObject(id, this.onPanelObjectChanged);
+                    this._subscribedPanelObjectIds.add(id);
+                    const obj: ioBroker.Object | null | undefined = await socket.getObject(id);
+                    const nodes: string[] = Array.isArray(obj?.native?.navigationNodes)
+                        ? (obj.native.navigationNodes as string[])
+                        : [];
+                    const panel = panels.find(p => p.id && `${ADAPTER_NAME}.${instance}.panels.${p.id}` === id);
+                    if (panel?.topic) {
+                        this.setState(
+                            prev =>
+                                ({
+                                    panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
+                                }) as PageConfigManagerState,
+                        );
+                    }
+                } catch (e) {
+                    console.warn(`[PageConfigManager] subscribeObject/getObject failed for ${id}`, e);
+                }
+            }
         }
     }
 
@@ -238,7 +329,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             cardType === 'cardEntities' ||
             cardType === 'cardSchedule'
         ) {
-            const menuCard: MenuEntry['card'] = cardType === 'pageMenu' ? 'cardGrid' : (cardType as MenuEntry['card']);
+            const menuCard: MenuEntry['card'] = cardType === 'pageMenu' ? 'cardGrid' : cardType;
             newEntry = {
                 card: menuCard,
                 uniqueName: name,
@@ -378,6 +469,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
                     expertMode={this.props.expertMode ?? false}
                     pagesList={pagesList}
+                    panelPagesMap={this.state.panelPagesMap}
                 />
             );
         }
@@ -435,6 +527,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     data: this.props.data,
                     onChange: this.props.onChange,
                     onError: this.props.onError,
+                    panelPagesMap: this.state.panelPagesMap,
                     // Gemeinsame Felder für aktuellen Eintrag
                     commonFields: currentEntry
                         ? {
