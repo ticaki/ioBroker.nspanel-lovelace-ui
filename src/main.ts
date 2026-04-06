@@ -2551,7 +2551,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     id: preItem.channelId,
                 };
             }
-            const convertToScriptRGBColor = (color?: string): any => {
+            const convertToScriptRGBColor = (color?: string): ScriptConfig.RGB | undefined => {
                 if (!color) {
                     return undefined;
                 }

@@ -212,7 +212,7 @@ class AdminConfiguration extends import_library.BaseClass {
             config: {
               card: entry.card,
               data: {
-                headline: { type: "const", constVal: entry.headline || "Grid" }
+                headline: { type: "const", constVal: entry.headline || "Entities" }
               }
             },
             pageItems: []

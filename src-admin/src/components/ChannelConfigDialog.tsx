@@ -680,7 +680,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const standardCanSave =
             channelIdValid &&
             ((isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel));
-        const canSave = nativeMode ? nativeJsonValid && channelIdValid : standardCanSave;
+        const canSave = nativeMode ? nativeJsonValid : standardCanSave;
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
