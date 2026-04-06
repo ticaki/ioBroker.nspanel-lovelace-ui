@@ -184,7 +184,7 @@ export class AdminConfiguration extends BaseClass {
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
-                                entry.card as any,
+                                { card: entry.card, uniqueName: entry.uniqueName },
                                 [],
                             );
                             if (!result.error && result.pageItem) {
@@ -218,6 +218,34 @@ export class AdminConfiguration extends BaseClass {
                         },
                         pageItems: [],
                     };
+
+                    if (entry.pageItems) {
+                        let start = false;
+                        for (let index = entry.pageItems.length - 1; index >= 0; index--) {
+                            let item = entry.pageItems[index];
+                            if (!item && !start) {
+                                continue;
+                            }
+                            start = true;
+                            if (!item) {
+                                item = { channelId: 'empty' };
+                            }
+                            const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                                item,
+                                { card: entry.card, uniqueName: entry.uniqueName },
+                                [],
+                            );
+                            if (!result.error && result.pageItem) {
+                                newPage.pageItems = newPage.pageItems ?? [];
+                                newPage.pageItems.unshift(result.pageItem);
+                            } else if (result.error) {
+                                this.log.warn(
+                                    `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`,
+                                );
+                            }
+                        }
+                    }
+
                     break;
                 }
                 default: {

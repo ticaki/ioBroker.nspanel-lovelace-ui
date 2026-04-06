@@ -2523,7 +2523,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     async convertAdminPageItemToPageItemConfig(
         preItem: AdminPageItemConfig | undefined,
-        prePage: any,
+        prePage: { card: string; uniqueName: string },
         messages: string[],
     ): Promise<{
         pageItem: NSPanel.PageItemDataItemsOptions | undefined;
@@ -2572,11 +2572,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
 
             const page: ScriptConfig.PageType = {
-                type: prePage.card as 'cardGrid',
+                type: prePage.card as ScriptConfig.PageType['type'],
                 uniqueName: prePage.uniqueName,
                 heading: '',
-                items: [],
-            };
+                items: [] as unknown as ScriptConfig.PageGrid['items'],
+            } as ScriptConfig.PageType;
             try {
                 const result = await manager.getPageItemConfig(item, page, messages);
                 messages = result.messages;

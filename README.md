@@ -158,6 +158,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### 0.15.4 (2026-04-04)
+- (ticaki) fixed: `convertAdminPageItemToPageItemConfig` now receives `{ card, uniqueName }` object instead of the card string, preventing undefined `prePage.card`/`uniqueName` during page-item validation
+- (ticaki) fixed: page type cast in `convertAdminPageItemToPageItemConfig` changed from `as 'cardGrid'` to `as ScriptConfig.PageType['type']` to support all card types correctly
+- (ticaki) fixed: `cardEntities`/`cardSchedule` pages now convert `pageItems` from admin config, so items configured in `PageMenuEditor` are applied to the panel
 - (ticaki) fixed: `PageMenuEditor` – dragging an item to a slot on a higher-indexed page no longer auto-creates an additional empty page when `arrow` scroll mode is active; extra pages are now tracked as a user-desired minimum rather than an additive offset
 - (ticaki) fixed: `PageMenuEditor` – all slot interactions (click, drag, delete) are now disabled when the adapter is offline (`alive = false`)
 - (ticaki) feat: `ChannelConfigDialog` – clicking Save now calls `CheckPageItemConfig` on the adapter before committing; configuration errors show a warning dialog (dialog stays open, no save); on success a log dialog is shown and the item is saved only after confirming "Save"
