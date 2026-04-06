@@ -243,15 +243,19 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     sx={{ backgroundColor: 'transparent', px: 1 }}
                                 >
                                     <MenuItem value="">{this.getText('panel_filter_all')}</MenuItem>
-                                    <MenuItem value={PANEL_FILTER_UNASSIGNED}>{this.getText('panel_filter_unassigned')}</MenuItem>
-                                    {panels.map(p => (
-                                        <MenuItem
-                                            key={p.topic}
-                                            value={p.topic}
-                                        >
-                                            {p.name || p.topic}
-                                        </MenuItem>
-                                    ))}
+                                    <MenuItem value={PANEL_FILTER_UNASSIGNED}>
+                                        {this.getText('panel_filter_unassigned')}
+                                    </MenuItem>
+                                    {panels
+                                        .filter(p => !!p.topic)
+                                        .map(p => (
+                                            <MenuItem
+                                                key={p.topic}
+                                                value={p.topic}
+                                            >
+                                                {p.name || p.topic}
+                                            </MenuItem>
+                                        ))}
                                 </Select>
                             </FormControl>
                         </Paper>

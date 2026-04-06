@@ -103,7 +103,7 @@ export class Panel extends BaseClass {
     public overrideLightPopup: boolean = true; //  Override light popup config type.
     public hideCards: boolean = false;
     readonly buttons: panelConfigPartial['buttons'];
-    navigation: Navigation;
+    navigation!: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
     readonly topic: string;
@@ -324,7 +324,6 @@ export class Panel extends BaseClass {
 
         this.statesControler = options.controller.statesControler;
         this.statesControler.clearObjectDatabase();
-        this.navigation = new Navigation({ adapter, panel: this, navigationConfig: [] });
 
         // Process admin pages and build navigation
     }

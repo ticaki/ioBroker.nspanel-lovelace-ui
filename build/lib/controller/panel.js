@@ -299,7 +299,6 @@ class Panel extends import_library.BaseClass {
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.statesControler = options.controller.statesControler;
     this.statesControler.clearObjectDatabase();
-    this.navigation = new import_navigation.Navigation({ adapter, panel: this, navigationConfig: [] });
   }
   async preInit(options) {
     const admin = new import_admin.AdminConfiguration(this.adapter);

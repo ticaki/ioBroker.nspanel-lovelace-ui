@@ -256,20 +256,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (socket && card && uniqueName) {
             this.setState({ isSaving: true });
             try {
-                const item: Record<string, unknown> = {
-                    channelId: configToSave.channelId,
-                    targetPage: configToSave.targetPage || undefined,
-                    trueIcon: configToSave.trueIcon || undefined,
-                    falseIcon: configToSave.falseIcon || undefined,
-                    trueColor: configToSave.trueColor || undefined,
-                    falseColor: configToSave.falseColor || undefined,
-                    nativeMode: configToSave.useNative ?? false,
-                    native: configToSave.native,
-                };
                 const result: { messages: string[]; error: string | undefined } = await socket.sendTo(
                     `${ADAPTER_NAME}.${instance}`,
                     'CheckPageItemConfig',
-                    { item, page: { card, uniqueName } },
+                    { item: configToSave, page: { card, uniqueName } },
                 );
                 this.setState({ isSaving: false });
                 const messages = Array.isArray(result?.messages)
@@ -686,9 +676,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         } = this.state;
 
         const expertMode = this.props.expertMode === true;
+        const channelIdValid = channelId !== '';
         const standardCanSave =
-            (isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel);
-        const canSave = nativeMode ? nativeJsonValid : standardCanSave;
+            channelIdValid &&
+            ((isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel));
+        const canSave = nativeMode ? nativeJsonValid && channelIdValid : standardCanSave;
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 

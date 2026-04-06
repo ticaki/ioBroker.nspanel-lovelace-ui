@@ -63,7 +63,7 @@ class AdminConfiguration extends import_library.BaseClass {
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
   async processentrys(option) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const entries = this.pageConfig;
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
@@ -184,7 +184,7 @@ class AdminConfiguration extends import_library.BaseClass {
               }
               const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
-                entry.card,
+                { card: entry.card, uniqueName: entry.uniqueName },
                 []
               );
               if (!result.error && result.pageItem) {
@@ -217,6 +217,32 @@ class AdminConfiguration extends import_library.BaseClass {
             },
             pageItems: []
           };
+          if (entry.pageItems) {
+            let start = false;
+            for (let index = entry.pageItems.length - 1; index >= 0; index--) {
+              let item = entry.pageItems[index];
+              if (!item && !start) {
+                continue;
+              }
+              start = true;
+              if (!item) {
+                item = { channelId: "empty" };
+              }
+              const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                { card: entry.card, uniqueName: entry.uniqueName },
+                []
+              );
+              if (!result.error && result.pageItem) {
+                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
+                newPage.pageItems.unshift(result.pageItem);
+              } else if (result.error) {
+                this.log.warn(
+                  `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`
+                );
+              }
+            }
+          }
           break;
         }
         default: {
@@ -249,7 +275,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.prev
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldNext = (_b = option.navigation[index].right) == null ? void 0 : _b.single;
+          const oldNext = (_c = option.navigation[index].right) == null ? void 0 : _c.single;
           if (oldNext && oldNext !== newPage.uniqueID) {
             overrwriteNext = true;
             option.navigation[index].right = option.navigation[index].right || {};
@@ -273,7 +299,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.next
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldPrev = (_c = option.navigation[index].left) == null ? void 0 : _c.single;
+          const oldPrev = (_d = option.navigation[index].left) == null ? void 0 : _d.single;
           if (oldPrev && oldPrev !== newPage.uniqueID) {
             option.navigation[index].left = option.navigation[index].left || {};
             option.navigation[index].left.single = newPage.uniqueID;

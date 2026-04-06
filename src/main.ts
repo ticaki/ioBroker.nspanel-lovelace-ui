@@ -2572,11 +2572,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
 
             const page = {
-                type: prePage.card as ScriptConfig.PageType['type'],
+                type: prePage.card as ScriptConfig.PagetypeType,
                 uniqueName: prePage.uniqueName,
                 heading: '',
-                items: [],
-            } as unknown as ScriptConfig.PageType;
+                items: [] as ScriptConfig.PageItem[],
+            } as ScriptConfig.PageType;
             try {
                 const result = await manager.getPageItemConfig(item, page, messages);
                 messages = result.messages;

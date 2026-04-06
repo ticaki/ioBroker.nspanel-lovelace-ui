@@ -89,6 +89,16 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         await this.updatePanelObjectSubscriptions();
     }
 
+    componentDidUpdate(prevProps: Readonly<ConfigGenericProps & { theme?: any }>): void {
+        const prevPanels = prevProps.data?.panels;
+        const nextPanels = this.props.data?.panels;
+        const prevInstance = prevProps.oContext?.instance;
+        const nextInstance = this.props.oContext?.instance;
+        if (prevPanels !== nextPanels || prevInstance !== nextInstance) {
+            void this.updatePanelObjectSubscriptions();
+        }
+    }
+
     /**
      * Wird aufgerufen, wenn sich ein Panel-Objekt (panels.${id}) ändert.
      * Liest navigationNodes und aktualisiert panelPagesMap.
