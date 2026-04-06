@@ -20,7 +20,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import WidgetsIcon from '@mui/icons-material/Widgets';
 import {
     type MenuEntry,
-    type PageItemConfig,
+    type AdminPageItemConfig,
     type AdminPanelConfig,
     ADAPTER_NAME,
 } from '../../../src/lib/types/adminShareConfig';
@@ -426,7 +426,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
      * @param item
      * @param forTrue
      */
-    private getItemIconSrc(item: PageItemConfig | null | undefined, forTrue = true): string {
+    private getItemIconSrc(item: AdminPageItemConfig | null | undefined, forTrue = true): string {
         if (item == null) {
             return '';
         }
@@ -455,7 +455,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         this.dialogRef.current?.openWith(item);
     };
 
-    private handleItemSave = (config: PageItemConfig): void => {
+    private handleItemSave = (config: AdminPageItemConfig): void => {
         const { editingSlotIndex } = this.state;
         if (editingSlotIndex === null) {
             return;

@@ -41,9 +41,9 @@ class AdminConfiguration extends import_library.BaseClass {
     this.adapter = adapter;
     this.pageConfig = this.adapter.config.pageConfig || [];
   }
-  processPanels(options) {
+  async processPanels(options) {
     for (const option of options) {
-      this.processentrys(option);
+      await this.processentrys(option);
     }
     return options;
   }
@@ -62,8 +62,8 @@ class AdminConfiguration extends import_library.BaseClass {
    *
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
-  processentrys(option) {
-    var _a, _b;
+  async processentrys(option) {
+    var _a, _b, _c;
     const entries = this.pageConfig;
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
@@ -152,6 +152,73 @@ class AdminConfiguration extends import_library.BaseClass {
           this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
           break;
         }
+        case "cardGrid":
+        case "cardGrid2":
+        case "cardGrid3": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: "",
+            config: {
+              card: entry.card,
+              data: {
+                headline: { type: "const", constVal: entry.headline || "Grid" }
+              }
+            },
+            pageItems: []
+          };
+          if (entry.pageItems) {
+            let start = false;
+            for (let index = entry.pageItems.length - 1; index >= 0; index--) {
+              let item = entry.pageItems[index];
+              if (!item && !start) {
+                continue;
+              }
+              start = true;
+              if (!item) {
+                item = { channelId: "empty" };
+              }
+              const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                entry.card,
+                []
+              );
+              if (!result.error && result.pageItem) {
+                newPage.pageItems = (_a = newPage.pageItems) != null ? _a : [];
+                newPage.pageItems.unshift(result.pageItem);
+              } else if (result.error) {
+                this.log.warn(
+                  `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`
+                );
+              }
+            }
+          }
+          break;
+        }
+        case "cardEntities":
+        case "cardSchedule": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: "",
+            config: {
+              card: entry.card,
+              data: {
+                headline: { type: "const", constVal: entry.headline || "Grid" }
+              }
+            },
+            pageItems: []
+          };
+          break;
+        }
         default: {
           this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
           continue;
@@ -182,7 +249,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.prev
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldNext = (_a = option.navigation[index].right) == null ? void 0 : _a.single;
+          const oldNext = (_b = option.navigation[index].right) == null ? void 0 : _b.single;
           if (oldNext && oldNext !== newPage.uniqueID) {
             overrwriteNext = true;
             option.navigation[index].right = option.navigation[index].right || {};
@@ -206,7 +273,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.next
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldPrev = (_b = option.navigation[index].left) == null ? void 0 : _b.single;
+          const oldPrev = (_c = option.navigation[index].left) == null ? void 0 : _c.single;
           if (oldPrev && oldPrev !== newPage.uniqueID) {
             option.navigation[index].left = option.navigation[index].left || {};
             option.navigation[index].left.single = newPage.uniqueID;

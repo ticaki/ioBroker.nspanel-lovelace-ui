@@ -103,7 +103,7 @@ export class Panel extends BaseClass {
     public overrideLightPopup: boolean = true; //  Override light popup config type.
     public hideCards: boolean = false;
     readonly buttons: panelConfigPartial['buttons'];
-    readonly navigation: Navigation;
+    navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
     readonly topic: string;
@@ -287,6 +287,12 @@ export class Panel extends BaseClass {
         return false;
     }
 
+    static async create(adapter: AdapterClassDefinition, options: panelConfigPartial): Promise<Panel> {
+        const result = new Panel(adapter, options);
+        await result.preInit(options);
+        return result;
+    }
+
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name, options.friendlyName ?? options.name);
         this.panelSend = new PanelSend(adapter, {
@@ -318,11 +324,13 @@ export class Panel extends BaseClass {
 
         this.statesControler = options.controller.statesControler;
         this.statesControler.clearObjectDatabase();
+        this.navigation = new Navigation({ adapter, panel: this, navigationConfig: [] });
 
         // Process admin pages and build navigation
+    }
+    async preInit(options: panelConfigPartial): Promise<void> {
         const admin = new AdminConfiguration(this.adapter);
-        admin.processentrys(options);
-
+        await admin.processentrys(options);
         options.pages = options.pages.filter(b => {
             if (
                 b.config?.card === 'screensaver' ||

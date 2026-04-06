@@ -15,9 +15,9 @@ export class AdminConfiguration extends BaseClass {
         this.pageConfig = this.adapter.config.pageConfig || [];
     }
 
-    public processPanels(options: panelConfigPartial[]): panelConfigPartial[] {
+    public async processPanels(options: panelConfigPartial[]): Promise<panelConfigPartial[]> {
         for (const option of options) {
-            this.processentrys(option);
+            await this.processentrys(option);
         }
         return options;
     }
@@ -36,7 +36,7 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param option - Panel configuration partial containing pages and navigation arrays
      */
-    public processentrys(option: panelConfigPartial): panelConfigPartial {
+    public async processentrys(option: panelConfigPartial): Promise<panelConfigPartial> {
         const entries = this.pageConfig;
 
         for (const entry of entries) {
@@ -149,6 +149,75 @@ export class AdminConfiguration extends BaseClass {
                     }
                     newPage = dataForcardTrash(entry);
                     this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
+                    break;
+                }
+                case 'cardGrid':
+                case 'cardGrid2':
+                case 'cardGrid3': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = {
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn,
+                        dpInit: '',
+                        config: {
+                            card: entry.card,
+                            data: {
+                                headline: { type: 'const', constVal: entry.headline || 'Grid' },
+                            },
+                        },
+                        pageItems: [],
+                    };
+
+                    if (entry.pageItems) {
+                        let start = false;
+                        for (let index = entry.pageItems.length - 1; index >= 0; index--) {
+                            let item = entry.pageItems[index];
+                            if (!item && !start) {
+                                continue;
+                            }
+                            start = true;
+                            if (!item) {
+                                item = { channelId: 'empty' };
+                            }
+                            const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                                item,
+                                entry.card as any,
+                                [],
+                            );
+                            if (!result.error && result.pageItem) {
+                                newPage.pageItems = newPage.pageItems ?? [];
+                                newPage.pageItems.unshift(result.pageItem);
+                            } else if (result.error) {
+                                this.log.warn(
+                                    `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`,
+                                );
+                            }
+                        }
+                    }
+
+                    break;
+                }
+                case 'cardEntities':
+                case 'cardSchedule': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = {
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn,
+                        dpInit: '',
+                        config: {
+                            card: entry.card,
+                            data: {
+                                headline: { type: 'const', constVal: entry.headline || 'Grid' },
+                            },
+                        },
+                        pageItems: [],
+                    };
                     break;
                 }
                 default: {

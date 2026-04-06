@@ -138,16 +138,16 @@ export type ScreensaverEntry = {
 
 export type ScreensaverEntries = ScreensaverEntry[];
 // QR Entry for pageQR configuration
-export type PageItemConfig = {
+export type AdminPageItemConfig = {
     channelId: string;
     role?: string;
-    name: string;
-    isNavigation: boolean;
-    targetPage: string;
-    trueIcon: string;
-    trueColor: string;
-    falseIcon: string;
-    falseColor: string;
+    name?: string;
+    isNavigation?: boolean;
+    targetPage?: string;
+    trueIcon?: string;
+    trueColor?: string;
+    falseIcon?: string;
+    falseColor?: string;
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
@@ -157,7 +157,7 @@ export type PageItemConfig = {
 export type MenuEntry = {
     card: Extract<AdminCardTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardSchedule'>; // Supported card types - will be extended
     headline: string;
-    pageItems: (PageItemConfig | undefined)[];
+    pageItems: (AdminPageItemConfig | undefined)[];
     scrollPresentation?: 'classic' | 'arrow';
     uniqueName: string;
 } & PageConfigBaseFields;

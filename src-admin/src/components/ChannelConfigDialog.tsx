@@ -25,11 +25,11 @@ import IconSelect from '../IconSelect';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
-    type PageItemConfig,
+    type AdminPageItemConfig,
     type MenuEntry,
 } from '../../../src/lib/types/adminShareConfig';
 
-export type { PageItemConfig };
+export type { AdminPageItemConfig as PageItemConfig };
 
 type ChannelConfigDialogProps = {
     socket: any;
@@ -47,7 +47,7 @@ type ChannelConfigDialogProps = {
     currentPageName?: string;
     /** Card-Typ der aktuellen Seite – wird für CheckPageItemConfig benötigt */
     currentPageCard?: MenuEntry['card'];
-    onSave?: (config: PageItemConfig) => void;
+    onSave?: (config: AdminPageItemConfig) => void;
     /** Vorausgefüllte Channel-ID für Testzwecke */
     initialChannelId?: string;
     /** Trigger-Button ausblenden; Dialog wird per openWith()-Methode geöffnet */
@@ -92,7 +92,7 @@ interface ChannelConfigDialogState {
     /** true = Fehler-Warnung, false = Log + Done */
     checkResultIsError: boolean;
     /** Zu speichernde Konfiguration – wird nach "Done" ausgeführt */
-    checkResultPendingConfig: PageItemConfig | null;
+    checkResultPendingConfig: AdminPageItemConfig | null;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -152,7 +152,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      *
      * @param data
      */
-    public openWith(data?: Partial<PageItemConfig>): void {
+    public openWith(data?: Partial<AdminPageItemConfig>): void {
         const isNative = data?.useNative === true;
         this.setState({
             open: true,
@@ -190,7 +190,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     /** Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. */
-    private buildSaveConfig(): PageItemConfig | null {
+    private buildSaveConfig(): AdminPageItemConfig | null {
         const { channelId, name, isNavigation, targetPage, trueIcon, trueColor, falseIcon, falseColor, channelRole } =
             this.state;
         if (this.state.nativeMode) {
@@ -231,7 +231,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      *
      * @param config
      */
-    private commitSave(config: PageItemConfig): void {
+    private commitSave(config: AdminPageItemConfig): void {
         if (this.props.onSave) {
             this.props.onSave(config);
         }
@@ -257,7 +257,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             this.setState({ isSaving: true });
             try {
                 const item: Record<string, unknown> = {
-                    id: configToSave.channelId,
+                    channelId: configToSave.channelId,
                     targetPage: configToSave.targetPage || undefined,
                     trueIcon: configToSave.trueIcon || undefined,
                     falseIcon: configToSave.falseIcon || undefined,

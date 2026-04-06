@@ -10,7 +10,7 @@ const PageScheduleMessageDefault: pages.PageScheduleMessage = {
 };
 
 export class PageSchedule extends PageMenu {
-    config: pages.cardScheduleDataItemOptions;
+    config: pages.cardEntitiesDataItemOptions;
     items: pages.PageBase['items'];
 
     constructor(config: PageInterface, options: pages.PageBase) {
@@ -33,17 +33,17 @@ export class PageSchedule extends PageMenu {
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardScheduleDataItemOptions> =
+        const tempConfig: Partial<pages.cardEntitiesDataItemOptions> =
             this.enums || this.dpInit
                 ? await this.basePanel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardScheduleDataItems> = await this.basePanel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardEntitiesDataItems> = await this.basePanel.statesControler.createDataItems(
             tempConfig,
             this,
         );
-        this.items = tempItem as pages.cardScheduleDataItems;
+        this.items = tempItem as pages.cardEntitiesDataItems;
         // set card because we lose it
         this.items.card = this.card as 'cardSchedule';
         await super.init();

@@ -433,7 +433,7 @@ class Controller extends Library.BaseClass {
         panel.navigation = o.native.navigation[panel.topic].data;
       }
     }
-    const newPanel = new Panel.Panel(this.adapter, panel);
+    const newPanel = await Panel.Panel.create(this.adapter, panel);
     if (await newPanel.isValid()) {
       await newPanel.init();
       this.panels.push(newPanel);
