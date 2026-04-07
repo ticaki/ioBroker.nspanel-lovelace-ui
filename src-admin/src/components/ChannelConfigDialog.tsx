@@ -17,7 +17,10 @@ import {
     MenuItem,
     type SelectChangeEvent,
     CircularProgress,
+    Tooltip,
 } from '@mui/material';
+import CancelIcon from '@mui/icons-material/Cancel';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
@@ -25,6 +28,7 @@ import IconSelect from '../IconSelect';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
+    requiredScriptDataPoints,
     type AdminPageItemConfig,
     type MenuEntry,
 } from '../../../src/lib/types/adminShareConfig';
@@ -93,10 +97,19 @@ interface ChannelConfigDialogState {
     checkResultIsError: boolean;
     /** Zu speichernde Konfiguration – wird nach "Done" ausgeführt */
     checkResultPendingConfig: AdminPageItemConfig | null;
+    /** Fehlende Pflicht-Datenpunkte (nach Datapoint-Prüfung) */
+    datapointErrors: string[];
+    /** Doppelt gemappte Datenpunkte (mehrere States passen auf dieselbe Rolle) */
+    datapointDuplicates: string[];
+    /** true während Datapoint-Prüfung läuft */
+    checkingDatapoints: boolean;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
 const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
+
+/** Verzögerung in ms bevor Datapoint-Prüfung beim Eintippen startet */
+const DATAPOINT_CHECK_DEBOUNCE_MS = 800;
 
 /**
  * Dialog zum Konfigurieren eines ioBroker-Channels mit
@@ -104,6 +117,8 @@ const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
  * Optik analog zu den Panel-Boxen in PagePanelOverview.
  */
 class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, ChannelConfigDialogState> {
+    private datapointCheckTimer: ReturnType<typeof setTimeout> | null = null;
+
     constructor(props: ChannelConfigDialogProps) {
         super(props);
         this.state = {
@@ -131,7 +146,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkResultMessages: [],
             checkResultIsError: false,
             checkResultPendingConfig: null,
+            datapointErrors: [],
+            datapointDuplicates: [],
+            checkingDatapoints: false,
         };
+    }
+
+    override componentWillUnmount(): void {
+        if (this.datapointCheckTimer !== null) {
+            clearTimeout(this.datapointCheckTimer);
+        }
     }
 
     private handleOpen = (): void => {
@@ -391,15 +415,41 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private handleChannelIdChange = (id: string): void => {
-        this.setState({ channelId: id, channelExists: null, channelRole: null, roleIsValid: null });
+        this.setState({
+            channelId: id,
+            channelExists: null,
+            channelRole: null,
+            roleIsValid: null,
+            datapointErrors: [],
+            datapointDuplicates: [],
+        });
+        if (this.datapointCheckTimer !== null) {
+            clearTimeout(this.datapointCheckTimer);
+        }
+        const trimmed = id.trim();
+        if (trimmed) {
+            this.datapointCheckTimer = setTimeout(() => {
+                void this.checkChannelExists(trimmed);
+            }, DATAPOINT_CHECK_DEBOUNCE_MS);
+        }
     };
 
     private handleChannelIdCommit = (id: string): void => {
+        if (this.datapointCheckTimer !== null) {
+            clearTimeout(this.datapointCheckTimer);
+            this.datapointCheckTimer = null;
+        }
         const trimmed = id.trim();
         if (trimmed) {
             void this.checkChannelExists(trimmed);
         } else {
-            this.setState({ channelExists: null, channelRole: null, roleIsValid: null });
+            this.setState({
+                channelExists: null,
+                channelRole: null,
+                roleIsValid: null,
+                datapointErrors: [],
+                datapointDuplicates: [],
+            });
         }
     };
 
@@ -415,14 +465,132 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             const role = (obj as any)?.common?.role ?? null;
             const channelRole = typeof role === 'string' ? role : null;
             const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
-            this.setState({
-                channelExists: obj != null,
-                channelRole,
-                roleIsValid: channelRole !== null ? roleIsValid : null,
-                checkingChannel: false,
-            });
+            this.setState(
+                {
+                    channelExists: obj != null,
+                    channelRole,
+                    roleIsValid: channelRole !== null ? roleIsValid : null,
+                    checkingChannel: false,
+                },
+                () => {
+                    if (obj != null && roleIsValid && channelRole) {
+                        void this.checkDatapoints(objectId, channelRole as keyof typeof requiredScriptDataPoints);
+                    }
+                },
+            );
         } catch {
             this.setState({ channelExists: false, checkingChannel: false });
+        }
+    }
+
+    /**
+     * Prüft ob alle required=true Datenpunkte im Channel vorhanden sind.
+     * Zeigt Fehler (fehlende States) und Duplikate (mehrere States treffen auf dieselbe Rolle).
+     *
+     * @param channelId  Die Channel-ID unter der die States gesucht werden
+     * @param role       Die Channel-Rolle (Key in requiredScriptDataPoints)
+     */
+    private async checkDatapoints(channelId: string, role: keyof typeof requiredScriptDataPoints): Promise<void> {
+        const { socket } = this.props;
+        if (!socket) {
+            return;
+        }
+
+        this.setState({ checkingDatapoints: true });
+        try {
+            const prefix = `${channelId}.`;
+            const allObjects: Record<string, ioBroker.Object> | null | undefined =
+                await socket.getObjectViewSystem('state');
+
+            // Alle direkten Kind-States (nur eine Ebene tiefer)
+            const childStates: ioBroker.StateCommon[] = [];
+            for (const [id, stateObj] of Object.entries(allObjects ?? {})) {
+                if (!id.startsWith(prefix)) {
+                    continue;
+                }
+                // Keine weiteren Ebenen (kein weiterer Punkt nach prefix)
+                const rest = id.slice(prefix.length);
+                if (rest.includes('.')) {
+                    continue;
+                }
+                childStates.push((stateObj as any).common as ioBroker.StateCommon);
+            }
+
+            const dpDef = requiredScriptDataPoints[role]?.data as
+                | Record<
+                      string,
+                      {
+                          role: string | string[];
+                          type: string | string[];
+                          writeable?: boolean;
+                          required: boolean;
+                          alternate?: string;
+                      }
+                  >
+                | undefined;
+
+            if (!dpDef) {
+                this.setState({ datapointErrors: [], datapointDuplicates: [], checkingDatapoints: false });
+                return;
+            }
+
+            const errors: string[] = [];
+            const duplicates: string[] = [];
+
+            for (const [dpKey, dp] of Object.entries(dpDef)) {
+                if (!dp.required) {
+                    continue;
+                }
+
+                const roles = Array.isArray(dp.role) ? dp.role : [dp.role];
+                const types = Array.isArray(dp.type) ? dp.type : [dp.type];
+
+                /**
+                 * Prüft ob ein State zu diesem Datenpunkt passt
+                 *
+                 * @param s
+                 */
+                const matches = (s: ioBroker.StateCommon): boolean => {
+                    if (!roles.includes(s.role)) {
+                        return false;
+                    }
+                    if (!types.includes(s.type as string)) {
+                        return false;
+                    }
+                    if (dp.writeable === true && s.write === false) {
+                        return false;
+                    }
+                    return true;
+                };
+
+                const matched = childStates.filter(matches);
+
+                // Alternate-Fallback prüfen
+                let foundViaAlternate = false;
+                if (matched.length === 0 && dp.alternate) {
+                    const altDp = dpDef[dp.alternate];
+                    if (altDp) {
+                        const altRoles = Array.isArray(altDp.role) ? altDp.role : [altDp.role];
+                        const altTypes = Array.isArray(altDp.type) ? altDp.type : [altDp.type];
+                        foundViaAlternate = childStates.some(
+                            s =>
+                                altRoles.includes(s.role) &&
+                                altTypes.includes(s.type as string) &&
+                                (altDp.writeable !== true || s.write !== false),
+                        );
+                    }
+                }
+
+                if (matched.length === 0 && !foundViaAlternate) {
+                    errors.push(dpKey);
+                } else if (matched.length > 1) {
+                    duplicates.push(dpKey);
+                }
+            }
+
+            this.setState({ datapointErrors: errors, datapointDuplicates: duplicates, checkingDatapoints: false });
+        } catch {
+            this.setState({ checkingDatapoints: false });
         }
     }
 
@@ -684,6 +852,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
+        const hasDatapointProblems =
+            !nativeMode &&
+            !this.state.checkingDatapoints &&
+            (this.state.datapointErrors.length > 0 || this.state.datapointDuplicates.length > 0);
+
         // Untertitel neben dem Titel
         const titleSuffix =
             channelId === ''
@@ -812,19 +985,65 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     </FormControl>
                                 )}
 
-                                {/* ioBroker-Channel-Auswahl */}
-                                <EntitySelector
-                                    label={I18n.t('channelConfigDialog_channelId')}
-                                    value={channelId}
-                                    onChange={this.handleChannelIdChange}
-                                    onCommit={this.handleChannelIdCommit}
-                                    onTransformSelectedId={this.transformChannelId}
-                                    socket={socket}
-                                    theme={theme}
-                                    themeType={themeType ?? 'light'}
-                                    dialogName="channelConfigDialog"
-                                    filterFunc={this.buildChannelFilterFunc()}
-                                />
+                                {/* ioBroker-Channel-Auswahl + Validierungsicons */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <EntitySelector
+                                            label={I18n.t('channelConfigDialog_channelId')}
+                                            value={channelId}
+                                            onChange={this.handleChannelIdChange}
+                                            onCommit={this.handleChannelIdCommit}
+                                            onTransformSelectedId={this.transformChannelId}
+                                            socket={socket}
+                                            theme={theme}
+                                            themeType={themeType ?? 'light'}
+                                            dialogName="channelConfigDialog"
+                                            filterFunc={this.buildChannelFilterFunc()}
+                                        />
+                                        {hasDatapointProblems && (
+                                            <Typography
+                                                variant="caption"
+                                                color="error"
+                                                sx={{ display: 'block', mt: 0.25, px: 1.75 }}
+                                            >
+                                                {channelId}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                    {/* Lade-Spinner während Prüfung */}
+                                    {(checkingChannel || this.state.checkingDatapoints) && (
+                                        <CircularProgress
+                                            size={20}
+                                            sx={{ flexShrink: 0 }}
+                                        />
+                                    )}
+                                    {/* Fehler-Icon: fehlende Pflicht-Datenpunkte */}
+                                    {!checkingChannel &&
+                                        !this.state.checkingDatapoints &&
+                                        this.state.datapointErrors.length > 0 && (
+                                            <Tooltip
+                                                title={`${I18n.t('channelConfigDialog_missingDps')}: ${this.state.datapointErrors.join(', ')}`}
+                                            >
+                                                <CancelIcon
+                                                    color="error"
+                                                    sx={{ flexShrink: 0 }}
+                                                />
+                                            </Tooltip>
+                                        )}
+                                    {/* Duplikat-Icon: mehrere States treffen auf dieselbe Pflicht-Rolle */}
+                                    {!checkingChannel &&
+                                        !this.state.checkingDatapoints &&
+                                        this.state.datapointDuplicates.length > 0 && (
+                                            <Tooltip
+                                                title={`${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`}
+                                            >
+                                                <ContentCopyIcon
+                                                    color="error"
+                                                    sx={{ flexShrink: 0 }}
+                                                />
+                                            </Tooltip>
+                                        )}
+                                </Box>
                                 {/* Validierungshinweis Channel */}
                                 {channelId !== '' && channelExists === false && !checkingChannel && (
                                     <Typography
@@ -894,6 +1113,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             variant="contained"
                             onClick={this.handleSave}
                             disabled={!canSave || this.state.isSaving}
+                            color={hasDatapointProblems ? 'warning' : 'primary'}
                             startIcon={
                                 this.state.isSaving ? (
                                     <CircularProgress
@@ -905,7 +1125,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         >
                             {this.state.isSaving
                                 ? I18n.t('channelConfigDialog_checking')
-                                : I18n.t('channelConfigDialog_save')}
+                                : hasDatapointProblems
+                                  ? I18n.t('channelConfigDialog_details')
+                                  : I18n.t('channelConfigDialog_save')}
                         </Button>
                     </DialogActions>
                 </Dialog>

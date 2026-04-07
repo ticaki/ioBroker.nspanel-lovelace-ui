@@ -84,6 +84,7 @@ export interface PageMenuEditorProps {
     getText: (key: string) => string;
     oContext: any;
     theme?: any;
+    themeType?: string;
     /** Alle konfigurierten Panels aus den Adapter-Native-Daten */
     panels?: AdminPanelConfig[];
     /** Expert-Mode aus dem json-config-System */
@@ -641,7 +642,11 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                                 <img
                                     src={iconSrc}
                                     alt={label}
-                                    style={{ width: 24, height: 24 }}
+                                    style={{
+                                        width: 24,
+                                        height: 24,
+                                        filter: this.props.themeType === 'dark' ? 'invert(1) brightness(2)' : undefined,
+                                    }}
                                 />
                             ) : (
                                 <WidgetsIcon sx={{ fontSize: 24, color: 'text.secondary' }} />
@@ -703,7 +708,11 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                             <img
                                 src={iconSrc}
                                 alt={label}
-                                style={{ width: 32, height: 32 }}
+                                style={{
+                                    width: 32,
+                                    height: 32,
+                                    filter: this.props.themeType === 'dark' ? 'invert(1) brightness(2)' : undefined,
+                                }}
                             />
                         ) : (
                             <WidgetsIcon sx={{ fontSize: 32, color: 'text.secondary' }} />

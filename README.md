@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) feat: new visual page editor in the admin UI – configure cardGrid, cardGrid2, cardGrid3, cardEntities and cardSchedule pages including their items directly in the admin without writing scripts
+- (copilot) dev: added `sync:datapoints` npm script that copies `requiredScriptDataPoints` as `as const` into `adminShareConfig.ts`
 
 ### 0.15.4 (2026-04-04)
 - (tt-tom17) fixed: iCal / trash page – date display year format (2-digit vs. 4-digit) was swapped for short and long item lists
