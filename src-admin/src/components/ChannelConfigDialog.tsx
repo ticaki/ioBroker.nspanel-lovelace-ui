@@ -502,8 +502,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             const allObjects: Record<string, ioBroker.Object> | null | undefined =
                 await socket.getObjectViewSystem('state');
 
-            // Alle direkten Kind-States (nur eine Ebene tiefer)
-            const childStates: ioBroker.StateCommon[] = [];
+            // Alle direkten Kind-States (nur eine Ebene tiefer) mit ihrem Key-Namen
+            const childStates: { key: string; common: ioBroker.StateCommon }[] = [];
             for (const [id, stateObj] of Object.entries(allObjects ?? {})) {
                 if (!id.startsWith(prefix)) {
                     continue;
@@ -513,7 +513,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 if (rest.includes('.')) {
                     continue;
                 }
-                childStates.push((stateObj as any).common as ioBroker.StateCommon);
+                childStates.push({ key: rest, common: (stateObj as any).common as ioBroker.StateCommon });
             }
 
             const dpDef = requiredScriptDataPoints[role]?.data as
@@ -525,6 +525,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                           writeable?: boolean;
                           required: boolean;
                           alternate?: string;
+                          useKey?: boolean;
                       }
                   >
                 | undefined;
@@ -549,15 +550,20 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                  * Prüft ob ein State zu diesem Datenpunkt passt
                  *
                  * @param s
+                 * @param s.key
+                 * @param s.common
                  */
-                const matches = (s: ioBroker.StateCommon): boolean => {
-                    if (!roles.includes(s.role)) {
+                const matches = (s: { key: string; common: ioBroker.StateCommon }): boolean => {
+                    if (dp.useKey === true && s.key !== dpKey) {
                         return false;
                     }
-                    if (!types.includes(s.type as string)) {
+                    if (!roles.includes(s.common.role)) {
                         return false;
                     }
-                    if (dp.writeable === true && s.write === false) {
+                    if (!types.includes(s.common.type as string)) {
+                        return false;
+                    }
+                    if (dp.writeable === true && s.common.write === false) {
                         return false;
                     }
                     return true;
@@ -570,13 +576,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 if (matched.length === 0 && dp.alternate) {
                     const altDp = dpDef[dp.alternate];
                     if (altDp) {
+                        const altKey = dp.alternate;
                         const altRoles = Array.isArray(altDp.role) ? altDp.role : [altDp.role];
                         const altTypes = Array.isArray(altDp.type) ? altDp.type : [altDp.type];
                         foundViaAlternate = childStates.some(
                             s =>
-                                altRoles.includes(s.role) &&
-                                altTypes.includes(s.type as string) &&
-                                (altDp.writeable !== true || s.write !== false),
+                                (altDp.useKey !== true || s.key === altKey) &&
+                                altRoles.includes(s.common.role) &&
+                                altTypes.includes(s.common.type as string) &&
+                                (altDp.writeable !== true || s.common.write !== false),
                         );
                     }
                 }
