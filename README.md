@@ -158,7 +158,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (copilot) fixed: ChannelConfigDialog – error messages (datapointErrors, datapointDuplicates, checkResult) are now properly reset when reopening the dialog
+- (ticaki) fixed: channel duplicate error
+- (tt-tom17) fixed: ChannelConfigDialog – error messages (datapointErrors, datapointDuplicates, checkResult) are now properly reset when reopening the dialog
 
 ### 0.16.1 (2026-04-09)
 - (ticaki) The native configuration in pageitems is available to everyone. It corresponds exactly to the script configuration for a page item.

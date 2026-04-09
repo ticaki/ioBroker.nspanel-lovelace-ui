@@ -564,7 +564,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     }
                 },
             );
-        } catch {
+        } catch (e) {
+            console.error('[ChannelConfigDialog] checkChannelExists failed for', objectId, e);
             this.setState({ channelExists: false, checkingChannel: false });
         }
     }
@@ -579,6 +580,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private async checkDatapoints(channelId: string, role: keyof typeof requiredScriptDataPoints): Promise<void> {
         const { socket } = this.props;
         if (!socket) {
+            console.warn('[ChannelConfigDialog] checkDatapoints: no socket available, skipping check for', channelId);
             return;
         }
 
@@ -617,6 +619,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 | undefined;
 
             if (!dpDef) {
+                console.warn(
+                    '[ChannelConfigDialog] checkDatapoints: no dpDef found for role',
+                    role,
+                    '– skipping datapoint check',
+                );
                 this.setState({ datapointErrors: [], datapointDuplicates: [], checkingDatapoints: false });
                 return;
             }
@@ -686,8 +693,29 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 }
             }
 
+            if (errors.length > 0) {
+                console.warn(
+                    '[ChannelConfigDialog] checkDatapoints: missing required datapoints in',
+                    channelId,
+                    '(role:',
+                    role,
+                    '):',
+                    errors,
+                );
+            }
+            if (duplicates.length > 0) {
+                console.warn(
+                    '[ChannelConfigDialog] checkDatapoints: duplicate datapoints in',
+                    channelId,
+                    '(role:',
+                    role,
+                    '):',
+                    duplicates,
+                );
+            }
             this.setState({ datapointErrors: errors, datapointDuplicates: duplicates, checkingDatapoints: false });
-        } catch {
+        } catch (e) {
+            console.error('[ChannelConfigDialog] checkDatapoints failed for', channelId, e);
             this.setState({ checkingDatapoints: false });
         }
     }
