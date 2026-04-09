@@ -13,11 +13,18 @@ import {
     Paper,
     IconButton,
     Tooltip,
+    Menu,
+    MenuItem,
+    ListItemIcon,
+    ListItemText,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import WidgetsIcon from '@mui/icons-material/Widgets';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 import {
     type MenuEntry,
     type AdminPageItemConfig,
@@ -27,6 +34,7 @@ import {
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
+import { I18n } from '@iobroker/adapter-react-v5';
 
 /** Basis-Slot-Anzahl pro Kartentyp (cardGrid2: eu/us-l = 8, us-p = 9) */
 const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
@@ -77,6 +85,28 @@ const ROLE_DEFAULT_ICONS: Record<string, [string, string]> = {
     window: ['window-open-variant', 'window-closed-variant'],
 };
 
+/**
+ * Default-Icons für navigation=true, abgeleitet aus getPageNaviItemConfig.
+ * Nur Rollen mit explizit gesetztem Icon (kein undefined-Fallback auf Template).
+ * Fallback auf ROLE_DEFAULT_ICONS für Template-basierte Rollen (blind, door, …).
+ */
+const NAV_ROLE_DEFAULT_ICONS: Record<string, [string, string]> = {
+    socket: ['power', 'power-standby'],
+    light: ['lightbulb', 'lightbulb-outline'],
+    dimmer: ['lightbulb', 'lightbulb-outline'],
+    hue: ['lightbulb', 'lightbulb-outline'],
+    rgb: ['lightbulb', 'lightbulb-outline'],
+    rgbSingle: ['lightbulb', 'lightbulb-outline'],
+    ct: ['lightbulb', 'lightbulb-outline'],
+    button: ['gesture-tap-button', 'gesture-tap-button'],
+    media: ['play-box-multiple', 'play-box-multiple-outline'],
+    info: ['information-outline', 'information-off-outline'],
+    temperature: ['temperature-celsius', 'temperature-celsius'],
+    thermostat: ['temperature-celsius', 'temperature-celsius'],
+    'level.timer': ['timer', 'timer'],
+    'level.mode.fan': ['fan', 'fan-off'],
+};
+
 export interface PageMenuEditorProps {
     entry: MenuEntry;
     onEntryChange: (updated: MenuEntry) => void;
@@ -102,6 +132,13 @@ interface PageMenuEditorState {
     extraPages: number;
     /** Gefilterte Seiten basierend auf den zugewiesenen Panels */
     filteredPagesList: string[];
+    /** Gecachte common.name-Werte pro Channel-ID */
+    channelNames: Record<string, string>;
+    /** Kontextmenü: Anker-Element und betroffener Slot-Index */
+    contextMenuEl: HTMLElement | null;
+    contextMenuIndex: number | null;
+    /** Zwischenablage für Kopieren/Einfügen von PageItems */
+    clipboard: AdminPageItemConfig | null;
 }
 
 export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMenuEditorState> {
@@ -118,6 +155,10 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             dragOverIndex: null,
             extraPages: 0,
             filteredPagesList: [],
+            channelNames: {},
+            contextMenuEl: null,
+            contextMenuIndex: null,
+            clipboard: null,
         };
     }
 
@@ -254,6 +295,84 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         this.subscribedPanelObjectIds = newIds;
     }
 
+    /**
+     * Lädt common.name für alle Channel-IDs in den pageItems, die noch keinen Eintrag im Cache haben.
+     */
+    private async loadChannelNames(): Promise<void> {
+        const socket = this.props.oContext?.socket;
+        if (!socket) {
+            return;
+        }
+        const items = this.props.entry.pageItems ?? [];
+        const toLoad = [
+            ...new Set(
+                items
+                    .filter(
+                        item =>
+                            item != null && !item.name && item.channelId && !this.state.channelNames[item.channelId],
+                    )
+                    .map(item => item!.channelId),
+            ),
+        ];
+        if (toLoad.length === 0) {
+            return;
+        }
+        const names: Record<string, string> = { ...this.state.channelNames };
+        for (const channelId of toLoad) {
+            try {
+                const obj: ioBroker.Object | null | undefined = await socket.getObject(channelId);
+                const rawName: unknown = (obj as any)?.common?.name;
+                let name = '';
+                if (typeof rawName === 'string') {
+                    name = rawName;
+                } else if (rawName && typeof rawName === 'object') {
+                    const nameMap = rawName as Record<string, string>;
+                    const lang: string = (I18n as any).getLanguage?.() ?? 'en';
+                    name = nameMap[lang] || nameMap.en || Object.values(nameMap)[0] || '';
+                }
+                if (name) {
+                    names[channelId] = name;
+                }
+            } catch {
+                // Ignorieren – Fallback auf Index
+            }
+        }
+        this.setState({ channelNames: names });
+    }
+
+    private handleContextMenu = (index: number, e: React.MouseEvent<HTMLElement>): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.setState({ contextMenuEl: e.currentTarget, contextMenuIndex: index });
+    };
+
+    private handleContextMenuClose = (): void => {
+        this.setState({ contextMenuEl: null, contextMenuIndex: null });
+    };
+
+    private handleCopyItem = (): void => {
+        const { contextMenuIndex } = this.state;
+        if (contextMenuIndex === null) {
+            return;
+        }
+        const item = (this.props.entry.pageItems ?? [])[contextMenuIndex];
+        this.setState({ clipboard: item ?? null, contextMenuEl: null, contextMenuIndex: null });
+    };
+
+    private handlePasteItem = (): void => {
+        const { contextMenuIndex, clipboard } = this.state;
+        if (contextMenuIndex === null || clipboard === null) {
+            return;
+        }
+        const pageItems = [...(this.props.entry.pageItems ?? [])];
+        while (pageItems.length <= contextMenuIndex) {
+            pageItems.push(undefined);
+        }
+        pageItems[contextMenuIndex] = { ...clipboard };
+        this.props.onEntryChange({ ...this.props.entry, pageItems });
+        this.setState({ contextMenuEl: null, contextMenuIndex: null });
+    };
+
     componentWillUnmount(): void {
         const instance = this.props.oContext.instance ?? '0';
         this.props.oContext.socket.unsubscribeState(
@@ -304,6 +423,9 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 void this.loadFilteredPages();
             }
         }
+        if (prevProps.entry.pageItems !== this.props.entry.pageItems) {
+            void this.loadChannelNames();
+        }
     }
 
     async componentDidMount(): Promise<void> {
@@ -325,6 +447,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             void this.loadFilteredPages();
             void this.updatePanelObjectSubscriptions();
         }
+        void this.loadChannelNames();
     }
 
     /**
@@ -447,9 +570,10 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         if (explicit) {
             return PageMenuEditor.getIconSrc(explicit);
         }
-        // Fallback: Role-Default aus gespeicherter role
+        // Fallback: Role-Default – bei Navigation zuerst NAV_ROLE_DEFAULT_ICONS
         const role = item.role ?? '';
-        const defaults = ROLE_DEFAULT_ICONS[role];
+        const isNav = item.isNavigation === true;
+        const defaults = (isNav ? NAV_ROLE_DEFAULT_ICONS[role] : undefined) ?? ROLE_DEFAULT_ICONS[role];
         if (defaults) {
             const [trueDefault, falseDefault] = defaults;
             return PageMenuEditor.getIconSrc(forTrue ? trueDefault : falseDefault);
@@ -559,6 +683,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const alive = this.state.alive;
 
         if (item == null) {
+            const hasClipboard = this.state.clipboard !== null;
             // Leerer Slot – klickbar, empfängt Drops
             return (
                 <Tooltip
@@ -571,6 +696,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
                         onDragLeave={alive ? this.handleDragLeave : undefined}
                         onDrop={alive ? e => this.handleDrop(index, e) : undefined}
+                        onContextMenu={alive && hasClipboard ? e => this.handleContextMenu(index, e) : undefined}
                         sx={{
                             width: '100%',
                             height: wide ? 44 : 96,
@@ -593,7 +719,17 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         }
 
         const iconSrc = this.getItemIconSrc(item, true);
-        const label = item.name || String(index + 1);
+        const channelName = item.channelId ? (this.state.channelNames[item.channelId] ?? '') : '';
+        const isNativeItem = item.useNative === true;
+        const isNavigationItem = item.isNavigation === true;
+        const role = item.role ?? '';
+        const fallbackLabel = isNativeItem
+            ? `${index + 1}: [native]`
+            : role
+              ? `${index + 1}: (${role})`
+              : String(index + 1);
+        const label = item.name || channelName || fallbackLabel;
+        const isNameFromChannel = !item.name && !!channelName;
 
         if (wide) {
             // Listenansicht (cardEntities / cardSchedule)
@@ -611,6 +747,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         onDragLeave={alive ? this.handleDragLeave : undefined}
                         onDrop={alive ? e => this.handleDrop(index, e) : undefined}
                         onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                        onContextMenu={alive ? e => this.handleContextMenu(index, e) : undefined}
                         sx={{
                             width: '100%',
                             height: 44,
@@ -654,10 +791,22 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         </Box>
                         <Typography
                             variant="body2"
-                            sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                            sx={{
+                                flex: 1,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                fontStyle: isNameFromChannel ? 'italic' : 'normal',
+                                color: isNameFromChannel ? 'text.secondary' : 'text.primary',
+                            }}
                         >
                             {label}
                         </Typography>
+                        {isNavigationItem && (
+                            <SubdirectoryArrowRightIcon
+                                sx={{ fontSize: 14, color: 'primary.main', opacity: 0.85, flexShrink: 0 }}
+                            />
+                        )}
                         <IconButton
                             size="small"
                             onClick={alive ? e => this.handleItemDelete(index, e) : undefined}
@@ -687,6 +836,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     onDragLeave={alive ? this.handleDragLeave : undefined}
                     onDrop={alive ? e => this.handleDrop(index, e) : undefined}
                     onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                    onContextMenu={alive ? e => this.handleContextMenu(index, e) : undefined}
                     sx={{
                         width: '100%',
                         height: 96,
@@ -694,6 +844,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         flexDirection: 'column',
                         alignItems: 'center',
                         p: 0.5,
+                        position: 'relative',
                         cursor: alive ? (isDragSource ? 'grabbing' : 'grab') : 'not-allowed',
                         userSelect: 'none',
                         opacity: isDragSource ? 0.4 : alive ? 1 : 0.45,
@@ -727,10 +878,25 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                             px: 0.5,
+                            fontStyle: isNameFromChannel ? 'italic' : 'normal',
+                            color: isNameFromChannel ? 'text.secondary' : 'text.primary',
                         }}
                     >
                         {label}
                     </Typography>
+                    {isNavigationItem && (
+                        <SubdirectoryArrowRightIcon
+                            sx={{
+                                position: 'absolute',
+                                bottom: 2,
+                                right: 2,
+                                fontSize: 13,
+                                color: 'primary.main',
+                                opacity: 0.85,
+                                pointerEvents: 'none',
+                            }}
+                        />
+                    )}
                     <Box sx={{ display: 'flex', mt: 0.25 }}>
                         <IconButton
                             size="small"
@@ -1092,6 +1258,32 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         {this.getText('pageMenu_add_page')}
                     </Button>
                 </Box>
+
+                {/* Kontextmenü für Kopieren / Einfügen */}
+                <Menu
+                    open={this.state.contextMenuEl !== null}
+                    anchorEl={this.state.contextMenuEl}
+                    onClose={this.handleContextMenuClose}
+                >
+                    {this.state.contextMenuIndex !== null &&
+                        (this.props.entry.pageItems ?? [])[this.state.contextMenuIndex] != null && (
+                            <MenuItem onClick={this.handleCopyItem}>
+                                <ListItemIcon>
+                                    <ContentCopyIcon fontSize="small" />
+                                </ListItemIcon>
+                                <ListItemText>{I18n.t('pageMenu_copy_item')}</ListItemText>
+                            </MenuItem>
+                        )}
+                    <MenuItem
+                        onClick={this.handlePasteItem}
+                        disabled={this.state.clipboard === null}
+                    >
+                        <ListItemIcon>
+                            <ContentPasteIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>{I18n.t('pageMenu_paste_item')}</ListItemText>
+                    </MenuItem>
+                </Menu>
 
                 {/* ChannelConfigDialog – ohne Trigger-Button, per ref gesteuert */}
                 <ChannelConfigDialog

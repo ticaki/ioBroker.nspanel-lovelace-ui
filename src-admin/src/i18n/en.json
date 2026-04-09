@@ -64,5 +64,8 @@
     "channelConfigDialog_valIconMax": "Icon Max Value",
     "channelConfigDialog_valueRange": "Value Range",
     "channelConfigDialog_valMin": "Min Value",
-    "channelConfigDialog_valMax": "Max Value"
+    "channelConfigDialog_valMax": "Max Value",
+    "channelConfigDialog_nameSuggestion": "Suggestion",
+    "pageMenu_copy_item": "Copy item",
+    "pageMenu_paste_item": "Paste item"
 }

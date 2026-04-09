@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import SettingsIcon from '@mui/icons-material/Settings';
+//import SettingsIcon from '@mui/icons-material/Settings';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
@@ -107,6 +107,8 @@ interface ChannelConfigDialogState {
     datapointDuplicates: string[];
     /** true während Datapoint-Prüfung läuft */
     checkingDatapoints: boolean;
+    /** Vorgeschlagener Name aus common.name des Channels – wird nicht gespeichert */
+    channelNameSuggestion: string;
     /** Options-Dialog sichtbar */
     optionsDialogOpen: boolean;
     /** useValue Checkbox Auswahl */
@@ -169,6 +171,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             datapointErrors: [],
             datapointDuplicates: [],
             checkingDatapoints: false,
+            channelNameSuggestion: '',
             optionsDialogOpen: false,
             useValue: false,
             useColor: false,
@@ -478,6 +481,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             roleIsValid: null,
             datapointErrors: [],
             datapointDuplicates: [],
+            channelNameSuggestion: '',
         });
         if (this.datapointCheckTimer !== null) {
             clearTimeout(this.datapointCheckTimer);
@@ -521,12 +525,22 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             const role = (obj as any)?.common?.role ?? null;
             const channelRole = typeof role === 'string' ? role : null;
             const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
+            const rawName: unknown = (obj as any)?.common?.name;
+            let channelNameSuggestion = '';
+            if (typeof rawName === 'string') {
+                channelNameSuggestion = rawName;
+            } else if (rawName && typeof rawName === 'object') {
+                const nameMap = rawName as Record<string, string>;
+                const lang: string = (I18n as any).getLanguage?.() ?? 'en';
+                channelNameSuggestion = nameMap[lang] || nameMap.en || Object.values(nameMap)[0] || '';
+            }
             this.setState(
                 {
                     channelExists: obj != null,
                     channelRole,
                     roleIsValid: channelRole !== null ? roleIsValid : null,
                     checkingChannel: false,
+                    channelNameSuggestion,
                 },
                 () => {
                     if (obj != null && roleIsValid && channelRole) {
@@ -1029,7 +1043,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     control={
                                         <Checkbox
                                             checked={isNavigation}
-                                            onChange={this.handleUseValueChange}
+                                            onChange={this.handleNavigationChange}
                                         />
                                     }
                                     label={
@@ -1169,7 +1183,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     variant="standard"
                                     fullWidth
                                     disabled={fieldsDisabled}
-                                    helperText={name === '' ? I18n.t('channelConfigDialog_defaultName') : undefined}
+                                    helperText={
+                                        name === '' && this.state.channelNameSuggestion
+                                            ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${this.state.channelNameSuggestion}`
+                                            : name === ''
+                                              ? I18n.t('channelConfigDialog_defaultName')
+                                              : undefined
+                                    }
+                                    FormHelperTextProps={{ sx: { color: 'text.disabled' } }}
                                 />
 
                                 {/* Zweispaltiger Bereich: Wahr / Unwahr */}
@@ -1205,6 +1226,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             </Button>
                         )}
                         {/* Options-Button */}
+                        {/* 
                         <Button
                             size="small"
                             variant="outlined"
@@ -1213,6 +1235,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         >
                             {I18n.t('channelConfigDialog_options')}
                         </Button>
+                        */}
                         {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
                         <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
                         <Button
