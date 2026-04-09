@@ -2205,7 +2205,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       const manager = new import_config_manager.ConfigManager(this);
       let item = void 0;
       if (preItem.useNative) {
-        item = { native: preItem.useNative ? preItem.native : void 0 };
+        item = preItem.useNative ? preItem.native : void 0;
       } else if (preItem.isNavigation) {
         item = {
           navigate: true,
@@ -2231,6 +2231,10 @@ class NspanelLovelaceUi extends utils.Adapter {
           return void 0;
         }
       };
+      if (!item) {
+        error = "Invalid/Empty item native configuration!";
+        return { pageItem, messages, error };
+      }
       if (!("native" in item)) {
         item.icon = preItem.trueIcon || void 0;
         item.icon2 = preItem.falseIcon || void 0;

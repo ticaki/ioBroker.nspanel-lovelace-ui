@@ -2537,7 +2537,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             let item: ScriptConfig.PageItem | undefined = undefined;
 
             if (preItem.useNative) {
-                item = { native: preItem.useNative ? preItem.native : undefined };
+                item = preItem.useNative ? preItem.native : undefined;
             } else if (preItem.isNavigation) {
                 item = {
                     navigate: true,
@@ -2563,6 +2563,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                     return undefined;
                 }
             };
+            if (!item) {
+                error = 'Invalid/Empty item native configuration!';
+                return { pageItem, messages, error };
+            }
 
             if (!('native' in item)) {
                 item.icon = (preItem.trueIcon as AllIcons) || undefined;

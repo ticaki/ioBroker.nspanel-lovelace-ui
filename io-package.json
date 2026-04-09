@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.16.0",
+    "version": "0.16.1",
     "news": {
+      "0.16.1": {
+        "en": "The native configuration in pageitems is available to everyone. It corresponds exactly to the script configuration for a page item.",
+        "de": "Die native Konfiguration in Pageitems steht allen zur Verfügung. Sie entspricht genau der Skript-Konfiguration für ein Seitenelement.",
+        "ru": "Нативная конфигурация в pageitems доступна всем. Она точно соответствует конфигурации скрипта для элемента страницы.",
+        "pt": "A configuração nativa nos pageitems está disponível para todos. Corresponde exatamente à configuração do script para um item de página.",
+        "nl": "De native configuratie in pageitems is voor iedereen beschikbaar. Het komt precies overeen met de scriptconfiguratie voor een pagina-item.",
+        "fr": "La configuration native dans les pageitems est disponible pour tout le monde. Elle correspond exactement à la configuration du script pour un élément de page.",
+        "it": "La configurazione nativa nei pageitems è disponibile per tutti. Corrisponde esattamente alla configurazione dello script per un elemento di pagina.",
+        "es": "La configuración nativa en los pageitems está disponible para todos. Corresponde exactamente a la configuración del script para un elemento de página.",
+        "pl": "Natywna konfiguracja w pageitems jest dostępna dla wszystkich. Odpowiada dokładnie konfiguracji skryptu dla elementu strony.",
+        "uk": "Нативна конфігурація у pageitems доступна всім. Вона точно відповідає конфігурації скрипта для елемента сторінки.",
+        "zh-cn": "pageitems 中的原生配置可供所有人使用。它与页面元素的脚本配置完全对应。"
+      },
       "0.16.0": {
         "en": "feat: new visual page editor in the admin UI – configure cardGrid, cardGrid2, cardGrid3, cardEntities and cardSchedule pages including their items directly in the admin.",
         "de": "feat: neuer visueller Seiteneditor im Admin UI – konfigurieren Sie cardGrid, cardGrid2, cardGrid3, cardEntities und cardSchedule-Seiten einschließlich ihrer Elemente direkt im Admin.",
@@ -80,19 +93,6 @@
         "pl": "refaktoryzacja: kod wyboru strefy czasowej przeniesiony z adaptera do handlera admina (wewnętrzne, bez zmian UI)\ndodane: TempOffset konfigurowalny w obiektach i zakładce admin (#629)\ndodane: przycisk \"Aktualizuj skrypty dla wszystkich paneli\" w zakładce Konserwacja",
         "uk": "рефакторинг: код вибору часового поясу переміщено з адаптера до обробника адміністратора (внутрішнє, без змін UI)\nдодано: TempOffset налаштовується в об'єктах і вкладці адміністратора (#629)\nдодано: кнопка \"Оновити скрипти для всіх панелей\" у вкладці Обслуговування",
         "zh-cn": "重构: 将时区选择代码从适配器移至管理处理器（内部重构，无UI变更）\n添加: TempOffset可在对象和管理标签中配置 (#629)\n添加: 维护标签中的\"为所有面板更新脚本\"按钮"
-      },
-      "0.13.4": {
-        "en": "added: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modes for HW button actions",
-        "de": "Hinzugefügt: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff Modi für HW-Buttonautomationen",
-        "ru": "добавлено: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff режимы для действий кнопок HW",
-        "pt": "adicionado: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modos para ações dos botões HW",
-        "nl": "toegevoegd: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modi voor HW-knopacties",
-        "fr": "ajouté: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modes pour les actions des boutons HW",
-        "it": "aggiunto: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modalità per le azioni dei pulsanti HW",
-        "es": "añadido: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff modos para las acciones de los botones HW",
-        "pl": "dodano: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff tryby dla akcji przycisków HW",
-        "uk": "додано: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff режими для дій кнопок HW",
-        "zh-cn": "添加: buttonOnDelayOff / buttonOffDelayOn / buttonDelayOn / buttonDelayOff 模式用于 HW 按钮操作"
       }
     },
     "titleLang": {

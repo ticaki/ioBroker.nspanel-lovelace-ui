@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.16.1 (2026-04-09)
+- (ticaki) The native configuration in pageitems is available to everyone. It corresponds exactly to the script configuration for a page item.
+
 ### 0.16.0 (2026-04-09)
 - (ticaki) feat: new visual page editor in the admin UI – configure cardGrid, cardGrid2, cardGrid3, cardEntities and cardSchedule pages including their items directly in the admin.
 
