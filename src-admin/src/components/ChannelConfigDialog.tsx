@@ -193,7 +193,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     private handleOpen = (): void => {
-        this.setState({ open: true });
+        this.setState({
+            open: true,
+            datapointErrors: [],
+            datapointDuplicates: [],
+            checkResultMessages: [],
+            checkResultOpen: false,
+            checkResultIsError: false,
+            checkResultPendingConfig: null,
+            isSaving: false,
+        });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
         } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
@@ -231,6 +240,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeJsonValid: isNative,
             nativeJsonErrorMessage: '',
             useValue: data?.useValue ?? false,
+            datapointErrors: [],
+            datapointDuplicates: [],
+            checkResultMessages: [],
+            checkResultOpen: false,
+            checkResultIsError: false,
+            checkResultPendingConfig: null,
+            isSaving: false,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
