@@ -25,7 +25,14 @@ import { ADAPTER_NAME, ALL_PANELS_SPECIAL_ID } from '../../../src/lib/types/admi
 export type PageCardType =
     | Extract<
           AdminCardTypes,
-          'cardChart' | 'cardAlarm' | 'cardQR' | 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardSchedule'
+          | 'cardChart'
+          | 'cardAlarm'
+          | 'cardQR'
+          | 'cardGrid'
+          | 'cardGrid2'
+          | 'cardGrid3'
+          | 'cardEntities'
+          | 'cardSchedule'
       >
     | 'all'
     | 'cardTrash'
