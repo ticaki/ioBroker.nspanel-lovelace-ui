@@ -28,12 +28,20 @@ import { URL } from 'node:url';
 import type * as pages from './lib/types/pages';
 import * as fs from 'node:fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
+import { Color } from './lib/const/Color';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
-import type { NavigationSavePayload, PanelListEntry, PanelInfo, PageConfig } from './lib/types/adminShareConfig';
+import type {
+    NavigationSavePayload,
+    PanelListEntry,
+    PanelInfo,
+    PageConfig,
+    AdminPageItemConfig,
+} from './lib/types/adminShareConfig';
 import { isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { NSpanelModel, oldQRType, oldChartType } from './lib/types/types';
 import iCal from 'node-ical';
+import type { NSPanel } from './lib/types/NSPanel';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -853,6 +861,23 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
+                case 'CheckPageItemConfig': {
+                    let messages: string[] = [];
+                    let error: string | undefined = undefined;
+                    if (obj.message && obj.message.item && obj.message.page) {
+                        const result = await this.convertAdminPageItemToPageItemConfig(
+                            obj.message.item,
+                            obj.message.page,
+                            messages,
+                        );
+                        messages = result.messages;
+                        error = result.error;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { messages, error }, obj.callback);
                     }
                     break;
                 }
@@ -2523,8 +2548,77 @@ class NspanelLovelaceUi extends utils.Adapter {
             return false;
         }
     }
-}
+    async convertAdminPageItemToPageItemConfig(
+        preItem: AdminPageItemConfig | undefined,
+        prePage: { card: string; uniqueName: string },
+        messages: string[],
+    ): Promise<{
+        pageItem: NSPanel.PageItemDataItemsOptions | undefined;
+        messages: string[];
+        error: string | undefined;
+    }> {
+        let error: string | undefined = undefined;
+        let pageItem: NSPanel.PageItemDataItemsOptions | undefined = undefined;
+        if (preItem && prePage) {
+            const manager = new ConfigManager(this);
+            let item: ScriptConfig.PageItem | undefined = undefined;
 
+            if (preItem.useNative) {
+                item = preItem.useNative ? preItem.native : undefined;
+            } else if (preItem.isNavigation) {
+                item = {
+                    navigate: true,
+                    targetPage: preItem.targetPage ?? '',
+                    type: null,
+                    id: preItem.channelId,
+                };
+            } else {
+                item = {
+                    type: null,
+                    id: preItem.channelId,
+                };
+            }
+            const convertToScriptRGBColor = (color?: string): ScriptConfig.RGB | undefined => {
+                if (!color) {
+                    return undefined;
+                }
+                try {
+                    const c = Color.ConvertHexToRgb(color);
+                    return { red: c.r, green: c.g, blue: c.b };
+                } catch {
+                    this.log.warn(`Invalid color format: ${color}`);
+                    return undefined;
+                }
+            };
+            if (!item) {
+                error = 'Invalid/Empty item native configuration!';
+                return { pageItem, messages, error };
+            }
+
+            if (!('native' in item)) {
+                item.icon = (preItem.trueIcon as AllIcons) || undefined;
+                item.icon2 = (preItem.falseIcon as AllIcons) || undefined;
+                item.onColor = convertToScriptRGBColor(preItem.trueColor);
+                item.offColor = convertToScriptRGBColor(preItem.falseColor);
+            }
+
+            const page = {
+                type: prePage.card as ScriptConfig.PagetypeType,
+                uniqueName: prePage.uniqueName,
+                heading: '',
+                items: [] as ScriptConfig.PageItem[],
+            } as ScriptConfig.PageType;
+            try {
+                const result = await manager.getPageItemConfig(item, page, messages);
+                messages = result.messages;
+                pageItem = result.itemConfig;
+            } catch (e: any) {
+                error = `Error in configuration: ${e.message}`;
+            }
+        }
+        return { pageItem, messages, error };
+    }
+}
 if (require.main !== module) {
     // Export the constructor in compact mode
     module.exports = (options: Partial<utils.AdapterOptions> | undefined) => new NspanelLovelaceUi(options);

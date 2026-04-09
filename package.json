@@ -1,6 +1,6 @@
 {
   "name": "iobroker.nspanel-lovelace-ui",
-  "version": "0.15.4",
+  "version": "0.16.1",
   "description": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
   "author": {
     "name": "ticaki",
@@ -88,6 +88,7 @@
     "npm": "npm i && cd src-admin && npm i",
     "build:admin": "cd src-admin && npm run build",
     "build:all": "npm run build && npm run build:admin",
+    "sync:datapoints": "ts-node tasks.ts sync:datapoints",
     "lint:admin": "cd src-admin && npm run lint",
     "verify": "npm run lint && npm run lint:admin && npm run build",
     "dev": "dev-server upload && dev-server watch",

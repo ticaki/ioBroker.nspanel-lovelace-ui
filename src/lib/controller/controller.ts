@@ -452,7 +452,7 @@ export class Controller extends Library.BaseClass {
             }
         }
 
-        const newPanel = new Panel.Panel(this.adapter, panel as Panel.panelConfigPartial);
+        const newPanel = await Panel.Panel.create(this.adapter, panel as Panel.panelConfigPartial);
         if (await newPanel.isValid()) {
             await newPanel.init();
 

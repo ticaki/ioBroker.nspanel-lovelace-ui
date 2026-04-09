@@ -20,7 +20,6 @@ var config_manager_const_exports = {};
 __export(config_manager_const_exports, {
   CustomTemplates: () => CustomTemplates,
   arrayOfAllConfigRequiredFields: () => arrayOfAllConfigRequiredFields,
-  channelRolesList: () => channelRolesList,
   checkedDatapoints: () => checkedDatapoints,
   defaultConfig: () => defaultConfig,
   isButton: () => isButton,
@@ -1021,12 +1020,10 @@ const requiredScriptDataPoints = {
     }
   }
 };
-const channelRolesList = Object.keys(requiredScriptDataPoints);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CustomTemplates,
   arrayOfAllConfigRequiredFields,
-  channelRolesList,
   checkedDatapoints,
   defaultConfig,
   isButton,

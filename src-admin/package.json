@@ -6,8 +6,9 @@
     "scripts": {
         "start": "vite --port 4173",
         "lint": "eslint -c eslint.config.mjs",
-        "build": "tsc && vite build && npm run copy:custom",
-        "copy:custom": "tsx ../tasks.ts admin:copy"
+        "build": "npm run sync:datapoints && tsc && vite build && npm run copy:custom",
+        "copy:custom": "tsx ../tasks.ts admin:copy",
+        "sync:datapoints": "tsx ../tasks.ts sync:datapoints"
     },
     "devDependencies": {
         "@iobroker/adapter-react-v5": "^8.1.6",

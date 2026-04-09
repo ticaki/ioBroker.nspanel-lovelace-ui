@@ -209,7 +209,6 @@ export type PageMenuConfig = (
     | cardThermo2DataItemOptions
     | cardGridDataItemOptions
     | cardEntitiesDataItemOptions
-    | cardScheduleDataItemOptions
     | cardMediaDataItemOptions
 ) & {
     options?: {
@@ -264,8 +263,7 @@ export type PageBase = (
         | cardAlarmDataItems
         | cardPopupDataItems
         | cardQRDataItems
-        | cardChartDataItems
-        | cardScheduleDataItems;
+        | cardChartDataItems;
 };
 
 export type PageBaseConfigTemplate = {
@@ -448,29 +446,20 @@ export type cardGridDataItemOptions = {
 
     data: ChangeTypeOfKeys<PageGridBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
+
 export type cardGridDataItems = {
     card: Extract<cardGridTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3'>;
     data: ChangeTypeOfKeys<PageGridBaseConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardEntitiesDataItemOptions = {
-    card: Extract<cardEntitiesTypes, 'cardEntities'>;
+    card: Extract<cardEntitiesTypes, 'cardEntities' | 'cardSchedule'>;
     cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
+
 export type cardEntitiesDataItems = {
-    card: Extract<cardEntitiesTypes, 'cardEntities'>;
-    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
-};
-
-export type cardScheduleDataItemOptions = {
-    card: Extract<cardEntitiesTypes, 'cardSchedule'>;
-    cardRole?: CardRole;
-
-    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, NSPanel.DataItemsOptions | undefined>;
-} & PageMenuBaseConfig;
-export type cardScheduleDataItems = {
-    card: Extract<cardEntitiesTypes, 'cardSchedule'>;
+    card: Extract<cardEntitiesTypes, 'cardEntities' | 'cardSchedule'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
 

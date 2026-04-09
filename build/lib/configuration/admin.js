@@ -41,9 +41,9 @@ class AdminConfiguration extends import_library.BaseClass {
     this.adapter = adapter;
     this.pageConfig = this.adapter.config.pageConfig || [];
   }
-  processPanels(options) {
+  async processPanels(options) {
     for (const option of options) {
-      this.processentrys(option);
+      await this.processentrys(option);
     }
     return options;
   }
@@ -62,8 +62,8 @@ class AdminConfiguration extends import_library.BaseClass {
    *
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
-  processentrys(option) {
-    var _a, _b, _c, _d, _e, _f;
+  async processentrys(option) {
+    var _a, _b, _c, _d;
     const entries = this.pageConfig;
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
@@ -152,37 +152,98 @@ class AdminConfiguration extends import_library.BaseClass {
           this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
           break;
         }
-        case "cardChart": {
+        case "cardGrid":
+        case "cardGrid2":
+        case "cardGrid3": {
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
-          const dbData = entry.selInstanceDataSource === 1 ? {
-            instance: entry.selInstance || "",
-            state: entry.setStateForDB || "",
-            hours: (_a = entry.rangeHours) != null ? _a : 24,
-            maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : 2,
-            factor: (_c = entry.factorCardChart) != null ? _c : 1,
-            maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : 4
-          } : void 0;
           newPage = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
             alwaysOn: entry.alwaysOn,
             dpInit: "",
             config: {
-              card: entry.selChartType || "cardChart",
+              card: entry.card,
+              scrollPresentation: entry.scrollPresentation || "classic",
               data: {
-                headline: { type: "const", constVal: entry.headline || "Page Chart" },
-                text: { type: "const", constVal: entry.txtLabelYAchse || "" },
-                color: { true: { color: { type: "const", constVal: entry.chartColor || "#FFFF00" } } },
-                ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
-                value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
-                dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0,
-                setStateForDB: entry.selInstanceDataSource === 1 && entry.setStateForDB ? { type: "triggered", dp: entry.setStateForDB } : void 0
+                headline: { type: "const", constVal: entry.headline || entry.uniqueName }
               }
             },
             pageItems: []
           };
+          if (entry.pageItems) {
+            let start = false;
+            for (let index = entry.pageItems.length - 1; index >= 0; index--) {
+              let item = entry.pageItems[index];
+              if (!item && !start) {
+                continue;
+              }
+              start = true;
+              if (!item) {
+                item = { channelId: "empty" };
+              }
+              const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                { card: entry.card, uniqueName: entry.uniqueName },
+                []
+              );
+              if (!result.error && result.pageItem) {
+                newPage.pageItems = (_a = newPage.pageItems) != null ? _a : [];
+                newPage.pageItems.unshift(result.pageItem);
+              } else if (result.error) {
+                this.log.warn(
+                  `Error processing1 page item ${index} for page '${entry.uniqueName}': ${result.error}`
+                );
+              }
+            }
+          }
+          break;
+        }
+        case "cardEntities":
+        case "cardSchedule": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: "",
+            config: {
+              card: entry.card,
+              data: {
+                headline: { type: "const", constVal: entry.headline || entry.uniqueName }
+              }
+            },
+            pageItems: []
+          };
+          if (entry.pageItems) {
+            let start = false;
+            for (let index = entry.pageItems.length - 1; index >= 0; index--) {
+              let item = entry.pageItems[index];
+              if (!item && !start) {
+                continue;
+              }
+              start = true;
+              if (!item) {
+                item = { channelId: "empty" };
+              }
+              const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                { card: entry.card, uniqueName: entry.uniqueName },
+                []
+              );
+              if (!result.error && result.pageItem) {
+                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
+                newPage.pageItems.unshift(result.pageItem);
+              } else if (result.error) {
+                this.log.warn(
+                  `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`
+                );
+              }
+            }
+          }
           break;
         }
         default: {
@@ -215,7 +276,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.prev
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldNext = (_e = option.navigation[index].right) == null ? void 0 : _e.single;
+          const oldNext = (_c = option.navigation[index].right) == null ? void 0 : _c.single;
           if (oldNext && oldNext !== newPage.uniqueID) {
             overrwriteNext = true;
             option.navigation[index].right = option.navigation[index].right || {};
@@ -239,7 +300,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.next
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldPrev = (_f = option.navigation[index].left) == null ? void 0 : _f.single;
+          const oldPrev = (_d = option.navigation[index].left) == null ? void 0 : _d.single;
           if (oldPrev && oldPrev !== newPage.uniqueID) {
             option.navigation[index].left = option.navigation[index].left || {};
             option.navigation[index].left.single = newPage.uniqueID;
