@@ -148,6 +148,7 @@ export type AdminPageItemConfig = {
     trueColor?: string;
     falseIcon?: string;
     falseColor?: string;
+    useValue?: boolean;
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
