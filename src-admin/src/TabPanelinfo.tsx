@@ -626,7 +626,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         // Konstruiere die URL zur Adapter-Konfiguration
         const protocol = window.location.protocol; // http: or https:
         const host = window.location.host; // ip:port, z.B. 127.0.0.1:8082
-        const configUrl = `${protocol}//${host}/#tab-instances/config/system.adapter.${this.adapterName}.${this.instance}`;
+        const configUrl = `${protocol}//${host}/#tab-instances/config/system.adapter.${this.adapterName}.${this.instance}/_tabMaintain`;
 
         console.log('[Panelinfo] Opening settings panel:', configUrl);
         window.location.href = configUrl;
@@ -642,7 +642,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         const stateData = panelStateData.states[statePath];
         const tempValue = stateData.tempValue;
 
-        if (tempValue === undefined) {
+        if (tempValue == undefined) {
             return; // No change
         }
 

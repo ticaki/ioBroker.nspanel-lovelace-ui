@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) feat: new visual page editor in the admin UI – configure cardGrid, cardGrid2, cardGrid3, cardEntities and cardSchedule pages including their items directly in the admin.
+
 ### 0.15.4 (2026-04-04)
 - (tt-tom17) fixed: iCal / trash page – date display year format (2-digit vs. 4-digit) was swapped for short and long item lists
 - (ticaki) fixed: panel rule timer increased from 120 s to 140 s to reduce false "panel disconnected" events after startup

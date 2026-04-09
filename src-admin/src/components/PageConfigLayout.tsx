@@ -14,13 +14,27 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
-import {
-    type NavigationAssignmentList,
-    type PageConfigEntry,
-    ADAPTER_NAME,
+import type {
+    AdminCardTypes,
+    NavigationAssignmentList,
+    PageConfigEntry,
+    AdminPanelConfig,
 } from '../../../src/lib/types/adminShareConfig';
+import { ADAPTER_NAME, ALL_PANELS_SPECIAL_ID } from '../../../src/lib/types/adminShareConfig';
 
-export type PageCardType = 'cardTrash' | 'cardAlarm' | 'cardQR' | 'all'; // 'all' = alle Typen anzeigen
+export type PageCardType =
+    | Extract<
+          AdminCardTypes,
+          'cardAlarm' | 'cardQR' | 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardSchedule'
+      >
+    | 'all'
+    | 'cardTrash'
+    | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
+
+const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
+
+/** Sonderwert für den Panel-Filter: Seiten ohne Zuweisung */
+const PANEL_FILTER_UNASSIGNED = '___UNASSIGNED___';
 
 export interface PageConfigLayoutProps {
     entries: PageConfigEntry[];
@@ -35,6 +49,8 @@ export interface PageConfigLayoutProps {
     oContext: any;
     getText: (key: string) => string;
     navigationPanelProps: any;
+    /** Konfigurierte Panels für den Panel-Filter */
+    panels?: AdminPanelConfig[];
 }
 
 interface PageConfigLayoutState {
@@ -42,6 +58,8 @@ interface PageConfigLayoutState {
     confirmDeleteOpen: boolean;
     confirmDeleteName: string | null;
     alive?: boolean;
+    /** Gewählter Panel-Filterkey (leer = alle) */
+    selectedPanelFilter: string;
 }
 
 export class PageConfigLayout extends React.Component<PageConfigLayoutProps, PageConfigLayoutState> {
@@ -52,6 +70,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
             confirmDeleteOpen: false,
             confirmDeleteName: null,
             alive: false,
+            selectedPanelFilter: '',
         };
     }
 
@@ -140,11 +159,38 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
             oContext,
             navigationPanelProps,
         } = this.props;
+        const { selectedPanelFilter } = this.state;
+        const panels: AdminPanelConfig[] = this.props.panels ?? [];
         const uniqueNames = Array.from(new Set(entries.map(e => e.uniqueName))).filter(Boolean);
 
         // Filter entries by selected card type
-        const filteredEntries = selectedCardType === 'all' ? entries : entries.filter(e => e.card === selectedCardType);
-        const filteredUniqueNames = Array.from(new Set(filteredEntries.map(e => e.uniqueName))).filter(Boolean);
+        const cardFilteredEntries =
+            selectedCardType === 'all'
+                ? entries
+                : selectedCardType === 'pageMenu'
+                  ? entries.filter(e => MENU_CARD_TYPES.includes(e.card))
+                  : entries.filter(e => e.card === selectedCardType);
+
+        // Filter additionally by selected panel
+        const filteredEntries =
+            selectedPanelFilter === ''
+                ? cardFilteredEntries
+                : selectedPanelFilter === PANEL_FILTER_UNASSIGNED
+                  ? cardFilteredEntries.filter(e => {
+                        const assignment = e.navigationAssignment ?? [];
+                        return assignment.length === 0;
+                    })
+                  : cardFilteredEntries.filter(e => {
+                        const assignment = e.navigationAssignment ?? [];
+                        return assignment.some(
+                            a => a.topic === selectedPanelFilter || a.topic === ALL_PANELS_SPECIAL_ID,
+                        );
+                    });
+
+        // Alphabetisch sortiert
+        const filteredUniqueNames = Array.from(new Set(filteredEntries.map(e => e.uniqueName)))
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b));
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
@@ -168,6 +214,52 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                         gap: 1,
                     }}
                 >
+                    {/* Panel Filter - oberhalb der Seitentypauswahl */}
+                    {panels.length > 0 && (
+                        <Paper
+                            sx={{ p: 0, mb: 1, backgroundColor: 'transparent' }}
+                            elevation={0}
+                        >
+                            <FormControl
+                                fullWidth
+                                variant="standard"
+                            >
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        mb: 1,
+                                        fontWeight: 600,
+                                        color: 'primary.main',
+                                        fontSize: '1rem',
+                                    }}
+                                >
+                                    {this.getText('panel_filter')}
+                                </Typography>
+                                <Select
+                                    value={selectedPanelFilter}
+                                    onChange={e => {
+                                        this.setState({ selectedPanelFilter: e.target.value });
+                                    }}
+                                    sx={{ backgroundColor: 'transparent', px: 1 }}
+                                >
+                                    <MenuItem value="">{this.getText('panel_filter_all')}</MenuItem>
+                                    <MenuItem value={PANEL_FILTER_UNASSIGNED}>
+                                        {this.getText('panel_filter_unassigned')}
+                                    </MenuItem>
+                                    {panels
+                                        .filter(p => !!p.topic)
+                                        .map(p => (
+                                            <MenuItem
+                                                key={p.topic}
+                                                value={p.topic}
+                                            >
+                                                {p.name || p.topic}
+                                            </MenuItem>
+                                        ))}
+                                </Select>
+                            </FormControl>
+                        </Paper>
+                    )}
                     {/* Page Type Selector - oberhalb der Überschrift */}
                     <Paper
                         sx={{ p: 0, mb: 1, backgroundColor: 'transparent' }}
@@ -200,6 +292,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 }}
                             >
                                 <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
+                                <MenuItem value="pageMenu">{this.getText('page_type_pageMenu')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>

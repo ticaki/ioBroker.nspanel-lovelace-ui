@@ -88,6 +88,7 @@
     "npm": "npm i && cd src-admin && npm i",
     "build:admin": "cd src-admin && npm run build",
     "build:all": "npm run build && npm run build:admin",
+    "sync:datapoints": "ts-node tasks.ts sync:datapoints",
     "lint:admin": "cd src-admin && npm run lint",
     "verify": "npm run lint && npm run lint:admin && npm run build",
     "dev": "dev-server upload && dev-server watch",

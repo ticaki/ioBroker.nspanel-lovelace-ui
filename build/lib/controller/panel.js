@@ -265,6 +265,11 @@ class Panel extends import_library.BaseClass {
     }
     return false;
   }
+  static async create(adapter, options) {
+    const result = new Panel(adapter, options);
+    await result.preInit(options);
+    return result;
+  }
   constructor(adapter, options) {
     var _a, _b;
     super(adapter, options.name, (_a = options.friendlyName) != null ? _a : options.name);
@@ -293,11 +298,14 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.scriptVersion = options.scriptVersion || "unknown";
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.statesControler = options.controller.statesControler;
+    this.statesControler.clearObjectDatabase();
+  }
+  async preInit(options) {
     const admin = new import_admin.AdminConfiguration(this.adapter);
-    admin.processentrys(options);
+    await admin.processentrys(options);
     options.pages = options.pages.filter((b) => {
-      var _a2, _b2, _c;
-      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
+      var _a, _b, _c;
+      if (((_a = b.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
         return true;
       }
       if (options.navigation.find((c) => c && c.name === b.uniqueID)) {

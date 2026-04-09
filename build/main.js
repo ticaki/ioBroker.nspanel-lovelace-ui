@@ -33,6 +33,7 @@ var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
 var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
+var import_Color = require("./lib/const/Color");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
@@ -712,6 +713,23 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, [], obj.callback);
+          }
+          break;
+        }
+        case "CheckPageItemConfig": {
+          let messages = [];
+          let error = void 0;
+          if (obj.message && obj.message.item && obj.message.page) {
+            const result = await this.convertAdminPageItemToPageItemConfig(
+              obj.message.item,
+              obj.message.page,
+              messages
+            );
+            messages = result.messages;
+            error = result.error;
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { messages, error }, obj.callback);
           }
           break;
         }
@@ -2178,6 +2196,62 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
       return false;
     }
+  }
+  async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
+    var _a;
+    let error = void 0;
+    let pageItem = void 0;
+    if (preItem && prePage) {
+      const manager = new import_config_manager.ConfigManager(this);
+      let item = void 0;
+      if (preItem.useNative) {
+        item = { native: preItem.useNative ? preItem.native : void 0 };
+      } else if (preItem.isNavigation) {
+        item = {
+          navigate: true,
+          targetPage: (_a = preItem.targetPage) != null ? _a : "",
+          type: null,
+          id: preItem.channelId
+        };
+      } else {
+        item = {
+          type: null,
+          id: preItem.channelId
+        };
+      }
+      const convertToScriptRGBColor = (color) => {
+        if (!color) {
+          return void 0;
+        }
+        try {
+          const c = import_Color.Color.ConvertHexToRgb(color);
+          return { red: c.r, green: c.g, blue: c.b };
+        } catch {
+          this.log.warn(`Invalid color format: ${color}`);
+          return void 0;
+        }
+      };
+      if (!("native" in item)) {
+        item.icon = preItem.trueIcon || void 0;
+        item.icon2 = preItem.falseIcon || void 0;
+        item.onColor = convertToScriptRGBColor(preItem.trueColor);
+        item.offColor = convertToScriptRGBColor(preItem.falseColor);
+      }
+      const page = {
+        type: prePage.card,
+        uniqueName: prePage.uniqueName,
+        heading: "",
+        items: []
+      };
+      try {
+        const result = await manager.getPageItemConfig(item, page, messages);
+        messages = result.messages;
+        pageItem = result.itemConfig;
+      } catch (e) {
+        error = `Error in configuration: ${e.message}`;
+      }
+    }
+    return { pageItem, messages, error };
   }
 }
 if (require.main !== module) {

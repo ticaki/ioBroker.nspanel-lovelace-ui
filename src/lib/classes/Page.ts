@@ -556,9 +556,11 @@ export class Page extends BaseClassPage {
             if (this.card === 'cardThermo' || this.card === 'cardThermo2') {
                 return;
             }
-            this.log.error(
-                `onPopupRequest: PageItem id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`,
-            );
+            if (!('arrowPageItem' in this) || !this.arrowPageItem || !id.startsWith('0-')) {
+                this.log.error(
+                    `onPopupRequest: PageItem id should be a number but is a string: ${id}. Page name: ${this.name}, Page id: ${this.id}, Page card: ${this.card}`,
+                );
+            }
         } else {
             const i = typeof id === 'number' ? id : parseInt(id);
             item = this.pageItems[i];
