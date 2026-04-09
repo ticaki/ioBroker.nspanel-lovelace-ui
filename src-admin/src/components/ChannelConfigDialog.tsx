@@ -24,6 +24,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import {
@@ -88,6 +89,8 @@ interface ChannelConfigDialogState {
     nativeJson: string;
     /** true wenn nativeJson syntaktisch valide ist */
     nativeJsonValid: boolean;
+    /** Fehlermeldung aus JSON.parse (inklusive Zeileninfo falls vorhanden) */
+    nativeJsonErrorMessage: string;
     /** true während CheckPageItemConfig-Anfrage läuft */
     isSaving: boolean;
     /** Ergebnis-Dialog sichtbar */
@@ -157,6 +160,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeMode: false,
             nativeJson: '',
             nativeJsonValid: false,
+            nativeJsonErrorMessage: '',
             isSaving: false,
             checkResultOpen: false,
             checkResultMessages: [],
@@ -222,6 +226,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeMode: isNative,
             nativeJson: isNative ? JSON.stringify(data?.native ?? {}, null, 2) : '',
             nativeJsonValid: isNative,
+            nativeJsonErrorMessage: '',
             useValue: data?.useValue ?? false,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
@@ -400,16 +405,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
     };
 
-    private handleNativeJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>): void => {
-        const json = e.target.value;
+    private handleNativeJsonChange = (json: string): void => {
         let valid = false;
+        let errorMessage = '';
         try {
             JSON.parse(json);
             valid = true;
-        } catch {
+        } catch (e) {
             valid = false;
+            errorMessage = e instanceof Error ? e.message : String(e);
         }
-        this.setState({ nativeJson: json, nativeJsonValid: valid });
+        this.setState({ nativeJson: json, nativeJsonValid: valid, nativeJsonErrorMessage: errorMessage });
     };
 
     private async loadValidChannels(): Promise<void> {
@@ -986,17 +992,36 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
                     <DialogContent>
                         {nativeMode ? (
-                            <TextField
-                                fullWidth
-                                multiline
-                                minRows={12}
-                                value={nativeJson}
-                                onChange={this.handleNativeJsonChange}
-                                error={!nativeJsonValid}
-                                helperText={!nativeJsonValid ? I18n.t('channelConfigDialog_invalidJson') : undefined}
-                                slotProps={{ input: { style: { fontFamily: 'monospace', fontSize: 13 } } }}
-                                variant="outlined"
-                            />
+                            <Box>
+                                <Box
+                                    sx={{
+                                        height: 420,
+                                        border: 1,
+                                        borderColor: nativeJsonValid ? 'divider' : 'error.main',
+                                        borderRadius: 1,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <Editor
+                                        mode="json"
+                                        value={nativeJson}
+                                        onChange={this.handleNativeJsonChange}
+                                        themeType={this.props.themeType ?? 'light'}
+                                        name="channel-config-native-editor"
+                                        editValueMode
+                                        error={!nativeJsonValid}
+                                    />
+                                </Box>
+                                {!nativeJsonValid && (
+                                    <Typography
+                                        variant="caption"
+                                        color="error"
+                                        sx={{ display: 'block', mt: 0.5, px: 0.5 }}
+                                    >
+                                        {this.state.nativeJsonErrorMessage || I18n.t('channelConfigDialog_invalidJson')}
+                                    </Typography>
+                                )}
+                            </Box>
                         ) : (
                             <Box sx={panelBoxStyle}>
                                 {/* Navigation-Checkbox */}
