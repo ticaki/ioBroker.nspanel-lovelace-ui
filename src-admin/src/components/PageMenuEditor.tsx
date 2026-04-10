@@ -1050,8 +1050,8 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                                 this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
                             }
                         }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' },
+                        slotProps={{
+                            input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
                         }}
                         disabled={!this.state.alive}
                     />
@@ -1068,9 +1068,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     onChange={e => {
                         this.props.onEntryChange({ ...entry, headline: e.target.value });
                     }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
-                    }}
+                    slotProps={{ input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } } }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
                 />
