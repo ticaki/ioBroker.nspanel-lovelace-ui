@@ -841,6 +841,35 @@ class Color extends ColorBase {
     mediaOnOffColor: Color.FireGlow
   };
   /**
+   * Returns the color theme object for a given adapter theme index.
+   *
+   * | Index | Theme           |
+   * |-------|-----------------|
+   * | 0     | default         |
+   * | 1     | topical         |
+   * | 2     | technical       |
+   * | 3     | sunset          |
+   * | 4     | volcano         |
+   *
+   * Unknown indices fall back to `defaultTheme`.
+   *
+   * @param index Adapter color theme index (0–4)
+   */
+  static getThemeByIndex(index) {
+    switch (index) {
+      case 1:
+        return Color.topicalTheme;
+      case 2:
+        return Color.technicalTheme;
+      case 3:
+        return Color.sunsetTheme;
+      case 4:
+        return Color.volcanoTheme;
+      default:
+        return Color.defaultTheme;
+    }
+  }
+  /**
    * set color theme...
    *
    * @param s ColorThemenInterface

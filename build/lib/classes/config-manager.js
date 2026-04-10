@@ -33,6 +33,7 @@ __export(config_manager_exports, {
 module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
+var import_page_item_defaults = require("../const/page-item-defaults");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
@@ -2486,14 +2487,14 @@ class ConfigManager extends import_library.BaseClass {
             if (item.role) {
               switch (item.role) {
                 case "socket": {
-                  icon = "power-socket-de";
-                  icon2 = "power-socket-de";
+                  icon = import_page_item_defaults.pageItemDefaults.socketPlug.iconOn;
+                  icon2 = import_page_item_defaults.pageItemDefaults.socketPlug.iconOff;
                   break;
                 }
               }
             }
-            icon = item.icon || icon || "power";
-            icon2 = item.icon2 || icon2 || "power-standby";
+            icon = item.icon || icon || import_page_item_defaults.pageItemDefaults.socket.iconOn;
+            icon2 = item.icon2 || icon2 || import_page_item_defaults.pageItemDefaults.socket.iconOff;
             const tempItem = {
               type: "switch",
               role: "",
@@ -2501,11 +2502,17 @@ class ConfigManager extends import_library.BaseClass {
                 icon: {
                   true: {
                     value: { type: "const", constVal: icon },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.on)
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.socket.colorOn]
+                    )
                   },
                   false: {
                     value: { type: "const", constVal: icon2 },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.off)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.socket.colorOff]
+                    )
                   },
                   scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
@@ -2530,16 +2537,22 @@ class ConfigManager extends import_library.BaseClass {
                   true: {
                     value: {
                       type: "const",
-                      constVal: item.icon || "lightbulb"
+                      constVal: item.icon || import_page_item_defaults.pageItemDefaults.light.iconOn
                     },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.light)
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.light.colorOn]
+                    )
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || "lightbulb-outline"
+                      constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.light.iconOff
                     },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.dark)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.light.colorOff]
+                    )
                   },
                   scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
@@ -2565,16 +2578,22 @@ class ConfigManager extends import_library.BaseClass {
                   true: {
                     value: {
                       type: "const",
-                      constVal: item.icon || "lightbulb"
+                      constVal: item.icon || import_page_item_defaults.pageItemDefaults.dimmer.iconOn
                     },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.light)
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.dimmer.colorOn]
+                    )
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || "lightbulb-outline"
+                      constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.dimmer.iconOff
                     },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.dark)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.dimmer.colorOff]
+                    )
                   },
                   scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
@@ -2635,16 +2654,22 @@ class ConfigManager extends import_library.BaseClass {
                   true: {
                     value: {
                       type: "const",
-                      constVal: item.icon || "lightbulb"
+                      constVal: item.icon || import_page_item_defaults.pageItemDefaults.ct.iconOn
                     },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.light)
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.ct.colorOn]
+                    )
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || "lightbulb-outline"
+                      constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.ct.iconOff
                     },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.dark)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.ct.colorOff]
+                    )
                   },
                   scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
@@ -2723,16 +2748,22 @@ class ConfigManager extends import_library.BaseClass {
                   true: {
                     value: {
                       type: "const",
-                      constVal: item.icon || "gesture-tap-button"
+                      constVal: item.icon || import_page_item_defaults.pageItemDefaults.button.iconOn
                     },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.activated)
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.button.colorOn]
+                    )
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || "gesture-tap-button"
+                      constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.button.iconOff
                     },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.deactivated)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.button.colorOff]
+                    )
                   },
                   scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
@@ -2759,21 +2790,27 @@ class ConfigManager extends import_library.BaseClass {
                     true: {
                       value: {
                         type: "const",
-                        constVal: item.icon || "window-shutter-open"
+                        constVal: item.icon || import_page_item_defaults.pageItemDefaults.blind.iconOn
                       },
-                      color: await this.getIconColor(item.onColor, import_Color.Color.open)
+                      color: await this.getIconColor(
+                        item.onColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOn]
+                      )
                     },
                     false: {
                       value: {
                         type: "const",
-                        constVal: item.icon2 || "window-shutter"
+                        constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.blind.iconOff
                       },
-                      color: await this.getIconColor(item.offColor, import_Color.Color.close)
+                      color: await this.getIconColor(
+                        item.offColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOff]
+                      )
                     },
                     unstable: {
                       value: {
                         type: "const",
-                        constVal: item.icon3 || "window-shutter-alert"
+                        constVal: item.icon3 || import_page_item_defaults.pageItemDefaults.blind.iconUnstable
                       }
                     },
                     scale: globals.isIconColorScaleElement(item.colorScale) ? {
@@ -2822,21 +2859,27 @@ class ConfigManager extends import_library.BaseClass {
                     true: {
                       value: {
                         type: "const",
-                        constVal: item.icon || "window-shutter-open"
+                        constVal: item.icon || import_page_item_defaults.pageItemDefaults.blind.iconOn
                       },
-                      color: await this.getIconColor(item.onColor, import_Color.Color.open)
+                      color: await this.getIconColor(
+                        item.onColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOn]
+                      )
                     },
                     false: {
                       value: {
                         type: "const",
-                        constVal: item.icon2 || "window-shutter"
+                        constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.blind.iconOff
                       },
-                      color: await this.getIconColor(item.offColor, import_Color.Color.close)
+                      color: await this.getIconColor(
+                        item.offColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOff]
+                      )
                     },
                     unstable: {
                       value: {
                         type: "const",
-                        constVal: item.icon3 || "window-shutter-alert"
+                        constVal: item.icon3 || import_page_item_defaults.pageItemDefaults.blind.iconUnstable
                       }
                     },
                     scale: globals.isIconColorScaleElement(item.colorScale) ? {
@@ -2860,16 +2903,22 @@ class ConfigManager extends import_library.BaseClass {
                     true: {
                       value: {
                         type: "const",
-                        constVal: (I2 == null ? void 0 : I2.icon) || "window-shutter"
+                        constVal: (I2 == null ? void 0 : I2.icon) || import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.iconOn
                       },
-                      color: await this.getIconColor(I2 == null ? void 0 : I2.iconOnColor, import_Color.Color.open)
+                      color: await this.getIconColor(
+                        I2 == null ? void 0 : I2.iconOnColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.colorOn]
+                      )
                     },
                     false: {
                       value: {
                         type: "const",
-                        constVal: (I2 == null ? void 0 : I2.icon2) || "window-shutter"
+                        constVal: (I2 == null ? void 0 : I2.icon2) || import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.iconOff
                       },
-                      color: await this.getIconColor(I2 == null ? void 0 : I2.iconOffColor, import_Color.Color.close)
+                      color: await this.getIconColor(
+                        I2 == null ? void 0 : I2.iconOffColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.colorOff]
+                      )
                     }
                   } : void 0,
                   entity3: R3 ? {
@@ -2880,16 +2929,22 @@ class ConfigManager extends import_library.BaseClass {
                     true: {
                       value: {
                         type: "const",
-                        constVal: (I3 == null ? void 0 : I3.icon) || "window-shutter"
+                        constVal: (I3 == null ? void 0 : I3.icon) || import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.iconOn
                       },
-                      color: await this.getIconColor(I3 == null ? void 0 : I3.iconOnColor, import_Color.Color.open)
+                      color: await this.getIconColor(
+                        I3 == null ? void 0 : I3.iconOnColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.colorOn]
+                      )
                     },
                     false: {
                       value: {
                         type: "const",
-                        constVal: (I3 == null ? void 0 : I3.icon2) || "window-shutter"
+                        constVal: (I3 == null ? void 0 : I3.icon2) || import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.iconOff
                       },
-                      color: await this.getIconColor(I3 == null ? void 0 : I3.iconOffColor, import_Color.Color.close)
+                      color: await this.getIconColor(
+                        I3 == null ? void 0 : I3.iconOffColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.colorOff]
+                      )
                     }
                   } : void 0,
                   entity4: R4 ? {
@@ -2900,16 +2955,22 @@ class ConfigManager extends import_library.BaseClass {
                     true: {
                       value: {
                         type: "const",
-                        constVal: (I4 == null ? void 0 : I4.icon) || "window-shutter"
+                        constVal: (I4 == null ? void 0 : I4.icon) || import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.iconOn
                       },
-                      color: await this.getIconColor(I4 == null ? void 0 : I4.iconOnColor, import_Color.Color.open)
+                      color: await this.getIconColor(
+                        I4 == null ? void 0 : I4.iconOnColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.colorOn]
+                      )
                     },
                     false: {
                       value: {
                         type: "const",
-                        constVal: (I4 == null ? void 0 : I4.icon2) || "window-shutter"
+                        constVal: (I4 == null ? void 0 : I4.icon2) || import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.iconOff
                       },
-                      color: await this.getIconColor(I4 == null ? void 0 : I4.iconOffColor, import_Color.Color.close)
+                      color: await this.getIconColor(
+                        I4 == null ? void 0 : I4.iconOffColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.shutterSlaveIcon.colorOff]
+                      )
                     }
                   } : void 0,
                   up: foundedStates[role].OPEN,
@@ -2931,21 +2992,27 @@ class ConfigManager extends import_library.BaseClass {
                     true: {
                       value: {
                         type: "const",
-                        constVal: item.icon || "garage-open"
+                        constVal: item.icon || import_page_item_defaults.pageItemDefaults.gate.iconOn
                       },
-                      color: await this.getIconColor(item.onColor, import_Color.Color.open)
+                      color: await this.getIconColor(
+                        item.onColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.gate.colorOn]
+                      )
                     },
                     false: {
                       value: {
                         type: "const",
-                        constVal: item.icon2 || "garage"
+                        constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.gate.iconOff
                       },
-                      color: await this.getIconColor(item.offColor, import_Color.Color.close)
+                      color: await this.getIconColor(
+                        item.offColor,
+                        import_Color.Color[import_page_item_defaults.pageItemDefaults.gate.colorOff]
+                      )
                     },
                     unstable: {
                       value: {
                         type: "const",
-                        constVal: item.icon3 || "garage-alert"
+                        constVal: item.icon3 || import_page_item_defaults.pageItemDefaults.gate.iconUnstable
                       }
                     },
                     scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
@@ -2979,8 +3046,11 @@ class ConfigManager extends import_library.BaseClass {
                 template: "text.gate.isOpen",
                 dpInit: item.id,
                 color: {
-                  true: await this.getIconColor(item.onColor, import_Color.Color.open),
-                  false: await this.getIconColor(item.offColor, import_Color.Color.close),
+                  true: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.gate.colorOn]),
+                  false: await this.getIconColor(
+                    item.offColor,
+                    import_Color.Color[import_page_item_defaults.pageItemDefaults.gate.colorOff]
+                  ),
                   scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
                 },
                 data: {
@@ -2999,8 +3069,8 @@ class ConfigManager extends import_library.BaseClass {
           case "temperature":
           case "door":
           case "window": {
-            let iconOn = "door-open";
-            let iconOff = "door-closed";
+            let iconOn = import_page_item_defaults.pageItemDefaults.door.iconOn;
+            let iconOff = import_page_item_defaults.pageItemDefaults.door.iconOff;
             let iconUnstable = "";
             let textOn = void 0;
             let textOff = void 0;
@@ -3009,8 +3079,8 @@ class ConfigManager extends import_library.BaseClass {
             let scaleVal = {};
             switch (role) {
               case "motion": {
-                iconOn = "motion-sensor";
-                iconOff = "motion-sensor";
+                iconOn = import_page_item_defaults.pageItemDefaults.motion.iconOn;
+                iconOff = import_page_item_defaults.pageItemDefaults.motion.iconOff;
                 iconUnstable = "";
                 adapterRole = "iconNotText";
                 textOn = "motion";
@@ -3019,17 +3089,17 @@ class ConfigManager extends import_library.BaseClass {
               }
               case "door": {
                 adapterRole = "iconNotText";
-                iconOn = "door-open";
-                iconOff = "door-closed";
-                iconUnstable = "door-closed";
+                iconOn = import_page_item_defaults.pageItemDefaults.door.iconOn;
+                iconOff = import_page_item_defaults.pageItemDefaults.door.iconOff;
+                iconUnstable = import_page_item_defaults.pageItemDefaults.door.iconUnstable;
                 textOn = "opened";
                 textOff = "closed";
                 break;
               }
               case "window": {
-                iconOn = "window-open-variant";
-                iconOff = "window-closed-variant";
-                iconUnstable = "window-closed-variant";
+                iconOn = import_page_item_defaults.pageItemDefaults.window.iconOn;
+                iconOff = import_page_item_defaults.pageItemDefaults.window.iconOff;
+                iconUnstable = import_page_item_defaults.pageItemDefaults.window.iconUnstable;
                 adapterRole = "iconNotText";
                 textOn = "opened";
                 textOff = "closed";
@@ -3039,9 +3109,9 @@ class ConfigManager extends import_library.BaseClass {
               case "airCondition":
               case "value.temperature":
               case "temperature": {
-                iconOn = "thermometer";
-                iconOff = "snowflake-thermometer";
-                iconUnstable = "sun-thermometer";
+                iconOn = import_page_item_defaults.pageItemDefaults.thermostat.iconOn;
+                iconOff = import_page_item_defaults.pageItemDefaults.thermostat.iconOff;
+                iconUnstable = import_page_item_defaults.pageItemDefaults.thermostat.iconUnstable;
                 adapterRole = valueDisplayRole;
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
@@ -3054,9 +3124,9 @@ class ConfigManager extends import_library.BaseClass {
               }
               case "value.humidity":
               case "humidity": {
-                iconOn = "water-percent";
-                iconOff = "water-off";
-                iconUnstable = "water-percent-alert";
+                iconOn = import_page_item_defaults.pageItemDefaults.humidity.iconOn;
+                iconOff = import_page_item_defaults.pageItemDefaults.humidity.iconOff;
+                iconUnstable = import_page_item_defaults.pageItemDefaults.humidity.iconUnstable;
                 adapterRole = valueDisplayRole;
                 if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
                   const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
@@ -3078,7 +3148,7 @@ class ConfigManager extends import_library.BaseClass {
                     value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
                     color: await this.getIconColor(
                       item.onColor || `${item.id}.COLORDEC`,
-                      import_Color.Color.good
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.door.colorOn]
                     ),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       ...iconTextDefaults,
@@ -3089,7 +3159,7 @@ class ConfigManager extends import_library.BaseClass {
                     value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
                     color: await this.getIconColor(
                       item.offColor || `${item.id}.COLORDEC`,
-                      import_Color.Color.bad
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.door.colorOff]
                     ),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       ...iconTextDefaults,
@@ -3146,16 +3216,16 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-outline" },
-                    color: item.onColor ? await this.getIconColor(item.onColor, import_Color.Color.good) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: import_Color.Color.bad },
+                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: import_page_item_defaults.pageItemDefaults.info.iconOn },
+                    color: item.onColor ? await this.getIconColor(item.onColor, import_Color.Color.good) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: import_Color.Color[import_page_item_defaults.pageItemDefaults.info.colorOn] },
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       ...iconTextDefaults,
                       value: foundedStates[role].ACTUAL
                     } : void 0
                   },
                   false: {
-                    value: icontemp ? await this.getFieldAsDataItemConfig(icontemp) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: "information-off-outline" },
-                    color: item.offColor ? await this.getIconColor(item.offColor, import_Color.Color.good) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: import_Color.Color.bad },
+                    value: icontemp ? await this.getFieldAsDataItemConfig(icontemp) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: import_page_item_defaults.pageItemDefaults.info.iconOff },
+                    color: item.offColor ? await this.getIconColor(item.offColor, import_Color.Color.good) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: import_Color.Color[import_page_item_defaults.pageItemDefaults.info.colorOff] },
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       ...iconTextDefaults,
                       value: foundedStates[role].ACTUAL
@@ -3192,8 +3262,8 @@ class ConfigManager extends import_library.BaseClass {
               type: "number",
               role: valueDisplayRole,
               color: {
-                true: await this.getIconColor(item.onColor, import_Color.Color.on),
-                false: await this.getIconColor(item.offColor, import_Color.Color.off),
+                true: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.volume.colorOn]),
+                false: await this.getIconColor(item.offColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.volume.colorOff]),
                 scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
               },
               icon: {
@@ -3212,13 +3282,13 @@ class ConfigManager extends import_library.BaseClass {
                 text,
                 icon: {
                   false: {
-                    value: { type: "const", constVal: "volume-mute" },
+                    value: { type: "const", constVal: import_page_item_defaults.pageItemDefaults.volume.iconOff },
                     text: {
                       value: foundedStates[role].ACTUAL,
                       unit: { type: "const", constVal: "%" },
                       textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                     },
-                    color: { type: "const", constVal: import_Color.Color.off }
+                    color: { type: "const", constVal: import_Color.Color[import_page_item_defaults.pageItemDefaults.volume.colorOff] }
                   },
                   true: {
                     value: foundedStates[role].ACTUAL ? {
@@ -3241,7 +3311,7 @@ class ConfigManager extends import_library.BaseClass {
                       unit: { type: "const", constVal: "%" },
                       textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                     },
-                    color: { type: "const", constVal: import_Color.Color.on }
+                    color: { type: "const", constVal: import_Color.Color[import_page_item_defaults.pageItemDefaults.volume.colorOn] }
                   }
                 }
               }
@@ -3287,12 +3357,21 @@ class ConfigManager extends import_library.BaseClass {
                 valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
                 icon: {
                   true: {
-                    value: { type: "const", constVal: item.icon || "clipboard-list-outline" },
-                    color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+                    value: { type: "const", constVal: item.icon || import_page_item_defaults.pageItemDefaults.select.iconOn },
+                    color: {
+                      type: "const",
+                      constVal: item.onColor || import_Color.Color[import_page_item_defaults.pageItemDefaults.select.colorOn]
+                    }
                   },
                   false: {
-                    value: { type: "const", constVal: item.icon2 || "clipboard-list" },
-                    color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+                    value: {
+                      type: "const",
+                      constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.select.iconOff
+                    },
+                    color: {
+                      type: "const",
+                      constVal: item.offColor || import_Color.Color[import_page_item_defaults.pageItemDefaults.select.colorOff]
+                    }
                   }
                 },
                 headline: { type: "const", constVal: item.name || commonName || role }
@@ -3312,15 +3391,23 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: await this.getFieldAsDataItemConfig(item.icon || "lock-open-variant"),
-                    color: await this.getIconColor(item.onColor, import_Color.Color.open)
+                    value: await this.getFieldAsDataItemConfig(
+                      item.icon || import_page_item_defaults.pageItemDefaults.lock.iconOn
+                    ),
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.lock.colorOn]
+                    )
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || "lock"
+                      constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.lock.iconOff
                     },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.close)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.lock.colorOff]
+                    )
                   }
                 },
                 text: {
@@ -3367,12 +3454,15 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: "plus-minus-variant" },
+                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: import_page_item_defaults.pageItemDefaults.slider.iconOn },
                     text: {
                       ...iconTextDefaults,
                       value: foundedStates[role].ACTUAL
                     },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.activated)
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.slider.colorOn]
+                    )
                   },
                   false: item.icon2 ? {
                     value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
@@ -3380,7 +3470,10 @@ class ConfigManager extends import_library.BaseClass {
                       ...iconTextDefaults,
                       value: foundedStates[role].ACTUAL
                     },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.deactivated)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.slider.colorOff]
+                    )
                   } : void 0,
                   scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
                 },
@@ -3437,12 +3530,24 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: { type: "const", constVal: item.icon || "alert-decagram-outline" },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.attention)
+                    value: {
+                      type: "const",
+                      constVal: item.icon || import_page_item_defaults.pageItemDefaults.warning.iconOn
+                    },
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.warning.colorOn]
+                    )
                   },
                   false: {
-                    value: { type: "const", constVal: item.icon2 || "alert-decagram-outline" },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.deactivated)
+                    value: {
+                      type: "const",
+                      constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.warning.iconOff
+                    },
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.warning.colorOff]
+                    )
                   }
                 }
               }
@@ -3457,8 +3562,8 @@ class ConfigManager extends import_library.BaseClass {
                 isAlarm = true;
               }
             }
-            const icon = isAlarm ? foundedStates[role].SET ? "clock-edit-outline" : "alarm" : foundedStates[role].SET ? "timer-edit-outline" : foundedStates[role].ACTUAL ? "timer-outline" : "timer";
-            const iconFalse = isAlarm ? "alarm-off" : foundedStates[role].SET ? "timer-off-outline" : foundedStates[role].ACTUAL ? "timer-off-outline" : "timer-off";
+            const icon = isAlarm ? foundedStates[role].SET ? import_page_item_defaults.pageItemDefaults.timer.iconAlarmEdit : import_page_item_defaults.pageItemDefaults.timer.iconAlarm : foundedStates[role].SET ? import_page_item_defaults.pageItemDefaults.timer.iconOnEdit : foundedStates[role].ACTUAL ? import_page_item_defaults.pageItemDefaults.timer.iconOnOutline : import_page_item_defaults.pageItemDefaults.timer.iconOn;
+            const iconFalse = isAlarm ? import_page_item_defaults.pageItemDefaults.timer.iconAlarmOff : foundedStates[role].SET ? import_page_item_defaults.pageItemDefaults.timer.iconOffOutline : foundedStates[role].ACTUAL ? import_page_item_defaults.pageItemDefaults.timer.iconOffOutline : import_page_item_defaults.pageItemDefaults.timer.iconOff;
             item.icon2 = item.icon2 || item.icon;
             itemConfig = {
               role: "timer",
@@ -3469,16 +3574,22 @@ class ConfigManager extends import_library.BaseClass {
                   true: {
                     value: {
                       type: "const",
-                      constVal: item.icon || icon || "timer"
+                      constVal: item.icon || icon || import_page_item_defaults.pageItemDefaults.timer.iconOn
                     },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.activated)
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOn]
+                    )
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || iconFalse || "timer"
+                      constVal: item.icon2 || iconFalse || import_page_item_defaults.pageItemDefaults.timer.iconOff
                     },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.deactivated)
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOff]
+                    )
                   },
                   scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
@@ -3512,12 +3623,18 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: { type: "const", constVal: item.icon || "fan" },
-                    color: await this.getIconColor(item.onColor, import_Color.Color.Green)
+                    value: { type: "const", constVal: item.icon || import_page_item_defaults.pageItemDefaults.fan.iconOn },
+                    color: await this.getIconColor(
+                      item.onColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.fan.colorOn]
+                    )
                   },
                   false: {
-                    value: { type: "const", constVal: item.icon2 || "fan-off" },
-                    color: await this.getIconColor(item.offColor, import_Color.Color.Red)
+                    value: { type: "const", constVal: item.icon2 || import_page_item_defaults.pageItemDefaults.fan.iconOff },
+                    color: await this.getIconColor(
+                      item.offColor,
+                      import_Color.Color[import_page_item_defaults.pageItemDefaults.fan.colorOff]
+                    )
                   }
                 },
                 entity1: {
@@ -3552,10 +3669,10 @@ class ConfigManager extends import_library.BaseClass {
           case "media": {
             const offIcon = item.icon2 || item.icon;
             let id = ((_w = foundedStates[role].STATE) == null ? void 0 : _w.dp) || item.id;
-            let defaultColorOn = import_Color.Color.on;
-            let defaultColorOff = import_Color.Color.off;
-            let defaultIconOn = "pause";
-            let defaultIconOff = "play";
+            let defaultColorOn = import_Color.Color[import_page_item_defaults.pageItemDefaults.media.colorOn];
+            let defaultColorOff = import_Color.Color[import_page_item_defaults.pageItemDefaults.media.colorOff];
+            let defaultIconOn = import_page_item_defaults.pageItemDefaults.media.iconOn;
+            let defaultIconOff = import_page_item_defaults.pageItemDefaults.media.iconOff;
             let nav = void 0;
             if (!await this.existsState(id)) {
               throw new Error(`DP: ${item.id} - media STATE ${id} not found!`);
@@ -3600,10 +3717,10 @@ class ConfigManager extends import_library.BaseClass {
                 items: []
               };
               nav = { type: "const", constVal: `media-${item.id}` };
-              defaultColorOn = import_Color.Color.activated;
-              defaultColorOff = import_Color.Color.deactivated;
-              defaultIconOn = "play-box-multiple";
-              defaultIconOff = "play-box-multiple-outline";
+              defaultColorOn = import_Color.Color[import_page_item_defaults.pageItemDefaults.mediaNav.colorOn];
+              defaultColorOff = import_Color.Color[import_page_item_defaults.pageItemDefaults.mediaNav.colorOff];
+              defaultIconOn = import_page_item_defaults.pageItemDefaults.mediaNav.iconOn;
+              defaultIconOff = import_page_item_defaults.pageItemDefaults.mediaNav.iconOff;
             }
             itemConfig = {
               role: "",

@@ -35,6 +35,7 @@ import {
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
 import { I18n } from '@iobroker/adapter-react-v5';
+import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 
 /** Basis-Slot-Anzahl pro Kartentyp (cardGrid2: eu/us-l = 8, us-p = 9) */
 const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
@@ -47,65 +48,6 @@ const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
 
 /** Ergebnis der Panel-Modell-Auswertung für cardGrid2 */
 type Grid2ModelStatus = 'all-usp' | 'none-usp' | 'conflict' | 'unknown';
-
-/**
- * Default-Icons pro channel role, abgeleitet aus getPageItemConfig (die korrekte Funktion).
- * Reihenfolge: [trueIcon, falseIcon]
- */
-const ROLE_DEFAULT_ICONS: Record<string, [string, string]> = {
-    airCondition: ['thermometer', 'snowflake-thermometer'],
-    blind: ['window-shutter-open', 'window-shutter'],
-    button: ['gesture-tap-button', 'gesture-tap-button'],
-    ct: ['lightbulb', 'lightbulb-outline'],
-    dimmer: ['lightbulb', 'lightbulb-outline'],
-    door: ['door-open', 'door-closed'],
-    gate: ['garage-open', 'garage'],
-    hue: ['lightbulb', 'lightbulb-outline'],
-    humidity: ['water-percent', 'water-off'],
-    info: ['information-outline', 'information-off-outline'],
-    'level.mode.fan': ['fan', 'fan-off'],
-    'level.timer': ['timer', 'timer-off'],
-    light: ['lightbulb', 'lightbulb-outline'],
-    lock: ['lock-open-variant', 'lock'],
-    media: ['play-box-multiple', 'play-box-multiple-outline'],
-    motion: ['motion-sensor', 'motion-sensor'],
-    rgb: ['lightbulb', 'lightbulb-outline'],
-    rgbSingle: ['lightbulb', 'lightbulb-outline'],
-    select: ['clipboard-list-outline', 'clipboard-list'],
-    'sensor.alarm.flood': ['water-alert', 'water-alert'],
-    slider: ['plus-minus-variant', 'plus-minus-variant'],
-    socket: ['power-socket-de', 'power-socket-de'],
-    temperature: ['thermometer', 'snowflake-thermometer'],
-    thermostat: ['thermometer', 'snowflake-thermometer'],
-    timeTable: ['train', 'train'],
-    'value.humidity': ['water-percent', 'water-off'],
-    'value.temperature': ['thermometer', 'snowflake-thermometer'],
-    volume: ['volume-high', 'volume-mute'],
-    warning: ['alert-decagram-outline', 'alert-decagram-outline'],
-    window: ['window-open-variant', 'window-closed-variant'],
-};
-
-/**
- * Default-Icons für navigation=true, abgeleitet aus getPageNaviItemConfig.
- * Nur Rollen mit explizit gesetztem Icon (kein undefined-Fallback auf Template).
- * Fallback auf ROLE_DEFAULT_ICONS für Template-basierte Rollen (blind, door, …).
- */
-const NAV_ROLE_DEFAULT_ICONS: Record<string, [string, string]> = {
-    socket: ['power', 'power-standby'],
-    light: ['lightbulb', 'lightbulb-outline'],
-    dimmer: ['lightbulb', 'lightbulb-outline'],
-    hue: ['lightbulb', 'lightbulb-outline'],
-    rgb: ['lightbulb', 'lightbulb-outline'],
-    rgbSingle: ['lightbulb', 'lightbulb-outline'],
-    ct: ['lightbulb', 'lightbulb-outline'],
-    button: ['gesture-tap-button', 'gesture-tap-button'],
-    media: ['play-box-multiple', 'play-box-multiple-outline'],
-    info: ['information-outline', 'information-off-outline'],
-    temperature: ['temperature-celsius', 'temperature-celsius'],
-    thermostat: ['temperature-celsius', 'temperature-celsius'],
-    'level.timer': ['timer', 'timer'],
-    'level.mode.fan': ['fan', 'fan-off'],
-};
 
 export interface PageMenuEditorProps {
     entry: MenuEntry;
@@ -570,13 +512,18 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         if (explicit) {
             return PageMenuEditor.getIconSrc(explicit);
         }
-        // Fallback: Role-Default – bei Navigation zuerst NAV_ROLE_DEFAULT_ICONS
+        // Fallback: Role-Default – bei Navigation zuerst pageNaviItemDefaults
         const role = item.role ?? '';
         const isNav = item.isNavigation === true;
-        const defaults = (isNav ? NAV_ROLE_DEFAULT_ICONS[role] : undefined) ?? ROLE_DEFAULT_ICONS[role];
-        if (defaults) {
-            const [trueDefault, falseDefault] = defaults;
-            return PageMenuEditor.getIconSrc(forTrue ? trueDefault : falseDefault);
+        if (isNav) {
+            const d = getPageNaviItemDefaultsByRole(role);
+            if (d) {
+                return PageMenuEditor.getIconSrc(forTrue ? d.iconOn : d.iconOff);
+            }
+        }
+        const d = getPageItemDefaultsByRole(role);
+        if (d) {
+            return PageMenuEditor.getIconSrc(forTrue ? d.iconOn : d.iconOff);
         }
         return '';
     }

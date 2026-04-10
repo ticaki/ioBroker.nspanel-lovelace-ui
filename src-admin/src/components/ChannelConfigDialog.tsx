@@ -19,7 +19,13 @@ import {
     CircularProgress,
     Tooltip,
 } from '@mui/material';
-import { Color, type RGB, type ColorScaleInput, type ColorThemenInterface } from '../../../src/lib/const/Color';
+import { Color, type RGB, type ColorScaleInput } from '../../../src/lib/const/Color';
+import {
+    getPageItemDefaultsByRole,
+    getPageNaviItemDefaultsByRole,
+    type PageItemRoleDefaults,
+} from '../../../src/lib/const/page-item-defaults';
+import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -144,6 +150,17 @@ const DATAPOINT_CHECK_DEBOUNCE_MS = 800;
  */
 class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, ChannelConfigDialogState> {
     private datapointCheckTimer: ReturnType<typeof setTimeout> | null = null;
+    private static iconMap: Map<string, string> | null = null;
+
+    private static getIconBase64(name: string): string {
+        if (!ChannelConfigDialog.iconMap) {
+            ChannelConfigDialog.iconMap = new Map();
+            for (const icon of icons as { name: string; base64: string }[]) {
+                ChannelConfigDialog.iconMap.set(icon.name, icon.base64);
+            }
+        }
+        return ChannelConfigDialog.iconMap.get(name) ?? '';
+    }
 
     constructor(props: ChannelConfigDialogProps) {
         super(props);
@@ -218,6 +235,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (this.state.validChannelIds.length === 0) {
             void this.loadValidChannels();
         }
+        void this.loadAdapterColorTheme();
     };
 
     /**
@@ -268,6 +286,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (!isNative && data?.channelId) {
             void this.checkChannelExists(data.channelId);
         }
+        void this.loadAdapterColorTheme();
     }
 
     private handleClose = (): void => {
@@ -296,14 +315,62 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     private getThemeColors(): { on: RGB; off: RGB } {
-        const themes: Record<number, ColorThemenInterface> = {
-            1: Color.topicalTheme,
-            2: Color.technicalTheme,
-            3: Color.sunsetTheme,
-            4: Color.volcanoTheme,
-        };
-        const theme = themes[this.state.adapterColorTheme] ?? Color.defaultTheme;
+        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
         return { on: theme.on, off: theme.off };
+    }
+
+    /**
+     * Returns on/off colors for the currently selected role.
+     * Falls back to the generic theme colors when no role-specific entry is found.
+     */
+    private getRoleDefaultColors(): { on: RGB; off: RGB } {
+        const defaults = this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+        const themeColors = this.getThemeColors();
+        if (!defaults) {
+            return themeColors;
+        }
+        const on = this.getThemeColorForKey(defaults.colorOn) ?? themeColors.on;
+        const off = this.getThemeColorForKey(defaults.colorOff) ?? themeColors.off;
+        return { on, off };
+    }
+
+    /**
+     * Resolves a color key (e.g. 'on', 'activated', 'Green') to an RGB value
+     * using the currently selected color theme.
+     *
+     * @param colorKey
+     */
+    private getThemeColorForKey(colorKey: string): RGB | null {
+        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
+        // Theme keys (lowercase, e.g. 'on', 'activated', 'open')
+        if (colorKey in theme) {
+            const val = (theme as unknown as Record<string, unknown>)[colorKey];
+            if (typeof val === 'object' && val !== null && 'r' in val) {
+                return val as RGB;
+            }
+        }
+        // Named Color statics (PascalCase, e.g. 'Green', 'Red')
+        if (colorKey in Color) {
+            const val = (Color as unknown as Record<string, unknown>)[colorKey];
+            if (typeof val === 'object' && val !== null && 'r' in val) {
+                return val as RGB;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the default icon / color entry for a given role and navigation flag.
+     * Returns null if no entry is found.
+     *
+     * @param role
+     * @param isNavigation
+     */
+    private getDefaultsForRole(role: string | null, isNavigation: boolean): PageItemRoleDefaults | null {
+        if (!role) {
+            return null;
+        }
+        return isNavigation ? getPageNaviItemDefaultsByRole(role) : getPageItemDefaultsByRole(role);
     }
 
     private handleOptionsClose = (): void => {
@@ -852,6 +919,65 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     /**
+    /**
+     * Renders a read-only color swatch with a label for the "default color" case.
+     * Pass the resolved default RGB; when null, colour swatch is omitted.
+     *
+     * @param label  Field label shown above the swatch
+     * @param rgb    Default RGB derived from the current theme (null = no swatch)
+     */
+    private renderColorDefault(label: string, rgb: RGB | null): React.JSX.Element {
+        const hex = rgb ? Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b) : '';
+        return (
+            <Box
+                sx={{
+                    border: '1px dashed',
+                    borderColor: 'text.disabled',
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.75,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    minHeight: 48,
+                }}
+            >
+                {rgb && (
+                    <Box
+                        sx={{
+                            width: 22,
+                            height: 22,
+                            backgroundColor: `rgb(${rgb.r},${rgb.g},${rgb.b})`,
+                            borderRadius: 0.5,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            flexShrink: 0,
+                            opacity: 0.75,
+                        }}
+                    />
+                )}
+                <Box>
+                    <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        sx={{ display: 'block', lineHeight: 1.2 }}
+                    >
+                        {label}
+                    </Typography>
+                    <Typography
+                        variant="caption"
+                        color="text.disabled"
+                    >
+                        {hex
+                            ? `${I18n.t('channelConfigDialog_defaultColor')}: ${hex}`
+                            : I18n.t('channelConfigDialog_defaultColor')}
+                    </Typography>
+                </Box>
+            </Box>
+        );
+    }
+
+    /**
      * Rendert eine Bedingungsspalte (true oder false)
      *
      * @param branch
@@ -866,6 +992,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const oContext = this.buildOContext();
         const theme = this.props.theme;
         const themeName: string = this.props.themeType === 'dark' ? 'dark' : 'light';
+
+        // Defaults from role
+        const defaults = this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+        const defaultIconName = defaults ? (isTrue ? defaults.iconOn : defaults.iconOff) : '';
+        const defaultColorKey = defaults ? (isTrue ? defaults.colorOn : defaults.colorOff) : '';
+        const defaultColorRgb: RGB | null = defaultColorKey ? this.getThemeColorForKey(defaultColorKey) : null;
+        const defaultColorHex: string = defaultColorRgb
+            ? Color.ConvertRGBtoHex(defaultColorRgb.r, defaultColorRgb.g, defaultColorRgb.b)
+            : '';
+
+        // Default icon SVG for preview
+        const defaultIconBase64 = defaultIconName ? ChannelConfigDialog.getIconBase64(defaultIconName) : '';
+        const defaultIconSvg = defaultIconBase64
+            ? atob(defaultIconBase64.replace(/^data:image\/svg\+xml;base64,/, '')).replace(
+                  /<svg([^>]*)>/,
+                  '<svg$1 fill="currentColor">',
+              )
+            : '';
 
         return (
             <Box
@@ -924,35 +1068,56 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     }}
                     theme={theme}
                 />
+                {/* Default-Icon-Vorschau – nur wenn kein Icon gesetzt */}
                 {iconValue === '' && (
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: -1 }}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.75,
+                            mt: -1,
+                            opacity: 0.6,
+                        }}
                     >
-                        {I18n.t('channelConfigDialog_defaultIcon')}
-                    </Typography>
+                        {defaultIconSvg !== '' && (
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    width: 18,
+                                    height: 18,
+                                    flexShrink: 0,
+                                    color: 'inherit',
+                                }}
+                                dangerouslySetInnerHTML={{ __html: defaultIconSvg }}
+                            />
+                        )}
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                        >
+                            {defaultIconName
+                                ? `${I18n.t('channelConfigDialog_defaultIcon')}: ${defaultIconName}`
+                                : I18n.t('channelConfigDialog_defaultIcon')}
+                        </Typography>
+                    </Box>
                 )}
 
                 {/* Farbauswahl */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {colorValue === '' ? (
                         <>
-                            <TextField
-                                variant="standard"
-                                label={I18n.t('channelConfigDialog_color')}
-                                value={I18n.t('channelConfigDialog_defaultColor')}
-                                disabled
-                                sx={{ flex: 1 }}
-                            />
+                            <Box sx={{ flex: 1 }}>
+                                {this.renderColorDefault(I18n.t('channelConfigDialog_color'), defaultColorRgb)}
+                            </Box>
                             <Button
                                 size="small"
                                 variant="outlined"
                                 onClick={() => {
+                                    const startColor = defaultColorHex || (isTrue ? '#00cc00' : '#cc0000');
                                     if (isTrue) {
-                                        this.setState({ trueColor: '#00cc00' });
+                                        this.setState({ trueColor: startColor });
                                     } else {
-                                        this.setState({ falseColor: '#cc0000' });
+                                        this.setState({ falseColor: startColor });
                                     }
                                 }}
                             >
@@ -1045,9 +1210,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             return null;
         }
 
-        const themeColors = this.getThemeColors();
-        const cto: RGB = trueColor !== '' ? Color.ConvertHexToRgb(trueColor) : themeColors.on;
-        const cfrom: RGB = falseColor !== '' ? Color.ConvertHexToRgb(falseColor) : themeColors.off;
+        const roleColors = this.getRoleDefaultColors();
+        const cto: RGB = trueColor !== '' ? Color.ConvertHexToRgb(trueColor) : roleColors.on;
+        const cfrom: RGB = falseColor !== '' ? Color.ConvertHexToRgb(falseColor) : roleColors.off;
         const lo = Math.min(valMin, valMax);
         const hi = Math.max(valMin, valMax);
         const best = valBest !== undefined ? Math.min(hi, Math.max(lo, Math.round(valBest))) : undefined;
@@ -1552,17 +1717,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     <Box sx={{ flex: 1 }}>
                                         {this.state.falseColor === '' ? (
                                             <>
-                                                <TextField
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_colorMin')}
-                                                    value={I18n.t('channelConfigDialog_defaultColor')}
-                                                    disabled
-                                                    fullWidth
-                                                />
+                                                {this.renderColorDefault(
+                                                    I18n.t('channelConfigDialog_colorMin'),
+                                                    this.getRoleDefaultColors().off,
+                                                )}
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
-                                                    onClick={() => this.setState({ falseColor: '#cc0000' })}
+                                                    onClick={() => {
+                                                        const c = this.getRoleDefaultColors().off;
+                                                        this.setState({
+                                                            falseColor: Color.ConvertRGBtoHex(c.r, c.g, c.b),
+                                                        });
+                                                    }}
                                                     sx={{ mt: 1 }}
                                                 >
                                                     {I18n.t('channelConfigDialog_setColor')}
@@ -1596,17 +1763,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     <Box sx={{ flex: 1 }}>
                                         {this.state.trueColor === '' ? (
                                             <>
-                                                <TextField
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_colorMax')}
-                                                    value={I18n.t('channelConfigDialog_defaultColor')}
-                                                    disabled
-                                                    fullWidth
-                                                />
+                                                {this.renderColorDefault(
+                                                    I18n.t('channelConfigDialog_colorMax'),
+                                                    this.getRoleDefaultColors().on,
+                                                )}
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
-                                                    onClick={() => this.setState({ trueColor: '#00cc00' })}
+                                                    onClick={() => {
+                                                        const c = this.getRoleDefaultColors().on;
+                                                        this.setState({
+                                                            trueColor: Color.ConvertRGBtoHex(c.r, c.g, c.b),
+                                                        });
+                                                    }}
                                                     sx={{ mt: 1 }}
                                                 >
                                                     {I18n.t('channelConfigDialog_setColor')}
@@ -1640,13 +1809,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     <Box sx={{ flex: 1 }}>
                                         {this.state.colorBest === '' ? (
                                             <>
-                                                <TextField
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_colorBest')}
-                                                    value={I18n.t('channelConfigDialog_defaultColor')}
-                                                    disabled
-                                                    fullWidth
-                                                />
+                                                {this.renderColorDefault(I18n.t('channelConfigDialog_colorBest'), null)}
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
