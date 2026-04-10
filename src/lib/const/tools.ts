@@ -430,7 +430,7 @@ export function getRGBFromValue(val: any, role?: string): RGB | undefined {
     }
     return undefined;
 }
-function getLogFromIconScale(i: types.IconColorElement, factor: number): number {
+/*function getLogFromIconScale(i: types.IconColorElement, factor: number): number {
     if (i.log10 !== undefined) {
         if (i.log10 === 'max') {
             factor = factor * (90 / 10) + 1;
@@ -444,7 +444,7 @@ function getLogFromIconScale(i: types.IconColorElement, factor: number): number 
         }
     }
     return factor;
-}
+}*/
 export async function GetIconColor(
     item: ChangeTypeOfKeys<NSPanel.IconEntryType, Dataitem | undefined> | undefined | RGB,
     value: boolean | number | null,
