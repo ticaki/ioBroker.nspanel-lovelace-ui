@@ -1280,7 +1280,7 @@ export class Color extends ColorBase {
         return typeof F == 'string' && F.startsWith('#') && F.length == 7;
     }
 
-    static isScriptRGB(F: any): F is ScriptConfig.RGB {
+    static isScriptRGB(F: any): F is { red: number; green: number; blue: number } {
         return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
     }
 

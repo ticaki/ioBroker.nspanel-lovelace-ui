@@ -217,6 +217,7 @@
     "channelConfigDialog_useValueDefault": "Standard",
     "channelConfigDialog_useValueLabel": "Wert statt Icon verwenden",
     "channelConfigDialog_valBest": "Bester Wert",
+    "channelConfigDialog_valBestPlaceholder": "kein Bestwert",
     "channelConfigDialog_valIconMax": "Icon Max-Wert",
     "channelConfigDialog_valIconMin": "Icon Min-Wert",
     "channelConfigDialog_valMax": "Max-Wert",

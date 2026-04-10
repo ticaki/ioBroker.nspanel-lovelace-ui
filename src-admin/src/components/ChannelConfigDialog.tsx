@@ -19,6 +19,7 @@ import {
     CircularProgress,
     Tooltip,
 } from '@mui/material';
+import { Color, type RGB, type ColorScaleInput, type ColorThemenInterface } from '../../../src/lib/const/Color';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -122,9 +123,12 @@ interface ChannelConfigDialogState {
     colorLog10: '' | 'max' | 'min';
     valMin: number;
     valMax: number;
-    valBest: number;
+    /** Optionaler Bestwert – undefined bedeutet kein Bestwert */
+    valBest: number | undefined;
     valIconMin: number;
     valIconMax: number;
+    /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
+    adapterColorTheme: number;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -182,9 +186,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             colorLog10: '',
             valMin: 0,
             valMax: 100,
-            valBest: 50,
+            valBest: undefined,
             valIconMin: 0,
             valIconMax: 100,
+            adapterColorTheme: 0,
         };
     }
 
@@ -270,10 +275,36 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private handleOptionsOpen = (): void => {
-        this.setState({
-            optionsDialogOpen: true,
-        });
+        this.setState({ optionsDialogOpen: true });
+        void this.loadAdapterColorTheme();
     };
+
+    private async loadAdapterColorTheme(): Promise<void> {
+        const { socket, adapterName = ADAPTER_NAME, instance = 0 } = this.props;
+        if (!socket) {
+            return;
+        }
+        try {
+            const obj: ioBroker.Object | null | undefined = await socket.getObject(
+                `system.adapter.${adapterName}.${instance}`,
+            );
+            const t = (obj as any)?.native?.colorTheme;
+            this.setState({ adapterColorTheme: typeof t === 'number' ? t : 0 });
+        } catch {
+            /* keep default 0 */
+        }
+    }
+
+    private getThemeColors(): { on: RGB; off: RGB } {
+        const themes: Record<number, ColorThemenInterface> = {
+            1: Color.topicalTheme,
+            2: Color.technicalTheme,
+            3: Color.sunsetTheme,
+            4: Color.volcanoTheme,
+        };
+        const theme = themes[this.state.adapterColorTheme] ?? Color.defaultTheme;
+        return { on: theme.on, off: theme.off };
+    }
 
     private handleOptionsClose = (): void => {
         this.setState({ optionsDialogOpen: false });
@@ -964,6 +995,132 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         );
     }
 
+    /** Berechnet die Ganzzahl-Werte für die Farbvorschau-Tabelle. */
+    private buildColorPreviewValues(): number[] {
+        const { valMin, valMax, valBest } = this.state;
+        const lo = Math.min(valMin, valMax);
+        const hi = Math.max(valMin, valMax);
+        const range = hi - lo;
+        if (range <= 1) {
+            return [];
+        }
+        const numCols = Math.min(30, range);
+        const values: number[] = [];
+        for (let i = 0; i < numCols; i++) {
+            values.push(Math.round(lo + (i * range) / (numCols - 1)));
+        }
+        // Deduplizieren (Rundung kann Duplikate erzeugen)
+        let unique = [...new Set(values)].sort((a, b) => a - b);
+        // val_best sicherstellen (nur wenn gesetzt)
+        if (valBest !== undefined) {
+            const best = Math.min(hi, Math.max(lo, Math.round(valBest)));
+            if (!unique.includes(best)) {
+                let closestIdx = -1;
+                let minDist = Infinity;
+                for (let i = 1; i < unique.length - 1; i++) {
+                    const d = Math.abs(unique[i] - best);
+                    if (d < minDist) {
+                        minDist = d;
+                        closestIdx = i;
+                    }
+                }
+                if (closestIdx >= 0) {
+                    unique[closestIdx] = best;
+                    unique = unique.sort((a, b) => a - b);
+                }
+            }
+        }
+        return unique;
+    }
+
+    /** Rendert die kompakte Farbvorschau-Tabelle unterhalb der Skalen-Einstellungen. */
+    private renderColorPreviewTable(): React.JSX.Element | null {
+        const { valMin, valMax, valBest, trueColor, falseColor, colorBest, colorMode, colorLog10 } = this.state;
+        const range = Math.abs(valMax - valMin);
+        if (range <= 1) {
+            return null;
+        }
+        const values = this.buildColorPreviewValues();
+        if (values.length === 0) {
+            return null;
+        }
+
+        const themeColors = this.getThemeColors();
+        const cto: RGB = trueColor !== '' ? Color.ConvertHexToRgb(trueColor) : themeColors.on;
+        const cfrom: RGB = falseColor !== '' ? Color.ConvertHexToRgb(falseColor) : themeColors.off;
+        const lo = Math.min(valMin, valMax);
+        const hi = Math.max(valMin, valMax);
+        const best = valBest !== undefined ? Math.min(hi, Math.max(lo, Math.round(valBest))) : undefined;
+        const colorBestRgb: RGB | undefined = colorBest !== '' ? Color.ConvertHexToRgb(colorBest) : undefined;
+        const def: RGB = { r: 128, g: 128, b: 128 };
+        const scale: ColorScaleInput = {
+            val_min: valMin,
+            val_max: valMax,
+            val_best: best,
+            color_best: colorBestRgb,
+            mode: colorMode,
+            log10: colorLog10 !== '' ? colorLog10 : undefined,
+        };
+
+        return (
+            <Box sx={{ mt: 1, width: '100%', overflowX: 'hidden' }}>
+                <Box
+                    sx={{
+                        display: 'table',
+                        width: '100%',
+                        tableLayout: 'fixed',
+                        borderCollapse: 'collapse',
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 0.5,
+                    }}
+                >
+                    {/* Zeile 1: Zahlenwerte */}
+                    <Box sx={{ display: 'table-row' }}>
+                        {values.map(v => (
+                            <Box
+                                key={`val-${v}`}
+                                sx={{
+                                    display: 'table-cell',
+                                    textAlign: 'center',
+                                    fontSize: '0.55rem',
+                                    lineHeight: 1.3,
+                                    py: 0.25,
+                                    borderLeft: '1px solid',
+                                    borderColor: 'divider',
+                                    fontWeight: v === lo || v === hi || v === best ? 'bold' : 'normal',
+                                    color: v === lo || v === hi || v === best ? 'text.primary' : 'text.secondary',
+                                    overflow: 'hidden',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {v}
+                            </Box>
+                        ))}
+                    </Box>
+                    {/* Zeile 2: Farben */}
+                    <Box sx={{ display: 'table-row' }}>
+                        {values.map(v => {
+                            const rgb = Color.computeNumberScaleColor(v, cto, cfrom, scale, def);
+                            return (
+                                <Box
+                                    key={`col-${v}`}
+                                    sx={{
+                                        display: 'table-cell',
+                                        height: 14,
+                                        backgroundColor: `rgb(${rgb.r},${rgb.g},${rgb.b})`,
+                                        borderLeft: '1px solid',
+                                        borderColor: 'divider',
+                                    }}
+                                />
+                            );
+                        })}
+                    </Box>
+                </Box>
+            </Box>
+        );
+    }
+
     render(): React.JSX.Element {
         const { socket, theme, themeType } = this.props;
         const {
@@ -1550,10 +1707,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         variant="standard"
                                         type="number"
                                         label={I18n.t('channelConfigDialog_valBest')}
-                                        value={this.state.valBest}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valBest: Number(e.target.value) })
-                                        }
+                                        value={this.state.valBest ?? ''}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const v = e.target.value;
+                                            this.setState({ valBest: v === '' ? undefined : Number(v) });
+                                        }}
+                                        placeholder={I18n.t('channelConfigDialog_valBestPlaceholder')}
                                         fullWidth
                                     />
                                 </Box>
@@ -1637,6 +1796,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         fullWidth
                                     />
                                 </Box>
+
+                                {/* Farbvorschau-Tabelle */}
+                                {this.renderColorPreviewTable()}
                             </Box>
                         )}
                     </DialogContent>

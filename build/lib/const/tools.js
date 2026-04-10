@@ -435,21 +435,6 @@ function getRGBFromValue(val, role) {
   }
   return void 0;
 }
-function getLogFromIconScale(i, factor) {
-  if (i.log10 !== void 0) {
-    if (i.log10 === "max") {
-      factor = factor * (90 / 10) + 1;
-      factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
-      factor = Math.log10(factor);
-    } else {
-      factor = (1 - factor) * (90 / 10) + 1;
-      factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
-      factor = Math.log10(factor);
-      factor = 1 - factor;
-    }
-  }
-  return factor;
-}
 async function GetIconColor(item, value, min = null, max = null, offColor = null) {
   var _a, _b;
   if (item === void 0) {

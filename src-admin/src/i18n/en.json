@@ -60,6 +60,7 @@
     "channelConfigDialog_log10_max": "Log10 to Max",
     "channelConfigDialog_log10_min": "Log10 to Min",
     "channelConfigDialog_valBest": "Best Value",
+    "channelConfigDialog_valBestPlaceholder": "no best value",
     "channelConfigDialog_valIconMin": "Icon Min Value",
     "channelConfigDialog_valIconMax": "Icon Max Value",
     "channelConfigDialog_valueRange": "Value Range",
