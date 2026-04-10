@@ -586,10 +586,10 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         this.props.onEntryChange({ ...this.props.entry, card });
     }
 
-    private handleSlotClick = (index: number): void => {
+    private handleSlotClick = (index: number, isGridCard: boolean): void => {
         const item = (this.props.entry.pageItems ?? [])[index];
         this.setState({ editingSlotIndex: index });
-        this.dialogRef.current?.openWith(item);
+        this.dialogRef.current?.openWith(item, isGridCard);
     };
 
     private handleItemSave = (config: AdminPageItemConfig): void => {
@@ -674,7 +674,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         }
     }
 
-    private renderSlot(index: number, totalSlots: number, wide: boolean): React.JSX.Element {
+    private renderSlot(index: number, totalSlots: number, wide: boolean, isGridCard: boolean): React.JSX.Element {
         const pageItems = this.props.entry.pageItems ?? [];
         const item = pageItems[index] ?? undefined;
         const isDragSource = this.dragSourceIndex === index;
@@ -692,7 +692,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 >
                     <Paper
                         elevation={0}
-                        onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                        onClick={alive ? () => this.handleSlotClick(index, isGridCard) : undefined}
                         onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
                         onDragLeave={alive ? this.handleDragLeave : undefined}
                         onDrop={alive ? e => this.handleDrop(index, e) : undefined}
@@ -746,7 +746,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
                         onDragLeave={alive ? this.handleDragLeave : undefined}
                         onDrop={alive ? e => this.handleDrop(index, e) : undefined}
-                        onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                        onClick={alive ? () => this.handleSlotClick(index, isGridCard) : undefined}
                         onContextMenu={alive ? e => this.handleContextMenu(index, e) : undefined}
                         sx={{
                             width: '100%',
@@ -835,7 +835,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
                     onDragLeave={alive ? this.handleDragLeave : undefined}
                     onDrop={alive ? e => this.handleDrop(index, e) : undefined}
-                    onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                    onClick={alive ? () => this.handleSlotClick(index, isGridCard) : undefined}
                     onContextMenu={alive ? e => this.handleContextMenu(index, e) : undefined}
                     sx={{
                         width: '100%',
@@ -922,6 +922,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         card: MenuEntry['card'],
         grid2Status: Grid2ModelStatus,
         totalRealSlots: number,
+        isGridCard: boolean,
         onRemovePage?: () => void,
     ): React.JSX.Element {
         const { columns, uspSpecial, wide } = this.getGridConfig(card, grid2Status);
@@ -993,7 +994,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                                 key={globalIdx}
                                 sx={isUspTop ? { gridColumn: '1 / -1' } : {}}
                             >
-                                {this.renderSlot(globalIdx, totalRealSlots, wide)}
+                                {this.renderSlot(globalIdx, totalRealSlots, wide, isGridCard)}
                             </Box>
                         );
                     })}
@@ -1239,6 +1240,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                             entry.card,
                             grid2Status,
                             totalRealSlots,
+                            isGridCard,
                             onRemovePage,
                         );
                     })}

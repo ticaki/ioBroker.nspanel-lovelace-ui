@@ -64,6 +64,7 @@ type ChannelConfigDialogProps = {
 
 interface ChannelConfigDialogState {
     open: boolean;
+    isGridCard: boolean;
     channelId: string;
     name: string;
     isNavigation: boolean;
@@ -149,6 +150,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             isNavigation: false,
             targetPage: '',
             availablePages: [],
+            isGridCard: false,
             loadingPages: false,
             trueIcon: '',
             trueColor: '',
@@ -218,8 +220,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * Wird von übergeordneten Komponenten per ref aufgerufen.
      *
      * @param data
+     * @param isGridCard  (optional) true wenn die Daten von einem GridCard-Item stammen – steuert die Sichtbarkeit bestimmter Felder
      */
-    public openWith(data?: Partial<AdminPageItemConfig>): void {
+    public openWith(data?: Partial<AdminPageItemConfig>, isGridCard?: boolean): void {
         const isNative = data?.useNative === true;
         this.setState({
             open: true,
@@ -247,6 +250,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkResultIsError: false,
             checkResultPendingConfig: null,
             isSaving: false,
+            isGridCard: isGridCard ?? false,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -1245,23 +1249,29 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     }}
                                 />
                                 {/* useValue Checkbox*/}
-                                <Box>
-                                    <FormControl component="fieldset">
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={useValue}
-                                                    onChange={this.handleUseValueChange}
-                                                />
-                                            }
-                                            label={
-                                                <Typography variant="body1">
-                                                    {I18n.t('channelConfigDialog_useValueLabel')}
-                                                </Typography>
-                                            }
-                                        />
-                                    </FormControl>
-                                </Box>
+                                {this.state.isGridCard && (
+                                    <Box>
+                                        <FormControl
+                                            component="fieldset"
+                                            disabled={fieldsDisabled}
+                                        >
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={useValue}
+                                                        onChange={this.handleUseValueChange}
+                                                        disabled={fieldsDisabled}
+                                                    />
+                                                }
+                                                label={
+                                                    <Typography variant="body1">
+                                                        {I18n.t('channelConfigDialog_useValueLabel')}
+                                                    </Typography>
+                                                }
+                                            />
+                                        </FormControl>
+                                    </Box>
+                                )}
                                 {/* Zweispaltiger Bereich: Wahr / Unwahr */}
                                 <Box
                                     sx={{
