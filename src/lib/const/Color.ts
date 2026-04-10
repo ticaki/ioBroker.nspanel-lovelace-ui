@@ -16,6 +16,21 @@ export type RGB = {
 
 export type hex = `#${string}`;
 
+/**
+ * Minimal scale configuration accepted by {@link Color.computeNumberScaleColor}.
+ * Intentionally mirrors `IconColorElement` from `types/types.ts` so that callers
+ * can pass the real type without creating a circular import.
+ */
+export type ColorScaleInput = {
+    val_min: number;
+    val_max: number;
+    val_best?: number;
+    /** Optional best-color (only used when `val_best` is set). */
+    color_best?: RGB;
+    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
+    log10?: 'max' | 'min';
+};
+
 interface MixedOptions {
     swap?: boolean;
 }
@@ -1408,4 +1423,162 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
         11_900: { r: 195, g: 210, b: 255 },
         12_000: { r: 195, g: 209, b: 255 },
     };
+
+    /**
+     * Apply logarithmic scaling to a 0-1 factor.
+     *
+     * @param i scale element
+     * @param factor linear factor in [0, 1]
+     * @returns scaled factor
+     */
+    private static logFromScale(i: ColorScaleInput, factor: number): number {
+        if (i.log10 !== undefined) {
+            if (i.log10 === 'max') {
+                factor = factor * (90 / 10) + 1;
+                factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
+                factor = Math.log10(factor);
+            } else {
+                factor = (1 - factor) * (90 / 10) + 1;
+                factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
+                factor = Math.log10(factor);
+                factor = 1 - factor;
+            }
+        }
+        return factor;
+    }
+
+    /**
+     * Compute the interpolated RGB color for a numeric value on a color scale.
+     * Mirrors the numeric branch of `getIconEntryColor` in tools.ts but operates
+     * on already-resolved RGB values (no Dataitem dependency) and returns RGB.
+     *
+     * @param value current numeric value
+     * @param cto color for the "true / max" end of the scale
+     * @param cfrom color for the "false / min" end of the scale
+     * @param scale scale configuration (ColorScaleInput-compatible) or unknown/null
+     * @param def fallback color when nothing else matches
+     * @returns interpolated RGB color
+     */
+    static computeNumberScaleColor(
+        value: number,
+        cto: RGB | undefined,
+        cfrom: RGB | undefined,
+        scale: unknown,
+        def: RGB,
+    ): RGB {
+        const isFullScale = (s: unknown): s is ColorScaleInput =>
+            typeof s === 'object' &&
+            s !== null &&
+            Number.isFinite((s as ColorScaleInput).val_min) &&
+            Number.isFinite((s as ColorScaleInput).val_max);
+
+        const isPartialScale = (s: unknown): s is { val_min?: number; val_max?: number } =>
+            typeof s === 'object' && s !== null && ('val_min' in s || 'val_max' in s);
+
+        let _cto = cto;
+        let _cfrom = cfrom;
+
+        if ((!_cto || !_cfrom) && isFullScale(scale)) {
+            switch (scale.mode) {
+                case 'hue':
+                case 'cie':
+                case 'mixed':
+                    break;
+                case 'triGrad':
+                case 'triGradAnchor':
+                case 'quadriGrad':
+                case 'quadriGradAnchor':
+                    _cto = _cto || Color.HMIOn;
+                    _cfrom = _cfrom || Color.HMIOff;
+                    break;
+            }
+        }
+
+        if (_cto && _cfrom && scale) {
+            if (isFullScale(scale)) {
+                let swap = false;
+                let vMin = scale.val_min;
+                let vMax = scale.val_max;
+                if (vMax < vMin) {
+                    const temp = vMax;
+                    vMax = vMin;
+                    vMin = temp;
+                    const temp2 = _cto;
+                    _cto = _cfrom;
+                    _cfrom = temp2;
+                    swap = true;
+                }
+                vMin = vMin < value ? vMin : value;
+                vMax = vMax > value ? vMax : value;
+
+                let vBest = scale.val_best ?? undefined;
+                vBest = vBest !== undefined ? Math.min(vMax, Math.max(vMin, vBest)) : undefined;
+                let factor = 1;
+                let func = Color.mixColor;
+                switch (scale.mode) {
+                    case 'hue':
+                        func = Color.mixColorHue;
+                        break;
+                    case 'cie':
+                        func = Color.mixColorCie;
+                        break;
+                    case 'mixed':
+                        func = Color.mixColor;
+                        break;
+                    case 'triGradAnchor':
+                        if (scale.val_best !== undefined) {
+                            func = Color.triGradAnchor;
+                            break;
+                        }
+                    // eslint-disable-next-line no-fallthrough
+                    case 'triGrad':
+                        func = Color.triGradColorScale;
+                        break;
+                    case 'quadriGradAnchor':
+                        if (scale.val_best !== undefined) {
+                            func = Color.quadriGradAnchor;
+                            break;
+                        }
+                    // eslint-disable-next-line no-fallthrough
+                    case 'quadriGrad':
+                        func = Color.quadriGradColorScale;
+                        break;
+                }
+                if (vMin === vMax) {
+                    return _cto;
+                } else if (vBest === undefined) {
+                    factor = (value - vMin) / (vMax - vMin);
+                    factor = Math.min(1, Math.max(0, factor));
+                    factor = Color.logFromScale(scale, factor);
+                    return func(_cfrom, _cto, factor, { swap });
+                } else if (value >= vBest) {
+                    const effectiveCfrom = scale.val_best !== undefined && scale.color_best ? scale.color_best : _cfrom;
+                    factor = 1 - (value - vBest) / (vMax - vBest);
+                    factor = Math.min(1, Math.max(0, factor));
+                    factor = Color.logFromScale(scale, factor);
+                    return func(effectiveCfrom, _cto, factor, { swap, anchorHigh: true });
+                }
+                const effectiveCto = scale.val_best !== undefined && scale.color_best ? scale.color_best : _cto;
+                factor = (value - vMin) / (vBest - vMin);
+                factor = Math.min(1, Math.max(0, factor));
+                factor = 1 - Color.logFromScale(scale, 1 - factor);
+                return func(_cfrom, effectiveCto, factor, { swap });
+            } else if (isPartialScale(scale)) {
+                if ((scale.val_min && scale.val_min >= value) || (scale.val_max && scale.val_max <= value)) {
+                    return _cto;
+                }
+                // intentional fall-through: no range match → continue to fallback
+            }
+        }
+        if (value) {
+            if (_cto) {
+                return _cto;
+            }
+        } else if (_cfrom) {
+            return _cfrom;
+        } else if (_cto) {
+            return _cto;
+        }
+        return def;
+    }
 }

@@ -351,7 +351,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
 }
 async function getIconEntryColor(i, value, def, defOff = null) {
-  var _a, _b, _c, _d;
+  var _a, _b, _c;
   value = value != null ? value : true;
   if (typeof def === "number") {
     def = import_Color.Color.decToRgb(def);
@@ -386,112 +386,20 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     }
     return color != null ? color : String(import_Color.Color.rgb_dec565(def));
   } else if (typeof value === "number") {
-    let cto = i.true && i.true.color && await i.true.color.getRGBValue();
-    let cfrom = i.false && i.false.color && await i.false.color.getRGBValue();
+    const rawCto = i.true && i.true.color && await i.true.color.getRGBValue();
+    const rawCfrom = i.false && i.false.color && await i.false.color.getRGBValue();
     const scale = i.scale && await i.scale.getObject();
-    if ((!cto || !cfrom) && globals.isIconColorScaleElement(scale)) {
-      switch (scale.mode) {
-        case "hue":
-        case "cie":
-        case "mixed": {
-          break;
-        }
-        case "triGrad":
-        case "triGradAnchor":
-        case "quadriGrad":
-        case "quadriGradAnchor": {
-          cto = cto || import_Color.Color.HMIOn;
-          cfrom = cfrom || import_Color.Color.HMIOff;
-        }
-      }
-    }
-    if (cto && cfrom && scale) {
-      let rColor = cto;
-      if (globals.isIconColorScaleElement(scale)) {
-        let swap = false;
-        let vMin = scale.val_min;
-        let vMax = scale.val_max;
-        if (vMax < vMin) {
-          const temp = vMax;
-          vMax = vMin;
-          vMin = temp;
-          const temp2 = cto;
-          cto = cfrom;
-          cfrom = temp2;
-          swap = true;
-        }
-        vMin = vMin < value ? vMin : value;
-        vMax = vMax > value ? vMax : value;
-        let vBest = (_d = scale.val_best) != null ? _d : void 0;
-        vBest = vBest !== void 0 ? Math.min(vMax, Math.max(vMin, vBest)) : void 0;
-        let factor = 1;
-        let func = import_Color.Color.mixColor;
-        switch (scale.mode) {
-          case "hue":
-            func = import_Color.Color.mixColorHue;
-            break;
-          case "cie":
-            func = import_Color.Color.mixColorCie;
-            break;
-          case "mixed":
-            func = import_Color.Color.mixColor;
-            break;
-          case "triGradAnchor":
-            if (scale.val_best !== void 0) {
-              func = import_Color.Color.triGradAnchor;
-              break;
-            }
-          // eslint-disable-next-line no-fallthrough
-          case "triGrad":
-            func = import_Color.Color.triGradColorScale;
-            break;
-          case "quadriGradAnchor":
-            if (scale.val_best !== void 0) {
-              func = import_Color.Color.quadriGradAnchor;
-              break;
-            }
-          // eslint-disable-next-line no-fallthrough
-          case "quadriGrad":
-            func = import_Color.Color.quadriGradColorScale;
-            break;
-        }
-        if (vMin == vMax) {
-          rColor = cto;
-        } else if (vBest === void 0) {
-          factor = (value - vMin) / (vMax - vMin);
-          factor = Math.min(1, Math.max(0, factor));
-          factor = getLogFromIconScale(scale, factor);
-          rColor = func(cfrom, cto, factor, { swap });
-        } else if (value >= vBest) {
-          cfrom = scale.val_best !== void 0 && scale.color_best ? scale.color_best : cfrom;
-          factor = 1 - (value - vBest) / (vMax - vBest);
-          factor = Math.min(1, Math.max(0, factor));
-          factor = getLogFromIconScale(scale, factor);
-          rColor = func(cfrom, cto, factor, { swap, anchorHigh: true });
-        } else {
-          cto = scale.val_best !== void 0 && scale.color_best ? scale.color_best : cto;
-          factor = (value - vMin) / (vBest - vMin);
-          factor = Math.min(1, Math.max(0, factor));
-          factor = 1 - getLogFromIconScale(scale, 1 - factor);
-          rColor = func(cfrom, cto, factor, { swap });
-        }
-        return String(import_Color.Color.rgb_dec565(rColor));
-      } else if (globals.isPartialColorScaleElement(scale)) {
-        if (scale.val_min && scale.val_min >= value || scale.val_max && scale.val_max <= value) {
-          return String(import_Color.Color.rgb_dec565(cto));
-        }
-        String(import_Color.Color.rgb_dec565(cfrom));
-      }
-    }
-    if (value) {
-      if (cto) {
-        return String(import_Color.Color.rgb_dec565(cto));
-      }
-    } else if (cfrom) {
-      return String(import_Color.Color.rgb_dec565(cfrom));
-    } else if (cto) {
-      return String(import_Color.Color.rgb_dec565(cto));
-    }
+    return String(
+      import_Color.Color.rgb_dec565(
+        import_Color.Color.computeNumberScaleColor(
+          value,
+          rawCto || void 0,
+          rawCfrom || void 0,
+          scale || void 0,
+          def
+        )
+      )
+    );
   }
   return String(import_Color.Color.rgb_dec565(def));
 }
