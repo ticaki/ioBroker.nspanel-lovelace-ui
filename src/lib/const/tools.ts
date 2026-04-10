@@ -3,7 +3,6 @@ import type { Library } from '../controller/library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';
-import type * as types from '../types/types';
 import * as globals from '../types/function-and-const';
 import type { NSPanel } from '../types/NSPanel';
 
