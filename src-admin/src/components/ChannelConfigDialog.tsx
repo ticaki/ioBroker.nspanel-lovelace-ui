@@ -1238,9 +1238,30 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                               ? I18n.t('channelConfigDialog_defaultName')
                                               : undefined
                                     }
-                                    FormHelperTextProps={{ sx: { color: 'text.disabled' } }}
+                                    slotProps={{
+                                        formHelperText: {
+                                            sx: { color: 'text.disabled' },
+                                        },
+                                    }}
                                 />
-
+                                {/* useValue Checkbox*/}
+                                <Box>
+                                    <FormControl component="fieldset">
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={useValue}
+                                                    onChange={this.handleUseValueChange}
+                                                />
+                                            }
+                                            label={
+                                                <Typography variant="body1">
+                                                    {I18n.t('channelConfigDialog_useValueLabel')}
+                                                </Typography>
+                                            }
+                                        />
+                                    </FormControl>
+                                </Box>
                                 {/* Zweispaltiger Bereich: Wahr / Unwahr */}
                                 <Box
                                     sx={{
@@ -1273,15 +1294,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     : I18n.t('channelConfigDialog_native')}
                             </Button>
                         )}
-                        {/* Options-Button */}
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={this.handleOptionsOpen}
-                            startIcon={<SettingsIcon />}
-                        >
-                            {I18n.t('channelConfigDialog_options')}
-                        </Button>
+                        {/* Options-Button, wenn nicht im Native-Modus */}
+                        {!nativeMode && (
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={this.handleOptionsOpen}
+                                startIcon={<SettingsIcon />}
+                            >
+                                {I18n.t('channelConfigDialog_options')}
+                            </Button>
+                        )}
                         {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
                         <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
                         <Button
@@ -1606,25 +1629,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 </Box>
                             </Box>
                         )}
-
-                        {/* useValue Checkbox*/}
-                        <Box>
-                            <FormControl component="fieldset">
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={useValue}
-                                            onChange={this.handleUseValueChange}
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="body1">
-                                            {I18n.t('channelConfigDialog_useValueLabel')}
-                                        </Typography>
-                                    }
-                                />
-                            </FormControl>
-                        </Box>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={this.handleOptionsClose}>{I18n.t('channelConfigDialog_close')}</Button>
