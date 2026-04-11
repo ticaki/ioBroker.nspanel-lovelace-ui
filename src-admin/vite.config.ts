@@ -29,7 +29,7 @@ const config = {
     build: {
         target: 'chrome89',
         outDir: './build',
-        chunkSizeWarningLimit: 3000,
+        chunkSizeWarningLimit: 5000,
         /*rollupOptions: {
             output: {
                 manualChunks: (id: string): string | undefined => {

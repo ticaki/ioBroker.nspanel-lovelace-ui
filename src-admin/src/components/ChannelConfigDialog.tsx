@@ -2036,10 +2036,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     themeType={themeType}
                     features={{
                         showUnit: true,
-                        showTextSize: this.state.useValue,
+                        showTextSize: this.state.useValue && !this.state.isGridCard,
                         showDateFormat: true,
                         showPreview: false,
                         readOnlyValueStateId: true,
+                        forceDateFormat: true,
+                        forceUnit: this.state.useValue || this.state.isGridCard,
                     }}
                     mainValueFilterFunc={this.buildChannelFilterFunc()}
                     mainValueTransformId={this.transformChannelId}

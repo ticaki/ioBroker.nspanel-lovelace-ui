@@ -195,7 +195,7 @@ class AdminConfiguration extends import_library.BaseClass {
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
-                  `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`
+                  `Error processing1 page item ${index} for page '${entry.uniqueName}': ${result.error}`
                 );
               }
             }

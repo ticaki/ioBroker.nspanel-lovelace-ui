@@ -343,13 +343,13 @@ class ValueEntryDialog extends React.Component<ValueEntryDialogProps, ValueEntry
     /** Builds the preview string from all current field values. */
     private async computePreview(): Promise<void> {
         const { socket } = this.props;
-        const usePlaceholder = this.props.features?.showPreview === true;
+        const usePlaceholder = this.props.features?.showPreview === false;
         const { valueStateId, unit, prefix, suffix, dateLocal, dateFormatOptions, valueStateType } = this.state;
 
-        const prefixResolved = usePlaceholder ? prefix : await this.resolveIfState(prefix);
-        const suffixResolved = usePlaceholder ? suffix : await this.resolveIfState(suffix);
+        const prefixResolved = await this.resolveIfState(prefix);
+        const suffixResolved = await this.resolveIfState(suffix);
 
-        // Main value: placeholder when showPreview===true, otherwise load from state
+        // Main value: placeholder when showPreview===false, otherwise load from state
         let mainValue: string | number | null = null;
         if (valueStateId) {
             if (usePlaceholder) {
@@ -466,7 +466,6 @@ class ValueEntryDialog extends React.Component<ValueEntryDialogProps, ValueEntry
             features.showDateFormat !== false &&
             (features.forceDateFormat === true || valueStateType === 'number' || valueStateType === 'string');
         // showPreview: undefined/not-set = show with real value; true = show with placeholder; false = hide
-        const showPreview = features.showPreview !== false;
         const readOnlyValueStateId = features.readOnlyValueStateId === true;
 
         return (
@@ -627,10 +626,10 @@ class ValueEntryDialog extends React.Component<ValueEntryDialogProps, ValueEntry
                             </FormControl>
                         )}
 
-                        {showPreview && <Divider />}
+                        {<Divider />}
 
                         {/* Preview (readonly) – controlled by features.showPreview */}
-                        {showPreview && (
+                        {
                             <TextField
                                 variant="outlined"
                                 fullWidth
@@ -644,7 +643,7 @@ class ValueEntryDialog extends React.Component<ValueEntryDialogProps, ValueEntry
                                     },
                                 }}
                             />
-                        )}
+                        }
                     </Box>
                 </DialogContent>
                 <DialogActions>
