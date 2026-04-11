@@ -32,6 +32,7 @@ export const pageItemDefaults = {
         iconOff: 'power-standby',
         colorOn: 'on',
         colorOff: 'off',
+        type: 'boolean',
     },
     /** Applied when item.role === 'socket' inside case 'socket'. */
     socketPlug: {
@@ -39,6 +40,7 @@ export const pageItemDefaults = {
         iconOff: 'power-socket-de',
         colorOn: 'on',
         colorOff: 'off',
+        type: 'boolean',
     },
 
     // ── Lights ────────────────────────────────────────────────────────────────
@@ -47,12 +49,14 @@ export const pageItemDefaults = {
         iconOff: 'lightbulb-outline',
         colorOn: 'light',
         colorOff: 'dark',
+        type: 'boolean',
     },
     dimmer: {
         iconOn: 'lightbulb',
         iconOff: 'lightbulb-outline',
         colorOn: 'light',
         colorOff: 'dark',
+        type: 'boolean',
     },
     /** Covers case 'ct' */
     ct: {
@@ -60,6 +64,7 @@ export const pageItemDefaults = {
         iconOff: 'lightbulb-outline',
         colorOn: 'light',
         colorOff: 'dark',
+        type: 'boolean',
     },
     /** Covers case 'rgb' */
     rgb: {
@@ -67,6 +72,7 @@ export const pageItemDefaults = {
         iconOff: 'lightbulb-outline',
         colorOn: 'light',
         colorOff: 'dark',
+        type: 'boolean',
     },
     /** Covers case 'hue' */
     hue: {
@@ -74,6 +80,7 @@ export const pageItemDefaults = {
         iconOff: 'lightbulb-outline',
         colorOn: 'light',
         colorOff: 'dark',
+        type: 'boolean',
     },
     /** Covers case 'rgbSingle' */
     rgbSingle: {
@@ -81,6 +88,7 @@ export const pageItemDefaults = {
         iconOff: 'lightbulb-outline',
         colorOn: 'light',
         colorOff: 'dark',
+        type: 'boolean',
     },
 
     // ── Button ────────────────────────────────────────────────────────────────
@@ -89,6 +97,7 @@ export const pageItemDefaults = {
         iconOff: 'gesture-tap-button',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'boolean',
     },
 
     // ── Shutters / blinds ─────────────────────────────────────────────────────
@@ -98,6 +107,7 @@ export const pageItemDefaults = {
         iconUnstable: 'window-shutter-alert',
         colorOn: 'open',
         colorOff: 'close',
+        type: 'number',
     },
     /** Default icons for individual shutterIcon entries (shutter2 variant). */
     shutterSlaveIcon: {
@@ -105,6 +115,7 @@ export const pageItemDefaults = {
         iconOff: 'window-shutter',
         colorOn: 'open',
         colorOff: 'close',
+        type: 'number',
     },
 
     // ── Gate ──────────────────────────────────────────────────────────────────
@@ -114,6 +125,7 @@ export const pageItemDefaults = {
         iconUnstable: 'garage-alert',
         colorOn: 'open',
         colorOff: 'close',
+        type: 'boolean',
     },
 
     // ── Sensors ───────────────────────────────────────────────────────────────
@@ -122,6 +134,7 @@ export const pageItemDefaults = {
         iconOff: 'motion-sensor',
         colorOn: 'good',
         colorOff: 'bad',
+        type: 'boolean',
     },
     door: {
         iconOn: 'door-open',
@@ -129,6 +142,7 @@ export const pageItemDefaults = {
         iconUnstable: 'door-closed',
         colorOn: 'good',
         colorOff: 'bad',
+        type: 'boolean',
     },
     window: {
         iconOn: 'window-open-variant',
@@ -136,6 +150,7 @@ export const pageItemDefaults = {
         iconUnstable: 'window-closed-variant',
         colorOn: 'good',
         colorOff: 'bad',
+        type: 'boolean',
     },
     /**
      * Covers cases: 'thermostat', 'airCondition', 'temperature', 'value.temperature'.
@@ -147,6 +162,7 @@ export const pageItemDefaults = {
         iconUnstable: 'sun-thermometer',
         colorOn: 'good',
         colorOff: 'bad',
+        type: 'number',
     },
     /**
      * Covers cases: 'humidity', 'value.humidity'.
@@ -157,6 +173,7 @@ export const pageItemDefaults = {
         iconUnstable: 'water-percent-alert',
         colorOn: 'good',
         colorOff: 'bad',
+        type: 'number',
     },
 
     // ── Info ──────────────────────────────────────────────────────────────────
@@ -169,6 +186,7 @@ export const pageItemDefaults = {
         iconOff: 'information-off-outline',
         colorOn: 'bad',
         colorOff: 'bad',
+        type: 'mixed',
     },
 
     // ── Volume ────────────────────────────────────────────────────────────────
@@ -181,6 +199,7 @@ export const pageItemDefaults = {
         iconOff: 'volume-mute', // inner icon – muted / off state (same)
         colorOn: 'on',
         colorOff: 'off',
+        type: 'number',
     },
 
     // ── Select ────────────────────────────────────────────────────────────────
@@ -193,6 +212,7 @@ export const pageItemDefaults = {
         iconOff: 'clipboard-list',
         colorOn: 'Green',
         colorOff: 'Red',
+        type: 'number',
     },
 
     // ── Lock ──────────────────────────────────────────────────────────────────
@@ -201,6 +221,7 @@ export const pageItemDefaults = {
         iconOff: 'lock',
         colorOn: 'open',
         colorOff: 'close',
+        type: 'boolean',
     },
 
     // ── Slider ────────────────────────────────────────────────────────────────
@@ -209,6 +230,7 @@ export const pageItemDefaults = {
         iconOff: '',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'number',
     },
 
     // ── Warning ───────────────────────────────────────────────────────────────
@@ -217,6 +239,7 @@ export const pageItemDefaults = {
         iconOff: 'alert-decagram-outline',
         colorOn: 'attention',
         colorOff: 'deactivated',
+        type: 'number',
     },
 
     // ── Timer ─────────────────────────────────────────────────────────────────
@@ -238,6 +261,7 @@ export const pageItemDefaults = {
         iconAlarmOff: 'alarm-off', // isAlarm - false side
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'mixed',
     },
 
     // ── Fan ───────────────────────────────────────────────────────────────────
@@ -250,6 +274,7 @@ export const pageItemDefaults = {
         iconOff: 'fan-off',
         colorOn: 'Green',
         colorOff: 'Red',
+        type: 'number',
     },
 
     // ── Media ─────────────────────────────────────────────────────────────────
@@ -259,6 +284,7 @@ export const pageItemDefaults = {
         iconOff: 'play',
         colorOn: 'on',
         colorOff: 'off',
+        type: 'boolean',
     },
     /** Used when item.asControl is false (navigation to a media page). */
     mediaNav: {
@@ -266,6 +292,7 @@ export const pageItemDefaults = {
         iconOff: 'play-box-multiple-outline',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'boolean',
     },
 } as const;
 
@@ -316,6 +343,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'power-standby',
         colorOn: 'on',
         colorOff: 'off',
+        type: 'boolean',
     },
 
     // ── Lights ────────────────────────────────────────────────────────────────
@@ -325,6 +353,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'lightbulb-outline',
         colorOn: 'light',
         colorOff: 'dark',
+        type: 'boolean',
     },
 
     // ── Button / undefined role ───────────────────────────────────────────────
@@ -333,6 +362,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'gesture-tap-button',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'boolean',
     },
 
     // ── Humidity ──────────────────────────────────────────────────────────────
@@ -343,6 +373,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'cold',
         colorOff: 'hot',
         template: 'button.humidity',
+        type: 'number',
     },
 
     // ── Temperature ───────────────────────────────────────────────────────────
@@ -353,6 +384,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'hot',
         colorOff: 'cold',
         template: 'button.temperature',
+        type: 'number',
     },
 
     // ── Gate ──────────────────────────────────────────────────────────────────
@@ -363,6 +395,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'open',
         colorOff: 'close',
         template: 'text.gate.isOpen',
+        type: 'boolean',
     },
 
     // ── Door ──────────────────────────────────────────────────────────────────
@@ -373,6 +406,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'open',
         colorOff: 'close',
         template: 'text.door.isOpen',
+        type: 'boolean',
     },
 
     // ── Window ────────────────────────────────────────────────────────────────
@@ -383,6 +417,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'open',
         colorOff: 'close',
         template: 'text.window.isOpen',
+        type: 'boolean',
     },
 
     // ── Media navigation ──────────────────────────────────────────────────────
@@ -391,6 +426,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'play-box-multiple-outline',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'boolean',
     },
 
     // ── Motion sensor ─────────────────────────────────────────────────────────
@@ -401,6 +437,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'attention',
         colorOff: 'deactivated',
         template: 'text.motion',
+        type: 'boolean',
     },
 
     // ── Volume ────────────────────────────────────────────────────────────────
@@ -411,6 +448,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'activated',
         colorOff: 'deactivated',
         template: 'button.volume',
+        type: 'number',
     },
 
     // ── Warning ───────────────────────────────────────────────────────────────
@@ -421,6 +459,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'attention',
         colorOff: 'deactivated',
         template: 'text.warning',
+        type: 'number',
     },
 
     // ── Info ──────────────────────────────────────────────────────────────────
@@ -429,6 +468,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'information-off-outline',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'mixed',
     },
 
     // ── Blind / shutter ───────────────────────────────────────────────────────
@@ -449,6 +489,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'activated',
         colorOff: 'deactivated',
         template: 'button.select',
+        type: 'number',
     },
 
     // ── Lock ──────────────────────────────────────────────────────────────────
@@ -459,6 +500,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'open',
         colorOff: 'close',
         template: 'text.lock',
+        type: 'boolean',
     },
 
     // ── Slider ────────────────────────────────────────────────────────────────
@@ -469,6 +511,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'good',
         colorOff: 'bad',
         template: 'button.slider',
+        type: 'number',
     },
 
     // ── Timer ─────────────────────────────────────────────────────────────────
@@ -477,6 +520,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'timer-off',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'boolean',
     },
 
     // ── Fan ───────────────────────────────────────────────────────────────────
@@ -485,6 +529,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'fan-off',
         colorOn: 'Green',
         colorOff: 'Red',
+        type: 'number',
     },
 
     // ── Time table ────────────────────────────────────────────────────────────
@@ -498,6 +543,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'Red',
         colorOff: 'Green',
         template: 'button.alias.fahrplan.departure',
+        type: 'mixed',
     },
 } as const;
 

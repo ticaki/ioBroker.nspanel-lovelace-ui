@@ -1405,7 +1405,7 @@ class Color extends ColorBase {
    * @param value current numeric value
    * @param cto color for the "true / max" end of the scale
    * @param cfrom color for the "false / min" end of the scale
-   * @param scale scale configuration (ColorScaleInput-compatible) or unknown/null
+   * @param scale scale configuration (IconColorElement-compatible) or unknown/null
    * @param def fallback color when nothing else matches
    * @returns interpolated RGB color
    */

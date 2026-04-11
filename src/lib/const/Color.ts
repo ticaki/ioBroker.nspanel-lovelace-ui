@@ -1,6 +1,7 @@
 import { colord, extend } from 'colord';
 import namesPlugin from 'colord/plugins/names';
 import mixPlugin from 'colord/plugins/mix';
+import type { IconColorElement } from '../types/adminShareConfig';
 
 extend([namesPlugin, mixPlugin]);
 
@@ -15,21 +16,6 @@ export type RGB = {
 };
 
 export type hex = `#${string}`;
-
-/**
- * Minimal scale configuration accepted by {@link Color.computeNumberScaleColor}.
- * Intentionally mirrors `IconColorElement` from `types/types.ts` so that callers
- * can pass the real type without creating a circular import.
- */
-export type ColorScaleInput = {
-    val_min: number;
-    val_max: number;
-    val_best?: number;
-    /** Optional best-color (only used when `val_best` is set). */
-    color_best?: RGB;
-    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
-    log10?: 'max' | 'min';
-};
 
 interface MixedOptions {
     swap?: boolean;
@@ -1462,7 +1448,7 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
      * @param factor linear factor in [0, 1]
      * @returns scaled factor
      */
-    private static logFromScale(i: ColorScaleInput, factor: number): number {
+    private static logFromScale(i: IconColorElement, factor: number): number {
         if (i.log10 !== undefined) {
             if (i.log10 === 'max') {
                 factor = factor * (90 / 10) + 1;
@@ -1486,7 +1472,7 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
      * @param value current numeric value
      * @param cto color for the "true / max" end of the scale
      * @param cfrom color for the "false / min" end of the scale
-     * @param scale scale configuration (ColorScaleInput-compatible) or unknown/null
+     * @param scale scale configuration (IconColorElement-compatible) or unknown/null
      * @param def fallback color when nothing else matches
      * @returns interpolated RGB color
      */
@@ -1497,11 +1483,11 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
         scale: unknown,
         def: RGB,
     ): RGB {
-        const isFullScale = (s: unknown): s is ColorScaleInput =>
+        const isFullScale = (s: unknown): s is IconColorElement =>
             typeof s === 'object' &&
             s !== null &&
-            Number.isFinite((s as ColorScaleInput).val_min) &&
-            Number.isFinite((s as ColorScaleInput).val_max);
+            Number.isFinite((s as IconColorElement).val_min) &&
+            Number.isFinite((s as IconColorElement).val_max);
 
         const isPartialScale = (s: unknown): s is { val_min?: number; val_max?: number } =>
             typeof s === 'object' && s !== null && ('val_min' in s || 'val_max' in s);

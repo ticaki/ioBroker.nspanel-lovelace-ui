@@ -2241,6 +2241,16 @@ class NspanelLovelaceUi extends utils.Adapter {
         item.icon2 = preItem.falseIcon || void 0;
         item.onColor = convertToScriptRGBColor(preItem.trueColor);
         item.offColor = convertToScriptRGBColor(preItem.falseColor);
+        if ((0, import_function_and_const.isIconColorScaleElement)(preItem.scale)) {
+          item.colorScale = {
+            ...preItem.scale,
+            color_best: preItem.scale.color_best ? {
+              red: preItem.scale.color_best.r,
+              green: preItem.scale.color_best.g,
+              blue: preItem.scale.color_best.b
+            } : void 0
+          };
+        }
         if (item.type !== "custom") {
           if (!item.name && preItem.valueEntry) {
             item.name = preItem.valueEntry.valueStateId;

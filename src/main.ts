@@ -38,7 +38,7 @@ import type {
     PageConfig,
     AdminPageItemConfig,
 } from './lib/types/adminShareConfig';
-import { isTasmotaStatusNet } from './lib/types/function-and-const';
+import { isIconColorScaleElement, isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { NSpanelModel, oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
@@ -2574,6 +2574,18 @@ class NspanelLovelaceUi extends utils.Adapter {
                 item.icon2 = (preItem.falseIcon as AllIcons) || undefined;
                 item.onColor = convertToScriptRGBColor(preItem.trueColor);
                 item.offColor = convertToScriptRGBColor(preItem.falseColor);
+                if (isIconColorScaleElement(preItem.scale)) {
+                    item.colorScale = {
+                        ...preItem.scale,
+                        color_best: preItem.scale.color_best
+                            ? {
+                                  red: preItem.scale.color_best.r,
+                                  green: preItem.scale.color_best.g,
+                                  blue: preItem.scale.color_best.b,
+                              }
+                            : undefined,
+                    };
+                }
 
                 if (item.type !== 'custom') {
                     if (!item.name && preItem.valueEntry) {

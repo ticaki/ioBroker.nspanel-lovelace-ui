@@ -14,7 +14,7 @@ import {
     MenuItem,
     type SelectChangeEvent,
 } from '@mui/material';
-import { Color, type RGB, type ColorScaleInput } from '../../../src/lib/const/Color';
+import { Color, type RGB } from '../../../src/lib/const/Color';
 import { type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
 import { I18n } from '@iobroker/adapter-react-v5';
 import type { ChannelColorConfig, IconColorElement } from '../../../src/lib/types/adminShareConfig';
@@ -350,7 +350,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
         const best = valBest !== undefined ? Math.min(hi, Math.max(lo, Math.round(valBest))) : undefined;
         const colorBestRgb: RGB | undefined = colorBest !== '' ? Color.ConvertHexToRgb(colorBest) : undefined;
         const def: RGB = { r: 128, g: 128, b: 128 };
-        const scale: ColorScaleInput = {
+        const scale: IconColorElement = {
             val_min: valMin,
             val_max: valMax,
             val_best: best,
