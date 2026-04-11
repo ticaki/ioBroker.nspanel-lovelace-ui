@@ -137,9 +137,72 @@ export type ScreensaverEntry = {
 };
 
 export type ScreensaverEntries = ScreensaverEntry[];
+
+/**
+ * Configuration for the "value display" dialog – mirrors the inputs of
+ * getValueEntryString() in tools.ts so the admin UI can configure them.
+ */
+export type ValueEntryConfig = {
+    /** ioBroker state ID with common.type string or number, or plain text */
+    valueStateId: string;
+    /** Unit string shown after the value (only used for number type) */
+    unit: string;
+    /** Prefix shown before the value (static string or state ID) */
+    prefix: string;
+    /** Suffix shown after unit (static string or state ID) */
+    suffix: string;
+    /**
+     * Date-format config: { local: locale-string, format: Intl.DateTimeFormatOptions }.
+     * Empty string means no date formatting.
+     */
+    dateFormat: { local: string; format: Intl.DateTimeFormatOptions } | '';
+    /** Text size override 0–5 (undefined = default) */
+    textSize: 0 | 1 | 2 | 3 | 4 | 5 | undefined;
+};
+
+/**
+ * Creates a default empty ValueEntryConfig, optionally pre-filling valueStateId.
+ *
+ * @param valueStateId  Optional initial state ID
+ */
+export function emptyValueEntryConfig(valueStateId = ''): ValueEntryConfig {
+    return { valueStateId, unit: '', prefix: '', suffix: '', dateFormat: '', textSize: undefined };
+}
+
+/**
+ * Normalizes a channelId value from persisted config to `ValueEntryConfig`.
+ * Handles backward-compatibility: if the stored value is a plain string (old format)
+ * it is promoted to `{ valueStateId: string, ...defaults }`.
+ *
+ * @param raw  Raw value from config – either a string (legacy) or ValueEntryConfig
+ */
+export function normalizeChannelId(raw: unknown): ValueEntryConfig {
+    if (typeof raw === 'string') {
+        return emptyValueEntryConfig(raw);
+    }
+    if (raw !== null && typeof raw === 'object' && 'valueStateId' in raw) {
+        const v = raw as Partial<ValueEntryConfig>;
+        return {
+            valueStateId: typeof v.valueStateId === 'string' ? v.valueStateId : '',
+            unit: typeof v.unit === 'string' ? v.unit : '',
+            prefix: typeof v.prefix === 'string' ? v.prefix : '',
+            suffix: typeof v.suffix === 'string' ? v.suffix : '',
+            dateFormat: v.dateFormat ?? '',
+            textSize: v.textSize,
+        };
+    }
+    return emptyValueEntryConfig();
+}
+
 // QR Entry for pageQR configuration
 export type AdminPageItemConfig = {
-    channelId: string;
+    /**
+     * Channel / device identifier.
+     * Always a `ValueEntryConfig` in the current format.
+     * Configs saved with an older version may contain a plain string –
+     * use `normalizeChannelId(item.channelId)` whenever reading from raw storage.
+     */
+    channelId: ValueEntryConfig;
     role?: string;
     name?: string;
     isNavigation?: boolean;
@@ -149,6 +212,8 @@ export type AdminPageItemConfig = {
     falseIcon?: string;
     falseColor?: string;
     useValue?: boolean;
+    /** Value-display configuration (prefix / unit / suffix / dateFormat) */
+    valueEntry?: ValueEntryConfig;
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */

@@ -148,7 +148,7 @@ export class AdminConfiguration extends BaseClass {
                         entry.alwaysOn = 'none';
                     }
                     newPage = dataForcardTrash(entry);
-                    this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
+                    this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
                     break;
                 }
                 case 'cardGrid':
@@ -181,7 +181,9 @@ export class AdminConfiguration extends BaseClass {
                             }
                             start = true;
                             if (!item) {
-                                item = { channelId: 'empty' };
+                                item = { channelId: ShareConfig.emptyValueEntryConfig('empty') };
+                            } else {
+                                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
@@ -229,7 +231,9 @@ export class AdminConfiguration extends BaseClass {
                             }
                             start = true;
                             if (!item) {
-                                item = { channelId: 'empty' };
+                                item = { channelId: ShareConfig.emptyValueEntryConfig('empty') };
+                            } else {
+                                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,

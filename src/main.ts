@@ -2543,12 +2543,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                     navigate: true,
                     targetPage: preItem.targetPage ?? '',
                     type: null,
-                    id: preItem.channelId,
+                    id: preItem.channelId.valueStateId,
                 };
             } else {
                 item = {
                     type: null,
-                    id: preItem.channelId,
+                    id: preItem.channelId.valueStateId,
                 };
             }
             const convertToScriptRGBColor = (color?: string): ScriptConfig.RGB | undefined => {
@@ -2573,6 +2573,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                 item.icon2 = (preItem.falseIcon as AllIcons) || undefined;
                 item.onColor = convertToScriptRGBColor(preItem.trueColor);
                 item.offColor = convertToScriptRGBColor(preItem.falseColor);
+
+                if (item.type !== 'custom') {
+                    if (!item.name && preItem.valueEntry) {
+                        item.name = preItem.valueEntry.valueStateId;
+                        item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;
+                        item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : undefined;
+                    }
+                    item.fontSize = preItem.channelId.textSize
+                        ? (Number(preItem.channelId.textSize) as typeof preItem.channelId.textSize)
+                        : undefined;
+                    item.prefixValue = preItem.channelId?.suffix ? preItem.channelId.suffix : undefined;
+                    item.suffixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
+                    item.unit = preItem.channelId?.unit ? preItem.channelId.unit : undefined;
+                    item.useValue = preItem.useValue;
+                }
             }
 
             const page = {
