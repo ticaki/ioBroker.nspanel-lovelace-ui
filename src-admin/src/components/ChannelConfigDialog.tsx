@@ -35,7 +35,7 @@ import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Comp
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
-import type ValueEntryDialog from './ValueEntryDialog';
+import ValueEntryDialog from './ValueEntryDialog';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
@@ -1589,7 +1589,51 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     falseColor={this.state.falseColor}
                     onColorChange={this.handleColorChange}
                 />
+                {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
+                <ValueEntryDialog
+                    ref={this.valueEntryDialogMain}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    features={{
+                        showUnit: true,
+                        showTextSize: this.state.useValue && !this.state.isGridCard,
+                        showDateFormat: true,
+                        showPreview: false,
+                        readOnlyValueStateId: true,
+                        forceDateFormat: true,
+                        forceUnit: this.state.useValue || this.state.isGridCard,
+                    }}
+                    mainValueFilterFunc={this.buildChannelFilterFunc()}
+                    mainValueTransformId={this.transformChannelId}
+                    onSave={(config: ValueEntryConfig) => {
+                        this.setState({ channelId: config });
+                        void this.checkChannelExists(config.valueStateId);
+                    }}
+                    onDelete={() => this.setState({ channelId: emptyValueEntryConfig() })}
+                />
 
+                {/* Name-Entry-Konfigurationsdialog */}
+                <ValueEntryDialog
+                    ref={this.valueEntryDialogRef}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    features={{
+                        showUnit: false,
+                        showTextSize: false,
+                        showDateFormat: false,
+                        showPreview: true,
+                        readOnlyValueStateId: false,
+                    }}
+                    onSave={(config: ValueEntryConfig) => {
+                        this.setState({ valueEntry: config });
+                        this.valueEntryDialogRef.current?.triggerPreviewFor(config);
+                    }}
+                    onDelete={() => this.setState({ valueEntry: undefined, valueEntryPreview: '' })}
+                    onPreviewUpdate={(text: string) => this.setState({ valueEntryPreview: text })}
+                    valueStateTypes={['string', 'number']}
+                />
                 {/* CheckPageItemConfig Ergebnis-Dialog */}
                 <Dialog
                     open={this.state.checkResultOpen}
