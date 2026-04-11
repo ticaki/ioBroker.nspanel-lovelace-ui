@@ -98,6 +98,8 @@
     "channelConfigColor_valIconMin": "Icon Min-Wert",
     "channelConfigColor_valIconMax": "Icon Max-Wert",
     "channelConfigColor_close": "Schließen",
+    "channelConfigColor_cancel": "Abbrechen",
+    "channelConfigColor_save": "Übernehmen",
     "pageMenu_copy_item": "Element kopieren",
     "pageMenu_paste_item": "Element einfügen",
     "valueEntryDialog_cancel": "Abbrechen",

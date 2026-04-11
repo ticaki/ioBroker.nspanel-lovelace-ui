@@ -96,6 +96,8 @@
     "channelConfigColor_valIconMin": "Icon Min Value",
     "channelConfigColor_valIconMax": "Icon Max Value",
     "channelConfigColor_close": "Close",
+    "channelConfigColor_cancel": "Cancel",
+    "channelConfigColor_save": "Apply",
     "pageMenu_copy_item": "Copy item",
     "pageMenu_paste_item": "Paste item"
 }

@@ -995,7 +995,7 @@ export const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints) as (keyo
 export type ChannelRole = keyof typeof requiredScriptDataPoints;
 export type IconScaleElement = IconColorElement | IconSelectElement;
 
-export type ChannelConfigColorConfig = Pick<AdminPageItemConfig, 'trueColor' | 'falseColor' | 'scale'>;
+export type ChannelColorConfig = Pick<AdminPageItemConfig, 'trueColor' | 'falseColor' | 'scale'>;
 
 export type IconSelectElement = {
     valIcon_min: number;

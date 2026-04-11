@@ -41,6 +41,7 @@ import type {
     AdminPageItemConfig,
     MenuEntry,
     ChannelValueConfig,
+    ChannelColorConfig,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
@@ -49,7 +50,7 @@ import {
     emptyChannelValueConfig,
     normalizeChannelId,
 } from '../../../src/lib/types/adminShareConfig';
-import ChannelConfigColor from './ChannelConfigColor';
+import ChannelColorDialog from './ChannelColorDialog';
 
 export type { AdminPageItemConfig as PageItemConfig };
 
@@ -127,8 +128,6 @@ interface ChannelConfigDialogState {
     checkingDatapoints: boolean;
     /** Vorgeschlagener Name aus common.name des Channels – wird nicht gespeichert */
     channelNameSuggestion: string;
-    /** Options-Dialog sichtbar */
-    optionsDialogOpen: boolean;
     /** Value-display configuration (undefined = not configured) */
     valueEntry: ChannelValueConfig | undefined;
     /** Last preview text computed inside ValueEntryDialog – purely for display in the name field */
@@ -155,6 +154,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private datapointCheckTimer: ReturnType<typeof setTimeout> | null = null;
     private valueEntryDialogRef = React.createRef<ChannelValueDialog>();
     private valueEntryDialogMain = React.createRef<ChannelValueDialog>();
+    private colorDialogRef = React.createRef<ChannelColorDialog>();
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -201,7 +201,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             datapointDuplicates: [],
             checkingDatapoints: false,
             channelNameSuggestion: '',
-            optionsDialogOpen: false,
             valueEntry: undefined,
             valueEntryPreview: '',
             useValue: false,
@@ -268,6 +267,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValue: data?.useValue ?? false,
             valueEntry: data?.valueEntry,
             valueEntryPreview: '',
+            scale: data?.scale,
             datapointErrors: [],
             datapointDuplicates: [],
             checkResultMessages: [],
@@ -299,9 +299,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.setState({ open: false });
     };
 
-    private handleOptionsOpen = (): void => {
-        this.setState({ optionsDialogOpen: true });
-        void this.loadAdapterColorTheme();
+    private handleColorOpen = (): void => {
+        this.colorDialogRef.current?.openWith({
+            trueColor: this.state.trueColor,
+            falseColor: this.state.falseColor,
+            scale: this.state.scale,
+        });
     };
 
     private async loadAdapterColorTheme(): Promise<void> {
@@ -379,12 +382,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         return isNavigation ? getPageNaviItemDefaultsByRole(role) : getPageItemDefaultsByRole(role);
     }
 
-    private handleOptionsClose = (): void => {
-        this.setState({ optionsDialogOpen: false });
-    };
-
-    private handleColorChange = (trueColor: string, falseColor: string): void => {
-        this.setState({ trueColor, falseColor });
+    private handleColorSave = (config: ChannelColorConfig): void => {
+        this.setState({
+            trueColor: config.trueColor ?? '',
+            falseColor: config.falseColor ?? '',
+            scale: config.scale,
+        });
     };
 
     /** Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. */
@@ -438,6 +441,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             falseIcon,
             falseColor,
             useValue,
+            scale,
             valueEntry: this.state.valueEntry,
         };
     }
@@ -1215,7 +1219,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeMode,
             nativeJson,
             nativeJsonValid,
-            optionsDialogOpen,
             useValue,
         } = this.state;
 
@@ -1617,12 +1620,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     : I18n.t('channelConfigDialog_native')}
                             </Button>
                         )}
-                        {/* Options-Button, wenn nicht im Native-Modus */}
+                        {/* Color-Button, wenn nicht im Native-Modus */}
                         {!nativeMode && !isCustom && (
                             <Button
                                 size="small"
                                 variant="outlined"
-                                onClick={this.handleOptionsOpen}
+                                onClick={this.handleColorOpen}
                                 startIcon={<PaletteIcon />}
                             >
                                 {I18n.t('channelConfigDialog_colorSettings')}
@@ -1654,18 +1657,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 </Dialog>
 
                 {/* Color Options Dialog */}
-                <ChannelConfigColor
+                <ChannelColorDialog
+                    ref={this.colorDialogRef}
                     socket={socket}
                     adapterName={this.props.adapterName}
                     instance={this.props.instance}
-                    open={optionsDialogOpen}
-                    onClose={this.handleOptionsClose}
                     channelRole={this.state.channelRole}
                     isNavigation={this.state.isNavigation}
                     roleDefaults={this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation)}
                     trueColor={this.state.trueColor}
                     falseColor={this.state.falseColor}
-                    onColorChange={this.handleColorChange}
+                    onSave={this.handleColorSave}
                 />
                 {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
                 <ChannelValueDialog
