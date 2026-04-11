@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-//import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
@@ -1274,7 +1274,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             </Button>
                         )}
                         {/* Options-Button */}
-                        {/* 
                         <Button
                             size="small"
                             variant="outlined"
@@ -1283,7 +1282,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         >
                             {I18n.t('channelConfigDialog_options')}
                         </Button>
-                        */}
                         {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
                         <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
                         <Button

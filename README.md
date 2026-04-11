@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) added: `Color.computeNumberScaleColor()` – reusable numeric scale interpolation extracted from `getIconEntryColor`, returns `RGB` (no Dataitem dependency); exported `ColorScaleInput` type
+
 ### 0.16.2 (2026-04-09)
 - (ticaki) fixed: channel duplicate error
 - (tt-tom17) fixed: ChannelConfigDialog – error messages (datapointErrors, datapointDuplicates, checkResult) are now properly reset when reopening the dialog
