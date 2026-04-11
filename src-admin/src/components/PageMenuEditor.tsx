@@ -29,6 +29,7 @@ import {
     type MenuEntry,
     type AdminPageItemConfig,
     type AdminPanelConfig,
+    normalizeChannelId,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
 } from '../../../src/lib/types/adminShareConfig';
@@ -249,11 +250,11 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const toLoad = [
             ...new Set(
                 items
-                    .filter(
-                        item =>
-                            item != null && !item.name && item.channelId && !this.state.channelNames[item.channelId],
-                    )
-                    .map(item => item!.channelId),
+                    .filter(item => {
+                        const cid = normalizeChannelId(item?.channelId).valueStateId;
+                        return item != null && !item.name && cid && !this.state.channelNames[cid];
+                    })
+                    .map(item => normalizeChannelId(item!.channelId).valueStateId),
             ),
         ];
         if (toLoad.length === 0) {
@@ -666,7 +667,9 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         }
 
         const iconSrc = this.getItemIconSrc(item, true);
-        const channelName = item.channelId ? (this.state.channelNames[item.channelId] ?? '') : '';
+        const channelName = item.channelId
+            ? (this.state.channelNames[normalizeChannelId(item.channelId).valueStateId] ?? '')
+            : '';
         const isNativeItem = item.useNative === true;
         const isNavigationItem = item.isNavigation === true;
         const role = item.role ?? '';
@@ -683,7 +686,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             return (
                 <Tooltip
                     key={index}
-                    title={item.channelId || label}
+                    title={normalizeChannelId(item.channelId).valueStateId || label}
                 >
                     <Paper
                         elevation={isDragSource ? 0 : 2}
@@ -772,7 +775,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         return (
             <Tooltip
                 key={index}
-                title={item.channelId || label}
+                title={normalizeChannelId(item.channelId).valueStateId || label}
             >
                 <Paper
                     elevation={isDragSource ? 0 : 2}

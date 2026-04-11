@@ -34,12 +34,16 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
+import ValueEntryDialog from './ValueEntryDialog';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
     requiredScriptDataPoints,
+    emptyValueEntryConfig,
+    normalizeChannelId,
     type AdminPageItemConfig,
     type MenuEntry,
+    type ValueEntryConfig,
 } from '../../../src/lib/types/adminShareConfig';
 
 export type { AdminPageItemConfig as PageItemConfig };
@@ -72,7 +76,7 @@ type ChannelConfigDialogProps = {
 interface ChannelConfigDialogState {
     open: boolean;
     isGridCard: boolean;
-    channelId: string;
+    channelId: ValueEntryConfig;
     name: string;
     isNavigation: boolean;
     targetPage: string;
@@ -119,6 +123,10 @@ interface ChannelConfigDialogState {
     channelNameSuggestion: string;
     /** Options-Dialog sichtbar */
     optionsDialogOpen: boolean;
+    /** Value-display configuration (undefined = not configured) */
+    valueEntry: ValueEntryConfig | undefined;
+    /** Last preview text computed inside ValueEntryDialog – purely for display in the name field */
+    valueEntryPreview: string;
     /** useValue Checkbox Auswahl */
     useValue: boolean;
     /** useColor Checkbox - aktiviert Farbeinstellungen */
@@ -150,6 +158,8 @@ const DATAPOINT_CHECK_DEBOUNCE_MS = 800;
  */
 class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, ChannelConfigDialogState> {
     private datapointCheckTimer: ReturnType<typeof setTimeout> | null = null;
+    private valueEntryDialogRef = React.createRef<ValueEntryDialog>();
+    private valueEntryDialogMain = React.createRef<ValueEntryDialog>();
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -166,7 +176,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         super(props);
         this.state = {
             open: false,
-            channelId: props.initialChannelId ?? '',
+            channelId: emptyValueEntryConfig(props.initialChannelId ?? ''),
             name: '',
             isNavigation: false,
             targetPage: '',
@@ -196,6 +206,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkingDatapoints: false,
             channelNameSuggestion: '',
             optionsDialogOpen: false,
+            valueEntry: undefined,
+            valueEntryPreview: '',
             useValue: false,
             useColor: false,
             colorBest: '',
@@ -249,7 +261,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const isNative = data?.useNative === true;
         this.setState({
             open: true,
-            channelId: data?.channelId ?? '',
+            channelId: normalizeChannelId(data?.channelId),
             name: data?.name ?? '',
             isNavigation: data?.isNavigation ?? false,
             targetPage: data?.targetPage ?? '',
@@ -266,6 +278,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeJsonValid: isNative,
             nativeJsonErrorMessage: '',
             useValue: data?.useValue ?? false,
+            valueEntry: data?.valueEntry,
+            valueEntryPreview: '',
             datapointErrors: [],
             datapointDuplicates: [],
             checkResultMessages: [],
@@ -283,8 +297,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (this.state.validChannelIds.length === 0) {
             void this.loadValidChannels();
         }
-        if (!isNative && data?.channelId) {
-            void this.checkChannelExists(data.channelId);
+        const channelIdToCheck = normalizeChannelId(data?.channelId).valueStateId;
+        if (!isNative && channelIdToCheck) {
+            void this.checkChannelExists(channelIdToCheck);
+        }
+        if (data?.valueEntry?.valueStateId) {
+            this.valueEntryDialogRef.current?.triggerPreviewFor(data.valueEntry);
         }
         void this.loadAdapterColorTheme();
     }
@@ -423,6 +441,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             falseIcon,
             falseColor,
             useValue,
+            valueEntry: this.state.valueEntry,
         };
     }
 
@@ -593,7 +612,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleChannelIdChange = (id: string): void => {
         this.setState({
-            channelId: id,
+            channelId: { ...this.state.channelId, valueStateId: id },
             channelExists: null,
             channelRole: null,
             roleIsValid: null,
@@ -1308,7 +1327,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         } = this.state;
 
         const expertMode = this.props.expertMode === true;
-        const channelIdValid = channelId !== '';
+        const channelIdValid = channelId.valueStateId !== '';
         const standardCanSave =
             channelIdValid &&
             ((isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel));
@@ -1321,9 +1340,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             !this.state.checkingDatapoints &&
             (this.state.datapointErrors.length > 0 || this.state.datapointDuplicates.length > 0);
 
+        console.log(
+            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}`,
+        );
         // Untertitel neben dem Titel
         const titleSuffix =
-            channelId === ''
+            channelId.valueStateId === ''
                 ? I18n.t('channelConfigDialog_noChannelSelected')
                 : channelRole !== null
                   ? `${channelRole}${roleIsValid === false ? ` (${I18n.t('channelConfigDialog_unknownRole')})` : ''}`
@@ -1473,7 +1495,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     <Box sx={{ flex: 1, minWidth: 0 }}>
                                         <EntitySelector
                                             label={I18n.t('channelConfigDialog_channelId')}
-                                            value={channelId}
+                                            value={channelId.valueStateId}
                                             onChange={this.handleChannelIdChange}
                                             onCommit={this.handleChannelIdCommit}
                                             onTransformSelectedId={this.transformChannelId}
@@ -1489,10 +1511,23 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 color="error"
                                                 sx={{ display: 'block', mt: 0.25, px: 1.75 }}
                                             >
-                                                {channelId}
+                                                {channelId.valueStateId}
                                             </Typography>
                                         )}
                                     </Box>
+                                    {/* ... Button für erweiterte Channel-ID Konfiguration */}
+                                    <Tooltip title={I18n.t('channelConfigDialog_channelIdConfig')}>
+                                        <span style={{ display: 'flex', alignItems: 'center' }}>
+                                            <Button
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    this.valueEntryDialogMain.current?.openWith(this.state.channelId)
+                                                }
+                                                sx={{ minWidth: 48, minHeight: 48 }}
+                                                startIcon={<SettingsIcon />}
+                                            ></Button>
+                                        </span>
+                                    </Tooltip>
                                     {/* Lade-Spinner während Prüfung */}
                                     {(checkingChannel || this.state.checkingDatapoints) && (
                                         <CircularProgress
@@ -1528,7 +1563,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         )}
                                 </Box>
                                 {/* Validierungshinweis Channel */}
-                                {channelId !== '' && channelExists === false && !checkingChannel && (
+                                {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
                                     <Typography
                                         variant="caption"
                                         color="error"
@@ -1547,29 +1582,53 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     </Typography>
                                 )}
 
-                                {/* Namensfeld */}
-                                <TextField
-                                    label={I18n.t('channelConfigDialog_name')}
-                                    value={name}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        this.setState({ name: e.target.value })
-                                    }
-                                    variant="standard"
-                                    fullWidth
-                                    disabled={fieldsDisabled}
-                                    helperText={
-                                        name === '' && this.state.channelNameSuggestion
-                                            ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${this.state.channelNameSuggestion}`
-                                            : name === ''
-                                              ? I18n.t('channelConfigDialog_defaultName')
-                                              : undefined
-                                    }
-                                    slotProps={{
-                                        formHelperText: {
-                                            sx: { color: 'text.disabled' },
-                                        },
-                                    }}
-                                />
+                                {/* Namensfeld + Value-Entry-Konfigurationsbutton */}
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                    <TextField
+                                        label={I18n.t('channelConfigDialog_name')}
+                                        value={name}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                            this.setState({ name: e.target.value })
+                                        }
+                                        variant="standard"
+                                        sx={{ flex: 1 }}
+                                        disabled={fieldsDisabled}
+                                        helperText={
+                                            name === '' && this.state.channelNameSuggestion
+                                                ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${this.state.channelNameSuggestion}`
+                                                : name === ''
+                                                  ? I18n.t('channelConfigDialog_defaultName')
+                                                  : undefined
+                                        }
+                                        slotProps={{
+                                            formHelperText: {
+                                                sx: { color: 'text.disabled' },
+                                            },
+                                            inputLabel: {
+                                                shrink: name === '' && this.state.valueEntryPreview !== '',
+                                            },
+                                        }}
+                                        placeholder={
+                                            name === '' && this.state.valueEntryPreview !== ''
+                                                ? this.state.valueEntryPreview
+                                                : undefined
+                                        }
+                                    />
+                                    <Tooltip title={I18n.t('channelConfigDialog_nameEntryConfig')}>
+                                        <span>
+                                            <Button
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    this.valueEntryDialogRef.current?.openWith(this.state.valueEntry)
+                                                }
+                                                disabled={fieldsDisabled}
+                                                sx={{ minWidth: 48 }}
+                                            >
+                                                ...
+                                            </Button>
+                                        </span>
+                                    </Tooltip>
+                                </Box>
                                 {/* useValue Checkbox*/}
                                 {this.state.isGridCard && (
                                     <Box>
@@ -1657,7 +1716,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 ? I18n.t('channelConfigDialog_checking')
                                 : hasDatapointProblems
                                   ? I18n.t('channelConfigDialog_details')
-                                  : I18n.t('channelConfigDialog_save')}
+                                  : I18n.t('valueEntryDialog_save')}
                         </Button>
                     </DialogActions>
                 </Dialog>
@@ -1969,6 +2028,49 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         <Button onClick={this.handleOptionsClose}>{I18n.t('channelConfigDialog_close')}</Button>
                     </DialogActions>
                 </Dialog>
+                {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
+                <ValueEntryDialog
+                    ref={this.valueEntryDialogMain}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    features={{
+                        showUnit: true,
+                        showTextSize: this.state.useValue,
+                        showDateFormat: true,
+                        showPreview: false,
+                        readOnlyValueStateId: true,
+                    }}
+                    mainValueFilterFunc={this.buildChannelFilterFunc()}
+                    mainValueTransformId={this.transformChannelId}
+                    onSave={(config: ValueEntryConfig) => {
+                        this.setState({ channelId: config });
+                        void this.checkChannelExists(config.valueStateId);
+                    }}
+                    onDelete={() => this.setState({ channelId: emptyValueEntryConfig() })}
+                />
+
+                {/* Name-Entry-Konfigurationsdialog */}
+                <ValueEntryDialog
+                    ref={this.valueEntryDialogRef}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    features={{
+                        showUnit: false,
+                        showTextSize: false,
+                        showDateFormat: false,
+                        showPreview: true,
+                        readOnlyValueStateId: false,
+                    }}
+                    onSave={(config: ValueEntryConfig) => {
+                        this.setState({ valueEntry: config });
+                        this.valueEntryDialogRef.current?.triggerPreviewFor(config);
+                    }}
+                    onDelete={() => this.setState({ valueEntry: undefined, valueEntryPreview: '' })}
+                    onPreviewUpdate={(text: string) => this.setState({ valueEntryPreview: text })}
+                    valueStateTypes={['string', 'number']}
+                />
 
                 {/* CheckPageItemConfig Ergebnis-Dialog */}
                 <Dialog

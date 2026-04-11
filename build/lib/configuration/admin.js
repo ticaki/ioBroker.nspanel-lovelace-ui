@@ -149,7 +149,7 @@ class AdminConfiguration extends import_library.BaseClass {
             entry.alwaysOn = "none";
           }
           newPage = dataForcardTrash(entry);
-          this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
+          this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
           break;
         }
         case "cardGrid":
@@ -181,7 +181,9 @@ class AdminConfiguration extends import_library.BaseClass {
               }
               start = true;
               if (!item) {
-                item = { channelId: "empty" };
+                item = { channelId: ShareConfig.emptyValueEntryConfig("empty") };
+              } else {
+                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
               }
               const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
@@ -193,7 +195,7 @@ class AdminConfiguration extends import_library.BaseClass {
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
-                  `Error processing1 page item ${index} for page '${entry.uniqueName}': ${result.error}`
+                  `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`
                 );
               }
             }
@@ -227,7 +229,9 @@ class AdminConfiguration extends import_library.BaseClass {
               }
               start = true;
               if (!item) {
-                item = { channelId: "empty" };
+                item = { channelId: ShareConfig.emptyValueEntryConfig("empty") };
+              } else {
+                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
               }
               const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,

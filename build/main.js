@@ -2198,7 +2198,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
-    var _a;
+    var _a, _b, _c, _d;
     let error = void 0;
     let pageItem = void 0;
     if (preItem && prePage) {
@@ -2211,12 +2211,12 @@ class NspanelLovelaceUi extends utils.Adapter {
           navigate: true,
           targetPage: (_a = preItem.targetPage) != null ? _a : "",
           type: null,
-          id: preItem.channelId
+          id: preItem.channelId.valueStateId
         };
       } else {
         item = {
           type: null,
-          id: preItem.channelId
+          id: preItem.channelId.valueStateId
         };
       }
       const convertToScriptRGBColor = (color) => {
@@ -2240,6 +2240,18 @@ class NspanelLovelaceUi extends utils.Adapter {
         item.icon2 = preItem.falseIcon || void 0;
         item.onColor = convertToScriptRGBColor(preItem.trueColor);
         item.offColor = convertToScriptRGBColor(preItem.falseColor);
+        if (item.type !== "custom") {
+          if (!item.name && preItem.valueEntry) {
+            item.name = preItem.valueEntry.valueStateId;
+            item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : void 0;
+            item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : void 0;
+          }
+          item.fontSize = preItem.channelId.textSize ? Number(preItem.channelId.textSize) : void 0;
+          item.prefixValue = ((_b = preItem.channelId) == null ? void 0 : _b.suffix) ? preItem.channelId.suffix : void 0;
+          item.suffixValue = ((_c = preItem.channelId) == null ? void 0 : _c.prefix) ? preItem.channelId.prefix : void 0;
+          item.unit = ((_d = preItem.channelId) == null ? void 0 : _d.unit) ? preItem.channelId.unit : void 0;
+          item.useValue = preItem.useValue;
+        }
       }
       const page = {
         type: prePage.card,
