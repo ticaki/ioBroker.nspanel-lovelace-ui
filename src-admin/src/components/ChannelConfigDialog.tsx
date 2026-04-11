@@ -19,7 +19,7 @@ import {
     CircularProgress,
     Tooltip,
 } from '@mui/material';
-import { Color, type RGB, type ColorScaleInput } from '../../../src/lib/const/Color';
+import { Color, type RGB } from '../../../src/lib/const/Color';
 import {
     getPageItemDefaultsByRole,
     getPageNaviItemDefaultsByRole,
@@ -28,7 +28,7 @@ import {
 import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import SettingsIcon from '@mui/icons-material/Settings';
+import PaletteIcon from '@mui/icons-material/Palette';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
@@ -45,6 +45,7 @@ import {
     type MenuEntry,
     type ValueEntryConfig,
 } from '../../../src/lib/types/adminShareConfig';
+import ChannelConfigColor from './ChannelConfigColor';
 
 export type { AdminPageItemConfig as PageItemConfig };
 
@@ -129,18 +130,6 @@ interface ChannelConfigDialogState {
     valueEntryPreview: string;
     /** useValue Checkbox Auswahl */
     useValue: boolean;
-    /** useColor Checkbox - aktiviert Farbeinstellungen */
-    useColor: boolean;
-    /** IconScaleElement Felder */
-    colorBest: string;
-    colorMode: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
-    colorLog10: '' | 'max' | 'min';
-    valMin: number;
-    valMax: number;
-    /** Optionaler Bestwert – undefined bedeutet kein Bestwert */
-    valBest: number | undefined;
-    valIconMin: number;
-    valIconMax: number;
     /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
     adapterColorTheme: number;
 }
@@ -209,15 +198,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             valueEntry: undefined,
             valueEntryPreview: '',
             useValue: false,
-            useColor: false,
-            colorBest: '',
-            colorMode: 'mixed',
-            colorLog10: '',
-            valMin: 0,
-            valMax: 100,
-            valBest: undefined,
-            valIconMin: 0,
-            valIconMax: 100,
             adapterColorTheme: 0,
         };
     }
@@ -393,6 +373,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleOptionsClose = (): void => {
         this.setState({ optionsDialogOpen: false });
+    };
+
+    private handleColorChange = (trueColor: string, falseColor: string): void => {
+        this.setState({ trueColor, falseColor });
     };
 
     /** Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. */
@@ -851,11 +835,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.setState({ useValue: checked });
     };
 
-    private handleUseColorChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const checked = event.target.checked;
-        this.setState({ useColor: checked });
-    };
-
     private handleTargetPageChange = (event: SelectChangeEvent<string>): void => {
         this.setState({ targetPage: event.target.value });
     };
@@ -1174,132 +1153,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             </Button>
                         </>
                     )}
-                </Box>
-            </Box>
-        );
-    }
-
-    /** Berechnet die Ganzzahl-Werte für die Farbvorschau-Tabelle. */
-    private buildColorPreviewValues(): number[] {
-        const { valMin, valMax, valBest } = this.state;
-        const lo = Math.min(valMin, valMax);
-        const hi = Math.max(valMin, valMax);
-        const range = hi - lo;
-        if (range <= 1) {
-            return [];
-        }
-        const numCols = Math.min(30, range);
-        const values: number[] = [];
-        for (let i = 0; i < numCols; i++) {
-            values.push(Math.round(lo + (i * range) / (numCols - 1)));
-        }
-        // Deduplizieren (Rundung kann Duplikate erzeugen)
-        let unique = [...new Set(values)].sort((a, b) => a - b);
-        // val_best sicherstellen (nur wenn gesetzt)
-        if (valBest !== undefined) {
-            const best = Math.min(hi, Math.max(lo, Math.round(valBest)));
-            if (!unique.includes(best)) {
-                let closestIdx = -1;
-                let minDist = Infinity;
-                for (let i = 1; i < unique.length - 1; i++) {
-                    const d = Math.abs(unique[i] - best);
-                    if (d < minDist) {
-                        minDist = d;
-                        closestIdx = i;
-                    }
-                }
-                if (closestIdx >= 0) {
-                    unique[closestIdx] = best;
-                    unique = unique.sort((a, b) => a - b);
-                }
-            }
-        }
-        return unique;
-    }
-
-    /** Rendert die kompakte Farbvorschau-Tabelle unterhalb der Skalen-Einstellungen. */
-    private renderColorPreviewTable(): React.JSX.Element | null {
-        const { valMin, valMax, valBest, trueColor, falseColor, colorBest, colorMode, colorLog10 } = this.state;
-        const range = Math.abs(valMax - valMin);
-        if (range <= 1) {
-            return null;
-        }
-        const values = this.buildColorPreviewValues();
-        if (values.length === 0) {
-            return null;
-        }
-
-        const roleColors = this.getRoleDefaultColors();
-        const cto: RGB = trueColor !== '' ? Color.ConvertHexToRgb(trueColor) : roleColors.on;
-        const cfrom: RGB = falseColor !== '' ? Color.ConvertHexToRgb(falseColor) : roleColors.off;
-        const lo = Math.min(valMin, valMax);
-        const hi = Math.max(valMin, valMax);
-        const best = valBest !== undefined ? Math.min(hi, Math.max(lo, Math.round(valBest))) : undefined;
-        const colorBestRgb: RGB | undefined = colorBest !== '' ? Color.ConvertHexToRgb(colorBest) : undefined;
-        const def: RGB = { r: 128, g: 128, b: 128 };
-        const scale: ColorScaleInput = {
-            val_min: valMin,
-            val_max: valMax,
-            val_best: best,
-            color_best: colorBestRgb,
-            mode: colorMode,
-            log10: colorLog10 !== '' ? colorLog10 : undefined,
-        };
-
-        return (
-            <Box sx={{ mt: 1, width: '100%', overflowX: 'hidden' }}>
-                <Box
-                    sx={{
-                        display: 'table',
-                        width: '100%',
-                        tableLayout: 'fixed',
-                        borderCollapse: 'collapse',
-                        border: 1,
-                        borderColor: 'divider',
-                        borderRadius: 0.5,
-                    }}
-                >
-                    {/* Zeile 1: Zahlenwerte */}
-                    <Box sx={{ display: 'table-row' }}>
-                        {values.map(v => (
-                            <Box
-                                key={`val-${v}`}
-                                sx={{
-                                    display: 'table-cell',
-                                    textAlign: 'center',
-                                    fontSize: '0.55rem',
-                                    lineHeight: 1.3,
-                                    py: 0.25,
-                                    borderLeft: '1px solid',
-                                    borderColor: 'divider',
-                                    fontWeight: v === lo || v === hi || v === best ? 'bold' : 'normal',
-                                    color: v === lo || v === hi || v === best ? 'text.primary' : 'text.secondary',
-                                    overflow: 'hidden',
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
-                                {v}
-                            </Box>
-                        ))}
-                    </Box>
-                    {/* Zeile 2: Farben */}
-                    <Box sx={{ display: 'table-row' }}>
-                        {values.map(v => {
-                            const rgb = Color.computeNumberScaleColor(v, cto, cfrom, scale, def);
-                            return (
-                                <Box
-                                    key={`col-${v}`}
-                                    sx={{
-                                        display: 'table-cell',
-                                        height: 14,
-                                        backgroundColor: `rgb(${rgb.r},${rgb.g},${rgb.b})`,
-                                        borderLeft: '1px solid',
-                                        borderColor: 'divider',
-                                    }}
-                                />
-                            );
-                        })}
-                    </Box>
                 </Box>
             </Box>
         );
@@ -1691,9 +1544,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 size="small"
                                 variant="outlined"
                                 onClick={this.handleOptionsOpen}
-                                startIcon={<SettingsIcon />}
+                                startIcon={<PaletteIcon />}
                             >
-                                {I18n.t('channelConfigDialog_options')}
+                                {I18n.t('channelConfigDialog_colorSettings')}
                             </Button>
                         )}
                         {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
@@ -1721,357 +1574,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     </DialogActions>
                 </Dialog>
 
-                {/* Options-Dialog */}
-                <Dialog
+                {/* Color Options Dialog */}
+                <ChannelConfigColor
+                    socket={socket}
+                    adapterName={this.props.adapterName}
+                    instance={this.props.instance}
                     open={optionsDialogOpen}
                     onClose={this.handleOptionsClose}
-                    maxWidth="md"
-                    fullWidth
-                >
-                    <DialogTitle>{I18n.t('channelConfigDialog_optionsTitle')}</DialogTitle>
-                    <DialogContent>
-                        {/* useColor Checkbox */}
-                        <Box sx={{ mt: 2, mb: 3 }}>
-                            <FormControl component="fieldset">
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={this.state.useColor}
-                                            onChange={this.handleUseColorChange}
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="body1">
-                                            {I18n.t('channelConfigDialog_useColorLabel')}
-                                        </Typography>
-                                    }
-                                />
-                            </FormControl>
-                        </Box>
-
-                        {/* Farbeinstellungen & IconScaleElement - nur sichtbar wenn useColor aktiv */}
-                        {this.state.useColor && (
-                            <Box
-                                sx={{
-                                    mb: 3,
-                                    p: 2,
-                                    border: 1,
-                                    borderColor: 'divider',
-                                    borderRadius: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 2,
-                                }}
-                            >
-                                <Typography
-                                    variant="h6"
-                                    sx={{ mb: 1 }}
-                                >
-                                    {I18n.t('channelConfigDialog_colorSettings')}
-                                </Typography>
-
-                                {/* Farbfelder */}
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    {/* Color Min (falseColor) */}
-                                    <Box sx={{ flex: 1 }}>
-                                        {this.state.falseColor === '' ? (
-                                            <>
-                                                {this.renderColorDefault(
-                                                    I18n.t('channelConfigDialog_colorMin'),
-                                                    this.getRoleDefaultColors().off,
-                                                )}
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    onClick={() => {
-                                                        const c = this.getRoleDefaultColors().off;
-                                                        this.setState({
-                                                            falseColor: Color.ConvertRGBtoHex(c.r, c.g, c.b),
-                                                        });
-                                                    }}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_setColor')}
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    type="color"
-                                                    label={I18n.t('channelConfigDialog_colorMin')}
-                                                    value={this.state.falseColor}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        this.setState({ falseColor: e.target.value })
-                                                    }
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    onClick={() => this.setState({ falseColor: '' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_resetColor')}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Box>
-
-                                    {/* Color Max (trueColor) */}
-                                    <Box sx={{ flex: 1 }}>
-                                        {this.state.trueColor === '' ? (
-                                            <>
-                                                {this.renderColorDefault(
-                                                    I18n.t('channelConfigDialog_colorMax'),
-                                                    this.getRoleDefaultColors().on,
-                                                )}
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    onClick={() => {
-                                                        const c = this.getRoleDefaultColors().on;
-                                                        this.setState({
-                                                            trueColor: Color.ConvertRGBtoHex(c.r, c.g, c.b),
-                                                        });
-                                                    }}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_setColor')}
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    type="color"
-                                                    label={I18n.t('channelConfigDialog_colorMax')}
-                                                    value={this.state.trueColor}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        this.setState({ trueColor: e.target.value })
-                                                    }
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    onClick={() => this.setState({ trueColor: '' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_resetColor')}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Box>
-
-                                    {/* Color Best */}
-                                    <Box sx={{ flex: 1 }}>
-                                        {this.state.colorBest === '' ? (
-                                            <>
-                                                {this.renderColorDefault(I18n.t('channelConfigDialog_colorBest'), null)}
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    onClick={() => this.setState({ colorBest: '#ffaa00' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_setColor')}
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    type="color"
-                                                    label={I18n.t('channelConfigDialog_colorBest')}
-                                                    value={this.state.colorBest}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        this.setState({ colorBest: e.target.value })
-                                                    }
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    onClick={() => this.setState({ colorBest: '' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_resetColor')}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Box>
-                                </Box>
-
-                                {/* val_min, val_max, val_best */}
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valMin')}
-                                        value={this.state.valMin}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valMin: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valMax')}
-                                        value={this.state.valMax}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valMax: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valBest')}
-                                        value={this.state.valBest ?? ''}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                            const v = e.target.value;
-                                            this.setState({ valBest: v === '' ? undefined : Number(v) });
-                                        }}
-                                        placeholder={I18n.t('channelConfigDialog_valBestPlaceholder')}
-                                        fullWidth
-                                    />
-                                </Box>
-
-                                {/* Color Mode Select */}
-                                <FormControl
-                                    variant="standard"
-                                    fullWidth
-                                >
-                                    <InputLabel>{I18n.t('channelConfigDialog_colorMode')}</InputLabel>
-                                    <Select
-                                        value={this.state.colorMode}
-                                        onChange={(e: SelectChangeEvent<string>) =>
-                                            this.setState({
-                                                colorMode: e.target.value as typeof this.state.colorMode,
-                                            })
-                                        }
-                                        label={I18n.t('channelConfigDialog_colorMode')}
-                                    >
-                                        <MenuItem value="mixed">
-                                            {I18n.t('channelConfigDialog_colorMode_mixed')}
-                                        </MenuItem>
-                                        <MenuItem value="hue">{I18n.t('channelConfigDialog_colorMode_hue')}</MenuItem>
-                                        <MenuItem value="cie">{I18n.t('channelConfigDialog_colorMode_cie')}</MenuItem>
-                                        <MenuItem value="triGrad">
-                                            {I18n.t('channelConfigDialog_colorMode_triGrad')}
-                                        </MenuItem>
-                                        <MenuItem value="triGradAnchor">
-                                            {I18n.t('channelConfigDialog_colorMode_triGradAnchor')}
-                                        </MenuItem>
-                                        <MenuItem value="quadriGrad">
-                                            {I18n.t('channelConfigDialog_colorMode_quadriGrad')}
-                                        </MenuItem>
-                                        <MenuItem value="quadriGradAnchor">
-                                            {I18n.t('channelConfigDialog_colorMode_quadriGradAnchor')}
-                                        </MenuItem>
-                                    </Select>
-                                </FormControl>
-
-                                {/* Log10 Select */}
-                                <FormControl
-                                    variant="standard"
-                                    fullWidth
-                                >
-                                    <InputLabel>{I18n.t('channelConfigDialog_log10')}</InputLabel>
-                                    <Select
-                                        value={this.state.colorLog10}
-                                        onChange={(e: SelectChangeEvent<string>) =>
-                                            this.setState({
-                                                colorLog10: e.target.value as typeof this.state.colorLog10,
-                                            })
-                                        }
-                                        label={I18n.t('channelConfigDialog_log10')}
-                                    >
-                                        <MenuItem value="">{I18n.t('channelConfigDialog_log10_linear')}</MenuItem>
-                                        <MenuItem value="max">{I18n.t('channelConfigDialog_log10_max')}</MenuItem>
-                                        <MenuItem value="min">{I18n.t('channelConfigDialog_log10_min')}</MenuItem>
-                                    </Select>
-                                </FormControl>
-
-                                {/* valIcon_min und valIcon_max */}
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valIconMin')}
-                                        value={this.state.valIconMin}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valIconMin: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valIconMax')}
-                                        value={this.state.valIconMax}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valIconMax: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                </Box>
-
-                                {/* Farbvorschau-Tabelle */}
-                                {this.renderColorPreviewTable()}
-                            </Box>
-                        )}
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={this.handleOptionsClose}>{I18n.t('channelConfigDialog_close')}</Button>
-                    </DialogActions>
-                </Dialog>
-                {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
-                <ValueEntryDialog
-                    ref={this.valueEntryDialogMain}
-                    socket={socket}
-                    theme={theme}
-                    themeType={themeType}
-                    features={{
-                        showUnit: true,
-                        showTextSize: this.state.useValue && !this.state.isGridCard,
-                        showDateFormat: true,
-                        showPreview: false,
-                        readOnlyValueStateId: true,
-                        forceDateFormat: true,
-                        forceUnit: this.state.useValue || this.state.isGridCard,
-                    }}
-                    mainValueFilterFunc={this.buildChannelFilterFunc()}
-                    mainValueTransformId={this.transformChannelId}
-                    onSave={(config: ValueEntryConfig) => {
-                        this.setState({ channelId: config });
-                        void this.checkChannelExists(config.valueStateId);
-                    }}
-                    onDelete={() => this.setState({ channelId: emptyValueEntryConfig() })}
-                />
-
-                {/* Name-Entry-Konfigurationsdialog */}
-                <ValueEntryDialog
-                    ref={this.valueEntryDialogRef}
-                    socket={socket}
-                    theme={theme}
-                    themeType={themeType}
-                    features={{
-                        showUnit: false,
-                        showTextSize: false,
-                        showDateFormat: false,
-                        showPreview: true,
-                        readOnlyValueStateId: false,
-                    }}
-                    onSave={(config: ValueEntryConfig) => {
-                        this.setState({ valueEntry: config });
-                        this.valueEntryDialogRef.current?.triggerPreviewFor(config);
-                    }}
-                    onDelete={() => this.setState({ valueEntry: undefined, valueEntryPreview: '' })}
-                    onPreviewUpdate={(text: string) => this.setState({ valueEntryPreview: text })}
-                    valueStateTypes={['string', 'number']}
+                    channelRole={this.state.channelRole}
+                    isNavigation={this.state.isNavigation}
+                    roleDefaults={this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation)}
+                    trueColor={this.state.trueColor}
+                    falseColor={this.state.falseColor}
+                    onColorChange={this.handleColorChange}
                 />
 
                 {/* CheckPageItemConfig Ergebnis-Dialog */}
