@@ -1488,15 +1488,15 @@ class Color extends ColorBase {
           return func(_cfrom, _cto, factor, { swap });
         } else if (value >= vBest) {
           const effectiveCfrom = scale.val_best !== void 0 && scale.color_best ? scale.color_best : _cfrom;
-          factor = 1 - (value - vBest) / (vMax - vBest);
-          factor = Math.min(1, Math.max(0, factor));
+          factor = (value - vBest) / (vMax - vBest);
+          factor = 1 - Math.min(1, Math.max(0, factor));
           factor = Color.logFromScale(scale, factor);
           return func(effectiveCfrom, _cto, factor, { swap, anchorHigh: true });
         }
         const effectiveCto = scale.val_best !== void 0 && scale.color_best ? scale.color_best : _cto;
         factor = (value - vMin) / (vBest - vMin);
         factor = Math.min(1, Math.max(0, factor));
-        factor = 1 - Color.logFromScale(scale, 1 - factor);
+        factor = Color.logFromScale(scale, factor);
         return func(_cfrom, effectiveCto, factor, { swap });
       } else if (isPartialScale(scale)) {
         if (scale.val_min && scale.val_min >= value || scale.val_max && scale.val_max <= value) {

@@ -181,7 +181,7 @@ export class AdminConfiguration extends BaseClass {
                             }
                             start = true;
                             if (!item) {
-                                item = { channelId: ShareConfig.emptyValueEntryConfig('empty') };
+                                item = { channelId: ShareConfig.emptyChannelValueConfig('empty') };
                             } else {
                                 item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
                             }
@@ -231,7 +231,7 @@ export class AdminConfiguration extends BaseClass {
                             }
                             start = true;
                             if (!item) {
-                                item = { channelId: ShareConfig.emptyValueEntryConfig('empty') };
+                                item = { channelId: ShareConfig.emptyChannelValueConfig('empty') };
                             } else {
                                 item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
                             }

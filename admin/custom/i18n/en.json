@@ -217,6 +217,8 @@
     "channelConfigDialog_icon_false": "Icon (false)",
     "channelConfigDialog_icon_true": "Icon (true)",
     "channelConfigDialog_invalidJson": "Invalid JSON",
+    "channelConfigDialog_isCustom": "Custom button (no alias needed)",
+    "channelConfigDialog_isCustomHint": "Custom button: Object ID must directly point to a boolean state (true/false)",
     "channelConfigDialog_isNavigation": "Is a navigation",
     "channelConfigDialog_log10": "Logarithmic Scaling",
     "channelConfigDialog_log10_linear": "Linear (none)",

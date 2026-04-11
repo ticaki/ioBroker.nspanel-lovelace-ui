@@ -217,6 +217,8 @@
     "channelConfigDialog_icon_false": "Symbol (unwahr)",
     "channelConfigDialog_icon_true": "Symbol (wahr)",
     "channelConfigDialog_invalidJson": "Ungültiges JSON",
+    "channelConfigDialog_isCustom": "Benutzerdefinierter Knopf (kein Alias nötig)",
+    "channelConfigDialog_isCustomHint": "Benutzerdefinierter Knopf: Object-Id muss direkt auf einen boolean State zeigen (true/false)",
     "channelConfigDialog_isNavigation": "Ist eine Navigation",
     "channelConfigDialog_log10": "Logarithmische Skalierung",
     "channelConfigDialog_log10_linear": "Linear (keine)",

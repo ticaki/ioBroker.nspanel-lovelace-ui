@@ -367,7 +367,7 @@ class ChannelConfigColor extends React.Component<ChannelConfigColorProps, Channe
 
     render(): React.JSX.Element {
         const { open } = this.props;
-        const { colorBest, colorMode, colorLog10, valMin, valMax, valBest, valIconMin, valIconMax } = this.state;
+        const { colorBest, colorMode, colorLog10, valMin, valMax, valBest /*, valIconMin, valIconMax*/ } = this.state;
 
         return (
             <Dialog
@@ -621,6 +621,7 @@ class ChannelConfigColor extends React.Component<ChannelConfigColorProps, Channe
                             </FormControl>
 
                             {/* valIcon_min und valIcon_max */}
+                            {/*
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <TextField
                                     variant="standard"
@@ -643,7 +644,7 @@ class ChannelConfigColor extends React.Component<ChannelConfigColorProps, Channe
                                     fullWidth
                                 />
                             </Box>
-
+                            */}
                             {/* Farbvorschau-Tabelle */}
                             {this.renderColorPreviewTable()}
                         </Box>

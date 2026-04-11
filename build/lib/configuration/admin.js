@@ -181,7 +181,7 @@ class AdminConfiguration extends import_library.BaseClass {
               }
               start = true;
               if (!item) {
-                item = { channelId: ShareConfig.emptyValueEntryConfig("empty") };
+                item = { channelId: ShareConfig.emptyChannelValueConfig("empty") };
               } else {
                 item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
               }
@@ -229,7 +229,7 @@ class AdminConfiguration extends import_library.BaseClass {
               }
               start = true;
               if (!item) {
-                item = { channelId: ShareConfig.emptyValueEntryConfig("empty") };
+                item = { channelId: ShareConfig.emptyChannelValueConfig("empty") };
               } else {
                 item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
               }

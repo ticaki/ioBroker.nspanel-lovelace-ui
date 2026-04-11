@@ -2236,6 +2236,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         return { pageItem, messages, error };
       }
       if (!("native" in item)) {
+        item.type = preItem.type === "custom" ? "custom" : null;
         item.icon = preItem.trueIcon || void 0;
         item.icon2 = preItem.falseIcon || void 0;
         item.onColor = convertToScriptRGBColor(preItem.trueColor);

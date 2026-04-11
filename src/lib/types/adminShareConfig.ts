@@ -142,7 +142,7 @@ export type ScreensaverEntries = ScreensaverEntry[];
  * Configuration for the "value display" dialog – mirrors the inputs of
  * getValueEntryString() in tools.ts so the admin UI can configure them.
  */
-export type ValueEntryConfig = {
+export type ChannelValueConfig = {
     /** ioBroker state ID with common.type string or number, or plain text */
     valueStateId: string;
     /** Unit string shown after the value (only used for number type) */
@@ -165,7 +165,7 @@ export type ValueEntryConfig = {
  *
  * @param valueStateId  Optional initial state ID
  */
-export function emptyValueEntryConfig(valueStateId = ''): ValueEntryConfig {
+export function emptyChannelValueConfig(valueStateId = ''): ChannelValueConfig {
     return { valueStateId, unit: '', prefix: '', suffix: '', dateFormat: '', textSize: undefined };
 }
 
@@ -176,12 +176,12 @@ export function emptyValueEntryConfig(valueStateId = ''): ValueEntryConfig {
  *
  * @param raw  Raw value from config – either a string (legacy) or ValueEntryConfig
  */
-export function normalizeChannelId(raw: unknown): ValueEntryConfig {
+export function normalizeChannelId(raw: unknown): ChannelValueConfig {
     if (typeof raw === 'string') {
-        return emptyValueEntryConfig(raw);
+        return emptyChannelValueConfig(raw);
     }
     if (raw !== null && typeof raw === 'object' && 'valueStateId' in raw) {
-        const v = raw as Partial<ValueEntryConfig>;
+        const v = raw as Partial<ChannelValueConfig>;
         return {
             valueStateId: typeof v.valueStateId === 'string' ? v.valueStateId : '',
             unit: typeof v.unit === 'string' ? v.unit : '',
@@ -191,7 +191,7 @@ export function normalizeChannelId(raw: unknown): ValueEntryConfig {
             textSize: v.textSize,
         };
     }
-    return emptyValueEntryConfig();
+    return emptyChannelValueConfig();
 }
 
 // QR Entry for pageQR configuration
@@ -202,10 +202,11 @@ export type AdminPageItemConfig = {
      * Configs saved with an older version may contain a plain string –
      * use `normalizeChannelId(item.channelId)` whenever reading from raw storage.
      */
-    channelId: ValueEntryConfig;
+    channelId: ChannelValueConfig;
     role?: string;
     name?: string;
     isNavigation?: boolean;
+    type?: string;
     targetPage?: string;
     trueIcon?: string;
     trueColor?: string;
@@ -213,7 +214,7 @@ export type AdminPageItemConfig = {
     falseColor?: string;
     useValue?: boolean;
     /** Value-display configuration (prefix / unit / suffix / dateFormat) */
-    valueEntry?: ValueEntryConfig;
+    valueEntry?: ChannelValueConfig;
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */

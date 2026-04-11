@@ -35,16 +35,16 @@ import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Comp
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
-import ValueEntryDialog from './ValueEntryDialog';
+import ChannelValueDialog from './ChannelValueDialog';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
     requiredScriptDataPoints,
-    emptyValueEntryConfig,
+    emptyChannelValueConfig,
     normalizeChannelId,
     type AdminPageItemConfig,
     type MenuEntry,
-    type ValueEntryConfig,
+    type ChannelValueConfig,
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigColor from './ChannelConfigColor';
 
@@ -78,9 +78,10 @@ type ChannelConfigDialogProps = {
 interface ChannelConfigDialogState {
     open: boolean;
     isGridCard: boolean;
-    channelId: ValueEntryConfig;
+    channelId: ChannelValueConfig;
     name: string;
     isNavigation: boolean;
+    isCustom: boolean;
     targetPage: string;
     availablePages: string[];
     loadingPages: boolean;
@@ -126,7 +127,7 @@ interface ChannelConfigDialogState {
     /** Options-Dialog sichtbar */
     optionsDialogOpen: boolean;
     /** Value-display configuration (undefined = not configured) */
-    valueEntry: ValueEntryConfig | undefined;
+    valueEntry: ChannelValueConfig | undefined;
     /** Last preview text computed inside ValueEntryDialog – purely for display in the name field */
     valueEntryPreview: string;
     /** useValue Checkbox Auswahl */
@@ -148,8 +149,8 @@ const DATAPOINT_CHECK_DEBOUNCE_MS = 800;
  */
 class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, ChannelConfigDialogState> {
     private datapointCheckTimer: ReturnType<typeof setTimeout> | null = null;
-    private valueEntryDialogRef = React.createRef<ValueEntryDialog>();
-    private valueEntryDialogMain = React.createRef<ValueEntryDialog>();
+    private valueEntryDialogRef = React.createRef<ChannelValueDialog>();
+    private valueEntryDialogMain = React.createRef<ChannelValueDialog>();
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -166,9 +167,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         super(props);
         this.state = {
             open: false,
-            channelId: emptyValueEntryConfig(props.initialChannelId ?? ''),
+            channelId: emptyChannelValueConfig(props.initialChannelId ?? ''),
             name: '',
             isNavigation: false,
+            isCustom: false,
             targetPage: '',
             availablePages: [],
             isGridCard: false,
@@ -245,6 +247,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId: normalizeChannelId(data?.channelId),
             name: data?.name ?? '',
             isNavigation: data?.isNavigation ?? false,
+            isCustom: data?.type === 'custom',
             targetPage: data?.targetPage ?? '',
             trueIcon: data?.trueIcon ?? '',
             trueColor: data?.trueColor ?? '',
@@ -322,7 +325,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * Returns on/off colors for the currently selected role.
      * Falls back to the generic theme colors when no role-specific entry is found.
      */
-    private getRoleDefaultColors(): { on: RGB; off: RGB } {
+    /*private getRoleDefaultColors(): { on: RGB; off: RGB } {
         const defaults = this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
         const themeColors = this.getThemeColors();
         if (!defaults) {
@@ -332,7 +335,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const off = this.getThemeColorForKey(defaults.colorOff) ?? themeColors.off;
         return { on, off };
     }
-
+    */
     /**
      * Resolves a color key (e.g. 'on', 'activated', 'Green') to an RGB value
      * using the currently selected color theme.
@@ -386,6 +389,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId,
             name,
             isNavigation,
+            isCustom,
             targetPage,
             trueIcon,
             trueColor,
@@ -401,6 +405,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     channelId,
                     name,
                     isNavigation,
+                    type: undefined,
                     targetPage,
                     trueIcon,
                     trueColor,
@@ -420,6 +425,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             role: channelRole ?? undefined,
             name,
             isNavigation,
+            type: isCustom ? 'custom' : undefined,
             targetPage,
             trueIcon,
             trueColor,
@@ -570,7 +576,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      */
     private buildChannelFilterFunc(): (obj: ioBroker.Object) => boolean {
         const { validChannelIds } = this.state;
+        const { isCustom } = this.state;
+
         return (obj: ioBroker.Object): boolean => {
+            if (isCustom) {
+                return obj.common?.type === 'boolean';
+            }
             const id = (obj as any)._id as string | undefined;
             if (!id) {
                 return false;
@@ -643,10 +654,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             return;
         }
         try {
+            const isCustom = this.state.isCustom;
             const obj: ioBroker.Object | null | undefined = await socket.getObject(objectId);
             const role = (obj as any)?.common?.role ?? null;
             const channelRole = typeof role === 'string' ? role : null;
-            const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
+            const roleIsValid =
+                isCustom || (channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole));
             const rawName: unknown = (obj as any)?.common?.name;
             let channelNameSuggestion = '';
             if (typeof rawName === 'string') {
@@ -660,13 +673,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 {
                     channelExists: obj != null,
                     channelRole,
-                    roleIsValid: channelRole !== null ? roleIsValid : null,
+                    roleIsValid: isCustom ? true : channelRole !== null ? roleIsValid : null,
                     checkingChannel: false,
                     channelNameSuggestion,
                 },
                 () => {
                     if (obj != null && roleIsValid && channelRole) {
-                        void this.checkDatapoints(objectId, channelRole as keyof typeof requiredScriptDataPoints);
+                        void this.checkDatapoints(
+                            objectId,
+                            channelRole as keyof typeof requiredScriptDataPoints,
+                            isCustom,
+                        );
                     }
                 },
             );
@@ -682,8 +699,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      *
      * @param channelId  Die Channel-ID unter der die States gesucht werden
      * @param role       Die Channel-Rolle (Key in requiredScriptDataPoints)
+     * @param isCustom   true wenn der Channel als "custom" getypt ist – dann werden die Rollenanforderungen ignoriert, aber die Datenpunkte trotzdem geprüft und Fehler/Duplikate angezeigt
      */
-    private async checkDatapoints(channelId: string, role: keyof typeof requiredScriptDataPoints): Promise<void> {
+    private async checkDatapoints(
+        channelId: string,
+        role: keyof typeof requiredScriptDataPoints,
+        isCustom: boolean = false,
+    ): Promise<void> {
         const { socket } = this.props;
         if (!socket) {
             console.warn('[ChannelConfigDialog] checkDatapoints: no socket available, skipping check for', channelId);
@@ -708,6 +730,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     continue;
                 }
                 childStates.push({ key: rest, common: (stateObj as any).common as ioBroker.StateCommon });
+            }
+            if (childStates.length === 1 && isCustom && childStates[0].common.type === 'boolean') {
+                // Sonderfall Custom-Channel mit genau einem Kind-State: Dieser wird automatisch als "value" gemappt, auch ohne explizite Rollenanforderung.
+                this.setState({ datapointErrors: [], datapointDuplicates: [], checkingDatapoints: false });
+                return;
             }
 
             const dpDef = requiredScriptDataPoints[role]?.data as
@@ -829,6 +856,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private handleNavigationChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const checked = event.target.checked;
         this.setState({ isNavigation: checked, targetPage: checked ? this.state.targetPage : '' });
+    };
+
+    private handleCustomChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const checked = event.target.checked;
+        this.setState({ isCustom: checked });
     };
 
     private handleUseValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -1166,6 +1198,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId,
             name,
             isNavigation,
+            isCustom,
             targetPage,
             availablePages,
             loadingPages,
@@ -1231,7 +1264,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
                 <Dialog
                     open={open}
-                    onClose={this.handleClose}
+                    onClose={(event, reason) => {
+                        // Dialog darf nur über Button geschlossen werden
+                        if (reason === 'backdropClick') {
+                            return;
+                        }
+                        this.handleClose();
+                    }}
                     fullWidth
                     maxWidth="md"
                 >
@@ -1288,21 +1327,41 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             </Box>
                         ) : (
                             <Box sx={panelBoxStyle}>
-                                {/* Navigation-Checkbox */}
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={isNavigation}
-                                            onChange={this.handleNavigationChange}
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="body1">
-                                            {I18n.t('channelConfigDialog_isNavigation')}
-                                        </Typography>
-                                    }
-                                />
-
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        gap: 2,
+                                        flexWrap: 'wrap',
+                                    }}
+                                >
+                                    {/* Navigation-Checkbox */}
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={isNavigation}
+                                                onChange={this.handleNavigationChange}
+                                            />
+                                        }
+                                        label={
+                                            <Typography variant="body1">
+                                                {I18n.t('channelConfigDialog_isNavigation')}
+                                            </Typography>
+                                        }
+                                    />
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={isCustom}
+                                                onChange={this.handleCustomChange}
+                                            />
+                                        }
+                                        label={
+                                            <Typography variant="body1">
+                                                {I18n.t('channelConfigDialog_isCustom')}
+                                            </Typography>
+                                        }
+                                    />
+                                </Box>
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
                                 {isNavigation && (
                                     <FormControl
@@ -1346,49 +1405,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
                                 {/* ioBroker-Channel-Auswahl + Validierungsicons */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <EntitySelector
-                                            label={I18n.t('channelConfigDialog_channelId')}
-                                            value={channelId.valueStateId}
-                                            onChange={this.handleChannelIdChange}
-                                            onCommit={this.handleChannelIdCommit}
-                                            onTransformSelectedId={this.transformChannelId}
-                                            socket={socket}
-                                            theme={theme}
-                                            themeType={themeType ?? 'light'}
-                                            dialogName="channelConfigDialog"
-                                            filterFunc={this.buildChannelFilterFunc()}
-                                        />
-                                        {hasDatapointProblems && (
-                                            <Typography
-                                                variant="caption"
-                                                color="error"
-                                                sx={{ display: 'block', mt: 0.25, px: 1.75 }}
-                                            >
-                                                {channelId.valueStateId}
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                    {/* ... Button für erweiterte Channel-ID Konfiguration */}
-                                    <Tooltip title={I18n.t('channelConfigDialog_channelIdConfig')}>
-                                        <span style={{ display: 'flex', alignItems: 'center' }}>
-                                            <Button
-                                                variant="outlined"
-                                                onClick={() =>
-                                                    this.valueEntryDialogMain.current?.openWith(this.state.channelId)
-                                                }
-                                                sx={{ minWidth: 48, minHeight: 48 }}
-                                                startIcon={<SettingsIcon />}
-                                            ></Button>
-                                        </span>
-                                    </Tooltip>
-                                    {/* Lade-Spinner während Prüfung */}
-                                    {(checkingChannel || this.state.checkingDatapoints) && (
-                                        <CircularProgress
-                                            size={20}
-                                            sx={{ flexShrink: 0 }}
-                                        />
-                                    )}
                                     {/* Fehler-Icon: fehlende Pflicht-Datenpunkte */}
                                     {!checkingChannel &&
                                         !this.state.checkingDatapoints &&
@@ -1415,6 +1431,53 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 />
                                             </Tooltip>
                                         )}
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <EntitySelector
+                                            label={I18n.t('channelConfigDialog_channelId')}
+                                            value={channelId.valueStateId}
+                                            onChange={this.handleChannelIdChange}
+                                            onCommit={this.handleChannelIdCommit}
+                                            onTransformSelectedId={this.transformChannelId}
+                                            socket={socket}
+                                            theme={theme}
+                                            themeType={themeType ?? 'light'}
+                                            dialogName="channelConfigDialog"
+                                            filterFunc={this.buildChannelFilterFunc()}
+                                        />
+                                        {hasDatapointProblems && (
+                                            <Typography
+                                                variant="caption"
+                                                color="error"
+                                                sx={{ display: 'block', mt: 0.25, px: 1.75 }}
+                                            >
+                                                {channelId.valueStateId}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                    {/* ... Button für erweiterte Channel-ID Konfiguration */}
+                                    {!isCustom && (
+                                        <Tooltip title={I18n.t('channelConfigDialog_channelIdConfig')}>
+                                            <span style={{ display: 'flex', alignItems: 'center' }}>
+                                                <Button
+                                                    variant="text"
+                                                    onClick={() =>
+                                                        this.valueEntryDialogMain.current?.openWith(
+                                                            this.state.channelId,
+                                                        )
+                                                    }
+                                                    sx={{ minWidth: 20, minHeight: 24 }}
+                                                    startIcon={<SettingsIcon />}
+                                                ></Button>
+                                            </span>
+                                        </Tooltip>
+                                    )}
+                                    {/* Lade-Spinner während Prüfung */}
+                                    {(checkingChannel || this.state.checkingDatapoints) && (
+                                        <CircularProgress
+                                            size={20}
+                                            sx={{ flexShrink: 0 }}
+                                        />
+                                    )}
                                 </Box>
                                 {/* Validierungshinweis Channel */}
                                 {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
@@ -1426,15 +1489,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         {I18n.t('channelConfigDialog_channelNotFound')}
                                     </Typography>
                                 )}
-                                {roleIsValid === false && !checkingChannel && (
+                                {(isCustom && (
                                     <Typography
                                         variant="caption"
                                         color="warning.main"
                                         sx={{ mt: -1.5 }}
                                     >
-                                        {I18n.t('channelConfigDialog_unknownRoleHint')}
+                                        {I18n.t('channelConfigDialog_isCustomHint')}
                                     </Typography>
-                                )}
+                                )) ||
+                                    (roleIsValid === false && !checkingChannel && (
+                                        <Typography
+                                            variant="caption"
+                                            color="warning.main"
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {I18n.t('channelConfigDialog_unknownRoleHint')}
+                                        </Typography>
+                                    ))}
 
                                 {/* Namensfeld + Value-Entry-Konfigurationsbutton */}
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -1459,7 +1531,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 sx: { color: 'text.disabled' },
                                             },
                                             inputLabel: {
-                                                shrink: name === '' && this.state.valueEntryPreview !== '',
+                                                shrink: name !== '' || this.state.valueEntryPreview !== '',
                                             },
                                         }}
                                         placeholder={
@@ -1484,7 +1556,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     </Tooltip>
                                 </Box>
                                 {/* useValue Checkbox*/}
-                                {this.state.isGridCard && (
+                                {this.state.isGridCard && !isCustom && (
                                     <Box>
                                         <FormControl
                                             component="fieldset"
@@ -1540,7 +1612,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             </Button>
                         )}
                         {/* Options-Button, wenn nicht im Native-Modus */}
-                        {!nativeMode && (
+                        {!nativeMode && !isCustom && (
                             <Button
                                 size="small"
                                 variant="outlined"
@@ -1590,7 +1662,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     onColorChange={this.handleColorChange}
                 />
                 {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
-                <ValueEntryDialog
+                <ChannelValueDialog
                     ref={this.valueEntryDialogMain}
                     socket={socket}
                     theme={theme}
@@ -1606,15 +1678,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     }}
                     mainValueFilterFunc={this.buildChannelFilterFunc()}
                     mainValueTransformId={this.transformChannelId}
-                    onSave={(config: ValueEntryConfig) => {
+                    onSave={(config: ChannelValueConfig) => {
                         this.setState({ channelId: config });
                         void this.checkChannelExists(config.valueStateId);
                     }}
-                    onDelete={() => this.setState({ channelId: emptyValueEntryConfig() })}
+                    onDelete={() => this.setState({ channelId: emptyChannelValueConfig() })}
                 />
 
                 {/* Name-Entry-Konfigurationsdialog */}
-                <ValueEntryDialog
+                <ChannelValueDialog
                     ref={this.valueEntryDialogRef}
                     socket={socket}
                     theme={theme}
@@ -1626,7 +1698,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         showPreview: true,
                         readOnlyValueStateId: false,
                     }}
-                    onSave={(config: ValueEntryConfig) => {
+                    onSave={(config: ChannelValueConfig) => {
                         this.setState({ valueEntry: config });
                         this.valueEntryDialogRef.current?.triggerPreviewFor(config);
                     }}

@@ -26,7 +26,7 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
-  emptyValueEntryConfig: () => emptyValueEntryConfig,
+  emptyChannelValueConfig: () => emptyChannelValueConfig,
   normalizeChannelId: () => normalizeChannelId,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
@@ -42,13 +42,13 @@ const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
-function emptyValueEntryConfig(valueStateId = "") {
+function emptyChannelValueConfig(valueStateId = "") {
   return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "", textSize: void 0 };
 }
 function normalizeChannelId(raw) {
   var _a;
   if (typeof raw === "string") {
-    return emptyValueEntryConfig(raw);
+    return emptyChannelValueConfig(raw);
   }
   if (raw !== null && typeof raw === "object" && "valueStateId" in raw) {
     const v = raw;
@@ -61,7 +61,7 @@ function normalizeChannelId(raw) {
       textSize: v.textSize
     };
   }
-  return emptyValueEntryConfig();
+  return emptyChannelValueConfig();
 }
 const panelStatusStates = {
   0: "offline",
@@ -778,7 +778,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
-  emptyValueEntryConfig,
+  emptyChannelValueConfig,
   normalizeChannelId,
   panelStatusColors,
   panelStatusStates,
