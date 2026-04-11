@@ -34,7 +34,8 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
-import ValueEntryDialog from './ValueEntryDialog';
+import SettingsIcon from '@mui/icons-material/Settings';
+import type ValueEntryDialog from './ValueEntryDialog';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,

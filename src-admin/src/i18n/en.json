@@ -1,5 +1,5 @@
 {
-    "channelConfigDialog_channelIdConfig": "Configure channel ID (advanced)"
+    "channelConfigDialog_channelIdConfig": "Configure channel ID (advanced)",
     "channelConfigDialog_open": "Configure PageItem",
     "channelConfigDialog_title": "PageItem Configuration",
     "channelConfigDialog_channelId": "ioBroker Channel",
