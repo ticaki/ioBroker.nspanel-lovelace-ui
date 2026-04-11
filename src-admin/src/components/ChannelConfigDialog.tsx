@@ -36,15 +36,18 @@ import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
+import type {
+    IconScaleElement,
+    AdminPageItemConfig,
+    MenuEntry,
+    ChannelValueConfig,
+} from '../../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
     requiredScriptDataPoints,
     emptyChannelValueConfig,
     normalizeChannelId,
-    type AdminPageItemConfig,
-    type MenuEntry,
-    type ChannelValueConfig,
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigColor from './ChannelConfigColor';
 
@@ -134,6 +137,7 @@ interface ChannelConfigDialogState {
     useValue: boolean;
     /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
     adapterColorTheme: number;
+    scale?: IconScaleElement;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -397,6 +401,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             falseColor,
             channelRole,
             useValue,
+            scale,
         } = this.state;
         if (this.state.nativeMode) {
             try {
@@ -412,6 +417,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     falseIcon,
                     falseColor,
                     useValue,
+                    scale,
                     role: channelRole ?? undefined,
                     useNative: true,
                     native: parsed,

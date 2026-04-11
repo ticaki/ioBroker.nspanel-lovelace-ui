@@ -17,12 +17,14 @@ import {
 import { Color, type RGB, type ColorScaleInput } from '../../../src/lib/const/Color';
 import { type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
 import { I18n } from '@iobroker/adapter-react-v5';
+import type { ChannelConfigColorConfig, IconColorElement } from '../../../src/lib/types/adminShareConfig';
 
 export interface ChannelConfigColorProps {
     socket: any;
     adapterName?: string;
     instance?: number;
     open: boolean;
+    onSave?: (config: ChannelConfigColorConfig) => void;
     onClose: () => void;
     /** Aktuelle Channel-Rolle, bestimmt die Default-Farben */
     channelRole: string | null;
@@ -164,6 +166,56 @@ class ChannelConfigColor extends React.Component<ChannelConfigColorProps, Channe
         return null;
     }
 
+    private handleSave = (): void => {
+        const { colorBest, colorMode, colorLog10, valMin, valMax, valBest, localTrueColor, localFalseColor } =
+            this.state;
+        const scale: IconColorElement = {
+            color_best: colorBest ? Color.ConvertHexToRgb(colorBest) : undefined,
+            mode: colorMode,
+            log10: colorLog10 !== '' ? colorLog10 : undefined,
+            val_min: valMin,
+            val_max: valMax,
+            val_best: valBest,
+        };
+        this.props.onSave?.({
+            scale,
+            trueColor: localTrueColor,
+            falseColor: localFalseColor,
+        });
+        // this.setState({ open: false });
+    };
+
+    /**
+     * Opens the dialog and pre-fills all fields from an existing config.
+     * Resolves the value state type, then triggers a preview recompute.
+     *
+     * @param config  Optional existing configuration to restore
+     */
+    public openWith(config?: Partial<ChannelConfigColorConfig>): void {
+        if (config?.scale) {
+            const scale = config.scale;
+            this.setState({
+                // open: true,
+                localFalseColor: config?.falseColor ?? this.props.falseColor,
+                localTrueColor: config?.trueColor ?? this.props.trueColor,
+                colorBest:
+                    scale && `color_best` in scale && scale.color_best
+                        ? Color.ConvertRGBtoHex(scale.color_best.r, scale.color_best.g, scale.color_best.b)
+                        : '',
+                colorMode: `mode` in scale && scale.mode ? scale.mode : 'mixed',
+                colorLog10: `log10` in scale && scale.log10 ? scale.log10 : '',
+                valMin: `val_min` in scale && scale.val_min != undefined ? scale.val_min : 0,
+                valMax: `val_max` in scale && scale.val_max != undefined ? scale.val_max : 100,
+                valBest: `val_best` in scale && scale.val_best != undefined ? scale.val_best : undefined,
+            });
+            return;
+        }
+        this.setState({
+            // open: true,
+            localFalseColor: config?.falseColor ?? this.props.falseColor,
+            localTrueColor: config?.trueColor ?? this.props.trueColor,
+        });
+    }
     /** Berechnet die Ganzzahl-Werte für die Farbvorschau-Tabelle. */
     private buildColorPreviewValues(): number[] {
         const { valMin, valMax, valBest } = this.state;

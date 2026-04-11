@@ -1168,6 +1168,7 @@ export class Color extends ColorBase {
     static ConvertRGBtoHex(red: number, green: number, blue: number): string {
         return `#${Color.ColorToHex(red)}${Color.ColorToHex(green)}${Color.ColorToHex(blue)}`;
     }
+
     static ConvertWithColordtoRgb(colorName: string): RGB {
         return colord(colorName).toRgb();
     }

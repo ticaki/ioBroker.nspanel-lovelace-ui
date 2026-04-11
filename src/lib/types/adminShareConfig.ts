@@ -1,3 +1,5 @@
+import type { RGB } from '../const/Color';
+
 // Zentrale Definition aller verfügbaren Card-Typen
 export type AdminCardTypes =
     // Grid Cards
@@ -213,6 +215,7 @@ export type AdminPageItemConfig = {
     falseIcon?: string;
     falseColor?: string;
     useValue?: boolean;
+    scale?: IconScaleElement;
     /** Value-display configuration (prefix / unit / suffix / dateFormat) */
     valueEntry?: ChannelValueConfig;
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
@@ -990,3 +993,37 @@ export const requiredScriptDataPoints = {
 
 export const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints) as (keyof typeof requiredScriptDataPoints)[];
 export type ChannelRole = keyof typeof requiredScriptDataPoints;
+export type IconScaleElement = IconColorElement | IconSelectElement;
+
+export type ChannelConfigColorConfig = Pick<AdminPageItemConfig, 'trueColor' | 'falseColor' | 'scale'>;
+
+export type IconSelectElement = {
+    valIcon_min: number;
+    valIcon_max: number;
+    valIcon_best?: number;
+};
+export type IconColorElement = {
+    val_min: number;
+    val_max: number;
+    val_best?: number;
+    /**
+     * Optional best-color (nur wirksam, wenn `val_best` gesetzt ist).
+     */
+    color_best?: RGB;
+    /**
+     * Color scale mode. Default is 'mixed'.
+     * - 'mixed': interpolate linearly between two RGB colors.
+     * - 'cie': interpolate using CIE color table.
+     * - 'hue': interpolate via hue/saturation/brightness.
+     * - 'triGrad': three-color gradient red→yellow→green, ignores custom colors.
+     * - 'triGradAnchor': like triGrad but anchors yellow to val_best.
+     * - 'quadriGrad': four-color gradient red→yellow→green→blue, ignores custom colors.
+     * - 'quadriGradAnchor': like quadriGrad but anchors green to val_best.
+     */
+    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
+    /**
+     * Apply logarithmic scaling. Use 'max' or 'min'.
+     * Undefined = linear scaling.
+     */
+    log10?: 'max' | 'min';
+};
