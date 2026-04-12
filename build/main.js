@@ -2241,6 +2241,8 @@ class NspanelLovelaceUi extends utils.Adapter {
         item.icon2 = preItem.falseIcon || void 0;
         item.onColor = convertToScriptRGBColor(preItem.trueColor);
         item.offColor = convertToScriptRGBColor(preItem.falseColor);
+        item.longPress = preItem.longPress || void 0;
+        item.targetPageLongPress = preItem.targetPageLongPress || void 0;
         if ((0, import_function_and_const.isIconColorScaleElement)(preItem.scale)) {
           item.colorScale = {
             ...preItem.scale,
