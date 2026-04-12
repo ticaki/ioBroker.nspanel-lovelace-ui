@@ -1029,3 +1029,48 @@ export type IconColorElement = {
      */
     log10?: 'max' | 'min';
 };
+
+export type PageBaseItemSimple = {
+    useColor?: boolean;
+    targetPageLongPress?: string;
+    longPress?: string;
+    interpolateColor?: boolean;
+    minValueBrightness?: number;
+    maxValueBrightness?: number;
+    minValueColorTemp?: number;
+    maxValueColorTemp?: number;
+    minValueLevel?: number;
+    maxValueLevel?: number;
+    minValueTilt?: number;
+    maxValueTilt?: number;
+    minValue?: number;
+    maxValue?: number;
+    stepValue?: number;
+    prefixName?: string;
+    suffixName?: string;
+    prefixValue?: string;
+    suffixValue?: string;
+    name?: string;
+    secondRow?: string;
+    buttonText?: string;
+    buttonTextOff?: string;
+    unit?: string;
+    colormode?: string;
+    modeList?: string[];
+    hidePassword?: boolean;
+    autoCreateALias?: boolean;
+    yAxis?: string;
+    yAxisTicks?: number[] | string;
+    xAxisDecorationId?: string;
+    useValue?: boolean;
+    monobutton?: boolean;
+    inSel_ChoiceState?: boolean; //deprecated
+    inSel_Alias?: string;
+    iconArray?: string[];
+    customIcons?: any[];
+    fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
+    actionStringArray?: string[];
+    alwaysOnDisplay?: boolean;
+};
+
+export type Beispiel = Pick<PageBaseItemSimple, 'minValue' | 'maxValue' | 'stepValue'>;

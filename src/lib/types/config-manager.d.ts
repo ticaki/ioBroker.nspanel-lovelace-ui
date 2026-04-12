@@ -626,8 +626,6 @@ declare namespace ScriptConfig {
         type?: undefined | null;
         uniqueName?: string;
         role?: string;
-        targetPageLongPress?: string;
-        longPress?: string;
         /**
          * The icon that is used in the standard case or if ID is true
          */
@@ -647,11 +645,32 @@ declare namespace ScriptConfig {
         /**
          * The color that is used when id is false
          */
+        shutterIcons?: [shutterIcons?, shutterIcons?, shutterIcons?] | null;
+        colorScale?: IconScaleElement;
         offColor?: RGB;
-        useColor?: boolean;
+
         /**
-         * Interpolate the icon colour by ID
+         * Wird vom Skript verwendet um zu entscheiden welches Popup verwendet wird.
+         * Adapter verwendet immer die neuen Popups außer wenn beim popupShutter tilt vorhanden ist
+         * dann wird das alte verwendet!
+         *
+         * @deprecated unused in adapter
          */
+        popupVersion?: number;
+        shutterType?: string;
+        sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
+        filter?: number;
+        enabled?: boolean | string;
+        // erstmal für media mit id keine erstellung einer mediaCard - nur schalten
+        asControl?: boolean;
+        /* role 'button' only */
+        confirm?: string | { text?: string; icon?: string; color?: RGB | { r: number; g: number; b: number } | string };
+    } & PageBaseItemSimple;
+
+    type PageBaseItemSimple = {
+        useColor?: boolean;
+        targetPageLongPress?: string;
+        longPress?: string;
         interpolateColor?: boolean;
         minValueBrightness?: number;
         maxValueBrightness?: number;
@@ -674,7 +693,6 @@ declare namespace ScriptConfig {
         buttonTextOff?: string;
         unit?: string;
         colormode?: string;
-        colorScale?: IconScaleElement;
         modeList?: string[];
         hidePassword?: boolean;
         autoCreateALias?: boolean;
@@ -687,28 +705,10 @@ declare namespace ScriptConfig {
         inSel_Alias?: string;
         iconArray?: string[];
         customIcons?: any[];
-        shutterIcons?: [shutterIcons?, shutterIcons?, shutterIcons?] | null;
         fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
         actionStringArray?: string[];
         alwaysOnDisplay?: boolean;
-        /**
-         * Wird vom Skript verwendet um zu entscheiden welches Popup verwendet wird.
-         * Adapter verwendet immer die neuen Popups außer wenn beim popupShutter tilt vorhanden ist
-         * dann wird das alte verwendet!
-         *
-         * @deprecated unused in adapter
-         */
-        popupVersion?: number;
-        shutterType?: string;
-        sliderItems?: [sliderItems?, sliderItems?, sliderItems?] | null;
-        filter?: number;
-        enabled?: boolean | string;
-        // erstmal für media mit id keine erstellung einer mediaCard - nur schalten
-        asControl?: boolean;
-        /* role 'button' only */
-        confirm?: string | { text?: string; icon?: string; color?: RGB | { r: number; g: number; b: number } | string };
     };
-
     type sliderItems = {
         heading: string;
         icon1?: string;
