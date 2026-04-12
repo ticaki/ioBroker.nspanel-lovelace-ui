@@ -121,5 +121,11 @@
     "valueEntryDialog_title": "Wertanzeige-Konfiguration",
     "valueEntryDialog_unit": "Einheit",
     "valueEntryDialog_valueState": "State-ID oder Freitext",
-    "valueEntryDialog_valueStateLabel": "Wertquelle"
+    "valueEntryDialog_valueStateLabel": "Wertquelle",
+    "channelConfigDialog_longPressTitle": "Langer Druck",
+    "channelConfigDialog_LongPressChannelId": "Kanal-ID (langer Druck)",
+    "channelConfigDialog_targetLongPressPage": "Zielseite",
+    "channelConfigDialog_longPressHint1": "Nur für Navigation, Benutzerdefinierten Knopf oder ChannelIds mit der role=button",
+    "channelConfigDialog_longPressHint2": "Nur eine der beiden Möglichkeiten kann verwendet werden.",
+    "channelConfigDialog_longPressHint3": "Langer Druck mit Ziel Datenpunkt erfordert einen Datenpunkt mit type=boolean und write=true"
 }

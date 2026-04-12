@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "Configuration de l'affichage des valeurs",
     "valueEntryDialog_unit": "Unité",
     "valueEntryDialog_valueState": "ID d'État ou texte libre",
-    "valueEntryDialog_valueStateLabel": "Source de valeur"
+    "valueEntryDialog_valueStateLabel": "Source de valeur",
+    "channelConfigDialog_longPressTitle": "Appui long",
+    "channelConfigDialog_LongPressChannelId": "ID du canal (appui long)",
+    "channelConfigDialog_targetLongPressPage": "Page cible (appui long)",
+    "channelConfigDialog_longPressHint1": "Uniquement pour la navigation, les boutons personnalisés ou les ChannelIds avec role=button",
+    "channelConfigDialog_longPressHint2": "Seule une des deux options peut être utilisée.",
+    "channelConfigDialog_longPressHint3": "L'appui long avec point de données cible nécessite un point de données avec type=boolean et write=true"
 }

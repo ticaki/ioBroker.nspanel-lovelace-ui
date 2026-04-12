@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "Konfiguracja wyświetlania wartości",
     "valueEntryDialog_unit": "Jednostka",
     "valueEntryDialog_valueState": "Identyfikator stanu lub dowolny tekst",
-    "valueEntryDialog_valueStateLabel": "Źródło wartości"
+    "valueEntryDialog_valueStateLabel": "Źródło wartości",
+    "channelConfigDialog_longPressTitle": "Długie naciśnięcie",
+    "channelConfigDialog_LongPressChannelId": "ID kanału (długie naciśnięcie)",
+    "channelConfigDialog_targetLongPressPage": "Strona docelowa (długie naciśnięcie)",
+    "channelConfigDialog_longPressHint1": "Tylko dla nawigacji, niestandardowego przycisku lub ChannelIds z role=button",
+    "channelConfigDialog_longPressHint2": "Można użyć tylko jednej z dwóch opcji.",
+    "channelConfigDialog_longPressHint3": "Długie naciśnięcie z docelowym punktem danych wymaga punktu danych z type=boolean i write=true"
 }

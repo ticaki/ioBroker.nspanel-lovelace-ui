@@ -99,5 +99,11 @@
     "channelConfigColor_cancel": "Cancel",
     "channelConfigColor_save": "Apply",
     "pageMenu_copy_item": "Copy item",
-    "pageMenu_paste_item": "Paste item"
+    "pageMenu_paste_item": "Paste item",
+    "channelConfigDialog_longPressTitle": "Long press",
+    "channelConfigDialog_LongPressChannelId": "Channel ID (long press)",
+    "channelConfigDialog_targetLongPressPage": "Target page (long press)",
+    "channelConfigDialog_longPressHint1": "Only for Navigation, Custom Button or ChannelIds with role=button",
+    "channelConfigDialog_longPressHint2": "Only one of the two options can be used.",
+    "channelConfigDialog_longPressHint3": "Long press with target datapoint requires a datapoint with type=boolean and write=true"
 }

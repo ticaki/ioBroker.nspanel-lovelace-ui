@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "Configuratie van waardeweergave",
     "valueEntryDialog_unit": "Eenheid",
     "valueEntryDialog_valueState": "Staats-ID of vrije tekst",
-    "valueEntryDialog_valueStateLabel": "Waardebron"
+    "valueEntryDialog_valueStateLabel": "Waardebron",
+    "channelConfigDialog_longPressTitle": "Lang indrukken",
+    "channelConfigDialog_LongPressChannelId": "Kanaal-ID (lang indrukken)",
+    "channelConfigDialog_targetLongPressPage": "Doelpagina (lang indrukken)",
+    "channelConfigDialog_longPressHint1": "Alleen voor navigatie, aangepaste knop of ChannelIds met role=button",
+    "channelConfigDialog_longPressHint2": "Slechts één van de twee opties kan worden gebruikt.",
+    "channelConfigDialog_longPressHint3": "Lang indrukken met doeldatapunt vereist een datapunt met type=boolean en write=true"
 }

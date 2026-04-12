@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "Configuración de visualización de valores",
     "valueEntryDialog_unit": "Unidad",
     "valueEntryDialog_valueState": "Identificación estatal o texto libre",
-    "valueEntryDialog_valueStateLabel": "Fuente de valor"
+    "valueEntryDialog_valueStateLabel": "Fuente de valor",
+    "channelConfigDialog_longPressTitle": "Pulsación larga",
+    "channelConfigDialog_LongPressChannelId": "ID de canal (pulsación larga)",
+    "channelConfigDialog_targetLongPressPage": "Página de destino (pulsación larga)",
+    "channelConfigDialog_longPressHint1": "Solo para navegación, botón personalizado o ChannelIds con role=button",
+    "channelConfigDialog_longPressHint2": "Solo se puede usar una de las dos opciones.",
+    "channelConfigDialog_longPressHint3": "La pulsación larga con punto de datos de destino requiere un punto de datos con type=boolean y write=true"
 }

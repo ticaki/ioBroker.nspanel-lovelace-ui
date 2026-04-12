@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "值显示配置",
     "valueEntryDialog_unit": "单元",
     "valueEntryDialog_valueState": "州 ID 或自由文本",
-    "valueEntryDialog_valueStateLabel": "价值来源"
+    "valueEntryDialog_valueStateLabel": "价值来源",
+    "channelConfigDialog_longPressTitle": "长按",
+    "channelConfigDialog_LongPressChannelId": "频道 ID（长按）",
+    "channelConfigDialog_targetLongPressPage": "目标页面（长按）",
+    "channelConfigDialog_longPressHint1": "仅适用于导航、自定义按钮或具有 role=button 的 ChannelId",
+    "channelConfigDialog_longPressHint2": "只能使用两种选项之一。",
+    "channelConfigDialog_longPressHint3": "带目标数据点的长按需要 type=boolean 且 write=true 的数据点"
 }

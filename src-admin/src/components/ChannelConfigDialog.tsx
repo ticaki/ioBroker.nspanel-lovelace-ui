@@ -27,7 +27,7 @@ import {
 } from '../../../src/lib/const/page-item-defaults';
 import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import PaletteIcon from '@mui/icons-material/Palette';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
@@ -87,6 +87,8 @@ interface ChannelConfigDialogState {
     isNavigation: boolean;
     isCustom: boolean;
     targetPage: string;
+    targetPageLongPress: string | null | undefined;
+    longPress: string | null | undefined;
     availablePages: string[];
     loadingPages: boolean;
     trueIcon: string;
@@ -137,6 +139,7 @@ interface ChannelConfigDialogState {
     /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
     adapterColorTheme: number;
     scale?: IconScaleElement;
+    hasProblems: boolean;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -176,6 +179,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             isNavigation: false,
             isCustom: false,
             targetPage: '',
+            targetPageLongPress: null,
+            longPress: null,
             availablePages: [],
             isGridCard: false,
             loadingPages: false,
@@ -200,6 +205,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             datapointErrors: [],
             datapointDuplicates: [],
             checkingDatapoints: false,
+            hasProblems: false,
             channelNameSuggestion: '',
             valueEntry: undefined,
             valueEntryPreview: '',
@@ -252,6 +258,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             isNavigation: data?.isNavigation ?? false,
             isCustom: data?.type === 'custom',
             targetPage: data?.targetPage ?? '',
+            targetPageLongPress: data?.targetPageLongPress || null,
+            longPress: data?.longPress || null,
             trueIcon: data?.trueIcon ?? '',
             trueColor: data?.trueColor ?? '',
             falseIcon: data?.falseIcon ?? '',
@@ -287,7 +295,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
         const channelIdToCheck = normalizeChannelId(data?.channelId).valueStateId;
         if (!isNative && channelIdToCheck) {
-            void this.checkChannelExists(channelIdToCheck);
+            void this.checkChannelExists(channelIdToCheck, data?.type === 'custom');
         }
         if (data?.valueEntry?.valueStateId) {
             this.valueEntryDialogRef.current?.triggerPreviewFor(data.valueEntry);
@@ -396,6 +404,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId,
             name,
             isNavigation,
+            targetPageLongPress,
+            longPress,
             isCustom,
             targetPage,
             trueIcon,
@@ -415,6 +425,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     isNavigation,
                     type: undefined,
                     targetPage,
+                    targetPageLongPress: targetPageLongPress || null,
+                    longPress: longPress || null,
                     trueIcon,
                     trueColor,
                     falseIcon,
@@ -436,6 +448,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             isNavigation,
             type: isCustom ? 'custom' : undefined,
             targetPage,
+            targetPageLongPress: targetPageLongPress || null,
+            longPress: longPress || null,
             trueIcon,
             trueColor,
             falseIcon,
@@ -656,7 +670,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
     };
 
-    private async checkChannelExists(objectId: string): Promise<void> {
+    private async checkChannelExists(objectId: string, checked: boolean | undefined = undefined): Promise<void> {
         const { socket } = this.props;
         this.setState({ checkingChannel: true });
         if (!socket) {
@@ -664,12 +678,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             return;
         }
         try {
-            const isCustom = this.state.isCustom;
+            const isCustom = checked === undefined ? this.state.isCustom : checked;
             const obj: ioBroker.Object | null | undefined = await socket.getObject(objectId);
-            const role = (obj as any)?.common?.role ?? null;
+            const role = obj?.common?.role ?? null;
             const channelRole = typeof role === 'string' ? role : null;
-            const roleIsValid =
-                isCustom || (channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole));
+            const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
             const rawName: unknown = (obj as any)?.common?.name;
             let channelNameSuggestion = '';
             if (typeof rawName === 'string') {
@@ -683,7 +696,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 {
                     channelExists: obj != null,
                     channelRole,
-                    roleIsValid: isCustom ? true : channelRole !== null ? roleIsValid : null,
+                    roleIsValid: channelRole !== null ? roleIsValid : null,
                     checkingChannel: false,
                     channelNameSuggestion,
                 },
@@ -727,6 +740,34 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             const prefix = `${channelId}.`;
             const allObjects: Record<string, ioBroker.Object> | null | undefined =
                 await socket.getObjectViewSystem('state');
+            if (isCustom) {
+                if (
+                    !allObjects?.[channelId] ||
+                    !allObjects?.[channelId]?.common?.type ||
+                    allObjects[channelId].common.type !== 'boolean'
+                ) {
+                    console.warn(
+                        `[ChannelConfigDialog] checkDatapoints: custom item has no boolean state at isCustom:${isCustom}`,
+                        channelId,
+                    );
+                    this.setState({
+                        datapointErrors: [],
+                        datapointDuplicates: [],
+                        checkingDatapoints: false,
+                        hasProblems: true,
+                    });
+                    return;
+                }
+                // Bei Custom-Items wird die ID direkt als boolean-State verwendet –
+                // keine Datenpunkt-Rollenprüfung nötig, unabhängig von childStates.
+                this.setState({
+                    datapointErrors: [],
+                    datapointDuplicates: [],
+                    checkingDatapoints: false,
+                    hasProblems: false,
+                });
+                return;
+            }
 
             // Alle direkten Kind-States (nur eine Ebene tiefer) mit ihrem Key-Namen
             const childStates: { key: string; common: ioBroker.StateCommon }[] = [];
@@ -740,11 +781,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     continue;
                 }
                 childStates.push({ key: rest, common: (stateObj as any).common as ioBroker.StateCommon });
-            }
-            if (childStates.length === 1 && isCustom && childStates[0].common.type === 'boolean') {
-                // Sonderfall Custom-Channel mit genau einem Kind-State: Dieser wird automatisch als "value" gemappt, auch ohne explizite Rollenanforderung.
-                this.setState({ datapointErrors: [], datapointDuplicates: [], checkingDatapoints: false });
-                return;
             }
 
             const dpDef = requiredScriptDataPoints[role]?.data as
@@ -760,14 +796,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                       }
                   >
                 | undefined;
-
-            if (!dpDef) {
+            if (!dpDef || childStates.length === 0) {
                 console.warn(
                     '[ChannelConfigDialog] checkDatapoints: no dpDef found for role',
                     role,
                     '– skipping datapoint check',
                 );
-                this.setState({ datapointErrors: [], datapointDuplicates: [], checkingDatapoints: false });
+                this.setState({
+                    datapointErrors: [],
+                    datapointDuplicates: [],
+                    checkingDatapoints: false,
+                    hasProblems: true,
+                });
                 return;
             }
 
@@ -856,10 +896,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     duplicates,
                 );
             }
-            this.setState({ datapointErrors: errors, datapointDuplicates: duplicates, checkingDatapoints: false });
+            this.setState({
+                datapointErrors: errors,
+                datapointDuplicates: duplicates,
+                checkingDatapoints: false,
+                hasProblems: false,
+            });
         } catch (e) {
             console.error('[ChannelConfigDialog] checkDatapoints failed for', channelId, e);
-            this.setState({ checkingDatapoints: false });
+            this.setState({ checkingDatapoints: false, hasProblems: true });
         }
     }
 
@@ -870,7 +915,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleCustomChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const checked = event.target.checked;
-        this.setState({ isCustom: checked });
+        this.setState({ isCustom: checked, checkingChannel: true });
+        void this.checkChannelExists(this.state.channelId.valueStateId, checked);
     };
 
     private handleUseValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -1210,6 +1256,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             isNavigation,
             isCustom,
             targetPage,
+            targetPageLongPress,
+            longPress,
             availablePages,
             loadingPages,
             channelExists,
@@ -1222,22 +1270,28 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValue,
         } = this.state;
 
+        const hasDatapointProblems =
+            !nativeMode &&
+            !this.state.checkingDatapoints &&
+            (this.state.datapointErrors.length > 0 ||
+                this.state.datapointDuplicates.length > 0 ||
+                this.state.hasProblems);
+
         const expertMode = this.props.expertMode === true;
         const channelIdValid = channelId.valueStateId !== '';
         const standardCanSave =
             channelIdValid &&
             ((isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel));
         const canSave = nativeMode ? nativeJsonValid : standardCanSave;
+
+        const errorSaveDetails = (!roleIsValid && !isCustom) || this.state.hasProblems;
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
-        const hasDatapointProblems =
-            !nativeMode &&
-            !this.state.checkingDatapoints &&
-            (this.state.datapointErrors.length > 0 || this.state.datapointDuplicates.length > 0);
+        const longPressEnabled = channelRole === 'button' || isCustom || isNavigation;
 
         console.log(
-            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}`,
+            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}`,
         );
         // Untertitel neben dem Titel
         const titleSuffix =
@@ -1430,11 +1484,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     {/* Duplikat-Icon: mehrere States treffen auf dieselbe Pflicht-Rolle */}
                                     {!checkingChannel &&
                                         !this.state.checkingDatapoints &&
-                                        this.state.datapointDuplicates.length > 0 && (
+                                        (this.state.datapointDuplicates.length > 0 || errorSaveDetails) && (
                                             <Tooltip
-                                                title={`${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`}
+                                                title={
+                                                    errorSaveDetails
+                                                        ? 'Press Details'
+                                                        : `${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`
+                                                }
                                             >
-                                                <ContentCopyIcon
+                                                <ErrorOutline
                                                     color="error"
                                                     sx={{ flexShrink: 0 }}
                                                 />
@@ -1588,6 +1646,123 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         </FormControl>
                                     </Box>
                                 )}
+                                {this.state.isGridCard && isCustom && longPressEnabled && (
+                                    <Box
+                                        component="fieldset"
+                                        sx={{
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            borderRadius: 1,
+                                            p: 1.5,
+                                            mt: 1,
+                                            flex: 1,
+                                            minWidth: 0,
+                                        }}
+                                    >
+                                        <Tooltip
+                                            title={
+                                                <Box>
+                                                    <Typography
+                                                        variant="caption"
+                                                        display="block"
+                                                    >
+                                                        {I18n.t('channelConfigDialog_longPressHint1')}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="caption"
+                                                        display="block"
+                                                    >
+                                                        {I18n.t('channelConfigDialog_longPressHint2')}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="caption"
+                                                        display="block"
+                                                    >
+                                                        {I18n.t('channelConfigDialog_longPressHint3')}
+                                                    </Typography>
+                                                </Box>
+                                            }
+                                        >
+                                            <Typography
+                                                component="legend"
+                                                variant="caption"
+                                                sx={{ color: 'text.secondary', px: 0.5, cursor: 'help' }}
+                                            >
+                                                {I18n.t('channelConfigDialog_longPressTitle')}
+                                            </Typography>
+                                        </Tooltip>
+                                        {targetPageLongPress == null && (
+                                            <EntitySelector
+                                                label={I18n.t('channelConfigDialog_LongPressChannelId')}
+                                                value={longPress || ''}
+                                                onChange={(value: string): void =>
+                                                    this.setState({ longPress: value || null })
+                                                }
+                                                onCommit={(value: string): void =>
+                                                    this.setState({ longPress: value || null })
+                                                }
+                                                onTransformSelectedId={(id: string) => id.trim()}
+                                                socket={socket}
+                                                theme={theme}
+                                                themeType={themeType ?? 'light'}
+                                                dialogName="longPressConfigDialog"
+                                                filterFunc={(obj: ioBroker.Object) => {
+                                                    return (
+                                                        obj.type === 'state' &&
+                                                        obj.common?.type === 'boolean' &&
+                                                        obj.common?.write === true
+                                                    );
+                                                }}
+                                            />
+                                        )}
+                                        {longPress == null && (
+                                            <FormControl
+                                                variant="standard"
+                                                fullWidth
+                                                disabled={loadingPages}
+                                            >
+                                                <InputLabel>{I18n.t('channelConfigDialog_targetPage')}</InputLabel>
+                                                <Select
+                                                    value={targetPageLongPress || ''}
+                                                    onChange={(event: SelectChangeEvent<string>): void => {
+                                                        this.setState({
+                                                            targetPageLongPress: event.target.value || null,
+                                                        });
+                                                    }}
+                                                    label={I18n.t('channelConfigDialog_targetLongPressPage')}
+                                                >
+                                                    <MenuItem value="">
+                                                        <em>{'---'}</em>
+                                                    </MenuItem>
+                                                    {loadingPages && (
+                                                        <MenuItem
+                                                            disabled
+                                                            value=""
+                                                        >
+                                                            <CircularProgress size={16} />
+                                                        </MenuItem>
+                                                    )}
+                                                    {!loadingPages && availablePages.length === 0 && (
+                                                        <MenuItem
+                                                            disabled
+                                                            value=""
+                                                        >
+                                                            {I18n.t('channelConfigDialog_noPages')}
+                                                        </MenuItem>
+                                                    )}
+                                                    {availablePages.map(page => (
+                                                        <MenuItem
+                                                            key={page}
+                                                            value={page}
+                                                        >
+                                                            {page}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        )}
+                                    </Box>
+                                )}
                                 {/* Zweispaltiger Bereich: Wahr / Unwahr */}
                                 <Box
                                     sx={{
@@ -1637,7 +1812,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             variant="contained"
                             onClick={this.handleSave}
                             disabled={!canSave || this.state.isSaving}
-                            color={hasDatapointProblems ? 'warning' : 'primary'}
+                            color={hasDatapointProblems || errorSaveDetails ? 'warning' : 'primary'}
                             startIcon={
                                 this.state.isSaving ? (
                                     <CircularProgress
@@ -1649,7 +1824,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         >
                             {this.state.isSaving
                                 ? I18n.t('channelConfigDialog_checking')
-                                : hasDatapointProblems
+                                : hasDatapointProblems || errorSaveDetails
                                   ? I18n.t('channelConfigDialog_details')
                                   : I18n.t('valueEntryDialog_save')}
                         </Button>

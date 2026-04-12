@@ -210,6 +210,8 @@ export type AdminPageItemConfig = {
     isNavigation?: boolean;
     type?: string;
     targetPage?: string;
+    targetPageLongPress?: string | null | undefined;
+    longPress?: string | null | undefined;
     trueIcon?: string;
     trueColor?: string;
     falseIcon?: string;

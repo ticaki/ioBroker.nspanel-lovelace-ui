@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "Конфигурация отображения значений",
     "valueEntryDialog_unit": "Единица",
     "valueEntryDialog_valueState": "Идентификатор штата или произвольный текст",
-    "valueEntryDialog_valueStateLabel": "Источник значения"
+    "valueEntryDialog_valueStateLabel": "Источник значения",
+    "channelConfigDialog_longPressTitle": "Долгое нажатие",
+    "channelConfigDialog_LongPressChannelId": "ID канала (долгое нажатие)",
+    "channelConfigDialog_targetLongPressPage": "Целевая страница (долгое нажатие)",
+    "channelConfigDialog_longPressHint1": "Только для навигации, пользовательской кнопки или ChannelIds с role=button",
+    "channelConfigDialog_longPressHint2": "Можно использовать только один из двух вариантов.",
+    "channelConfigDialog_longPressHint3": "Долгое нажатие с целевой точкой данных требует точку данных с type=boolean и write=true"
 }

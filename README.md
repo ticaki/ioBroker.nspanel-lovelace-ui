@@ -159,7 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (tt-tom17) added: ChannelColorDialog
-- (ticaki) added: `Color.computeNumberScaleColor()` – reusable numeric scale interpolation extracted from `getIconEntryColor`, returns `RGB` (no Dataitem dependency); exported `ColorScaleInput` type
+- (ticaki) added: customItem, longPress, targetPageLongPress
 - (ticaki) feat: ChannelConfigDialog now shows default icon preview and default color swatch (from pageItemDefaults/pageNaviItemDefaults) when no icon/color is explicitly set; PageMenuEditor icon defaults consolidated in shared page-item-defaults file
 
 ### 0.16.2 (2026-04-09)

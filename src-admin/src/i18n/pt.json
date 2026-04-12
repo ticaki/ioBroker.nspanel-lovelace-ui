@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "Configuração de exibição de valor",
     "valueEntryDialog_unit": "Unidade",
     "valueEntryDialog_valueState": "ID do estado ou texto livre",
-    "valueEntryDialog_valueStateLabel": "Fonte de valor"
+    "valueEntryDialog_valueStateLabel": "Fonte de valor",
+    "channelConfigDialog_longPressTitle": "Pressão longa",
+    "channelConfigDialog_LongPressChannelId": "ID do canal (pressão longa)",
+    "channelConfigDialog_targetLongPressPage": "Página de destino (pressão longa)",
+    "channelConfigDialog_longPressHint1": "Apenas para navegação, botão personalizado ou ChannelIds com role=button",
+    "channelConfigDialog_longPressHint2": "Apenas uma das duas opções pode ser usada.",
+    "channelConfigDialog_longPressHint3": "Pressão longa com ponto de dados de destino requer um ponto de dados com type=boolean e write=true"
 }

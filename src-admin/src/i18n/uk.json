@@ -90,5 +90,11 @@
     "valueEntryDialog_title": "Конфігурація відображення значень",
     "valueEntryDialog_unit": "одиниця",
     "valueEntryDialog_valueState": "Державний ідентифікатор або довільний текст",
-    "valueEntryDialog_valueStateLabel": "Джерело значення"
+    "valueEntryDialog_valueStateLabel": "Джерело значення",
+    "channelConfigDialog_longPressTitle": "Довге натискання",
+    "channelConfigDialog_LongPressChannelId": "ID каналу (довге натискання)",
+    "channelConfigDialog_targetLongPressPage": "Цільова сторінка (довге натискання)",
+    "channelConfigDialog_longPressHint1": "Лише для навігації, власної кнопки або ChannelIds з role=button",
+    "channelConfigDialog_longPressHint2": "Можна використовувати лише один з двох варіантів.",
+    "channelConfigDialog_longPressHint3": "Довге натискання з цільовою точкою даних вимагає точку даних з type=boolean та write=true"
 }
