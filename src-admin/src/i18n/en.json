@@ -98,6 +98,14 @@
     "channelConfigColor_close": "Close",
     "channelConfigColor_cancel": "Cancel",
     "channelConfigColor_save": "Apply",
+    "channelConfigMinMax_title": "Min/Max Settings",
+    "channelConfigMinMax_description": "Configure minimum and maximum values for this item.",
+    "channelConfigMinMax_min": "Minimum Value",
+    "channelConfigMinMax_max": "Maximum Value",
+    "channelConfigMinMax_minPlaceholder": "optional",
+    "channelConfigMinMax_maxPlaceholder": "optional",
+    "channelConfigMinMax_cancel": "Cancel",
+    "channelConfigMinMax_apply": "Apply",
     "pageMenu_copy_item": "Copy item",
     "pageMenu_paste_item": "Paste item"
 }
