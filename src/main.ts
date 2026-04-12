@@ -38,7 +38,7 @@ import type {
     PageConfig,
     AdminPageItemConfig,
 } from './lib/types/adminShareConfig';
-import { isTasmotaStatusNet } from './lib/types/function-and-const';
+import { isIconColorScaleElement, isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { NSpanelModel, oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
@@ -2543,12 +2543,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                     navigate: true,
                     targetPage: preItem.targetPage ?? '',
                     type: null,
-                    id: preItem.channelId,
+                    id: preItem.channelId.valueStateId,
                 };
             } else {
                 item = {
                     type: null,
-                    id: preItem.channelId,
+                    id: preItem.channelId.valueStateId,
                 };
             }
             const convertToScriptRGBColor = (color?: string): ScriptConfig.RGB | undefined => {
@@ -2569,10 +2569,41 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
 
             if (!('native' in item)) {
-                item.icon = (preItem.trueIcon as AllIcons) || undefined;
-                item.icon2 = (preItem.falseIcon as AllIcons) || undefined;
+                item.type = preItem.type === 'custom' ? 'custom' : null;
+                item.icon = preItem.trueIcon || undefined;
+                item.icon2 = preItem.falseIcon || undefined;
                 item.onColor = convertToScriptRGBColor(preItem.trueColor);
                 item.offColor = convertToScriptRGBColor(preItem.falseColor);
+                item.longPress = preItem.longPress || undefined;
+                item.targetPageLongPress = preItem.targetPageLongPress || undefined;
+
+                if (isIconColorScaleElement(preItem.scale)) {
+                    item.colorScale = {
+                        ...preItem.scale,
+                        color_best: preItem.scale.color_best
+                            ? {
+                                  red: preItem.scale.color_best.r,
+                                  green: preItem.scale.color_best.g,
+                                  blue: preItem.scale.color_best.b,
+                              }
+                            : undefined,
+                    };
+                }
+
+                if (item.type !== 'custom') {
+                    if (!item.name && preItem.valueEntry) {
+                        item.name = preItem.valueEntry.valueStateId;
+                        item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;
+                        item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : undefined;
+                    }
+                    item.fontSize = preItem.channelId.textSize
+                        ? (Number(preItem.channelId.textSize) as typeof preItem.channelId.textSize)
+                        : undefined;
+                    item.prefixValue = preItem.channelId?.suffix ? preItem.channelId.suffix : undefined;
+                    item.suffixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
+                    item.unit = preItem.channelId?.unit ? preItem.channelId.unit : undefined;
+                    item.useValue = preItem.useValue;
+                }
             }
 
             const page = {

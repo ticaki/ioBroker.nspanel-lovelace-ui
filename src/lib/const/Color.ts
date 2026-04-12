@@ -1,6 +1,7 @@
 import { colord, extend } from 'colord';
 import namesPlugin from 'colord/plugins/names';
 import mixPlugin from 'colord/plugins/mix';
+import type { IconColorElement } from '../types/adminShareConfig';
 
 extend([namesPlugin, mixPlugin]);
 
@@ -15,21 +16,6 @@ export type RGB = {
 };
 
 export type hex = `#${string}`;
-
-/**
- * Minimal scale configuration accepted by {@link Color.computeNumberScaleColor}.
- * Intentionally mirrors `IconColorElement` from `types/types.ts` so that callers
- * can pass the real type without creating a circular import.
- */
-export type ColorScaleInput = {
-    val_min: number;
-    val_max: number;
-    val_best?: number;
-    /** Optional best-color (only used when `val_best` is set). */
-    color_best?: RGB;
-    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
-    log10?: 'max' | 'min';
-};
 
 interface MixedOptions {
     swap?: boolean;
@@ -865,6 +851,36 @@ export class Color extends ColorBase {
     };
 
     /**
+     * Returns the color theme object for a given adapter theme index.
+     *
+     * | Index | Theme           |
+     * |-------|-----------------|
+     * | 0     | default         |
+     * | 1     | topical         |
+     * | 2     | technical       |
+     * | 3     | sunset          |
+     * | 4     | volcano         |
+     *
+     * Unknown indices fall back to `defaultTheme`.
+     *
+     * @param index Adapter color theme index (0–4)
+     */
+    static getThemeByIndex(index: number): ColorThemenInterface {
+        switch (index) {
+            case 1:
+                return Color.topicalTheme;
+            case 2:
+                return Color.technicalTheme;
+            case 3:
+                return Color.sunsetTheme;
+            case 4:
+                return Color.volcanoTheme;
+            default:
+                return Color.defaultTheme;
+        }
+    }
+
+    /**
      * set color theme...
      *
      * @param s ColorThemenInterface
@@ -1138,6 +1154,7 @@ export class Color extends ColorBase {
     static ConvertRGBtoHex(red: number, green: number, blue: number): string {
         return `#${Color.ColorToHex(red)}${Color.ColorToHex(green)}${Color.ColorToHex(blue)}`;
     }
+
     static ConvertWithColordtoRgb(colorName: string): RGB {
         return colord(colorName).toRgb();
     }
@@ -1280,7 +1297,7 @@ export class Color extends ColorBase {
         return typeof F == 'string' && F.startsWith('#') && F.length == 7;
     }
 
-    static isScriptRGB(F: any): F is ScriptConfig.RGB {
+    static isScriptRGB(F: any): F is { red: number; green: number; blue: number } {
         return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
     }
 
@@ -1431,7 +1448,7 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
      * @param factor linear factor in [0, 1]
      * @returns scaled factor
      */
-    private static logFromScale(i: ColorScaleInput, factor: number): number {
+    private static logFromScale(i: IconColorElement, factor: number): number {
         if (i.log10 !== undefined) {
             if (i.log10 === 'max') {
                 factor = factor * (90 / 10) + 1;
@@ -1455,7 +1472,7 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
      * @param value current numeric value
      * @param cto color for the "true / max" end of the scale
      * @param cfrom color for the "false / min" end of the scale
-     * @param scale scale configuration (ColorScaleInput-compatible) or unknown/null
+     * @param scale scale configuration (IconColorElement-compatible) or unknown/null
      * @param def fallback color when nothing else matches
      * @returns interpolated RGB color
      */
@@ -1466,11 +1483,11 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
         scale: unknown,
         def: RGB,
     ): RGB {
-        const isFullScale = (s: unknown): s is ColorScaleInput =>
+        const isFullScale = (s: unknown): s is IconColorElement =>
             typeof s === 'object' &&
             s !== null &&
-            Number.isFinite((s as ColorScaleInput).val_min) &&
-            Number.isFinite((s as ColorScaleInput).val_max);
+            Number.isFinite((s as IconColorElement).val_min) &&
+            Number.isFinite((s as IconColorElement).val_max);
 
         const isPartialScale = (s: unknown): s is { val_min?: number; val_max?: number } =>
             typeof s === 'object' && s !== null && ('val_min' in s || 'val_max' in s);
@@ -1553,15 +1570,15 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
                     return func(_cfrom, _cto, factor, { swap });
                 } else if (value >= vBest) {
                     const effectiveCfrom = scale.val_best !== undefined && scale.color_best ? scale.color_best : _cfrom;
-                    factor = 1 - (value - vBest) / (vMax - vBest);
-                    factor = Math.min(1, Math.max(0, factor));
+                    factor = (value - vBest) / (vMax - vBest);
+                    factor = 1 - Math.min(1, Math.max(0, factor));
                     factor = Color.logFromScale(scale, factor);
                     return func(effectiveCfrom, _cto, factor, { swap, anchorHigh: true });
                 }
                 const effectiveCto = scale.val_best !== undefined && scale.color_best ? scale.color_best : _cto;
                 factor = (value - vMin) / (vBest - vMin);
                 factor = Math.min(1, Math.max(0, factor));
-                factor = 1 - Color.logFromScale(scale, 1 - factor);
+                factor = Color.logFromScale(scale, factor);
                 return func(_cfrom, effectiveCto, factor, { swap });
             } else if (isPartialScale(scale)) {
                 if ((scale.val_min && scale.val_min >= value) || (scale.val_max && scale.val_max <= value)) {

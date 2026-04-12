@@ -11,15 +11,8 @@ import type {
     screenSaverCardType,
     StateRole,
 } from './pages';
-import type {
-    EventMethod,
-    EventType,
-    IconColorElement,
-    IconSelectElement,
-    PopupType,
-    ScreensaverModeType,
-    ValueDateFormat,
-} from './types';
+import type { EventMethod, EventType, PopupType, ScreensaverModeType, ValueDateFormat } from './types';
+import type { IconColorElement, IconSelectElement } from './adminShareConfig';
 
 export function convertColorScaleBest(F: any): IconColorElement['color_best'] {
     if (F) {

@@ -2,6 +2,7 @@ import type * as dataItem from '../controller/data-item';
 import { type RGB } from '../const/Color';
 import type * as pages from './pages';
 import type { NSPanel } from './NSPanel';
+import type { IconScaleElement } from './adminShareConfig';
 
 /**
  * Bitte an folgendes Schema halten
@@ -172,39 +173,6 @@ export type DimMode = {
 export type ValueDateFormat = { local: string; format: any };
 
 export type NSpanelModel = 'eu' | 'us-p' | 'us-l';
-
-export type IconScaleElement = IconColorElement | IconSelectElement;
-
-export type IconSelectElement = {
-    valIcon_min: number;
-    valIcon_max: number;
-    valIcon_best?: number;
-};
-export type IconColorElement = {
-    val_min: number;
-    val_max: number;
-    val_best?: number;
-    /**
-     * Optional best-color (nur wirksam, wenn `val_best` gesetzt ist).
-     */
-    color_best?: RGB;
-    /**
-     * Color scale mode. Default is 'mixed'.
-     * - 'mixed': interpolate linearly between two RGB colors.
-     * - 'cie': interpolate using CIE color table.
-     * - 'hue': interpolate via hue/saturation/brightness.
-     * - 'triGrad': three-color gradient red→yellow→green, ignores custom colors.
-     * - 'triGradAnchor': like triGrad but anchors yellow to val_best.
-     * - 'quadriGrad': four-color gradient red→yellow→green→blue, ignores custom colors.
-     * - 'quadriGradAnchor': like quadriGrad but anchors green to val_best.
-     */
-    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
-    /**
-     * Apply logarithmic scaling. Use 'max' or 'min'.
-     * Undefined = linear scaling.
-     */
-    log10?: 'max' | 'min';
-};
 
 export type DataItemstype = NSPanel.DataItemsOptions['type'];
 export type DataItemsMode = 'custom' | 'auto';

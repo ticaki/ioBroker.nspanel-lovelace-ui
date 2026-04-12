@@ -3,7 +3,6 @@ import type { Library } from '../controller/library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';
-import type * as types from '../types/types';
 import * as globals from '../types/function-and-const';
 import type { NSPanel } from '../types/NSPanel';
 
@@ -430,7 +429,7 @@ export function getRGBFromValue(val: any, role?: string): RGB | undefined {
     }
     return undefined;
 }
-function getLogFromIconScale(i: types.IconColorElement, factor: number): number {
+/*function getLogFromIconScale(i: types.IconColorElement, factor: number): number {
     if (i.log10 !== undefined) {
         if (i.log10 === 'max') {
             factor = factor * (90 / 10) + 1;
@@ -444,7 +443,7 @@ function getLogFromIconScale(i: types.IconColorElement, factor: number): number 
         }
     }
     return factor;
-}
+}*/
 export async function GetIconColor(
     item: ChangeTypeOfKeys<NSPanel.IconEntryType, Dataitem | undefined> | undefined | RGB,
     value: boolean | number | null,

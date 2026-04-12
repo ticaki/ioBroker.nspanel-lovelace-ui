@@ -26,6 +26,8 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  emptyChannelValueConfig: () => emptyChannelValueConfig,
+  normalizeChannelId: () => normalizeChannelId,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
@@ -40,6 +42,27 @@ const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
+function emptyChannelValueConfig(valueStateId = "") {
+  return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "", textSize: void 0 };
+}
+function normalizeChannelId(raw) {
+  var _a;
+  if (typeof raw === "string") {
+    return emptyChannelValueConfig(raw);
+  }
+  if (raw !== null && typeof raw === "object" && "valueStateId" in raw) {
+    const v = raw;
+    return {
+      valueStateId: typeof v.valueStateId === "string" ? v.valueStateId : "",
+      unit: typeof v.unit === "string" ? v.unit : "",
+      prefix: typeof v.prefix === "string" ? v.prefix : "",
+      suffix: typeof v.suffix === "string" ? v.suffix : "",
+      dateFormat: (_a = v.dateFormat) != null ? _a : "",
+      textSize: v.textSize
+    };
+  }
+  return emptyChannelValueConfig();
+}
 const panelStatusStates = {
   0: "offline",
   // Panel ist offline, keine belegbare Verbindung zum Adapter
@@ -755,6 +778,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  emptyChannelValueConfig,
+  normalizeChannelId,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,

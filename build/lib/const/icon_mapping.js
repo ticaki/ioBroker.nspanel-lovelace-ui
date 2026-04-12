@@ -6937,9 +6937,9 @@ class Icons {
       return Icons.iconMap.get(val);
     }
     if (Icons.adapter) {
-      Icons.adapter.log.warn(`${val} is not a icon!`);
+      Icons.adapter.log.debug(`${val} is not a icon!`);
     }
-    return "";
+    return ma_name;
   }
   /**
    * Determines if the provided string is an icon.

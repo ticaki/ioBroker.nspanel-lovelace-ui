@@ -29,12 +29,14 @@ import {
     type MenuEntry,
     type AdminPageItemConfig,
     type AdminPanelConfig,
+    normalizeChannelId,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
 import { I18n } from '@iobroker/adapter-react-v5';
+import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 
 /** Basis-Slot-Anzahl pro Kartentyp (cardGrid2: eu/us-l = 8, us-p = 9) */
 const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
@@ -47,65 +49,6 @@ const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
 
 /** Ergebnis der Panel-Modell-Auswertung für cardGrid2 */
 type Grid2ModelStatus = 'all-usp' | 'none-usp' | 'conflict' | 'unknown';
-
-/**
- * Default-Icons pro channel role, abgeleitet aus getPageItemConfig (die korrekte Funktion).
- * Reihenfolge: [trueIcon, falseIcon]
- */
-const ROLE_DEFAULT_ICONS: Record<string, [string, string]> = {
-    airCondition: ['thermometer', 'snowflake-thermometer'],
-    blind: ['window-shutter-open', 'window-shutter'],
-    button: ['gesture-tap-button', 'gesture-tap-button'],
-    ct: ['lightbulb', 'lightbulb-outline'],
-    dimmer: ['lightbulb', 'lightbulb-outline'],
-    door: ['door-open', 'door-closed'],
-    gate: ['garage-open', 'garage'],
-    hue: ['lightbulb', 'lightbulb-outline'],
-    humidity: ['water-percent', 'water-off'],
-    info: ['information-outline', 'information-off-outline'],
-    'level.mode.fan': ['fan', 'fan-off'],
-    'level.timer': ['timer', 'timer-off'],
-    light: ['lightbulb', 'lightbulb-outline'],
-    lock: ['lock-open-variant', 'lock'],
-    media: ['play-box-multiple', 'play-box-multiple-outline'],
-    motion: ['motion-sensor', 'motion-sensor'],
-    rgb: ['lightbulb', 'lightbulb-outline'],
-    rgbSingle: ['lightbulb', 'lightbulb-outline'],
-    select: ['clipboard-list-outline', 'clipboard-list'],
-    'sensor.alarm.flood': ['water-alert', 'water-alert'],
-    slider: ['plus-minus-variant', 'plus-minus-variant'],
-    socket: ['power-socket-de', 'power-socket-de'],
-    temperature: ['thermometer', 'snowflake-thermometer'],
-    thermostat: ['thermometer', 'snowflake-thermometer'],
-    timeTable: ['train', 'train'],
-    'value.humidity': ['water-percent', 'water-off'],
-    'value.temperature': ['thermometer', 'snowflake-thermometer'],
-    volume: ['volume-high', 'volume-mute'],
-    warning: ['alert-decagram-outline', 'alert-decagram-outline'],
-    window: ['window-open-variant', 'window-closed-variant'],
-};
-
-/**
- * Default-Icons für navigation=true, abgeleitet aus getPageNaviItemConfig.
- * Nur Rollen mit explizit gesetztem Icon (kein undefined-Fallback auf Template).
- * Fallback auf ROLE_DEFAULT_ICONS für Template-basierte Rollen (blind, door, …).
- */
-const NAV_ROLE_DEFAULT_ICONS: Record<string, [string, string]> = {
-    socket: ['power', 'power-standby'],
-    light: ['lightbulb', 'lightbulb-outline'],
-    dimmer: ['lightbulb', 'lightbulb-outline'],
-    hue: ['lightbulb', 'lightbulb-outline'],
-    rgb: ['lightbulb', 'lightbulb-outline'],
-    rgbSingle: ['lightbulb', 'lightbulb-outline'],
-    ct: ['lightbulb', 'lightbulb-outline'],
-    button: ['gesture-tap-button', 'gesture-tap-button'],
-    media: ['play-box-multiple', 'play-box-multiple-outline'],
-    info: ['information-outline', 'information-off-outline'],
-    temperature: ['temperature-celsius', 'temperature-celsius'],
-    thermostat: ['temperature-celsius', 'temperature-celsius'],
-    'level.timer': ['timer', 'timer'],
-    'level.mode.fan': ['fan', 'fan-off'],
-};
 
 export interface PageMenuEditorProps {
     entry: MenuEntry;
@@ -307,11 +250,11 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         const toLoad = [
             ...new Set(
                 items
-                    .filter(
-                        item =>
-                            item != null && !item.name && item.channelId && !this.state.channelNames[item.channelId],
-                    )
-                    .map(item => item!.channelId),
+                    .filter(item => {
+                        const cid = normalizeChannelId(item?.channelId).valueStateId;
+                        return item != null && !item.name && cid && !this.state.channelNames[cid];
+                    })
+                    .map(item => normalizeChannelId(item!.channelId).valueStateId),
             ),
         ];
         if (toLoad.length === 0) {
@@ -570,13 +513,18 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         if (explicit) {
             return PageMenuEditor.getIconSrc(explicit);
         }
-        // Fallback: Role-Default – bei Navigation zuerst NAV_ROLE_DEFAULT_ICONS
+        // Fallback: Role-Default – bei Navigation zuerst pageNaviItemDefaults
         const role = item.role ?? '';
         const isNav = item.isNavigation === true;
-        const defaults = (isNav ? NAV_ROLE_DEFAULT_ICONS[role] : undefined) ?? ROLE_DEFAULT_ICONS[role];
-        if (defaults) {
-            const [trueDefault, falseDefault] = defaults;
-            return PageMenuEditor.getIconSrc(forTrue ? trueDefault : falseDefault);
+        if (isNav) {
+            const d = getPageNaviItemDefaultsByRole(role);
+            if (d) {
+                return PageMenuEditor.getIconSrc(forTrue ? d.iconOn : d.iconOff);
+            }
+        }
+        const d = getPageItemDefaultsByRole(role);
+        if (d) {
+            return PageMenuEditor.getIconSrc(forTrue ? d.iconOn : d.iconOff);
         }
         return '';
     }
@@ -586,10 +534,10 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         this.props.onEntryChange({ ...this.props.entry, card });
     }
 
-    private handleSlotClick = (index: number): void => {
+    private handleSlotClick = (index: number, isGridCard: boolean): void => {
         const item = (this.props.entry.pageItems ?? [])[index];
         this.setState({ editingSlotIndex: index });
-        this.dialogRef.current?.openWith(item);
+        this.dialogRef.current?.openWith(item, isGridCard);
     };
 
     private handleItemSave = (config: AdminPageItemConfig): void => {
@@ -674,7 +622,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         }
     }
 
-    private renderSlot(index: number, totalSlots: number, wide: boolean): React.JSX.Element {
+    private renderSlot(index: number, totalSlots: number, wide: boolean, isGridCard: boolean): React.JSX.Element {
         const pageItems = this.props.entry.pageItems ?? [];
         const item = pageItems[index] ?? undefined;
         const isDragSource = this.dragSourceIndex === index;
@@ -692,7 +640,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 >
                     <Paper
                         elevation={0}
-                        onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                        onClick={alive ? () => this.handleSlotClick(index, isGridCard) : undefined}
                         onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
                         onDragLeave={alive ? this.handleDragLeave : undefined}
                         onDrop={alive ? e => this.handleDrop(index, e) : undefined}
@@ -719,7 +667,9 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         }
 
         const iconSrc = this.getItemIconSrc(item, true);
-        const channelName = item.channelId ? (this.state.channelNames[item.channelId] ?? '') : '';
+        const channelName = item.channelId
+            ? (this.state.channelNames[normalizeChannelId(item.channelId).valueStateId] ?? '')
+            : '';
         const isNativeItem = item.useNative === true;
         const isNavigationItem = item.isNavigation === true;
         const role = item.role ?? '';
@@ -736,7 +686,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
             return (
                 <Tooltip
                     key={index}
-                    title={item.channelId || label}
+                    title={normalizeChannelId(item.channelId).valueStateId || label}
                 >
                     <Paper
                         elevation={isDragSource ? 0 : 2}
@@ -746,7 +696,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                         onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
                         onDragLeave={alive ? this.handleDragLeave : undefined}
                         onDrop={alive ? e => this.handleDrop(index, e) : undefined}
-                        onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                        onClick={alive ? () => this.handleSlotClick(index, isGridCard) : undefined}
                         onContextMenu={alive ? e => this.handleContextMenu(index, e) : undefined}
                         sx={{
                             width: '100%',
@@ -825,7 +775,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         return (
             <Tooltip
                 key={index}
-                title={item.channelId || label}
+                title={normalizeChannelId(item.channelId).valueStateId || label}
             >
                 <Paper
                     elevation={isDragSource ? 0 : 2}
@@ -835,7 +785,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                     onDragOver={alive ? e => this.handleDragOver(index, e) : undefined}
                     onDragLeave={alive ? this.handleDragLeave : undefined}
                     onDrop={alive ? e => this.handleDrop(index, e) : undefined}
-                    onClick={alive ? () => this.handleSlotClick(index) : undefined}
+                    onClick={alive ? () => this.handleSlotClick(index, isGridCard) : undefined}
                     onContextMenu={alive ? e => this.handleContextMenu(index, e) : undefined}
                     sx={{
                         width: '100%',
@@ -922,6 +872,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         card: MenuEntry['card'],
         grid2Status: Grid2ModelStatus,
         totalRealSlots: number,
+        isGridCard: boolean,
         onRemovePage?: () => void,
     ): React.JSX.Element {
         const { columns, uspSpecial, wide } = this.getGridConfig(card, grid2Status);
@@ -993,7 +944,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                                 key={globalIdx}
                                 sx={isUspTop ? { gridColumn: '1 / -1' } : {}}
                             >
-                                {this.renderSlot(globalIdx, totalRealSlots, wide)}
+                                {this.renderSlot(globalIdx, totalRealSlots, wide, isGridCard)}
                             </Box>
                         );
                     })}
@@ -1239,6 +1190,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                             entry.card,
                             grid2Status,
                             totalRealSlots,
+                            isGridCard,
                             onRemovePage,
                         );
                     })}

@@ -19,21 +19,38 @@ import {
     CircularProgress,
     Tooltip,
 } from '@mui/material';
+import { Color, type RGB } from '../../../src/lib/const/Color';
+import {
+    getPageItemDefaultsByRole,
+    getPageNaviItemDefaultsByRole,
+    type PageItemRoleDefaults,
+} from '../../../src/lib/const/page-item-defaults';
+import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import SettingsIcon from '@mui/icons-material/Settings';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import PaletteIcon from '@mui/icons-material/Palette';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ChannelValueDialog from './ChannelValueDialog';
+import type {
+    IconScaleElement,
+    AdminPageItemConfig,
+    MenuEntry,
+    ChannelValueConfig,
+    ChannelColorConfig,
+} from '../../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
     requiredScriptDataPoints,
-    type AdminPageItemConfig,
-    type MenuEntry,
+    emptyChannelValueConfig,
+    normalizeChannelId,
 } from '../../../src/lib/types/adminShareConfig';
+import ChannelColorDialog from './ChannelColorDialog';
 
 export type { AdminPageItemConfig as PageItemConfig };
 
@@ -64,10 +81,14 @@ type ChannelConfigDialogProps = {
 
 interface ChannelConfigDialogState {
     open: boolean;
-    channelId: string;
+    isGridCard: boolean;
+    channelId: ChannelValueConfig;
     name: string;
     isNavigation: boolean;
+    isCustom: boolean;
     targetPage: string;
+    targetPageLongPress: string | null | undefined;
+    longPress: string | null | undefined;
     availablePages: string[];
     loadingPages: boolean;
     trueIcon: string;
@@ -109,21 +130,17 @@ interface ChannelConfigDialogState {
     checkingDatapoints: boolean;
     /** Vorgeschlagener Name aus common.name des Channels – wird nicht gespeichert */
     channelNameSuggestion: string;
-    /** Options-Dialog sichtbar */
-    optionsDialogOpen: boolean;
+    /** Value-display configuration (undefined = not configured) */
+    valueEntry: ChannelValueConfig | undefined;
+    /** Last preview text computed inside ValueEntryDialog – purely for display in the name field */
+    valueEntryPreview: string;
     /** useValue Checkbox Auswahl */
     useValue: boolean;
-    /** useColor Checkbox - aktiviert Farbeinstellungen */
-    useColor: boolean;
-    /** IconScaleElement Felder */
-    colorBest: string;
-    colorMode: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
-    colorLog10: '' | 'max' | 'min';
-    valMin: number;
-    valMax: number;
-    valBest: number;
-    valIconMin: number;
-    valIconMax: number;
+    /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
+    adapterColorTheme: number;
+    scale?: IconScaleElement;
+    hasProblems: boolean;
+    colorFieldDisabled: boolean;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -139,16 +156,34 @@ const DATAPOINT_CHECK_DEBOUNCE_MS = 800;
  */
 class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, ChannelConfigDialogState> {
     private datapointCheckTimer: ReturnType<typeof setTimeout> | null = null;
+    private valueEntryDialogRef = React.createRef<ChannelValueDialog>();
+    private valueEntryDialogMain = React.createRef<ChannelValueDialog>();
+    private colorDialogRef = React.createRef<ChannelColorDialog>();
+    private static iconMap: Map<string, string> | null = null;
+
+    private static getIconBase64(name: string): string {
+        if (!ChannelConfigDialog.iconMap) {
+            ChannelConfigDialog.iconMap = new Map();
+            for (const icon of icons as { name: string; base64: string }[]) {
+                ChannelConfigDialog.iconMap.set(icon.name, icon.base64);
+            }
+        }
+        return ChannelConfigDialog.iconMap.get(name) ?? '';
+    }
 
     constructor(props: ChannelConfigDialogProps) {
         super(props);
         this.state = {
             open: false,
-            channelId: props.initialChannelId ?? '',
+            channelId: emptyChannelValueConfig(props.initialChannelId ?? ''),
             name: '',
             isNavigation: false,
+            isCustom: false,
             targetPage: '',
+            targetPageLongPress: null,
+            longPress: null,
             availablePages: [],
+            isGridCard: false,
             loadingPages: false,
             trueIcon: '',
             trueColor: '',
@@ -171,18 +206,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             datapointErrors: [],
             datapointDuplicates: [],
             checkingDatapoints: false,
+            hasProblems: false,
             channelNameSuggestion: '',
-            optionsDialogOpen: false,
+            valueEntry: undefined,
+            valueEntryPreview: '',
             useValue: false,
-            useColor: false,
-            colorBest: '',
-            colorMode: 'mixed',
-            colorLog10: '',
-            valMin: 0,
-            valMax: 100,
-            valBest: 50,
-            valIconMin: 0,
-            valIconMax: 100,
+            colorFieldDisabled: false,
+            adapterColorTheme: 0,
         };
     }
 
@@ -211,6 +241,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (this.state.validChannelIds.length === 0) {
             void this.loadValidChannels();
         }
+        void this.loadAdapterColorTheme();
     };
 
     /**
@@ -218,15 +249,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * Wird von übergeordneten Komponenten per ref aufgerufen.
      *
      * @param data
+     * @param isGridCard  (optional) true wenn die Daten von einem GridCard-Item stammen – steuert die Sichtbarkeit bestimmter Felder
      */
-    public openWith(data?: Partial<AdminPageItemConfig>): void {
+    public openWith(data?: Partial<AdminPageItemConfig>, isGridCard?: boolean): void {
         const isNative = data?.useNative === true;
         this.setState({
             open: true,
-            channelId: data?.channelId ?? '',
+            channelId: normalizeChannelId(data?.channelId),
             name: data?.name ?? '',
             isNavigation: data?.isNavigation ?? false,
+            isCustom: data?.type === 'custom',
             targetPage: data?.targetPage ?? '',
+            targetPageLongPress: data?.targetPageLongPress || null,
+            longPress: data?.longPress || null,
             trueIcon: data?.trueIcon ?? '',
             trueColor: data?.trueColor ?? '',
             falseIcon: data?.falseIcon ?? '',
@@ -240,6 +275,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeJsonValid: isNative,
             nativeJsonErrorMessage: '',
             useValue: data?.useValue ?? false,
+            valueEntry: data?.valueEntry,
+            valueEntryPreview: '',
+            scale: data?.scale,
             datapointErrors: [],
             datapointDuplicates: [],
             checkResultMessages: [],
@@ -247,6 +285,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkResultIsError: false,
             checkResultPendingConfig: null,
             isSaving: false,
+            colorFieldDisabled: false,
+            isGridCard: isGridCard ?? false,
+            hasProblems: false,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -256,23 +297,109 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (this.state.validChannelIds.length === 0) {
             void this.loadValidChannels();
         }
-        if (!isNative && data?.channelId) {
-            void this.checkChannelExists(data.channelId);
+        const channelIdToCheck = normalizeChannelId(data?.channelId).valueStateId;
+        if (!isNative && channelIdToCheck) {
+            void this.checkChannelExists(channelIdToCheck, data?.type === 'custom');
         }
+        if (data?.valueEntry?.valueStateId) {
+            this.valueEntryDialogRef.current?.triggerPreviewFor(data.valueEntry);
+        }
+        void this.loadAdapterColorTheme();
     }
 
     private handleClose = (): void => {
         this.setState({ open: false });
     };
 
-    private handleOptionsOpen = (): void => {
-        this.setState({
-            optionsDialogOpen: true,
+    private handleColorOpen = (): void => {
+        this.colorDialogRef.current?.openWith({
+            trueColor: this.state.trueColor,
+            falseColor: this.state.falseColor,
+            scale: this.state.scale,
         });
     };
 
-    private handleOptionsClose = (): void => {
-        this.setState({ optionsDialogOpen: false });
+    private async loadAdapterColorTheme(): Promise<void> {
+        const { socket, adapterName = ADAPTER_NAME, instance = 0 } = this.props;
+        if (!socket) {
+            return;
+        }
+        try {
+            const obj: ioBroker.Object | null | undefined = await socket.getObject(
+                `system.adapter.${adapterName}.${instance}`,
+            );
+            const t = (obj as any)?.native?.colorTheme;
+            this.setState({ adapterColorTheme: typeof t === 'number' ? t : 0 });
+        } catch {
+            /* keep default 0 */
+        }
+    }
+
+    private getThemeColors(): { on: RGB; off: RGB } {
+        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
+        return { on: theme.on, off: theme.off };
+    }
+
+    /**
+     * Returns on/off colors for the currently selected role.
+     * Falls back to the generic theme colors when no role-specific entry is found.
+     */
+    /*private getRoleDefaultColors(): { on: RGB; off: RGB } {
+        const defaults = this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+        const themeColors = this.getThemeColors();
+        if (!defaults) {
+            return themeColors;
+        }
+        const on = this.getThemeColorForKey(defaults.colorOn) ?? themeColors.on;
+        const off = this.getThemeColorForKey(defaults.colorOff) ?? themeColors.off;
+        return { on, off };
+    }
+    */
+    /**
+     * Resolves a color key (e.g. 'on', 'activated', 'Green') to an RGB value
+     * using the currently selected color theme.
+     *
+     * @param colorKey
+     */
+    private getThemeColorForKey(colorKey: string): RGB | null {
+        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
+        // Theme keys (lowercase, e.g. 'on', 'activated', 'open')
+        if (colorKey in theme) {
+            const val = (theme as unknown as Record<string, unknown>)[colorKey];
+            if (typeof val === 'object' && val !== null && 'r' in val) {
+                return val as RGB;
+            }
+        }
+        // Named Color statics (PascalCase, e.g. 'Green', 'Red')
+        if (colorKey in Color) {
+            const val = (Color as unknown as Record<string, unknown>)[colorKey];
+            if (typeof val === 'object' && val !== null && 'r' in val) {
+                return val as RGB;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the default icon / color entry for a given role and navigation flag.
+     * Returns null if no entry is found.
+     *
+     * @param role
+     * @param isNavigation
+     */
+    private getDefaultsForRole(role: string | null, isNavigation: boolean): PageItemRoleDefaults | null {
+        if (!role) {
+            return null;
+        }
+        return isNavigation ? getPageNaviItemDefaultsByRole(role) : getPageItemDefaultsByRole(role);
+    }
+
+    private handleColorSave = (config: ChannelColorConfig): void => {
+        this.setState({
+            trueColor: config.trueColor ?? '',
+            falseColor: config.falseColor ?? '',
+            scale: config.scale,
+        });
     };
 
     /** Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. */
@@ -281,6 +408,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId,
             name,
             isNavigation,
+            targetPageLongPress,
+            longPress,
+            isCustom,
             targetPage,
             trueIcon,
             trueColor,
@@ -288,6 +418,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             falseColor,
             channelRole,
             useValue,
+            scale,
         } = this.state;
         if (this.state.nativeMode) {
             try {
@@ -296,12 +427,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     channelId,
                     name,
                     isNavigation,
+                    type: undefined,
                     targetPage,
+                    targetPageLongPress: targetPageLongPress || null,
+                    longPress: longPress || null,
                     trueIcon,
                     trueColor,
                     falseIcon,
                     falseColor,
                     useValue,
+                    scale,
                     role: channelRole ?? undefined,
                     useNative: true,
                     native: parsed,
@@ -315,12 +450,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             role: channelRole ?? undefined,
             name,
             isNavigation,
+            type: isCustom ? 'custom' : undefined,
             targetPage,
+            targetPageLongPress: targetPageLongPress || null,
+            longPress: longPress || null,
             trueIcon,
             trueColor,
             falseIcon,
             falseColor,
             useValue,
+            scale,
+            valueEntry: this.state.valueEntry,
         };
     }
 
@@ -464,7 +604,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      */
     private buildChannelFilterFunc(): (obj: ioBroker.Object) => boolean {
         const { validChannelIds } = this.state;
+        const { isCustom } = this.state;
+
         return (obj: ioBroker.Object): boolean => {
+            if (isCustom) {
+                return obj.common?.type === 'boolean';
+            }
             const id = (obj as any)._id as string | undefined;
             if (!id) {
                 return false;
@@ -491,7 +636,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleChannelIdChange = (id: string): void => {
         this.setState({
-            channelId: id,
+            channelId: { ...this.state.channelId, valueStateId: id },
             channelExists: null,
             channelRole: null,
             roleIsValid: null,
@@ -529,7 +674,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
     };
 
-    private async checkChannelExists(objectId: string): Promise<void> {
+    private async checkChannelExists(objectId: string, checked: boolean | undefined = undefined): Promise<void> {
         const { socket } = this.props;
         this.setState({ checkingChannel: true });
         if (!socket) {
@@ -537,8 +682,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             return;
         }
         try {
+            const isCustom = checked === undefined ? this.state.isCustom : checked;
             const obj: ioBroker.Object | null | undefined = await socket.getObject(objectId);
-            const role = (obj as any)?.common?.role ?? null;
+            const role = obj?.common?.role ?? null;
             const channelRole = typeof role === 'string' ? role : null;
             const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
             const rawName: unknown = (obj as any)?.common?.name;
@@ -560,7 +706,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 },
                 () => {
                     if (obj != null && roleIsValid && channelRole) {
-                        void this.checkDatapoints(objectId, channelRole as keyof typeof requiredScriptDataPoints);
+                        void this.checkDatapoints(
+                            objectId,
+                            channelRole as keyof typeof requiredScriptDataPoints,
+                            isCustom,
+                        );
                     }
                 },
             );
@@ -576,8 +726,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      *
      * @param channelId  Die Channel-ID unter der die States gesucht werden
      * @param role       Die Channel-Rolle (Key in requiredScriptDataPoints)
+     * @param isCustom   true wenn der Channel als "custom" getypt ist – dann werden die Rollenanforderungen ignoriert, aber die Datenpunkte trotzdem geprüft und Fehler/Duplikate angezeigt
      */
-    private async checkDatapoints(channelId: string, role: keyof typeof requiredScriptDataPoints): Promise<void> {
+    private async checkDatapoints(
+        channelId: string,
+        role: keyof typeof requiredScriptDataPoints,
+        isCustom: boolean = false,
+    ): Promise<void> {
         const { socket } = this.props;
         if (!socket) {
             console.warn('[ChannelConfigDialog] checkDatapoints: no socket available, skipping check for', channelId);
@@ -587,9 +742,47 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.setState({ checkingDatapoints: true });
         try {
             const prefix = `${channelId}.`;
+            let colorFieldDisabled = true;
             const allObjects: Record<string, ioBroker.Object> | null | undefined =
                 await socket.getObjectViewSystem('state');
+            if (isCustom) {
+                if (
+                    !allObjects?.[channelId] ||
+                    !allObjects?.[channelId]?.common?.type ||
+                    allObjects[channelId].common.type !== 'boolean'
+                ) {
+                    console.warn(
+                        `[ChannelConfigDialog] checkDatapoints: custom item has no boolean state at isCustom:${isCustom}`,
+                        channelId,
+                    );
+                    this.setState({
+                        datapointErrors: [],
+                        datapointDuplicates: [],
+                        checkingDatapoints: false,
+                        hasProblems: true,
+                        colorFieldDisabled,
+                    });
+                    return;
+                }
+                // Bei Custom-Items wird die ID direkt als boolean-State verwendet –
+                // keine Datenpunkt-Rollenprüfung nötig, unabhängig von childStates.
+                this.setState({
+                    datapointErrors: [],
+                    datapointDuplicates: [],
+                    checkingDatapoints: false,
+                    hasProblems: false,
+                    colorFieldDisabled,
+                });
+                return;
+            }
 
+            if (this.state.isNavigation) {
+                const defaults = getPageNaviItemDefaultsByRole(role);
+                colorFieldDisabled = defaults?.type !== 'number' && defaults?.type !== 'mixed';
+            } else {
+                const defaults = getPageItemDefaultsByRole(role);
+                colorFieldDisabled = defaults?.type !== 'number' && defaults?.type !== 'mixed';
+            }
             // Alle direkten Kind-States (nur eine Ebene tiefer) mit ihrem Key-Namen
             const childStates: { key: string; common: ioBroker.StateCommon }[] = [];
             for (const [id, stateObj] of Object.entries(allObjects ?? {})) {
@@ -617,14 +810,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                       }
                   >
                 | undefined;
-
-            if (!dpDef) {
+            if (!dpDef || childStates.length === 0) {
                 console.warn(
                     '[ChannelConfigDialog] checkDatapoints: no dpDef found for role',
                     role,
                     '– skipping datapoint check',
                 );
-                this.setState({ datapointErrors: [], datapointDuplicates: [], checkingDatapoints: false });
+                this.setState({
+                    datapointErrors: [],
+                    datapointDuplicates: [],
+                    checkingDatapoints: false,
+                    hasProblems: true,
+                });
                 return;
             }
 
@@ -713,10 +910,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     duplicates,
                 );
             }
-            this.setState({ datapointErrors: errors, datapointDuplicates: duplicates, checkingDatapoints: false });
+            this.setState({
+                datapointErrors: errors,
+                datapointDuplicates: duplicates,
+                checkingDatapoints: false,
+                hasProblems: false,
+                colorFieldDisabled,
+            });
         } catch (e) {
             console.error('[ChannelConfigDialog] checkDatapoints failed for', channelId, e);
-            this.setState({ checkingDatapoints: false });
+            this.setState({ checkingDatapoints: false, hasProblems: true });
         }
     }
 
@@ -725,14 +928,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.setState({ isNavigation: checked, targetPage: checked ? this.state.targetPage : '' });
     };
 
+    private handleCustomChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const checked = event.target.checked;
+        this.setState({ isCustom: checked, checkingChannel: true });
+        void this.checkChannelExists(this.state.channelId.valueStateId, checked);
+    };
+
     private handleUseValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const checked = event.target.checked;
         this.setState({ useValue: checked });
-    };
-
-    private handleUseColorChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const checked = event.target.checked;
-        this.setState({ useColor: checked });
     };
 
     private handleTargetPageChange = (event: SelectChangeEvent<string>): void => {
@@ -817,6 +1021,65 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     /**
+    /**
+     * Renders a read-only color swatch with a label for the "default color" case.
+     * Pass the resolved default RGB; when null, colour swatch is omitted.
+     *
+     * @param label  Field label shown above the swatch
+     * @param rgb    Default RGB derived from the current theme (null = no swatch)
+     */
+    private renderColorDefault(label: string, rgb: RGB | null): React.JSX.Element {
+        const hex = rgb ? Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b) : '';
+        return (
+            <Box
+                sx={{
+                    border: '1px dashed',
+                    borderColor: 'text.disabled',
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.75,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    minHeight: 48,
+                }}
+            >
+                {rgb && (
+                    <Box
+                        sx={{
+                            width: 22,
+                            height: 22,
+                            backgroundColor: `rgb(${rgb.r},${rgb.g},${rgb.b})`,
+                            borderRadius: 0.5,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            flexShrink: 0,
+                            opacity: 0.75,
+                        }}
+                    />
+                )}
+                <Box>
+                    <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        sx={{ display: 'block', lineHeight: 1.2 }}
+                    >
+                        {label}
+                    </Typography>
+                    <Typography
+                        variant="caption"
+                        color="text.disabled"
+                    >
+                        {hex
+                            ? `${I18n.t('channelConfigDialog_defaultColor')}: ${hex}`
+                            : I18n.t('channelConfigDialog_defaultColor')}
+                    </Typography>
+                </Box>
+            </Box>
+        );
+    }
+
+    /**
      * Rendert eine Bedingungsspalte (true oder false)
      *
      * @param branch
@@ -831,6 +1094,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const oContext = this.buildOContext();
         const theme = this.props.theme;
         const themeName: string = this.props.themeType === 'dark' ? 'dark' : 'light';
+
+        // Defaults from role
+        const defaults = this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+        const defaultIconName = defaults ? (isTrue ? defaults.iconOn : defaults.iconOff) : '';
+        const defaultColorKey = defaults ? (isTrue ? defaults.colorOn : defaults.colorOff) : '';
+        const defaultColorRgb: RGB | null = defaultColorKey ? this.getThemeColorForKey(defaultColorKey) : null;
+        const defaultColorHex: string = defaultColorRgb
+            ? Color.ConvertRGBtoHex(defaultColorRgb.r, defaultColorRgb.g, defaultColorRgb.b)
+            : '';
+
+        // Default icon SVG for preview
+        const defaultIconBase64 = defaultIconName ? ChannelConfigDialog.getIconBase64(defaultIconName) : '';
+        const defaultIconSvg = defaultIconBase64
+            ? atob(defaultIconBase64.replace(/^data:image\/svg\+xml;base64,/, '')).replace(
+                  /<svg([^>]*)>/,
+                  '<svg$1 fill="currentColor">',
+              )
+            : '';
 
         return (
             <Box
@@ -889,35 +1170,56 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     }}
                     theme={theme}
                 />
+                {/* Default-Icon-Vorschau – nur wenn kein Icon gesetzt */}
                 {iconValue === '' && (
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: -1 }}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.75,
+                            mt: -1,
+                            opacity: 0.6,
+                        }}
                     >
-                        {I18n.t('channelConfigDialog_defaultIcon')}
-                    </Typography>
+                        {defaultIconSvg !== '' && (
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    width: 18,
+                                    height: 18,
+                                    flexShrink: 0,
+                                    color: 'inherit',
+                                }}
+                                dangerouslySetInnerHTML={{ __html: defaultIconSvg }}
+                            />
+                        )}
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                        >
+                            {defaultIconName
+                                ? `${I18n.t('channelConfigDialog_defaultIcon')}: ${defaultIconName}`
+                                : I18n.t('channelConfigDialog_defaultIcon')}
+                        </Typography>
+                    </Box>
                 )}
 
                 {/* Farbauswahl */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {colorValue === '' ? (
                         <>
-                            <TextField
-                                variant="standard"
-                                label={I18n.t('channelConfigDialog_color')}
-                                value={I18n.t('channelConfigDialog_defaultColor')}
-                                disabled
-                                sx={{ flex: 1 }}
-                            />
+                            <Box sx={{ flex: 1 }}>
+                                {this.renderColorDefault(I18n.t('channelConfigDialog_color'), defaultColorRgb)}
+                            </Box>
                             <Button
                                 size="small"
                                 variant="outlined"
                                 onClick={() => {
+                                    const startColor = defaultColorHex || (isTrue ? '#00cc00' : '#cc0000');
                                     if (isTrue) {
-                                        this.setState({ trueColor: '#00cc00' });
+                                        this.setState({ trueColor: startColor });
                                     } else {
-                                        this.setState({ falseColor: '#cc0000' });
+                                        this.setState({ falseColor: startColor });
                                     }
                                 }}
                             >
@@ -967,7 +1269,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId,
             name,
             isNavigation,
+            isCustom,
             targetPage,
+            targetPageLongPress,
+            longPress,
             availablePages,
             loadingPages,
             channelExists,
@@ -977,27 +1282,38 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeMode,
             nativeJson,
             nativeJsonValid,
-            optionsDialogOpen,
             useValue,
+            colorFieldDisabled,
         } = this.state;
-
-        const expertMode = this.props.expertMode === true;
-        const channelIdValid = channelId !== '';
-        const standardCanSave =
-            channelIdValid &&
-            ((isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel));
-        const canSave = nativeMode ? nativeJsonValid : standardCanSave;
-        /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
-        const fieldsDisabled = !standardCanSave;
 
         const hasDatapointProblems =
             !nativeMode &&
             !this.state.checkingDatapoints &&
-            (this.state.datapointErrors.length > 0 || this.state.datapointDuplicates.length > 0);
+            (this.state.datapointErrors.length > 0 ||
+                this.state.datapointDuplicates.length > 0 ||
+                this.state.hasProblems);
 
+        const expertMode = this.props.expertMode === true;
+        const channelIdValid = channelId.valueStateId !== '';
+        const standardCanSave =
+            (isNavigation && targetPage !== '') ||
+            (!isNavigation && channelIdValid && channelExists === true && !checkingChannel);
+        const canSave = nativeMode ? nativeJsonValid : standardCanSave;
+
+        const errorSaveDetails =
+            !(isNavigation && !channelIdValid) && ((!roleIsValid && !isCustom) || this.state.hasProblems);
+        /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
+        const fieldsDisabled = !standardCanSave;
+
+        const internColorFieldsDisabled = !channelIdValid || isCustom || nativeMode || colorFieldDisabled;
+        const longPressEnabled = channelRole === 'button' || isCustom || isNavigation;
+
+        console.log(
+            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
+        );
         // Untertitel neben dem Titel
         const titleSuffix =
-            channelId === ''
+            channelId.valueStateId === ''
                 ? I18n.t('channelConfigDialog_noChannelSelected')
                 : channelRole !== null
                   ? `${channelRole}${roleIsValid === false ? ` (${I18n.t('channelConfigDialog_unknownRole')})` : ''}`
@@ -1029,7 +1345,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
                 <Dialog
                     open={open}
-                    onClose={this.handleClose}
+                    onClose={(event, reason) => {
+                        // Dialog darf nur über Button geschlossen werden
+                        if (reason === 'backdropClick') {
+                            return;
+                        }
+                        this.handleClose();
+                    }}
                     fullWidth
                     maxWidth="md"
                 >
@@ -1086,21 +1408,41 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             </Box>
                         ) : (
                             <Box sx={panelBoxStyle}>
-                                {/* Navigation-Checkbox */}
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={isNavigation}
-                                            onChange={this.handleNavigationChange}
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="body1">
-                                            {I18n.t('channelConfigDialog_isNavigation')}
-                                        </Typography>
-                                    }
-                                />
-
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        gap: 2,
+                                        flexWrap: 'wrap',
+                                    }}
+                                >
+                                    {/* Navigation-Checkbox */}
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={isNavigation}
+                                                onChange={this.handleNavigationChange}
+                                            />
+                                        }
+                                        label={
+                                            <Typography variant="body1">
+                                                {I18n.t('channelConfigDialog_isNavigation')}
+                                            </Typography>
+                                        }
+                                    />
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={isCustom}
+                                                onChange={this.handleCustomChange}
+                                            />
+                                        }
+                                        label={
+                                            <Typography variant="body1">
+                                                {I18n.t('channelConfigDialog_isCustom')}
+                                            </Typography>
+                                        }
+                                    />
+                                </Box>
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
                                 {isNavigation && (
                                     <FormControl
@@ -1144,36 +1486,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
                                 {/* ioBroker-Channel-Auswahl + Validierungsicons */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <EntitySelector
-                                            label={I18n.t('channelConfigDialog_channelId')}
-                                            value={channelId}
-                                            onChange={this.handleChannelIdChange}
-                                            onCommit={this.handleChannelIdCommit}
-                                            onTransformSelectedId={this.transformChannelId}
-                                            socket={socket}
-                                            theme={theme}
-                                            themeType={themeType ?? 'light'}
-                                            dialogName="channelConfigDialog"
-                                            filterFunc={this.buildChannelFilterFunc()}
-                                        />
-                                        {hasDatapointProblems && (
-                                            <Typography
-                                                variant="caption"
-                                                color="error"
-                                                sx={{ display: 'block', mt: 0.25, px: 1.75 }}
-                                            >
-                                                {channelId}
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                    {/* Lade-Spinner während Prüfung */}
-                                    {(checkingChannel || this.state.checkingDatapoints) && (
-                                        <CircularProgress
-                                            size={20}
-                                            sx={{ flexShrink: 0 }}
-                                        />
-                                    )}
                                     {/* Fehler-Icon: fehlende Pflicht-Datenpunkte */}
                                     {!checkingChannel &&
                                         !this.state.checkingDatapoints &&
@@ -1190,19 +1502,70 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     {/* Duplikat-Icon: mehrere States treffen auf dieselbe Pflicht-Rolle */}
                                     {!checkingChannel &&
                                         !this.state.checkingDatapoints &&
-                                        this.state.datapointDuplicates.length > 0 && (
+                                        (this.state.datapointDuplicates.length > 0 || errorSaveDetails) && (
                                             <Tooltip
-                                                title={`${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`}
+                                                title={
+                                                    errorSaveDetails
+                                                        ? 'Press Button Details'
+                                                        : `${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`
+                                                }
                                             >
-                                                <ContentCopyIcon
+                                                <ErrorOutline
                                                     color="error"
                                                     sx={{ flexShrink: 0 }}
                                                 />
                                             </Tooltip>
                                         )}
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <EntitySelector
+                                            label={I18n.t('channelConfigDialog_channelId')}
+                                            value={channelId.valueStateId}
+                                            onChange={this.handleChannelIdChange}
+                                            onCommit={this.handleChannelIdCommit}
+                                            onTransformSelectedId={this.transformChannelId}
+                                            socket={socket}
+                                            theme={theme}
+                                            themeType={themeType ?? 'light'}
+                                            dialogName="channelConfigDialog"
+                                            filterFunc={this.buildChannelFilterFunc()}
+                                        />
+                                        {hasDatapointProblems && (
+                                            <Typography
+                                                variant="caption"
+                                                color="error"
+                                                sx={{ display: 'block', mt: 0.25, px: 1.75 }}
+                                            >
+                                                {channelId.valueStateId}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                    {/* ... Button für erweiterte Channel-ID Konfiguration */}
+                                    {!isCustom && (
+                                        <Tooltip title={I18n.t('channelConfigDialog_channelIdConfig')}>
+                                            <span style={{ display: 'flex', alignItems: 'center' }}>
+                                                <Button
+                                                    variant="text"
+                                                    onClick={() =>
+                                                        this.valueEntryDialogMain.current?.openWith(
+                                                            this.state.channelId,
+                                                        )
+                                                    }
+                                                    sx={{ minWidth: 20, minHeight: 24 }}
+                                                    startIcon={<SettingsIcon />}
+                                                ></Button>
+                                            </span>
+                                        </Tooltip>
+                                    )}
+                                    {/* Lade-Spinner während Prüfung */}
+                                    {(checkingChannel || this.state.checkingDatapoints) && (
+                                        <CircularProgress
+                                            size={20}
+                                            sx={{ flexShrink: 0 }}
+                                        />
+                                    )}
                                 </Box>
                                 {/* Validierungshinweis Channel */}
-                                {channelId !== '' && channelExists === false && !checkingChannel && (
+                                {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
                                     <Typography
                                         variant="caption"
                                         color="error"
@@ -1211,36 +1574,213 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         {I18n.t('channelConfigDialog_channelNotFound')}
                                     </Typography>
                                 )}
-                                {roleIsValid === false && !checkingChannel && (
+                                {(isCustom && (
                                     <Typography
                                         variant="caption"
                                         color="warning.main"
                                         sx={{ mt: -1.5 }}
                                     >
-                                        {I18n.t('channelConfigDialog_unknownRoleHint')}
+                                        {I18n.t('channelConfigDialog_isCustomHint')}
                                     </Typography>
+                                )) ||
+                                    (roleIsValid === false && !checkingChannel && (
+                                        <Typography
+                                            variant="caption"
+                                            color="warning.main"
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {I18n.t('channelConfigDialog_unknownRoleHint')}
+                                        </Typography>
+                                    ))}
+
+                                {/* Namensfeld + Value-Entry-Konfigurationsbutton */}
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                    <TextField
+                                        label={I18n.t('channelConfigDialog_name')}
+                                        value={name}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                            this.setState({ name: e.target.value })
+                                        }
+                                        variant="standard"
+                                        sx={{ flex: 1 }}
+                                        disabled={fieldsDisabled}
+                                        helperText={
+                                            name === '' && this.state.channelNameSuggestion
+                                                ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${this.state.channelNameSuggestion}`
+                                                : name === ''
+                                                  ? I18n.t('channelConfigDialog_defaultName')
+                                                  : undefined
+                                        }
+                                        slotProps={{
+                                            formHelperText: {
+                                                sx: { color: 'text.disabled' },
+                                            },
+                                            inputLabel: {
+                                                shrink: name !== '' || this.state.valueEntryPreview !== '',
+                                            },
+                                        }}
+                                        placeholder={
+                                            name === '' && this.state.valueEntryPreview !== ''
+                                                ? this.state.valueEntryPreview
+                                                : undefined
+                                        }
+                                    />
+                                    <Tooltip title={I18n.t('channelConfigDialog_nameEntryConfig')}>
+                                        <span>
+                                            <Button
+                                                variant="outlined"
+                                                onClick={() =>
+                                                    this.valueEntryDialogRef.current?.openWith(this.state.valueEntry)
+                                                }
+                                                disabled={fieldsDisabled}
+                                                sx={{ minWidth: 48 }}
+                                            >
+                                                ...
+                                            </Button>
+                                        </span>
+                                    </Tooltip>
+                                </Box>
+                                {/* useValue Checkbox*/}
+                                {this.state.isGridCard && !isCustom && (
+                                    <Box>
+                                        <FormControl
+                                            component="fieldset"
+                                            disabled={fieldsDisabled}
+                                        >
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={useValue}
+                                                        onChange={this.handleUseValueChange}
+                                                        disabled={fieldsDisabled}
+                                                    />
+                                                }
+                                                label={
+                                                    <Typography variant="body1">
+                                                        {I18n.t('channelConfigDialog_useValueLabel')}
+                                                    </Typography>
+                                                }
+                                            />
+                                        </FormControl>
+                                    </Box>
                                 )}
-
-                                {/* Namensfeld */}
-                                <TextField
-                                    label={I18n.t('channelConfigDialog_name')}
-                                    value={name}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        this.setState({ name: e.target.value })
-                                    }
-                                    variant="standard"
-                                    fullWidth
-                                    disabled={fieldsDisabled}
-                                    helperText={
-                                        name === '' && this.state.channelNameSuggestion
-                                            ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${this.state.channelNameSuggestion}`
-                                            : name === ''
-                                              ? I18n.t('channelConfigDialog_defaultName')
-                                              : undefined
-                                    }
-                                    FormHelperTextProps={{ sx: { color: 'text.disabled' } }}
-                                />
-
+                                {this.state.isGridCard && isCustom && longPressEnabled && (
+                                    <Box
+                                        component="fieldset"
+                                        sx={{
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            borderRadius: 1,
+                                            p: 1.5,
+                                            mt: 1,
+                                            flex: 1,
+                                            minWidth: 0,
+                                        }}
+                                    >
+                                        <Tooltip
+                                            title={
+                                                <Box>
+                                                    <Typography
+                                                        variant="caption"
+                                                        display="block"
+                                                    >
+                                                        {I18n.t('channelConfigDialog_longPressHint1')}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="caption"
+                                                        display="block"
+                                                    >
+                                                        {I18n.t('channelConfigDialog_longPressHint2')}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="caption"
+                                                        display="block"
+                                                    >
+                                                        {I18n.t('channelConfigDialog_longPressHint3')}
+                                                    </Typography>
+                                                </Box>
+                                            }
+                                        >
+                                            <Typography
+                                                component="legend"
+                                                variant="caption"
+                                                sx={{ color: 'text.secondary', px: 0.5, cursor: 'help' }}
+                                            >
+                                                {I18n.t('channelConfigDialog_longPressTitle')}
+                                            </Typography>
+                                        </Tooltip>
+                                        {targetPageLongPress == null && (
+                                            <EntitySelector
+                                                label={I18n.t('channelConfigDialog_LongPressChannelId')}
+                                                value={longPress || ''}
+                                                onChange={(value: string): void =>
+                                                    this.setState({ longPress: value || null })
+                                                }
+                                                onCommit={(value: string): void =>
+                                                    this.setState({ longPress: value || null })
+                                                }
+                                                onTransformSelectedId={(id: string) => id.trim()}
+                                                socket={socket}
+                                                theme={theme}
+                                                themeType={themeType ?? 'light'}
+                                                dialogName="longPressConfigDialog"
+                                                filterFunc={(obj: ioBroker.Object) => {
+                                                    return (
+                                                        obj.type === 'state' &&
+                                                        obj.common?.type === 'boolean' &&
+                                                        obj.common?.write === true
+                                                    );
+                                                }}
+                                            />
+                                        )}
+                                        {longPress == null && (
+                                            <FormControl
+                                                variant="standard"
+                                                fullWidth
+                                                disabled={loadingPages}
+                                            >
+                                                <InputLabel>{I18n.t('channelConfigDialog_targetPage')}</InputLabel>
+                                                <Select
+                                                    value={targetPageLongPress || ''}
+                                                    onChange={(event: SelectChangeEvent<string>): void => {
+                                                        this.setState({
+                                                            targetPageLongPress: event.target.value || null,
+                                                        });
+                                                    }}
+                                                    label={I18n.t('channelConfigDialog_targetLongPressPage')}
+                                                >
+                                                    <MenuItem value="">
+                                                        <em>{'---'}</em>
+                                                    </MenuItem>
+                                                    {loadingPages && (
+                                                        <MenuItem
+                                                            disabled
+                                                            value=""
+                                                        >
+                                                            <CircularProgress size={16} />
+                                                        </MenuItem>
+                                                    )}
+                                                    {!loadingPages && availablePages.length === 0 && (
+                                                        <MenuItem
+                                                            disabled
+                                                            value=""
+                                                        >
+                                                            {I18n.t('channelConfigDialog_noPages')}
+                                                        </MenuItem>
+                                                    )}
+                                                    {availablePages.map(page => (
+                                                        <MenuItem
+                                                            key={page}
+                                                            value={page}
+                                                        >
+                                                            {page}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        )}
+                                    </Box>
+                                )}
                                 {/* Zweispaltiger Bereich: Wahr / Unwahr */}
                                 <Box
                                     sx={{
@@ -1273,22 +1813,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     : I18n.t('channelConfigDialog_native')}
                             </Button>
                         )}
-                        {/* Options-Button */}
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={this.handleOptionsOpen}
-                            startIcon={<SettingsIcon />}
-                        >
-                            {I18n.t('channelConfigDialog_options')}
-                        </Button>
+                        {/* Color-Button, wenn nicht im Native-Modus */}
+                        {!internColorFieldsDisabled && (
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={this.handleColorOpen}
+                                startIcon={<PaletteIcon />}
+                            >
+                                {I18n.t('channelConfigDialog_colorSettings')}
+                            </Button>
+                        )}
                         {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
                         <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
                         <Button
                             variant="contained"
                             onClick={this.handleSave}
                             disabled={!canSave || this.state.isSaving}
-                            color={hasDatapointProblems ? 'warning' : 'primary'}
+                            color={hasDatapointProblems || errorSaveDetails ? 'warning' : 'primary'}
                             startIcon={
                                 this.state.isSaving ? (
                                     <CircularProgress
@@ -1300,337 +1842,71 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         >
                             {this.state.isSaving
                                 ? I18n.t('channelConfigDialog_checking')
-                                : hasDatapointProblems
+                                : hasDatapointProblems || errorSaveDetails
                                   ? I18n.t('channelConfigDialog_details')
-                                  : I18n.t('channelConfigDialog_save')}
+                                  : I18n.t('valueEntryDialog_save')}
                         </Button>
                     </DialogActions>
                 </Dialog>
 
-                {/* Options-Dialog */}
-                <Dialog
-                    open={optionsDialogOpen}
-                    onClose={this.handleOptionsClose}
-                    maxWidth="md"
-                    fullWidth
-                >
-                    <DialogTitle>{I18n.t('channelConfigDialog_optionsTitle')}</DialogTitle>
-                    <DialogContent>
-                        {/* useColor Checkbox */}
-                        <Box sx={{ mt: 2, mb: 3 }}>
-                            <FormControl component="fieldset">
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={this.state.useColor}
-                                            onChange={this.handleUseColorChange}
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="body1">
-                                            {I18n.t('channelConfigDialog_useColorLabel')}
-                                        </Typography>
-                                    }
-                                />
-                            </FormControl>
-                        </Box>
+                {/* Color Options Dialog */}
+                <ChannelColorDialog
+                    ref={this.colorDialogRef}
+                    socket={socket}
+                    adapterName={this.props.adapterName}
+                    instance={this.props.instance}
+                    channelRole={this.state.channelRole}
+                    isNavigation={this.state.isNavigation}
+                    roleDefaults={this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation)}
+                    trueColor={this.state.trueColor}
+                    falseColor={this.state.falseColor}
+                    onSave={this.handleColorSave}
+                />
+                {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
+                <ChannelValueDialog
+                    ref={this.valueEntryDialogMain}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    features={{
+                        showUnit: true,
+                        showTextSize: this.state.useValue && !this.state.isGridCard,
+                        showDateFormat: true,
+                        showPreview: false,
+                        readOnlyValueStateId: true,
+                        forceDateFormat: true,
+                        forceUnit: this.state.useValue || this.state.isGridCard,
+                    }}
+                    mainValueFilterFunc={this.buildChannelFilterFunc()}
+                    mainValueTransformId={this.transformChannelId}
+                    onSave={(config: ChannelValueConfig) => {
+                        this.setState({ channelId: config });
+                        void this.checkChannelExists(config.valueStateId);
+                    }}
+                    onDelete={() => this.setState({ channelId: emptyChannelValueConfig() })}
+                />
 
-                        {/* Farbeinstellungen & IconScaleElement - nur sichtbar wenn useColor aktiv */}
-                        {this.state.useColor && (
-                            <Box
-                                sx={{
-                                    mb: 3,
-                                    p: 2,
-                                    border: 1,
-                                    borderColor: 'divider',
-                                    borderRadius: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 2,
-                                }}
-                            >
-                                <Typography
-                                    variant="h6"
-                                    sx={{ mb: 1 }}
-                                >
-                                    {I18n.t('channelConfigDialog_colorSettings')}
-                                </Typography>
-
-                                {/* Farbfelder */}
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    {/* Color Min (falseColor) */}
-                                    <Box sx={{ flex: 1 }}>
-                                        {this.state.falseColor === '' ? (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_colorMin')}
-                                                    value={I18n.t('channelConfigDialog_defaultColor')}
-                                                    disabled
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    onClick={() => this.setState({ falseColor: '#cc0000' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_setColor')}
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    type="color"
-                                                    label={I18n.t('channelConfigDialog_colorMin')}
-                                                    value={this.state.falseColor}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        this.setState({ falseColor: e.target.value })
-                                                    }
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    onClick={() => this.setState({ falseColor: '' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_resetColor')}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Box>
-
-                                    {/* Color Max (trueColor) */}
-                                    <Box sx={{ flex: 1 }}>
-                                        {this.state.trueColor === '' ? (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_colorMax')}
-                                                    value={I18n.t('channelConfigDialog_defaultColor')}
-                                                    disabled
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    onClick={() => this.setState({ trueColor: '#00cc00' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_setColor')}
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    type="color"
-                                                    label={I18n.t('channelConfigDialog_colorMax')}
-                                                    value={this.state.trueColor}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        this.setState({ trueColor: e.target.value })
-                                                    }
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    onClick={() => this.setState({ trueColor: '' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_resetColor')}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Box>
-
-                                    {/* Color Best */}
-                                    <Box sx={{ flex: 1 }}>
-                                        {this.state.colorBest === '' ? (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_colorBest')}
-                                                    value={I18n.t('channelConfigDialog_defaultColor')}
-                                                    disabled
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    onClick={() => this.setState({ colorBest: '#ffaa00' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_setColor')}
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TextField
-                                                    variant="standard"
-                                                    type="color"
-                                                    label={I18n.t('channelConfigDialog_colorBest')}
-                                                    value={this.state.colorBest}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        this.setState({ colorBest: e.target.value })
-                                                    }
-                                                    fullWidth
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    onClick={() => this.setState({ colorBest: '' })}
-                                                    sx={{ mt: 1 }}
-                                                >
-                                                    {I18n.t('channelConfigDialog_resetColor')}
-                                                </Button>
-                                            </>
-                                        )}
-                                    </Box>
-                                </Box>
-
-                                {/* val_min, val_max, val_best */}
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valMin')}
-                                        value={this.state.valMin}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valMin: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valMax')}
-                                        value={this.state.valMax}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valMax: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valBest')}
-                                        value={this.state.valBest}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valBest: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                </Box>
-
-                                {/* Color Mode Select */}
-                                <FormControl
-                                    variant="standard"
-                                    fullWidth
-                                >
-                                    <InputLabel>{I18n.t('channelConfigDialog_colorMode')}</InputLabel>
-                                    <Select
-                                        value={this.state.colorMode}
-                                        onChange={(e: SelectChangeEvent<string>) =>
-                                            this.setState({
-                                                colorMode: e.target.value as typeof this.state.colorMode,
-                                            })
-                                        }
-                                        label={I18n.t('channelConfigDialog_colorMode')}
-                                    >
-                                        <MenuItem value="mixed">
-                                            {I18n.t('channelConfigDialog_colorMode_mixed')}
-                                        </MenuItem>
-                                        <MenuItem value="hue">{I18n.t('channelConfigDialog_colorMode_hue')}</MenuItem>
-                                        <MenuItem value="cie">{I18n.t('channelConfigDialog_colorMode_cie')}</MenuItem>
-                                        <MenuItem value="triGrad">
-                                            {I18n.t('channelConfigDialog_colorMode_triGrad')}
-                                        </MenuItem>
-                                        <MenuItem value="triGradAnchor">
-                                            {I18n.t('channelConfigDialog_colorMode_triGradAnchor')}
-                                        </MenuItem>
-                                        <MenuItem value="quadriGrad">
-                                            {I18n.t('channelConfigDialog_colorMode_quadriGrad')}
-                                        </MenuItem>
-                                        <MenuItem value="quadriGradAnchor">
-                                            {I18n.t('channelConfigDialog_colorMode_quadriGradAnchor')}
-                                        </MenuItem>
-                                    </Select>
-                                </FormControl>
-
-                                {/* Log10 Select */}
-                                <FormControl
-                                    variant="standard"
-                                    fullWidth
-                                >
-                                    <InputLabel>{I18n.t('channelConfigDialog_log10')}</InputLabel>
-                                    <Select
-                                        value={this.state.colorLog10}
-                                        onChange={(e: SelectChangeEvent<string>) =>
-                                            this.setState({
-                                                colorLog10: e.target.value as typeof this.state.colorLog10,
-                                            })
-                                        }
-                                        label={I18n.t('channelConfigDialog_log10')}
-                                    >
-                                        <MenuItem value="">{I18n.t('channelConfigDialog_log10_linear')}</MenuItem>
-                                        <MenuItem value="max">{I18n.t('channelConfigDialog_log10_max')}</MenuItem>
-                                        <MenuItem value="min">{I18n.t('channelConfigDialog_log10_min')}</MenuItem>
-                                    </Select>
-                                </FormControl>
-
-                                {/* valIcon_min und valIcon_max */}
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valIconMin')}
-                                        value={this.state.valIconMin}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valIconMin: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                    <TextField
-                                        variant="standard"
-                                        type="number"
-                                        label={I18n.t('channelConfigDialog_valIconMax')}
-                                        value={this.state.valIconMax}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ valIconMax: Number(e.target.value) })
-                                        }
-                                        fullWidth
-                                    />
-                                </Box>
-                            </Box>
-                        )}
-
-                        {/* useValue Checkbox*/}
-                        <Box>
-                            <FormControl component="fieldset">
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={useValue}
-                                            onChange={this.handleUseValueChange}
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="body1">
-                                            {I18n.t('channelConfigDialog_useValueLabel')}
-                                        </Typography>
-                                    }
-                                />
-                            </FormControl>
-                        </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={this.handleOptionsClose}>{I18n.t('channelConfigDialog_close')}</Button>
-                    </DialogActions>
-                </Dialog>
-
+                {/* Name-Entry-Konfigurationsdialog */}
+                <ChannelValueDialog
+                    ref={this.valueEntryDialogRef}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    features={{
+                        showUnit: false,
+                        showTextSize: false,
+                        showDateFormat: false,
+                        showPreview: true,
+                        readOnlyValueStateId: false,
+                    }}
+                    onSave={(config: ChannelValueConfig) => {
+                        this.setState({ valueEntry: config });
+                        this.valueEntryDialogRef.current?.triggerPreviewFor(config);
+                    }}
+                    onDelete={() => this.setState({ valueEntry: undefined, valueEntryPreview: '' })}
+                    onPreviewUpdate={(text: string) => this.setState({ valueEntryPreview: text })}
+                    valueStateTypes={['string', 'number']}
+                />
                 {/* CheckPageItemConfig Ergebnis-Dialog */}
                 <Dialog
                     open={this.state.checkResultOpen}
