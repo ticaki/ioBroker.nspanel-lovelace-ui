@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    TextField,
-    Box,
-    Typography,
-} from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography } from '@mui/material';
 import { I18n } from '@iobroker/adapter-react-v5';
 
 export interface ChannelMinMaxConfig {
@@ -21,6 +12,8 @@ export interface ChannelMinMaxDialogProps {
     adapterName?: string;
     instance?: number;
     onSave?: (config: ChannelMinMaxConfig) => void;
+    /** Aktuelle Channel-Rolle, bestimmt die Default-Farben */
+    channelRole: string | null;
 }
 
 interface ChannelMinMaxDialogState {

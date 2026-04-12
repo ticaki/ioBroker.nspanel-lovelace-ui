@@ -35,6 +35,7 @@ import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Comp
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
+import SwapVert from '@mui/icons-material/SwapVert';
 import ChannelValueDialog from './ChannelValueDialog';
 import type {
     IconScaleElement,
@@ -51,6 +52,7 @@ import {
     normalizeChannelId,
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelColorDialog from './ChannelColorDialog';
+import ChannelMinMaxDialog from './ChannelMinMaxDialog';
 
 export type { AdminPageItemConfig as PageItemConfig };
 
@@ -155,6 +157,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private valueEntryDialogRef = React.createRef<ChannelValueDialog>();
     private valueEntryDialogMain = React.createRef<ChannelValueDialog>();
     private colorDialogRef = React.createRef<ChannelColorDialog>();
+    private minMaxDialogRef = React.createRef<ChannelMinMaxDialog>();
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -304,6 +307,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             trueColor: this.state.trueColor,
             falseColor: this.state.falseColor,
             scale: this.state.scale,
+        });
+    };
+
+    private handleMinMaxOpen = (): void => {
+        this.minMaxDialogRef.current?.openWith({
+            min: undefined,
+            max: undefined,
         });
     };
 
@@ -1620,6 +1630,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     : I18n.t('channelConfigDialog_native')}
                             </Button>
                         )}
+                        {/* MinMax-Button, wenn nicht im Native-Modus */}
+                        {!nativeMode && !isCustom && (
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={this.handleMinMaxOpen}
+                                startIcon={<SwapVert />}
+                            >
+                                {I18n.t('channelConfigDialog_minMaxSettings')}
+                            </Button>
+                        )}
                         {/* Color-Button, wenn nicht im Native-Modus */}
                         {!nativeMode && !isCustom && (
                             <Button
@@ -1669,6 +1690,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     falseColor={this.state.falseColor}
                     onSave={this.handleColorSave}
                 />
+                {/* Min/Max Options Dialog */}
+                <ChannelMinMaxDialog
+                    ref={this.minMaxDialogRef}
+                    socket={socket}
+                    adapterName={this.props.adapterName}
+                    instance={this.props.instance}
+                    channelRole={this.state.channelRole}
+                />
+
                 {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
                 <ChannelValueDialog
                     ref={this.valueEntryDialogMain}
