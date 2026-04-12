@@ -157,10 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.17.0 (2026-04-12)
 - (tt-tom17) added: ChannelColorDialog
-- (ticaki) added: customItem, longPress, targetPageLongPress
-- (ticaki) feat: ChannelConfigDialog now shows default icon preview and default color swatch (from pageItemDefaults/pageNaviItemDefaults) when no icon/color is explicitly set; PageMenuEditor icon defaults consolidated in shared page-item-defaults file
+- (ticaki) added: customItem, longPress, targetPageLongPress, icons as id, div.
 
 ### 0.16.2 (2026-04-09)
 - (ticaki) fixed: channel duplicate error
