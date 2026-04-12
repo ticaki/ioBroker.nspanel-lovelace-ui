@@ -2700,6 +2700,9 @@ export class ConfigManager extends BaseClass {
                         : obj.common.name[this.library.getLocalLanguage()];
                 if (item.type === 'custom') {
                     const writeable = await this.existsAndWriteableState(`${item.id}`);
+                    if (writeable === null) {
+                        throw new Error(`State ${item.id} does not exist!`);
+                    }
                     if (writeable) {
                         return {
                             messages,
@@ -5764,13 +5767,13 @@ export class ConfigManager extends BaseClass {
         return true;
     }
 
-    async existsAndWriteableState(id: string): Promise<boolean> {
+    async existsAndWriteableState(id: string): Promise<boolean | null> {
         if (this.validStateId(id) === false) {
-            return false;
+            return null;
         }
         const o = await this.statesController?.getObjectAsync(id);
         if (!o || o.type !== 'state') {
-            return false;
+            return null;
         }
         return o.common?.write === true;
     }

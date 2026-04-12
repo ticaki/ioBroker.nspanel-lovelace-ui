@@ -284,6 +284,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkResultPendingConfig: null,
             isSaving: false,
             isGridCard: isGridCard ?? false,
+            hasProblems: false,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -1488,7 +1489,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             <Tooltip
                                                 title={
                                                     errorSaveDetails
-                                                        ? 'Press Details'
+                                                        ? 'Press Button Details'
                                                         : `${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`
                                                 }
                                             >

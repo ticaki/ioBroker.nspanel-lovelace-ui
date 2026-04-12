@@ -2340,6 +2340,9 @@ class ConfigManager extends import_library.BaseClass {
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         if (item.type === "custom") {
           const writeable = await this.existsAndWriteableState(`${item.id}`);
+          if (writeable === null) {
+            throw new Error(`State ${item.id} does not exist!`);
+          }
           if (writeable) {
             return {
               messages,
@@ -4869,11 +4872,11 @@ class ConfigManager extends import_library.BaseClass {
   async existsAndWriteableState(id) {
     var _a, _b;
     if (this.validStateId(id) === false) {
-      return false;
+      return null;
     }
     const o = await ((_a = this.statesController) == null ? void 0 : _a.getObjectAsync(id));
     if (!o || o.type !== "state") {
-      return false;
+      return null;
     }
     return ((_b = o.common) == null ? void 0 : _b.write) === true;
   }
