@@ -1901,7 +1901,7 @@ export class ConfigManager extends BaseClass {
                         },
                         icon: {
                             true: {
-                                value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
                                 color: await this.getIconColor(item.onColor, Color.cold),
                                 text: {
                                     ...iconTextDefaults,
@@ -1909,7 +1909,7 @@ export class ConfigManager extends BaseClass {
                                 },
                             },
                             false: {
-                                value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                value: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                                 color: await this.getIconColor(item.offColor, Color.hot),
                                 text: {
                                     ...iconTextDefaults,
@@ -1956,7 +1956,7 @@ export class ConfigManager extends BaseClass {
                         },
                         icon: {
                             true: {
-                                value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
                                 color: await this.getIconColor(item.onColor, Color.hot),
                                 text: {
                                     ...iconTextDefaults,
@@ -1964,7 +1964,7 @@ export class ConfigManager extends BaseClass {
                                 },
                             },
                             false: {
-                                value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                value: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                                 color: await this.getIconColor(item.offColor, Color.cold),
                                 text: {
                                     ...iconTextDefaults,
@@ -1999,8 +1999,8 @@ export class ConfigManager extends BaseClass {
                             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                         },
                         icon: {
-                            true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                            false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                         },
                         data: {
                             text: text,
@@ -2025,8 +2025,8 @@ export class ConfigManager extends BaseClass {
                             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                         },
                         icon: {
-                            true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                            false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                         },
                         data: {
                             entity1: { value: foundedStates[role].ACTUAL },
@@ -2050,8 +2050,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         entity1: { value: foundedStates[role].ACTUAL },
@@ -2073,8 +2073,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         entity1: { value: foundedStates[role].ACTUAL },
@@ -2132,8 +2132,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         entity1: { value: foundedStates[role].ACTUAL },
@@ -2164,8 +2164,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         entity1: {
@@ -2227,8 +2227,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -2258,7 +2258,7 @@ export class ConfigManager extends BaseClass {
                         icon: {
                             true: {
                                 value: item.icon
-                                    ? { type: 'const', constVal: item.icon }
+                                    ? await this.getFieldAsDataItemConfig(item.icon, true)
                                     : {
                                           type: 'const',
                                           constVal: 'information-outline',
@@ -2270,9 +2270,9 @@ export class ConfigManager extends BaseClass {
                             },
                             false: {
                                 value: item.icon2
-                                    ? { type: 'const', constVal: item.icon2 }
+                                    ? await this.getFieldAsDataItemConfig(item.icon2, true)
                                     : item.icon
-                                      ? { type: 'const', constVal: item.icon }
+                                      ? await this.getFieldAsDataItemConfig(item.icon, true)
                                       : {
                                             type: 'const',
                                             constVal: 'information-off-outline',
@@ -2332,8 +2332,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         text1: text1,
@@ -2361,8 +2361,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         entity1: {
@@ -2388,8 +2388,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         text: text,
@@ -2420,8 +2420,8 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                     },
                     icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
                         entity1: {
@@ -3779,7 +3779,7 @@ export class ConfigManager extends BaseClass {
                                 icon: {
                                     true: {
                                         value: item.icon
-                                            ? await this.getFieldAsDataItemConfig(item.icon)
+                                            ? await this.getFieldAsDataItemConfig(item.icon, true)
                                             : (await this.existsState(`${item.id}.USERICON`))
                                               ? { type: 'triggered', dp: `${item.id}.USERICON` }
                                               : { type: 'const', constVal: pageItemDefaults.info.iconOn },
@@ -3859,7 +3859,7 @@ export class ConfigManager extends BaseClass {
                                 scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                             },
                             icon: {
-                                true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
                                 false: icontemp ? { type: 'const', constVal: icontemp } : undefined,
                             },
                             data: {
@@ -3953,8 +3953,8 @@ export class ConfigManager extends BaseClass {
                                 scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
                             },
                             icon: {
-                                true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                                false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                                false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                             }, */
                             data: {
                                 entityInSel: {
@@ -3994,8 +3994,8 @@ export class ConfigManager extends BaseClass {
                             type: 'shutter',
                             role: '',
                             icon: {
-                                true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                                false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                                false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                             },
                             data: {
                                 icon: {
@@ -4073,7 +4073,7 @@ export class ConfigManager extends BaseClass {
                                 icon: {
                                     true: {
                                         value: item.icon
-                                            ? { type: 'const', constVal: item.icon }
+                                            ? await this.getFieldAsDataItemConfig(item.icon, true)
                                             : { type: 'const', constVal: pageItemDefaults.slider.iconOn },
                                         text: {
                                             ...iconTextDefaults,
@@ -4086,7 +4086,9 @@ export class ConfigManager extends BaseClass {
                                     },
                                     false: item.icon2
                                         ? {
-                                              value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                              value: item.icon2
+                                                  ? await this.getFieldAsDataItemConfig(item.icon2, true)
+                                                  : undefined,
                                               text: {
                                                   ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
@@ -4469,7 +4471,7 @@ export class ConfigManager extends BaseClass {
                                 icon: {
                                     true: {
                                         value: item.icon
-                                            ? { type: 'const', constVal: item.icon }
+                                            ? await this.getFieldAsDataItemConfig(item.icon, true)
                                             : { type: 'const', constVal: defaultIconOn },
                                         color: await this.getIconColor(item.onColor, defaultColorOn),
                                     },

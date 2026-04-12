@@ -1628,7 +1628,7 @@ class ConfigManager extends import_library.BaseClass {
             },
             icon: {
               true: {
-                value: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
                 color: await this.getIconColor(item.onColor, import_Color.Color.cold),
                 text: {
                   ...iconTextDefaults,
@@ -1636,7 +1636,7 @@ class ConfigManager extends import_library.BaseClass {
                 }
               },
               false: {
-                value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
+                value: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0,
                 color: await this.getIconColor(item.offColor, import_Color.Color.hot),
                 text: {
                   ...iconTextDefaults,
@@ -1677,7 +1677,7 @@ class ConfigManager extends import_library.BaseClass {
             },
             icon: {
               true: {
-                value: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
                 color: await this.getIconColor(item.onColor, import_Color.Color.hot),
                 text: {
                   ...iconTextDefaults,
@@ -1685,7 +1685,7 @@ class ConfigManager extends import_library.BaseClass {
                 }
               },
               false: {
-                value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
+                value: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0,
                 color: await this.getIconColor(item.offColor, import_Color.Color.cold),
                 text: {
                   ...iconTextDefaults,
@@ -1718,8 +1718,8 @@ class ConfigManager extends import_library.BaseClass {
               scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
             },
             icon: {
-              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+              false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
             },
             data: {
               text,
@@ -1743,8 +1743,8 @@ class ConfigManager extends import_library.BaseClass {
               scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
             },
             icon: {
-              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+              false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
             },
             data: {
               entity1: { value: foundedStates[role].ACTUAL },
@@ -1767,8 +1767,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             entity1: { value: foundedStates[role].ACTUAL },
@@ -1790,8 +1790,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             entity1: { value: foundedStates[role].ACTUAL },
@@ -1846,8 +1846,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             entity1: { value: foundedStates[role].ACTUAL },
@@ -1877,8 +1877,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             entity1: {
@@ -1934,8 +1934,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -1964,7 +1964,7 @@ class ConfigManager extends import_library.BaseClass {
           data: {
             icon: {
               true: {
-                value: item.icon ? { type: "const", constVal: item.icon } : {
+                value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : {
                   type: "const",
                   constVal: "information-outline"
                 },
@@ -1974,7 +1974,7 @@ class ConfigManager extends import_library.BaseClass {
                 }
               },
               false: {
-                value: item.icon2 ? { type: "const", constVal: item.icon2 } : item.icon ? { type: "const", constVal: item.icon } : {
+                value: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : {
                   type: "const",
                   constVal: "information-off-outline"
                 },
@@ -2022,8 +2022,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             text1,
@@ -2050,8 +2050,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             entity1: {
@@ -2076,8 +2076,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             text,
@@ -2106,8 +2106,8 @@ class ConfigManager extends import_library.BaseClass {
             scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
           },
           data: {
             entity1: {
@@ -3219,7 +3219,7 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: import_page_item_defaults.pageItemDefaults.info.iconOn },
+                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : await this.existsState(`${item.id}.USERICON`) ? { type: "triggered", dp: `${item.id}.USERICON` } : { type: "const", constVal: import_page_item_defaults.pageItemDefaults.info.iconOn },
                     color: item.onColor ? await this.getIconColor(item.onColor, import_Color.Color.good) : await this.existsState(`${item.id}.COLORDEC`) ? { type: "triggered", dp: `${item.id}.COLORDEC` } : { type: "const", constVal: import_Color.Color[import_page_item_defaults.pageItemDefaults.info.colorOn] },
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       ...iconTextDefaults,
@@ -3270,7 +3270,7 @@ class ConfigManager extends import_library.BaseClass {
                 scale: globals.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
               },
               icon: {
-                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
                 false: icontemp ? { type: "const", constVal: icontemp } : void 0
               },
               data: {
@@ -3348,8 +3348,8 @@ class ConfigManager extends import_library.BaseClass {
                   scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
               },
               icon: {
-                  true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                  false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                  true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                  false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
               }, */
               data: {
                 entityInSel: {
@@ -3388,8 +3388,8 @@ class ConfigManager extends import_library.BaseClass {
               type: "shutter",
               role: "",
               icon: {
-                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+                false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
               },
               data: {
                 icon: {
@@ -3457,7 +3457,7 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: import_page_item_defaults.pageItemDefaults.slider.iconOn },
+                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : { type: "const", constVal: import_page_item_defaults.pageItemDefaults.slider.iconOn },
                     text: {
                       ...iconTextDefaults,
                       value: foundedStates[role].ACTUAL
@@ -3468,7 +3468,7 @@ class ConfigManager extends import_library.BaseClass {
                     )
                   },
                   false: item.icon2 ? {
-                    value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
+                    value: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0,
                     text: {
                       ...iconTextDefaults,
                       value: foundedStates[role].ACTUAL
@@ -3733,7 +3733,7 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 icon: {
                   true: {
-                    value: item.icon ? { type: "const", constVal: item.icon } : { type: "const", constVal: defaultIconOn },
+                    value: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : { type: "const", constVal: defaultIconOn },
                     color: await this.getIconColor(item.onColor, defaultColorOn)
                   },
                   false: {

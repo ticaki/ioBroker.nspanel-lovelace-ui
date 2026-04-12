@@ -66,8 +66,12 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                         filterOptions={opts => opts}
                         getOptionLabel={option => (typeof option === 'string' ? option : option.name)}
                         value={
-                            // value should be an object from options or null
-                            icons.find(opt => opt.name === this.state.iconValue) || null
+                            // For known icons return the object; for free-text strings return the
+                            // string itself (freeSolo); for empty return null.
+                            icons.find(opt => opt.name === this.state.iconValue) ||
+                            (this.state.iconValue && !icons.find(opt => opt.name === this.state.iconValue)
+                                ? this.state.iconValue
+                                : null)
                         }
                         inputValue={this.state.inputValue}
                         onInputChange={(_, newInputValue) => {
@@ -148,7 +152,17 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                             return opt.name === vName;
                         }}
                         clearOnBlur={false}
-                        freeSolo={false}
+                        freeSolo={true}
+                        onBlur={() => {
+                            const currentInput = this.state.inputValue;
+                            if (currentInput !== (this.state.iconValue ?? '')) {
+                                this.setState({
+                                    iconValue: currentInput || null,
+                                    filteredIcons: this.filterIcons(this.state.icons, currentInput),
+                                });
+                                void this.onChange(this.props.attr!, currentInput);
+                            }
+                        }}
                         disableClearable={false}
                         style={{ width: '100%' }}
                     />
