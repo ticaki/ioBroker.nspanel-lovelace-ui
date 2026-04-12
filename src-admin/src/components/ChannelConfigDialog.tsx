@@ -1664,7 +1664,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         </FormControl>
                                     </Box>
                                 )}
-                                {this.state.isGridCard && isCustom && longPressEnabled && (
+                                {this.state.isGridCard && longPressEnabled && (
                                     <Box
                                         component="fieldset"
                                         sx={{

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.0",
+    "version": "0.17.1",
     "news": {
+      "0.17.1": {
+        "en": "bugfix: longpress",
+        "de": "bugfix: longpress",
+        "ru": "исполнитель: longpress",
+        "pt": "correção de erros: longpress",
+        "nl": "bugfix: longpress",
+        "fr": "bugfix: longpress",
+        "it": "bugfix: longpress",
+        "es": "bugfix: longpress",
+        "pl": "bugfix: długotrwale",
+        "uk": "javascript licenses api веб-сайт",
+        "zh-cn": "错误修正: 长压"
+      },
       "0.17.0": {
         "en": "added: ChannelColorDialog\nadded: customItem, longPress, targetPageLongPress, icons as id, div.",
         "de": "hinzugefügt: ChannelColorDialog\nhinzugefügt: customItem, longPress, targetPageLongPress, icons as id, div.",
@@ -80,19 +93,6 @@
         "pl": "dodano: okno dialogowe wiadomości, gdy instalacja Berry nie powiodła się z powodu braku dostępu do internetu na panelu\ndodano: ulepszone wykrywanie trybu offline dla paneli\nulepszone: buforowanie informacji o wersji (15–60 min) w celu zmniejszenia liczby zewnętrznych wywołań API\nnaprawiono: karta informacyjna panelu wyświetla teraz etykiety stanów w poprawnym języku systemowym",
         "uk": "додано: діалог повідомлення, коли встановлення Berry не вдається через відсутність доступу до інтернету на панелі\nдодано: покращене визначення режиму офлайн для панелей\nпокращено: кешування інформації про версію (15–60 хв.) для зменшення зовнішніх викликів API\nвиправлено: вкладка інформації про панель тепер відображає мітки станів на правильній мові системи",
         "zh-cn": "新增: Berry 安装因面板缺少网络连接而失败时显示消息对话框\n新增: 改进面板的离线检测\n改进: 版本信息缓存（15–60分钟）以减少外部API调用\n修复: 管理面板信息标签现在以正确的系统语言显示状态标签"
-      },
-      "0.15.1": {
-        "en": "added: internet access check for Tasmota device before berry installation",
-        "de": "hinzugefügt: Internetzugangscheck für Tasmota Gerät vor Berryinstallation",
-        "ru": "добавлено: проверка доступа к интернету для устройства Tasmota перед установкой Berry",
-        "pt": "adicionado: verificação de acesso à internet para dispositivo Tasmota antes da instalação do Berry",
-        "nl": "toegevoegd: controle op internettoegang voor Tasmota-apparaat vóór de Berry-installatie",
-        "fr": "ajouté : vérification de l'accès internet pour l'appareil Tasmota avant l'installation de Berry",
-        "it": "aggiunto: verifica dell'accesso a internet per il dispositivo Tasmota prima dell'installazione di Berry",
-        "es": "añadido: comprobación de acceso a internet para el dispositivo Tasmota antes de la instalación de Berry",
-        "pl": "dodano: sprawdzenie dostępu do internetu dla urządzenia Tasmota przed instalacją Berry",
-        "uk": "додано: перевірка доступу до інтернету для пристрою Tasmota перед встановленням Berry",
-        "zh-cn": "新增: 在安装Berry之前检查Tasmota设备的网络访问权限"
       }
     },
     "titleLang": {

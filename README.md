@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.17.1 (2026-04-12)
+- (ticaki) bugfix: longpress
+
 ### 0.17.0 (2026-04-12)
 - (tt-tom17) added: ChannelColorDialog
 - (ticaki) added: customItem, longPress, targetPageLongPress, icons as id, div.
