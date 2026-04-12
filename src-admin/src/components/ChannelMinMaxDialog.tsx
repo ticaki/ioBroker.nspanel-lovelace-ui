@@ -3,8 +3,8 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, B
 import { I18n } from '@iobroker/adapter-react-v5';
 
 export interface ChannelMinMaxConfig {
-    min?: number;
-    max?: number;
+    valIconMin?: number;
+    valIconMax?: number;
 }
 
 export interface ChannelMinMaxDialogProps {
@@ -19,9 +19,9 @@ export interface ChannelMinMaxDialogProps {
 interface ChannelMinMaxDialogState {
     open: boolean;
     /** Minimalwert */
-    min: number | undefined;
+    valIconMin: number | undefined;
     /** Maximalwert */
-    max: number | undefined;
+    valIconMax: number | undefined;
 }
 
 /**
@@ -32,16 +32,16 @@ class ChannelMinMaxDialog extends React.Component<ChannelMinMaxDialogProps, Chan
         super(props);
         this.state = {
             open: false,
-            min: undefined,
-            max: undefined,
+            valIconMin: undefined,
+            valIconMax: undefined,
         };
     }
 
     private handleSave = (): void => {
-        const { min, max } = this.state;
+        const { valIconMin, valIconMax } = this.state;
         this.props.onSave?.({
-            min,
-            max,
+            valIconMin,
+            valIconMax,
         });
         this.setState({ open: false });
     };
@@ -58,13 +58,13 @@ class ChannelMinMaxDialog extends React.Component<ChannelMinMaxDialogProps, Chan
     public openWith(config?: Partial<ChannelMinMaxConfig>): void {
         this.setState({
             open: true,
-            min: config?.min,
-            max: config?.max,
+            valIconMin: config?.valIconMin,
+            valIconMax: config?.valIconMax,
         });
     }
 
     render(): React.JSX.Element {
-        const { open, min, max } = this.state;
+        const { open, valIconMin, valIconMax } = this.state;
 
         return (
             <Dialog
@@ -100,29 +100,26 @@ class ChannelMinMaxDialog extends React.Component<ChannelMinMaxDialogProps, Chan
                         </Typography>
 
                         {/* Min/Max Felder */}
+                        {/* valIcon_min und valIcon_max */}
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField
                                 variant="standard"
                                 type="number"
-                                label={I18n.t('channelConfigMinMax_min')}
-                                value={min ?? ''}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const v = e.target.value;
-                                    this.setState({ min: v === '' ? undefined : Number(v) });
-                                }}
-                                placeholder={I18n.t('channelConfigMinMax_minPlaceholder')}
+                                label={I18n.t('channelConfigColor_valIconMin')}
+                                value={valIconMin}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    this.setState({ valIconMin: Number(e.target.value) })
+                                }
                                 fullWidth
                             />
                             <TextField
                                 variant="standard"
                                 type="number"
-                                label={I18n.t('channelConfigMinMax_max')}
-                                value={max ?? ''}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const v = e.target.value;
-                                    this.setState({ max: v === '' ? undefined : Number(v) });
-                                }}
-                                placeholder={I18n.t('channelConfigMinMax_maxPlaceholder')}
+                                label={I18n.t('channelConfigColor_valIconMax')}
+                                value={valIconMax}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    this.setState({ valIconMax: Number(e.target.value) })
+                                }
                                 fullWidth
                             />
                         </Box>
