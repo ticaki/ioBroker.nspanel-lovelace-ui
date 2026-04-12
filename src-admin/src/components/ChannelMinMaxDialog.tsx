@@ -1,11 +1,7 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography } from '@mui/material';
 import { I18n } from '@iobroker/adapter-react-v5';
-
-export interface ChannelMinMaxConfig {
-    valIconMin?: number;
-    valIconMax?: number;
-}
+import type { ChannelMinMaxConfig } from '../../../src/lib/types/adminShareConfig';
 
 export interface ChannelMinMaxDialogProps {
     socket: any;
@@ -19,9 +15,11 @@ export interface ChannelMinMaxDialogProps {
 interface ChannelMinMaxDialogState {
     open: boolean;
     /** Minimalwert */
-    valIconMin: number | undefined;
+    valIcon_min: number;
     /** Maximalwert */
-    valIconMax: number | undefined;
+    valIcon_max: number;
+    /** Optionaler bester Wert */
+    valIcon_best?: number;
 }
 
 /**
@@ -32,16 +30,18 @@ class ChannelMinMaxDialog extends React.Component<ChannelMinMaxDialogProps, Chan
         super(props);
         this.state = {
             open: false,
-            valIconMin: undefined,
-            valIconMax: undefined,
+            valIcon_min: 0,
+            valIcon_max: 100,
+            valIcon_best: undefined,
         };
     }
 
     private handleSave = (): void => {
-        const { valIconMin, valIconMax } = this.state;
+        const { valIcon_min, valIcon_max, valIcon_best } = this.state;
         this.props.onSave?.({
-            valIconMin,
-            valIconMax,
+            valIcon_min,
+            valIcon_max,
+            valIcon_best,
         });
         this.setState({ open: false });
     };
@@ -58,13 +58,14 @@ class ChannelMinMaxDialog extends React.Component<ChannelMinMaxDialogProps, Chan
     public openWith(config?: Partial<ChannelMinMaxConfig>): void {
         this.setState({
             open: true,
-            valIconMin: config?.valIconMin,
-            valIconMax: config?.valIconMax,
+            valIcon_min: config?.valIcon_min ?? 0,
+            valIcon_max: config?.valIcon_max ?? 100,
+            valIcon_best: config?.valIcon_best,
         });
     }
 
     render(): React.JSX.Element {
-        const { open, valIconMin, valIconMax } = this.state;
+        const { open, valIcon_min, valIcon_max, valIcon_best } = this.state;
 
         return (
             <Dialog
@@ -106,9 +107,9 @@ class ChannelMinMaxDialog extends React.Component<ChannelMinMaxDialogProps, Chan
                                 variant="standard"
                                 type="number"
                                 label={I18n.t('channelConfigColor_valIconMin')}
-                                value={valIconMin}
+                                value={valIcon_min}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    this.setState({ valIconMin: Number(e.target.value) })
+                                    this.setState({ valIcon_min: Number(e.target.value) })
                                 }
                                 fullWidth
                             />
@@ -116,9 +117,19 @@ class ChannelMinMaxDialog extends React.Component<ChannelMinMaxDialogProps, Chan
                                 variant="standard"
                                 type="number"
                                 label={I18n.t('channelConfigColor_valIconMax')}
-                                value={valIconMax}
+                                value={valIcon_max}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    this.setState({ valIconMax: Number(e.target.value) })
+                                    this.setState({ valIcon_max: Number(e.target.value) })
+                                }
+                                fullWidth
+                            />
+                            <TextField
+                                variant="standard"
+                                type="number"
+                                label={I18n.t('channelConfigColor_valIconBest')}
+                                value={valIcon_best}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    this.setState({ valIcon_best: Number(e.target.value) })
                                 }
                                 fullWidth
                             />

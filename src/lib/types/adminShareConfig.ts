@@ -1027,3 +1027,8 @@ export type IconColorElement = {
      */
     log10?: 'max' | 'min';
 };
+
+export type ChannelMinMaxConfig = {
+    valValueMin?: number;
+    valValueMax?: number;
+} & IconSelectElement;

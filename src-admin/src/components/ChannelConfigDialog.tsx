@@ -312,8 +312,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleMinMaxOpen = (): void => {
         this.minMaxDialogRef.current?.openWith({
-            valIconMin: undefined,
-            valIconMax: undefined,
+            valIcon_min: 0,
+            valIcon_max: 100,
         });
     };
 
