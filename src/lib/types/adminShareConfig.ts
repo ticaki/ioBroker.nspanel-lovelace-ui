@@ -1073,4 +1073,4 @@ export type PageBaseItemSimple = {
     alwaysOnDisplay?: boolean;
 };
 
-export type Beispiel = Pick<PageBaseItemSimple, 'minValue' | 'maxValue' | 'stepValue'>;
+export type ChannelMinMaxConfig = Pick<PageBaseItemSimple, 'minValue' | 'maxValue'> & IconSelectElement;
