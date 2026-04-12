@@ -23,6 +23,7 @@ export interface PageItemRoleDefaults {
      * Key name of the Color class property used as the "off" fallback color.
      */
     colorOff: string;
+    type: 'boolean' | 'number' | 'mixed';
 }
 
 export const pageItemDefaults = {
@@ -335,6 +336,7 @@ export const pageNaviItemDefaults = {
         iconOff: 'gesture-tap-button',
         colorOn: 'activated',
         colorOff: 'deactivated',
+        type: 'boolean',
     },
 
     // ── On/Off switch ─────────────────────────────────────────────────────────
@@ -479,6 +481,7 @@ export const pageNaviItemDefaults = {
         colorOn: 'open',
         colorOff: 'close',
         template: 'text.shutter.navigation',
+        type: 'number',
     },
 
     // ── Select ────────────────────────────────────────────────────────────────

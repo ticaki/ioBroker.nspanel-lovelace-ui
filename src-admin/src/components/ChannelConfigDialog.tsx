@@ -140,6 +140,7 @@ interface ChannelConfigDialogState {
     adapterColorTheme: number;
     scale?: IconScaleElement;
     hasProblems: boolean;
+    colorFieldDisabled: boolean;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -210,6 +211,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             valueEntry: undefined,
             valueEntryPreview: '',
             useValue: false,
+            colorFieldDisabled: false,
             adapterColorTheme: 0,
         };
     }
@@ -283,6 +285,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkResultIsError: false,
             checkResultPendingConfig: null,
             isSaving: false,
+            colorFieldDisabled: false,
             isGridCard: isGridCard ?? false,
             hasProblems: false,
         });
@@ -739,6 +742,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.setState({ checkingDatapoints: true });
         try {
             const prefix = `${channelId}.`;
+            let colorFieldDisabled = true;
             const allObjects: Record<string, ioBroker.Object> | null | undefined =
                 await socket.getObjectViewSystem('state');
             if (isCustom) {
@@ -756,6 +760,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         datapointDuplicates: [],
                         checkingDatapoints: false,
                         hasProblems: true,
+                        colorFieldDisabled,
                     });
                     return;
                 }
@@ -766,10 +771,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     datapointDuplicates: [],
                     checkingDatapoints: false,
                     hasProblems: false,
+                    colorFieldDisabled,
                 });
                 return;
             }
 
+            if (this.state.isNavigation) {
+                const defaults = getPageNaviItemDefaultsByRole(role);
+                colorFieldDisabled = defaults?.type !== 'number' && defaults?.type !== 'mixed';
+            } else {
+                const defaults = getPageItemDefaultsByRole(role);
+                colorFieldDisabled = defaults?.type !== 'number' && defaults?.type !== 'mixed';
+            }
             // Alle direkten Kind-States (nur eine Ebene tiefer) mit ihrem Key-Namen
             const childStates: { key: string; common: ioBroker.StateCommon }[] = [];
             for (const [id, stateObj] of Object.entries(allObjects ?? {})) {
@@ -902,6 +915,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 datapointDuplicates: duplicates,
                 checkingDatapoints: false,
                 hasProblems: false,
+                colorFieldDisabled,
             });
         } catch (e) {
             console.error('[ChannelConfigDialog] checkDatapoints failed for', channelId, e);
@@ -1269,6 +1283,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeJson,
             nativeJsonValid,
             useValue,
+            colorFieldDisabled,
         } = this.state;
 
         const hasDatapointProblems =
@@ -1281,18 +1296,20 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const expertMode = this.props.expertMode === true;
         const channelIdValid = channelId.valueStateId !== '';
         const standardCanSave =
-            channelIdValid &&
-            ((isNavigation && targetPage !== '') || (!isNavigation && channelExists === true && !checkingChannel));
+            (isNavigation && targetPage !== '') ||
+            (!isNavigation && channelIdValid && channelExists === true && !checkingChannel);
         const canSave = nativeMode ? nativeJsonValid : standardCanSave;
 
-        const errorSaveDetails = (!roleIsValid && !isCustom) || this.state.hasProblems;
+        const errorSaveDetails =
+            !(isNavigation && !channelIdValid) && ((!roleIsValid && !isCustom) || this.state.hasProblems);
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
+        const internColorFieldsDisabled = !channelIdValid || isCustom || nativeMode || colorFieldDisabled;
         const longPressEnabled = channelRole === 'button' || isCustom || isNavigation;
 
         console.log(
-            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}`,
+            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
         );
         // Untertitel neben dem Titel
         const titleSuffix =
@@ -1797,7 +1814,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             </Button>
                         )}
                         {/* Color-Button, wenn nicht im Native-Modus */}
-                        {!nativeMode && !isCustom && (
+                        {!internColorFieldsDisabled && (
                             <Button
                                 size="small"
                                 variant="outlined"

@@ -295,7 +295,8 @@ const pageNaviItemDefaults = {
     iconOn: "gesture-tap-button",
     iconOff: "gesture-tap-button",
     colorOn: "activated",
-    colorOff: "deactivated"
+    colorOff: "deactivated",
+    type: "boolean"
   },
   // ── On/Off switch ─────────────────────────────────────────────────────────
   socket: {
@@ -425,7 +426,8 @@ const pageNaviItemDefaults = {
     iconOff: "window-shutter",
     colorOn: "open",
     colorOff: "close",
-    template: "text.shutter.navigation"
+    template: "text.shutter.navigation",
+    type: "number"
   },
   // ── Select ────────────────────────────────────────────────────────────────
   /** Icons from template 'button.select'. */
