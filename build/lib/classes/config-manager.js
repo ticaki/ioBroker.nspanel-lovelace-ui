@@ -36,7 +36,6 @@ var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_page_item_defaults = require("../const/page-item-defaults");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
-var import_pageChart = require("../pages/pageChart");
 var import_readme = require("../tools/readme");
 var globals = __toESM(require("../types/function-and-const"));
 var import_function_and_const = require("../types/function-and-const");
@@ -711,36 +710,6 @@ class ConfigManager extends import_library.BaseClass {
           } catch (error) {
             messages.push(
               `Configuration error in page power ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
-            );
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-        }
-        if (page.type === "cardChart" || page.type === "cardLChart") {
-          if (!Array.isArray(this.adapter.config.pageChartdata)) {
-            messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageChartdata.findIndex(
-            (item) => item.pageName === page.uniqueName
-          );
-          if (index === -1) {
-            messages.push(`No pageChartdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          try {
-            ({ gridItem, messages } = await import_pageChart.PageChart.getChartPageConfig(
-              this,
-              index,
-              gridItem,
-              messages,
-              page
-            ));
-          } catch (error) {
-            messages.push(
-              `Configuration error in page chart ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
             );
             this.log.warn(messages[messages.length - 1]);
             continue;

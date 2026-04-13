@@ -246,6 +246,37 @@ export type QREntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
+// Chart Entry for pageChart configuration
+export type ChartEntry = {
+    card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
+    uniqueName: string;
+    headline?: string;
+    chartColor?: string;
+    txtLabelYAchse?: string;
+
+    selChartType?: 'cardChart' | 'cardLChart';
+    selInstanceDataSource?: number; // 0 = script, 1 = DB adapter
+    // oldScriptVersion
+    setStateForTicks?: string;
+    setStateForValues?: string;
+    // db Version
+    selInstance?: string; // Instance ID for DB adapter
+    setStateForDB?: string;
+    rangeHours?: number;
+    maxXAxisTicks?: number;
+    factorCardChart?: number; // 1, 10, 100, 1000
+    maxXAxisLabels?: number;
+} & PageConfigBaseFields;
+
+export type ChartDetailsExternal = {
+    instance: string; // Instance ID for DB adapter
+    state: string;
+    hours?: number;
+    maxTicks?: number;
+    factor?: number; // 1, 10, 100, 1000
+    maxLabels?: number;
+};
+
 export type TrashItem = {
     textTrash: string;
     customTrash: string;
@@ -277,8 +308,8 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry;
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry;
+export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | ChartEntry | MenuEntry;
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | ChartEntry | MenuEntry;
 
 export type PanelStatus =
     | 'offline'

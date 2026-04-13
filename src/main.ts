@@ -170,6 +170,33 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             }
 
+            if (native.pageChartdata) {
+                native.pageChartdata.forEach((page: oldChartType) => {
+                    const temp: PageConfig = {
+                        card: 'cardChart',
+                        uniqueName: page.pageName,
+                        headline: page.headline,
+                        hidden: page.hiddenByTrigger || false,
+                        chartColor: page.chart_color || '',
+                        selChartType: page.selChartType || 'cardChart',
+                        selInstanceDataSource: page.selInstanceDataSource || 0,
+                        selInstance: page.selInstance || '',
+                        setStateForTicks: page.setStateForTicks || '',
+                        setStateForValues: page.setStateForValues || '',
+                        setStateForDB: page.setStateForDB || '',
+                        txtLabelYAchse: page.txtlabelYAchse || '',
+                        rangeHours: page.rangeHours || 24,
+                        maxXAxisTicks: page.maxXAxisTicks || 2,
+                        factorCardChart: page.factorCardChart || 1,
+                        maxXAxisLabels: page.maxXAxisLabels || 4,
+                    };
+
+                    native.pageConfig.push(temp);
+                });
+                //delete native.pageChartdata;
+                change = true;
+            }
+
             if (change) {
                 const uniquePages = new Map();
                 for (const p of native.pageConfig ?? []) {

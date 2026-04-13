@@ -666,7 +666,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     componentDidMount(): void {
         this.checkAlive();
         this.fetchNavigation();
-        // Autosave-Intervall starten
+        // Autosave-Interval starten
         this.autosaveInterval = setInterval(() => {
             if (this.state.dirty) {
                 void this.saveNavigation();

@@ -151,6 +151,47 @@ export class AdminConfiguration extends BaseClass {
                     this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
                     break;
                 }
+
+                case 'cardChart': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    const dbData: ShareConfig.ChartDetailsExternal | undefined =
+                        entry.selInstanceDataSource === 1
+                            ? {
+                                  instance: entry.selInstance || '',
+                                  state: entry.setStateForDB || '',
+                                  hours: entry.rangeHours ?? 24,
+                                  maxTicks: entry.maxXAxisTicks ?? 2,
+                                  factor: entry.factorCardChart ?? 1,
+                                  maxLabels: entry.maxXAxisLabels ?? 4,
+                              }
+                            : undefined;
+                    newPage = {
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn,
+                        dpInit: '',
+                        config: {
+                            card: entry.selChartType || 'cardChart',
+                            data: {
+                                headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
+                                text: { type: 'const', constVal: entry.txtLabelYAchse || '' },
+                                color: { true: { color: { type: 'const', constVal: entry.chartColor || '#FFFF00' } } },
+                                ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
+                                value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
+                                dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
+                                setStateForDB:
+                                    entry.selInstanceDataSource === 1 && entry.setStateForDB
+                                        ? { type: 'triggered', dp: entry.setStateForDB }
+                                        : undefined,
+                            },
+                        },
+                        pageItems: [],
+                    };
+                    break;
+                }
+
                 case 'cardGrid':
                 case 'cardGrid2':
                 case 'cardGrid3': {
