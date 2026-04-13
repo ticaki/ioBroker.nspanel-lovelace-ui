@@ -296,7 +296,8 @@
         "colMediaTitleOff": "#808080",
         "colMediaOnOffColor": "#ffffff"
       }
-    ]
+    ],
+    "adminOverridesScriptPages": false
   },
   "objects": [],
   "instanceObjects": [

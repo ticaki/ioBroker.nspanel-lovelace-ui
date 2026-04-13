@@ -7,7 +7,7 @@ declare global {
             versionJsonUrl: string;
             berryUrl: string;
             tftUrl: string;
-
+            adminOverridesScriptPages: boolean;
             rememberLastSite: boolean
             testCase: boolean;
             mqttServer: boolean;
