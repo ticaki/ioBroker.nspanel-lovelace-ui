@@ -91,7 +91,45 @@ class NavigationAssignmentPanel extends ConfigGeneric<
   // ... rest of the class omitted for brevity ...
 }
 ```
-
+8. MUI slotProps API (Material-UI v6+)
+  - Use the new `slotProps` API instead of deprecated component-specific props.
+  - **TextField input styling**: Use `slotProps={{ input: { ... } }}` instead of `InputProps={{ ... }}`
+    ```tsx
+    // ✅ Correct
+    <TextField
+        slotProps={{
+            input: {
+                sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+            },
+        }}
+    />
+    
+    // ❌ Deprecated
+    <TextField
+        InputProps={{
+            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+        }}
+    />
+    ```
+  - **TextField helper text styling**: Use `slotProps={{ formHelperText: { ... } }}` instead of `FormHelperTextProps={{ ... }}`
+    ```tsx
+    // ✅ Correct
+    <TextField
+        helperText="Hilfetext"
+        slotProps={{
+            formHelperText: {
+                sx: { color: 'text.disabled' },
+            },
+        }}
+    />
+    
+    // ❌ Deprecated
+    <TextField
+        helperText="Hilfetext"
+        FormHelperTextProps={{ sx: { color: 'text.disabled' } }}
+    />
+    ```
+    
 Notes
 - Translations that affect the Admin/React code (everything under `./src-admin`) belong in the corresponding admin UI i18n files: `./src-admin/src/i18n/*` (not in `admin/i18n`).
 - These rules are additive to the general repository guidelines above. When in doubt prefer explicit type-safety and full i18n coverage.

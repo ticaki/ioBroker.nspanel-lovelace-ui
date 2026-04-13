@@ -149,7 +149,7 @@ class AdminConfiguration extends import_library.BaseClass {
             entry.alwaysOn = "none";
           }
           newPage = dataForcardTrash(entry);
-          this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
+          this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
           break;
         }
         case "cardChart": {
@@ -214,7 +214,9 @@ class AdminConfiguration extends import_library.BaseClass {
               }
               start = true;
               if (!item) {
-                item = { channelId: "empty" };
+                item = { channelId: ShareConfig.emptyChannelValueConfig("empty") };
+              } else {
+                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
               }
               const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
@@ -260,7 +262,9 @@ class AdminConfiguration extends import_library.BaseClass {
               }
               start = true;
               if (!item) {
-                item = { channelId: "empty" };
+                item = { channelId: ShareConfig.emptyChannelValueConfig("empty") };
+              } else {
+                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
               }
               const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
@@ -284,9 +288,30 @@ class AdminConfiguration extends import_library.BaseClass {
           continue;
         }
       }
-      if (option.pages.find((a) => a.uniqueID === newPage.uniqueID)) {
-        this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
-        continue;
+      if (!this.adapter.config.adminOverridesScriptPages) {
+        if (option.pages.find((a) => a.uniqueID === newPage.uniqueID)) {
+          this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+          continue;
+        }
+      } else {
+        option.pages = option.pages.filter((a) => a.uniqueID !== newPage.uniqueID);
+        option.navigation = option.navigation.filter(
+          (b) => b && b.name !== newPage.uniqueID
+        );
+        option.navigation.forEach((b) => {
+          var _a2, _b2;
+          if (b) {
+            if (this.pageConfig.find((e) => e.uniqueName === b.name)) {
+            } else {
+              if (((_a2 = b.left) == null ? void 0 : _a2.single) === newPage.uniqueID) {
+                b.left.single = void 0;
+              }
+              if (((_b2 = b.right) == null ? void 0 : _b2.single) === newPage.uniqueID) {
+                b.right.single = void 0;
+              }
+            }
+          }
+        });
       }
       option.pages.push(newPage);
       const navigation = navAssign.navigation;
@@ -323,7 +348,10 @@ class AdminConfiguration extends import_library.BaseClass {
               option.navigation[nextIndex].left.single = newPage.uniqueID;
             }
           } else if (!oldNext) {
-            option.navigation[index].right = { single: newPage.uniqueID };
+            option.navigation[index].right = {
+              ...(_d = option.navigation[index].right) != null ? _d : {},
+              single: newPage.uniqueID
+            };
           }
         }
       }
@@ -346,7 +374,10 @@ class AdminConfiguration extends import_library.BaseClass {
               option.navigation[prevIndex].right.single = newPage.uniqueID;
             }
           } else if (!oldPrev) {
-            option.navigation[index].left = { single: newPage.uniqueID };
+            option.navigation[index].left = {
+              ...(_f = option.navigation[index].left) != null ? _f : {},
+              single: newPage.uniqueID
+            };
           }
         }
       }

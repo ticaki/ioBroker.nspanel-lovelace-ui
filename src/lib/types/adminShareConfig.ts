@@ -1,3 +1,5 @@
+import type { RGB } from '../const/Color';
+
 // Zentrale Definition aller verfügbaren Card-Typen
 export type AdminCardTypes =
     // Grid Cards
@@ -138,18 +140,85 @@ export type ScreensaverEntry = {
 
 export type ScreensaverEntries = ScreensaverEntry[];
 
+/**
+ * Configuration for the "value display" dialog – mirrors the inputs of
+ * getValueEntryString() in tools.ts so the admin UI can configure them.
+ */
+export type ChannelValueConfig = {
+    /** ioBroker state ID with common.type string or number, or plain text */
+    valueStateId: string;
+    /** Unit string shown after the value (only used for number type) */
+    unit: string;
+    /** Prefix shown before the value (static string or state ID) */
+    prefix: string;
+    /** Suffix shown after unit (static string or state ID) */
+    suffix: string;
+    /**
+     * Date-format config: { local: locale-string, format: Intl.DateTimeFormatOptions }.
+     * Empty string means no date formatting.
+     */
+    dateFormat: { local: string; format: Intl.DateTimeFormatOptions } | '';
+};
+
+/**
+ * Creates a default empty ValueEntryConfig, optionally pre-filling valueStateId.
+ *
+ * @param valueStateId  Optional initial state ID
+ */
+export function emptyChannelValueConfig(valueStateId = ''): ChannelValueConfig {
+    return { valueStateId, unit: '', prefix: '', suffix: '', dateFormat: '' };
+}
+
+/**
+ * Normalizes a channelId value from persisted config to `ValueEntryConfig`.
+ * Handles backward-compatibility: if the stored value is a plain string (old format)
+ * it is promoted to `{ valueStateId: string, ...defaults }`.
+ *
+ * @param raw  Raw value from config – either a string (legacy) or ValueEntryConfig
+ */
+export function normalizeChannelId(raw: unknown): ChannelValueConfig {
+    if (typeof raw === 'string') {
+        return emptyChannelValueConfig(raw);
+    }
+    if (raw !== null && typeof raw === 'object' && 'valueStateId' in raw) {
+        const v = raw as Partial<ChannelValueConfig>;
+        return {
+            valueStateId: typeof v.valueStateId === 'string' ? v.valueStateId : '',
+            unit: typeof v.unit === 'string' ? v.unit : '',
+            prefix: typeof v.prefix === 'string' ? v.prefix : '',
+            suffix: typeof v.suffix === 'string' ? v.suffix : '',
+            dateFormat: v.dateFormat ?? '',
+        };
+    }
+    return emptyChannelValueConfig();
+}
+
 // QR Entry for pageQR configuration
 export type AdminPageItemConfig = {
-    channelId: string;
+    /**
+     * Channel / device identifier.
+     * Always a `ValueEntryConfig` in the current format.
+     * Configs saved with an older version may contain a plain string –
+     * use `normalizeChannelId(item.channelId)` whenever reading from raw storage.
+     */
+    channelId: ChannelValueConfig;
     role?: string;
     name?: string;
     isNavigation?: boolean;
+    type?: string;
     targetPage?: string;
+    targetPageLongPress?: string | null | undefined;
+    longPress?: string | null | undefined;
     trueIcon?: string;
     trueColor?: string;
     falseIcon?: string;
     falseColor?: string;
     useValue?: boolean;
+    /** Text size override 0–5 (undefined = default) */
+    textSize?: 0 | 1 | 2 | 3 | 4 | 5;
+    scale?: IconScaleElement;
+    /** Value-display configuration (prefix / unit / suffix / dateFormat) */
+    valueEntry?: ChannelValueConfig;
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
@@ -956,3 +1025,82 @@ export const requiredScriptDataPoints = {
 
 export const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints) as (keyof typeof requiredScriptDataPoints)[];
 export type ChannelRole = keyof typeof requiredScriptDataPoints;
+export type IconScaleElement = IconColorElement | IconSelectElement;
+
+export type ChannelColorConfig = Pick<AdminPageItemConfig, 'trueColor' | 'falseColor' | 'scale'>;
+
+export type IconSelectElement = {
+    valIcon_min: number;
+    valIcon_max: number;
+    valIcon_best?: number;
+};
+export type IconColorElement = {
+    val_min: number;
+    val_max: number;
+    val_best?: number;
+    /**
+     * Optional best-color (nur wirksam, wenn `val_best` gesetzt ist).
+     */
+    color_best?: RGB;
+    /**
+     * Color scale mode. Default is 'mixed'.
+     * - 'mixed': interpolate linearly between two RGB colors.
+     * - 'cie': interpolate using CIE color table.
+     * - 'hue': interpolate via hue/saturation/brightness.
+     * - 'triGrad': three-color gradient red→yellow→green, ignores custom colors.
+     * - 'triGradAnchor': like triGrad but anchors yellow to val_best.
+     * - 'quadriGrad': four-color gradient red→yellow→green→blue, ignores custom colors.
+     * - 'quadriGradAnchor': like quadriGrad but anchors green to val_best.
+     */
+    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
+    /**
+     * Apply logarithmic scaling. Use 'max' or 'min'.
+     * Undefined = linear scaling.
+     */
+    log10?: 'max' | 'min';
+};
+
+export type PageBaseItemSimple = {
+    useColor?: boolean;
+    targetPageLongPress?: string;
+    longPress?: string;
+    interpolateColor?: boolean;
+    minValueBrightness?: number;
+    maxValueBrightness?: number;
+    minValueColorTemp?: number;
+    maxValueColorTemp?: number;
+    minValueLevel?: number;
+    maxValueLevel?: number;
+    minValueTilt?: number;
+    maxValueTilt?: number;
+    minValue?: number;
+    maxValue?: number;
+    stepValue?: number;
+    prefixName?: string;
+    suffixName?: string;
+    prefixValue?: string;
+    suffixValue?: string;
+    name?: string;
+    secondRow?: string;
+    buttonText?: string;
+    buttonTextOff?: string;
+    unit?: string;
+    colormode?: string;
+    modeList?: string[];
+    hidePassword?: boolean;
+    autoCreateALias?: boolean;
+    yAxis?: string;
+    yAxisTicks?: number[] | string;
+    xAxisDecorationId?: string;
+    useValue?: boolean;
+    monobutton?: boolean;
+    inSel_ChoiceState?: boolean; //deprecated
+    inSel_Alias?: string;
+    iconArray?: string[];
+    customIcons?: any[];
+    fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
+    actionStringArray?: string[];
+    alwaysOnDisplay?: boolean;
+};
+
+export type Beispiel = Pick<PageBaseItemSimple, 'minValue' | 'maxValue' | 'stepValue'>;

@@ -1470,12 +1470,14 @@ export namespace NSPanel {
 
     type IconEntryType =
         | (Partial<Record<BooleanUnion, { value: string; text?: TextSizeEntryType }>> &
-              ColorEntryTypeBooleanStandard & { unstable: { value: string; text?: TextSizeEntryType; color: RGB } })
+              ColorEntryTypeBooleanStandard & { unstable: { value: string; text?: TextSizeEntryType; color: RGB } } & {
+                  textSize?: number;
+              })
         | undefined;
 
     type TextEntryType = Record<BooleanUnion, string>;
 
-    type TextSizeEntryType = ValueEntryType & { textSize?: number };
+    type TextSizeEntryType = ValueEntryType;
 
     type TextEntryType2 = Record<BooleanUnion, { value: string; prefix: string; suffix: string }>;
 

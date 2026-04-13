@@ -51,10 +51,10 @@ const textTemplates = {
             dateFormat: {
               type: "const",
               constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
-            },
-            textSize: { type: "const", constVal: 1 }
+            }
           }
-        }
+        },
+        textSize: { type: "const", constVal: 1 }
       }
     }
   },
@@ -219,14 +219,14 @@ const textTemplates = {
             unit: {
               type: "const",
               constVal: "%"
-            },
-            textSize: { type: "const", constVal: 2 }
+            }
           },
           color: {
             type: "const",
             constVal: import_Color.Color.Green
           }
         },
+        textSize: { type: "const", constVal: 2 },
         false: {
           value: {
             type: "triggered",
@@ -341,11 +341,11 @@ const textTemplates = {
             unit: {
               type: "const",
               constVal: "%"
-            },
-            textSize: { type: "const", constVal: 2 }
+            }
           },
           color: void 0
         },
+        textSize: { type: "const", constVal: 2 },
         false: {
           value: {
             type: "triggered",

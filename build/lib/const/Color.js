@@ -841,6 +841,35 @@ class Color extends ColorBase {
     mediaOnOffColor: Color.FireGlow
   };
   /**
+   * Returns the color theme object for a given adapter theme index.
+   *
+   * | Index | Theme           |
+   * |-------|-----------------|
+   * | 0     | default         |
+   * | 1     | topical         |
+   * | 2     | technical       |
+   * | 3     | sunset          |
+   * | 4     | volcano         |
+   *
+   * Unknown indices fall back to `defaultTheme`.
+   *
+   * @param index Adapter color theme index (0–4)
+   */
+  static getThemeByIndex(index) {
+    switch (index) {
+      case 1:
+        return Color.topicalTheme;
+      case 2:
+        return Color.technicalTheme;
+      case 3:
+        return Color.sunsetTheme;
+      case 4:
+        return Color.volcanoTheme;
+      default:
+        return Color.defaultTheme;
+    }
+  }
+  /**
    * set color theme...
    *
    * @param s ColorThemenInterface
@@ -1376,7 +1405,7 @@ class Color extends ColorBase {
    * @param value current numeric value
    * @param cto color for the "true / max" end of the scale
    * @param cfrom color for the "false / min" end of the scale
-   * @param scale scale configuration (ColorScaleInput-compatible) or unknown/null
+   * @param scale scale configuration (IconColorElement-compatible) or unknown/null
    * @param def fallback color when nothing else matches
    * @returns interpolated RGB color
    */
@@ -1459,15 +1488,15 @@ class Color extends ColorBase {
           return func(_cfrom, _cto, factor, { swap });
         } else if (value >= vBest) {
           const effectiveCfrom = scale.val_best !== void 0 && scale.color_best ? scale.color_best : _cfrom;
-          factor = 1 - (value - vBest) / (vMax - vBest);
-          factor = Math.min(1, Math.max(0, factor));
+          factor = (value - vBest) / (vMax - vBest);
+          factor = 1 - Math.min(1, Math.max(0, factor));
           factor = Color.logFromScale(scale, factor);
           return func(effectiveCfrom, _cto, factor, { swap, anchorHigh: true });
         }
         const effectiveCto = scale.val_best !== void 0 && scale.color_best ? scale.color_best : _cto;
         factor = (value - vMin) / (vBest - vMin);
         factor = Math.min(1, Math.max(0, factor));
-        factor = 1 - Color.logFromScale(scale, 1 - factor);
+        factor = Color.logFromScale(scale, factor);
         return func(_cfrom, effectiveCto, factor, { swap });
       } else if (isPartialScale(scale)) {
         if (scale.val_min && scale.val_min >= value || scale.val_max && scale.val_max <= value) {

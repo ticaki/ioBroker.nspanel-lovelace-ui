@@ -148,7 +148,7 @@ export class AdminConfiguration extends BaseClass {
                         entry.alwaysOn = 'none';
                     }
                     newPage = dataForcardTrash(entry);
-                    this.log.debug(`Generated trash page for '${entry.uniqueName}'`);
+                    this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
                     break;
                 }
 
@@ -222,7 +222,9 @@ export class AdminConfiguration extends BaseClass {
                             }
                             start = true;
                             if (!item) {
-                                item = { channelId: 'empty' };
+                                item = { channelId: ShareConfig.emptyChannelValueConfig('empty') };
+                            } else {
+                                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
@@ -270,7 +272,9 @@ export class AdminConfiguration extends BaseClass {
                             }
                             start = true;
                             if (!item) {
-                                item = { channelId: 'empty' };
+                                item = { channelId: ShareConfig.emptyChannelValueConfig('empty') };
+                            } else {
+                                item = { ...item, channelId: ShareConfig.normalizeChannelId(item.channelId) };
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
@@ -295,10 +299,33 @@ export class AdminConfiguration extends BaseClass {
                     continue;
                 }
             }
+
             // Check for duplicate page name
-            if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
-                this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
-                continue;
+            if (!this.adapter.config.adminOverridesScriptPages) {
+                if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
+                    this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+                    continue;
+                }
+            } else {
+                // Remove existing page and navigation entries for this page name to allow overrides
+                option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
+                option.navigation = option.navigation.filter(
+                    (b: NavigationItemConfig | null) => b && b.name !== newPage.uniqueID,
+                );
+                option.navigation.forEach((b: NavigationItemConfig | null) => {
+                    if (b) {
+                        if (this.pageConfig.find(e => e.uniqueName === b.name)) {
+                            // Don't reset navigation entries for pages defined in admin config
+                        } else {
+                            if (b.left?.single === newPage.uniqueID) {
+                                b.left.single = undefined;
+                            }
+                            if (b.right?.single === newPage.uniqueID) {
+                                b.right.single = undefined;
+                            }
+                        }
+                    }
+                });
             }
 
             option.pages.push(newPage);
@@ -345,7 +372,10 @@ export class AdminConfiguration extends BaseClass {
                             option.navigation[nextIndex].left.single = newPage.uniqueID;
                         }
                     } else if (!oldNext) {
-                        option.navigation[index].right = { single: newPage.uniqueID };
+                        option.navigation[index].right = {
+                            ...(option.navigation[index].right ?? {}),
+                            single: newPage.uniqueID,
+                        };
                     }
                 }
             }
@@ -371,7 +401,10 @@ export class AdminConfiguration extends BaseClass {
                             option.navigation[prevIndex].right.single = newPage.uniqueID;
                         }
                     } else if (!oldPrev) {
-                        option.navigation[index].left = { single: newPage.uniqueID };
+                        option.navigation[index].left = {
+                            ...(option.navigation[index].left ?? {}),
+                            single: newPage.uniqueID,
+                        };
                     }
                 }
             }

@@ -2222,7 +2222,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
-    var _a;
+    var _a, _b, _c, _d;
     let error = void 0;
     let pageItem = void 0;
     if (preItem && prePage) {
@@ -2235,12 +2235,12 @@ class NspanelLovelaceUi extends utils.Adapter {
           navigate: true,
           targetPage: (_a = preItem.targetPage) != null ? _a : "",
           type: null,
-          id: preItem.channelId
+          id: preItem.channelId.valueStateId
         };
       } else {
         item = {
           type: null,
-          id: preItem.channelId
+          id: preItem.channelId.valueStateId
         };
       }
       const convertToScriptRGBColor = (color) => {
@@ -2260,10 +2260,36 @@ class NspanelLovelaceUi extends utils.Adapter {
         return { pageItem, messages, error };
       }
       if (!("native" in item)) {
+        item.type = preItem.type === "custom" ? "custom" : null;
         item.icon = preItem.trueIcon || void 0;
         item.icon2 = preItem.falseIcon || void 0;
         item.onColor = convertToScriptRGBColor(preItem.trueColor);
         item.offColor = convertToScriptRGBColor(preItem.falseColor);
+        item.longPress = preItem.longPress || void 0;
+        item.targetPageLongPress = preItem.targetPageLongPress || void 0;
+        item.name = preItem.name || void 0;
+        if ((0, import_function_and_const.isIconColorScaleElement)(preItem.scale)) {
+          item.colorScale = {
+            ...preItem.scale,
+            color_best: preItem.scale.color_best ? {
+              red: preItem.scale.color_best.r,
+              green: preItem.scale.color_best.g,
+              blue: preItem.scale.color_best.b
+            } : void 0
+          };
+        }
+        if (item.type !== "custom") {
+          item.fontSize = preItem.textSize ? Number(preItem.textSize) : void 0;
+          if (!item.name && preItem.valueEntry) {
+            item.name = preItem.valueEntry.valueStateId;
+            item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : void 0;
+            item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : void 0;
+          }
+          item.prefixValue = ((_b = preItem.channelId) == null ? void 0 : _b.suffix) ? preItem.channelId.suffix : void 0;
+          item.suffixValue = ((_c = preItem.channelId) == null ? void 0 : _c.prefix) ? preItem.channelId.prefix : void 0;
+          item.unit = ((_d = preItem.channelId) == null ? void 0 : _d.unit) ? preItem.channelId.unit : void 0;
+          item.useValue = preItem.useValue;
+        }
       }
       const page = {
         type: prePage.card,

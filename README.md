@@ -157,8 +157,15 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (ticaki) added: `Color.computeNumberScaleColor()` – reusable numeric scale interpolation extracted from `getIconEntryColor`, returns `RGB` (no Dataitem dependency); exported `ColorScaleInput` type
+### 0.17.2 (2026-04-13)
+- (ticaki) bugfix: pageitem name / icon as id for most roles / textSize
+
+### 0.17.1 (2026-04-12)
+- (ticaki) bugfix: longpress
+
+### 0.17.0 (2026-04-12)
+- (tt-tom17) added: ChannelColorDialog
+- (ticaki) added: customItem, longPress, targetPageLongPress, icons as id, div.
 
 ### 0.16.2 (2026-04-09)
 - (ticaki) fixed: channel duplicate error

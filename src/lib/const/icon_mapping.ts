@@ -6918,11 +6918,11 @@ export class Icons {
         }
 
         if (Icons.adapter) {
-            Icons.adapter.log.warn(`${val} is not a icon!`);
+            Icons.adapter.log.debug(`${val} is not a icon!`);
         }
         //else console.log(`${val} is not a icon!`);
 
-        return '';
+        return ma_name;
     }
 
     /**
