@@ -118,6 +118,7 @@
     "valueEntryDialog_suffix": "Suffix (Text oder State-ID)",
     "valueEntryDialog_textSize": "Textgröße",
     "valueEntryDialog_textSizeDefault": "Standard",
+    "valueEntryDialog_textSizeTooltip": "Auf Gridseiten kann man mit diesem Attribut die Schriftgröße auf einen Wert zw. 0 und 5 setzen.\nFont 0 - Default - Size 24 (No Icons, Support for various special chars from different langs)\nFont 1 - Size 32 (Icons and limited chars)\nFont 2 - Size 32 (No Icons, Support for various special chars from different langs)\nFont 3 - Size 48 (Icons and limited chars)\nFont 4 - Size 80 (Icons and limited chars)\nFont 5 - Size 128 (ascii only)",
     "valueEntryDialog_title": "Wertanzeige-Konfiguration",
     "valueEntryDialog_unit": "Einheit",
     "valueEntryDialog_valueState": "State-ID oder Freitext",

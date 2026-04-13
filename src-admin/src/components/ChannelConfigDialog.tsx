@@ -1636,31 +1636,42 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 {/* useValue Checkbox + TextSize */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                                     {this.state.isGridCard && (
-                                        <Autocomplete
-                                            options={['', '1', '2', '3', '4', '5'] as string[]}
-                                            value={this.state.textSize !== undefined ? String(this.state.textSize) : ''}
-                                            onChange={(_e, val) =>
-                                                this.setState({
-                                                    textSize:
-                                                        val === '' || val === null
-                                                            ? undefined
-                                                            : (Number(val) as 0 | 1 | 2 | 3 | 4 | 5),
-                                                })
+                                        <Tooltip
+                                            title={
+                                                <span style={{ whiteSpace: 'pre-line' }}>
+                                                    {I18n.t('valueEntryDialog_textSizeTooltip')}
+                                                </span>
                                             }
-                                            disabled={fieldsDisabled}
-                                            disableClearable={false}
-                                            getOptionLabel={opt =>
-                                                opt === '' ? I18n.t('valueEntryDialog_textSizeDefault') : opt
-                                            }
-                                            sx={{ width: 160 }}
-                                            renderInput={params => (
-                                                <TextField
-                                                    {...params}
-                                                    variant="standard"
-                                                    label={I18n.t('valueEntryDialog_textSize')}
-                                                />
-                                            )}
-                                        />
+                                            placement="top"
+                                        >
+                                            <Autocomplete
+                                                options={['', '0', '1', '2', '3', '4', '5'] as string[]}
+                                                value={
+                                                    this.state.textSize !== undefined ? String(this.state.textSize) : ''
+                                                }
+                                                onChange={(_e, val) =>
+                                                    this.setState({
+                                                        textSize:
+                                                            val === '' || val === null
+                                                                ? undefined
+                                                                : (Number(val) as 0 | 1 | 2 | 3 | 4 | 5),
+                                                    })
+                                                }
+                                                disabled={fieldsDisabled}
+                                                disableClearable={false}
+                                                getOptionLabel={opt =>
+                                                    opt === '' ? I18n.t('valueEntryDialog_textSizeDefault') : opt
+                                                }
+                                                sx={{ width: 160 }}
+                                                renderInput={params => (
+                                                    <TextField
+                                                        {...params}
+                                                        variant="standard"
+                                                        label={I18n.t('valueEntryDialog_textSize')}
+                                                    />
+                                                )}
+                                            />
+                                        </Tooltip>
                                     )}
                                     {this.state.isGridCard && !isCustom && (
                                         <FormControl

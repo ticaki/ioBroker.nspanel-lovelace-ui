@@ -621,6 +621,7 @@
     "valueEntryDialog_suffix": "Suffix (text or State ID)",
     "valueEntryDialog_textSize": "Text Size",
     "valueEntryDialog_textSizeDefault": "default",
+    "valueEntryDialog_textSizeTooltip": "On grid pages, the font size can be set to a value between 0 and 5.\nFont 0 - Default - Size 24 (No Icons, Support for various special chars from different langs)\nFont 1 - Size 32 (Icons and limited chars)\nFont 2 - Size 32 (No Icons, Support for various special chars from different langs)\nFont 3 - Size 48 (Icons and limited chars)\nFont 4 - Size 80 (Icons and limited chars)\nFont 5 - Size 128 (ascii only)",
     "valueEntryDialog_title": "Value Display Configuration",
     "valueEntryDialog_unit": "Unit",
     "valueEntryDialog_valueState": "Value State ID",
