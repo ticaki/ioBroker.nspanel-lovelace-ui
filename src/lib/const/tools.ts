@@ -280,9 +280,6 @@ export async function getIconEntryValue(
         return Icons.GetIcon(on ? def : defOff || def);
     }
     const textSize = i.textSize && (await i.textSize.getNumber());
-    if (textSize != null) {
-        console.log(`Text size for icon entry is ${textSize}`);
-    }
     const text = getText ? (i.true && i.true.text && (await getValueEntryString(i.true.text))) || null : null;
     if (text !== null) {
         const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;
@@ -290,15 +287,15 @@ export async function getIconEntryValue(
             const scale = i.scale && (await i.scale.getObject());
             if (globals.isPartialColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= on) || (scale.val_max && scale.val_max <= on)) {
-                    return text + (textSize ? `¬${textSize}` : '');
+                    return text + (textSize != null ? `¬${textSize}` : '');
                 }
                 textFalse;
             }
         }
         if (!on) {
-            return (textFalse || text) + (textSize ? `¬${textSize}` : '');
+            return (textFalse || text) + (textSize != null ? `¬${textSize}` : '');
         }
-        return text + (textSize ? `¬${textSize}` : '');
+        return text + (textSize != null ? `¬${textSize}` : '');
     }
     const icon = (i.true && i.true.value && (await i.true.value.getString())) || null;
     const scaleM = i.scale && (await i.scale.getObject());
@@ -325,17 +322,17 @@ export async function getIconEntryValue(
         if (min < on && max > on) {
             return (
                 Icons.GetIcon((i.unstable && i.unstable.value && (await i.unstable.value.getString())) || icon || def) +
-                (textSize ? `¬${textSize}` : '')
+                (textSize != null ? `¬${textSize}` : '')
             );
         } else if ((!swap && max > on) || (swap && min < on)) {
             return (
                 Icons.GetIcon(
                     (i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def,
-                ) + (textSize ? `¬${textSize}` : '')
+                ) + (textSize != null ? `¬${textSize}` : '')
             );
         }
     }
-    return Icons.GetIcon(icon ?? def) + (textSize ? `¬${textSize}` : '');
+    return Icons.GetIcon(icon ?? def) + (textSize != null ? `¬${textSize}` : '');
 }
 
 export async function getIconEntryColor(
