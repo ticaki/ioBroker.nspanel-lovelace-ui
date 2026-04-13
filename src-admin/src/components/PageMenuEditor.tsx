@@ -600,25 +600,22 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         this.props.onEntryChange({ ...this.props.entry, pageItems });
     };
 
-    private getGridConfig(
-        card: MenuEntry['card'],
-        grid2Status: Grid2ModelStatus,
-    ): { columns: string; uspSpecial: boolean; wide: boolean } {
+    private getGridConfig(card: MenuEntry['card'], grid2Status: Grid2ModelStatus): { columns: string; wide: boolean } {
         switch (card) {
             case 'cardGrid':
-                return { columns: 'repeat(3, 1fr)', uspSpecial: false, wide: false };
+                return { columns: 'repeat(3, 1fr)', wide: false };
             case 'cardGrid2':
                 return grid2Status === 'all-usp'
-                    ? { columns: 'repeat(2, 1fr)', uspSpecial: true, wide: false }
-                    : { columns: 'repeat(4, 1fr)', uspSpecial: false, wide: false };
+                    ? { columns: 'repeat(3, 1fr)', wide: false }
+                    : { columns: 'repeat(4, 1fr)', wide: false };
             case 'cardGrid3':
-                return { columns: 'repeat(2, 1fr)', uspSpecial: false, wide: false };
+                return { columns: 'repeat(2, 1fr)', wide: false };
             case 'cardEntities':
-                return { columns: '1fr', uspSpecial: false, wide: true };
+                return { columns: '1fr', wide: true };
             case 'cardSchedule':
-                return { columns: '1fr', uspSpecial: false, wide: true };
+                return { columns: '1fr', wide: true };
             default:
-                return { columns: 'repeat(3, 1fr)', uspSpecial: false, wide: false };
+                return { columns: 'repeat(3, 1fr)', wide: false };
         }
     }
 
@@ -875,7 +872,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         isGridCard: boolean,
         onRemovePage?: () => void,
     ): React.JSX.Element {
-        const { columns, uspSpecial, wide } = this.getGridConfig(card, grid2Status);
+        const { columns, wide } = this.getGridConfig(card, grid2Status);
         const startIdx = pageIndex * effectiveSlots;
 
         return (
@@ -913,7 +910,6 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                 <Box sx={{ display: 'grid', gridTemplateColumns: columns, gap: 1 }}>
                     {Array.from({ length: baseSlots }, (_, localIdx) => {
                         const isArrowSlot = arrowMode && localIdx === effectiveSlots;
-                        const isUspTop = uspSpecial && localIdx === 0;
 
                         if (isArrowSlot) {
                             return (
@@ -940,12 +936,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
 
                         const globalIdx = startIdx + localIdx;
                         return (
-                            <Box
-                                key={globalIdx}
-                                sx={isUspTop ? { gridColumn: '1 / -1' } : {}}
-                            >
-                                {this.renderSlot(globalIdx, totalRealSlots, wide, isGridCard)}
-                            </Box>
+                            <Box key={globalIdx}>{this.renderSlot(globalIdx, totalRealSlots, wide, isGridCard)}</Box>
                         );
                     })}
                 </Box>

@@ -1067,6 +1067,9 @@ export class Panel extends BaseClass {
                     if (this.unload || this.adapter.unload) {
                         return;
                     }
+                    if (msg.nlui_driver_version === -1) {
+                        return;
+                    }
                     this.adapter.setTimeout(async () => {
                         let result: Record<string, string> | undefined = undefined;
                         try {
