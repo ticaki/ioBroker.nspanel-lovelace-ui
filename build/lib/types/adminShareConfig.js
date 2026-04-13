@@ -43,7 +43,7 @@ const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
 function emptyChannelValueConfig(valueStateId = "") {
-  return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "", textSize: void 0 };
+  return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "" };
 }
 function normalizeChannelId(raw) {
   var _a;
@@ -57,8 +57,7 @@ function normalizeChannelId(raw) {
       unit: typeof v.unit === "string" ? v.unit : "",
       prefix: typeof v.prefix === "string" ? v.prefix : "",
       suffix: typeof v.suffix === "string" ? v.suffix : "",
-      dateFormat: (_a = v.dateFormat) != null ? _a : "",
-      textSize: v.textSize
+      dateFormat: (_a = v.dateFormat) != null ? _a : ""
     };
   }
   return emptyChannelValueConfig();

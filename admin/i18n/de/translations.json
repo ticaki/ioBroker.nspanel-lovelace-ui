@@ -619,7 +619,7 @@
     "valueEntryDialog_previewHint": "Zeigt Präfix + aktuellen Wert + Einheit + Suffix. State-IDs werden zum aktuellen Wert aufgelöst.",
     "valueEntryDialog_save": "Übernehmen",
     "valueEntryDialog_suffix": "Suffix (Text oder State-ID)",
-    "valueEntryDialog_textSize": "Textgröße",
+    "valueEntryDialog_textSize": "Text-/Icongröße",
     "valueEntryDialog_textSizeDefault": "Standard",
     "valueEntryDialog_title": "Wertanzeige-Konfiguration",
     "valueEntryDialog_unit": "Einheit",

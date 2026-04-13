@@ -10,11 +10,6 @@ import {
     Typography,
     Paper,
     Divider,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    type SelectChangeEvent,
 } from '@mui/material';
 import { I18n } from '@iobroker/adapter-react-v5';
 import { EntitySelector } from './EntitySelector';
@@ -24,8 +19,6 @@ import type { ChannelValueConfig } from '../../../src/lib/types/adminShareConfig
 type ChannelValueDialogFeatures = {
     /** Show the Unit field (only has effect when value state type is number, or when forceUnit is true). Default: true */
     showUnit?: boolean;
-    /** Show the Text Size select. Default: true */
-    showTextSize?: boolean;
     /** Show the Date Format section (only has effect when value state type is number/string, or when forceDateFormat is true). Default: true */
     showDateFormat?: boolean;
     /**
@@ -100,8 +93,6 @@ interface ChannelValueDialogState {
     dateFormatOptions: string;
     /** Whether dateFormatOptions can be parsed and applied via toLocaleString */
     dateFormatOptionsValid: boolean;
-    /** Text size 0–5 (undefined = default/auto) */
-    textSize: 0 | 1 | 2 | 3 | 4 | 5 | undefined;
     previewText: string;
     previewLoading: boolean;
 }
@@ -157,7 +148,6 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
             dateLocal: getBrowserLocale(),
             dateFormatOptions: '',
             dateFormatOptionsValid: false,
-            textSize: undefined,
             previewText: '',
             previewLoading: false,
         };
@@ -189,7 +179,6 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                 dateLocal,
                 dateFormatOptions,
                 dateFormatOptionsValid: tryParseDateFormatOptions(dateFormatOptions) !== null,
-                textSize: config?.textSize ?? undefined,
                 previewText: '',
                 previewLoading: true,
             },
@@ -230,7 +219,6 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                 dateLocal,
                 dateFormatOptions,
                 dateFormatOptionsValid: tryParseDateFormatOptions(dateFormatOptions) !== null,
-                textSize: config?.textSize ?? undefined,
                 previewText: '',
                 previewLoading: true,
             },
@@ -256,11 +244,11 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
     };
 
     private handleSave = (): void => {
-        const { valueStateId, unit, prefix, suffix, dateLocal, dateFormatOptions, textSize } = this.state;
+        const { valueStateId, unit, prefix, suffix, dateLocal, dateFormatOptions } = this.state;
         const parsedFormat = tryParseDateFormatOptions(dateFormatOptions);
         const dateFormat: ChannelValueConfig['dateFormat'] =
             parsedFormat !== null ? { local: dateLocal, format: parsedFormat } : '';
-        this.props.onSave?.({ valueStateId, unit, prefix, suffix, dateFormat, textSize });
+        this.props.onSave?.({ valueStateId, unit, prefix, suffix, dateFormat });
         this.setState({ open: false });
     };
 
@@ -452,7 +440,6 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
             dateLocal,
             dateFormatOptions,
             dateFormatOptionsValid,
-            textSize,
             previewText,
             previewLoading,
         } = this.state;
@@ -460,7 +447,6 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
 
         const features = this.props.features ?? {};
         const showUnit = features.showUnit !== false && (valueStateType === 'number' || features.forceUnit === true);
-        const showTextSize = features.showTextSize !== false;
         // showDateFormat: controlled by features AND type check – bypassed by forceDateFormat
         const showDateFormat =
             features.showDateFormat !== false &&
@@ -600,36 +586,6 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                                     }
                                 />
                             </Paper>
-                        )}
-
-                        {/* Text Size select 0–5 (controlled by features.showTextSize) */}
-                        {showTextSize && (
-                            <FormControl
-                                variant="standard"
-                                fullWidth
-                            >
-                                <InputLabel>{I18n.t('valueEntryDialog_textSize')}</InputLabel>
-                                <Select
-                                    value={textSize !== undefined ? String(textSize) : ''}
-                                    onChange={(e: SelectChangeEvent<string>) => {
-                                        const v = e.target.value;
-                                        this.setState({
-                                            textSize: v === '' ? undefined : (Number(v) as 0 | 1 | 2 | 3 | 4 | 5),
-                                        });
-                                    }}
-                                    label={I18n.t('valueEntryDialog_textSize')}
-                                >
-                                    <MenuItem value="">{I18n.t('valueEntryDialog_textSizeDefault')}</MenuItem>
-                                    {([1, 2, 3, 4, 5] as const).map(v => (
-                                        <MenuItem
-                                            key={v}
-                                            value={String(v)}
-                                        >
-                                            {String(v)}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
                         )}
 
                         {<Divider />}

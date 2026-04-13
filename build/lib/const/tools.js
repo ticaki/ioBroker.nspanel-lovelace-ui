@@ -301,6 +301,10 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   if (!i) {
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff || def);
   }
+  const textSize = i.textSize && await i.textSize.getNumber();
+  if (textSize != null) {
+    console.log(`Text size for icon entry is ${textSize}`);
+  }
   const text = getText ? i.true && i.true.text && await getValueEntryString(i.true.text) || null : null;
   if (text !== null) {
     const textFalse = i.false && i.false.text && await getValueEntryString(i.false.text) || null;
@@ -308,15 +312,15 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
       const scale = i.scale && await i.scale.getObject();
       if (globals.isPartialColorScaleElement(scale)) {
         if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on) {
-          return text;
+          return text + (textSize ? `\xAC${textSize}` : "");
         }
         textFalse;
       }
     }
     if (!on) {
-      return textFalse || text;
+      return (textFalse || text) + (textSize ? `\xAC${textSize}` : "");
     }
-    return text;
+    return text + (textSize ? `\xAC${textSize}` : "");
   }
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
   const scaleM = i.scale && await i.scale.getObject();
@@ -339,16 +343,14 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     const min = swap ? scale.valIcon_max : scale.valIcon_min;
     const max = swap ? scale.valIcon_min : scale.valIcon_max;
     if (min < on && max > on) {
-      return import_icon_mapping.Icons.GetIcon(
-        i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def
-      );
+      return import_icon_mapping.Icons.GetIcon(i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def) + (textSize ? `\xAC${textSize}` : "");
     } else if (!swap && max > on || swap && min < on) {
       return import_icon_mapping.Icons.GetIcon(
         i.false && i.false.value && await i.false.value.getString() || defOff || icon || def
-      );
+      ) + (textSize ? `\xAC${textSize}` : "");
     }
   }
-  return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
+  return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def) + (textSize ? `\xAC${textSize}` : "");
 }
 async function getIconEntryColor(i, value, def, defOff = null) {
   var _a, _b, _c;
@@ -605,11 +607,8 @@ async function getValueEntryBoolean(i) {
   }
   return null;
 }
-function isTextSizeEntryType(F) {
-  return "textSize" in F;
-}
 async function getValueEntryString(i, v = null) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
   if (!i || !i.value) {
     return null;
   }
@@ -643,11 +642,7 @@ async function getValueEntryString(i, v = null) {
       }
     }
     res2 = prefix + res2 + unit + suffix;
-    let opt = "";
-    if (isTextSizeEntryType(i)) {
-      opt = String((_l = i.textSize && await i.textSize.getNumber()) != null ? _l : "");
-    }
-    return res2 + (opt ? `\xAC${opt}` : "");
+    return res2;
   }
   let res = await i.value.getString();
   if (res != null) {
@@ -658,11 +653,6 @@ async function getValueEntryString(i, v = null) {
       }
     }
     res = prefix + res + unit + suffix;
-    let opt = "";
-    if (isTextSizeEntryType(i)) {
-      opt = String((_m = i.textSize && await i.textSize.getNumber()) != null ? _m : "");
-    }
-    res += opt ? `\xAC${opt}` : "";
   }
   return res;
 }

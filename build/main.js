@@ -2193,7 +2193,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
+      this.log.error(`Error checking internet acces1s for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
       return false;
     }
   }
@@ -2243,6 +2243,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         item.offColor = convertToScriptRGBColor(preItem.falseColor);
         item.longPress = preItem.longPress || void 0;
         item.targetPageLongPress = preItem.targetPageLongPress || void 0;
+        item.name = preItem.name || void 0;
         if ((0, import_function_and_const.isIconColorScaleElement)(preItem.scale)) {
           item.colorScale = {
             ...preItem.scale,
@@ -2254,12 +2255,12 @@ class NspanelLovelaceUi extends utils.Adapter {
           };
         }
         if (item.type !== "custom") {
+          item.fontSize = preItem.textSize ? Number(preItem.textSize) : void 0;
           if (!item.name && preItem.valueEntry) {
             item.name = preItem.valueEntry.valueStateId;
             item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : void 0;
             item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : void 0;
           }
-          item.fontSize = preItem.channelId.textSize ? Number(preItem.channelId.textSize) : void 0;
           item.prefixValue = ((_b = preItem.channelId) == null ? void 0 : _b.suffix) ? preItem.channelId.suffix : void 0;
           item.suffixValue = ((_c = preItem.channelId) == null ? void 0 : _c.prefix) ? preItem.channelId.prefix : void 0;
           item.unit = ((_d = preItem.channelId) == null ? void 0 : _d.unit) ? preItem.channelId.unit : void 0;

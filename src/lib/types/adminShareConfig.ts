@@ -158,8 +158,6 @@ export type ChannelValueConfig = {
      * Empty string means no date formatting.
      */
     dateFormat: { local: string; format: Intl.DateTimeFormatOptions } | '';
-    /** Text size override 0–5 (undefined = default) */
-    textSize: 0 | 1 | 2 | 3 | 4 | 5 | undefined;
 };
 
 /**
@@ -168,7 +166,7 @@ export type ChannelValueConfig = {
  * @param valueStateId  Optional initial state ID
  */
 export function emptyChannelValueConfig(valueStateId = ''): ChannelValueConfig {
-    return { valueStateId, unit: '', prefix: '', suffix: '', dateFormat: '', textSize: undefined };
+    return { valueStateId, unit: '', prefix: '', suffix: '', dateFormat: '' };
 }
 
 /**
@@ -190,7 +188,6 @@ export function normalizeChannelId(raw: unknown): ChannelValueConfig {
             prefix: typeof v.prefix === 'string' ? v.prefix : '',
             suffix: typeof v.suffix === 'string' ? v.suffix : '',
             dateFormat: v.dateFormat ?? '',
-            textSize: v.textSize,
         };
     }
     return emptyChannelValueConfig();
@@ -217,6 +214,8 @@ export type AdminPageItemConfig = {
     falseIcon?: string;
     falseColor?: string;
     useValue?: boolean;
+    /** Text size override 0–5 (undefined = default) */
+    textSize?: 0 | 1 | 2 | 3 | 4 | 5;
     scale?: IconScaleElement;
     /** Value-display configuration (prefix / unit / suffix / dateFormat) */
     valueEntry?: ChannelValueConfig;

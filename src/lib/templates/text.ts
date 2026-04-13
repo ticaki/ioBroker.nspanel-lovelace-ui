@@ -31,9 +31,9 @@ export const textTemplates: TemplateItems = {
                             type: 'const',
                             constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
                         },
-                        textSize: { type: 'const', constVal: 1 },
                     },
                 },
+                textSize: { type: 'const', constVal: 1 },
             },
         },
     },
@@ -202,13 +202,13 @@ export const textTemplates: TemplateItems = {
                             type: 'const',
                             constVal: '%',
                         },
-                        textSize: { type: 'const', constVal: 2 },
                     },
                     color: {
                         type: 'const',
                         constVal: Color.Green,
                     },
                 },
+                textSize: { type: 'const', constVal: 2 },
                 false: {
                     value: {
                         type: 'triggered',
@@ -325,10 +325,10 @@ export const textTemplates: TemplateItems = {
                             type: 'const',
                             constVal: '%',
                         },
-                        textSize: { type: 'const', constVal: 2 },
                     },
                     color: undefined,
                 },
+                textSize: { type: 'const', constVal: 2 },
                 false: {
                     value: {
                         type: 'triggered',

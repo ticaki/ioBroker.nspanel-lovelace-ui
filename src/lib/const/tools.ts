@@ -279,7 +279,10 @@ export async function getIconEntryValue(
     if (!i) {
         return Icons.GetIcon(on ? def : defOff || def);
     }
-
+    const textSize = i.textSize && (await i.textSize.getNumber());
+    if (textSize != null) {
+        console.log(`Text size for icon entry is ${textSize}`);
+    }
     const text = getText ? (i.true && i.true.text && (await getValueEntryString(i.true.text))) || null : null;
     if (text !== null) {
         const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;
@@ -287,15 +290,15 @@ export async function getIconEntryValue(
             const scale = i.scale && (await i.scale.getObject());
             if (globals.isPartialColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= on) || (scale.val_max && scale.val_max <= on)) {
-                    return text;
+                    return text + (textSize ? `¬${textSize}` : '');
                 }
                 textFalse;
             }
         }
         if (!on) {
-            return textFalse || text;
+            return (textFalse || text) + (textSize ? `¬${textSize}` : '');
         }
-        return text;
+        return text + (textSize ? `¬${textSize}` : '');
     }
     const icon = (i.true && i.true.value && (await i.true.value.getString())) || null;
     const scaleM = i.scale && (await i.scale.getObject());
@@ -320,16 +323,19 @@ export async function getIconEntryValue(
         const min = swap ? scale.valIcon_max : scale.valIcon_min;
         const max = swap ? scale.valIcon_min : scale.valIcon_max;
         if (min < on && max > on) {
-            return Icons.GetIcon(
-                (i.unstable && i.unstable.value && (await i.unstable.value.getString())) || icon || def,
+            return (
+                Icons.GetIcon((i.unstable && i.unstable.value && (await i.unstable.value.getString())) || icon || def) +
+                (textSize ? `¬${textSize}` : '')
             );
         } else if ((!swap && max > on) || (swap && min < on)) {
-            return Icons.GetIcon(
-                (i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def,
+            return (
+                Icons.GetIcon(
+                    (i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def,
+                ) + (textSize ? `¬${textSize}` : '')
             );
         }
     }
-    return Icons.GetIcon(icon ?? def);
+    return Icons.GetIcon(icon ?? def) + (textSize ? `¬${textSize}` : '');
 }
 
 export async function getIconEntryColor(
@@ -657,9 +663,7 @@ export async function getValueEntryBoolean(
     }
     return null;
 }
-function isTextSizeEntryType(F: any): F is ChangeTypeOfKeys<NSPanel.TextSizeEntryType, Dataitem | undefined> {
-    return 'textSize' in (F as NSPanel.TextSizeEntryType);
-}
+
 export async function getValueEntryString(
     i: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null = null,
@@ -699,11 +703,7 @@ export async function getValueEntryString(
         }
 
         res = prefix + res + unit + suffix;
-        let opt = '';
-        if (isTextSizeEntryType(i)) {
-            opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
-        }
-        return res + (opt ? `¬${opt}` : '');
+        return res;
     }
     let res = await i.value.getString();
 
@@ -716,11 +716,6 @@ export async function getValueEntryString(
         }
 
         res = prefix + res + unit + suffix;
-        let opt = '';
-        if (isTextSizeEntryType(i)) {
-            opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
-        }
-        res += opt ? `¬${opt}` : '';
     }
     return res;
 }

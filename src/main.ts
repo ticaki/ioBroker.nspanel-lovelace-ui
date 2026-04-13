@@ -2517,7 +2517,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             return true;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
+            this.log.error(`Error checking internet acces1s for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
             return false;
         }
     }
@@ -2576,6 +2576,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 item.offColor = convertToScriptRGBColor(preItem.falseColor);
                 item.longPress = preItem.longPress || undefined;
                 item.targetPageLongPress = preItem.targetPageLongPress || undefined;
+                item.name = preItem.name || undefined;
 
                 if (isIconColorScaleElement(preItem.scale)) {
                     item.colorScale = {
@@ -2589,16 +2590,16 @@ class NspanelLovelaceUi extends utils.Adapter {
                             : undefined,
                     };
                 }
-
                 if (item.type !== 'custom') {
+                    item.fontSize = preItem.textSize
+                        ? (Number(preItem.textSize) as typeof preItem.textSize)
+                        : undefined;
                     if (!item.name && preItem.valueEntry) {
                         item.name = preItem.valueEntry.valueStateId;
                         item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;
                         item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : undefined;
                     }
-                    item.fontSize = preItem.channelId.textSize
-                        ? (Number(preItem.channelId.textSize) as typeof preItem.channelId.textSize)
-                        : undefined;
+
                     item.prefixValue = preItem.channelId?.suffix ? preItem.channelId.suffix : undefined;
                     item.suffixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
                     item.unit = preItem.channelId?.unit ? preItem.channelId.unit : undefined;

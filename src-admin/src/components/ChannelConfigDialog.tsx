@@ -12,10 +12,7 @@ import {
     FormControlLabel,
     Typography,
     FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    type SelectChangeEvent,
+    Autocomplete,
     CircularProgress,
     Tooltip,
 } from '@mui/material';
@@ -136,6 +133,8 @@ interface ChannelConfigDialogState {
     valueEntryPreview: string;
     /** useValue Checkbox Auswahl */
     useValue: boolean;
+    /** Textgröße 1–5 (undefined = Standard) */
+    textSize: 0 | 1 | 2 | 3 | 4 | 5 | undefined;
     /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
     adapterColorTheme: number;
     scale?: IconScaleElement;
@@ -211,6 +210,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             valueEntry: undefined,
             valueEntryPreview: '',
             useValue: false,
+            textSize: undefined,
             colorFieldDisabled: false,
             adapterColorTheme: 0,
         };
@@ -275,6 +275,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             nativeJsonValid: isNative,
             nativeJsonErrorMessage: '',
             useValue: data?.useValue ?? false,
+            textSize: data?.textSize,
             valueEntry: data?.valueEntry,
             valueEntryPreview: '',
             scale: data?.scale,
@@ -419,12 +420,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelRole,
             useValue,
             scale,
+            textSize,
         } = this.state;
         if (this.state.nativeMode) {
             try {
                 const parsed: unknown = JSON.parse(this.state.nativeJson);
                 return {
-                    channelId,
+                    channelId: channelId,
                     name,
                     isNavigation,
                     type: undefined,
@@ -436,6 +438,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     falseIcon,
                     falseColor,
                     useValue,
+                    textSize,
                     scale,
                     role: channelRole ?? undefined,
                     useNative: true,
@@ -446,7 +449,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             }
         }
         return {
-            channelId,
+            channelId: channelId,
             role: channelRole ?? undefined,
             name,
             isNavigation,
@@ -458,6 +461,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             trueColor,
             falseIcon,
             falseColor,
+            textSize,
             useValue,
             scale,
             valueEntry: this.state.valueEntry,
@@ -939,8 +943,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.setState({ useValue: checked });
     };
 
-    private handleTargetPageChange = (event: SelectChangeEvent<string>): void => {
-        this.setState({ targetPage: event.target.value });
+    private handleTargetPageChange = (value: string): void => {
+        this.setState({ targetPage: value });
     };
 
     private sortPages(pages: string[]): string[] {
@@ -1445,43 +1449,32 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 </Box>
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
                                 {isNavigation && (
-                                    <FormControl
-                                        variant="standard"
-                                        fullWidth
+                                    <Autocomplete
+                                        options={loadingPages ? [] : availablePages}
+                                        value={targetPage || null}
+                                        onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
+                                        onInputChange={(_e, val) => this.handleTargetPageChange(val)}
                                         disabled={loadingPages}
-                                    >
-                                        <InputLabel>{I18n.t('channelConfigDialog_targetPage')}</InputLabel>
-                                        <Select
-                                            value={targetPage}
-                                            onChange={this.handleTargetPageChange}
-                                            label={I18n.t('channelConfigDialog_targetPage')}
-                                        >
-                                            {loadingPages && (
-                                                <MenuItem
-                                                    disabled
-                                                    value=""
-                                                >
-                                                    <CircularProgress size={16} />
-                                                </MenuItem>
-                                            )}
-                                            {!loadingPages && availablePages.length === 0 && (
-                                                <MenuItem
-                                                    disabled
-                                                    value=""
-                                                >
-                                                    {I18n.t('channelConfigDialog_noPages')}
-                                                </MenuItem>
-                                            )}
-                                            {availablePages.map(page => (
-                                                <MenuItem
-                                                    key={page}
-                                                    value={page}
-                                                >
-                                                    {page}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
+                                        freeSolo
+                                        renderInput={params => (
+                                            <TextField
+                                                {...params}
+                                                variant="standard"
+                                                label={I18n.t('channelConfigDialog_targetPage')}
+                                                slotProps={{
+                                                    input: {
+                                                        ...params.InputProps,
+                                                        endAdornment: (
+                                                            <>
+                                                                {loadingPages && <CircularProgress size={16} />}
+                                                                {params.InputProps.endAdornment}
+                                                            </>
+                                                        ),
+                                                    },
+                                                }}
+                                            />
+                                        )}
+                                    />
                                 )}
 
                                 {/* ioBroker-Channel-Auswahl + Validierungsicons */}
@@ -1640,9 +1633,35 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         </span>
                                     </Tooltip>
                                 </Box>
-                                {/* useValue Checkbox*/}
+                                {/* useValue Checkbox + TextSize */}
+
                                 {this.state.isGridCard && !isCustom && (
-                                    <Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                        <Autocomplete
+                                            options={['', '1', '2', '3', '4', '5'] as string[]}
+                                            value={this.state.textSize !== undefined ? String(this.state.textSize) : ''}
+                                            onChange={(_e, val) =>
+                                                this.setState({
+                                                    textSize:
+                                                        val === '' || val === null
+                                                            ? undefined
+                                                            : (Number(val) as 0 | 1 | 2 | 3 | 4 | 5),
+                                                })
+                                            }
+                                            disabled={fieldsDisabled}
+                                            disableClearable={false}
+                                            getOptionLabel={opt =>
+                                                opt === '' ? I18n.t('valueEntryDialog_textSizeDefault') : opt
+                                            }
+                                            sx={{ width: 160 }}
+                                            renderInput={params => (
+                                                <TextField
+                                                    {...params}
+                                                    variant="standard"
+                                                    label={I18n.t('valueEntryDialog_textSize')}
+                                                />
+                                            )}
+                                        />
                                         <FormControl
                                             component="fieldset"
                                             disabled={fieldsDisabled}
@@ -1664,6 +1683,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         </FormControl>
                                     </Box>
                                 )}
+
                                 {this.state.isGridCard && longPressEnabled && (
                                     <Box
                                         component="fieldset"
@@ -1734,50 +1754,36 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             />
                                         )}
                                         {longPress == null && (
-                                            <FormControl
-                                                variant="standard"
-                                                fullWidth
+                                            <Autocomplete
+                                                options={loadingPages ? [] : availablePages}
+                                                value={targetPageLongPress || null}
+                                                onChange={(_e, val) =>
+                                                    this.setState({ targetPageLongPress: val || null })
+                                                }
+                                                onInputChange={(_e, val) =>
+                                                    this.setState({ targetPageLongPress: val || null })
+                                                }
                                                 disabled={loadingPages}
-                                            >
-                                                <InputLabel>{I18n.t('channelConfigDialog_targetPage')}</InputLabel>
-                                                <Select
-                                                    value={targetPageLongPress || ''}
-                                                    onChange={(event: SelectChangeEvent<string>): void => {
-                                                        this.setState({
-                                                            targetPageLongPress: event.target.value || null,
-                                                        });
-                                                    }}
-                                                    label={I18n.t('channelConfigDialog_targetLongPressPage')}
-                                                >
-                                                    <MenuItem value="">
-                                                        <em>{'---'}</em>
-                                                    </MenuItem>
-                                                    {loadingPages && (
-                                                        <MenuItem
-                                                            disabled
-                                                            value=""
-                                                        >
-                                                            <CircularProgress size={16} />
-                                                        </MenuItem>
-                                                    )}
-                                                    {!loadingPages && availablePages.length === 0 && (
-                                                        <MenuItem
-                                                            disabled
-                                                            value=""
-                                                        >
-                                                            {I18n.t('channelConfigDialog_noPages')}
-                                                        </MenuItem>
-                                                    )}
-                                                    {availablePages.map(page => (
-                                                        <MenuItem
-                                                            key={page}
-                                                            value={page}
-                                                        >
-                                                            {page}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                                freeSolo
+                                                renderInput={params => (
+                                                    <TextField
+                                                        {...params}
+                                                        variant="standard"
+                                                        label={I18n.t('channelConfigDialog_targetLongPressPage')}
+                                                        slotProps={{
+                                                            input: {
+                                                                ...params.InputProps,
+                                                                endAdornment: (
+                                                                    <>
+                                                                        {loadingPages && <CircularProgress size={16} />}
+                                                                        {params.InputProps.endAdornment}
+                                                                    </>
+                                                                ),
+                                                            },
+                                                        }}
+                                                    />
+                                                )}
+                                            />
                                         )}
                                     </Box>
                                 )}
@@ -1870,7 +1876,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     themeType={themeType}
                     features={{
                         showUnit: true,
-                        showTextSize: this.state.useValue && !this.state.isGridCard,
                         showDateFormat: true,
                         showPreview: false,
                         readOnlyValueStateId: true,
@@ -1894,7 +1899,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     themeType={themeType}
                     features={{
                         showUnit: false,
-                        showTextSize: false,
                         showDateFormat: false,
                         showPreview: true,
                         readOnlyValueStateId: false,

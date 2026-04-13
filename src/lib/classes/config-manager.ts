@@ -1586,18 +1586,12 @@ export class ConfigManager extends BaseClass {
                     longPress: item.longPress ? await this.getFieldAsDataItemConfig(item.longPress) : undefined,
                     icon: {
                         true: {
-                            value: {
-                                type: 'const',
-                                constVal: item.icon || 'gesture-tap-button',
-                            },
+                            value: await this.getFieldAsDataItemConfig(item.icon || 'gesture-tap-button', true),
                             color: await this.getIconColor(item.onColor, Color.activated),
                         },
                         false: item.icon2
                             ? {
-                                  value: {
-                                      type: 'const',
-                                      constVal: item.icon2 || 'gesture-tap-button',
-                                  },
+                                  value: await this.getFieldAsDataItemConfig(item.icon2 || 'gesture-tap-button', true),
                                   color: await this.getIconColor(item.offColor, Color.deactivated),
                               }
                             : undefined,
@@ -1668,7 +1662,7 @@ export class ConfigManager extends BaseClass {
                 prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
                 suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
             },
-            textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+            textSize: item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
         };
 
         const iconTextDefaults: {
@@ -1678,7 +1672,7 @@ export class ConfigManager extends BaseClass {
             suffix?: NSPanel.DataItemsOptions | null | undefined;
         } = {
             unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
-            textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+            textSize: item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
             prefix:
                 globals.isCardEntitiesType(page.type) && item.prefixValue
                     ? await this.getFieldAsDataItemConfig(item.prefixValue)
@@ -1696,10 +1690,7 @@ export class ConfigManager extends BaseClass {
                     setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     icon: {
                         true: {
-                            value: {
-                                type: 'const',
-                                constVal: item.icon || 'gesture-tap-button',
-                            },
+                            value: await this.getFieldAsDataItemConfig(item.icon || 'gesture-tap-button', true),
                             color: await this.getIconColor(item.onColor, Color.activated),
                         },
                         scale: globals.isIconColorScaleElement(item.colorScale)
@@ -1707,6 +1698,10 @@ export class ConfigManager extends BaseClass {
                             : undefined,
                         maxBri: undefined,
                         minBri: undefined,
+                        textSize:
+                            item.fontSize || item.fontSize == 0
+                                ? { type: 'const', constVal: item.fontSize }
+                                : undefined,
                     },
                     text1: text1,
                     text: text,
@@ -1768,17 +1763,11 @@ export class ConfigManager extends BaseClass {
                     data: {
                         icon: {
                             true: {
-                                value: {
-                                    type: 'const',
-                                    constVal: String(icon),
-                                },
+                                value: await this.getFieldAsDataItemConfig(icon || 'gesture-tap-button', true),
                                 color: await this.getIconColor(item.onColor, Color.on),
                             },
                             false: {
-                                value: {
-                                    type: 'const',
-                                    constVal: icon2,
-                                },
+                                value: await this.getFieldAsDataItemConfig(icon2 || 'gesture-tap-button', true),
                                 color: await this.getIconColor(item.offColor, Color.off),
                             },
                             scale: globals.isIconColorScaleElement(item.colorScale)
@@ -1810,17 +1799,11 @@ export class ConfigManager extends BaseClass {
                     data: {
                         icon: {
                             true: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon || 'lightbulb',
-                                },
+                                value: await this.getFieldAsDataItemConfig(item.icon || 'lightbulb', true),
                                 color: await this.getIconColor(item.onColor, Color.light),
                             },
                             false: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon2 || 'lightbulb-outline',
-                                },
+                                value: await this.getFieldAsDataItemConfig(item.icon2 || 'lightbulb-outline', true),
                                 color: await this.getIconColor(item.offColor, Color.dark),
                             },
                             scale: globals.isIconColorScaleElement(item.colorScale)
@@ -1846,17 +1829,12 @@ export class ConfigManager extends BaseClass {
                     data: {
                         icon: {
                             true: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon || 'gesture-tap-button',
-                                },
+                                value: await this.getFieldAsDataItemConfig(item.icon || 'gesture-tap-button', true),
+
                                 color: await this.getIconColor(item.onColor, Color.activated),
                             },
                             false: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon2 || 'gesture-tap-button',
-                                },
+                                value: await this.getFieldAsDataItemConfig(item.icon2 || 'gesture-tap-button', true),
                                 color: await this.getIconColor(item.offColor, Color.deactivated),
                             },
                             scale: globals.isIconColorScaleElement(item.colorScale)
@@ -2095,17 +2073,14 @@ export class ConfigManager extends BaseClass {
                     data: {
                         icon: {
                             true: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon || 'play-box-multiple',
-                                },
+                                value: await this.getFieldAsDataItemConfig(item.icon || 'play-box-multiple', true),
                                 color: await this.getIconColor(item.onColor, Color.activated),
                             },
                             false: {
-                                value: {
-                                    type: 'const',
-                                    constVal: item.icon2 || 'play-box-multiple-outline',
-                                },
+                                value: await this.getFieldAsDataItemConfig(
+                                    item.icon2 || 'play-box-multiple-outline',
+                                    true,
+                                ),
                                 color: await this.getIconColor(item.offColor, Color.deactivated),
                             },
                             scale: globals.isIconColorScaleElement(item.colorScale)
@@ -2484,11 +2459,11 @@ export class ConfigManager extends BaseClass {
                     data: {
                         icon: {
                             true: {
-                                value: { type: 'const', constVal: item.icon || 'fan' },
+                                value: await this.getFieldAsDataItemConfig(item.icon || 'fan', true),
                                 color: await this.getIconColor(item.onColor, Color.Green),
                             },
                             false: {
-                                value: { type: 'const', constVal: item.icon2 || 'fan-off' },
+                                value: await this.getFieldAsDataItemConfig(item.icon2 || 'fan-off', true),
                                 color: await this.getIconColor(item.offColor, Color.Red),
                             },
                         },
@@ -2716,18 +2691,18 @@ export class ConfigManager extends BaseClass {
 
                                     icon: {
                                         true: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon || 'gesture-tap-button',
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon || 'gesture-tap-button',
+                                                true,
+                                            ),
                                             color: await this.getIconColor(item.onColor, Color.activated),
                                         },
                                         false: item.icon2
                                             ? {
-                                                  value: {
-                                                      type: 'const',
-                                                      constVal: item.icon2 || 'gesture-tap-button',
-                                                  },
+                                                  value: await this.getFieldAsDataItemConfig(
+                                                      item.icon2 || 'gesture-tap-button',
+                                                      true,
+                                                  ),
                                                   color: await this.getIconColor(item.offColor, Color.deactivated),
                                               }
                                             : undefined,
@@ -2766,18 +2741,18 @@ export class ConfigManager extends BaseClass {
 
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || 'gesture-tap-button',
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || 'gesture-tap-button',
+                                            true,
+                                        ),
                                         color: await this.getIconColor(item.onColor, Color.activated),
                                     },
                                     false: item.icon2
                                         ? {
-                                              value: {
-                                                  type: 'const',
-                                                  constVal: item.icon2 || 'gesture-tap-button',
-                                              },
+                                              value: await this.getFieldAsDataItemConfig(
+                                                  item.icon2 || 'gesture-tap-button',
+                                                  true,
+                                              ),
                                               color: await this.getIconColor(item.offColor, Color.deactivated),
                                           }
                                         : undefined,
@@ -2871,7 +2846,8 @@ export class ConfigManager extends BaseClass {
                         prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
                         suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
                     },
-                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                    textSize:
+                        item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
                 };
                 const headline = await getButtonsTextTrue(item, role || '');
 
@@ -2884,7 +2860,8 @@ export class ConfigManager extends BaseClass {
                     suffix?: NSPanel.DataItemsOptions | null | undefined;
                 } = {
                     unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
-                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                    textSize:
+                        item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
                     prefix:
                         globals.isCardEntitiesType(page.type) && item.prefixValue
                             ? await this.getFieldAsDataItemConfig(item.prefixValue)
@@ -2924,14 +2901,14 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: { type: 'const', constVal: icon },
+                                        value: await this.getFieldAsDataItemConfig(icon, true),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.socket.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: { type: 'const', constVal: icon2 },
+                                        value: await this.getFieldAsDataItemConfig(icon2, true),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.socket.colorOff],
@@ -2961,20 +2938,20 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || pageItemDefaults.light.iconOn,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || pageItemDefaults.light.iconOn,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.light.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || pageItemDefaults.light.iconOff,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || pageItemDefaults.light.iconOff,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.light.colorOff],
@@ -3006,20 +2983,20 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || pageItemDefaults.dimmer.iconOn,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || pageItemDefaults.dimmer.iconOn,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.dimmer.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || pageItemDefaults.dimmer.iconOff,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || pageItemDefaults.dimmer.iconOff,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.dimmer.colorOff],
@@ -3099,20 +3076,20 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || pageItemDefaults.ct.iconOn,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || pageItemDefaults.ct.iconOn,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.ct.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || pageItemDefaults.ct.iconOff,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || pageItemDefaults.ct.iconOff,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.ct.colorOff],
@@ -3223,20 +3200,20 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || pageItemDefaults.button.iconOn,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || pageItemDefaults.button.iconOn,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.button.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || pageItemDefaults.button.iconOff,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || pageItemDefaults.button.iconOff,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.button.colorOff],
@@ -3272,30 +3249,30 @@ export class ConfigManager extends BaseClass {
                                 data: {
                                     icon: {
                                         true: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon || pageItemDefaults.blind.iconOn,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon || pageItemDefaults.blind.iconOn,
+                                                true,
+                                            ),
                                             color: await this.getIconColor(
                                                 item.onColor,
                                                 Color[pageItemDefaults.blind.colorOn],
                                             ),
                                         },
                                         false: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon2 || pageItemDefaults.blind.iconOff,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon2 || pageItemDefaults.blind.iconOff,
+                                                true,
+                                            ),
                                             color: await this.getIconColor(
                                                 item.offColor,
                                                 Color[pageItemDefaults.blind.colorOff],
                                             ),
                                         },
                                         unstable: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon3 || pageItemDefaults.blind.iconUnstable,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon3 || pageItemDefaults.blind.iconUnstable,
+                                                true,
+                                            ),
                                         },
                                         scale: globals.isIconColorScaleElement(item.colorScale)
                                             ? {
@@ -3366,30 +3343,30 @@ export class ConfigManager extends BaseClass {
                                 data: {
                                     icon: {
                                         true: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon || pageItemDefaults.blind.iconOn,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon || pageItemDefaults.blind.iconOn,
+                                                true,
+                                            ),
                                             color: await this.getIconColor(
                                                 item.onColor,
                                                 Color[pageItemDefaults.blind.colorOn],
                                             ),
                                         },
                                         false: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon2 || pageItemDefaults.blind.iconOff,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon2 || pageItemDefaults.blind.iconOff,
+                                                true,
+                                            ),
                                             color: await this.getIconColor(
                                                 item.offColor,
                                                 Color[pageItemDefaults.blind.colorOff],
                                             ),
                                         },
                                         unstable: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon3 || pageItemDefaults.blind.iconUnstable,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon3 || pageItemDefaults.blind.iconUnstable,
+                                                true,
+                                            ),
                                         },
                                         scale: globals.isIconColorScaleElement(item.colorScale)
                                             ? {
@@ -3516,30 +3493,30 @@ export class ConfigManager extends BaseClass {
                                 data: {
                                     icon: {
                                         true: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon || pageItemDefaults.gate.iconOn,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon || pageItemDefaults.gate.iconOn,
+                                                true,
+                                            ),
                                             color: await this.getIconColor(
                                                 item.onColor,
                                                 Color[pageItemDefaults.gate.colorOn],
                                             ),
                                         },
                                         false: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon2 || pageItemDefaults.gate.iconOff,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon2 || pageItemDefaults.gate.iconOff,
+                                                true,
+                                            ),
                                             color: await this.getIconColor(
                                                 item.offColor,
                                                 Color[pageItemDefaults.gate.colorOff],
                                             ),
                                         },
                                         unstable: {
-                                            value: {
-                                                type: 'const',
-                                                constVal: item.icon3 || pageItemDefaults.gate.iconUnstable,
-                                            },
+                                            value: await this.getFieldAsDataItemConfig(
+                                                item.icon3 || pageItemDefaults.gate.iconUnstable,
+                                                true,
+                                            ),
                                         },
                                         scale: item.colorScale
                                             ? { type: 'const', constVal: item.colorScale }
@@ -3876,14 +3853,15 @@ export class ConfigManager extends BaseClass {
                                 switch1: foundedStates[role].MUTE,
                                 text: text,
                                 icon: {
+                                    textSize:
+                                        item.fontSize || item.fontSize == 0
+                                            ? { type: 'const', constVal: item.fontSize }
+                                            : undefined,
                                     false: {
                                         value: { type: 'const', constVal: pageItemDefaults.volume.iconOff },
                                         text: {
                                             value: foundedStates[role].ACTUAL,
                                             unit: { type: 'const', constVal: '%' },
-                                            textSize: item.fontSize
-                                                ? { type: 'const', constVal: item.fontSize }
-                                                : undefined,
                                         },
                                         color: { type: 'const', constVal: Color[pageItemDefaults.volume.colorOff] },
                                     },
@@ -3908,9 +3886,6 @@ export class ConfigManager extends BaseClass {
                                         text: {
                                             value: foundedStates[role].ACTUAL,
                                             unit: { type: 'const', constVal: '%' },
-                                            textSize: item.fontSize
-                                                ? { type: 'const', constVal: item.fontSize }
-                                                : undefined,
                                         },
                                         color: { type: 'const', constVal: Color[pageItemDefaults.volume.colorOn] },
                                     },
@@ -3965,17 +3940,20 @@ export class ConfigManager extends BaseClass {
                                 valueList: item.modeList ? { type: 'const', constVal: item.modeList } : undefined,
                                 icon: {
                                     true: {
-                                        value: { type: 'const', constVal: item.icon || pageItemDefaults.select.iconOn },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || pageItemDefaults.select.iconOn,
+                                            true,
+                                        ),
                                         color: {
                                             type: 'const',
                                             constVal: item.onColor || Color[pageItemDefaults.select.colorOn],
                                         },
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || pageItemDefaults.select.iconOff,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || pageItemDefaults.select.iconOff,
+                                            true,
+                                        ),
                                         color: {
                                             type: 'const',
                                             constVal: item.offColor || Color[pageItemDefaults.select.colorOff],
@@ -4241,20 +4219,20 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || pageItemDefaults.warning.iconOn,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || pageItemDefaults.warning.iconOn,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.warning.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || pageItemDefaults.warning.iconOff,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || pageItemDefaults.warning.iconOff,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.warning.colorOff],
@@ -4299,20 +4277,20 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon || icon || pageItemDefaults.timer.iconOn,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || icon || pageItemDefaults.timer.iconOn,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.timer.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: {
-                                            type: 'const',
-                                            constVal: item.icon2 || iconFalse || pageItemDefaults.timer.iconOff,
-                                        },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || iconFalse || pageItemDefaults.timer.iconOff,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.timer.colorOff],
@@ -4355,14 +4333,20 @@ export class ConfigManager extends BaseClass {
                             data: {
                                 icon: {
                                     true: {
-                                        value: { type: 'const', constVal: item.icon || pageItemDefaults.fan.iconOn },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon || pageItemDefaults.fan.iconOn,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.onColor,
                                             Color[pageItemDefaults.fan.colorOn],
                                         ),
                                     },
                                     false: {
-                                        value: { type: 'const', constVal: item.icon2 || pageItemDefaults.fan.iconOff },
+                                        value: await this.getFieldAsDataItemConfig(
+                                            item.icon2 || pageItemDefaults.fan.iconOff,
+                                            true,
+                                        ),
                                         color: await this.getIconColor(
                                             item.offColor,
                                             Color[pageItemDefaults.fan.colorOff],
