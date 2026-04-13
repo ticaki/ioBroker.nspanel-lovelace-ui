@@ -1,4 +1,3 @@
-import { urlToHttpOptions } from 'node:url';
 import type { NavigationItemConfig } from '../classes/navigation';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
