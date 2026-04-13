@@ -302,9 +302,6 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff || def);
   }
   const textSize = i.textSize && await i.textSize.getNumber();
-  if (textSize != null) {
-    console.log(`Text size for icon entry is ${textSize}`);
-  }
   const text = getText ? i.true && i.true.text && await getValueEntryString(i.true.text) || null : null;
   if (text !== null) {
     const textFalse = i.false && i.false.text && await getValueEntryString(i.false.text) || null;
@@ -312,15 +309,15 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
       const scale = i.scale && await i.scale.getObject();
       if (globals.isPartialColorScaleElement(scale)) {
         if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on) {
-          return text + (textSize ? `\xAC${textSize}` : "");
+          return text + (textSize != null ? `\xAC${textSize}` : "");
         }
         textFalse;
       }
     }
     if (!on) {
-      return (textFalse || text) + (textSize ? `\xAC${textSize}` : "");
+      return (textFalse || text) + (textSize != null ? `\xAC${textSize}` : "");
     }
-    return text + (textSize ? `\xAC${textSize}` : "");
+    return text + (textSize != null ? `\xAC${textSize}` : "");
   }
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
   const scaleM = i.scale && await i.scale.getObject();
@@ -343,14 +340,14 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     const min = swap ? scale.valIcon_max : scale.valIcon_min;
     const max = swap ? scale.valIcon_min : scale.valIcon_max;
     if (min < on && max > on) {
-      return import_icon_mapping.Icons.GetIcon(i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def) + (textSize ? `\xAC${textSize}` : "");
+      return import_icon_mapping.Icons.GetIcon(i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def) + (textSize != null ? `\xAC${textSize}` : "");
     } else if (!swap && max > on || swap && min < on) {
       return import_icon_mapping.Icons.GetIcon(
         i.false && i.false.value && await i.false.value.getString() || defOff || icon || def
-      ) + (textSize ? `\xAC${textSize}` : "");
+      ) + (textSize != null ? `\xAC${textSize}` : "");
     }
   }
-  return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def) + (textSize ? `\xAC${textSize}` : "");
+  return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def) + (textSize != null ? `\xAC${textSize}` : "");
 }
 async function getIconEntryColor(i, value, def, defOff = null) {
   var _a, _b, _c;

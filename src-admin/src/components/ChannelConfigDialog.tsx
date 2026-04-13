@@ -1634,9 +1634,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     </Tooltip>
                                 </Box>
                                 {/* useValue Checkbox + TextSize */}
-
-                                {this.state.isGridCard && !isCustom && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                    {this.state.isGridCard && (
                                         <Autocomplete
                                             options={['', '1', '2', '3', '4', '5'] as string[]}
                                             value={this.state.textSize !== undefined ? String(this.state.textSize) : ''}
@@ -1662,6 +1661,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 />
                                             )}
                                         />
+                                    )}
+                                    {this.state.isGridCard && !isCustom && (
                                         <FormControl
                                             component="fieldset"
                                             disabled={fieldsDisabled}
@@ -1681,9 +1682,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 }
                                             />
                                         </FormControl>
-                                    </Box>
-                                )}
-
+                                    )}
+                                </Box>
                                 {this.state.isGridCard && longPressEnabled && (
                                     <Box
                                         component="fieldset"

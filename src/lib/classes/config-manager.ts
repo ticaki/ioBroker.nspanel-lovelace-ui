@@ -1598,6 +1598,10 @@ export class ConfigManager extends BaseClass {
                         scale: globals.isIconColorScaleElement(item.colorScale)
                             ? { type: 'const', constVal: item.colorScale }
                             : undefined,
+                        textSize:
+                            item.fontSize || item.fontSize == 0
+                                ? { type: 'const', constVal: item.fontSize }
+                                : undefined,
                     },
                     text1: {
                         true: item.buttonText
@@ -2709,6 +2713,10 @@ export class ConfigManager extends BaseClass {
                                         scale: globals.isIconColorScaleElement(item.colorScale)
                                             ? { type: 'const', constVal: item.colorScale }
                                             : undefined,
+                                        textSize:
+                                            item.fontSize || item.fontSize == 0
+                                                ? { type: 'const', constVal: item.fontSize }
+                                                : undefined,
                                     },
                                     text1: {
                                         true: item.buttonText

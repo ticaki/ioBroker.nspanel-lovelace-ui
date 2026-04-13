@@ -1384,7 +1384,8 @@ class ConfigManager extends import_library.BaseClass {
               value: await this.getFieldAsDataItemConfig(item.icon2 || "gesture-tap-button", true),
               color: await this.getIconColor(item.offColor, import_Color.Color.deactivated)
             } : void 0,
-            scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
+            scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
+            textSize: item.fontSize || item.fontSize == 0 ? { type: "const", constVal: item.fontSize } : void 0
           },
           text1: {
             true: item.buttonText ? await this.getFieldAsDataItemConfig((_a = item.buttonText) != null ? _a : "", true) : {
@@ -2339,7 +2340,8 @@ class ConfigManager extends import_library.BaseClass {
                       ),
                       color: await this.getIconColor(item.offColor, import_Color.Color.deactivated)
                     } : void 0,
-                    scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
+                    scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
+                    textSize: item.fontSize || item.fontSize == 0 ? { type: "const", constVal: item.fontSize } : void 0
                   },
                   text1: {
                     true: item.buttonText ? await this.getFieldAsDataItemConfig((_a = item.buttonText) != null ? _a : "", true) : {

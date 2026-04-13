@@ -598,6 +598,7 @@ declare namespace ScriptConfig {
         longPress?: string | undefined;
         icon?: string;
         icon2?: string;
+        fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
         name?: string;
         onColor?: RGB | string;
         offColor?: RGB | string;
