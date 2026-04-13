@@ -2193,7 +2193,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      this.log.error(`Error checking internet acces1s for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
+      this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
       return false;
     }
   }

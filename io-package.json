@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.1",
+    "version": "0.17.2",
     "news": {
+      "0.17.2": {
+        "en": "bugfix: pageitem name / icon as id for most roles / textSize",
+        "de": "bugfix: pageitem name / icon als id für die meisten Rollen / textGröße",
+        "ru": "bugfix: pageitem name / icon as id для большинства ролей / textSize",
+        "pt": "bugfix: nome / ícone do item de página como id para a maioria das funções / textoSize",
+        "nl": "bugfix: pageitem naam / pictogram als id voor de meeste rollen / tekstgrootte",
+        "fr": "bugfix : nom de pageitem / icône comme id pour la plupart des rôles / textSize",
+        "it": "bugfix: pageitem name / icona come id per la maggior parte dei ruoli / textSize",
+        "es": "bugfix: nombre de página / icono como id para la mayoría de los roles / texto",
+        "pl": "bugfix: nazwa obiektu / ikona jako id dla większości ról / textSize",
+        "uk": "виправлено помилку: ім'я сторінки / іконка як ідентифікатор для більшості ролей / текстВибір",
+        "zh-cn": "bugfix: 页面项目名称/ 图标作为大多数角色的 ID / textSize"
+      },
       "0.17.1": {
         "en": "bugfix: longpress",
         "de": "bugfix: longpress",
@@ -80,19 +93,6 @@
         "pl": "naprawiono: strona iCal / śmieci – format roku wyświetlania daty (2-cyfrowy vs. 4-cyfrowy) był zamieniony dla krótkich i długich list elementów\nnaprawiono: licznik zasad panelu zwiększony z 120 s do 140 s w celu zmniejszenia fałszywych zdarzeń \"panel odłączony\" po uruchomieniu\nnaprawiono: `setPopupNotification` teraz zwraca `{ error: 'No Panels Online' }` poprzez wywołanie zwrotne, gdy żaden panel nie jest online zamiast milcząco ignorować wywołanie",
         "uk": "виправлено: сторінка iCal / смітника – формат відображення року дати (2-значний vs. 4-значний) був переставлений для коротких і довгих списків елементів\nвиправлено: таймер правила панелі збільшений з 120 до 140 s для зменшення помилкових подій \"panel disconnected\" після запуску\nвиправлено: `setPopupNotification` тепер повертає `{ error: 'No Panels Online' }` через зворотний виклик, коли немає панелі онлайн, замість того щоб мовчки ігнорувати виклик",
         "zh-cn": "修复: iCal / 垃圾页 – 日期显示年份格式（2位数对4位数）在短列表和长列表中被互换\n修复: 面板规则计时器从120 s增加到140 s，以减少启动后的误报\"面板断开连接\"事件\n修复: `setPopupNotification` 现在在没有面板在线时通过回调返回 `{ error: 'No Panels Online' }`，而不是静默忽略该调用"
-      },
-      "0.15.2": {
-        "en": "added: message dialog when berry installation fails due to missing internet access on the panel\nadded: improved offline detection for panels\nimproved: version info caching (15–60 min) to reduce external API calls\nfixed: admin panel info tab now displays state labels in the correct system language",
-        "de": "neu: Meldungsdialog wenn die Berry-Installation aufgrund fehlender Internetverbindung des Panels fehlschlägt\nneu: Verbesserte Offline-Erkennung für Panels\nverbessert: Versions-Info-Caching (15–60 Min.) zur Reduzierung externer API-Aufrufe\nbehoben: Panel-Info-Tab zeigt State-Labels nun in der korrekten Systemsprache an",
-        "ru": "добавлено: диалог сообщения, если установка Berry не удаётся из-за отсутствия доступа к интернету на панели\nдобавлено: улучшенное определение режима офлайн для панелей\nулучшено: кэширование информации о версии (15–60 мин.) для уменьшения внешних вызовов API\nисправлено: вкладка информации о панели теперь отображает метки состояний на правильном языке системы",
-        "pt": "adicionado: diálogo de mensagem quando a instalação do Berry falha por falta de acesso à internet no painel\nadicionado: detecção offline melhorada para painéis\nmelhorado: cache de informações de versão (15–60 min) para reduzir chamadas de API externas\ncorrigido: aba de informações do painel agora exibe rótulos de estado no idioma do sistema correto",
-        "nl": "toegevoegd: berichtendialoog als de Berry-installatie mislukt vanwege het ontbreken van internettoegang op het paneel\ntoegevoegd: verbeterde offline-detectie voor panelen\nverbeterd: versie-info-caching (15–60 min) om externe API-aanroepen te verminderen\nopgelost: paneelinformatie-tabblad toont nu statuslabels in de juiste systeemtaal",
-        "fr": "ajouté : boîte de dialogue de message lorsque l'installation de Berry échoue en raison d'un manque d'accès internet sur le panneau\najouté : détection hors ligne améliorée pour les panneaux\namélioré : mise en cache des informations de version (15–60 min) pour réduire les appels API externes\ncorrigé : l'onglet d'informations du panneau affiche maintenant les étiquettes d'état dans la langue du système correcte",
-        "it": "aggiunto: finestra di dialogo quando l'installazione di Berry fallisce per mancanza di accesso a internet sul pannello\naggiunto: rilevamento offline migliorato per i pannelli\nmigliorato: cache delle informazioni di versione (15–60 min) per ridurre le chiamate API esterne\ncorretto: la scheda informazioni del pannello ora visualizza le etichette di stato nella lingua di sistema corretta",
-        "es": "añadido: diálogo de mensaje cuando la instalación de Berry falla por falta de acceso a internet en el panel\nañadido: detección sin conexión mejorada para paneles\nmejorado: caché de información de versión (15–60 min) para reducir las llamadas a API externas\ncorregido: la pestaña de información del panel ahora muestra las etiquetas de estado en el idioma del sistema correcto",
-        "pl": "dodano: okno dialogowe wiadomości, gdy instalacja Berry nie powiodła się z powodu braku dostępu do internetu na panelu\ndodano: ulepszone wykrywanie trybu offline dla paneli\nulepszone: buforowanie informacji o wersji (15–60 min) w celu zmniejszenia liczby zewnętrznych wywołań API\nnaprawiono: karta informacyjna panelu wyświetla teraz etykiety stanów w poprawnym języku systemowym",
-        "uk": "додано: діалог повідомлення, коли встановлення Berry не вдається через відсутність доступу до інтернету на панелі\nдодано: покращене визначення режиму офлайн для панелей\nпокращено: кешування інформації про версію (15–60 хв.) для зменшення зовнішніх викликів API\nвиправлено: вкладка інформації про панель тепер відображає мітки станів на правильній мові системи",
-        "zh-cn": "新增: Berry 安装因面板缺少网络连接而失败时显示消息对话框\n新增: 改进面板的离线检测\n改进: 版本信息缓存（15–60分钟）以减少外部API调用\n修复: 管理面板信息标签现在以正确的系统语言显示状态标签"
       }
     },
     "titleLang": {
