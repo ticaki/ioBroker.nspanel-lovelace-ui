@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.2",
+    "version": "0.17.3",
     "news": {
+      "0.17.3": {
+        "en": "fixed: textSize/fontSize 0-5 and tooltip, us-p admin layout, not update emu berry, textSize for custom item, activate trigger for custom id",
+        "de": "behoben: textSize/fontSize 0-5 und tooltip, us-p admin layout, ignoriere berry update für emu, textSize für benutzerdefiniertes Item, trigger für benutzerdefinierte Item ID aktiviert",
+        "ru": "фиксированный: textSize/fontSize 0-5 и tooltip, us-p admin layout, not update emu berry, textSize for custom item, activate trigger for custom id",
+        "pt": "fixo: textSize/fontSize 0-5 e tooltip, us-p layout de administrador, não atualizar emu berry, textSize para item personalizado, ativar gatilho para id personalizado",
+        "nl": "fixed: textSize/fontSize 0-5 en tooltip, us-p admin layout, geen update emu bery, textSize voor aangepast item, activeer trigger voor aangepaste id",
+        "fr": "fixe: textSize/fontSize 0-5 et tooltip, us-p admin layout, pas de mise à jour emu berry, textSize pour un élément personnalisé, activez le déclencheur pour un id personnalisé",
+        "it": "fisso: textSize/fontSize 0-5 e tooltip, us-p admin layout, non aggiornare emu berry, textSize per articolo personalizzato, attivare il trigger per id personalizzato",
+        "es": "fijo: textSize/fontSize 0-5 y tooltip, us-p admin layout, no actualizado emu berry, textoSize for custom item, activa el gatillo para id personalizado",
+        "pl": "stałe: textSize / fontSize 0- 5 i końcówka narzędzia, układ administracyjny us- p, nie aktualizacja jagody emu, textSize dla niestandardowych elementów, aktywacja przycisku dla niestandardowych id",
+        "uk": "виправлено: textSize/fontSize 0-5 і tooltip, us-p адмін макет, не оновити ему ягідку, текстВибір для користувацького елемента, активувати тригер для користувальницьких ідентифікаторів",
+        "zh-cn": "固定:文本Size/fontSize 0-5和工具提示,我们-p管理员布局,不更新emu bery,文本Size为自定义项目,激活自定义ID的触发器"
+      },
       "0.17.2": {
         "en": "bugfix: pageitem name / icon as id for most roles / textSize",
         "de": "bugfix: pageitem name / icon als id für die meisten Rollen / textGröße",
@@ -80,19 +93,6 @@
         "pl": "feat: nowy edytor stron wizualnych w UI admin – skonfiguruj strony cardGrid, cardGrid2, cardGrid3, cardEntities i cardSchedule, w tym ich elementy bezpośrednio w admin.",
         "uk": "feat: новий візуальний редактор сторінок в адмін UI – налаштовуйте сторінки cardGrid, cardGrid2, cardGrid3, cardEntities та cardSchedule включаючи їх елементи безпосередньо в адмін.",
         "zh-cn": "feat: admin UI 中的新视觉页面编辑器 – 配置 cardGrid, cardGrid2, cardGrid3, cardEntities 和 cardSchedule 页面,包括直接在admin中的项目."
-      },
-      "0.15.4": {
-        "en": "fixed: iCal / trash page – date display year format (2-digit vs. 4-digit) was swapped for short and long item lists\nfixed: panel rule timer increased from 120 s to 140 s to reduce false \"panel disconnected\" events after startup\nfixed: `setPopupNotification` now returns `{ error: 'No Panels Online' }` via callback when no panel is online instead of silently ignoring the call",
-        "de": "behoben: iCal / Müll-Seite – Datumsanzeigeformat für das Jahr (2-stellig vs. 4-stellig) war für kurze und lange Eintraglisten vertauscht\nbehoben: Panel-Regel-Timer von 120 s auf 140 s erhöht, um falsche \"Panel getrennt\"-Ereignisse nach dem Start zu reduzieren\nbehoben: `setPopupNotification` gibt jetzt `{ error: 'No Panels Online' }` per Callback zurück, wenn kein Panel online ist, anstatt den Aufruf still zu ignorieren",
-        "ru": "исправлено: страница iCal / мусора – формат отображения года даты (2-значный против 4-значного) был переставлен для коротких и длинных списков элементов\nисправлено: таймер правил панели увеличен со 120 до 140 с для уменьшения ложных событий \"панель отключена\" после запуска\nисправлено: `setPopupNotification` теперь возвращает `{ error: 'No Panels Online' }` через обратный вызов, когда ни одна панель не онлайн, вместо того чтобы молча игнорировать вызов",
-        "pt": "corrigido: página iCal / lixo – o formato do ano na exibição de data (2 dígitos vs. 4 dígitos) estava trocado para listas de itens curtas e longas\ncorrigido: o temporizador de regra do painel foi aumentado de 120 s para 140 s para reduzir falsos eventos \"panel desconectado\" após a inicialização\ncorrigido: `setPopupNotification` agora retorna `{ error: 'No Panels Online' }` via callback quando nenhum painel está online em vez de ignorar silenciosamente a chamada",
-        "nl": "opgelost: iCal / prullenbak-pagina – het formaat van het jaar in de datumweergave (2-cijferig vs. 4-cijferig) was verwisseld voor korte en lange lijsten\nopgelost: paneelregel-timer verhoogd van 120 s naar 140 s om valse \"paneel verbroken\"-gebeurtenissen na het opstarten te verminderen\nopgelost: `setPopupNotification` geeft nu `{ error: 'No Panels Online' }` terug via callback wanneer geen paneel online is in plaats van de aanroep stil te negeren",
-        "fr": "corrigé : page iCal / poubelle – le format de l'année dans l'affichage de la date (2 chiffres contre 4 chiffres) était inversé pour les listes d'éléments courtes et longues\ncorrigé : la règle du panneau timer est passée de 120 s à 140 s pour réduire les faux événements \"panel déconnecté\" après le démarrage\ncorrigé : `setPopupNotification` retourne désormais `{ error: 'No Panels Online' }` via callback quand aucun panneau n'est en ligne au lieu d'ignorer silencieusement l'appel",
-        "it": "corretto: pagina iCal / cestino – il formato dell'anno nella visualizzazione della data (2-digit vs. 4-digit) era invertito per le liste di elementi brevi e lunghe\ncorretto: il timer della regola del pannello è aumentato da 120 s a 140 s per ridurre i falsi eventi \"panel scollegato\" dopo l'avvio\ncorretto: `setPopupNotification` ora restituisce `{ error: 'No Panels Online' }` via callback quando nessun pannello è online invece di ignorare silenziosamente la chiamata",
-        "es": "corregido: página iCal / basura – el formato del año en la visualización de fecha (2 dígitos vs. 4 dígitos) estaba intercambiado para listas de elementos cortas y largas\ncorregido: el temporizador de regla del panel aumentó de 120 s a 140 s para reducir los falsos eventos \"panel desconectado\" después del arranque\ncorregido: `setPopupNotification` ahora devuelve `{ error: 'No Panels Online' }` vía callback cuando ningún panel está en línea en lugar de ignorar silenciosamente la llamada",
-        "pl": "naprawiono: strona iCal / śmieci – format roku wyświetlania daty (2-cyfrowy vs. 4-cyfrowy) był zamieniony dla krótkich i długich list elementów\nnaprawiono: licznik zasad panelu zwiększony z 120 s do 140 s w celu zmniejszenia fałszywych zdarzeń \"panel odłączony\" po uruchomieniu\nnaprawiono: `setPopupNotification` teraz zwraca `{ error: 'No Panels Online' }` poprzez wywołanie zwrotne, gdy żaden panel nie jest online zamiast milcząco ignorować wywołanie",
-        "uk": "виправлено: сторінка iCal / смітника – формат відображення року дати (2-значний vs. 4-значний) був переставлений для коротких і довгих списків елементів\nвиправлено: таймер правила панелі збільшений з 120 до 140 s для зменшення помилкових подій \"panel disconnected\" після запуску\nвиправлено: `setPopupNotification` тепер повертає `{ error: 'No Panels Online' }` через зворотний виклик, коли немає панелі онлайн, замість того щоб мовчки ігнорувати виклик",
-        "zh-cn": "修复: iCal / 垃圾页 – 日期显示年份格式（2位数对4位数）在短列表和长列表中被互换\n修复: 面板规则计时器从120 s增加到140 s，以减少启动后的误报\"面板断开连接\"事件\n修复: `setPopupNotification` 现在在没有面板在线时通过回调返回 `{ error: 'No Panels Online' }`，而不是静默忽略该调用"
       }
     },
     "titleLang": {
