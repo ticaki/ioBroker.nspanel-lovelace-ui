@@ -371,6 +371,7 @@
     "nextF": "next",
     "nextW": "Next",
     "no_screensavers": "No Screensavers",
+    "not_a_boolean_state": "not a boolean state",
     "not_a_state": "not a state",
     "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange.",
     "nsPanelInit": "NSPanel initialization",

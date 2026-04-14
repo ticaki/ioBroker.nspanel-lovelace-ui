@@ -95,7 +95,9 @@ interface ChannelConfigDialogState {
     /** null = nicht geprüft, true = existiert, false = existiert nicht */
     channelExists: boolean | null;
     checkingChannel: boolean;
-    stateIsWriteable: boolean | null;
+
+    // null=kein State, undefined=kein boolean State, true/false=boolean State mit write=true/false
+    stateIsWriteable?: boolean | null;
     /** common.role des gewählten ioBroker-Objekts */
     channelRole: string | null;
     /** true wenn channelRole eine bekannte ScriptConfig.channelRole ist */
@@ -696,7 +698,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             const isCustom = checked === undefined ? this.state.isCustom : checked;
             const obj: ioBroker.Object | null | undefined = await socket.getObject(objectId);
             const role = obj?.common?.role ?? null;
-            const stateIsWriteable = obj?.type === 'state' ? obj.common?.write === true : null;
+            const stateIsWriteable =
+                obj?.type === 'state' ? (obj.common.type !== 'boolean' ? undefined : obj.common?.write === true) : null;
             const channelRole = typeof role === 'string' ? role : null;
             const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
             const rawName: unknown = (obj as any)?.common?.name;
@@ -1614,7 +1617,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                     ? I18n.t('read-only')
                                                     : stateIsWriteable === true
                                                       ? I18n.t('writeable')
-                                                      : I18n.t('not_a_state'))
+                                                      : stateIsWriteable === undefined
+                                                        ? I18n.t('not_a_boolean_state')
+                                                        : I18n.t('not_a_state'))
                                             }.`}
                                         </Typography>
                                     )) ||
