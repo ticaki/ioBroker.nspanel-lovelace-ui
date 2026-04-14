@@ -1358,6 +1358,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     }}
                     fullWidth
                     maxWidth="md"
+                    sx={{
+                        '& .MuiDialog-container': {
+                            alignItems: 'flex-start',
+                        },
+                        '& .MuiDialog-paper': {
+                            mt: { xs: 0, sm: 4, lg: 12 },
+                            mx: { xs: 0, sm: 'auto' },
+                            borderRadius: { xs: 0, sm: 2 },
+                            maxHeight: { xs: '100dvh', sm: 'calc(100dvh - 64px)' },
+                            width: { xs: '100%', sm: undefined },
+                        },
+                    }}
                 >
                     <DialogTitle>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1511,7 +1523,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         )}
                                     <Box sx={{ flex: 1, minWidth: 0 }}>
                                         <EntitySelector
-                                            label={I18n.t('channelConfigDialog_channelId')}
+                                            label={I18n.t(
+                                                isCustom
+                                                    ? 'channelConfigDialog_stateId'
+                                                    : 'channelConfigDialog_channelId',
+                                            )}
                                             value={channelId.valueStateId}
                                             onChange={this.handleChannelIdChange}
                                             onCommit={this.handleChannelIdCommit}
@@ -1567,15 +1583,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         {I18n.t('channelConfigDialog_channelNotFound')}
                                     </Typography>
                                 )}
-                                {(isCustom && (
+                                {(!isNavigation && !channelId.valueStateId && (
                                     <Typography
                                         variant="caption"
                                         color="warning.main"
                                         sx={{ mt: -1.5 }}
                                     >
-                                        {I18n.t('channelConfigDialog_isCustomHint')}
+                                        {I18n.t('channelConfigDialog_missingIDForbidden')}
                                     </Typography>
                                 )) ||
+                                    (isCustom && (
+                                        <Typography
+                                            variant="caption"
+                                            color="text.disabled"
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {I18n.t('channelConfigDialog_isCustomHint')}
+                                        </Typography>
+                                    )) ||
                                     (roleIsValid === false && !checkingChannel && (
                                         <Typography
                                             variant="caption"
@@ -1584,7 +1609,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         >
                                             {I18n.t('channelConfigDialog_unknownRoleHint')}
                                         </Typography>
-                                    ))}
+                                    )) ||
+                                    (channelId.valueStateId && (
+                                        <Typography
+                                            variant="caption"
+                                            color="text.disabled"
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {I18n.t('ok')}
+                                        </Typography>
+                                    )) || (
+                                        <Typography
+                                            variant="caption"
+                                            color="text.disabled"
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {I18n.t('channelConfigDialog_emptyIDAllowed')}
+                                        </Typography>
+                                    )}
 
                                 {/* Namensfeld + Value-Entry-Konfigurationsbutton */}
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
