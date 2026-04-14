@@ -2689,7 +2689,7 @@ export class ConfigManager extends BaseClass {
                                 type: 'button',
                                 data: {
                                     entity1: {
-                                        value: await this.getFieldAsDataItemConfig(item.id),
+                                        value: await this.getFieldAsDataItemConfig(item.id, true),
                                         set: writeable ? await this.getFieldAsDataItemConfig(item.id) : undefined,
                                     },
 
