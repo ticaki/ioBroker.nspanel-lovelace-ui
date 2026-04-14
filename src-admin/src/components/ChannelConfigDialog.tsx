@@ -95,6 +95,7 @@ interface ChannelConfigDialogState {
     /** null = nicht geprüft, true = existiert, false = existiert nicht */
     channelExists: boolean | null;
     checkingChannel: boolean;
+    stateIsWriteable: boolean | null;
     /** common.role des gewählten ioBroker-Objekts */
     channelRole: string | null;
     /** true wenn channelRole eine bekannte ScriptConfig.channelRole ist */
@@ -191,6 +192,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelExists: null,
             checkingChannel: false,
             channelRole: null,
+            stateIsWriteable: null,
             roleIsValid: null,
             validChannelIds: [],
             nativeMode: false,
@@ -628,7 +630,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param id
      */
     private transformChannelId = (id: string): string => {
-        const { validChannelIds } = this.state;
+        const { validChannelIds, isCustom } = this.state;
+        if (isCustom) {
+            return id;
+        }
         let best = '';
         for (const chId of validChannelIds) {
             if ((id === chId || id.startsWith(`${chId}.`)) && chId.length > best.length) {
@@ -643,6 +648,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId: { ...this.state.channelId, valueStateId: id },
             channelExists: null,
             channelRole: null,
+            stateIsWriteable: null,
             roleIsValid: null,
             datapointErrors: [],
             datapointDuplicates: [],
@@ -671,6 +677,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             this.setState({
                 channelExists: null,
                 channelRole: null,
+                stateIsWriteable: null,
                 roleIsValid: null,
                 datapointErrors: [],
                 datapointDuplicates: [],
@@ -689,6 +696,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             const isCustom = checked === undefined ? this.state.isCustom : checked;
             const obj: ioBroker.Object | null | undefined = await socket.getObject(objectId);
             const role = obj?.common?.role ?? null;
+            const stateIsWriteable = obj?.type === 'state' ? obj.common?.write === true : null;
             const channelRole = typeof role === 'string' ? role : null;
             const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
             const rawName: unknown = (obj as any)?.common?.name;
@@ -704,6 +712,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 {
                     channelExists: obj != null,
                     channelRole,
+                    stateIsWriteable,
                     roleIsValid: channelRole !== null ? roleIsValid : null,
                     checkingChannel: false,
                     channelNameSuggestion,
@@ -1282,6 +1291,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelExists,
             checkingChannel,
             channelRole,
+            stateIsWriteable,
             roleIsValid,
             nativeMode,
             nativeJson,
@@ -1595,10 +1605,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     (isCustom && (
                                         <Typography
                                             variant="caption"
-                                            color="text.disabled"
+                                            color={stateIsWriteable != null ? 'text.disabled' : 'warning.main'}
                                             sx={{ mt: -1.5 }}
                                         >
-                                            {I18n.t('channelConfigDialog_isCustomHint')}
+                                            {`${
+                                                I18n.t('channelConfigDialog_isCustomHint') +
+                                                (stateIsWriteable === false
+                                                    ? I18n.t('read-only')
+                                                    : stateIsWriteable === true
+                                                      ? I18n.t('writeable')
+                                                      : I18n.t('not_a_state'))
+                                            }.`}
                                         </Typography>
                                     )) ||
                                     (roleIsValid === false && !checkingChannel && (
@@ -1616,7 +1633,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             color="text.disabled"
                                             sx={{ mt: -1.5 }}
                                         >
-                                            {I18n.t('ok')}
+                                            {I18n.t(`ok ${channelRole ? `(role=${channelRole})` : ''}`)}
                                         </Typography>
                                     )) || (
                                         <Typography

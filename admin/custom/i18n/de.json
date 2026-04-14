@@ -222,7 +222,7 @@
     "channelConfigDialog_icon_true": "Symbol (wahr)",
     "channelConfigDialog_invalidJson": "Ungültiges JSON",
     "channelConfigDialog_isCustom": "Benutzerdefinierter Knopf (kein Alias nötig)",
-    "channelConfigDialog_isCustomHint": "Benutzerdefinierter Knopf: Object-Id muss direkt auf einen boolean State zeigen (true/false)",
+    "channelConfigDialog_isCustomHint": "Benutzerdefinierter Knopf: Id muss direkt auf einen type=boolean State zeigen. Ausgewählte ID ist ",
     "channelConfigDialog_isNavigation": "Ist eine Navigation",
     "channelConfigDialog_log10": "Logarithmische Skalierung",
     "channelConfigDialog_log10_linear": "Linear (keine)",
@@ -371,6 +371,7 @@
     "nextF": "Nächste",
     "nextW": "Weiter",
     "no_screensavers": "Keine Bildschirmschoner",
+    "not_a_state": "kein State",
     "notifyMqttServer": "Wir empfehlen den internen MQTT-Server des Adapters zu nutzen, dieser arbeitet direkt mit dem Panel. Dadurch konnte der Datenaustausch optimiert werden.",
     "nsPanelInit": "Nspanel-Initialisierung",
     "nsPanelInitLabel": "Nspanel-Initialisierung",
@@ -464,6 +465,7 @@
     "qr_type_wifi": "WLAN",
     "qr_wlan_hidden": "Verstecktes Netzwerk",
     "qr_wlan_type": "WLAN-Verschlüsselung",
+    "read-only": "nur lesbar",
     "refresh": "Aktualisieren",
     "rememberLastSite": "Letzte Seite merken",
     "rememberLastSiteHint": "Optional: Merke die zuletzt geöffnete Seite und nutze diese als neue Startseite - bis zum Restart des Panels",
@@ -640,5 +642,6 @@
     "wlanhidden": "verstecktes Wlan",
     "wlantype": "Wlan Verschlüsselung",
     "writeTasmotaTele": "Tasmota Telemetriedaten schreiben",
-    "writeTasmotaTeleHint": "Wenn aktiviert, werden die Telemetriedaten des Panels in den Datenpunkten gespeichert. (panels/XXXXX/info/tasmota/sts....)"
+    "writeTasmotaTeleHint": "Wenn aktiviert, werden die Telemetriedaten des Panels in den Datenpunkten gespeichert. (panels/XXXXX/info/tasmota/sts....)",
+    "writeable": "beschreibbar"
 }

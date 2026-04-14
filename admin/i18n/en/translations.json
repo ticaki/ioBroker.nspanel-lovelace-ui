@@ -222,7 +222,7 @@
     "channelConfigDialog_icon_true": "Icon (true)",
     "channelConfigDialog_invalidJson": "Invalid JSON",
     "channelConfigDialog_isCustom": "Custom button (no alias needed)",
-    "channelConfigDialog_isCustomHint": "Custom button: Object ID must directly point to a boolean state (true/false)",
+    "channelConfigDialog_isCustomHint": "Custom button: The ID must point directly to a state with type=boolean. The selected ID is ",
     "channelConfigDialog_isNavigation": "Is a navigation",
     "channelConfigDialog_log10": "Logarithmic Scaling",
     "channelConfigDialog_log10_linear": "Linear (none)",
@@ -371,6 +371,7 @@
     "nextF": "next",
     "nextW": "Next",
     "no_screensavers": "No Screensavers",
+    "not_a_state": "not a state",
     "notifyMqttServer": "We recommend using the adapter's internal MQTT server, which works directly with the panel. This optimizes data exchange.",
     "nsPanelInit": "NSPanel initialization",
     "nsPanelInitLabel": "NSPanel initialisation",
@@ -464,6 +465,7 @@
     "qr_type_wifi": "WiFi",
     "qr_wlan_hidden": "Hidden Network",
     "qr_wlan_type": "WiFi Encryption",
+    "read-only": "read-only",
     "refresh": "Refresh",
     "rememberLastSite": "Remember last page",
     "rememberLastSiteHint": "Optional: Remember the last opened page and open it the next time the interface is loaded. If disabled, the page defined as the start page in the settings will be opened.",
@@ -640,5 +642,6 @@
     "wlanhidden": "hidden wifi",
     "wlantype": "Wifi encryption",
     "writeTasmotaTele": "Write Tasmota telemetry data",
-    "writeTasmotaTeleHint": "When enabled, the telemetry data of the panel will be stored in the data points (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "When enabled, the telemetry data of the panel will be stored in the data points (panels/XXXXX/info/tasmota/sts....).",
+    "writeable": "writeable"
 }
