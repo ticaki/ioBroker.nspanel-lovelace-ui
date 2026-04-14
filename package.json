@@ -39,7 +39,7 @@
     "level": "^10.0.0",
     "mqtt": "^5.15.1",
     "node-forge": "^1.4.0",
-    "node-ical": "^0.25.6",
+    "node-ical": "^0.26.0",
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
