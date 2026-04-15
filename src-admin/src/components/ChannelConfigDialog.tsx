@@ -1879,54 +1879,60 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         )}
                     </DialogContent>
 
-                    <DialogActions>
-                        {/* Nativ JSON-Modus Umschalter nur im Expertenmodus anzeigen */}
-                        {(expertMode || nativeMode) && (
-                            <Button
-                                size="small"
-                                variant={nativeMode ? 'contained' : 'outlined'}
-                                color={nativeMode ? 'warning' : 'inherit'}
-                                onClick={this.handleNativeModeToggle}
-                                sx={{ mr: 'auto' }}
-                            >
-                                {nativeMode
-                                    ? I18n.t('channelConfigDialog_standard')
-                                    : I18n.t('channelConfigDialog_native')}
-                            </Button>
-                        )}
-                        {/* Color-Button, wenn nicht im Native-Modus */}
+                    <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 2, pb: 2 }}>
+                        {/* Color-Button in eigener Zeile, wenn nicht im Native-Modus */}
                         {!internColorFieldsDisabled && (
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={this.handleColorOpen}
-                                startIcon={<PaletteIcon />}
-                            >
-                                {I18n.t('channelConfigDialog_colorSettings')}
-                            </Button>
+                            <Box>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={this.handleColorOpen}
+                                    startIcon={<PaletteIcon />}
+                                    fullWidth
+                                >
+                                    {I18n.t('channelConfigDialog_colorSettings')}
+                                </Button>
+                            </Box>
                         )}
-                        {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
-                        <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
-                        <Button
-                            variant="contained"
-                            onClick={this.handleSave}
-                            disabled={!canSave || this.state.isSaving}
-                            color={hasDatapointProblems || errorSaveDetails ? 'warning' : 'primary'}
-                            startIcon={
-                                this.state.isSaving ? (
-                                    <CircularProgress
-                                        size={16}
-                                        color="inherit"
-                                    />
-                                ) : undefined
-                            }
-                        >
-                            {this.state.isSaving
-                                ? I18n.t('channelConfigDialog_checking')
-                                : hasDatapointProblems || errorSaveDetails
-                                  ? I18n.t('channelConfigDialog_details')
-                                  : I18n.t('valueEntryDialog_save')}
-                        </Button>
+                        {/* Untere Zeile: Native-Toggle links, Abbrechen + Speichern rechts */}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                            {/* Nativ JSON-Modus Umschalter nur im Expertenmodus anzeigen */}
+                            {(expertMode || nativeMode) && (
+                                <Button
+                                    size="small"
+                                    variant={nativeMode ? 'contained' : 'outlined'}
+                                    color={nativeMode ? 'warning' : 'inherit'}
+                                    onClick={this.handleNativeModeToggle}
+                                    sx={{ mr: 'auto' }}
+                                >
+                                    {nativeMode
+                                        ? I18n.t('channelConfigDialog_standard')
+                                        : I18n.t('channelConfigDialog_native')}
+                                </Button>
+                            )}
+                            {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
+                            <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
+                            <Button
+                                variant="contained"
+                                onClick={this.handleSave}
+                                disabled={!canSave || this.state.isSaving}
+                                color={hasDatapointProblems || errorSaveDetails ? 'warning' : 'primary'}
+                                startIcon={
+                                    this.state.isSaving ? (
+                                        <CircularProgress
+                                            size={16}
+                                            color="inherit"
+                                        />
+                                    ) : undefined
+                                }
+                            >
+                                {this.state.isSaving
+                                    ? I18n.t('channelConfigDialog_checking')
+                                    : hasDatapointProblems || errorSaveDetails
+                                      ? I18n.t('channelConfigDialog_details')
+                                      : I18n.t('valueEntryDialog_save')}
+                            </Button>
+                        </Box>
                     </DialogActions>
                 </Dialog>
 
