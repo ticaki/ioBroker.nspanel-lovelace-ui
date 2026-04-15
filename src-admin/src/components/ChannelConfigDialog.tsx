@@ -1376,10 +1376,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             alignItems: 'flex-start',
                         },
                         '& .MuiDialog-paper': {
-                            mt: { xs: 0, sm: 4, lg: 12 },
+                            mt: { xs: 0, sm: 4, lg: 8 },
                             mx: { xs: 0, sm: 'auto' },
                             borderRadius: { xs: 0, sm: 2 },
-                            maxHeight: { xs: '100dvh', sm: 'calc(100dvh - 64px)' },
+                            maxHeight: { xs: '100dvh', sm: 'calc(100dvh - 64px)', lg: 'calc(100dvh - 128px)' },
                             width: { xs: '100%', sm: undefined },
                         },
                     }}

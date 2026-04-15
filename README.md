@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) Improved selection of custom button IDs
+- (copilot) fixed: ChannelConfigDialog bottom cut off on small laptop screens (save/color buttons not reachable)
 
 ### 0.17.3 (2026-04-14)
 - (ticaki) fixed: textSize/fontSize 0-5 and tooltip, us-p admin layout, not update emu berry, textSize for custom item, activate trigger for custom id
