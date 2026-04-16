@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.3",
+    "version": "0.17.4",
     "news": {
+      "0.17.4": {
+        "en": "fixed: admin navigation pages were incorrectly linked\nimproved: selection of custom button IDs\nfixed: ChannelConfigDialog footer cut off on small laptop screens (save/color buttons unreachable)",
+        "de": "fixed: Admin-Navigationsseiten waren falsch verknüpft\nimproved: Auswahl benutzerdefinierter Tasten-IDs\nfixed: ChannelConfigDialog unten auf kleinen Laptop-Bildschirmen abgeschnitten (Speichern/Farb-Schaltflächen nicht erreichbar)",
+        "ru": "fixed: страницы навигации администратора были неправильно связаны\nimproved: выбор пользовательских идентификаторов кнопок\nfixed: нижняя часть ChannelConfigDialog обрезана на небольших экранах ноутбуков (кнопки сохранения/цвета недоступны)",
+        "pt": "fixed: as páginas de navegação do admin estavam incorretamente vinculadas\nimproved: seleção de IDs de botões personalizados\nfixed: rodapé do ChannelConfigDialog cortado em telas de laptop pequenas (botões salvar/cor não acessíveis)",
+        "nl": "fixed: admin-navigatiepagina's waren onjuist gekoppeld\nimproved: selectie van aangepaste knop-ID's\nfixed: onderkant van ChannelConfigDialog afgesneden op kleine laptopschermen (opslaan/kleurenknoppen niet bereikbaar)",
+        "fr": "fixed: les pages de navigation admin étaient incorrectement liées\nimproved: sélection des identifiants de boutons personnalisés\nfixed: bas du ChannelConfigDialog tronqué sur les petits écrans de laptop (boutons enregistrer/couleur inaccessibles)",
+        "it": "fixed: le pagine di navigazione admin erano collegate in modo errato\nimproved: selezione degli ID dei pulsanti personalizzati\nfixed: parte inferiore di ChannelConfigDialog troncata su schermi piccoli di laptop (pulsanti salva/colore non raggiungibili)",
+        "es": "fixed: las páginas de navegación del admin estaban vinculadas incorrectamente\nimproved: selección de IDs de botones personalizados\nfixed: parte inferior de ChannelConfigDialog cortada en pantallas de laptop pequeñas (botones guardar/color no accesibles)",
+        "pl": "fixed: strony nawigacji administratora były nieprawidłowo połączone\nimproved: wybór niestandardowych identyfikatorów przycisków\nfixed: dolna część ChannelConfigDialog odcięta na małych ekranach laptopów (przyciski zapisz/kolor niedostępne)",
+        "uk": "fixed: сторінки навігації адміністратора були неправильно пов'язані\nimproved: вибір ідентифікаторів користувацьких кнопок\nfixed: нижня частина ChannelConfigDialog обрізана на невеликих екранах ноутбуків (кнопки збереження/кольору недоступні)",
+        "zh-cn": "fixed: 管理员导航页面链接不正确\nimproved: 自定义按钮ID的选择\nfixed: ChannelConfigDialog底部在小型笔记本电脑屏幕上被截断（保存/颜色按钮无法访问）"
+      },
       "0.17.3": {
         "en": "fixed: textSize/fontSize 0-5 and tooltip, us-p admin layout, not update emu berry, textSize for custom item, activate trigger for custom id",
         "de": "behoben: textSize/fontSize 0-5 und tooltip, us-p admin layout, ignoriere berry update für emu, textSize für benutzerdefiniertes Item, trigger für benutzerdefinierte Item ID aktiviert",
@@ -80,19 +93,6 @@
         "pl": "Natywna konfiguracja w pageitems jest dostępna dla wszystkich. Odpowiada dokładnie konfiguracji skryptu dla elementu strony.",
         "uk": "Нативна конфігурація у pageitems доступна всім. Вона точно відповідає конфігурації скрипта для елемента сторінки.",
         "zh-cn": "pageitems 中的原生配置可供所有人使用。它与页面元素的脚本配置完全对应。"
-      },
-      "0.16.0": {
-        "en": "feat: new visual page editor in the admin UI – configure cardGrid, cardGrid2, cardGrid3, cardEntities and cardSchedule pages including their items directly in the admin.",
-        "de": "feat: neuer visueller Seiteneditor im Admin UI – konfigurieren Sie cardGrid, cardGrid2, cardGrid3, cardEntities und cardSchedule-Seiten einschließlich ihrer Elemente direkt im Admin.",
-        "ru": "новое: новый визуальный редактор страниц в пользовательском интерфейсе администратора – настройка страниц cardGrid, cardGrid2, cardGrid3, cardEntities и cardSchedule, включая их элементы непосредственно в администраторе.",
-        "pt": "feat: novo editor de páginas visual na interface de administração – configure as páginas cardGrid, cardGrid2, cardGrid3, cardEntities e cardSchedule incluindo seus itens diretamente no painel de administração.",
-        "nl": "feat: nieuwe visuele pagina-editor in de admin UI – configureer cardGrid, cardGrid2, cardGrid3, cardEntities en cardSchedule-pagina's inclusief hun items rechtstreeks in de admin.",
-        "fr": "feat: nouvel éditeur visuel de pages dans l'interface admin – configurez les pages cardGrid, cardGrid2, cardGrid3, cardEntities et cardSchedule incluant leurs éléments directement dans l'administrateur.",
-        "it": "feat: nuovo editor visivo delle pagine nell'interfaccia di amministrazione – configura le pagine cardGrid, cardGrid2, cardGrid3, cardEntities e cardSchedule inclusi i loro elementi direttamente nell'amministratore.",
-        "es": "feat: nuevo editor de páginas visuales en el panel de administración – configure las páginas cardGrid, cardGrid2, cardGrid3, cardEntities y cardSchedule incluyendo sus elementos directamente en el administrador.",
-        "pl": "feat: nowy edytor stron wizualnych w UI admin – skonfiguruj strony cardGrid, cardGrid2, cardGrid3, cardEntities i cardSchedule, w tym ich elementy bezpośrednio w admin.",
-        "uk": "feat: новий візуальний редактор сторінок в адмін UI – налаштовуйте сторінки cardGrid, cardGrid2, cardGrid3, cardEntities та cardSchedule включаючи їх елементи безпосередньо в адмін.",
-        "zh-cn": "feat: admin UI 中的新视觉页面编辑器 – 配置 cardGrid, cardGrid2, cardGrid3, cardEntities 和 cardSchedule 页面,包括直接在admin中的项目."
       }
     },
     "titleLang": {

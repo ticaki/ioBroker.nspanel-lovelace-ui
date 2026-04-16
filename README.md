@@ -157,7 +157,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.17.4 (2026-04-16)
+- (ticaki) The admin navigation has been assembled incorrectly.
 - (ticaki) Improved selection of custom button IDs
 - (tt-tom17) fixed: ChannelConfigDialog bottom cut off on small laptop screens (save/color buttons not reachable)
 
