@@ -599,7 +599,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart" && page.type !== "cardMedia" && page.type !== "cardSchedule") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardThermo2" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart" && page.type !== "cardMedia" && page.type !== "cardSchedule" && page.type !== "cardQR" && page.type !== "cardAlarm" && page.type !== "cardUnlock") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -631,6 +631,9 @@ class ConfigManager extends import_library.BaseClass {
             };
             panelConfig.navigation.push(navItem);
           }
+        }
+        if (page.type === "cardQR" || page.type === "cardAlarm" || page.type === "cardUnlock") {
+          return { panelConfig, messages };
         }
         let gridItem = {
           dpInit: "",
