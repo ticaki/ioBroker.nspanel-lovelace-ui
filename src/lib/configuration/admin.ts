@@ -320,10 +320,10 @@ export class AdminConfiguration extends BaseClass {
                 nav.home = 'main';
             }
             if (nav.home) {
-                navigationEntry.left!.double = nav.home;
+                navigationEntry.right!.double = nav.home;
             }
             if (nav.parent) {
-                navigationEntry.right!.double = nav.parent;
+                navigationEntry.left!.double = nav.parent;
             }
 
             // Defer prev/next chain resolution to applyPendingNavigations

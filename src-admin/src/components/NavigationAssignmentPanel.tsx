@@ -1436,60 +1436,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                 ))}
                                         </Select>
                                     </Box>
-
-                                    <Box>
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                            sx={{ mb: 0.5, display: 'block' }}
-                                        >
-                                            home
-                                        </Typography>
-                                        <Select
-                                            size="small"
-                                            displayEmpty
-                                            aria-label="home"
-                                            value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
-                                            onOpen={() => {
-                                                if (this.state.selectedAddedTopic) {
-                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                                }
-                                            }}
-                                            onChange={e =>
-                                                this.setNavigationForSelected({
-                                                    home: String(e.target.value) || undefined,
-                                                })
-                                            }
-                                            sx={{ width: '100%' }}
-                                            disabled={
-                                                !this.state.alive ||
-                                                (this.state.selectedAddedTopic
-                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                                    : false)
-                                            }
-                                            endAdornment={
-                                                this.state.selectedAddedTopic &&
-                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                        <CircularProgress size={16} />
-                                                    </Box>
-                                                ) : null
-                                            }
-                                        >
-                                            <MenuItem value="">{<em>—</em>}</MenuItem>
-                                            {pages
-                                                .filter((p: string) => p !== this.props.uniqueName)
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`home-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
-                                        </Select>
-                                    </Box>
-
                                     <Box>
                                         <Typography
                                             variant="caption"
@@ -1535,6 +1481,58 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                 .map((p: string) => (
                                                     <MenuItem
                                                         key={`parent-${p}`}
+                                                        value={p}
+                                                    >
+                                                        {p}
+                                                    </MenuItem>
+                                                ))}
+                                        </Select>
+                                    </Box>
+                                    <Box>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ mb: 0.5, display: 'block' }}
+                                        >
+                                            home
+                                        </Typography>
+                                        <Select
+                                            size="small"
+                                            displayEmpty
+                                            aria-label="home"
+                                            value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
+                                            onOpen={() => {
+                                                if (this.state.selectedAddedTopic) {
+                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                                }
+                                            }}
+                                            onChange={e =>
+                                                this.setNavigationForSelected({
+                                                    home: String(e.target.value) || undefined,
+                                                })
+                                            }
+                                            sx={{ width: '100%' }}
+                                            disabled={
+                                                !this.state.alive ||
+                                                (this.state.selectedAddedTopic
+                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                    : false)
+                                            }
+                                            endAdornment={
+                                                this.state.selectedAddedTopic &&
+                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                        <CircularProgress size={16} />
+                                                    </Box>
+                                                ) : null
+                                            }
+                                        >
+                                            <MenuItem value="">{<em>—</em>}</MenuItem>
+                                            {pages
+                                                .filter((p: string) => p !== this.props.uniqueName)
+                                                .map((p: string) => (
+                                                    <MenuItem
+                                                        key={`home-${p}`}
                                                         value={p}
                                                     >
                                                         {p}
