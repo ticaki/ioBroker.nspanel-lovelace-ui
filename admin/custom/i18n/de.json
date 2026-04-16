@@ -500,6 +500,7 @@
     "sendToRequestFail4": "Anfrage an das Panel fehlgeschlagen",
     "sendToRequestFailBerry": "Keine Download-Bestätigung von Tasmota nach der Berry-Installation erhalten",
     "short": "kurz",
+    "show_system_pages": "Systemseiten anzeigen",
     "shutter": "Rollladen",
     "shutterClosedIsZero": "Die Position von 0 wird als vollständig geschlossen angezeigt (maximal ausgefahren).",
     "speakerList": "Lautsprecher",

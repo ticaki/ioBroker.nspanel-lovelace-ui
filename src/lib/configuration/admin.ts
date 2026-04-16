@@ -11,10 +11,6 @@ type PendingNavEntry = {
     pageId: string;
     prev: string | undefined;
     next: string | undefined;
-    prevDone: boolean;
-    nextDone: boolean;
-    /** true when prev chain-insertion already set right.single – explicit next must be skipped */
-    rightSetByPrev: boolean;
 };
 
 export class AdminConfiguration extends BaseClass {
@@ -336,9 +332,6 @@ export class AdminConfiguration extends BaseClass {
                     pageId: newPage.uniqueID,
                     prev: nav.prev,
                     next: nav.next,
-                    prevDone: false,
-                    nextDone: false,
-                    rightSetByPrev: false,
                 });
             }
         }
@@ -347,89 +340,264 @@ export class AdminConfiguration extends BaseClass {
     }
 
     /**
-     * Phase 2: apply pending prev/next chain assignments in repeated iterations until
-     * stable (nothing changes). Handles forward-references where a referenced page was
-     * not yet present in option.navigation when the referencing entry was first processed.
+     * Phase 2: wire prev/next navigation by building full chains and splicing
+     * them into the existing navigation, preserving existing connections.
+     *
+     * Algorithm:
+     * 1. Apply each page's own left/right pointers from its explicit prev/next.
+     * 2. Group all pages by their declared `prev` target.
+     * 3. Find root insertion points (prevTarget is NOT a pending page) and build
+     *    full chains by recursively following sub-groups.
+     * 4. Splice each full chain after its prevTarget: if prevTarget had an existing
+     *    right pointer, it is moved to the end of the chain (preserving the topology).
+     * 5. Handle remaining groups (prevTarget is a pending page not reached from any root).
+     * 6. For pages that only declare `next` (no prev), splice before next target,
+     *    inheriting the target's old left pointer.
      *
      * @param option - Panel configuration partial
      * @param pendingNavs - Pending navigation entries collected in phase 1
      */
     private applyPendingNavigations(option: panelConfigPartial, pendingNavs: PendingNavEntry[]): void {
-        let changed = true;
-        while (changed) {
-            changed = false;
-            for (const pending of pendingNavs) {
-                if (pending.prevDone && (pending.nextDone || pending.next === undefined || pending.rightSetByPrev)) {
-                    continue;
-                }
+        if (!pendingNavs.length) {
+            return;
+        }
 
-                const pageEntry = option.navigation.find(b => b?.name === pending.pageId);
-                if (!pageEntry) {
-                    continue;
-                }
+        // Build lookup for quick access
+        const pendingMap = new Map<string, PendingNavEntry>();
+        for (const p of pendingNavs) {
+            pendingMap.set(p.pageId, p);
+        }
 
-                // Process prev: insert pageEntry after prevEntry in the chain
-                if (pending.prev !== undefined && !pending.prevDone) {
-                    const prevEntry = option.navigation.find(b => b?.name === pending.prev);
-                    if (prevEntry) {
-                        pageEntry.left = { ...(pageEntry.left ?? {}), single: pending.prev };
-                        const oldNext = prevEntry.right?.single;
-                        if (oldNext && oldNext !== pending.pageId) {
-                            this.log.debug(
-                                `Navigation: '${pending.prev}' already points to '${oldNext}', inserting '${pending.pageId}' between them.`,
-                            );
-                            prevEntry.right = { ...(prevEntry.right ?? {}), single: pending.pageId };
-                            if (!pageEntry.right?.single) {
-                                pageEntry.right = { ...(pageEntry.right ?? {}), single: oldNext };
-                                pending.rightSetByPrev = true;
-                            }
-                            const oldNextEntry = option.navigation.find(b => b?.name === oldNext);
-                            if (oldNextEntry) {
-                                oldNextEntry.left = { ...(oldNextEntry.left ?? {}), single: pending.pageId };
-                            }
-                        } else if (!oldNext) {
-                            prevEntry.right = { ...(prevEntry.right ?? {}), single: pending.pageId };
-                        }
-                        pending.prevDone = true;
-                        changed = true;
-                    }
-                }
+        // Step 1: Apply each page's own explicit prev/next as direct left/right pointers
+        for (const pending of pendingNavs) {
+            const pageEntry = option.navigation.find(b => b?.name === pending.pageId);
+            if (!pageEntry) {
+                continue;
+            }
+            if (pending.prev !== undefined) {
+                pageEntry.left = { ...(pageEntry.left ?? {}), single: pending.prev };
+            }
+            if (pending.next !== undefined) {
+                pageEntry.right = { ...(pageEntry.right ?? {}), single: pending.next };
+            }
+        }
 
-                // Process next: insert pageEntry before nextEntry in the chain.
-                // Skipped if prev chain-insertion already set right.single.
-                if (pending.next !== undefined && !pending.nextDone && !pending.rightSetByPrev) {
-                    const nextEntry = option.navigation.find(b => b?.name === pending.next);
-                    if (nextEntry) {
-                        pageEntry.right = { ...(pageEntry.right ?? {}), single: pending.next };
-                        const oldPrev = nextEntry.left?.single;
-                        if (oldPrev && oldPrev !== pending.pageId) {
-                            nextEntry.left = { ...(nextEntry.left ?? {}), single: pending.pageId };
-                            if (!pageEntry.left?.single) {
-                                pageEntry.left = { ...(pageEntry.left ?? {}), single: oldPrev };
-                            }
-                            const oldPrevEntry = option.navigation.find(b => b?.name === oldPrev);
-                            if (oldPrevEntry) {
-                                oldPrevEntry.right = { ...(oldPrevEntry.right ?? {}), single: pending.pageId };
-                            }
-                        } else if (!oldPrev) {
-                            nextEntry.left = { ...(nextEntry.left ?? {}), single: pending.pageId };
-                        }
-                        pending.nextDone = true;
-                        changed = true;
-                    }
+        // Step 2: Group pages by their declared `prev` target (preserving definition order)
+        const byPrev = new Map<string, string[]>();
+        for (const pending of pendingNavs) {
+            if (pending.prev !== undefined) {
+                const list = byPrev.get(pending.prev) ?? [];
+                list.push(pending.pageId);
+                byPrev.set(pending.prev, list);
+            }
+        }
+
+        // Step 3: Build full chains from root insertion points and splice into navigation
+        const processedGroups = new Set<string>();
+
+        for (const [prevTarget] of byPrev) {
+            if (pendingMap.has(prevTarget)) {
+                continue; // Not a root – will be reached via sub-group recursion
+            }
+            const fullChain = this.buildFullChain(prevTarget, byPrev, pendingMap, processedGroups);
+            if (fullChain.length) {
+                this.spliceChainAfter(prevTarget, fullChain, pendingMap, option);
+            }
+        }
+
+        // Step 4: Handle remaining groups whose prevTarget is a pending page
+        // not reached from any root (e.g. disconnected sub-chains)
+        for (const [prevTarget] of byPrev) {
+            if (processedGroups.has(prevTarget)) {
+                continue;
+            }
+            const fullChain = this.buildFullChain(prevTarget, byPrev, pendingMap, processedGroups);
+            if (fullChain.length) {
+                this.spliceChainAfter(prevTarget, fullChain, pendingMap, option);
+            }
+        }
+
+        // Step 5: For pages with only `next` declared (no prev), splice before next target
+        for (const pending of pendingNavs) {
+            if (pending.next === undefined || pending.prev !== undefined) {
+                continue;
+            }
+            const nextEntry = option.navigation.find(b => b?.name === pending.next);
+            if (!nextEntry) {
+                continue;
+            }
+            const pageEntry = option.navigation.find(b => b?.name === pending.pageId);
+            if (!pageEntry) {
+                continue;
+            }
+
+            // Save old left of the next target before overwriting
+            const oldLeft = nextEntry.left?.single;
+            nextEntry.left = { ...(nextEntry.left ?? {}), single: pending.pageId };
+
+            // Splice: inherit the old left so no new loose end is created
+            if (oldLeft !== undefined && oldLeft !== pending.pageId && !pageEntry.left?.single) {
+                pageEntry.left = { ...(pageEntry.left ?? {}), single: oldLeft };
+                const oldLeftEntry = option.navigation.find(b => b?.name === oldLeft);
+                if (oldLeftEntry?.right?.single === pending.next) {
+                    oldLeftEntry.right = { ...(oldLeftEntry.right ?? {}), single: pending.pageId };
                 }
             }
         }
 
-        // Log unresolved entries (referenced pages not found anywhere in navigation)
+        // Log unresolved references
         for (const pending of pendingNavs) {
-            if (pending.prev !== undefined && !pending.prevDone) {
+            if (pending.prev !== undefined && !option.navigation.find(b => b?.name === pending.prev)) {
                 this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
             }
-            if (pending.next !== undefined && !pending.nextDone && !pending.rightSetByPrev) {
+            if (pending.next !== undefined && !option.navigation.find(b => b?.name === pending.next)) {
                 this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
             }
         }
+    }
+
+    /**
+     * Splice a chain of pages after prevTarget, preserving existing connections.
+     * If prevTarget.right was already set, the old target is moved to the end
+     * of the chain (provided the last element has no explicit next declaration).
+     *
+     * @param prevTarget - Name of the page to insert after
+     * @param fullChain - Ordered list of page IDs to insert
+     * @param pendingMap - Lookup map from pageId to PendingNavEntry
+     * @param option - Panel configuration partial
+     */
+    private spliceChainAfter(
+        prevTarget: string,
+        fullChain: string[],
+        pendingMap: Map<string, PendingNavEntry>,
+        option: panelConfigPartial,
+    ): void {
+        const prevEntry = option.navigation.find(b => b?.name === prevTarget);
+        const oldRight = prevEntry?.right?.single;
+
+        // Wire: prevTarget.right → chain[0]
+        if (prevEntry) {
+            prevEntry.right = { ...(prevEntry.right ?? {}), single: fullChain[0] };
+        }
+        const firstEntry = option.navigation.find(b => b?.name === fullChain[0]);
+        if (firstEntry) {
+            firstEntry.left = { ...(firstEntry.left ?? {}), single: prevTarget };
+        }
+
+        // Wire internal chain links
+        for (let i = 1; i < fullChain.length; i++) {
+            const curr = option.navigation.find(b => b?.name === fullChain[i]);
+            const prev = option.navigation.find(b => b?.name === fullChain[i - 1]);
+
+            if (curr) {
+                curr.left = { ...(curr.left ?? {}), single: fullChain[i - 1] };
+            }
+            if (prev) {
+                // Only overwrite prev.right when it has no explicit next pointing elsewhere
+                const prevPending = pendingMap.get(fullChain[i - 1]);
+                const hasExternalNext = prevPending?.next !== undefined && prevPending.next !== fullChain[i];
+                if (!hasExternalNext) {
+                    prev.right = { ...(prev.right ?? {}), single: fullChain[i] };
+                }
+            }
+        }
+
+        // Splice end: connect last chain element to the old right of prevTarget
+        if (oldRight !== undefined && !fullChain.includes(oldRight)) {
+            const lastId = fullChain[fullChain.length - 1];
+            const lastPending = pendingMap.get(lastId);
+            const lastEntry = option.navigation.find(b => b?.name === lastId);
+
+            if (lastEntry && !lastPending?.next) {
+                lastEntry.right = { ...(lastEntry.right ?? {}), single: oldRight };
+                const oldRightEntry = option.navigation.find(b => b?.name === oldRight);
+                if (oldRightEntry) {
+                    oldRightEntry.left = { ...(oldRightEntry.left ?? {}), single: lastId };
+                }
+            }
+        }
+    }
+
+    /**
+     * Recursively build a complete chain starting from pages grouped by prevTarget,
+     * following sub-groups where a chain member is itself the prevTarget of another group.
+     *
+     * @param prevTarget - The prevTarget whose group to process
+     * @param byPrev - Mapping from prevTarget to list of page IDs
+     * @param pendingMap - Lookup map from pageId to PendingNavEntry
+     * @param processedGroups - Set of already processed prevTargets (prevents cycles)
+     */
+    private buildFullChain(
+        prevTarget: string,
+        byPrev: Map<string, string[]>,
+        pendingMap: Map<string, PendingNavEntry>,
+        processedGroups: Set<string>,
+    ): string[] {
+        const pageIds = byPrev.get(prevTarget);
+        if (!pageIds || processedGroups.has(prevTarget)) {
+            return [];
+        }
+
+        processedGroups.add(prevTarget);
+        const groupChain = this.buildChainFromGroup(pageIds, pendingMap);
+        const result: string[] = [];
+
+        for (const pageId of groupChain) {
+            result.push(pageId);
+            // If this page is the prevTarget of another group, recurse to extend the chain
+            if (byPrev.has(pageId) && !processedGroups.has(pageId)) {
+                const subChain = this.buildFullChain(pageId, byPrev, pendingMap, processedGroups);
+                result.push(...subChain);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Build an ordered chain from a group of pages that share the same `prev` target.
+     * Pages connected via intra-group `next` pointers are ordered first;
+     * remaining pages are appended in their original definition order.
+     *
+     * @param pageIds - Page IDs in the group (definition order)
+     * @param pendingMap - Lookup map from pageId to PendingNavEntry
+     */
+    private buildChainFromGroup(pageIds: string[], pendingMap: Map<string, PendingNavEntry>): string[] {
+        const pageSet = new Set(pageIds);
+
+        // Collect next pointers that stay within the group
+        const nextInGroup = new Map<string, string>();
+        for (const id of pageIds) {
+            const p = pendingMap.get(id);
+            if (p?.next !== undefined && pageSet.has(p.next)) {
+                nextInGroup.set(id, p.next);
+            }
+        }
+
+        // Chain starts: pages not pointed to as next by any other page in the group
+        const hasIncoming = new Set(nextInGroup.values());
+        const starts = pageIds.filter(id => !hasIncoming.has(id));
+
+        const result: string[] = [];
+        const visited = new Set<string>();
+
+        for (const start of starts) {
+            let curr: string | undefined = start;
+            while (curr !== undefined && pageSet.has(curr) && !visited.has(curr)) {
+                visited.add(curr);
+                result.push(curr);
+                curr = nextInGroup.get(curr);
+            }
+        }
+
+        // Append any pages not reachable via intra-group links (e.g. cycles or isolated)
+        for (const id of pageIds) {
+            if (!visited.has(id)) {
+                result.push(id);
+            }
+        }
+
+        return result;
     }
 }
 

@@ -310,92 +310,218 @@ class AdminConfiguration extends import_library.BaseClass {
         pendingNavs.push({
           pageId: newPage.uniqueID,
           prev: nav.prev,
-          next: nav.next,
-          prevDone: false,
-          nextDone: false,
-          rightSetByPrev: false
+          next: nav.next
         });
       }
     }
     return pendingNavs;
   }
   /**
-   * Phase 2: apply pending prev/next chain assignments in repeated iterations until
-   * stable (nothing changes). Handles forward-references where a referenced page was
-   * not yet present in option.navigation when the referencing entry was first processed.
+   * Phase 2: wire prev/next navigation by building full chains and splicing
+   * them into the existing navigation, preserving existing connections.
+   *
+   * Algorithm:
+   * 1. Apply each page's own left/right pointers from its explicit prev/next.
+   * 2. Group all pages by their declared `prev` target.
+   * 3. Find root insertion points (prevTarget is NOT a pending page) and build
+   *    full chains by recursively following sub-groups.
+   * 4. Splice each full chain after its prevTarget: if prevTarget had an existing
+   *    right pointer, it is moved to the end of the chain (preserving the topology).
+   * 5. Handle remaining groups (prevTarget is a pending page not reached from any root).
+   * 6. For pages that only declare `next` (no prev), splice before next target,
+   *    inheriting the target's old left pointer.
    *
    * @param option - Panel configuration partial
    * @param pendingNavs - Pending navigation entries collected in phase 1
    */
   applyPendingNavigations(option, pendingNavs) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const pending of pendingNavs) {
-        if (pending.prevDone && (pending.nextDone || pending.next === void 0 || pending.rightSetByPrev)) {
-          continue;
-        }
-        const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
-        if (!pageEntry) {
-          continue;
-        }
-        if (pending.prev !== void 0 && !pending.prevDone) {
-          const prevEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.prev);
-          if (prevEntry) {
-            pageEntry.left = { ...(_a = pageEntry.left) != null ? _a : {}, single: pending.prev };
-            const oldNext = (_b = prevEntry.right) == null ? void 0 : _b.single;
-            if (oldNext && oldNext !== pending.pageId) {
-              this.log.debug(
-                `Navigation: '${pending.prev}' already points to '${oldNext}', inserting '${pending.pageId}' between them.`
-              );
-              prevEntry.right = { ...(_c = prevEntry.right) != null ? _c : {}, single: pending.pageId };
-              if (!((_d = pageEntry.right) == null ? void 0 : _d.single)) {
-                pageEntry.right = { ...(_e = pageEntry.right) != null ? _e : {}, single: oldNext };
-                pending.rightSetByPrev = true;
-              }
-              const oldNextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldNext);
-              if (oldNextEntry) {
-                oldNextEntry.left = { ...(_f = oldNextEntry.left) != null ? _f : {}, single: pending.pageId };
-              }
-            } else if (!oldNext) {
-              prevEntry.right = { ...(_g = prevEntry.right) != null ? _g : {}, single: pending.pageId };
-            }
-            pending.prevDone = true;
-            changed = true;
-          }
-        }
-        if (pending.next !== void 0 && !pending.nextDone && !pending.rightSetByPrev) {
-          const nextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next);
-          if (nextEntry) {
-            pageEntry.right = { ...(_h = pageEntry.right) != null ? _h : {}, single: pending.next };
-            const oldPrev = (_i = nextEntry.left) == null ? void 0 : _i.single;
-            if (oldPrev && oldPrev !== pending.pageId) {
-              nextEntry.left = { ...(_j = nextEntry.left) != null ? _j : {}, single: pending.pageId };
-              if (!((_k = pageEntry.left) == null ? void 0 : _k.single)) {
-                pageEntry.left = { ...(_l = pageEntry.left) != null ? _l : {}, single: oldPrev };
-              }
-              const oldPrevEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldPrev);
-              if (oldPrevEntry) {
-                oldPrevEntry.right = { ...(_m = oldPrevEntry.right) != null ? _m : {}, single: pending.pageId };
-              }
-            } else if (!oldPrev) {
-              nextEntry.left = { ...(_n = nextEntry.left) != null ? _n : {}, single: pending.pageId };
-            }
-            pending.nextDone = true;
-            changed = true;
-          }
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    if (!pendingNavs.length) {
+      return;
+    }
+    const pendingMap = /* @__PURE__ */ new Map();
+    for (const p of pendingNavs) {
+      pendingMap.set(p.pageId, p);
+    }
+    for (const pending of pendingNavs) {
+      const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
+      if (!pageEntry) {
+        continue;
+      }
+      if (pending.prev !== void 0) {
+        pageEntry.left = { ...(_a = pageEntry.left) != null ? _a : {}, single: pending.prev };
+      }
+      if (pending.next !== void 0) {
+        pageEntry.right = { ...(_b = pageEntry.right) != null ? _b : {}, single: pending.next };
+      }
+    }
+    const byPrev = /* @__PURE__ */ new Map();
+    for (const pending of pendingNavs) {
+      if (pending.prev !== void 0) {
+        const list = (_c = byPrev.get(pending.prev)) != null ? _c : [];
+        list.push(pending.pageId);
+        byPrev.set(pending.prev, list);
+      }
+    }
+    const processedGroups = /* @__PURE__ */ new Set();
+    for (const [prevTarget] of byPrev) {
+      if (pendingMap.has(prevTarget)) {
+        continue;
+      }
+      const fullChain = this.buildFullChain(prevTarget, byPrev, pendingMap, processedGroups);
+      if (fullChain.length) {
+        this.spliceChainAfter(prevTarget, fullChain, pendingMap, option);
+      }
+    }
+    for (const [prevTarget] of byPrev) {
+      if (processedGroups.has(prevTarget)) {
+        continue;
+      }
+      const fullChain = this.buildFullChain(prevTarget, byPrev, pendingMap, processedGroups);
+      if (fullChain.length) {
+        this.spliceChainAfter(prevTarget, fullChain, pendingMap, option);
+      }
+    }
+    for (const pending of pendingNavs) {
+      if (pending.next === void 0 || pending.prev !== void 0) {
+        continue;
+      }
+      const nextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next);
+      if (!nextEntry) {
+        continue;
+      }
+      const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
+      if (!pageEntry) {
+        continue;
+      }
+      const oldLeft = (_d = nextEntry.left) == null ? void 0 : _d.single;
+      nextEntry.left = { ...(_e = nextEntry.left) != null ? _e : {}, single: pending.pageId };
+      if (oldLeft !== void 0 && oldLeft !== pending.pageId && !((_f = pageEntry.left) == null ? void 0 : _f.single)) {
+        pageEntry.left = { ...(_g = pageEntry.left) != null ? _g : {}, single: oldLeft };
+        const oldLeftEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldLeft);
+        if (((_h = oldLeftEntry == null ? void 0 : oldLeftEntry.right) == null ? void 0 : _h.single) === pending.next) {
+          oldLeftEntry.right = { ...(_i = oldLeftEntry.right) != null ? _i : {}, single: pending.pageId };
         }
       }
     }
     for (const pending of pendingNavs) {
-      if (pending.prev !== void 0 && !pending.prevDone) {
+      if (pending.prev !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.prev)) {
         this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
       }
-      if (pending.next !== void 0 && !pending.nextDone && !pending.rightSetByPrev) {
+      if (pending.next !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next)) {
         this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
       }
     }
+  }
+  /**
+   * Splice a chain of pages after prevTarget, preserving existing connections.
+   * If prevTarget.right was already set, the old target is moved to the end
+   * of the chain (provided the last element has no explicit next declaration).
+   *
+   * @param prevTarget - Name of the page to insert after
+   * @param fullChain - Ordered list of page IDs to insert
+   * @param pendingMap - Lookup map from pageId to PendingNavEntry
+   * @param option - Panel configuration partial
+   */
+  spliceChainAfter(prevTarget, fullChain, pendingMap, option) {
+    var _a, _b, _c, _d, _e, _f, _g;
+    const prevEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === prevTarget);
+    const oldRight = (_a = prevEntry == null ? void 0 : prevEntry.right) == null ? void 0 : _a.single;
+    if (prevEntry) {
+      prevEntry.right = { ...(_b = prevEntry.right) != null ? _b : {}, single: fullChain[0] };
+    }
+    const firstEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === fullChain[0]);
+    if (firstEntry) {
+      firstEntry.left = { ...(_c = firstEntry.left) != null ? _c : {}, single: prevTarget };
+    }
+    for (let i = 1; i < fullChain.length; i++) {
+      const curr = option.navigation.find((b) => (b == null ? void 0 : b.name) === fullChain[i]);
+      const prev = option.navigation.find((b) => (b == null ? void 0 : b.name) === fullChain[i - 1]);
+      if (curr) {
+        curr.left = { ...(_d = curr.left) != null ? _d : {}, single: fullChain[i - 1] };
+      }
+      if (prev) {
+        const prevPending = pendingMap.get(fullChain[i - 1]);
+        const hasExternalNext = (prevPending == null ? void 0 : prevPending.next) !== void 0 && prevPending.next !== fullChain[i];
+        if (!hasExternalNext) {
+          prev.right = { ...(_e = prev.right) != null ? _e : {}, single: fullChain[i] };
+        }
+      }
+    }
+    if (oldRight !== void 0 && !fullChain.includes(oldRight)) {
+      const lastId = fullChain[fullChain.length - 1];
+      const lastPending = pendingMap.get(lastId);
+      const lastEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === lastId);
+      if (lastEntry && !(lastPending == null ? void 0 : lastPending.next)) {
+        lastEntry.right = { ...(_f = lastEntry.right) != null ? _f : {}, single: oldRight };
+        const oldRightEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldRight);
+        if (oldRightEntry) {
+          oldRightEntry.left = { ...(_g = oldRightEntry.left) != null ? _g : {}, single: lastId };
+        }
+      }
+    }
+  }
+  /**
+   * Recursively build a complete chain starting from pages grouped by prevTarget,
+   * following sub-groups where a chain member is itself the prevTarget of another group.
+   *
+   * @param prevTarget - The prevTarget whose group to process
+   * @param byPrev - Mapping from prevTarget to list of page IDs
+   * @param pendingMap - Lookup map from pageId to PendingNavEntry
+   * @param processedGroups - Set of already processed prevTargets (prevents cycles)
+   */
+  buildFullChain(prevTarget, byPrev, pendingMap, processedGroups) {
+    const pageIds = byPrev.get(prevTarget);
+    if (!pageIds || processedGroups.has(prevTarget)) {
+      return [];
+    }
+    processedGroups.add(prevTarget);
+    const groupChain = this.buildChainFromGroup(pageIds, pendingMap);
+    const result = [];
+    for (const pageId of groupChain) {
+      result.push(pageId);
+      if (byPrev.has(pageId) && !processedGroups.has(pageId)) {
+        const subChain = this.buildFullChain(pageId, byPrev, pendingMap, processedGroups);
+        result.push(...subChain);
+      }
+    }
+    return result;
+  }
+  /**
+   * Build an ordered chain from a group of pages that share the same `prev` target.
+   * Pages connected via intra-group `next` pointers are ordered first;
+   * remaining pages are appended in their original definition order.
+   *
+   * @param pageIds - Page IDs in the group (definition order)
+   * @param pendingMap - Lookup map from pageId to PendingNavEntry
+   */
+  buildChainFromGroup(pageIds, pendingMap) {
+    const pageSet = new Set(pageIds);
+    const nextInGroup = /* @__PURE__ */ new Map();
+    for (const id of pageIds) {
+      const p = pendingMap.get(id);
+      if ((p == null ? void 0 : p.next) !== void 0 && pageSet.has(p.next)) {
+        nextInGroup.set(id, p.next);
+      }
+    }
+    const hasIncoming = new Set(nextInGroup.values());
+    const starts = pageIds.filter((id) => !hasIncoming.has(id));
+    const result = [];
+    const visited = /* @__PURE__ */ new Set();
+    for (const start of starts) {
+      let curr = start;
+      while (curr !== void 0 && pageSet.has(curr) && !visited.has(curr)) {
+        visited.add(curr);
+        result.push(curr);
+        curr = nextInGroup.get(curr);
+      }
+    }
+    for (const id of pageIds) {
+      if (!visited.has(id)) {
+        result.push(id);
+      }
+    }
+    return result;
   }
 }
 function isAlwaysOnMode(F) {

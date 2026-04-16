@@ -500,6 +500,7 @@
     "sendToRequestFail4": "Request to the panel failed",
     "sendToRequestFailBerry": "Did not receive download confirmation from Tasmota after berry installation",
     "short": "short",
+    "show_system_pages": "Show system pages",
     "shutter": "Shutter",
     "shutterClosedIsZero": "The position of 0 is displayed as fully closed (maximally extended).",
     "speakerList": "Speaker list",

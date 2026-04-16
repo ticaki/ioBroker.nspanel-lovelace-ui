@@ -3300,7 +3300,6 @@
         "NavigationFlow": {
             "type": "panel",
             "label": "Navigation Flow",
-            "expertMode": true,
             "items": {
                 "_myCustomAttribute": {
                     "type": "custom",
