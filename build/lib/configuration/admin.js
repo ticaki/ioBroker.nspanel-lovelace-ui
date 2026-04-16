@@ -301,10 +301,10 @@ class AdminConfiguration extends import_library.BaseClass {
         nav.home = "main";
       }
       if (nav.home) {
-        navigationEntry.left.double = nav.home;
+        navigationEntry.right.double = nav.home;
       }
       if (nav.parent) {
-        navigationEntry.right.double = nav.parent;
+        navigationEntry.left.double = nav.parent;
       }
       if (nav.prev !== void 0 || nav.next !== void 0) {
         pendingNavs.push({
