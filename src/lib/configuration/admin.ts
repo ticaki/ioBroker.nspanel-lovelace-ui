@@ -370,10 +370,10 @@ export class AdminConfiguration extends BaseClass {
 
             // Handle home/parent navigation
             if (navigation.home) {
-                navigationEntry.left!.double = navigation.home;
+                navigationEntry.right!.double = navigation.home;
             }
             if (navigation.parent) {
-                navigationEntry.right!.double = navigation.parent;
+                navigationEntry.left!.double = navigation.parent;
             }
 
             option.navigation.push(navigationEntry);
