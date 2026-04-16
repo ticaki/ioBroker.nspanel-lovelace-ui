@@ -684,7 +684,10 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardChart' &&
                     page.type !== 'cardLChart' &&
                     page.type !== 'cardMedia' &&
-                    page.type !== 'cardSchedule'
+                    page.type !== 'cardSchedule' &&
+                    page.type !== 'cardQR' &&
+                    page.type !== 'cardAlarm' &&
+                    page.type !== 'cardUnlock'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -718,6 +721,9 @@ export class ConfigManager extends BaseClass {
                         };
                         panelConfig.navigation.push(navItem);
                     }
+                }
+                if (page.type === 'cardQR' || page.type === 'cardAlarm' || page.type === 'cardUnlock') {
+                    return { panelConfig, messages };
                 }
 
                 let gridItem: pages.PageBase = {

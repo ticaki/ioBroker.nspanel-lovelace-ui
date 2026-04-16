@@ -49,22 +49,26 @@ class AdminConfiguration extends import_library.BaseClass {
   }
   /**
    * Process configurable pages from adapter config and build navigation entries.
-   * Supports ALL_PANELS_SPECIAL_ID for applying pages to all panels at once,
-   * then allows individual panel overrides or exclusions.
-   *
-   * Logic:
-   * - First pass: If ALL_PANELS_SPECIAL_ID assignment exists, apply to all panels
-   * - Second pass: Process panel-specific assignments
-   *   - Empty navigation with prior ALL = exclude this panel from that page
-   *   - Empty navigation without ALL = default to home:'main'
-   *
-   * Supported card types: cardAlarm (unlock/alarm), cardQR, and more in the future.
+   * Orchestrates page creation (phase 1) and deferred navigation chain resolution (phase 2).
    *
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
   async processentrys(option) {
-    var _a, _b, _c, _d, _e, _f;
+    const pendingNavs = await this.createPagesFromConfig(option);
+    this.applyPendingNavigations(option, pendingNavs);
+    return option;
+  }
+  /**
+   * Phase 1: create all pages from admin config, push stub navigation entries, and collect
+   * pending prev/next chain assignments for deferred resolution.
+   * home/parent links are applied immediately since they carry no chain dependency.
+   *
+   * @param option - Panel configuration partial
+   */
+  async createPagesFromConfig(option) {
+    var _a, _b;
     const entries = this.pageConfig;
+    const pendingNavs = [];
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
         continue;
@@ -281,82 +285,117 @@ class AdminConfiguration extends import_library.BaseClass {
         });
       }
       option.pages.push(newPage);
-      const navigation = navAssign.navigation;
-      if (!navigation) {
-        continue;
-      }
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
         right: { single: void 0, double: void 0 },
         left: { single: void 0, double: void 0 }
       };
-      if (!navigation.prev && !navigation.next && !navigation.home && !navigation.parent) {
-        navigation.home = "main";
-      }
-      let overrwriteNext = false;
-      if (navigation.prev) {
-        navigationEntry.left.single = navigation.prev;
-        const index = option.navigation.findIndex(
-          (b) => b && b.name === navigation.prev
-        );
-        if (index !== -1 && option.navigation[index]) {
-          const oldNext = (_c = option.navigation[index].right) == null ? void 0 : _c.single;
-          if (oldNext && oldNext !== newPage.uniqueID) {
-            overrwriteNext = true;
-            option.navigation[index].right = option.navigation[index].right || {};
-            option.navigation[index].right.single = newPage.uniqueID;
-            navigationEntry.right.single = oldNext;
-            const nextIndex = option.navigation.findIndex(
-              (b) => b && b.name === oldNext
-            );
-            if (nextIndex !== -1 && option.navigation[nextIndex]) {
-              option.navigation[nextIndex].left = option.navigation[nextIndex].left || {};
-              option.navigation[nextIndex].left.single = newPage.uniqueID;
-            }
-          } else if (!oldNext) {
-            option.navigation[index].right = {
-              ...(_d = option.navigation[index].right) != null ? _d : {},
-              single: newPage.uniqueID
-            };
-          }
-        }
-      }
-      if (!overrwriteNext && navigation.next) {
-        navigationEntry.right.single = navigation.next;
-        const index = option.navigation.findIndex(
-          (b) => b && b.name === navigation.next
-        );
-        if (index !== -1 && option.navigation[index]) {
-          const oldPrev = (_e = option.navigation[index].left) == null ? void 0 : _e.single;
-          if (oldPrev && oldPrev !== newPage.uniqueID) {
-            option.navigation[index].left = option.navigation[index].left || {};
-            option.navigation[index].left.single = newPage.uniqueID;
-            navigationEntry.left.single = oldPrev;
-            const prevIndex = option.navigation.findIndex(
-              (b) => b && b.name === oldPrev
-            );
-            if (prevIndex !== -1 && option.navigation[prevIndex]) {
-              option.navigation[prevIndex].right = option.navigation[prevIndex].right || {};
-              option.navigation[prevIndex].right.single = newPage.uniqueID;
-            }
-          } else if (!oldPrev) {
-            option.navigation[index].left = {
-              ...(_f = option.navigation[index].left) != null ? _f : {},
-              single: newPage.uniqueID
-            };
-          }
-        }
-      }
-      if (navigation.home) {
-        navigationEntry.right.double = navigation.home;
-      }
-      if (navigation.parent) {
-        navigationEntry.left.double = navigation.parent;
-      }
       option.navigation.push(navigationEntry);
+      const navigation = navAssign.navigation;
+      if (!navigation) {
+        continue;
+      }
+      const nav = { ...navigation };
+      if (!nav.prev && !nav.next && !nav.home && !nav.parent) {
+        nav.home = "main";
+      }
+      if (nav.home) {
+        navigationEntry.left.double = nav.home;
+      }
+      if (nav.parent) {
+        navigationEntry.right.double = nav.parent;
+      }
+      if (nav.prev !== void 0 || nav.next !== void 0) {
+        pendingNavs.push({
+          pageId: newPage.uniqueID,
+          prev: nav.prev,
+          next: nav.next,
+          prevDone: false,
+          nextDone: false,
+          rightSetByPrev: false
+        });
+      }
     }
-    return option;
+    return pendingNavs;
+  }
+  /**
+   * Phase 2: apply pending prev/next chain assignments in repeated iterations until
+   * stable (nothing changes). Handles forward-references where a referenced page was
+   * not yet present in option.navigation when the referencing entry was first processed.
+   *
+   * @param option - Panel configuration partial
+   * @param pendingNavs - Pending navigation entries collected in phase 1
+   */
+  applyPendingNavigations(option, pendingNavs) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const pending of pendingNavs) {
+        if (pending.prevDone && (pending.nextDone || pending.next === void 0 || pending.rightSetByPrev)) {
+          continue;
+        }
+        const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
+        if (!pageEntry) {
+          continue;
+        }
+        if (pending.prev !== void 0 && !pending.prevDone) {
+          const prevEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.prev);
+          if (prevEntry) {
+            pageEntry.left = { ...(_a = pageEntry.left) != null ? _a : {}, single: pending.prev };
+            const oldNext = (_b = prevEntry.right) == null ? void 0 : _b.single;
+            if (oldNext && oldNext !== pending.pageId) {
+              this.log.debug(
+                `Navigation: '${pending.prev}' already points to '${oldNext}', inserting '${pending.pageId}' between them.`
+              );
+              prevEntry.right = { ...(_c = prevEntry.right) != null ? _c : {}, single: pending.pageId };
+              if (!((_d = pageEntry.right) == null ? void 0 : _d.single)) {
+                pageEntry.right = { ...(_e = pageEntry.right) != null ? _e : {}, single: oldNext };
+                pending.rightSetByPrev = true;
+              }
+              const oldNextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldNext);
+              if (oldNextEntry) {
+                oldNextEntry.left = { ...(_f = oldNextEntry.left) != null ? _f : {}, single: pending.pageId };
+              }
+            } else if (!oldNext) {
+              prevEntry.right = { ...(_g = prevEntry.right) != null ? _g : {}, single: pending.pageId };
+            }
+            pending.prevDone = true;
+            changed = true;
+          }
+        }
+        if (pending.next !== void 0 && !pending.nextDone && !pending.rightSetByPrev) {
+          const nextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next);
+          if (nextEntry) {
+            pageEntry.right = { ...(_h = pageEntry.right) != null ? _h : {}, single: pending.next };
+            const oldPrev = (_i = nextEntry.left) == null ? void 0 : _i.single;
+            if (oldPrev && oldPrev !== pending.pageId) {
+              nextEntry.left = { ...(_j = nextEntry.left) != null ? _j : {}, single: pending.pageId };
+              if (!((_k = pageEntry.left) == null ? void 0 : _k.single)) {
+                pageEntry.left = { ...(_l = pageEntry.left) != null ? _l : {}, single: oldPrev };
+              }
+              const oldPrevEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldPrev);
+              if (oldPrevEntry) {
+                oldPrevEntry.right = { ...(_m = oldPrevEntry.right) != null ? _m : {}, single: pending.pageId };
+              }
+            } else if (!oldPrev) {
+              nextEntry.left = { ...(_n = nextEntry.left) != null ? _n : {}, single: pending.pageId };
+            }
+            pending.nextDone = true;
+            changed = true;
+          }
+        }
+      }
+    }
+    for (const pending of pendingNavs) {
+      if (pending.prev !== void 0 && !pending.prevDone) {
+        this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
+      }
+      if (pending.next !== void 0 && !pending.nextDone && !pending.rightSetByPrev) {
+        this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
+      }
+    }
   }
 }
 function isAlwaysOnMode(F) {
