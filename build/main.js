@@ -800,12 +800,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                       if (topic) {
                         const index = this.config.panels.findIndex((p) => p.topic === topic);
                         if (index !== -1) {
-                          const index2 = this.controller.panels.findIndex(
+                          const indexC = this.controller.panels.findIndex(
                             (a) => a.topic === topic
                           );
-                          if (index2 !== -1) {
+                          if (indexC !== -1) {
+                            config.model = this.config.panels[index].model;
                             await this.controller.removePanel(
-                              this.controller.panels[index2]
+                              this.controller.panels[indexC]
                             );
                             if (this.unload) {
                               if (obj2.callback) {
@@ -948,7 +949,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const config = this.config;
                 const panels = (_i = config.panels) != null ? _i : [];
                 const index = panels.findIndex((a) => a.topic === obj.message.tasmotaTopic);
-                const item = index === -1 ? { name: "", ip: "", topic: "", id: "", model: "" } : panels[index];
+                const item = index === -1 ? { name: "", ip: "", topic: "", id: "", model: "eu" } : panels[index];
                 const ipIndex = panels.findIndex((a) => a.ip === obj.message.tasmotaIP);
                 let versionsJson = void 0;
                 versionsJson = await this.getVersionsJson();

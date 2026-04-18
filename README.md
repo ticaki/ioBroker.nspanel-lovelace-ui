@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.17.5 (2026-04-18)
+- (ticaki) When the panel was restarted by the script, the model was set to ‘eu’
+
 ### 0.17.4 (2026-04-16)
 - (ticaki) The admin navigation has been assembled incorrectly.
 - (ticaki) Improved selection of custom button IDs

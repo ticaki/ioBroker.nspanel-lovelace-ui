@@ -39,7 +39,7 @@ import type {
     AdminPageItemConfig,
 } from './lib/types/adminShareConfig';
 import { isIconColorScaleElement, isTasmotaStatusNet } from './lib/types/function-and-const';
-import type { NSpanelModel, oldQRType } from './lib/types/types';
+import type { oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 
@@ -250,7 +250,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             }
                         }
                         if (c && c.panelConfig) {
-                            c.panelConfig.model = (a.model as NSpanelModel) || 'eu';
+                            c.panelConfig.model = a.model || 'eu';
                             config.push(c.panelConfig);
                             usedConfig = 'raw';
                         } else {
@@ -264,7 +264,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             (b: { topic: string }) => b.topic === a.topic,
                         );
                         if (conv) {
-                            conv.model = (a.model as NSpanelModel) || 'eu';
+                            conv.model = a.model || 'eu';
                             config.push(conv);
                             usedConfig = 'converted';
                         }
@@ -944,12 +944,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             if (topic) {
                                                 const index = this.config.panels.findIndex(p => p.topic === topic);
                                                 if (index !== -1) {
-                                                    const index = this.controller.panels.findIndex(
+                                                    const indexC = this.controller.panels.findIndex(
                                                         a => a.topic === topic,
                                                     );
-                                                    if (index !== -1) {
+                                                    if (indexC !== -1) {
+                                                        config.model = this.config.panels[index].model;
                                                         await this.controller.removePanel(
-                                                            this.controller.panels[index],
+                                                            this.controller.panels[indexC],
                                                         );
 
                                                         if (this.unload) {
@@ -1121,7 +1122,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const panels = config.panels ?? [];
                                 const index = panels.findIndex(a => a.topic === obj.message.tasmotaTopic);
                                 const item: (typeof this.config.panels)[number] =
-                                    index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
+                                    index === -1 ? { name: '', ip: '', topic: '', id: '', model: 'eu' } : panels[index];
                                 const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
                                 let versionsJson: Record<string, string> | undefined = undefined;
                                 versionsJson = await this.getVersionsJson();

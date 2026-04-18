@@ -1,5 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
+import {NSpanelModel} from "./types/types";
+
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
     namespace ioBroker {
@@ -37,7 +39,7 @@ declare global {
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
             tasmotaAdminPassword: string;
-            panels: {name: string, topic: string, id: string, ip: string, model: string}[];
+            panels: {name: string, topic: string, id: string, ip: string, model: NSpanelModel}[];
             pw1: string;
 
             // PagePower
