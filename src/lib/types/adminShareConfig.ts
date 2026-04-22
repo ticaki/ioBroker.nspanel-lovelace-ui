@@ -1070,6 +1070,7 @@ export type PageBaseItemSimple = {
     fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
     actionStringArray?: string[];
     alwaysOnDisplay?: boolean;
+    useValueConditions?: string | null;
 };
 
 export type Beispiel = Pick<PageBaseItemSimple, 'minValue' | 'maxValue' | 'stepValue'>;

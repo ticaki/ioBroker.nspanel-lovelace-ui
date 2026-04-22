@@ -709,6 +709,7 @@ declare namespace ScriptConfig {
         fontSize?: 0 | 1 | 2 | 3 | 4 | 5;
         actionStringArray?: string[];
         alwaysOnDisplay?: boolean;
+        useValueConditions?: string | null | undefined;
     };
     type sliderItems = {
         heading: string;

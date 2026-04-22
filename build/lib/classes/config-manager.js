@@ -1429,7 +1429,8 @@ class ConfigManager extends import_library.BaseClass {
       unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
       textSize: item.fontSize || item.fontSize == 0 ? { type: "const", constVal: item.fontSize } : void 0,
       prefix: globals.isCardEntitiesType(page.type) && item.prefixValue ? await this.getFieldAsDataItemConfig(item.prefixValue) : void 0,
-      suffix: globals.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0
+      suffix: globals.isCardEntitiesType(page.type) && item.suffixValue ? await this.getFieldAsDataItemConfig(item.suffixValue) : void 0,
+      useValueConditions: globals.isCardEntitiesType(page.type) && item.useValueConditions ? await this.getFieldAsDataItemConfig(item.useValueConditions) : void 0
     };
     if (!item.id) {
       return {

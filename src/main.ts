@@ -2592,9 +2592,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                     };
                 }
                 if (item.type !== 'custom') {
-                    item.fontSize = preItem.textSize
-                        ? (Number(preItem.textSize) as typeof preItem.textSize)
-                        : undefined;
+                    item.fontSize =
+                        preItem.textSize || preItem.textSize == 0
+                            ? (Number(preItem.textSize) as typeof preItem.textSize)
+                            : undefined;
                     if (!item.name && preItem.valueEntry) {
                         item.name = preItem.valueEntry.valueStateId;
                         item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;

@@ -1680,6 +1680,7 @@ export class ConfigManager extends BaseClass {
             textSize?: NSPanel.DataItemsOptions | null | undefined;
             prefix?: NSPanel.DataItemsOptions | null | undefined;
             suffix?: NSPanel.DataItemsOptions | null | undefined;
+            useValueConditions?: NSPanel.DataItemsOptions | null | undefined;
         } = {
             unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
             textSize: item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
@@ -1690,6 +1691,10 @@ export class ConfigManager extends BaseClass {
             suffix:
                 globals.isCardEntitiesType(page.type) && item.suffixValue
                     ? await this.getFieldAsDataItemConfig(item.suffixValue)
+                    : undefined,
+            useValueConditions:
+                globals.isCardEntitiesType(page.type) && item.useValueConditions
+                    ? await this.getFieldAsDataItemConfig(item.useValueConditions)
                     : undefined,
         };
 
@@ -1742,7 +1747,7 @@ export class ConfigManager extends BaseClass {
                 const o = await this.adapter.getForeignObjectAsync(actual.dp);
                 t = o?.common?.type as string | undefined;
             } else {
-                t = actual?.type; // falls du den Typ schon trägst
+                t = actual?.type;
             }
 
             valueDisplayRole = t === 'string' || t === 'number' || t === 'mixed' ? 'textNotIcon' : 'iconNotText';
@@ -2872,6 +2877,7 @@ export class ConfigManager extends BaseClass {
                     textSize?: NSPanel.DataItemsOptions | null | undefined;
                     prefix?: NSPanel.DataItemsOptions | null | undefined;
                     suffix?: NSPanel.DataItemsOptions | null | undefined;
+                    useValueConditions?: NSPanel.DataItemsOptions | null | undefined;
                 } = {
                     unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
                     textSize:

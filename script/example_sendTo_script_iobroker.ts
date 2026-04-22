@@ -683,7 +683,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.20.1';
+const version = '0.21.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1392,6 +1392,7 @@ declare namespace ScriptConfig {
             yAxisTicks?: number[] | string;
             xAxisDecorationId?: string;
             useValue?: boolean;
+            useValueConditions?: string | null | undefined;
             monobutton?: boolean;
             inSel_ChoiceState?: boolean; // deprecated
             inSel_Alias?: string;
