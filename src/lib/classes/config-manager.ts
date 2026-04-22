@@ -1692,10 +1692,9 @@ export class ConfigManager extends BaseClass {
                 globals.isCardEntitiesType(page.type) && item.suffixValue
                     ? await this.getFieldAsDataItemConfig(item.suffixValue)
                     : undefined,
-            useValueConditions:
-                globals.isCardEntitiesType(page.type) && item.useValueConditions
-                    ? await this.getFieldAsDataItemConfig(item.useValueConditions)
-                    : undefined,
+            useValueConditions: item.useValueConditions
+                ? await this.getFieldAsDataItemConfig(item.useValueConditions)
+                : undefined,
         };
 
         if (!item.id) {
@@ -2890,6 +2889,9 @@ export class ConfigManager extends BaseClass {
                         globals.isCardEntitiesType(page.type) && item.suffixValue
                             ? await this.getFieldAsDataItemConfig(item.suffixValue)
                             : undefined,
+                    useValueConditions: item.useValueConditions
+                        ? await this.getFieldAsDataItemConfig(item.useValueConditions)
+                        : undefined,
                 };
 
                 let pageConfig: ScriptConfig.PageType | undefined = undefined;
