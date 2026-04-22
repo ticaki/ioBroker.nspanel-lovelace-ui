@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.5",
+    "version": "0.17.6",
     "news": {
+      "0.17.6": {
+        "en": "Added `useValueConditions` to `pageItem`. This can be used to set conditions for when the value and when the icon should be displayed.\ntextSize=0 was rejected by the admin",
+        "de": "`useValueConditions` zu `pageItem` hinzugefügt. Dies kann verwendet werden, um Bedingungen festzulegen, wann der Wert und wann das Symbol angezeigt werden sollen.\ntextSize=0 wurde vom admin zurückgewiesen",
+        "ru": "Добавить \"Условия использования ценностей\" в \"пункт страницы\". Это может быть использовано для установки условий, когда значение и когда иконка должна быть отображена.\ntextSize=0 был отклонен администратором",
+        "pt": "Adicionado `useValueConditions` para `pageItem`. Isto pode ser usado para definir as condições para quando o valor e quando o ícone deve ser exibido.\ntextSize=0 foi rejeitado pelo administrador",
+        "nl": "Toegevoegd aan paginaItem. Dit kan worden gebruikt om voorwaarden in te stellen voor wanneer de waarde en wanneer het pictogram moet worden weergegeven.\ntextSize=0 werd afgewezen door de admin",
+        "fr": "Ajout de `useValueConditions` à `pageItem`. Cela peut être utilisé pour définir les conditions pour quand la valeur et quand l'icône doit être affichée.\ntextSize=0 a été rejeté par l'administrateur",
+        "it": "Aggiunto `useValueConditions` a `pageItem`. Questo può essere utilizzato per impostare le condizioni per quando il valore e quando l'icona deve essere visualizzata.\ntextSize=0 è stato respinto dall'amministratore",
+        "es": "Añadido `ValueConditions` a `pageItem`. Esto se puede utilizar para establecer condiciones para cuando el valor y cuando se debe mostrar el icono.\ntextSize=0 fue rechazado por el administrador",
+        "pl": "Dodano 'User ValueConditions' do 'spektaklu'. Można to wykorzystać do ustawienia warunków, kiedy wartość i kiedy ikona powinny być wyświetlane.\ntextSize = 0 został odrzucony przez admin",
+        "uk": "Додано `useValueConditions` на сторінкуItem`. Це може бути використаний для встановлення умов, коли значення і коли іконка повинна відображатися.\njavaScript licenses API Веб-сайт Go1.13.8",
+        "zh-cn": "将“使用价值条件”添加到“页面项目”。 这可以用来设定值和图标显示时间的条件.\n文本Size=0被管理员拒绝"
+      },
       "0.17.5": {
         "en": "When the panel was restarted by the script, the model was set to ‘eu’",
         "de": "Bei einem durch den Skript versand verursachten Neustart des Panels, wurde das Model auf 'eu' gesetzt",
@@ -80,19 +93,6 @@
         "pl": "dodane: ChannelColorDialog\ndodano: customItem, longPress, Doceant PageLongPress, ikony jako id, div.",
         "uk": "доданий: CanColorDialog\nдодано: CustomItem, longPress, цільовийPageLongPress, іконки як ідентифікатор, div.",
         "zh-cn": "添加: Channel ColorDialog 语言\n添加:自定义项目,长报,目标PageLongPress,图标作为 id, div."
-      },
-      "0.16.2": {
-        "en": "fixed: channel duplicate error\nfixed: ChannelConfigDialog – error messages (datapointErrors, datapointDuplicates, checkResult) are now properly reset when reopening the dialog",
-        "de": "behoben: Kanal-Duplikat-Fehler\nbehoben: ChannelConfigDialog – Fehlermeldungen (datapointErrors, datapointDuplicates, checkResult) werden nun beim erneuten Öffnen des Dialogs richtig zurückgesetzt",
-        "ru": "исправлено: ошибка дублирования канала\nисправлено: ChannelConfigDialog – сообщения об ошибках (datapointErrors, datapointDuplicates, checkResult) теперь должным образом сбрасываются при повторном открытии диалога",
-        "pt": "corrigido: erro de canal duplicado\ncorrigido: ChannelConfigDialog – mensagens de erro (datapointErrors, datapointDuplicates, checkResult) agora são corretamente repostas ao reabrir a janela",
-        "nl": "opgelost: kanaal-duplicaatfout\nopgelost: ChannelConfigDialog – foutmeldingen (datapointErrors, datapointDuplicates, checkResult) worden nu correct gereset bij het heropenen van het dialoogvenster",
-        "fr": "corrigé : erreur de duplication de canal\ncorrigé : ChannelConfigDialog – les messages d'erreur (datapointErrors, datapointDuplicates, checkResult) sont maintenant correctement réinitialisés lors de la réouverture de la boîte de dialogue",
-        "it": "corretto: errore di canale duplicato\ncorretto: ChannelConfigDialog – i messaggi di errore (datapointErrors, datapointDuplicates, checkResult) sono ora correttamente azzerati quando si riapre la finestra di dialogo",
-        "es": "corregido: error de canal duplicado\ncorregido: ChannelConfigDialog – los mensajes de error (datapointErrors, datapointDuplicates, checkResult) ahora se reinician correctamente al reabrir el diálogo",
-        "pl": "naprawiono: błąd duplikatu kanału\nnaprawiono: ChannelConfigDialog – komunikaty błędów (datapointErrors, datapointDuplicates, checkResult) są teraz poprawnie resetowane przy ponownym otwarciu okna dialogowego",
-        "uk": "виправлено: помилка дублікату каналу\nвиправлено: ChannelConfigDialog – повідомлення про помилки (datapointErrors, datapointDuplicates, checkResult) тепер належним чином скидаються при повторному відкритті діалогу",
-        "zh-cn": "修复: 频道重复错误\n修复: ChannelConfigDialog – 错误消息 (datapointErrors, datapointDuplicates, checkResult) 现在在重新打开对话框时已正确重置"
       }
     },
     "titleLang": {

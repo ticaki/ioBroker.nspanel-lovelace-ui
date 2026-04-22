@@ -157,6 +157,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.17.6 (2026-04-22)
+- (ticaki) Added `useValueConditions` to `pageItem`. This can be used to set conditions for when the value and when the icon should be displayed.
+- (ticaki) textSize=0 was rejected by the admin
+
 ### 0.17.5 (2026-04-18)
 - (ticaki) When the panel was restarted by the script, the model was set to ‘eu’
 
