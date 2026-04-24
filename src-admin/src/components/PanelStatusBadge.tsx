@@ -23,6 +23,7 @@ export interface PanelStatusBadgeProps {
 interface PanelStatusBadgeState {
     status: PanelStatus | null;
     loading: boolean;
+    activated: boolean | null;
 }
 
 export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, PanelStatusBadgeState> {
@@ -35,27 +36,66 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
         this.state = {
             status: null,
             loading: true,
+            activated: null,
         };
     }
 
     async componentDidMount(): Promise<void> {
         await this.subscribeToStatus();
+        await this.subscribeToActivated();
     }
 
     async componentDidUpdate(prevProps: PanelStatusBadgeProps): Promise<void> {
         if (prevProps.panelId !== this.props.panelId) {
             await this.unsubscribeFromStatus(prevProps.panelId);
+            await this.unsubscribeFromActivated(prevProps.panelId);
             await this.subscribeToStatus();
+            await this.subscribeToActivated();
         }
     }
 
     componentWillUnmount(): void {
         void this.unsubscribeFromStatus(this.props.panelId);
+        void this.unsubscribeFromActivated(this.props.panelId);
     }
 
     private getStatusStateId(): string {
         return `${this.adapter}.${this.instance}.panels.${this.props.panelId}.status`;
     }
+
+    private getActivatedStateId(panelId: string): string {
+        return `${this.adapter}.${this.instance}.panels.${panelId}.cmd.activated`;
+    }
+
+    private async subscribeToActivated(): Promise<void> {
+        const activatedStateId = this.getActivatedStateId(this.props.panelId);
+
+        try {
+            const state = await this.oContext.socket.getState(activatedStateId);
+            this.onActivatedChanged(activatedStateId, state);
+            await this.oContext.socket.subscribeState(activatedStateId, this.onActivatedChanged);
+        } catch (error) {
+            console.error('[PanelStatusBadge] Failed to subscribe to activated state:', error);
+        }
+    }
+
+    private async unsubscribeFromActivated(panelId: string): Promise<void> {
+        const activatedStateId = this.getActivatedStateId(panelId);
+
+        try {
+            await this.oContext.socket.unsubscribeState(activatedStateId, this.onActivatedChanged);
+        } catch (error) {
+            console.error('[PanelStatusBadge] Failed to unsubscribe from activated state:', error);
+        }
+    }
+
+    private onActivatedChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        // null/undefined means state does not exist → treat as activated (true)
+        const activated = state?.val !== undefined && state.val !== null ? !!state.val : true;
+        if (activated !== this.state.activated) {
+            this.setState({ activated });
+        }
+    };
 
     private async subscribeToStatus(): Promise<void> {
         const statusStateId = this.getStatusStateId();
@@ -109,9 +149,12 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
     }
 
     render(): React.JSX.Element {
-        const { status, loading } = this.state;
+        const { status, loading, activated } = this.state;
         const { size = 'small', showLabel = true, showIcon = true, disableTooltip = false, alive = true } = this.props;
         const maxWidth = showLabel ? 150 : 24;
+
+        // Panel is deactivated → always show deactivated badge
+        const effectiveStatus: PanelStatus | null = activated === false ? 'deactivated' : status;
 
         if (loading) {
             return (
@@ -126,7 +169,7 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
             );
         }
 
-        if (!status || !alive) {
+        if (!effectiveStatus || !alive) {
             return (
                 <Chip
                     size={size}
@@ -139,9 +182,9 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
             );
         }
 
-        const color = panelStatusColors[status];
-        const label = this.getStatusLabel(status);
-        console.log(`[PanelStatusBadge] Rendering status: ${status} with color ${color}`);
+        const color = panelStatusColors[effectiveStatus];
+        const label = this.getStatusLabel(effectiveStatus);
+        console.log(`[PanelStatusBadge] Rendering status: ${effectiveStatus} with color ${color}`);
 
         const chipelement = (
             <Chip

@@ -157,6 +157,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Added `panels.{id}.cmd.activated` state to enable/disable a panel; toggle visible in TabMaintain and TabPanelinfo admin UI
+- (ticaki) Fixed `textSize`/`fontSize` value `0` being rejected by the admin and ignored in some cases
+
 ### 0.17.6 (2026-04-22)
 - (ticaki) Added `useValueConditions` to `pageItem`. This can be used to set conditions for when the value and when the icon should be displayed.
 - (ticaki) textSize=0 was rejected by the admin

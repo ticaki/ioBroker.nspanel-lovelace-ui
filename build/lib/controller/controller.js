@@ -164,6 +164,7 @@ class Controller extends Library.BaseClass {
     );
   };
   onLibraryStateChange = async (id, state) => {
+    var _a;
     if (!id.startsWith("panels.") || state.ack) {
       return;
     }
@@ -175,9 +176,9 @@ class Controller extends Library.BaseClass {
           if (panel) {
             break;
           }
-          const panelConfig = this.adapter.config.panels.find(
-            (p) => p.id === id.split(".").slice(1, -2).join(".")
-          );
+          const mac = id.split(".").slice(1, 2).join(".");
+          const topic = (_a = this.adapter.config.panels.find((p) => p.id === mac)) == null ? void 0 : _a.topic;
+          const panelConfig = this.options.panels.find((p) => p.topic === topic);
           if (panelConfig) {
             await this.addPanel(structuredClone(panelConfig));
           }

@@ -180,9 +180,9 @@ export class Controller extends Library.BaseClass {
                     if (panel) {
                         break;
                     }
-                    const panelConfig = this.adapter.config.panels.find(
-                        p => p.id === id.split('.').slice(1, -2).join('.'),
-                    );
+                    const mac = id.split('.').slice(1, 2).join('.');
+                    const topic = this.adapter.config.panels.find(p => p.id === mac)?.topic;
+                    const panelConfig = this.options.panels.find(p => p.topic === topic);
                     if (panelConfig) {
                         await this.addPanel(structuredClone(panelConfig));
                     }

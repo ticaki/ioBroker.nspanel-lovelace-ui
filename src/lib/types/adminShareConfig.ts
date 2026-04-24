@@ -288,7 +288,8 @@ export type PanelStatus =
     | 'online'
     | 'flashing'
     | 'error'
-    | 'setup';
+    | 'setup'
+    | 'deactivated';
 
 export const panelStatusStates: Record<number, PanelStatus> = {
     0: 'offline', // Panel ist offline, keine belegbare Verbindung zum Adapter
@@ -299,6 +300,7 @@ export const panelStatusStates: Record<number, PanelStatus> = {
     5: 'flashing', // Panel wird geflasht
     6: 'error', // Panel hat einen Fehler gemeldet (z.B. Verbindungsfehler, Fehler beim Flashen, etc.)
     7: 'setup', // Panel befindet sich im Einrichtungsmodus
+    8: 'deactivated', // Panel ist per cmd.activated deaktiviert
 };
 
 export const panelStatusColors: Record<PanelStatus, string> = {
@@ -310,6 +312,7 @@ export const panelStatusColors: Record<PanelStatus, string> = {
     flashing: '#FFC107',
     setup: '#d99800',
     error: '#F44336',
+    deactivated: '#607D8B',
 };
 
 export const panelStatusTranslationKeys: Record<PanelStatus, string> = {
@@ -321,6 +324,7 @@ export const panelStatusTranslationKeys: Record<PanelStatus, string> = {
     flashing: 'Panel_status_flashing',
     setup: 'Panel_status_setup',
     error: 'Panel_status_error',
+    deactivated: 'Panel_status_deactivated',
 };
 
 export function reversePanelStatusStates(value: PanelStatus): number {

@@ -64,6 +64,7 @@ interface PanelConfig {
 
 // Hier können weitere States hinzugefügt werden, die angezeigt bzw. gesteuert werden sollen
 const displayStates = [
+    'cmd.activated', // Panel aktivieren/deaktivieren
     'cmd.screenSaver.layout', // steht für z.B. für nspanel-lovelace-ui.0.panels.C0_49_EF_FA_4C_6C.cmd.screenSaver.layout
     'cmd.screenSaver.timeout',
     'cmd.dim.dayMode',

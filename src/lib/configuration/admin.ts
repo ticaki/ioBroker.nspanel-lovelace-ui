@@ -13,6 +13,31 @@ type PendingNavEntry = {
     next: string | undefined;
 };
 
+function shallowDescribe(value: unknown): string {
+    if (value === null) {
+        return 'null';
+    }
+    if (Array.isArray(value)) {
+        return `Array(${value.length})`;
+    }
+    if (typeof value === 'object') {
+        const obj = value as Record<string, unknown>;
+        const keys = Object.keys(obj);
+        const entries = keys.map(k => {
+            const v = obj[k];
+            if (Array.isArray(v)) {
+                return `${k}: Array(${v.length})`;
+            }
+            if (v !== null && typeof v === 'object') {
+                return `${k}: {${Object.keys(v as Record<string, unknown>).join(', ')}}`;
+            }
+            return `${k}: ${JSON.stringify(v)}`;
+        });
+        return `{ ${entries.join(', ')} }`;
+    }
+    return JSON.stringify(value);
+}
+
 export class AdminConfiguration extends BaseClass {
     private pageConfig: ShareConfig.PageConfig[] = [];
     constructor(adapter: NspanelLovelaceUi) {
@@ -21,12 +46,6 @@ export class AdminConfiguration extends BaseClass {
         this.pageConfig = this.adapter.config.pageConfig || [];
     }
 
-    public async processPanels(options: panelConfigPartial[]): Promise<panelConfigPartial[]> {
-        for (const option of options) {
-            await this.processentrys(option);
-        }
-        return options;
-    }
     /**
      * Process configurable pages from adapter config and build navigation entries.
      * Orchestrates page creation (phase 1) and deferred navigation chain resolution (phase 2).
@@ -34,8 +53,16 @@ export class AdminConfiguration extends BaseClass {
      * @param option - Panel configuration partial containing pages and navigation arrays
      */
     public async processentrys(option: panelConfigPartial): Promise<panelConfigPartial> {
-        const pendingNavs = await this.createPagesFromConfig(option);
-        this.applyPendingNavigations(option, pendingNavs);
+        try {
+            const pendingNavs = await this.createPagesFromConfig(option);
+            this.applyPendingNavigations(option, pendingNavs);
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            const stack = error instanceof Error ? (error.stack ?? 'no stack') : 'no stack';
+            this.log.error(
+                `[processentrys] Failed to process panel "${option.name ?? shallowDescribe(option)}": ${msg}\nOption: ${shallowDescribe(option)}\nStack: ${stack}`,
+            );
+        }
         return option;
     }
 

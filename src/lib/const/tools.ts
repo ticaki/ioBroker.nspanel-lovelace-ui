@@ -280,9 +280,6 @@ export async function getIconEntryValue(
         return Icons.GetIcon(on ? def : defOff || def);
     }
     const textSize = i.textSize && (await i.textSize.getNumber());
-    if (textSize != null) {
-        console.log('Text size:', textSize);
-    }
     const text = getText ? (i.true && i.true.text && (await getValueEntryString(i.true.text))) || null : null;
     if (text !== null) {
         const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;

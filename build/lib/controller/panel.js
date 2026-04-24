@@ -301,6 +301,7 @@ class Panel extends import_library.BaseClass {
     this.statesControler.clearObjectDatabase();
   }
   async preInit(options) {
+    options.pages = options.pages || [];
     const admin = new import_admin.AdminConfiguration(this.adapter);
     await admin.processentrys(options);
     options.pages = options.pages.filter((b) => {

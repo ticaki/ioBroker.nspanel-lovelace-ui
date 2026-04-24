@@ -873,11 +873,7 @@ export class ConfigManager extends BaseClass {
                         if (page.type === 'cardThermo' && a === 0) {
                             continue;
                         }
-                        if (page.type === 'cardThermo2') {
-                            this.log.warn(
-                                `Page ${page.uniqueName} is cardThermo2, items are not supported and will be ignored!`,
-                            );
-                        }
+
                         try {
                             const temp = await this.getPageItemConfig(item, page, messages);
                             const itemConfig = temp.itemConfig;

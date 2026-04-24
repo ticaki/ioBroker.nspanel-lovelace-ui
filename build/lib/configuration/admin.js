@@ -34,18 +34,36 @@ module.exports = __toCommonJS(admin_exports);
 var import_library = require("../controller/library");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_function_and_const = require("../types/function-and-const");
+function shallowDescribe(value) {
+  if (value === null) {
+    return "null";
+  }
+  if (Array.isArray(value)) {
+    return `Array(${value.length})`;
+  }
+  if (typeof value === "object") {
+    const obj = value;
+    const keys = Object.keys(obj);
+    const entries = keys.map((k) => {
+      const v = obj[k];
+      if (Array.isArray(v)) {
+        return `${k}: Array(${v.length})`;
+      }
+      if (v !== null && typeof v === "object") {
+        return `${k}: {${Object.keys(v).join(", ")}}`;
+      }
+      return `${k}: ${JSON.stringify(v)}`;
+    });
+    return `{ ${entries.join(", ")} }`;
+  }
+  return JSON.stringify(value);
+}
 class AdminConfiguration extends import_library.BaseClass {
   pageConfig = [];
   constructor(adapter) {
     super(adapter, "AdminConfiguration");
     this.adapter = adapter;
     this.pageConfig = this.adapter.config.pageConfig || [];
-  }
-  async processPanels(options) {
-    for (const option of options) {
-      await this.processentrys(option);
-    }
-    return options;
   }
   /**
    * Process configurable pages from adapter config and build navigation entries.
@@ -54,8 +72,19 @@ class AdminConfiguration extends import_library.BaseClass {
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
   async processentrys(option) {
-    const pendingNavs = await this.createPagesFromConfig(option);
-    this.applyPendingNavigations(option, pendingNavs);
+    var _a, _b;
+    try {
+      const pendingNavs = await this.createPagesFromConfig(option);
+      this.applyPendingNavigations(option, pendingNavs);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? (_a = error.stack) != null ? _a : "no stack" : "no stack";
+      this.log.error(
+        `[processentrys] Failed to process panel "${(_b = option.name) != null ? _b : shallowDescribe(option)}": ${msg}
+Option: ${shallowDescribe(option)}
+Stack: ${stack}`
+      );
+    }
     return option;
   }
   /**

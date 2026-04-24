@@ -77,8 +77,10 @@ const panelStatusStates = {
   // Panel wird geflasht
   6: "error",
   // Panel hat einen Fehler gemeldet (z.B. Verbindungsfehler, Fehler beim Flashen, etc.)
-  7: "setup"
+  7: "setup",
   // Panel befindet sich im Einrichtungsmodus
+  8: "deactivated"
+  // Panel ist per cmd.activated deaktiviert
 };
 const panelStatusColors = {
   offline: "#9E9E9E",
@@ -88,7 +90,8 @@ const panelStatusColors = {
   online: "#4CAF50",
   flashing: "#FFC107",
   setup: "#d99800",
-  error: "#F44336"
+  error: "#F44336",
+  deactivated: "#607D8B"
 };
 const panelStatusTranslationKeys = {
   offline: "Panel_status_offline",
@@ -98,7 +101,8 @@ const panelStatusTranslationKeys = {
   online: "Panel_status_online",
   flashing: "Panel_status_flashing",
   setup: "Panel_status_setup",
-  error: "Panel_status_error"
+  error: "Panel_status_error",
+  deactivated: "Panel_status_deactivated"
 };
 function reversePanelStatusStates(value) {
   const reversed = {};

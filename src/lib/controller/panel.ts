@@ -328,6 +328,7 @@ export class Panel extends BaseClass {
         // Process admin pages and build navigation
     }
     async preInit(options: panelConfigPartial): Promise<void> {
+        options.pages = options.pages || [];
         const admin = new AdminConfiguration(this.adapter);
         await admin.processentrys(options);
         options.pages = options.pages.filter(b => {
