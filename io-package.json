@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.6",
+    "version": "0.17.7",
     "news": {
+      "0.17.7": {
+        "en": "Added `panels.{id}.cmd.activated` state to enable/disable a panel; toggle visible in TabMaintain and TabPanelinfo admin UI\nFixed `textSize`/`fontSize` value `0` being rejected by the admin and ignored in some cases",
+        "de": "Hinzugefügt `panels.{id}.cmd.activated` Zustand, um ein Panel zu aktivieren / zu deaktivieren; toggle sichtbar in TabMaintain und TabPanelinfo admin UI\nFixed `textSize`/`fontSize` Wert `0` wird vom Admin abgelehnt und zusätzlich `textSize`/`fontSize` wurde in einigen Fällen vom Pageitem ignoriert.",
+        "ru": "Добавлено состояние «panels.{id}.cmd.activated» для включения/отключения панели; переключатель, видимый в интерфейсе администратора TabMaintain и TabPanelinfo\nИсправленное значение «textSize» / «fontSize» «0» отклоняется администратором и в некоторых случаях игнорируется",
+        "pt": "Adicionado o estado `panels.{id}.cmd.activated` para activar/desactivar um painel; comutar visível no TabMaintain e TabPanelinfo admin UI\nFixo `textSize`/`fontSize` valor `0` sendo rejeitado pelo administrador e ignorado em alguns casos",
+        "nl": "Toegevoegde \nVaste tekstMaat",
+        "fr": "Ajout de l'état `panels.{id}.cmd.activated` pour activer/désactiver un panneau; basculer visible dans TabMaintain et TabPanelinfo admin UI\nCorrection `textSize`/`fontSize` valeur `0` étant rejetée par l'administrateur et ignorée dans certains cas",
+        "it": "Aggiunto `panels.{id}.cmd.activated` stato per attivare/disattivare un pannello; attivare visibile in TabMaintain e TabPanelinfo admin UI\nFisso `textSize`/`fontSize` valore `0` essere respinto dall'amministratore e ignorato in alcuni casi",
+        "es": "Añadido `panels.{id}.cmd.activated` estado para habilitar/desactivar un panel; cambiar visible en TabMaintain y TabPanelinfo admin UI\nFijo `textSize`/`fontSize` valor `0` siendo rechazado por el administrador e ignorado en algunos casos",
+        "pl": "Dodano 'panele. {id} .cmd.activated' stan, aby włączyć / wyłączyć panel; przełączanie widoczne w Interfejsie administratora TabMainten i TabPanelinfo\nNaprawiono, że 'textSize' / 'fontSize' wartość '0' jest odrzucana przez admin i ignorowana w niektórych przypadkach",
+        "uk": "Додано `panels.{id}.cmd.activated` стан, щоб увімкнути/вимкнути панель; окуляри видимі в TabMaintain і TabPanelinfo admin UI\nВиправлено `textSize`/`fontSize` значення `0` відхилений адміністратором і ігнорується в деяких випадках",
+        "zh-cn": "添加了“ panels.{id}.cmd.activated”状态以启用/损坏面板;切换可见于 TabMaintain 和 TabPanelinfo admin UI\n固定的`文本化'/`fontSize ' 值`0 ' 被行政当局拒绝,在某些情况下被忽略"
+      },
       "0.17.6": {
         "en": "Added `useValueConditions` to `pageItem`. This can be used to set conditions for when the value and when the icon should be displayed.\ntextSize=0 was rejected by the admin",
         "de": "`useValueConditions` zu `pageItem` hinzugefügt. Dies kann verwendet werden, um Bedingungen festzulegen, wann der Wert und wann das Symbol angezeigt werden sollen.\ntextSize=0 wurde vom admin zurückgewiesen",
@@ -80,19 +93,6 @@
         "pl": "bugfix: długotrwale",
         "uk": "javascript licenses api веб-сайт",
         "zh-cn": "错误修正: 长压"
-      },
-      "0.17.0": {
-        "en": "added: ChannelColorDialog\nadded: customItem, longPress, targetPageLongPress, icons as id, div.",
-        "de": "hinzugefügt: ChannelColorDialog\nhinzugefügt: customItem, longPress, targetPageLongPress, icons as id, div.",
-        "ru": "источник: ChannelColorDialog\nдобавлено: customItem, longPress, targetPageLongPress, иконки как id, div.",
-        "pt": "adicionado: ChannelColorDialog\nadd: customItem, longPress, targetPageLongPress, ícones como id, div.",
-        "nl": "toegevoegd: Kanaalkleurdialoog\ntoegevoegd: customItem, longPress, targetPageLongPress, iconen als id, div.",
-        "fr": "ajouté: ChannelColorDialog\najouté: customItem, longPress, ciblePageLongPress, icônes comme id, div.",
-        "it": "aggiunto: CanaleColorDialog\naggiunto: customItem, longPress, targetPageLongPress, icone come id, div.",
-        "es": "añadido: ChannelColorDialog\nañadido: customItem, longPress, targetPageLongPress, iconos as id, div.",
-        "pl": "dodane: ChannelColorDialog\ndodano: customItem, longPress, Doceant PageLongPress, ikony jako id, div.",
-        "uk": "доданий: CanColorDialog\nдодано: CustomItem, longPress, цільовийPageLongPress, іконки як ідентифікатор, div.",
-        "zh-cn": "添加: Channel ColorDialog 语言\n添加:自定义项目,长报,目标PageLongPress,图标作为 id, div."
       }
     },
     "titleLang": {
