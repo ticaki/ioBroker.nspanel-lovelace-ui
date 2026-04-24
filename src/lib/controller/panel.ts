@@ -601,6 +601,25 @@ export class Panel extends BaseClass {
                 definition.genericStateObjects.panel.panels.buttons.screensaverGesture,
             );
         }
+        state = this.library.readdb(`panels.${this.name}.cmd.activated`);
+        if (state && state.val != null) {
+            await this.library.writedp(
+                `panels.${this.name}.cmd.activated`,
+                true,
+                definition.genericStateObjects.panel.panels.cmd.activated,
+            );
+        } else {
+            await this.library.writedp(
+                `panels.${this.name}.cmd.activated`,
+                true,
+                definition.genericStateObjects.panel.panels.cmd.activated,
+            );
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.hideCards`,
+            !!state?.val,
+            definition.genericStateObjects.panel.panels.cmd.hideCards,
+        );
 
         state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);
         if (state && state.val != null) {
@@ -854,6 +873,7 @@ export class Panel extends BaseClass {
     ) => void = (payload: string, ackForType: boolean, force?: boolean, opt?: IClientPublishOptions) => {
         this.sendToPanelClass(payload, ackForType, force, opt);
     };
+
     /**
      * Activate a page or toggle sleep on the current page.
      *

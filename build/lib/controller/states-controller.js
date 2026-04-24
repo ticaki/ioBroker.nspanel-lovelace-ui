@@ -663,6 +663,7 @@ class StatesControler extends import_library.BaseClass {
           ack: state.ack
         });
         if (((_d = (_c = libState.obj) == null ? void 0 : _c.common) == null ? void 0 : _d.write) && this.adapter.controller) {
+          await this.adapter.controller.onLibraryStateChange(id, state);
           const panels = this.adapter.controller.panels;
           for (const panel of panels) {
             await panel.onStateChange(id, state);

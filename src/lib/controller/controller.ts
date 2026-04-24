@@ -11,6 +11,7 @@ import { Color } from '../const/Color';
 import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
 import { getTrashDataFromFile, getTrashDataFromState } from '../pages/tools/pageTrash';
+import * as definition from '../const/definition';
 
 /**
  * Controller Class
@@ -165,6 +166,42 @@ export class Controller extends Library.BaseClass {
         return new Promise(resolve =>
             resolve(new Date().toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit' })),
         );
+    };
+
+    onLibraryStateChange = async (id: string, state: nsPanelState): Promise<void> => {
+        if (!id.startsWith('panels.') || state.ack) {
+            return;
+        }
+        const endsWith = id.split('.').slice(-2).join('.');
+        switch (endsWith) {
+            case 'cmd.activated': {
+                if (state.val === true) {
+                    const panel = this.panels.find(p => p.name === id.split('.').slice(1, -2).join('.'));
+                    if (panel) {
+                        break;
+                    }
+                    const panelConfig = this.adapter.config.panels.find(
+                        p => p.id === id.split('.').slice(1, -2).join('.'),
+                    );
+                    if (panelConfig) {
+                        await this.addPanel(structuredClone(panelConfig));
+                    }
+                } else if (state.val === false) {
+                    const panel = this.panels.find(p => p.name === id.split('.').slice(1, -2).join('.'));
+                    if (panel) {
+                        await this.removePanel(panel);
+                    }
+                }
+                await this.library.writedp(
+                    `panels.${this.name}.cmd.activated`,
+                    !!state.val,
+                    definition.genericStateObjects.panel.panels.cmd.activated,
+                );
+                break;
+            }
+            default:
+                break;
+        }
     };
 
     /**
@@ -415,6 +452,7 @@ export class Controller extends Library.BaseClass {
             if (panelConfig === undefined) {
                 continue;
             }
+
             tasks.push(this.addPanel(structuredClone(panelConfig)));
         }
 
@@ -441,6 +479,11 @@ export class Controller extends Library.BaseClass {
         }
 
         panel.name = this.adapter.config.panels[index].id;
+        const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
+        if (state && state.val === false) {
+            this.log.info(`Panel ${panel.name} is deactivated, skipping initialization.`);
+            return false;
+        }
         panel.friendlyName = this.adapter.config.panels[index].name;
         panel.controller = this;
         panel.scriptName = panel.scriptName || 'missing';

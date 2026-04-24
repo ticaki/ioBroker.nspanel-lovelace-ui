@@ -39,6 +39,7 @@ var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
 var import_Color = require("../const/Color");
 var import_pageTrash = require("../pages/tools/pageTrash");
+var definition = __toESM(require("../const/definition"));
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -161,6 +162,41 @@ class Controller extends Library.BaseClass {
     return new Promise(
       (resolve) => resolve((/* @__PURE__ */ new Date()).toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" }))
     );
+  };
+  onLibraryStateChange = async (id, state) => {
+    if (!id.startsWith("panels.") || state.ack) {
+      return;
+    }
+    const endsWith = id.split(".").slice(-2).join(".");
+    switch (endsWith) {
+      case "cmd.activated": {
+        if (state.val === true) {
+          const panel = this.panels.find((p) => p.name === id.split(".").slice(1, -2).join("."));
+          if (panel) {
+            break;
+          }
+          const panelConfig = this.adapter.config.panels.find(
+            (p) => p.id === id.split(".").slice(1, -2).join(".")
+          );
+          if (panelConfig) {
+            await this.addPanel(structuredClone(panelConfig));
+          }
+        } else if (state.val === false) {
+          const panel = this.panels.find((p) => p.name === id.split(".").slice(1, -2).join("."));
+          if (panel) {
+            await this.removePanel(panel);
+          }
+        }
+        await this.library.writedp(
+          `panels.${this.name}.cmd.activated`,
+          !!state.val,
+          definition.genericStateObjects.panel.panels.cmd.activated
+        );
+        break;
+      }
+      default:
+        break;
+    }
   };
   /**
    * Handles internal commands based on the provided id and state.
@@ -424,6 +460,11 @@ class Controller extends Library.BaseClass {
       return false;
     }
     panel.name = this.adapter.config.panels[index].id;
+    const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
+    if (state && state.val === false) {
+      this.log.info(`Panel ${panel.name} is deactivated, skipping initialization.`);
+      return false;
+    }
     panel.friendlyName = this.adapter.config.panels[index].name;
     panel.controller = this;
     panel.scriptName = panel.scriptName || "missing";

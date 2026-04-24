@@ -550,6 +550,25 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     }
+    state = this.library.readdb(`panels.${this.name}.cmd.activated`);
+    if (state && state.val != null) {
+      await this.library.writedp(
+        `panels.${this.name}.cmd.activated`,
+        true,
+        definition.genericStateObjects.panel.panels.cmd.activated
+      );
+    } else {
+      await this.library.writedp(
+        `panels.${this.name}.cmd.activated`,
+        true,
+        definition.genericStateObjects.panel.panels.cmd.activated
+      );
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.hideCards`,
+      !!(state == null ? void 0 : state.val),
+      definition.genericStateObjects.panel.panels.cmd.hideCards
+    );
     state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);
     if (state && state.val != null) {
       this.hideCards = !!state.val;
