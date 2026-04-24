@@ -873,6 +873,11 @@ export class ConfigManager extends BaseClass {
                         if (page.type === 'cardThermo' && a === 0) {
                             continue;
                         }
+                        if (page.type === 'cardThermo2') {
+                            this.log.warn(
+                                `Page ${page.uniqueName} is cardThermo2, items are not supported and will be ignored!`,
+                            );
+                        }
                         try {
                             const temp = await this.getPageItemConfig(item, page, messages);
                             const itemConfig = temp.itemConfig;
@@ -2534,6 +2539,12 @@ export class ConfigManager extends BaseClass {
                 throw new Error(`longPress is only supported for button and switch items!`);
             }
         }
+        if (item.fontSize != null && itemConfig.data?.icon) {
+            itemConfig.data.icon = {
+                ...itemConfig.data.icon,
+                textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+            };
+        }
 
         if (item.filter != null) {
             itemConfig.filter = item.filter;
@@ -3687,7 +3698,7 @@ export class ConfigManager extends BaseClass {
                                             Color[pageItemDefaults.door.colorOn],
                                         ),
 
-                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                        text: (await this.existsState(foundedStates[role].ACTUAL?.dp || ''))
                                             ? {
                                                   ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
@@ -3700,7 +3711,7 @@ export class ConfigManager extends BaseClass {
                                             item.offColor || `${item.id}.COLORDEC`,
                                             Color[pageItemDefaults.door.colorOff],
                                         ),
-                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                        text: (await this.existsState(foundedStates[role].ACTUAL?.dp || ''))
                                             ? {
                                                   ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
@@ -4523,6 +4534,12 @@ export class ConfigManager extends BaseClass {
                 if (item.longPress && itemConfig?.type === 'button' && !itemConfig?.data?.longPress) {
                     itemConfig.data = itemConfig.data || {};
                     itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
+                }
+                if (item.fontSize != null && itemConfig?.data?.icon) {
+                    itemConfig.data.icon = {
+                        ...itemConfig.data.icon,
+                        textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                    };
                 }
                 if (item.enabled === false && itemConfig) {
                     if (!itemConfig.data) {
