@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.81",
+    "version": "0.17.8",
     "news": {
       "0.17.8": {
         "en": "fixed: Cannot read properties of undefined (reading 'trim')",

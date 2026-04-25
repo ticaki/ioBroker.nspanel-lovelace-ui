@@ -94,7 +94,8 @@
     "dev": "dev-server upload && dev-server watch",
     "dev:admin": "npm run build:admin && dev-server upload && dev-server watch",
     "dev:full": "npm run verify && npm run build:admin && dev-server upload && dev-server watch",
-    "start": "cd src-admin && npm run start"
+    "start": "cd src-admin && npm run start",
+    "repochecker": "npx @iobroker/repochecker https://github.com/ticaki/ioBroker.nspanel-lovelace-ui main"
   },
   "bugs": {
     "url": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues"
