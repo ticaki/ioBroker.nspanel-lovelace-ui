@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.7",
+    "version": "0.17.8",
     "news": {
+      "0.17.8": {
+        "en": "fixed: Cannot read properties of undefined (reading 'trim')",
+        "de": "fix: Kann keine Eigenschaften von undefiniert lesen (lesen 'trim')",
+        "ru": "фиксированный: не может считывать свойства неопределенного (чтение строки)",
+        "pt": "fixo: Não é possível ler as propriedades indefinidas (lendo 'trim')",
+        "nl": "vast: Kan eigenschappen van ongedefinieerde niet lezen (lezen van 'trim')",
+        "fr": "corrigé: Impossible de lire les propriétés non définies (lecture de 'trim')",
+        "it": "fisso: non possono leggere le proprietà di non definito (leggendo 'trim')",
+        "es": "fijo: No se pueden leer propiedades indefinidas (leer 'trim')",
+        "pl": "stałe: Nie można odczytać właściwości nieokreślone (czytanie 'trim')",
+        "uk": "фіксована: Не можна прочитати властивості невизначеного (читання 'trim')",
+        "zh-cn": "固定: 无法读取未定义的属性( 正在读取“ trim ”)"
+      },
       "0.17.7": {
         "en": "Added `panels.{id}.cmd.activated` state to enable/disable a panel; toggle visible in TabMaintain and TabPanelinfo admin UI\nFixed `textSize`/`fontSize` value `0` being rejected by the admin and ignored in some cases",
         "de": "Hinzugefügt `panels.{id}.cmd.activated` Zustand, um ein Panel zu aktivieren / zu deaktivieren; toggle sichtbar in TabMaintain und TabPanelinfo admin UI\nFixed `textSize`/`fontSize` Wert `0` wird vom Admin abgelehnt und zusätzlich `textSize`/`fontSize` wurde in einigen Fällen vom Pageitem ignoriert.",
@@ -80,19 +93,6 @@
         "pl": "bugfix: nazwa obiektu / ikona jako id dla większości ról / textSize",
         "uk": "виправлено помилку: ім'я сторінки / іконка як ідентифікатор для більшості ролей / текстВибір",
         "zh-cn": "bugfix: 页面项目名称/ 图标作为大多数角色的 ID / textSize"
-      },
-      "0.17.1": {
-        "en": "bugfix: longpress",
-        "de": "bugfix: longpress",
-        "ru": "исполнитель: longpress",
-        "pt": "correção de erros: longpress",
-        "nl": "bugfix: longpress",
-        "fr": "bugfix: longpress",
-        "it": "bugfix: longpress",
-        "es": "bugfix: longpress",
-        "pl": "bugfix: długotrwale",
-        "uk": "javascript licenses api веб-сайт",
-        "zh-cn": "错误修正: 长压"
       }
     },
     "titleLang": {

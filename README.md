@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.17.8 (2026-04-25)
+- (ticaki) fixed: Cannot read properties of undefined (reading 'trim')
+
 ### 0.17.7 (2026-04-24)
 - (ticaki) Added `panels.{id}.cmd.activated` state to enable/disable a panel; toggle visible in TabMaintain and TabPanelinfo admin UI
 - (ticaki) Fixed `textSize`/`fontSize` value `0` being rejected by the admin and ignored in some cases
