@@ -866,6 +866,7 @@ export class Panel extends BaseClass {
         force?: boolean,
         opt?: IClientPublishOptions,
     ) => void = () => {};
+
     protected sendToPanel: (
         payload: string,
         ackForType: boolean,
@@ -1123,11 +1124,7 @@ export class Panel extends BaseClass {
                 }
             }
         } else if (topic.endsWith('/tele/LWT')) {
-            if (message === 'Offline') {
-                //this.log.warn('LWT shows offline!');
-                // deaktiviert, weils zu falschen offline meldungen bei 1 nutzer kommt
-                //this.isOnline = false;
-            }
+            // deaktiviert, weils zu falschen offline meldungen kommen.
         } else if (topic.endsWith('/tele/INFO1')) {
             this.restartLoops();
         } else if (topic.endsWith('/tele/STATE')) {

@@ -31,6 +31,7 @@ declare global {
             fixBrokenCommonTypes: boolean;
             hideDeveloperSymbols: boolean;
             writeTasmotaTele:boolean;
+            deactivateDebugLog: boolean;
 
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;

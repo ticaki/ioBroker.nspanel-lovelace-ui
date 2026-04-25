@@ -52,6 +52,9 @@ class CustomLog {
     getName(): string {
         return this.#prefix;
     }
+    silly(log: string, log2: string = ''): void {
+        this.#adapter.log.silly(log2 ? `[${log}] ${log2}` : `[${this.#prefix}] ${log}`);
+    }
     debug(log: string, log2: string = ''): void {
         this.#adapter.log.debug(log2 ? `[${log}] ${log2}` : `[${this.#prefix}] ${log}`);
     }

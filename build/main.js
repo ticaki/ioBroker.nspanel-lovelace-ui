@@ -73,6 +73,11 @@ class NspanelLovelaceUi extends utils.Adapter {
    */
   async onReady() {
     var _a, _b, _c, _d, _e, _f;
+    if (this.config.deactivateDebugLog) {
+      this.log.debug = (_msg) => {
+      };
+      this.log.silly = this.log.info;
+    }
     await this.extendForeignObjectAsync(this.namespace, {
       type: "meta",
       common: { name: { en: "Nspanel Instance", de: "Nspanel Instanze" }, type: "meta.folder" },

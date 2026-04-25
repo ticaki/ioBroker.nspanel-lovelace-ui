@@ -84,6 +84,13 @@ class NspanelLovelaceUi extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
+        // this.config.deactivateDebugLog = true; // just for testing
+        // rewrite log functions to reduce log output while developing. Add silly log for important debug messages.
+        // remove silly logs after testing to reduce log output
+        if (this.config.deactivateDebugLog) {
+            this.log.debug = (_msg: string) => {};
+            this.log.silly = this.log.info;
+        }
         await this.extendForeignObjectAsync(this.namespace, {
             type: 'meta',
             common: { name: { en: 'Nspanel Instance', de: 'Nspanel Instanze' }, type: 'meta.folder' },
