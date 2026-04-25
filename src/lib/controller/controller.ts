@@ -695,7 +695,7 @@ export class Controller extends Library.BaseClass {
 
             this.globalPanelInfo.availableTftFirmwareVersion = result;
 
-            this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota.trim();
+            this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota ? result.tasmota.trim() : '';
 
             for (const panel of this.panels) {
                 await panel.writeInfo();
@@ -712,7 +712,7 @@ export class Controller extends Library.BaseClass {
                 return '';
             }
             // Filter JSON by "tag_name" and write to variable
-            const TasmotaVersionOnline = result.tasmota.trim();
+            const TasmotaVersionOnline = typeof result.tasmota === 'string' ? result.tasmota.trim() : '';
 
             this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
             for (const panel of this.panels) {
@@ -807,7 +807,7 @@ export class Controller extends Library.BaseClass {
                         this.log.debug(`Processing trash data from state ${state} for entry ${entry.uniqueName}`);
                         result = await getTrashDataFromState(daten.val, entry);
                     } else {
-                        if (!entry.trashFile || entry.trashFile.trim() === '') {
+                        if (!entry.trashFile || typeof entry.trashFile !== 'string' || entry.trashFile.trim() === '') {
                             this.log.warn(`No trash .ics-file defined for entry: ${entry.uniqueName}`);
                             continue;
                         }

@@ -1722,7 +1722,7 @@ export class Panel extends BaseClass {
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
         const modelSuffix = this.info.nspanel.model == 'eu' ? '' : `-${this.info.nspanel.model}`;
         const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
-        this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key].trim();
+        this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion[key];
 
         const def = structuredClone(definition.genericStateObjects);
         if (this.info.tasmota.sensors?.TempUnit === 'F') {

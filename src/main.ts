@@ -2107,7 +2107,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     let language = this.library.getLocalLanguage();
                     language = language === 'zh-cn' ? 'en' : language;
                     const result = await this.getVersionsJson();
-                    if (result && 'tasmota' in result) {
+                    if (result && 'tasmota' in result && typeof result.tasmota === 'string') {
                         const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
 
                         if (this.controller?.panels) {
@@ -2237,7 +2237,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     const eventName =
                                         typeof eventSummary === 'string' ? eventSummary : (eventSummary as any)?.val;
 
-                                    if (eventName && eventName.trim() !== '') {
+                                    if (eventName && typeof eventName === 'string' && eventName.trim() !== '') {
                                         eventNames.add(eventName);
                                     }
                                 }

@@ -252,8 +252,8 @@ export async function handleCardRole(
 
             result = [];
             for (let i = 0; i < arr.length; i++) {
-                const val = arr[i].name.trim();
-                const id = arr[i].id.trim();
+                const val = (arr[i].name ?? '').trim();
+                const id = (arr[i].id ?? '').trim();
                 if (!val) {
                     continue;
                 }
