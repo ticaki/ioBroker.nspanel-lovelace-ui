@@ -20,6 +20,7 @@ import {
 import HomeIcon from '@mui/icons-material/Home';
 import EditIcon from '@mui/icons-material/Edit';
 import { EntitySelector } from './EntitySelector';
+import IconSelect from '../IconSelect';
 import {
     ADAPTER_NAME,
     type PowerEntry,
@@ -62,6 +63,8 @@ interface PagePowerEditorState {
 }
 
 export class PagePowerEditor extends React.Component<PagePowerEditorProps, PagePowerEditorState> {
+    private readonly emptyCommon: Record<string, any> = {};
+
     constructor(props: PagePowerEditorProps) {
         super(props);
         this.state = {
@@ -244,12 +247,33 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                             value={data.entityHeadline ?? ''}
                             onChange={e => this.updateSlot(slot, { entityHeadline: e.target.value })}
                         />
-                        <TextField
-                            fullWidth
-                            variant="standard"
-                            label={this.getText('power_icon')}
-                            value={data.icon ?? ''}
-                            onChange={e => this.updateSlot(slot, { icon: e.target.value })}
+                        <IconSelect
+                            oContext={oContext}
+                            alive={this.state.alive}
+                            changed={false}
+                            themeName={theme?.palette?.mode === 'dark' ? 'dark' : 'light'}
+                            common={this.emptyCommon}
+                            attr="icon"
+                            data={{ icon: data.icon ?? '' }}
+                            originalData={{ icon: data.icon ?? '' }}
+                            onError={(): void => {}}
+                            schema={{
+                                type: 'custom',
+                                name: 'IconSelect',
+                                url: '',
+                                label: 'power_icon',
+                                i18n: true,
+                            }}
+                            custom
+                            onChange={(attrOrData: string | Record<string, any>, val?: unknown, cb?: () => void): void => {
+                                const newIcon =
+                                    typeof attrOrData === 'string'
+                                        ? typeof val === 'string' ? val : ''
+                                        : typeof attrOrData.icon === 'string' ? attrOrData.icon : '';
+                                this.updateSlot(slot, { icon: newIcon });
+                                if (cb) cb();
+                            }}
+                            theme={theme}
                         />
                         <Box sx={{ gridColumn: '1 / span 2' }}>
                             <EntitySelector
@@ -291,11 +315,13 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                         <TextField
                             fullWidth
                             variant="standard"
+                            type="color"
                             label={this.getText('power_iconColor')}
-                            value={data.iconColor ?? ''}
+                            value={data.iconColor || '#ffffff'}
                             disabled={!!data.useColorScale}
                             onChange={e => this.updateSlot(slot, { iconColor: e.target.value })}
                             helperText={this.getText('power_iconColor_hint')}
+                            slotProps={{ inputLabel: { shrink: true } }}
                         />
                         <FormControlLabel
                             control={
