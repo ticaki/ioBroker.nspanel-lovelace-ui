@@ -21,6 +21,27 @@ import HomeIcon from '@mui/icons-material/Home';
 import EditIcon from '@mui/icons-material/Edit';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
+import iconsJson from '../icons.json';
+
+const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
+
+function getIconSvgHtml(name: string | undefined): string | null {
+    if (!name) {
+        return null;
+    }
+    const entry = ICONS_LIST.find(i => i.name === name);
+    if (!entry) {
+        return null;
+    }
+    try {
+        return atob(entry.base64.replace(/^data:image\/svg\+xml;base64,/, '')).replace(
+            /<svg([^>]*)>/,
+            '<svg$1 fill="currentColor">',
+        );
+    } catch {
+        return null;
+    }
+}
 import {
     ADAPTER_NAME,
     type PowerEntry,
@@ -130,6 +151,8 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
         const idx = SLOT_INDICES[slot];
         const label = `${this.getText('power')} ${idx}`;
         const empty = !data.state && !data.entityHeadline && !data.icon;
+        const iconSvg = getIconSvgHtml(data.icon);
+        const isDark = this.props.theme?.palette?.mode === 'dark';
 
         return (
             <Paper
@@ -139,6 +162,8 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                 sx={{
                     p: 1.5,
                     minHeight: 90,
+                    position: 'relative',
+                    overflow: 'hidden',
                     cursor: this.state.alive ? 'pointer' : 'not-allowed',
                     opacity: this.state.alive ? 1 : 0.5,
                     border: empty ? '1px dashed' : '1px solid',
@@ -149,11 +174,29 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                     justifyContent: 'space-between',
                 }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {iconSvg && (
+                    <Box
+                        aria-hidden
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 64,
+                            height: 64,
+                            opacity: data.iconColor ? 0.25 : isDark ? 0.55 : 0.25,
+                            color: data.iconColor || (isDark ? '#ffffff' : 'text.primary'),
+                            pointerEvents: 'none',
+                            '& svg': { width: '100%', height: '100%' },
+                        }}
+                        dangerouslySetInnerHTML={{ __html: iconSvg }}
+                    />
+                )}
+                <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="caption" color="text.secondary">{label}</Typography>
                     <EditIcon fontSize="small" color="action" />
                 </Box>
-                <Box>
+                <Box sx={{ position: 'relative' }}>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                         {data.entityHeadline || this.getText('power_slot_empty')}
                     </Typography>
